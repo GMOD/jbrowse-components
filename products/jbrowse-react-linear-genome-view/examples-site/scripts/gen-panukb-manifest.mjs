@@ -1,8 +1,16 @@
-// Regenerates src/data/panukbPhenotypes.json from the official Pan-UKBB
-// phenotype manifest. The manifest lists every per-phenotype flat file (id,
-// description, category, cohort sizes, populations analyzed). We trim it to the
-// fields the example's phenotype picker needs and ship the result so the demo
-// can browse the whole catalog without fetching the ~1.4MB manifest at runtime.
+// Regenerates panukbPhenotypes.json from the official Pan-UKBB phenotype
+// manifest. The manifest lists every per-phenotype flat file (id,
+// description, category, cohort sizes, populations analyzed). We trim it to
+// the fields the example's phenotype picker needs so the demo can browse the
+// whole catalog without fetching the ~1.4MB manifest at runtime.
+//
+// The trimmed output is too large to track in git, so it's hosted at
+// s3://jbrowse.org/demos/panukbb/panukbPhenotypes.json (fetched by
+// PanUKBGWAS.tsx) instead of living in public/. After running this script,
+// upload the result with:
+//   aws s3 cp panukbPhenotypes.json \
+//     s3://jbrowse.org/demos/panukbb/panukbPhenotypes.json \
+//     --content-type application/json
 //
 // Usage: node scripts/gen-panukb-manifest.mjs
 import { gunzipSync } from 'node:zlib'
@@ -16,7 +24,6 @@ const MANIFEST_URL =
 const out = join(
   dirname(fileURLToPath(import.meta.url)),
   '..',
-  'public',
   'panukbPhenotypes.json',
 )
 
