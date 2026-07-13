@@ -135,20 +135,9 @@ export interface CommonSpecFields {
   expectedConsole?: string[]
 }
 
-// Mode 1: navigate to app, interact via UI to open tracks.
-// This is the reliable approach — plugins are fully loaded before tracks open.
-export interface LGVSpec extends CommonSpecFields {
-  mode?: 'lgv'
-  name: string
-  config?: string // defaults to volvox config
-  loc?: string // location to navigate to (default: config default)
-  openTracks?: string[] // track IDs to click open in the track selector
-  settleMs?: number
-  actions?: ScreenshotAction[]
-}
-
-// Mode 2: navigate directly to a session spec URL.
-// Use for multi-view layouts (dotplot, synteny) where the UI approach is awkward.
+// Navigate directly to a session spec URL. Every browser-rendered spec uses this
+// mode (multi-view layouts, single LGVs, everything); the session is built
+// declaratively via the helpers in screenshot-spec-helpers.ts.
 export interface SessionUrlSpec extends CommonSpecFields {
   mode: 'url'
   name: string
@@ -161,10 +150,10 @@ export interface SessionUrlSpec extends CommonSpecFields {
   actions?: ScreenshotAction[]
 }
 
-// Mode 3: invoke the @jbrowse/img CLI (jb2export) directly. These produce the
+// Invoke the @jbrowse/img CLI (jb2export) directly. These produce the
 // products/jbrowse-img/README example images — React SSR renders straight to
 // SVG/PNG with no browser involved, so they regenerate from plain jb2export
-// args instead of the LGV/URL puppeteer machinery, and land in
+// args instead of the URL-mode puppeteer machinery, and land in
 // products/jbrowse-img/img/ rather than website/static/img/.
 export interface CliSpec {
   mode: 'cli'
@@ -174,12 +163,16 @@ export interface CliSpec {
   diffThreshold?: number
 }
 
-// Mode 4: render the embedded `@jbrowse/react-linear-genome-view2` component
-// itself (not the jbrowse-web app) via its prebuilt UMD bundle, the exact
-// script-tag setup the embed tutorial documents. The generator serves a tiny
-// harness page that calls `createViewState(viewState)` and mounts
-// `<JBrowseLinearGenomeView>`, then screenshots the component element. Use for
-// figures that must show the embedded component rather than the full app.
+// Render the embedded `@jbrowse/react-linear-genome-view2` component itself (not
+// the jbrowse-web app) via its prebuilt UMD bundle, the exact script-tag setup
+// the embed tutorial documents. The generator serves a tiny harness page that
+// calls `createViewState(viewState)` and mounts `<JBrowseLinearGenomeView>`,
+// then screenshots the component element. Use for figures that must show the
+// embedded component rather than the full app.
+//
+// NOTE: this mode screenshots the `#root` element directly and does NOT run the
+// shared `shoot` path, so the CommonSpecFields that only take effect there
+// (annotations, crop, hideSelectors, hideTooltip, stages) are ignored here.
 export interface EmbeddedSpec extends CommonSpecFields {
   mode: 'embedded'
   name: string
@@ -193,7 +186,7 @@ export interface EmbeddedSpec extends CommonSpecFields {
   settleMs?: number
 }
 
-// Mode 5: stack already-rendered PNGs into one combined figure. Each `parts`
+// Stack already-rendered PNGs into one combined figure. Each `parts`
 // entry is another spec's name; the generator reads those specs' committed
 // static/img/<name>.png files and `convert -append`s them (top to bottom) into
 // <name>.png. It runs after the browser/cli specs so the parts are freshly
@@ -208,5 +201,5 @@ export interface ComposeSpec {
   diffThreshold?: number
 }
 
-export type BrowserScreenshotSpec = LGVSpec | SessionUrlSpec | EmbeddedSpec
+export type BrowserScreenshotSpec = SessionUrlSpec | EmbeddedSpec
 export type ScreenshotSpec = BrowserScreenshotSpec | CliSpec | ComposeSpec

@@ -1,5 +1,6 @@
 import {
   DEMO_CONFIG,
+  HPYLORI_26695_SEQ_ADAPTER,
   VOLVOX,
   hpyloriUrl,
   lgvSession,
@@ -41,8 +42,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
   // and terminus of replication, drawing the classic two-arm skew profile. Two
   // session GCContentTracks wrap the assembly's sequence (absolute fasta url —
   // session tracks don't inherit the config's baseUri): one in `content` mode
-  // (G+C fraction) and one in `skew` mode, both with large overlapping windows
-  // to smooth the genome-scale curve.
+  // (G+C fraction) and one in `skew` mode with a wide overlapping smoothing
+  // window, both smoothing the genome-scale curve.
   {
     mode: 'url',
     name: 'gc_content',
@@ -55,17 +56,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           assemblyNames: ['hpylori_26695'],
           adapter: {
             type: 'GCContentAdapter',
-            sequenceAdapter: {
-              type: 'IndexedFastaAdapter',
-              fastaLocation: {
-                uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa',
-                locationType: 'UriLocation',
-              },
-              faiLocation: {
-                uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa.fai',
-                locationType: 'UriLocation',
-              },
-            },
+            sequenceAdapter: HPYLORI_26695_SEQ_ADAPTER,
           },
           displays: [
             {
@@ -84,17 +75,7 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           assemblyNames: ['hpylori_26695'],
           adapter: {
             type: 'GCContentAdapter',
-            sequenceAdapter: {
-              type: 'IndexedFastaAdapter',
-              fastaLocation: {
-                uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa',
-                locationType: 'UriLocation',
-              },
-              faiLocation: {
-                uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa.fai',
-                locationType: 'UriLocation',
-              },
-            },
+            sequenceAdapter: HPYLORI_26695_SEQ_ADAPTER,
           },
           displays: [
             {
@@ -459,9 +440,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
   // Multi-wiggle clustering, two-stage figure over the PUR copy-number panel
   // (1000 Genomes kidd-lab CNV bigWigs, 104 PUR individuals) added to
   // config_demo — a far richer dataset than the synthetic volvox wiggle
-  // . Shown in multi-row density mode across a wide chr1 window
-  // spanning the AMY1 locus (hg38), a classic copy-number-polymorphic region, so
-  // the per-individual copy-number differences drive a meaningful clustering.
+  // . Shown in multi-row density mode across a wide hg38 window
+  // (chr3:162.3-163.4 Mb, reviewer-specified), a copy-number-polymorphic region,
+  // so the per-individual copy-number differences drive a meaningful clustering.
   // Top frame: the "Cluster by score" dialog open (auto/manual mode, before).
   // Bottom frame: after "Run clustering", the 104 rows are reordered by signal
   // similarity. showTree:false hides the dendrogram (only the row

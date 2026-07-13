@@ -79,10 +79,12 @@ Maximum height of the display in pixels
 
 #### slot: heightMode
 
-Track-height strategy (shared vocabulary with the alignments display). `inherit`
-(the default) follows the session-wide default for this display type, falling
-back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` resizes the
-track to fit all features, `fit` shrinks features to fill the current height.
+Track-sizing strategy — how the track responds when there are more features than
+fit (shared vocabulary with the alignments display, exposed in the "Track
+sizing" menu). `inherit` (the default) follows the session-wide default for this
+display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height,
+`grow` expands the track to show all features, `fit` squeezes features to fill
+the current height. Orthogonal to the per-feature size set by `displayMode`.
 Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit)
 settings.
 
@@ -94,7 +96,7 @@ settings.
   type: 'stringEnum',
   model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
   description:
-    'Track-height strategy (shared vocabulary with the alignments display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` resizes the track to fit all features, `fit` shrinks features to fill the current height. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
+    'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
 
 
 
@@ -216,8 +218,8 @@ height in pixels of the main body of each feature
 
 Feature height preset. `inherit` (the default) follows the session-wide default
 for this display type, falling back to `normal`;
-`normal`/`compact`/`superCompact` pin the track explicitly (including pinning
-`normal` back over a `compact` session default)
+`normal`/`compact`/`superCompact` customize the track explicitly (including
+customizing `normal` back over a `compact` session default)
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
 `inherit`, `normal`, `compact`, `superCompact`) · **Default:** `'inherit'` ·
@@ -233,7 +235,7 @@ _promotable_
     'superCompact',
   ]),
   description:
-    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` pin the track explicitly (including pinning `normal` back over a `compact` session default)',
+    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default)',
 
 
 
@@ -268,7 +270,7 @@ transcripts, "longestCoding" shows only the longest coding transcript
 
 subfeature label display mode. `inherit` (the default) follows the session-wide
 default for this display type, falling back to `none`; `none`/`below`/`overlay`
-pin the track explicitly
+customize the track explicitly
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
 `inherit`, `none`, `below`, `overlay`) · **Default:** `'inherit'` · _promotable_
@@ -283,7 +285,7 @@ pin the track explicitly
     'overlay',
   ]),
   description:
-    'subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` pin the track explicitly',
+    'subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` customize the track explicitly',
 
 
 
@@ -300,8 +302,8 @@ pin the track explicitly
 
 Display directional chevrons on intron lines to indicate strand direction. Unset
 (the default) follows the session-wide default for this display type, falling
-back to on; an explicit true/false pins the track (including pinning on over an
-off session default)
+back to on; an explicit true/false customizes the track (including customizing
+on over an off session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
 **Default:** `undefined` · _promotable_
@@ -310,7 +312,7 @@ off session default)
 {
   type: 'maybeBoolean',
   description:
-    'Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false pins the track (including pinning on over an off session default)',
+    'Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (including customizing on over an off session default)',
 
 
 

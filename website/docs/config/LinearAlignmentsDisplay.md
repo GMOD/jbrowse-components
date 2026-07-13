@@ -76,42 +76,42 @@ _See the **Config slots** section below for all available configuration fields._
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                                       | Type                                                             | Description                                                                                                                                                         |
-| ---------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [featureHeight](#slot-featureheight)                       | `number`                                                         | Height of each feature (read) in pixels                                                                                                                             |
-| [featureSpacing](#slot-featurespacing)                     | `number`                                                         | Spacing between features in pixels                                                                                                                                  |
-| [heightMode](#slot-heightmode)                             | `stringEnum`                                                     | Track-height strategy (shared vocabulary with the canvas feature display).                                                                                          |
-| [readConnectionsLineWidth](#slot-readconnectionslinewidth) | `number`                                                         | Line width for read-connection arcs/lines in pixels                                                                                                                 |
-| [showSashimiLabels](#slot-showsashimilabels)               | `boolean`                                                        | Draw the supporting-read count on each sashimi arc                                                                                                                  |
-| [height](#slot-height)                                     | `number`                                                         |                                                                                                                                                                     |
-| [autoscale](#slot-autoscale)                               | `stringEnum` (local, localsd)                                    | Coverage autoscale type                                                                                                                                             |
-| [scaleType](#slot-scaletype)                               | `stringEnum` (linear, log)                                       | Coverage scale type (linear or log)                                                                                                                                 |
-| [mismatchAlpha](#slot-mismatchalpha)                       | `maybeBoolean`                                                   | Fade mismatch bases by their per-base Phred quality.                                                                                                                |
-| [showLowFreqMismatches](#slot-showlowfreqmismatches)       | `boolean`                                                        | Show low-frequency mismatches (below the SNP-calling threshold) in the coverage track                                                                               |
-| [showLegend](#slot-showlegend)                             | `boolean`                                                        | Show the color-scheme legend overlay                                                                                                                                |
-| [largeFeaturesFirst](#slot-largefeaturesfirst)             | `boolean`                                                        | Lay out the widest features in the lowest pileup rows instead of by genomic start, so large alignments cluster at the top rather than interleaving with small ones. |
-| [linkedReads](#slot-linkedreads)                           | `stringEnum` (inherit, off, normal)                              | Linked-read (barcode-chain) layout mode                                                                                                                             |
-| [showBezierConnections](#slot-showbezierconnections)       | `boolean`                                                        | Draw paired-read connection curves over the pileup                                                                                                                  |
-| [showCoverage](#slot-showcoverage)                         | `boolean`                                                        | Draw the coverage histogram band                                                                                                                                    |
-| [showPileup](#slot-showpileup)                             | `boolean`                                                        | Draw the stacked-read pileup band                                                                                                                                   |
-| [coverageHeight](#slot-coverageheight)                     | `number`                                                         | Height of the coverage band in pixels                                                                                                                               |
-| [showMismatches](#slot-showmismatches)                     | `boolean`                                                        | Draw per-base mismatches on reads                                                                                                                                   |
-| [showInterbaseIndicators](#slot-showinterbaseindicators)   | `boolean`                                                        | Draw interbase insertion/clip count bars and indicator triangles                                                                                                    |
-| [drawSingletons](#slot-drawsingletons)                     | `boolean`                                                        | Draw reads whose mate is unmapped                                                                                                                                   |
-| [drawProperPairs](#slot-drawproperpairs)                   | `boolean`                                                        | Draw properly-paired reads                                                                                                                                          |
-| [flipStrandLongReadChains](#slot-flipstrandlongreadchains) | `boolean`                                                        | Flip strand coloring for reverse long-read chains                                                                                                                   |
-| [colorSupplementaryChains](#slot-colorsupplementarychains) | `boolean`                                                        | Paint paired supplementary chains a flat supplementary color                                                                                                        |
-| [drawInter](#slot-drawinter)                               | `boolean`                                                        | Draw inter-chromosomal read-connection arcs                                                                                                                         |
-| [drawLongRange](#slot-drawlongrange)                       | `boolean`                                                        | Draw long-range read-connection arcs                                                                                                                                |
-| [arcColorByType](#slot-arccolorbytype)                     | `stringEnum` (insertSizeAndOrientation, insertSize, orientation) | How to color read-connection arcs                                                                                                                                   |
-| [readConnections](#slot-readconnections)                   | `stringEnum` (inherit, off, arc, samplot)                        | Read-connection rendering mode (mate pairs + split reads)                                                                                                           |
-| [readConnectionsDown](#slot-readconnectionsdown)           | `boolean`                                                        | Draw read connections below the coverage band                                                                                                                       |
-| [showSashimiArcs](#slot-showsashimiarcs)                   | `boolean`                                                        | Draw sashimi (splice-junction) arcs                                                                                                                                 |
-| [sashimiArcsMode](#slot-sashimiarcsmode)                   | `stringEnum` (inherit, up, down, auto)                           | Sashimi junction-arc placement                                                                                                                                      |
-| [minSashimiScore](#slot-minsashimiscore)                   | `number`                                                         | Hide sashimi arcs with fewer than this many supporting reads                                                                                                        |
-| [sashimiArcsHeight](#slot-sashimiarcsheight)               | `number`                                                         | Height of the sashimi-arc band in pixels                                                                                                                            |
-| [readConnectionsHeight](#slot-readconnectionsheight)       | `number`                                                         | Height of the read-connection band in pixels                                                                                                                        |
-| [showSoftClipping](#slot-showsoftclipping)                 | `maybeBoolean`                                                   | Draw soft-clipped read portions.                                                                                                                                    |
+| Slot                                                       | Type                                                             | Description                                                                                                                                                                |
+| ---------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [featureHeight](#slot-featureheight)                       | `number`                                                         | Height of each feature (read) in pixels                                                                                                                                    |
+| [featureSpacing](#slot-featurespacing)                     | `number`                                                         | Spacing between features in pixels                                                                                                                                         |
+| [heightMode](#slot-heightmode)                             | `stringEnum`                                                     | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). |
+| [readConnectionsLineWidth](#slot-readconnectionslinewidth) | `number`                                                         | Line width for read-connection arcs/lines in pixels                                                                                                                        |
+| [showSashimiLabels](#slot-showsashimilabels)               | `boolean`                                                        | Draw the supporting-read count on each sashimi arc                                                                                                                         |
+| [height](#slot-height)                                     | `number`                                                         |                                                                                                                                                                            |
+| [autoscale](#slot-autoscale)                               | `stringEnum` (local, localsd)                                    | Coverage autoscale type                                                                                                                                                    |
+| [scaleType](#slot-scaletype)                               | `stringEnum` (linear, log)                                       | Coverage scale type (linear or log)                                                                                                                                        |
+| [mismatchAlpha](#slot-mismatchalpha)                       | `maybeBoolean`                                                   | Fade mismatch bases by their per-base Phred quality.                                                                                                                       |
+| [showLowFreqMismatches](#slot-showlowfreqmismatches)       | `boolean`                                                        | Show low-frequency mismatches (below the SNP-calling threshold) in the coverage track                                                                                      |
+| [showLegend](#slot-showlegend)                             | `boolean`                                                        | Show the color-scheme legend overlay                                                                                                                                       |
+| [largeFeaturesFirst](#slot-largefeaturesfirst)             | `boolean`                                                        | Lay out the widest features in the lowest pileup rows instead of by genomic start, so large alignments cluster at the top rather than interleaving with small ones.        |
+| [linkedReads](#slot-linkedreads)                           | `stringEnum` (inherit, off, normal)                              | Linked-read (barcode-chain) layout mode                                                                                                                                    |
+| [showBezierConnections](#slot-showbezierconnections)       | `boolean`                                                        | Draw paired-read connection curves over the pileup                                                                                                                         |
+| [showCoverage](#slot-showcoverage)                         | `boolean`                                                        | Draw the coverage histogram band                                                                                                                                           |
+| [showPileup](#slot-showpileup)                             | `boolean`                                                        | Draw the stacked-read pileup band                                                                                                                                          |
+| [coverageHeight](#slot-coverageheight)                     | `number`                                                         | Height of the coverage band in pixels                                                                                                                                      |
+| [showMismatches](#slot-showmismatches)                     | `boolean`                                                        | Draw per-base mismatches on reads                                                                                                                                          |
+| [showInterbaseIndicators](#slot-showinterbaseindicators)   | `boolean`                                                        | Draw interbase insertion/clip count bars and indicator triangles                                                                                                           |
+| [drawSingletons](#slot-drawsingletons)                     | `boolean`                                                        | Draw reads whose mate is unmapped                                                                                                                                          |
+| [drawProperPairs](#slot-drawproperpairs)                   | `boolean`                                                        | Draw properly-paired reads                                                                                                                                                 |
+| [flipStrandLongReadChains](#slot-flipstrandlongreadchains) | `boolean`                                                        | Flip strand coloring for reverse long-read chains                                                                                                                          |
+| [colorSupplementaryChains](#slot-colorsupplementarychains) | `boolean`                                                        | Paint paired supplementary chains a flat supplementary color                                                                                                               |
+| [drawInter](#slot-drawinter)                               | `boolean`                                                        | Draw inter-chromosomal read-connection arcs                                                                                                                                |
+| [drawLongRange](#slot-drawlongrange)                       | `boolean`                                                        | Draw long-range read-connection arcs                                                                                                                                       |
+| [arcColorByType](#slot-arccolorbytype)                     | `stringEnum` (insertSizeAndOrientation, insertSize, orientation) | How to color read-connection arcs                                                                                                                                          |
+| [readConnections](#slot-readconnections)                   | `stringEnum` (inherit, off, arc, samplot)                        | Read-connection rendering mode (mate pairs + split reads)                                                                                                                  |
+| [readConnectionsDown](#slot-readconnectionsdown)           | `boolean`                                                        | Draw read connections below the coverage band                                                                                                                              |
+| [showSashimiArcs](#slot-showsashimiarcs)                   | `boolean`                                                        | Draw sashimi (splice-junction) arcs                                                                                                                                        |
+| [sashimiArcsMode](#slot-sashimiarcsmode)                   | `stringEnum` (inherit, up, down, auto)                           | Sashimi junction-arc placement                                                                                                                                             |
+| [minSashimiScore](#slot-minsashimiscore)                   | `number`                                                         | Hide sashimi arcs with fewer than this many supporting reads                                                                                                               |
+| [sashimiArcsHeight](#slot-sashimiarcsheight)               | `number`                                                         | Height of the sashimi-arc band in pixels                                                                                                                                   |
+| [readConnectionsHeight](#slot-readconnectionsheight)       | `number`                                                         | Height of the read-connection band in pixels                                                                                                                               |
+| [showSoftClipping](#slot-showsoftclipping)                 | `maybeBoolean`                                                   | Draw soft-clipped read portions.                                                                                                                                           |
 
 <details>
 <summary>Advanced slots (9)</summary>
@@ -149,11 +149,14 @@ _promotable_
 
 #### slot: heightMode
 
-Track-height strategy (shared vocabulary with the canvas feature display).
-`inherit` (the default) follows the session-wide default for this display type,
-falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and
-scrolls; `grow` resizes the track to fit every read at the configured height;
-`fit` sizes reads so every uncollapsed group fills the display without scrolling
+Track-sizing strategy — how the track responds when there are more reads than
+fit (shared vocabulary with the canvas feature display, exposed in the "Track
+sizing" menu). `inherit` (the default) follows the session-wide default for this
+display type, falling back to `fixed`; `fixed` keeps
+`featureHeight`/`featureSpacing` and scrolls; `grow` expands the track to show
+every read at the configured height; `fit` squeezes reads so every uncollapsed
+group fills the display without scrolling. Orthogonal to the per-read size set
+by `featureHeight`/`featureSpacing`
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
 **Default:** `'inherit'` · _promotable_
@@ -163,7 +166,7 @@ scrolls; `grow` resizes the track to fit every read at the configured height;
   type: 'stringEnum',
   model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
   description:
-    'Track-height strategy (shared vocabulary with the canvas feature display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and scrolls; `grow` resizes the track to fit every read at the configured height; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
+    'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight`/`featureSpacing` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`/`featureSpacing`',
 
 
 
@@ -288,8 +291,8 @@ _advanced_
 
 Fade mismatch bases by their per-base Phred quality. Unset (the default) follows
 the session-wide default for this display type, falling back to off; an explicit
-true/false pins the track (either direction, including pinning off over an on
-session default)
+true/false customizes the track (either direction, including customizing off
+over an on session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
 **Default:** `undefined` · _promotable_
@@ -298,7 +301,7 @@ session default)
 {
   type: 'maybeBoolean',
   description:
-    'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+    'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
 
 
 
@@ -501,7 +504,7 @@ Read-connection rendering mode (mate pairs + split reads)
 Draw read connections below the coverage band
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _promotable_
+`true` · _promotable_
 
 #### slot: showSashimiArcs
 
@@ -557,8 +560,9 @@ Height of the read-connection band in pixels
 #### slot: showSoftClipping
 
 Draw soft-clipped read portions. Unset (the default) follows the session-wide
-default for this display type, falling back to off; an explicit true/false pins
-the track (either direction, including pinning off over an on session default)
+default for this display type, falling back to off; an explicit true/false
+customizes the track (either direction, including customizing off over an on
+session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
 **Default:** `undefined` · _promotable_
@@ -567,7 +571,7 @@ the track (either direction, including pinning off over an on session default)
 {
   type: 'maybeBoolean',
   description:
-    'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+    'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
 
 
 

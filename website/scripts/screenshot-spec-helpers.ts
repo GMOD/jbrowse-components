@@ -7,10 +7,10 @@ import type {
 } from './screenshot-spec-types.ts'
 
 export const VOLVOX = 'test_data/volvox/config.json'
-// volvox_sv_cram's adapter, reused to build the two strand-split session tracks
-// that the group-by spec renders. Session tracks don't inherit the config's
-// baseUri, so an absolute url is used (the same volvox test data jbrowse.org
-// hosts) — works in both the local generator and the live-link instance.
+// volvox_sv_cram's adapter, used to build the read_cloud session track. Session
+// tracks don't inherit the config's baseUri, so an absolute url is used (the
+// same volvox test data jbrowse.org hosts) — works in both the local generator
+// and the live-link instance.
 export const VOLVOX_SV_CRAM =
   'https://jbrowse.org/code/jb2/latest/test_data/volvox'
 export const VOLVOX_SV_CRAM_ADAPTER = {
@@ -36,6 +36,16 @@ export const HG002_NANOPORE_ADAPTER = {
     location: { uri: `${HG002_NANOPORE_BAM}.bai`, locationType: 'UriLocation' },
     indexType: 'BAI',
   },
+}
+// The HP-grouped HG002 ONT session track shared by the haplotype / groupby /
+// smalldel figures (session tracks don't inherit the config, so it carries its
+// own adapter). Referenced as a const so all three encode byte-identically.
+export const HG002_NANOPORE_HP_TRACK = {
+  type: 'AlignmentsTrack',
+  trackId: 'hg002_nanopore_hp',
+  name: 'HG002 ONT',
+  assemblyNames: ['hg19'],
+  adapter: HG002_NANOPORE_ADAPTER,
 }
 // HG00151 Oxford Nanopore reads from the 1000 Genomes ONT Sequencing Consortium
 // (s3://1000g-ont), minimap2-aligned to hg38. Deliberately the MINIMAP2_ALIGNED_BAMS
@@ -165,6 +175,49 @@ export const HG008_BAF_TRACK = {
     bigWigLocation: {
       uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
       locationType: 'UriLocation',
+    },
+  },
+}
+
+// hpylori 26695 reference sequence adapter, shared by the GC-content and GC-skew
+// session tracks (both wrap the same assembly sequence via an absolute fasta
+// url, since session tracks don't inherit the config's baseUri). Referenced as a
+// const so both GCContentAdapters encode byte-identically.
+export const HPYLORI_26695_SEQ_ADAPTER = {
+  type: 'IndexedFastaAdapter',
+  fastaLocation: {
+    uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa',
+    locationType: 'UriLocation',
+  },
+  faiLocation: {
+    uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa.fai',
+    locationType: 'UriLocation',
+  },
+}
+
+// HG008-T hap1 vs GRCh38 synteny as a session track, shared by the sv_cgiab
+// dotplot and synteny figures. The cgiab config wires this .pif.gz through a
+// plain PAFAdapter, which doesn't strip the PIF q/t refName prefixes (so the
+// features never map); overriding with PairwiseIndexedPAFAdapter fixes it.
+// Referenced as a const so both figures encode byte-identically.
+export const CGIAB_HAP1_PIF_TRACK = {
+  type: 'SyntenyTrack',
+  trackId: 'HG008T.hap1_pif',
+  name: 'HG008T.hap1',
+  assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+  adapter: {
+    type: 'PairwiseIndexedPAFAdapter',
+    assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
+    pifGzLocation: {
+      uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'TBI',
+      location: {
+        uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz.tbi',
+        locationType: 'UriLocation',
+      },
     },
   },
 }

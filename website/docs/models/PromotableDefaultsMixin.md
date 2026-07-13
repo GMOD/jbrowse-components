@@ -20,22 +20,22 @@ without re-implementing the two delegations per display type.
 
 ## Members
 
-| Member                                                 | Kind    | Defined by              | Description                                                                                                                                                                                                    |
-| ------------------------------------------------------ | ------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [sessionDefaultChanges](#method-sessiondefaultchanges) | Methods | PromotableDefaultsMixin | Effective config differences an un-pinned track inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.              |
-| [clearSessionDefaults](#action-clearsessiondefaults)   | Actions | PromotableDefaultsMixin | Clear the session-wide defaults reported by `sessionDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge. |
+| Member                                                         | Kind    | Defined by              | Description                                                                                                                                                                                                        |
+| -------------------------------------------------------------- | ------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [displayTypeDefaultChanges](#method-displaytypedefaultchanges) | Methods | PromotableDefaultsMixin | Effective config differences a track following the default inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.       |
+| [clearDisplayTypeDefaults](#action-cleardisplaytypedefaults)   | Actions | PromotableDefaultsMixin | Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge. |
 
 <details>
 <summary>PromotableDefaultsMixin - Methods</summary>
 
-#### method: sessionDefaultChanges
+#### method: displayTypeDefaultChanges
 
-Effective config differences an un-pinned track inherits from session-wide
-defaults (distinct from per-track config edits / trackConfigDeltas). Drives the
-"affected by a session default" badge.
+Effective config differences a track following the default inherits from
+session-wide defaults (distinct from per-track config edits /
+trackConfigDeltas). Drives the "affected by a session default" badge.
 
 ```ts
-type sessionDefaultChanges = () => TrackConfigChange[]
+type displayTypeDefaultChanges = () => TrackConfigChange[]
 ```
 
 </details>
@@ -43,14 +43,14 @@ type sessionDefaultChanges = () => TrackConfigChange[]
 <details>
 <summary>PromotableDefaultsMixin - Actions</summary>
 
-#### action: clearSessionDefaults
+#### action: clearDisplayTypeDefaults
 
-Clear the session-wide defaults reported by `sessionDefaultChanges` so this
+Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this
 display (and its siblings of the same type) revert to their config values. Backs
 the "clear default" action on the selector badge.
 
 ```ts
-type clearSessionDefaults = () => void
+type clearDisplayTypeDefaults = () => void
 ```
 
 </details>

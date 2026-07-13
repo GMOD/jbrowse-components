@@ -49,8 +49,6 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [tracks](#property-tracks)                                                     | Properties | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [viewTrackConfigs](#property-viewtrackconfigs)                                 | Properties | DotplotView                                     | this represents tracks specific to this view specifically used for read vs ref dotplots where this track would not really apply elsewhere                                                                                                                                                                                                                                                                                   |
 | [init](#property-init)                                                         | Properties | DotplotView                                     | used for initializing the view from a session snapshot                                                                                                                                                                                                                                                                                                                                                                      |
-| [highlight](#property-highlight)                                               | Properties | DotplotView                                     | translucent highlight bands drawn per-axis: vertical when the region's assembly matches hview, horizontal when it matches vview                                                                                                                                                                                                                                                                                             |
-| [showHighlightChips](#property-showhighlightchips)                             | Properties | DotplotView                                     | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default                                                                                                                                                                                                                                                                                                  |
 | [showColorLegend](#property-showcolorlegend)                                   | Properties | DotplotView                                     | Show the floating color-by legend in the top-right of the plot. Dismissible via the legend's close button; re-enable from the color-by (palette) menu.                                                                                                                                                                                                                                                                      |
 | [volatileWidth](#volatile-volatilewidth)                                       | Volatiles  | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [volatileError](#volatile-volatileerror)                                       | Volatiles  | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -97,10 +95,6 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [setLockAspectRatio](#action-setlockaspectratio)                               | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [syncBpPerPx](#action-syncbpperpx)                                             | Actions    | DotplotView                                     | Equalize hview/vview bpPerPx without recentering. Used by the aspect-lock autorun to absorb divergence from box-zoom and similar operations while preserving the user's current pan position.                                                                                                                                                                                                                               |
 | [setLineWidth](#action-setlinewidth)                                           | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [addToHighlights](#action-addtohighlights)                                     | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [setHighlight](#action-sethighlight)                                           | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [removeHighlight](#action-removehighlight)                                     | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [setShowHighlightChips](#action-setshowhighlightchips)                         | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [setShowColorLegend](#action-setshowcolorlegend)                               | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [clearView](#action-clearview)                                                 | Actions    | DotplotView                                     | returns to the import form                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [setWidth](#action-setwidth)                                                   | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -145,6 +139,13 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [renderNow](#action-rendernow)                                                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [setRenderError](#action-setrendererror)                                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.                                                                                                                                                                                                              |
 | [attachRenderingBackend](#action-attachrenderingbackend)                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                                                                                                                 |
+| [highlight](#property-highlight)                                               | Properties | [HighlightsMixin](../highlightsmixin)           | translucent highlight bands, seeded from URL params or session JSON and added interactively via the rubber-band menu                                                                                                                                                                                                                                                                                                        |
+| [showHighlightChips](#property-showhighlightchips)                             | Properties | [HighlightsMixin](../highlightsmixin)           | controls whether the interactive highlight chip (link icon + context menu) is drawn on each highlight band; off by default                                                                                                                                                                                                                                                                                                  |
+| [addToHighlights](#action-addtohighlights)                                     | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [setHighlight](#action-sethighlight)                                           | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [removeHighlight](#action-removehighlight)                                     | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [updateHighlight](#action-updatehighlight)                                     | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [setShowHighlightChips](#action-setshowhighlightchips)                         | Actions    | [HighlightsMixin](../highlightsmixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 <details>
 <summary>DotplotView - Properties</summary>
@@ -222,33 +223,6 @@ type init = IType<
 >
 // code
 init: types.frozen<DotplotViewInit | undefined>()
-```
-
-#### property: highlight
-
-translucent highlight bands drawn per-axis: vertical when the region's assembly
-matches hview, horizontal when it matches vview
-
-```ts
-// type signature
-type highlight = IOptionalIType<
-  IArrayType<IType<HighlightType, HighlightType, HighlightType>>,
-  [undefined]
->
-// code
-highlight: types.stripDefault(types.array(types.frozen<HighlightType>()), [])
-```
-
-#### property: showHighlightChips
-
-controls whether the interactive highlight chip (link icon + context menu) is
-drawn on each highlight band; off by default
-
-```ts
-// type signature
-type showHighlightChips = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showHighlightChips: types.stripDefault(types.boolean, false)
 ```
 
 #### property: showColorLegend
@@ -819,30 +793,6 @@ type setLockAspectRatio = (flag: boolean) => void
 type setLineWidth = (value: number) => void
 ```
 
-#### action: addToHighlights
-
-```ts
-type addToHighlights = (highlight: HighlightType) => void
-```
-
-#### action: setHighlight
-
-```ts
-type setHighlight = (highlight?: HighlightType[] | undefined) => void
-```
-
-#### action: removeHighlight
-
-```ts
-type removeHighlight = (highlight: HighlightType) => void
-```
-
-#### action: setShowHighlightChips
-
-```ts
-type setShowHighlightChips = (arg: boolean) => void
-```
-
 #### action: setShowColorLegend
 
 ```ts
@@ -1164,6 +1114,77 @@ type attachRenderingBackend = <B>(
   backend: B,
   cbs: RenderingBackendCallbacks<B>,
 ) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from HighlightsMixin</summary>
+
+[HighlightsMixin →](../highlightsmixin)
+
+**Properties**
+
+#### property: highlight
+
+translucent highlight bands, seeded from URL params or session JSON and added
+interactively via the rubber-band menu
+
+```ts
+// type signature
+type highlight = IOptionalIType<
+  IArrayType<IType<HighlightType, HighlightType, HighlightType>>,
+  [undefined]
+>
+// code
+highlight: types.stripDefault(types.array(types.frozen<HighlightType>()), [])
+```
+
+#### property: showHighlightChips
+
+controls whether the interactive highlight chip (link icon + context menu) is
+drawn on each highlight band; off by default
+
+```ts
+// type signature
+type showHighlightChips = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showHighlightChips: types.stripDefault(types.boolean, false)
+```
+
+**Actions**
+
+#### action: addToHighlights
+
+```ts
+type addToHighlights = (highlight: HighlightType) => void
+```
+
+#### action: setHighlight
+
+```ts
+type setHighlight = (highlight?: HighlightType[] | undefined) => void
+```
+
+#### action: removeHighlight
+
+```ts
+type removeHighlight = (highlight: HighlightType) => void
+```
+
+#### action: updateHighlight
+
+```ts
+type updateHighlight = (
+  old: HighlightType,
+  updates: Partial<HighlightType>,
+) => void
+```
+
+#### action: setShowHighlightChips
+
+```ts
+type setShowHighlightChips = (arg: boolean) => void
 ```
 
 </details>

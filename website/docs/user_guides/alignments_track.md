@@ -40,8 +40,8 @@ The track menu's **Color by...** offers several schemes.
 
 <!-- COLOR_TABLE alignments-strand START -->
 
-| Color | Name | Value | Description |
-| --- | --- | --- | --- |
+| Color                                                                                                                                                                       | Name           | Value     | Description                     |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | --------- | ------------------------------- |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#EC8B8B;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#EC8B8B"></span> | Forward strand | `#EC8B8B` | Read maps to the forward strand |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#8F8FD8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#8F8FD8"></span> | Reverse strand | `#8F8FD8` | Read maps to the reverse strand |
 
@@ -128,10 +128,16 @@ settings.
 
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
 
-The **Set feature height** submenu offers Normal, Compact, and Super-compact
-presets (plus a custom value). Each preset's trailing ⋯ control opens a dialog
-to make that height the session-wide default for alignments tracks — applied to
-future tracks and, optionally, to the ones already open.
+The **Read height** submenu offers Normal, Compact, and Super-compact presets
+(plus a custom value) for how tall each read is drawn. Each preset's trailing ⋯
+control opens a dialog to make that height the session-wide default for
+alignments tracks — applied to future tracks and, optionally, to the ones
+already open.
+
+Read height is separate from the sibling **Track sizing** submenu, which
+controls what the track does when there are more reads than fit: _scroll_ (fixed
+height), _expand_ (grow the track to show every read), or _squeeze_ (shrink
+reads to fill the current height).
 
 <Figure caption="Making Compact the default feature height. Top: the ⋯ control on the Compact preset (circled). Bottom: it opens this dialog; ticking both boxes sets Compact as the default for new alignments tracks and applies it to the two tracks already open." src="/img/feature_height_default.png" />
 
@@ -144,11 +150,11 @@ coverage, to suppress noise).
 
 <!-- COLOR_TABLE alignments-indicators START -->
 
-| Color | Name | Value | Description |
-| --- | --- | --- | --- |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#800080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#800080"></span> | Insertion | `#800080` | Reads carry an insertion relative to the reference |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#00f;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#00f"></span> | Soft clip | `#00f` | Reads are soft-clipped (clipped bases retained in the read) |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f00;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f00"></span> | Hard clip | `#f00` | Reads are hard-clipped (clipped bases removed from the read) |
+| Color                                                                                                                                                                       | Name      | Value     | Description                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | --------- | ------------------------------------------------------------ |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#800080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#800080"></span> | Insertion | `#800080` | Reads carry an insertion relative to the reference           |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#00f;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#00f"></span>       | Soft clip | `#00f`    | Reads are soft-clipped (clipped bases retained in the read)  |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#f00;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#f00"></span>       | Hard clip | `#f00`    | Reads are hard-clipped (clipped bases removed from the read) |
 
 <!-- COLOR_TABLE alignments-indicators END -->
 

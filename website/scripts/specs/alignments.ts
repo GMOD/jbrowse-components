@@ -1,6 +1,6 @@
 import {
   DEMO_CONFIG,
-  HG002_NANOPORE_ADAPTER,
+  HG002_NANOPORE_HP_TRACK,
   VOLVOX,
   VOLVOX_SV_CRAM_ADAPTER,
   cascadeBoxes,
@@ -555,15 +555,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'alignments/haplotype',
     url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'hg002_nanopore_hp',
-          name: 'HG002 ONT',
-          assemblyNames: ['hg19'],
-          adapter: HG002_NANOPORE_ADAPTER,
-        },
-      ],
+      sessionTracks: [HG002_NANOPORE_HP_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -599,15 +591,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'alignments/haplotype_groupby',
     url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'hg002_nanopore_hp',
-          name: 'HG002 ONT',
-          assemblyNames: ['hg19'],
-          adapter: HG002_NANOPORE_ADAPTER,
-        },
-      ],
+      sessionTracks: [HG002_NANOPORE_HP_TRACK],
       views: [
         {
           type: 'LinearGenomeView',

@@ -20,6 +20,11 @@ Shared state model for LD displays
 | [configuration](#property-configuration)                           | Properties | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [rpcData](#volatile-rpcdata)                                       | Volatiles  | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [focalSnpLocus](#volatile-focalsnplocus)                           | Volatiles  | SharedLDModel                                             | Locus (`refName:start`) of the focal SNP whose LD row+column is emphasized, or undefined. Keyed by locus rather than array index so the selection survives a re-fetch that reorders SNPs.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [byteEstimateVisibleBp](#volatile-byteestimatevisiblebp)           | Volatiles  | SharedLDModel                                             | visibleBp at which the current `featureDensityStats` byte estimate was captured, so the derived `regionTooLarge` getter can scale it to the currently visible span (mirrors canvas's byteEstimateVisibleBp).                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [estimatedVisibleBytes](#getter-estimatedvisiblebytes)             | Getters    | SharedLDModel                                             | The cached byte estimate scaled from the span it was measured over (`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to span, so scaling makes the verdict a pure function of the current view and self-releases on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch.                                                                                                                                                                                                                                                                                                    |
+| [tooLargeStatus](#getter-toolargestatus)                           | Getters    | SharedLDModel                                             | Shared verdict + reason (AUTO_FORCE_LOAD_BP floor + bytes-over-limit), fed the scaled estimate so the byte gate self-releases on zoom-in. Same helper as every other gating path so the banner text can't drift.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [regionTooLarge](#getter-regiontoolarge)                           | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [regionTooLargeReason](#getter-regiontoolargereason)               | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [prefersOffset](#getter-prefersoffset)                             | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [minorAlleleFrequencyFilter](#getter-minorallelefrequencyfilter)   | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [lengthCutoffFilter](#getter-lengthcutofffilter)                   | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -46,6 +51,7 @@ Shared state model for LD displays
 | [isPrecomputedLD](#getter-isprecomputedld)                         | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [effectiveLdMetric](#getter-effectiveldmetric)                     | Getters    | SharedLDModel                                             | Metric the loaded data actually represents. A pre-computed file with no D' column downgrades a 'dprime' request to 'r2', so the legend and the metric radios read this rather than the raw requested `ldMetric`.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [dprimeAvailable](#getter-dprimeavailable)                         | Getters    | SharedLDModel                                             | Whether the D' metric can be shown — false only for a pre-computed file lacking a DP column, which disables the D' option.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [ldMethod](#getter-ldmethod)                                       | Getters    | SharedLDModel                                             | How the loaded LD values were derived: 'phased' (exact haplotypic), 'composite' (Weir estimate from unphased genotypes), or 'precomputed' (read from a PLINK/ldmat file). Undefined until data loads.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [focalSnpIndex](#getter-focalsnpindex)                             | Getters    | SharedLDModel                                             | Array index of the focal SNP in the current `snps`, or -1 if none is selected or the locus is no longer present after a re-fetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | [effectiveLineZoneHeight](#getter-effectivelinezoneheight)         | Getters    | SharedLDModel                                             | Pixel height of the SVG zone above the canvas (variant labels + lines, or recombination scale). The hit-test subtracts this from mouseY before reversing the render transform.                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [ldCanvasHeight](#getter-ldcanvasheight)                           | Getters    | SharedLDModel                                             | Effective height for the LD canvas (total height minus the zone the recombination overlay / variant lines occupy above the matrix).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -75,6 +81,7 @@ Shared state model for LD displays
 | [setUseGenomicPositions](#action-setusegenomicpositions)           | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [setSignedLD](#action-setsignedld)                                 | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [setJexlFilters](#action-setjexlfilters)                           | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [setFeatureDensityStats](#action-setfeaturedensitystats)           | Actions    | SharedLDModel                                             | Records the span the byte estimate was measured at so the derived `regionTooLarge` getter can scale it to the current view (mirrors canvas's setFeatureDensityStats override).                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [startRenderingBackend](#action-startrenderingbackend)             | Actions    | SharedLDModel                                             | Starts the upload/render autorun. Data + color ramp both derive from the same rpcData object, so a single identity-diffed slot handles both uploads.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [performLDFetch](#action-performldfetch)                           | Actions    | SharedLDModel                                             | Re-fetches LD matrix for the current viewport. Both the autorun (in `afterAttach`) and `reload()` invoke this directly.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [id](#property-id)                                                 | Properties | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -110,11 +117,8 @@ Shared state model for LD displays
 | [regionTooLargeState](#volatile-regiontoolargestate)               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [regionTooLargeReasonState](#volatile-regiontoolargereasonstate)   | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [featureDensityStats](#volatile-featuredensitystats)               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [regionTooLarge](#getter-regiontoolarge)                           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [regionTooLargeReason](#getter-regiontoolargereason)               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [regionCannotBeRenderedText](#method-regioncannotberenderedtext)   | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)             | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [setRegionTooLarge](#action-setregiontoolarge)                     | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [setFeatureDensityStats](#action-setfeaturedensitystats)           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit) | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)             | force-load: raise the byte limit past the current request and clear the too-large banner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [forceLoad](#action-forceload)                                     | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)             | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | [canvasDrawn](#volatile-canvasdrawn)                               | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)           | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
@@ -177,6 +181,19 @@ type focalSnpLocus = string | undefined
 focalSnpLocus: undefined as string | undefined
 ```
 
+#### volatile: byteEstimateVisibleBp
+
+visibleBp at which the current `featureDensityStats` byte estimate was captured,
+so the derived `regionTooLarge` getter can scale it to the currently visible
+span (mirrors canvas's byteEstimateVisibleBp).
+
+```ts
+// type signature
+type byteEstimateVisibleBp = number | undefined
+// code
+byteEstimateVisibleBp: undefined as number | undefined
+```
+
 </details>
 
 <details>
@@ -195,6 +212,28 @@ rpcData: null as LDDataResult | null
 
 <details>
 <summary>SharedLDModel - Getters</summary>
+
+#### getter: estimatedVisibleBytes
+
+The cached byte estimate scaled from the span it was measured over
+(`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to
+span, so scaling makes the verdict a pure function of the current view and
+self-releases on zoom-in — without it a large zoomed-out estimate stays above
+the limit forever and gates refetch.
+
+```ts
+type estimatedVisibleBytes = number | undefined
+```
+
+#### getter: tooLargeStatus
+
+Shared verdict + reason (AUTO_FORCE_LOAD_BP floor + bytes-over-limit), fed the
+scaled estimate so the byte gate self-releases on zoom-in. Same helper as every
+other gating path so the banner text can't drift.
+
+```ts
+type tooLargeStatus = RegionTooLargeStatus
+```
 
 #### getter: snps
 
@@ -238,6 +277,16 @@ a DP column, which disables the D' option.
 
 ```ts
 type dprimeAvailable = boolean
+```
+
+#### getter: ldMethod
+
+How the loaded LD values were derived: 'phased' (exact haplotypic), 'composite'
+(Weir estimate from unphased genotypes), or 'precomputed' (read from a
+PLINK/ldmat file). Undefined until data loads.
+
+```ts
+type ldMethod = LDMethod | undefined
 ```
 
 #### getter: focalSnpIndex
@@ -312,6 +361,18 @@ type renderState =
 
 <details>
 <summary>SharedLDModel - Getters (other undocumented members)</summary>
+
+#### getter: regionTooLarge
+
+```ts
+type regionTooLarge = boolean
+```
+
+#### getter: regionTooLargeReason
+
+```ts
+type regionTooLargeReason = string
+```
 
 #### getter: prefersOffset
 
@@ -516,6 +577,16 @@ type renderSvg = (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 
 <details>
 <summary>SharedLDModel - Actions</summary>
+
+#### action: setFeatureDensityStats
+
+Records the span the byte estimate was measured at so the derived
+`regionTooLarge` getter can scale it to the current view (mirrors canvas's
+setFeatureDensityStats override).
+
+```ts
+type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
+```
 
 #### action: startRenderingBackend
 
@@ -979,20 +1050,6 @@ type featureDensityStats = FeatureDensityStats | undefined
 featureDensityStats: undefined as FeatureDensityStats | undefined
 ```
 
-**Getters**
-
-#### getter: regionTooLarge
-
-```ts
-type regionTooLarge = boolean
-```
-
-#### getter: regionTooLargeReason
-
-```ts
-type regionTooLargeReason = string
-```
-
 **Methods**
 
 #### method: regionCannotBeRenderedText
@@ -1010,12 +1067,6 @@ type regionCannotBeRenderedText = () => '' | 'Force load to see features'
 
 ```ts
 type setRegionTooLarge = (val: boolean, reason?: string | undefined) => void
-```
-
-#### action: setFeatureDensityStats
-
-```ts
-type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
 ```
 
 #### action: setFeatureDensityStatsLimit

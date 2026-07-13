@@ -53,17 +53,16 @@ _See the **Config slots** section below for all available configuration fields._
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                                   | Type                                   | Description                                                                                                                    |
-| ------------------------------------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| [height](#slot-height)                                 | `number`                               | default height for the Hi-C track                                                                                              |
-| [colorScheme](#slot-colorscheme)                       | `stringEnum` (fall, juicebox, viridis) | color ramp used to render contact intensity                                                                                    |
-| [showLegend](#slot-showlegend)                         | `boolean`                              | show the color scale legend                                                                                                    |
-| [resolutionBias](#slot-resolutionbias)                 | `number`                               | Signed integer offset from the zoom-derived auto-picked binsize.                                                               |
-| [useLogScale](#slot-uselogscale)                       | `boolean`                              | map contact counts to color on a log2 scale                                                                                    |
-| [useColorPercentile](#slot-usecolorpercentile)         | `boolean`                              | false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of counts, so off-diagonal contacts read more strongly. |
-| [showResolutionControls](#slot-showresolutioncontrols) | `boolean`                              | show the on-canvas resolution stepper overlay                                                                                  |
-| [selectedNormalization](#slot-selectednormalization)   | `string`                               | The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE).                                                      |
-| [fitToHeight](#slot-fittoheight)                       | `boolean`                              | squash the triangle vertically to fit the display height instead of drawing square bins                                        |
+| Slot                                                 | Type                                   | Description                                                                                                                    |
+| ---------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| [height](#slot-height)                               | `number`                               | default height for the Hi-C track                                                                                              |
+| [colorScheme](#slot-colorscheme)                     | `stringEnum` (fall, juicebox, viridis) | color ramp used to render contact intensity                                                                                    |
+| [showLegend](#slot-showlegend)                       | `boolean`                              | show the color scale legend                                                                                                    |
+| [resolutionBias](#slot-resolutionbias)               | `number`                               | Signed integer offset from the zoom-derived auto-picked binsize.                                                               |
+| [useLogScale](#slot-uselogscale)                     | `boolean`                              | map contact counts to color on a log2 scale                                                                                    |
+| [useColorPercentile](#slot-usecolorpercentile)       | `boolean`                              | false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of counts, so off-diagonal contacts read more strongly. |
+| [selectedNormalization](#slot-selectednormalization) | `string`                               | The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE).                                                      |
+| [fitToHeight](#slot-fittoheight)                     | `boolean`                              | squash the triangle vertically to fit the display height instead of drawing square bins                                        |
 
 <details>
 <summary>LinearHicDisplay - Slots</summary>
@@ -86,7 +85,7 @@ color ramp used to render contact intensity
 show the color scale legend
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
+`true`
 
 #### slot: resolutionBias
 
@@ -107,13 +106,6 @@ map contact counts to color on a log2 scale
 
 false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of
 counts, so off-diagonal contacts read more strongly.
-
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
-
-#### slot: showResolutionControls
-
-show the on-canvas resolution stepper overlay
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `false`

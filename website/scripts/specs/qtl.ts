@@ -76,7 +76,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
     settleMs: 16000,
   },
 
-  // Zoomed to a ~14 Mb window on Tyrp1. At this scale the association is a broad
+  // Whole chr4 with the Tyrp1 gene position marked. The association is a broad
   // plateau (RI-panel LD extends for many Mb), so the gene sits under the
   // *region*, not a razor apex — the figure's real payload is the gene position
   // plus the strain-by-strain recombination breakpoints resolved in the painting

@@ -178,9 +178,9 @@ list** on the left panel for one-click launching.
 
 ## Launching from the command line
 
-If you start JBrowse Desktop from a terminal, you can pass a session (`.jbrowse`)
-or a configuration (`config.json`) file to open it straight away, skipping the
-start screen:
+If you start JBrowse Desktop from a terminal, you can pass a session
+(`.jbrowse`) or a configuration (`config.json`) file to open it straight away,
+skipping the start screen:
 
 ```sh
 # Linux AppImage

@@ -7,23 +7,7 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how
 to import these from a plugin.
 
-## applyPromotableDefault
-
-Apply a promotable value along either or both axes — the manage-default dialog's
-submit. `future` sets (or clears) the session default so new + un-pinned tracks
-inherit it. `openTracks` also updates the currently-open tracks that differ:
-when the default now holds these values (`future`), un-pin them so they inherit
-it (and track later changes); otherwise write the values onto them directly, so
-"open tracks" works even without a persistent default.
-
-```js
-// type signature
-(self: PromotableDisplay, entries: PromotableEntry[], opts: { future: boolean; openTracks: boolean; }) => void
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-## clearDisplaySessionDefaults
+## clearPromotedDefaults
 
 Clear every promoted default for this display type, so sibling tracks revert to
 their own config values. Backs the badge's "clear default" action.
@@ -35,16 +19,14 @@ their own config values. Backs the badge's "clear default" action.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-## displaySessionDefaultChanges
+## DisplayTypeDefaultControl
 
-Effective differences an un-pinned track inherits from session-wide defaults,
-one per promotable slot whose inherited value differs from its schema default.
-Drives the track-selector "affected by a session default" badge.
-
-```js
-// type signature
-(self: PromotableDisplay) => TrackConfigChange[]
-```
+A promotable "default for all tracks of this type" control, bundled so a menu
+row's trailing pin consumes it as a single prop. `active` = this value is
+currently the session default (a filled pin); `toggle` sets it as the default or
+clears it. On set, `toggle` raises a snackbar with an "Apply to N open tracks"
+action for any open tracks not already showing this value (see
+`applyDefaultToggle`).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
@@ -75,10 +57,23 @@ only (consults the session) — the worker reads raw config.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+## getDisplayTypeDefaultChanges
+
+Effective differences a track following the default inherits from session-wide
+defaults, one per promotable slot whose inherited value differs from its schema
+default. Drives the track-selector "affected by a session default" badge.
+
+```js
+// type signature
+(self: PromotableDisplay) => TrackConfigChange[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
 ## isPromotableDefault
 
 Whether every value in `entries` is the current session default for its slot.
-The live state the manage-default dialog's checkbox reflects.
+The live state the pin's filled/outline reflects.
 
 ```js
 // type signature
@@ -87,7 +82,7 @@ The live state the manage-default dialog's checkbox reflects.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-## makeCurrentValueSessionDefaultControl
+## makeCurrentValueDisplayTypeDefaultControl
 
 Promote-current control: "make this track's current resolved value(s) the
 session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
@@ -96,12 +91,12 @@ not a fixed on-value. Groups multiple slots behind one control.
 
 ```js
 // type signature
-(self: PromotableDisplay, slots: string[]) => SessionDefaultControl
+(self: PromotableDisplay, slots: string[]) => DisplayTypeDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-## makeSessionDefaultControl
+## makeDisplayTypeDefaultControl
 
 Per-value control: "make `slot === onValue` the session default". The meaning is
 per-value ("make arcs the default"), independent of the track's current value —
@@ -110,12 +105,12 @@ sharing one slot (arcs vs read cloud) stay independent.
 
 ```js
 // type signature
-(self: PromotableDisplay, slot: string, onValue: unknown) => SessionDefaultControl
+(self: PromotableDisplay, slot: string, onValue: unknown) => DisplayTypeDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-## makeSlotsValueSessionDefaultControl
+## makeSlotsValueDisplayTypeDefaultControl
 
 Per-value control over a _group_ of slots: "make this exact combination of slot
 values the session default". `active` reflects whether this exact combination is
@@ -126,7 +121,7 @@ promote-current wrappers below delegate to.
 
 ```js
 // type signature
-(self: PromotableDisplay, entries: PromotableEntry[]) => SessionDefaultControl
+(self: PromotableDisplay, entries: PromotableEntry[]) => DisplayTypeDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -164,22 +159,11 @@ harmless no-op since they're dropped anyway.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-## SessionDefaultControl
-
-A promotable "default for all tracks of this type" control, bundled so a menu
-row consumes it as a single prop. `active` = this value is currently the session
-default; `toggle` sets it as the default or clears it (non-destructive — no open
-track is overwritten). `self`/`entries` let the trailing adornment open the
-manage-default dialog, whose "apply to open tracks" is the only path that
-overwrites tracks pinned to a different value.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ## setPromotableDefault
 
 Set (`on`) or clear (`!on`) this value combination as the session default for
-the display type. Non-destructive: un-pinned open tracks inherit it via
-`getConfResolved`; tracks pinned to their own value keep it.
+the display type. Non-destructive: tracks that follow the default inherit it via
+`getConfResolved`; tracks the user has customized keep their own value.
 
 ```js
 // type signature
@@ -190,9 +174,9 @@ the display type. Non-destructive: un-pinned open tracks inherit it via
 
 ## tracksDifferingFrom
 
-Open tracks (across all views) whose resolved value differs from `entries` —
-exactly the tracks "apply to open tracks" would visibly change. The
-manage-default dialog counts these to name the overwrite scope before submit.
+Open tracks (across all views) whose resolved value differs from `entries` — the
+ones "apply to open tracks" would visibly change by resetting them to follow the
+default. Drives that action's count.
 
 ```js
 // type signature

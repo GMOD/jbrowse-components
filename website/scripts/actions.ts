@@ -1,18 +1,14 @@
 import { delay } from '@jbrowse/browser-test-utils'
 
 import type { ScreenshotAction } from './screenshot-specs.ts'
-import type { ElementHandle, Page } from 'puppeteer'
+import type { Page } from 'puppeteer'
 
 // re-exported so generate-screenshots.ts keeps importing it from './actions'
 export { delay }
 
 // Default wait for an element to appear/become-visible before acting on it.
 export const FIND_TIMEOUT = 30000
-const LOCATION_BOX_TIMEOUT = 15000
-const TRACK_LABEL_TIMEOUT = 5000
 const DEFAULT_ACTION_DELAY_MS = 500
-const NAV_SETTLE_MS = 300
-const SCROLL_STEP_MS = 100
 
 // puppeteer text-pseudo-selector: matches an element by its visible text. Used
 // to reach HTML floating labels / menu items that carry no testid.
@@ -228,55 +224,4 @@ export async function runAction(page: Page, action: ScreenshotAction) {
       )
     })
   }
-}
-
-export async function setLocation(page: Page, loc: string) {
-  const locBox = await waitForVisible(
-    page,
-    'input[placeholder="Search for location"]',
-    { timeout: LOCATION_BOX_TIMEOUT },
-  )
-  await locBox?.click({ count: 3 })
-  await locBox?.type(loc)
-  await page.keyboard.press('Enter')
-  await delay(NAV_SETTLE_MS)
-}
-
-async function scrollTrackListUntilVisible(page: Page, trackId: string) {
-  const selector = `[data-testid="htsTrackLabel-Tracks,${trackId}"]`
-  // The track list is virtualized, so scroll its container until the item renders
-  let found: ElementHandle | null = null
-  for (let step = 0; step < 30 && !found; step++) {
-    found = await page.$(selector)
-    if (!found) {
-      await page.evaluate((s: number) => {
-        // Find the scrollable track list container (overflowY:auto with scrollable content)
-        const containers = Array.from(
-          document.querySelectorAll<HTMLElement>('*'),
-        )
-        const scrollable = containers.find(
-          el =>
-            window.getComputedStyle(el).overflowY === 'auto' &&
-            el.scrollHeight > el.clientHeight + 10,
-        )
-        if (scrollable) {
-          scrollable.scrollTop = s * 150
-        }
-      }, step)
-      await delay(SCROLL_STEP_MS)
-    }
-  }
-  return found
-}
-
-export async function openTrack(page: Page, trackId: string) {
-  const selector = `[data-testid="htsTrackLabel-Tracks,${trackId}"]`
-  // First check if it's already in the DOM, otherwise scroll the virtualized list
-  if (!(await page.$(selector))) {
-    await scrollTrackListUntilVisible(page, trackId)
-  }
-  const label = await page.waitForSelector(selector, {
-    timeout: TRACK_LABEL_TIMEOUT,
-  })
-  await label?.click()
 }

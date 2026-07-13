@@ -471,9 +471,9 @@ export const featuresSpecs: ScreenshotSpec[] = [
   },
 
   // Feature-details upstream/downstream sequence panel (v1.1.0 blog post) — the
-  // multi-exon volvox EDEN gene with "Show feature sequence" expanded into the
-  // genomic-with-introns + up/down-stream mode so the colored upstream / exon /
-  // intron / downstream sequence is shown.
+  // multi-exon volvox Apple3 gene (at ctgA:17400-23000) with "Show feature
+  // sequence" expanded into the genomic-with-introns + up/down-stream mode so
+  // the colored upstream / exon / intron / downstream sequence is shown.
   {
     mode: 'url',
     name: 'upstream_downstream_details',

@@ -1,4 +1,5 @@
 import {
+  CGIAB_HAP1_PIF_TRACK,
   DOTPLOT_CONFIG,
   HS1_MM39_CONFIG,
   PICALM_ALU_LOCUS,
@@ -79,8 +80,8 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // session (was a reviewer share link whose mismatched per-panel zoom fanned
     // ribbons far off the left edge — the "drawing offscreen" the review
     // flagged). Both panels span their full assemblies at matched scale, so the
-    // bezier ribbons stay inside the view. minAlignmentLength drops short-anchor
-    // noise; drawCurves + per-query color + low alpha keep them legible.
+    // ribbons stay inside the view. Per-query color plus a higher alpha and a
+    // taller synteny band keep the straight ribbons legible.
     url: sessionSpec('test_data/config_dotplot.json', {
       views: [
         {
@@ -377,7 +378,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny, mirroring the
   // hs1_vs_mm39 config defaultSession: 500k minlen drops short-alignment
   // hairball noise, autoDiagonalize reorders mm39 chroms into clean diagonals,
-  // and drawCurves + low alpha + per-query coloring give legible bezier ribbons
+  // and low alpha + per-query coloring give legible straight ribbons
   // (matches data/hs1ToMm39/ribbon-500k.png reference). Remote UCSC liftOver PIF
   // + two 2bit genomes, so allow a long ready/settle.
   {
@@ -417,29 +418,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // refName ("haplotype1-…") and the dotplot renders empty. Override the track
     // with the correct PairwiseIndexedPAFAdapter (tabix .pif.gz) so the dots paint.
     url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'SyntenyTrack',
-          trackId: 'HG008T.hap1_pif',
-          name: 'HG008T.hap1',
-          assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
-          adapter: {
-            type: 'PairwiseIndexedPAFAdapter',
-            assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
-            pifGzLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'TBI',
-              location: {
-                uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz.tbi',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ],
+      sessionTracks: [CGIAB_HAP1_PIF_TRACK],
       views: [
         {
           type: 'DotplotView',
@@ -508,29 +487,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // are the ones that actually align to the displayed GRCh38 chromosomes, so
     // the ribbons connect (contig 15 maps to chr1/chr5, not shown here).
     url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'SyntenyTrack',
-          trackId: 'HG008T.hap1_pif',
-          name: 'HG008T.hap1',
-          assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
-          adapter: {
-            type: 'PairwiseIndexedPAFAdapter',
-            assemblyNames: ['HG008T.hap1', 'GRCh38_GIABv3'],
-            pifGzLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              indexType: 'TBI',
-              location: {
-                uri: 'https://jbrowse.org/demos/cgiab/HG008T.hap1.pif.gz.tbi',
-                locationType: 'UriLocation',
-              },
-            },
-          },
-        },
-      ],
+      sessionTracks: [CGIAB_HAP1_PIF_TRACK],
       views: [
         {
           type: 'LinearSyntenyView',

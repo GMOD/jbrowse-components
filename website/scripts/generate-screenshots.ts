@@ -17,14 +17,7 @@ import {
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
-import {
-  delay,
-  openTrack,
-  runAction,
-  setLocation,
-  textSelector,
-  waitForVisible,
-} from './actions.ts'
+import { delay, runAction, textSelector, waitForVisible } from './actions.ts'
 import {
   clearAnnotations,
   drawAnnotations,
@@ -105,7 +98,9 @@ const DEFAULT_LOCAL_PORT = 3334
 const diffThreshold = optNum(values['diff-threshold']) ?? DEFAULT_DIFF_THRESHOLD
 const externalPort = optNum(values.port)
 const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
-const CONCURRENCY = optNum(values.concurrency) ?? (headed ? 1 : 4)
+// Math.max(1, …) so `--concurrency 0` can't spin up zero workers and silently
+// skip every render spec while still exiting 0.
+const CONCURRENCY = Math.max(1, optNum(values.concurrency) ?? (headed ? 1 : 4))
 
 const HELP = `Render website screenshots from scripts/screenshot-specs.ts.
 
@@ -163,7 +158,6 @@ const EMBED_UMD_PATH = path.resolve(
   'dist',
   'react-linear-genome-view.umd.production.min.js',
 )
-const VOLVOX_CONFIG = 'test_data/volvox/config.json'
 // Maximum time to wait for canvas displays to signal paint-complete via their
 // *-done testids. Acts as a timeout (proceed if it expires), not a fixed floor.
 const DEFAULT_SETTLE_MS = 2500
@@ -250,40 +244,7 @@ async function debugDump(page: Page, name: string) {
   console.error(`    [${name}] debug screenshot: ${debugPath}`)
 }
 
-async function captureLGV(
-  page: Page,
-  spec: ScreenshotSpec & { mode?: 'lgv' },
-  port: number,
-) {
-  const config = spec.config ?? VOLVOX_CONFIG
-  await page.goto(
-    `http://localhost:${port}/?config=${config}&sessionName=Screenshot`,
-    { waitUntil: 'networkidle0', timeout: 60000 },
-  )
-
-  // Wait for the view to be fully initialized (ctgA appears in the default volvox session)
-  await waitForVisible(page, textSelector('ctgA'))
-  await waitForLoadingComplete(page, { waitForDownloads: true })
-  await waitForQuiescent(page)
-
-  if (spec.loc) {
-    await setLocation(page, spec.loc)
-    await delay(500)
-  }
-
-  for (const trackId of spec.openTracks ?? []) {
-    await openTrack(page, trackId)
-    await delay(300)
-  }
-
-  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
-}
-
-async function captureUrl(
-  page: Page,
-  spec: ScreenshotSpec & { mode: 'url' },
-  port: number,
-) {
+async function captureUrl(page: Page, spec: SessionUrlSpec, port: number) {
   const fullUrl = spec.url.startsWith('http')
     ? spec.url
     : `http://localhost:${port}/${spec.url}`
@@ -498,11 +459,7 @@ async function renderSpecToTemp(
     return captureEmbeddedToTemp(page, spec, suffix)
   }
 
-  if (spec.mode === 'url') {
-    await captureUrl(page, spec, port)
-  } else {
-    await captureLGV(page, spec, port)
-  }
+  await captureUrl(page, spec, port)
 
   await runActions(page, spec.name, spec.actions)
   await assertViewsRendered(page, spec.name)

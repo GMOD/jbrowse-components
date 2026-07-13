@@ -1,7 +1,7 @@
 import {
   DEMO_CONFIG,
   HG00151_ONT_1000G_ADAPTER,
-  HG002_NANOPORE_ADAPTER,
+  HG002_NANOPORE_HP_TRACK,
   HG008_BAF_TRACK,
   HG008_LOG2RATIO_TRACK,
   VOLVOX,
@@ -259,15 +259,7 @@ export const svSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'smalldel',
     url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'hg002_nanopore_hp',
-          name: 'HG002 ONT',
-          assemblyNames: ['hg19'],
-          adapter: HG002_NANOPORE_ADAPTER,
-        },
-      ],
+      sessionTracks: [HG002_NANOPORE_HP_TRACK],
       views: [
         {
           type: 'LinearGenomeView',

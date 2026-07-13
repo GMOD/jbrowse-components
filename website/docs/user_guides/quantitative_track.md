@@ -12,13 +12,16 @@ as continuous tracks with several visual styles.
 
 The **Rendering type** option (the display's
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
-slot) offers four styles:
+slot) offers these styles:
 
 - XY plot - filled bar chart; good for coverage and discrete peaks
 - Density - a single-row heatmap where color intensity encodes the value;
   compact for browsing many tracks at once
-- Line - connects data points with a line; better for smooth signals and fine
-  resolution comparisons
+- Line (step) - traces the tops of the bars as a stepped line; best for dense
+  binned data where each pixel is a real bin
+- Line (connect points) - joins the midpoint of each data point straight to the
+  next; smoother for sparse or discrete signals where the stepped plateaus look
+  wrong
 - Scatter - draws individual points without filling; useful for sparse data and
   seeing single values
 

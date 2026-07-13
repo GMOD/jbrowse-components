@@ -138,11 +138,14 @@ _promotable_
 
 #### slot: heightMode
 
-Track-height strategy (shared vocabulary with the canvas feature display).
-`inherit` (the default) follows the session-wide default for this display type,
-falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and
-scrolls; `grow` resizes the track to fit every read at the configured height;
-`fit` sizes reads so every uncollapsed group fills the display without scrolling
+Track-sizing strategy — how the track responds when there are more reads than
+fit (shared vocabulary with the canvas feature display, exposed in the "Track
+sizing" menu). `inherit` (the default) follows the session-wide default for this
+display type, falling back to `fixed`; `fixed` keeps
+`featureHeight`/`featureSpacing` and scrolls; `grow` expands the track to show
+every read at the configured height; `fit` squeezes reads so every uncollapsed
+group fills the display without scrolling. Orthogonal to the per-read size set
+by `featureHeight`/`featureSpacing`
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
 **Default:** `'inherit'` · _promotable_
@@ -152,7 +155,7 @@ scrolls; `grow` resizes the track to fit every read at the configured height;
   type: 'stringEnum',
   model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
   description:
-    'Track-height strategy (shared vocabulary with the canvas feature display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and scrolls; `grow` resizes the track to fit every read at the configured height; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
+    'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight`/`featureSpacing` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`/`featureSpacing`',
 
 
 
@@ -243,8 +246,8 @@ _advanced_
 
 Fade mismatch bases by their per-base Phred quality. Unset (the default) follows
 the session-wide default for this display type, falling back to off; an explicit
-true/false pins the track (either direction, including pinning off over an on
-session default)
+true/false customizes the track (either direction, including customizing off
+over an on session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
 **Default:** `undefined` · _promotable_
@@ -253,7 +256,7 @@ session default)
 {
   type: 'maybeBoolean',
   description:
-    'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+    'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
 
 
 
@@ -439,7 +442,7 @@ Read-connection rendering mode (mate pairs + split reads)
 Draw read connections below the coverage band
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _promotable_
+`true` · _promotable_
 
 #### slot: showSashimiArcs
 
@@ -495,8 +498,9 @@ Height of the read-connection band in pixels
 #### slot: showSoftClipping
 
 Draw soft-clipped read portions. Unset (the default) follows the session-wide
-default for this display type, falling back to off; an explicit true/false pins
-the track (either direction, including pinning off over an on session default)
+default for this display type, falling back to off; an explicit true/false
+customizes the track (either direction, including customizing off over an on
+session default)
 
 **Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
 **Default:** `undefined` · _promotable_
@@ -505,7 +509,7 @@ the track (either direction, including pinning off over an on session default)
 {
   type: 'maybeBoolean',
   description:
-    'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+    'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
 
 
 
