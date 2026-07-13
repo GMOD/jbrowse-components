@@ -231,6 +231,55 @@ bam_indels <- function(uri, chrom, start, end) {
 # erases the body and leaves a thin teal connector line; an insertion is a thin
 # purple tick marking sequence absent from the reference.
 gap_colors <- c(D = "#808080", N = "#009a8a", I = "#800080")`,
+  bam_base_quality: `# Per-base Phred quality for every reference-aligned base - the signal JBrowse's
+# perBaseQuality color-by paints. Reads QUAL (stored genomic-forward in BAM, so
+# no reverse-strand handling) and walks the CIGAR to map each M/=/X read base to
+# its reference column (I/S consume the read only, D/N/H the reference / nothing).
+# Returns data.frame(read_index, refpos [0-based], score [Phred int]); read_index
+# matches read_bam order so a base joins its pileup row via reads$row[bq$read_index].
+bam_base_quality <- function(uri, chrom, start, end) {
+  b <- scanBam(uri, param = ScanBamParam(
+    which = GRanges(chrom, IRanges(start + 1, end)),
+    what = c("pos", "cigar", "qual")))[[1]]
+  quals <- as(b$qual, "IntegerList")
+  out <- vector("list", length(b$cigar))
+  for (i in seq_along(b$cigar)) {
+    q <- quals[[i]]; if (!length(q)) next
+    ops <- regmatches(b$cigar[i], gregexpr("[0-9]+[MIDNSHP=X]", b$cigar[i]))[[1]]
+    if (!length(ops)) next
+    oplen <- as.integer(sub("[MIDNSHP=X]$", "", ops)); opchr <- sub("^[0-9]+", "", ops)
+    rp <- b$pos[i] - 1L; qp <- 1L; pos <- integer(0); sc <- integer(0)
+    for (k in seq_along(ops)) {
+      L <- oplen[k]; op <- opchr[k]
+      if (op %in% c("M", "=", "X")) {
+        pos <- c(pos, rp:(rp + L - 1L)); sc <- c(sc, q[qp:(qp + L - 1L)])
+        rp <- rp + L; qp <- qp + L
+      } else if (op %in% c("I", "S")) { qp <- qp + L
+      } else if (op %in% c("D", "N")) { rp <- rp + L }
+    }
+    if (length(pos)) out[[i]] <- data.frame(read_index = i, refpos = pos, score = sc)
+  }
+  do.call(rbind, out)
+}`,
+  quality_colors: `# JBrowse's per-base-quality color ramp: each Phred score maps to HSL(hue, 55%,
+# 50%) with hue = score * 1.5 (red at low quality -> yellow -> green at high), a
+# maxed score pinned to green hue 150. Vectorized; HSL is converted to hex inline
+# because base R has no HSL constructor (hsv() is a different color space).
+quality_colors <- function(scores) {
+  h <- ifelse(scores >= 255, 150, scores * 1.5)
+  s <- 0.55; l <- 0.5
+  cc <- (1 - abs(2 * l - 1)) * s
+  x <- cc * (1 - abs((h / 60) %% 2 - 1))
+  m <- l - cc / 2
+  r <- g <- b <- numeric(length(h))
+  i <- h < 60;             r[i] <- cc;   g[i] <- x[i]
+  i <- h >= 60  & h < 120; r[i] <- x[i]; g[i] <- cc
+  i <- h >= 120 & h < 180; g[i] <- cc;   b[i] <- x[i]
+  i <- h >= 180 & h < 240; g[i] <- x[i]; b[i] <- cc
+  i <- h >= 240 & h < 300; r[i] <- x[i]; b[i] <- cc
+  i <- h >= 300;           r[i] <- cc;   b[i] <- x[i]
+  rgb(r + m, g + m, b + m)
+}`,
   base_colors: `# JBrowse's per-base mismatch colors (green A / blue C / orange G / red T /
 # brown N), used with scale_fill_identity so no legend and no second fill scale.
 base_colors <- c(A = "#4caf50", C = "#2196f3", G = "#ff9800", T = "#f44336", N = "#795548")`,
@@ -584,16 +633,16 @@ read_vcf_gt <- function(uri, chrom, start, end, phased = FALSE) {
   read_gwas: `# Read GWAS association points from a tabix'd BED into data.frame(pos, score).
 # The score column is looked up by NAME in the header line (BedTabixAdapter's
 # scoreColumn, e.g. neg_log_pvalue); the genomic position column comes from the
-# tabix index (headerTabix()\$indexColumns) so it works whatever BED layout the
+# tabix index (headerTabix()$indexColumns) so it works whatever BED layout the
 # file uses. pos is 0-based (BED chromStart). Rsamtools only - no GWAS package.
 read_gwas <- function(uri, chrom, start, end, score_col) {
   tf <- TabixFile(uri)
   h <- headerTabix(tf)
-  cols <- if (length(h\$header))
-    strsplit(sub("^#", "", h\$header[length(h\$header)]), "\\t", fixed = TRUE)[[1]]
+  cols <- if (length(h$header))
+    strsplit(sub("^#", "", h$header[length(h$header)]), "\\t", fixed = TRUE)[[1]]
     else character(0)
   score_i <- match(score_col, cols)
-  pos_col <- h\$indexColumns[["start"]]
+  pos_col <- h$indexColumns[["start"]]
   lines <- unlist(scanTabix(tf, param = GRanges(chrom, IRanges(start + 1, end))))
   if (!length(lines) || is.na(score_i)) {
     return(data.frame(pos = integer(), score = numeric()))

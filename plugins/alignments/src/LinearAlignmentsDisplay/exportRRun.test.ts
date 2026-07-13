@@ -174,6 +174,44 @@ cat(nrow(mm), paste(unique(mm$modtype), collapse = ","), "\\n")
   expect(types).toBe('m')
 }, 90000)
 
+// perBaseQuality: the generated pileup must run, and bam_base_quality must map a
+// Phred score onto every aligned base (the signal the color-by paints), with
+// quality_colors turning each into a valid hex on JBrowse's ramp
+maybe('perBaseQuality pileup runs and bam_base_quality scores every base', () => {
+  const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+  const fragments = alignmentsFragments({
+    ...baseParams,
+    trackId: 'aln',
+    trackName: 'Volvox reads',
+    uri: bam,
+    showCoverage: false,
+    showPileup: true,
+    colorBy: 'perBaseQuality',
+  })
+  const script = assembleRScript({ refName: 'ctgA', start: 3000, end: 3200 }, fragments)
+  const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-baseq-'))
+  writeFileSync(join(dir, 'view.R'), script)
+  execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+  const helpers = script.split('# Data sources')[0]!
+  const probe = `${helpers}
+bq <- bam_base_quality(${JSON.stringify(bam)}, "ctgA", 3000, 3200)
+cols <- quality_colors(bq$score)
+cat(nrow(bq), max(bq$score), sum(!grepl("^#[0-9A-Fa-f]{6}$", cols)), "\\n")
+`
+  writeFileSync(join(dir, 'probe.R'), probe)
+  const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+    cwd: dir,
+    encoding: 'utf8',
+  }).trim()
+  const [count, maxScore, badColors] = out.split(/\s+/).map(Number)
+  // many aligned bases scored, all as valid Phred integers, every color a hex
+  expect(count!).toBeGreaterThan(100)
+  expect(maxScore!).toBeGreaterThan(0)
+  expect(badColors).toBe(0)
+}, 90000)
+
 // linkedReads = "normal": the generated chain-layout script must run, and
 // link_reads must group a paired BAM's records into chains by read name and
 // produce mate-gap connectors (each chain spans its full template, so it uses
