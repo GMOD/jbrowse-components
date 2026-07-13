@@ -38,6 +38,27 @@ whose rows come from `IRanges::disjointBins()`.
 
 ![alignments](./alignments.png)
 
+### Modifications / methylation (MM/ML)
+
+`colorBy: 'modifications'` (and `'methylation'`) keeps grey read bodies and
+overlays per-base modification ticks parsed reference-free from the MM/ML tags by
+`bam_modifications()` — a faithful `getModPositions` port (reverse-strand
+target-base complement + 5′-end counting, interleaved combined-code ML, CIGAR
+ref-mapping; ML read via `scanBam` since its `B:C` array breaks
+`readGAlignments`). Ticks are colored by modification type with `mod_colors()`
+(the IGV/JBrowse palette) above an editable `min_prob` threshold; the blue bars
+are soft-clip indicators.
+
+Arabidopsis WGBS methylation called into a modBAM shows both **5mC (red)** and
+**5hmC (magenta)** on a dense pileup (`NC_003070.9:5,000-10,000`):
+
+![modifications](./modifications.png)
+
+Human ONT native **5mC (red)** on `hg38 20:1-12,000` (the reads are soft-clipped
+at their 5′ ends, hence the blue bars):
+
+![human modifications](./modifications_human.png)
+
 ## Genes — `LinearBasicDisplay`
 
 GFF3 gene models: `geom_segment` bodies + `geom_rect` exon/CDS boxes, rows from

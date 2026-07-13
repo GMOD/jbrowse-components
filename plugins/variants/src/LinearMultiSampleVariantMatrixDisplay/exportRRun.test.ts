@@ -25,7 +25,7 @@ function runMatrix(
   name: string,
   file: string,
   region: { refName: string; start: number; end: number },
-  opts?: { minMaf?: number; maxMissing?: number },
+  opts?: { minMaf?: number; maxMissing?: number; phased?: boolean },
 ) {
   const fragment = variantMatrixFragment({
     trackId: `vcf_${name}`,
@@ -33,6 +33,7 @@ function runMatrix(
     uri: resolve(process.cwd(), `test_data/volvox/${file}`),
     minMaf: opts?.minMaf ?? 0,
     maxMissing: opts?.maxMissing ?? 1,
+    phased: opts?.phased ?? false,
   })
   const script = assembleRScript(region, [fragment])
   const dir = mkdtempSync(join(tmpdir(), `jb-rexport-vmatrix-${name}-`))
@@ -49,6 +50,18 @@ maybe('1094-sample matrix script runs and produces a figure', () => {
     start: 3000,
     end: 12738,
   })
+  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+}, 120000)
+
+// phased mode on the diploid 1094-sample panel: samples expand to HP0/HP1
+// haplotype rows, exercising the per-haplotype single-allele classing branch
+maybe('1094-sample phased matrix script runs and produces a figure', () => {
+  const dir = runMatrix(
+    'test_phased',
+    'volvox.test.vcf.gz',
+    { refName: 'contigA', start: 3000, end: 12738 },
+    { phased: true },
+  )
   expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
 }, 120000)
 

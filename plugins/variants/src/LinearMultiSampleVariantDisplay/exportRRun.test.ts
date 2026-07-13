@@ -25,6 +25,7 @@ function runRows(
   name: string,
   file: string,
   region: { refName: string; start: number; end: number },
+  opts?: { phased?: boolean },
 ) {
   const fragment = variantRowFragment({
     trackId: `vcf_${name}`,
@@ -32,6 +33,7 @@ function runRows(
     uri: resolve(process.cwd(), `test_data/volvox/${file}`),
     minMaf: 0,
     maxMissing: 1,
+    phased: opts?.phased ?? false,
   })
   const script = assembleRScript(region, [fragment])
   const dir = mkdtempSync(join(tmpdir(), `jb-rexport-vrows-${name}-`))
@@ -58,5 +60,17 @@ maybe('1094-sample row display runs and produces a figure', () => {
     start: 3000,
     end: 12738,
   })
+  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+}, 120000)
+
+// phased mode: the diploid panel expands to HP0/HP1 haplotype rows (2188 rows),
+// exercising the per-haplotype single-allele classing at genomic position
+maybe('1094-sample phased row display runs and produces a figure', () => {
+  const dir = runRows(
+    'test_phased',
+    'volvox.test.vcf.gz',
+    { refName: 'contigA', start: 3000, end: 12738 },
+    { phased: true },
+  )
   expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
 }, 120000)

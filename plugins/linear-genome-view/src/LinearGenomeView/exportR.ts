@@ -1,4 +1,8 @@
-import { saveAs } from '@jbrowse/core/util'
+import { getConf } from '@jbrowse/core/configuration'
+import { getSession, saveAs } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+
+import { rName, rStr, safeVarName } from './rexportShared.ts'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type { ExportRCodeOptions, RTrackFragment } from './types.ts'
@@ -30,6 +34,14 @@ function hasRExport(display: unknown): display is RExportDisplay {
  * an assistant) can read and edit them without learning a bespoke package.
  */
 const HELPERS: Record<string, string> = {
+  resolve_chrom: `# Translate a canonical chromosome name to the one a particular track's file
+# uses. JBrowse resolves refname aliases (chr1 vs 1 vs NC_000001.11) per file;
+# 'aliases' is a named vector canonical -> file name for one track. A name not
+# in it passes through unchanged, so the same plot_region() call reads correctly
+# from files with different contig naming.
+resolve_chrom <- function(chrom, aliases) {
+  if (chrom %in% names(aliases)) aliases[[chrom]] else chrom
+}`,
   read_bigwig: `# Read a BigWig region into a data.frame(seqnames, start, end, score)
 read_bigwig <- function(uri, chrom, start, end) {
   as.data.frame(rtracklayer::import(uri, which = GRanges(chrom, IRanges(start + 1, end))))
@@ -52,15 +64,67 @@ bp_axis <- function() {
     expand = expansion(mult = 0.01)
   )
 }`,
-  read_bam: `# Read alignments in a region as a data.frame(start, end, strand, mapq,
-# isize), with reference-based (CIGAR-aware) coordinates. isize is |TLEN| (0 for
-# unpaired) so a color-by-insert-size panel works without a reference.
+  cram_to_bam: `# Rsamtools/GenomicAlignments is a BAM-only reader and cannot open CRAM, so
+# decode the queried region to a temporary indexed BAM with samtools (the
+# standard CRAM tool) and hand that back for the bam_* helpers to read. samtools
+# restores the MD tag from the reference while decoding, so the reference-free
+# bam_mismatches walk still works. 'ref' is the reference FASTA; when NULL/empty
+# samtools resolves the reference from the CRAM's own UR header or a
+# REF_PATH/REF_CACHE cache. A plain (non-.cram) path is returned unchanged, so
+# the same script works for BAM and CRAM tracks. Requires samtools on PATH.
+cram_to_bam <- function(uri, chrom, start, end, ref = NULL) {
+  if (!grepl("\\\\.cram$", uri, ignore.case = TRUE)) return(uri)
+  out <- tempfile(fileext = ".bam")
+  region <- sprintf("%s:%d-%d", chrom, start + 1, end)
+  args <- c("view", "-b", "-o", out,
+            if (!is.null(ref) && nzchar(ref)) c("-T", ref), uri, region)
+  if (system2("samtools", args) != 0) stop("samtools failed to decode CRAM: ", uri)
+  Rsamtools::indexBam(out)
+  out
+}`,
+  read_bam: `# Read alignments in a region as a data.frame(name, start, end, strand, mapq,
+# isize, flag, orientation, mate_unmapped, interchrom), with reference-based
+# (CIGAR-aware) coordinates. isize is |TLEN| (0 for unpaired) so a
+# color-by-insert-size panel works without a reference; orientation / mate_unmapped
+# / interchrom drive the pair-orientation coloring (see pair_orientation); name is
+# QNAME, so mates + supplementary segments can be grouped into chains (link_reads).
 read_bam <- function(uri, chrom, start, end) {
   ga <- readGAlignments(uri, param = ScanBamParam(
-    which = GRanges(chrom, IRanges(start + 1, end)), what = c("mapq", "isize")))
-  data.frame(start = start(ga) - 1L, end = end(ga),
+    which = GRanges(chrom, IRanges(start + 1, end)),
+    what = c("qname", "flag", "mapq", "isize", "mrnm", "mpos")))
+  flag <- mcols(ga)$flag
+  mate_chrom <- as.character(mcols(ga)$mrnm)
+  data.frame(name = mcols(ga)$qname, start = start(ga) - 1L, end = end(ga),
              strand = as.character(strand(ga)), mapq = mcols(ga)$mapq,
-             isize = abs(mcols(ga)$isize))
+             isize = abs(mcols(ga)$isize), flag = flag,
+             orientation = pair_orientation(flag, start(ga), mcols(ga)$mpos),
+             mate_unmapped = bitwAnd(flag, 0x8L) != 0,
+             # "=" is RNEXT shorthand for the read's own chromosome
+             interchrom = !is.na(mate_chrom) & mate_chrom != chrom & mate_chrom != "=",
+             stringsAsFactors = FALSE)
+}`,
+  pair_orientation: `# Classify a read pair's orientation into the IGV FR-library categories
+# (LR normal / RL / RR / LL), reproducing JBrowse's getPairOrientation +
+# pairDirection. Vectorized over a BAM's flag / position columns. The leftmost
+# mate (self_left) is chosen consistently from either read - by position within a
+# chromosome, read1-first when positions tie or the mate position is unknown - so
+# the two mates of one pair always agree. Returns NA for unpaired reads or
+# orientations outside the FR set. self_pos/mate_pos are 1-based leftmost coords.
+pair_orientation <- function(flag, self_pos, mate_pos) {
+  is_paired <- bitwAnd(flag, 0x1L) != 0
+  is_read1  <- bitwAnd(flag, 0x40L) != 0
+  self_str  <- ifelse(bitwAnd(flag, 0x10L) != 0, "R", "F")
+  mate_str  <- ifelse(bitwAnd(flag, 0x20L) != 0, "R", "F")
+  self_num  <- ifelse(is_read1, "1", "2")
+  mate_num  <- ifelse(is_read1, "2", "1")
+  known     <- !is.na(mate_pos) & mate_pos > 0
+  self_left <- ifelse(!known | self_pos == mate_pos, is_read1, self_pos < mate_pos)
+  o <- ifelse(self_left,
+    paste0(self_str, self_num, mate_str, mate_num),
+    paste0(mate_str, mate_num, self_str, self_num))
+  fr <- c(F1R2 = "LR", F2R1 = "LR", R1F2 = "RL", R2F1 = "RL",
+          R1R2 = "RR", R2R1 = "RR", F1F2 = "LL", F2F1 = "LL")
+  ifelse(is_paired, unname(fr[o]), NA_character_)
 }`,
   bam_mismatches: `# Per-read mismatches from the MD tag - reference-free, exactly how JBrowse
 # derives SNP ticks when MD is present (no reference FASTA needed). Walks the
@@ -104,6 +168,32 @@ bam_mismatches <- function(uri, chrom, start, end) {
   }
   do.call(rbind, out)
 }`,
+  bam_clips: `# Soft/hard clips at each read's ends, from the first/last CIGAR op (S = soft,
+# H = hard). Returns data.frame(read_index, pos, type, length): 'pos' is the
+# 0-based reference position of the clip - a read's aligned start for a leading
+# clip, its aligned end for a trailing clip - marking where the read carries
+# unaligned sequence (a breakpoint signal, the same clip indicators JBrowse
+# draws). 'read_index' matches read_bam order (same region, same readGAlignments
+# order) so a clip bar joins its pileup row via reads$row[clips$read_index].
+bam_clips <- function(uri, chrom, start, end) {
+  ga <- readGAlignments(uri, param = ScanBamParam(
+    which = GRanges(chrom, IRanges(start + 1, end))))
+  cig <- cigar(ga); rs <- start(ga) - 1L; re <- end(ga)
+  out <- vector("list", length(ga))
+  for (i in seq_along(ga)) {
+    ops <- regmatches(cig[i], gregexpr("[0-9]+[MIDNSHP=X]", cig[i]))[[1]]
+    if (!length(ops)) next
+    op <- sub("^[0-9]+", "", ops); len <- as.integer(sub("[MIDNSHP=X]$", "", ops))
+    n <- length(ops); ends <- list()
+    if (op[1] %in% c("S", "H")) ends[[1]] <- data.frame(read_index = i, pos = rs[i], type = op[1], length = len[1])
+    if (op[n] %in% c("S", "H")) ends[[2]] <- data.frame(read_index = i, pos = re[i], type = op[n], length = len[n])
+    out[[i]] <- do.call(rbind, ends)
+  }
+  do.call(rbind, out)
+}`,
+  clip_colors: `# JBrowse's clip indicator colors: soft clip blue, hard clip red. Used with
+# scale_color_identity (a separate aesthetic from the read/mismatch fill scale).
+clip_colors <- c(S = "#0000ff", H = "#ff0000")`,
   base_colors: `# JBrowse's per-base mismatch colors (green A / blue C / orange G / red T /
 # brown N), used with scale_fill_identity so no legend and no second fill scale.
 base_colors <- c(A = "#4caf50", C = "#2196f3", G = "#ff9800", T = "#f44336", N = "#795548")`,
@@ -112,7 +202,9 @@ base_colors <- c(A = "#4caf50", C = "#2196f3", G = "#ff9800", T = "#f44336", N =
 # JBrowse's read color schemes: normal (grey, the default), strand (pink fwd /
 # blue rev), mappingQuality (a fixed-saturation hue ramp over MAPQ, treating
 # MAPQ as a hue in degrees like the GPU renderer), insertSize (pink short / red
-# long / grey normal, thresholds = mean +/- 3sd of the library's mapped |TLEN|).
+# long / grey normal, thresholds = mean +/- 3sd of the library's mapped |TLEN|),
+# pairOrientation (grey LR / teal RL / blue RR / green LL, with an unmapped-mate
+# and an inter-chromosomal bucket that override the orientation hue like JBrowse).
 read_fill_colors <- function(reads, color_by = "normal") {
   hue_ramp <- function(h) {
     hp <- (h %% 360) / 60; cc <- 0.5; mm <- 0.25
@@ -131,9 +223,102 @@ read_fill_colors <- function(reads, color_by = "normal") {
     m <- if (length(obs)) mean(obs) else 0; s <- if (length(obs) > 1) sd(obs) else 0
     ifelse(is > m + 3 * s, "#ff0000",
       ifelse(is > 0 & is < m - 3 * s, "#ffc0cb", "#d3d3d3"))
+  } else if (color_by == "pairOrientation") {
+    pal <- c(LR = "#d3d3d3", RL = "#0099bb", RR = "#5555bb", LL = "#4d9a4d")
+    col <- unname(pal[reads$orientation])
+    col[is.na(col)] <- "#c8c8c8"                # unpaired / non-FR orientation
+    col[reads$interchrom] <- "#6e4b3a"          # mate on another chromosome
+    col[reads$mate_unmapped] <- "#b05a20"       # unmapped mate wins (like JBrowse)
+    col
   } else {
     rep("#d3d3d3", nrow(reads))
   }
+}`,
+  mod_colors: `# Base-modification type colors (IGV/JBrowse palette: red 5mC 'm', magenta 5hmC
+# 'h', deep-blue 6mA 'a', ...). Codes outside the table hash to a stable muted
+# hue, mirroring JBrowse's randomColor fallback. Returned as literal hex so mod
+# ticks share one scale_fill_identity() with the read bodies.
+mod_colors <- function(types) {
+  pal <- c(m = "#ff0000", h = "#ff00ff", o = "#6f4e81", f = "#f6c85f",
+           c = "#9dd866", g = "#ffa056", e = "#8dddd0", b = "#00642f",
+           a = "#33006f", "17082" = "#3399ff", "17596" = "#669900",
+           "21839" = "#990099")
+  hsl <- function(h, s, l) {
+    cc <- (1 - abs(2 * l - 1)) * s; x <- cc * (1 - abs((h / 60) %% 2 - 1)); m <- l - cc / 2
+    rgbv <- switch(floor(h / 60) %% 6 + 1, c(cc, x, 0), c(x, cc, 0), c(0, cc, x),
+                   c(0, x, cc), c(x, 0, cc), c(cc, 0, x))
+    grDevices::rgb(rgbv[1] + m, rgbv[2] + m, rgbv[3] + m)
+  }
+  vapply(as.character(types), function(t)
+    if (!is.na(pal[t])) unname(pal[t]) else hsl((sum(utf8ToInt(t)) * 10) %% 360, 0.2, 0.5),
+    character(1), USE.NAMES = FALSE)
+}`,
+  bam_modifications: `# Per-base modifications from the MM/ML tags (modBAM) - the signal JBrowse's
+# 'modifications'/methylation coloring shows, parsed reference-free from the tags
+# (no reference FASTA). For each MM group (e.g. "C+m" 5mC, "A+a" 6mA) walks the
+# comma-separated skip counts over the read's target bases to recover each
+# modified base, reads its ML probability (0..255 -> 0..1), and CIGAR-maps the
+# read position to the reference. Faithful to JBrowse's getModPositions:
+# reverse-strand reads complement the target base and count from the read 5' end;
+# combined codes like "C+mh" interleave ML per position. ML is a B:C array tag
+# that breaks readGAlignments' DataFrame, so this reads via scanBam (whose read
+# order matches read_bam's readGAlignments, so read_index joins to pileup rows).
+# Returns data.frame(read_index, refpos [0-based], modtype, prob, strand).
+bam_modifications <- function(uri, chrom, start, end, min_prob = 0.1) {
+  b <- scanBam(BamFile(uri), param = ScanBamParam(
+    which = GRanges(chrom, IRanges(start + 1, end)),
+    what = c("strand", "pos", "cigar", "seq"),
+    tag = c("MM", "ML", "Mm", "Ml")))[[1]]
+  mm_all <- if (!is.null(b$tag$MM)) b$tag$MM else b$tag$Mm
+  ml_all <- if (!is.null(b$tag$ML)) b$tag$ML else b$tag$Ml
+  if (is.null(mm_all)) return(NULL)
+  compl <- c(A = "T", T = "A", C = "G", G = "C", U = "A", N = "N")
+  seqs <- as.character(b$seq); strands <- as.character(b$strand); out <- list()
+  for (i in seq_along(mm_all)) {
+    mm <- mm_all[i]; if (is.na(mm) || mm == "") next
+    ml <- if (is.null(ml_all)) integer(0) else as.integer(ml_all[[i]])
+    isrev <- strands[i] == "-"
+    s <- strsplit(seqs[i], "", fixed = TRUE)[[1]]; n <- length(s)
+    # CIGAR read(1-based)->ref(1-based) column map, reference-forward orientation
+    ops <- regmatches(b$cigar[i], gregexpr("[0-9]+[MIDNSHP=X]", b$cigar[i]))[[1]]
+    oplen <- as.integer(sub("[MIDNSHP=X]$", "", ops)); opchr <- sub("^[0-9]+", "", ops)
+    ref2 <- rep(NA_integer_, n); rp <- b$pos[i]; qp <- 1L
+    for (k in seq_along(ops)) {
+      op <- opchr[k]; L <- oplen[k]
+      if (op %in% c("M", "=", "X")) {
+        ref2[qp:(qp + L - 1L)] <- rp:(rp + L - 1L); rp <- rp + L; qp <- qp + L
+      } else if (op %in% c("I", "S")) { qp <- qp + L
+      } else if (op %in% c("D", "N")) { rp <- rp + L }
+    }
+    mlbase <- 0L
+    for (g in strsplit(mm, ";", fixed = TRUE)[[1]]) {
+      if (g == "") next
+      f <- strsplit(g, ",", fixed = TRUE)[[1]]
+      h <- regmatches(f[1], regexec("([ACGTUN])([-+])([a-z]+|[A-Z]|[0-9]+)", f[1]))[[1]]
+      if (length(h) < 4L) next
+      base <- h[2]; typestr <- h[4]; deltas <- as.integer(f[-1]); ndelta <- length(deltas)
+      if (!ndelta) next
+      # combined lowercase codes (mh) are one type per char; a ChEBI number or a
+      # single uppercase ambiguity code is one type (mirrors getModPositions)
+      single <- utf8ToInt(substr(typestr, 1, 1))[1] < 97L || nchar(typestr) == 1L
+      types <- if (single) typestr else strsplit(typestr, "", fixed = TRUE)[[1]]
+      ntypes <- length(types)
+      target <- if (isrev) compl[[base]] else base
+      idx <- if (base == "N") seq_len(n) else which(s == target)
+      if (isrev) idx <- rev(idx)                       # count from the read 5' end
+      sel <- idx[cumsum(deltas) + seq_len(ndelta)]     # ref-forward SEQ index, MM order
+      refp <- ref2[sel]
+      for (tj in seq_len(ntypes)) {
+        probs <- (ml[mlbase + tj + (seq_len(ndelta) - 1L) * ntypes] + 0.5) / 256
+        keep <- !is.na(refp) & !is.na(probs) & probs >= min_prob
+        if (any(keep)) out[[length(out) + 1L]] <- data.frame(
+          read_index = i, refpos = refp[keep] - 1L, modtype = types[tj],
+          prob = probs[keep], strand = if (isrev) -1L else 1L, stringsAsFactors = FALSE)
+      }
+      mlbase <- mlbase + ndelta * ntypes
+    }
+  }
+  if (length(out)) do.call(rbind, out) else NULL
 }`,
   snp_freq_threshold: `# Minimum mismatch frequency drawn in the SNP-coverage track at a given depth -
 # JBrowse hides low-frequency noise by default (80% below 10x depth, easing to
@@ -146,6 +331,29 @@ snp_freq_threshold <- function(depth) {
 pileup_layout <- function(reads) {
   reads$row <- disjointBins(IRanges(reads$start + 1L, reads$end))
   reads
+}`,
+  link_reads: `# Chain layout (JBrowse's linkedReads = "normal"): group a region's records by
+# read name (QNAME) - the two mates of a pair plus any supplementary/secondary
+# segments share one name - and place each whole chain on a single row, packing
+# chains by their min-start..max-end span with disjointBins (the same primitive
+# pileup_layout uses on individual reads). Reads keep their original read_bam
+# order (only a 'row' column is added) so mismatch/mod ticks still join by
+# read_index. Also returns a 'links' data.frame of connector segments spanning the
+# gap between each chain's consecutive pieces (the mate-pair gap or split-read
+# junction). A record whose mate/other segment falls outside the fetched window
+# simply has no connector (only the segments actually in view are linked).
+link_reads <- function(reads) {
+  nm <- ifelse(is.na(reads$name), paste0("_r", seq_len(nrow(reads))), reads$name)
+  chain_start <- tapply(reads$start, nm, min)
+  chain_end   <- tapply(reads$end, nm, max)
+  row <- disjointBins(IRanges(as.integer(chain_start) + 1L, as.integer(chain_end)))
+  names(row) <- names(chain_start)
+  reads$row <- unname(row[nm])
+  ord <- order(nm, reads$start); s <- reads[ord, ]; g <- nm[ord]
+  same <- g[-1] == g[-length(g)]
+  x0 <- s$end[-nrow(s)]; x1 <- s$start[-1]; keep <- same & x1 > x0
+  links <- data.frame(xstart = x0[keep], xend = x1[keep], row = s$row[-1][keep])
+  list(reads = reads, links = links)
 }`,
   bam_coverage: `# Per-base read depth over the region.
 bam_coverage <- function(uri, chrom, start, end) {
@@ -239,16 +447,21 @@ hic_triangle <- function(uri, chrom, start, end, binsize, norm) {
              counts = rep(m$counts, 4), group = rep(seq_len(nrow(m)), 4))
 }`,
   read_vcf_gt: `# Read per-sample genotypes of a VCF region via the tabix index (Rsamtools - no
-# VariantAnnotation) into a sample-by-site genotype matrix. Sample names come
-# from the '#CHROM' header line; the GT subfield is located in each record's
-# FORMAT column. Each variant's "most frequent ALT" allele is found across all
-# samples (matching JBrowse's allele-count coloring), then every cell is classed
-# ref / het / hom (dosage of that ALT) / other (a secondary ALT) / nocall. Also
-# returns per-site minor-allele-frequency and no-call missingness (no-calls
+# VariantAnnotation) into a genotype matrix. Sample names come from the '#CHROM'
+# header line; the GT subfield is located in each record's FORMAT column. Each
+# variant's "most frequent ALT" allele is found across all samples (matching
+# JBrowse's allele-count coloring). Two modes, mirroring the display's
+# renderingMode:
+#   collapsed (phased = FALSE): one column per sample, each cell classed ref /
+#     het / hom (dosage of that ALT) / other (a secondary ALT) / nocall.
+#   phased   (phased = TRUE):  one column per haplotype ("<sample> HP<n>",
+#     n = ploidy of that sample seen in the region), each single allele classed
+#     ref / alt (the most frequent ALT) / other / nocall.
+# Also returns per-site minor-allele-frequency and no-call missingness (no-calls
 # excluded from the MAF denominator, as in JBrowse) so sites can be filtered, and
 # each site's 0-based half-open genomic span (start/end; symbolic SVs use INFO
 # END) for displays that draw at genomic position rather than by column index.
-read_vcf_gt <- function(uri, chrom, start, end) {
+read_vcf_gt <- function(uri, chrom, start, end, phased = FALSE) {
   tf <- TabixFile(uri)
   hdr <- headerTabix(tf)$header
   header_cols <- strsplit(sub("^#", "", hdr[length(hdr)]), "\\t", fixed = TRUE)[[1]]
@@ -256,9 +469,11 @@ read_vcf_gt <- function(uri, chrom, start, end) {
   ns <- length(samples)
   lines <- unlist(scanTabix(tf, param = GRanges(chrom, IRanges(start + 1, end))))
   if (!length(lines)) {
-    return(list(cls = matrix(character(), 0, ns), dose = matrix(numeric(), 0, ns),
+    cols <- if (phased) character() else samples
+    return(list(cls = matrix(character(), 0, length(cols)),
+                dose = matrix(numeric(), 0, length(cols)),
                 maf = numeric(), missingness = numeric(), has_alt = logical(),
-                start = integer(), end = integer(), samples = samples))
+                start = integer(), end = integer(), samples = cols))
   }
   m <- do.call(rbind, strsplit(lines, "\\t", fixed = TRUE))
   pos <- as.integer(m[, 2]); ref <- m[, 4]; alt <- sub(",.*", "", m[, 5])
@@ -272,23 +487,50 @@ read_vcf_gt <- function(uri, chrom, start, end) {
   gt_field <- vapply(strsplit(m[, 9], ":", fixed = TRUE),
                      function(f) match("GT", f), integer(1))
   nv <- nrow(m)
-  cls <- matrix("nocall", nv, ns)
-  dose <- matrix(NA_real_, nv, ns)
   maf <- numeric(nv); missingness <- numeric(nv); has_alt <- logical(nv)
+  toks_all <- vector("list", nv); mfa_all <- character(nv)
   for (i in seq_len(nv)) {
     raw <- m[i, 10:(9 + ns)]
     gi <- gt_field[i]
     gts <- if (is.na(gi)) raw else
       vapply(strsplit(raw, ":", fixed = TRUE), function(x) x[gi], character(1))
     toks <- strsplit(gts, "[/|]")
+    toks_all[[i]] <- toks
     all_alleles <- unlist(toks)
     called <- all_alleles[all_alleles != "."]
     alt_tab <- table(called[called != "0"])
-    mfa <- if (length(alt_tab)) names(alt_tab)[which.max(alt_tab)] else NA_character_
-    has_alt[i] <- !is.na(mfa)
+    mfa_all[i] <- if (length(alt_tab)) names(alt_tab)[which.max(alt_tab)] else NA_character_
+    has_alt[i] <- !is.na(mfa_all[i])
     counts <- sort(as.integer(table(called)), decreasing = TRUE)
     maf[i] <- if (length(counts) >= 2) counts[2] / length(called) else 0
     missingness[i] <- sum(all_alleles == ".") / length(all_alleles)
+  }
+  if (phased) {
+    # per-sample ploidy = max allele count across sites (samples never called
+    # anywhere default to diploid), then one HP column per haplotype
+    ploidy <- rep(2L, ns)
+    for (i in seq_len(nv)) ploidy <- pmax(ploidy, lengths(toks_all[[i]]))
+    hap_sample <- rep(seq_len(ns), ploidy)
+    hap_idx <- unlist(lapply(ploidy, seq_len))
+    hap_names <- paste0(samples[hap_sample], " HP", hap_idx - 1L)
+    # site-by-haplotype allele matrix, then class every cell in one vectorized
+    # pass (single allele per cell: ref / alt = most-frequent ALT / other / nocall)
+    allele <- do.call(rbind, lapply(toks_all, function(toks)
+      mapply(function(s, k) toks[[s]][k], hap_sample, hap_idx)))
+    mfa <- matrix(mfa_all, nv, length(hap_sample))
+    is_ref <- !is.na(allele) & allele == "0"
+    is_alt <- !is.na(allele) & allele != "0" & allele != "." & allele == mfa
+    is_oth <- !is.na(allele) & allele != "0" & allele != "." & allele != mfa
+    cls <- matrix("nocall", nv, length(hap_sample))
+    cls[is_ref] <- "ref"; cls[is_alt] <- "alt"; cls[is_oth] <- "other"
+    dose <- ifelse(is_ref, 0, ifelse(is_alt | is_oth, 1, NA_real_))
+    rownames(cls) <- seq_len(nv); colnames(cls) <- hap_names
+    return(list(cls = cls, dose = dose, maf = maf, missingness = missingness,
+                has_alt = has_alt, start = vstart, end = vend, samples = hap_names))
+  }
+  cls <- matrix("nocall", nv, ns); dose <- matrix(NA_real_, nv, ns)
+  for (i in seq_len(nv)) {
+    toks <- toks_all[[i]]; mfa <- mfa_all[i]
     for (j in seq_len(ns)) {
       a <- toks[[j]]
       if (all(a == ".")) next
@@ -365,6 +607,39 @@ function getViewRegion(model: LinearGenomeViewModel): ViewRegion | undefined {
   return { refName: first.refName, start, end }
 }
 
+/**
+ * The track file's refname aliases as canonical -> file name, keeping only the
+ * entries that differ (the ones needing translation). Mirrors what JBrowse uses
+ * to fetch: `getRefNameMapForAdapter` runs the same CoreGetRefNames resolution
+ * against the assembly's aliases, so a track whose file names contigs
+ * differently from the assembly (chr1 vs 1) still reads. Returns undefined when
+ * nothing differs, so the common case emits no aliasing code. Resolution
+ * failures are swallowed (the export still works, just without translation).
+ */
+async function resolveRefNameMap(
+  model: LinearGenomeViewModel,
+  track: LinearGenomeViewModel['tracks'][number],
+) {
+  try {
+    const { assemblyManager } = getSession(model)
+    const map = await assemblyManager.getRefNameMapForAdapter(
+      getConf(track, 'adapter'),
+      model.assemblyNames[0],
+      { sessionId: getRpcSessionId(model) },
+    )
+    const diff: Record<string, string> = {}
+    for (const [canonical, name] of Object.entries(map)) {
+      if (canonical !== name) {
+        diff[canonical] = name
+      }
+    }
+    return Object.keys(diff).length > 0 ? diff : undefined
+  } catch (e) {
+    console.error(e)
+    return undefined
+  }
+}
+
 /** Collect one R fragment per track whose display knows how to export. */
 async function collectFragments(
   model: LinearGenomeViewModel,
@@ -376,8 +651,15 @@ async function collectFragments(
     if (hasRExport(display)) {
       const result = await display.exportRCode(opts)
       // a display may contribute several stacked panels (e.g. alignments emit a
-      // coverage panel and a pileup panel)
-      fragments.push(...(Array.isArray(result) ? result : result ? [result] : []))
+      // coverage panel and a pileup panel); all panels of one track share the
+      // track file's refName aliases
+      const panels = Array.isArray(result) ? result : result ? [result] : []
+      if (panels.length > 0) {
+        const refNameMap = await resolveRefNameMap(model, track)
+        for (const panel of panels) {
+          fragments.push(refNameMap ? { ...panel, refNameMap } : panel)
+        }
+      }
     }
   }
   return fragments
@@ -395,15 +677,48 @@ export function assembleRScript(
       ...fragments.flatMap(f => f.packages),
     ]),
   ]
-  // emit helper defs in a stable order, deduped
+  // one deduped `<track>_refnames <- c(canonical = "file name", ...)` per track
+  // that needs alias translation; the panel wraps its read in resolve_chrom
+  const hasRefNames = (f: RTrackFragment) =>
+    !!f.refNameMap && Object.keys(f.refNameMap).length > 0
+  const refNameVar = (f: RTrackFragment) => `${safeVarName(f.trackId)}_refnames`
+  const refNameVecs = new Map<string, string>()
+  for (const f of fragments) {
+    const map = f.refNameMap
+    if (map && Object.keys(map).length > 0) {
+      const entries = Object.entries(map)
+        .map(([canonical, name]) => `${rName(canonical)} = ${rStr(name)}`)
+        .join(', ')
+      refNameVecs.set(refNameVar(f), `c(${entries})`)
+    }
+  }
+
+  // emit helper defs in a stable order, deduped; resolve_chrom rides on any
+  // fragment carrying refNameMap rather than the usual per-fragment helper list
+  const needsResolveChrom = fragments.some(hasRefNames)
   const helperNames = Object.keys(HELPERS).filter(name =>
-    fragments.some(f => f.helpers.includes(name)),
+    name === 'resolve_chrom'
+      ? needsResolveChrom
+      : fragments.some(f => f.helpers.includes(name)),
   )
   const helpers = helperNames.map(name => HELPERS[name]).join('\n\n')
   const setups = [...new Set(fragments.map(f => f.setup))].join('\n')
+  const refNameSetup =
+    refNameVecs.size > 0
+      ? `\n\n# JBrowse refname aliases: translate the view's canonical chromosome
+# name to the one each track's file uses (see resolve_chrom).
+${[...refNameVecs].map(([name, vec]) => `${name} <- ${vec}`).join('\n')}`
+      : ''
 
   const panelBlocks = fragments
-    .map(f => `  ${f.plotVariable} <- ${f.plotExpr.replaceAll('\n', '\n  ')}`)
+    .map(f =>
+      hasRefNames(f)
+        ? `  ${f.plotVariable} <- local({
+    chrom <- resolve_chrom(chrom, ${refNameVar(f)})
+    ${f.plotExpr.replaceAll('\n', '\n    ')}
+  })`
+        : `  ${f.plotVariable} <- ${f.plotExpr.replaceAll('\n', '\n  ')}`,
+    )
     .join('\n\n')
 
   const heights = fragments.map(f => f.heightWeight ?? 1).join(', ')
@@ -427,7 +742,7 @@ ${packages.map(p => `library(${p})`).join('\n')}
 ${helpers}
 
 # Data sources (local paths or URLs).
-${setups}
+${setups}${refNameSetup}
 
 # Draw every track for one region and stack them into a single figure.
 # start/end are 0-based half-open (as in a BED file).

@@ -17,12 +17,15 @@ patchwork with a `heightWeight`." A heatmap is still one ggplot (`geom_tile` /
 multi-panel mini-figure is still "one stacked entry." New readers go in the
 `HELPERS` table in `exportR.ts`, same as `read_bigwig`/`read_vcf`.
 
-**The one real gap: aspect ratio.** Every shipped panel is wide-and-short;
-`heightWeight` is the only size lever and it only scales height. A Hi-C map wants
-`coord_fixed()` (square bins) and a many-sample matrix wants to be tall. Decide
-early (see open decisions) whether to (a) just lean on `heightWeight`, or
-(b) add an optional aspect/`coord_fixed` hint to `RTrackFragment`. Recommend
-starting with `heightWeight` only and revisiting if figures look wrong.
+**Aspect ratio (resolved: `heightWeight` only).** Every panel is wide-and-short;
+`heightWeight` is the only size lever and it only scales height. Both shipped 2-D
+displays live with that rather than adding a `coord_fixed`/aspect hint to
+`RTrackFragment`: the variant matrix leans on a tall `heightWeight`, and Hi-C
+ships as the **rotated triangle** (below) whose y-axis is interaction distance,
+not a second genomic axis — so it deliberately does *not* want `coord_fixed`; it
+shares the genomic x with the other tracks and fills whatever height
+`heightWeight` allots. `coord_fixed` (the original square Hi-C plan) was dropped
+for exactly this reason. No `RTrackFragment` schema change was needed.
 
 ## Hi-C — `LinearHicDisplay` / `HicAdapter` — SHIPPED
 
@@ -161,23 +164,45 @@ an **explicit return type** (breaks the MST self-type cycle). Both
 the wiring spot is obvious. Add `exportRCode.test.ts` (codegen) +
 `exportRRun.test.ts` (real `Rscript`, `test.skip` when the R dep is absent).
 
+## Phased HP split — both multi-sample variant displays — SHIPPED
+
+Done. `read_vcf_gt` grew a `phased = FALSE` parameter (default keeps the
+collapsed one-row-per-sample path unchanged). When `phased = TRUE` it expands
+each sample into one column per haplotype (`"<sample> HP<n>"`, `n` = the sample's
+ploidy = max allele count seen in the region, defaulting to diploid) and classes
+each *single* allele `ref` / `alt` (the site's most-frequent ALT) / `other` (a
+secondary ALT) / `nocall` — mirroring `getPhasedColor` (`shared/getPhasedColor.ts`),
+which colors the mfa allele `set1[0]` (`#377eb8`) and secondary alts `set1[1]`
+(`#e41a1c`). Both `variant{Row,Matrix}Fragment` take a `phased: boolean` that
+switches the `read_vcf_gt(..., TRUE)` arg and the factor levels + `scale_fill_manual`
+palette; the builders read `self.renderingMode === 'phased'` in `exportRCode`.
+The matrix still clusters on the (now per-haplotype 0/1) `dose` matrix, so it
+gets a haplotype dendrogram for free. Verified through `Rscript` on the diploid
+1094-sample `volvox.test.vcf.gz` (2188 haplotype rows) in both
+`exportRRun.test.ts` files.
+
+The one gotcha: the classing is intentionally single-allele (`ref`/`alt`/
+`other`), *not* the collapsed `het`/`hom` dosage — a haplotype is one chromosome,
+so het/hom don't apply. The palette drops the het/hom shades accordingly.
+
 ## Open decisions
 
-Hi-C, the variant matrix, and the regular per-sample display are all shipped;
-their decisions are resolved (see the SHIPPED notes above). The regular
-`LinearMultiSampleVariantDisplay` reuses `read_vcf_gt` (extended to also return
-each site's genomic `start`/`end`) + the ref/het/hom classing, drawing one
-`geom_rect` row per sample at honest genomic POS (keeps the shared
-`coord_cartesian(xlim=)` contract, so it aligns with 1-D tracks), samples in VCF
-order (no dendrogram). Gallery figure `variant_rows_genes.png`. Remaining for a
-future pass:
+Hi-C, the variant matrix, the regular per-sample display, and the phased HP
+split are all shipped; their decisions are resolved (see the SHIPPED notes
+above). The regular `LinearMultiSampleVariantDisplay` reuses `read_vcf_gt`
+(extended to also return each site's genomic `start`/`end`) + the ref/het/hom
+classing, drawing one `geom_rect` row per sample at honest genomic POS (keeps the
+shared `coord_cartesian(xlim=)` contract, so it aligns with 1-D tracks), samples
+in VCF order (no dendrogram). Gallery figure `variant_rows_genes.png`. Remaining
+for a future pass:
 
-- **Phased HP split:** `"<sample> HP0/HP1"` rows (`expandSourcesToHaplotypes`) —
-  deferred for both displays; default is one collapsed row per sample.
 - **Cell fidelity:** the matrix uses a 5-level discrete `scale_fill_manual`; a
   continuous dosage gradient or `scale_fill_identity` mirroring
   `getColorAlleleCount`'s exact alpha blend is possible if closer parity is
-  wanted (currently not pixel-perfect, by design).
+  wanted (currently not pixel-perfect, by design). Phased mode likewise flattens
+  the phase-set (`PS`) hue coloring `getPhasedColor` does when a `PS` subfield is
+  present — every alt haplotype gets the flat mfa/secondary color, not a
+  per-phase-set hue.
 
 Relates to `R_EXPORT.md`, the variants `plugins/variants/src/CLAUDE.md`
 (matrix-mode / clustering / filters), and the memory
