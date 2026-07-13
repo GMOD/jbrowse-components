@@ -151,7 +151,12 @@ describe('groupContiguousBlocks', () => {
   test('an elided/padding block breaks a run', () => {
     const runs = groupContiguousBlocks([
       block(0, 0, 800, 0),
-      { type: 'InterRegionPaddingBlock', key: 'pad', widthPx: 3, offsetPx: 800 },
+      {
+        type: 'InterRegionPaddingBlock',
+        key: 'pad',
+        widthPx: 3,
+        offsetPx: 800,
+      },
       block(0, 800, 1600, 803),
     ])
     expect(runs).toHaveLength(2)

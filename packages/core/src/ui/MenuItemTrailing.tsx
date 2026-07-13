@@ -52,11 +52,7 @@ function MenuItemHelpSlot({
 // Rightmost fixed-width column holding an item's endAdornment (e.g. the "default
 // for all" pin). Reserved on every row of a menu that has any adornment so they
 // right-align into their own column.
-function MenuItemEndAdornmentSlot({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function MenuItemEndAdornmentSlot({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{

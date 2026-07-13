@@ -46,7 +46,9 @@ export function interleaveInstances(
       // (0xffffffff, larger than any genomic coord) marks the source start so the
       // shader collapses that first quad to nothing. Both unused by other modes.
       u32[off + FIELD_OFFSET_F32.prevMidBp] =
-        i > 0 ? Math.floor((positions[pi - 2]! + positions[pi - 1]!) / 2) : 0xffffffff
+        i > 0
+          ? Math.floor((positions[pi - 2]! + positions[pi - 1]!) / 2)
+          : 0xffffffff
       f32[off + FIELD_OFFSET_F32.prevScoreLine] = i > 0 ? scores[i - 1]! : 0
       // The shader's line pass draws three segments per feature:
       //   v0–v1: vertical at startX from prevScore → score (transition in)

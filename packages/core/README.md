@@ -25,7 +25,7 @@ Apache-2.0 © Evolutionary Software Foundation
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
-### clearDisplaySessionDefaults
+### clearPromotedDefaults
 
 Clear every promoted default for this display type, so sibling tracks revert to
 their own config values. Backs the badge's "clear default" action.
@@ -37,16 +37,14 @@ their own config values. Backs the badge's "clear default" action.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-### displaySessionDefaultChanges
+### DisplayTypeDefaultControl
 
-Effective differences a track following the default inherits from session-wide
-defaults, one per promotable slot whose inherited value differs from its schema
-default. Drives the track-selector "affected by a session default" badge.
-
-```js
-// type signature
-(self: PromotableDisplay) => TrackConfigChange[]
-```
+A promotable "default for all tracks of this type" control, bundled so a menu
+row's trailing pin consumes it as a single prop. `active` = this value is
+currently the session default (a filled pin); `toggle` sets it as the default or
+clears it. On set, `toggle` raises a snackbar with an "Apply to N open tracks"
+action for any open tracks not already showing this value (see
+`applyDefaultToggle`).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
@@ -113,6 +111,19 @@ containing view.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+### getDisplayTypeDefaultChanges
+
+Effective differences a track following the default inherits from session-wide
+defaults, one per promotable slot whose inherited value differs from its schema
+default. Drives the track-selector "affected by a session default" badge.
+
+```js
+// type signature
+(self: PromotableDisplay) => TrackConfigChange[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
 ### getEnv
 
 Returns the MST environment for a node, which carries the `pluginManager`.
@@ -148,7 +159,7 @@ The live state the pin's filled/outline reflects.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-### makeCurrentValueSessionDefaultControl
+### makeCurrentValueDisplayTypeDefaultControl
 
 Promote-current control: "make this track's current resolved value(s) the
 session default". Use for a symmetric setting (a `maybeBoolean` toggle, or a
@@ -157,12 +168,12 @@ not a fixed on-value. Groups multiple slots behind one control.
 
 ```js
 // type signature
-(self: PromotableDisplay, slots: string[]) => SessionDefaultControl
+(self: PromotableDisplay, slots: string[]) => DisplayTypeDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-### makeSessionDefaultControl
+### makeDisplayTypeDefaultControl
 
 Per-value control: "make `slot === onValue` the session default". The meaning is
 per-value ("make arcs the default"), independent of the track's current value —
@@ -171,12 +182,12 @@ sharing one slot (arcs vs read cloud) stay independent.
 
 ```js
 // type signature
-(self: PromotableDisplay, slot: string, onValue: unknown) => SessionDefaultControl
+(self: PromotableDisplay, slot: string, onValue: unknown) => DisplayTypeDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
-### makeSlotsValueSessionDefaultControl
+### makeSlotsValueDisplayTypeDefaultControl
 
 Per-value control over a _group_ of slots: "make this exact combination of slot
 values the session default". `active` reflects whether this exact combination is
@@ -187,7 +198,7 @@ promote-current wrappers below delegate to.
 
 ```js
 // type signature
-(self: PromotableDisplay, entries: PromotableEntry[]) => SessionDefaultControl
+(self: PromotableDisplay, entries: PromotableEntry[]) => DisplayTypeDefaultControl
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -222,17 +233,6 @@ harmless no-op since they're dropped anyway.
 // type signature
 (self: PromotableDisplay) => Record<string, unknown>
 ```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-### SessionDefaultControl
-
-A promotable "default for all tracks of this type" control, bundled so a menu
-row's trailing pin consumes it as a single prop. `active` = this value is
-currently the session default (a filled pin); `toggle` sets it as the default or
-clears it. On set, `toggle` raises a snackbar with an "Apply to N open tracks"
-action for any open tracks not already showing this value (see
-`applyDefaultToggle`).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 

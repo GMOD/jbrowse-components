@@ -88,6 +88,8 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [sampleColorMap](#slot-samplecolormap)     | `frozen`      | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.                                     |
 | [rowOrder](#slot-roworder)                 | `stringArray` | Optional explicit row order.                                                                                        |
 | [rowHeight](#slot-rowheight)               | `number`      | Fixed height in pixels of each row.                                                                                 |
+| [showLegend](#slot-showlegend)             | `boolean`     | Show the categorical color key (swatch + label per distinct per-feature color).                                     |
+| [legend](#slot-legend)                     | `frozen`      | Explicit color key: an array of `{ label, color }`.                                                                 |
 | [showTree](#slot-showtree)                 | `boolean`     | show the cluster tree sidebar                                                                                       |
 | [showBranchLength](#slot-showbranchlength) | `boolean`     | Position tree nodes by cluster merge height (dendrogram) vs.                                                        |
 
@@ -161,6 +163,38 @@ rows).
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0.9`
 · _advanced_
+
+#### slot: showLegend
+
+Show the categorical color key (swatch + label per distinct per-feature color).
+Only appears in per-feature color mode; in per-row palette / sampleColorMap mode
+the sidebar labels are already the key, so nothing shows regardless. The entries
+come from `legend` when set, else are auto-derived from named, categorical
+features (e.g. chromHMM states).
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
+
+#### slot: legend
+
+Explicit color key: an array of `{ label, color }`. Use this when the category
+is encoded only in the block color (e.g. an `itemRgb` ancestry painting) so
+there's no feature attribute to auto-derive a legend from — the mapping is a
+semantic the data doesn't carry, so the config declares it. `color` is any CSS
+color and should match what `color` paints. Overrides the auto-derived legend
+when non-empty.
+
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `[]`
+
+**Example:**
+
+```js
+legend: [
+  { label: 'Maternal', color: 'rgb(227,26,28)' },
+  { label: 'Paternal', color: 'rgb(31,120,180)' },
+  { label: 'Unknown', color: 'rgb(170,170,170)' },
+]
+```
 
 #### slot: showTree
 

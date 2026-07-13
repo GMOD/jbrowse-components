@@ -140,9 +140,9 @@ describe('drawMismatches visible-row-band cull', () => {
     expect(count(baseState({ canvasHeight: 100 }))).toBeLessThan(20)
   })
   test('scrolled to the middle, still only the visible band fills', () => {
-    expect(count(baseState({ canvasHeight: 100, scrollTop: 5000 }))).toBeLessThan(
-      20,
-    )
+    expect(
+      count(baseState({ canvasHeight: 100, scrollTop: 5000 })),
+    ).toBeLessThan(20)
   })
   test('a canvas tall enough for every row fills them all (cull is a no-op)', () => {
     expect(count(baseState({ canvasHeight: 100000 }))).toBe(rows)

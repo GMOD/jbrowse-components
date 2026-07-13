@@ -49,7 +49,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
       <CascadingMenuButton
         data-testid="track-selector-hamburger"
         tooltip="Track selector menu"
-        menuItems={[
+        menuItems={() => [
           {
             label: 'Open faceted track selector',
             onClick: () => {
@@ -72,11 +72,13 @@ const HamburgerMenu = observer(function HamburgerMenu({
                 },
               ]
             : []),
-          {
-            label: 'Connections...',
-            subMenu: [
-              ...(isSessionModelWithConnectionEditing(session)
-                ? [
+          // only offer the Connections submenu when the session can edit
+          // connections, otherwise it opens to an empty popup
+          ...(isSessionModelWithConnectionEditing(session)
+            ? [
+                {
+                  label: 'Connections...',
+                  subMenu: [
                     {
                       label: 'Add connection...',
                       onClick: () => {
@@ -96,13 +98,12 @@ const HamburgerMenu = observer(function HamburgerMenu({
                         setConnectionManagerOpen(true)
                       },
                     },
-                  ]
-                : []),
-            ],
-          },
+                  ],
+                },
+              ]
+            : []),
           {
             label: 'Sort...',
-            type: 'subMenu',
             subMenu: [
               {
                 label: 'Sort tracks by name',
@@ -124,7 +125,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
           },
           {
             label: 'Collapse...',
-            type: 'subMenu',
             subMenu: [
               ...(model.hasAnySubcategories
                 ? [

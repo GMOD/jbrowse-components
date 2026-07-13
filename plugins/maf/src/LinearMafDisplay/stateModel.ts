@@ -820,7 +820,10 @@ export default function stateModelFactory(
         if (self.rowHeight > 0 && oldRows > 0) {
           self.configuration.setSlot(
             'rowHeight',
-            Math.max(1, (self.rowHeight * (newHeight - self.rowsTopOffset)) / oldRows),
+            Math.max(
+              1,
+              (self.rowHeight * (newHeight - self.rowsTopOffset)) / oldRows,
+            ),
           )
         }
         self.resizing = true

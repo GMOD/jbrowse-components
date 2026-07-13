@@ -1,4 +1,7 @@
-import { SMALL_POINT_MAX_DIAMETER_PX, appendPointMarker } from './pointMarker.ts'
+import {
+  SMALL_POINT_MAX_DIAMETER_PX,
+  appendPointMarker,
+} from './pointMarker.ts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 

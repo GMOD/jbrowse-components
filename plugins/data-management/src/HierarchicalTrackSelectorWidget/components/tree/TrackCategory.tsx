@@ -117,6 +117,7 @@ function categoryTrackMenuItems(
   model: HierarchicalTrackSelectorModel,
   item: TreeCategoryNode,
 ) {
+  const trackNodes = getAllTrackNodes(item)
   return [
     {
       label: 'Open as faceted selector...',
@@ -127,19 +128,19 @@ function categoryTrackMenuItems(
     {
       label: 'Add to selection',
       onClick: () => {
-        model.addToSelection(getAllTrackNodes(item).map(n => n.conf))
+        model.addToSelection(trackNodes.map(n => n.conf))
       },
     },
     {
       label: 'Remove from selection',
       onClick: () => {
-        model.removeFromSelection(getAllTrackNodes(item).map(n => n.conf))
+        model.removeFromSelection(trackNodes.map(n => n.conf))
       },
     },
     {
       label: 'Show all',
       onClick: () => {
-        for (const node of getAllTrackNodes(item)) {
+        for (const node of trackNodes) {
           model.view.showTrack(node.trackId)
         }
       },
@@ -147,7 +148,7 @@ function categoryTrackMenuItems(
     {
       label: 'Hide all',
       onClick: () => {
-        for (const node of getAllTrackNodes(item)) {
+        for (const node of trackNodes) {
           model.view.hideTrack(node.trackId)
         }
       },

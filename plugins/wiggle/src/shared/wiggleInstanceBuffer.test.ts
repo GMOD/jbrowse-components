@@ -138,14 +138,20 @@ describe('interleaveInstances', () => {
   // start), so sporadic non-tiling bins don't dash the line.
   describe('center-line (prevMidBp / prevScoreLine)', () => {
     test('first feature has no previous → sentinel', () => {
-      const f = readInstance(interleaveInstances([makeSource([5], [0], [100])], 1), 0)
+      const f = readInstance(
+        interleaveInstances([makeSource([5], [0], [100])], 1),
+        0,
+      )
       expect(f.prevMidBp).toBe(NO_PREV_MID)
       expect(f.prevScoreLine).toBe(0)
     })
 
     test('adjacent feature carries the previous midpoint (floored) and score', () => {
       // prev [0,100] midpoint = 50; [100,201] midpoint = 150 (floored from 150.5)
-      const buf = interleaveInstances([makeSource([5, 8], [0, 100], [100, 201])], 2)
+      const buf = interleaveInstances(
+        [makeSource([5, 8], [0, 100], [100, 201])],
+        2,
+      )
       expect(readInstance(buf, 0).prevMidBp).toBe(NO_PREV_MID)
       expect(readInstance(buf, 1).prevMidBp).toBe(50)
       expect(readInstance(buf, 1).prevScoreLine).toBe(5)
@@ -153,7 +159,10 @@ describe('interleaveInstances', () => {
 
     test('non-adjacent (gapped) features still connect: prev midpoint + real score', () => {
       // gap between bp 100 and 200; the center-line bridges it rather than break
-      const buf = interleaveInstances([makeSource([5, 8], [0, 200], [100, 300])], 2)
+      const buf = interleaveInstances(
+        [makeSource([5, 8], [0, 200], [100, 300])],
+        2,
+      )
       expect(readInstance(buf, 1).prevMidBp).toBe(50) // prev [0,100] midpoint
       expect(readInstance(buf, 1).prevScoreLine).toBe(5) // real prev score, not 0
     })
@@ -170,7 +179,10 @@ describe('interleaveInstances', () => {
     test('large coordinates near uint32 range keep an exact floored midpoint', () => {
       const a = 4_000_000_000
       const b = 4_000_000_100
-      const buf = interleaveInstances([makeSource([5, 8], [a, b], [b, b + 100])], 2)
+      const buf = interleaveInstances(
+        [makeSource([5, 8], [a, b], [b, b + 100])],
+        2,
+      )
       expect(readInstance(buf, 1).prevMidBp).toBe(Math.floor((a + b) / 2))
     })
   })

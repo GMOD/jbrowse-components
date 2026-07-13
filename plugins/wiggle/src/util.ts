@@ -62,9 +62,10 @@ export const MULTI_WIGGLE_RENDERING_GROUPS = [
 
 export const WIGGLE_RENDERING_TYPES = WIGGLE_RENDERINGS.map(([value]) => value)
 
-export const MULTI_WIGGLE_RENDERING_TYPES = MULTI_WIGGLE_RENDERING_GROUPS.flatMap(
-  ([, options]) => options.map(([value]) => value),
-)
+export const MULTI_WIGGLE_RENDERING_TYPES =
+  MULTI_WIGGLE_RENDERING_GROUPS.flatMap(([, options]) =>
+    options.map(([value]) => value),
+  )
 
 // Default color used by wiggle config schema
 export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'

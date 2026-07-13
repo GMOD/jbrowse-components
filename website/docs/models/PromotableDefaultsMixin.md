@@ -18,12 +18,41 @@ display. A display whose config schema has any `promotable` slot composes this
 so the "affected by a session default" badge and its "clear default" action work
 without re-implementing the two delegations per display type.
 
+It re-declares the `type`/`configuration` props it reads (`compose` merges them
+last-wins with the concrete display's own declarations) so `self` is typed as a
+promotable display and the two delegations stay cast-free.
+
 ## Members
 
-| Member                                                         | Kind    | Defined by              | Description                                                                                                                                                                                                        |
-| -------------------------------------------------------------- | ------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [displayTypeDefaultChanges](#method-displaytypedefaultchanges) | Methods | PromotableDefaultsMixin | Effective config differences a track following the default inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.       |
-| [clearDisplayTypeDefaults](#action-cleardisplaytypedefaults)   | Actions | PromotableDefaultsMixin | Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge. |
+| Member                                                         | Kind       | Defined by              | Description                                                                                                                                                                                                        |
+| -------------------------------------------------------------- | ---------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [type](#property-type)                                         | Properties | PromotableDefaultsMixin |                                                                                                                                                                                                                    |
+| [configuration](#property-configuration)                       | Properties | PromotableDefaultsMixin |                                                                                                                                                                                                                    |
+| [displayTypeDefaultChanges](#method-displaytypedefaultchanges) | Methods    | PromotableDefaultsMixin | Effective config differences a track following the default inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.       |
+| [clearDisplayTypeDefaults](#action-cleardisplaytypedefaults)   | Actions    | PromotableDefaultsMixin | Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge. |
+
+<details>
+<summary>PromotableDefaultsMixin - Properties</summary>
+
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<string>
+// code
+type: types.string
+```
+
+#### property: configuration
+
+```ts
+// type signature
+type configuration = ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
+</details>
 
 <details>
 <summary>PromotableDefaultsMixin - Methods</summary>

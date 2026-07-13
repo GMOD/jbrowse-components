@@ -208,7 +208,11 @@ export function BaseSessionModel<
           } else {
             const dflt = getConf(self, ['preferences', key])
             if (value !== dflt) {
-              changes.push({ path: [key], from: dflt, to: value } as TrackConfigChange)
+              changes.push({
+                path: [key],
+                from: dflt,
+                to: value,
+              } as TrackConfigChange)
             }
           }
         }

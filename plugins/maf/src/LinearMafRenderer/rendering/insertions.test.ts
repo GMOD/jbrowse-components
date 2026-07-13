@@ -36,7 +36,9 @@ const draw = (
   ctx: ReturnType<typeof makeCtx>['ctx'],
   markers: InsertionMarker[],
   pxPerBp = 10,
-) => { drawMafInsertions(ctx as never, markers, '#800080', pxPerBp) }
+) => {
+  drawMafInsertions(ctx as never, markers, '#800080', pxPerBp)
+}
 
 test('one marker draws one insertion glyph', () => {
   const { ctx, fillRectCalls } = makeCtx()

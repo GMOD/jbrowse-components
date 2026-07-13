@@ -56,7 +56,9 @@ test('per-row revert resets only that entry without closing', () => {
     { path: ['theme'], from: 'default', to: 'lightStock' },
   ]
   const { getAllByRole } = renderDialog(changes, onReset, onClose, onResetRow)
-  const revertButtons = getAllByRole('button', { name: 'Reset this preference' })
+  const revertButtons = getAllByRole('button', {
+    name: 'Reset this preference',
+  })
   expect(revertButtons).toHaveLength(2)
   fireEvent.click(revertButtons[0]!)
   expect(onResetRow).toHaveBeenCalledTimes(1)
@@ -81,7 +83,9 @@ test('cancel closes without resetting', () => {
 test('with no changes the reset action is disabled', () => {
   const onReset = jest.fn()
   const { getByRole, getByText } = renderDialog([], onReset)
-  expect(getByText('All preferences are already at their defaults.')).toBeTruthy()
+  expect(
+    getByText('All preferences are already at their defaults.'),
+  ).toBeTruthy()
   const button = getByRole('button', { name: 'Reset to defaults' })
   expect(button).toHaveProperty('disabled', true)
   fireEvent.click(button)

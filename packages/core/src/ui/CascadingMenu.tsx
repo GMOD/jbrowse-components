@@ -46,7 +46,11 @@ function makeTestId(kind: string, label: React.ReactNode) {
 
 // Leading icon slot shared by submenu rows and clickable rows; renders nothing
 // when the item has no icon (the row insets instead to stay column-aligned).
-function MenuItemLeadingIcon({ Icon }: { Icon: React.ElementType | undefined }) {
+function MenuItemLeadingIcon({
+  Icon,
+}: {
+  Icon: React.ElementType | undefined
+}) {
   return Icon ? (
     <ListItemIcon>
       <Icon />

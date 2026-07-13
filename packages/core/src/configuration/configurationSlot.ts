@@ -13,8 +13,8 @@ interface SlotTypeSpec {
   /**
    * value substituted when the config editor converts a callback back to a
    * fixed value but the slot's own default is itself a callback (see
-   * `toFixedValue`). Omitted for `maybeNumber`, whose fixed form is genuinely
-   * "unset" — that conversion path throws instead.
+   * `toFixedValue`). Omitted for `maybeNumber`/`maybeBoolean`, whose fixed form
+   * is genuinely "unset" — that conversion path throws instead.
    */
   fallbackDefault?: unknown
 }
