@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
@@ -24,6 +26,9 @@ const QuickSelectSyntenyTrack = observer(function QuickSelectSyntenyTrack({
 }) {
   const session = getSession(model)
   const syntenyTracks = getSyntenyTracks(session.tracks, [])
+  // the Select stays on its placeholder (value="") so it reads as a one-shot
+  // action; this caption confirms which track the rows were filled from
+  const [filledFrom, setFilledFrom] = useState('')
   return syntenyTracks.length ? (
     <div style={{ marginBottom: 10 }}>
       <Typography>Quick start from a synteny track</Typography>
@@ -40,6 +45,7 @@ const QuickSelectSyntenyTrack = observer(function QuickSelectSyntenyTrack({
             const rows = names.length > 2 ? [...names] : [names[0]!, names[1]!]
             setSelectedAssemblyNames(rows)
             setSelectedRow(0)
+            setFilledFrom(getTrackName(track, session))
             model.clearImportFormSyntenyTracks()
             for (let idx = 0; idx < rows.length - 1; idx++) {
               model.setImportFormSyntenyTrack(idx, {
@@ -59,6 +65,11 @@ const QuickSelectSyntenyTrack = observer(function QuickSelectSyntenyTrack({
           </MenuItem>
         ))}
       </Select>
+      {filledFrom ? (
+        <Typography variant="caption" component="div" color="text.secondary">
+          Filled from {filledFrom}
+        </Typography>
+      ) : null}
     </div>
   ) : null
 })

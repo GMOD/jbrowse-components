@@ -45,10 +45,12 @@ const LinearSyntenyViewImportForm = observer(
       defaultAssemblyName,
     ])
     const [error, setError] = useState<unknown>()
+    const [submitting, setSubmitting] = useState(false)
 
     const handleLaunch = async () => {
       try {
         setError(undefined)
+        setSubmitting(true)
         await doSubmit({
           selectedAssemblyNames,
           model,
@@ -56,6 +58,7 @@ const LinearSyntenyViewImportForm = observer(
       } catch (e) {
         console.error(e)
         setError(e)
+        setSubmitting(false)
       }
     }
 
@@ -71,13 +74,14 @@ const LinearSyntenyViewImportForm = observer(
               selectedRow={selectedRow}
               setSelectedRow={setSelectedRow}
               defaultAssemblyName={defaultAssemblyName}
+              submitting={submitting}
               onLaunch={() => {
                 void handleLaunch()
               }}
             />
           </div>
           <div className={classes.rightPanel}>
-            <div>
+            <div role="status" aria-live="polite">
               Synteny dataset to display between row {selectedRow + 1} and{' '}
               {selectedRow + 2}
             </div>

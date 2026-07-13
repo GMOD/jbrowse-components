@@ -2,20 +2,34 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
+function countByName(names: string[]) {
+  const counts = new Map<string, number>()
+  for (const name of names) {
+    counts.set(name, (counts.get(name) ?? 0) + 1)
+  }
+  return counts
+}
+
 /**
- * Synteny tracks in the session whose `assemblyNames` include every one of the
- * given assemblies. Shared by the linear-synteny and dotplot import forms (the
- * per-level/per-pair track selectors) and the "add assembly row" dialog.
+ * Synteny tracks in the session whose `assemblyNames` cover every one of the
+ * given assemblies, counting multiplicity: a duplicated request like `[a, a]`
+ * (a self-alignment row pair) only matches a track that references `a` twice,
+ * not an arbitrary `a`↔`b` cross-species track that happens to include `a`.
+ * Shared by the linear-synteny and dotplot import forms (the per-level/per-pair
+ * track selectors) and the "add assembly row" dialog.
  */
 export function getSyntenyTracks(
   tracks: AnyConfigurationModel[],
   assemblies: string[],
 ) {
+  const needed = countByName(assemblies)
   return tracks.filter(track => {
-    const assemblyNames = readConfObject(track, 'assemblyNames') as string[]
+    const available = countByName(
+      readConfObject(track, 'assemblyNames') as string[],
+    )
     return (
       track.type.includes('Synteny') &&
-      assemblies.every(name => assemblyNames.includes(name))
+      [...needed].every(([name, count]) => (available.get(name) ?? 0) >= count)
     )
   })
 }

@@ -1,6 +1,7 @@
 import { Suspense, useState } from 'react'
 
 import {
+  CircularProgress,
   FormControlLabel,
   Grid,
   Paper,
@@ -49,6 +50,7 @@ const ImportSyntenyOpenCustomTrack = observer(
           make-pif) file to view. These file types can also be gzipped.
         </Typography>
         <RadioGroup
+          aria-label="Custom synteny file format"
           value={radioOption}
           onChange={event => {
             setRadioOption(event.target.value)
@@ -68,7 +70,7 @@ const ImportSyntenyOpenCustomTrack = observer(
         </RadioGroup>
         {selectedFormat ? (
           <Grid container sx={{ justifyContent: 'center' }}>
-            <Suspense fallback={null}>
+            <Suspense fallback={<CircularProgress size={20} />}>
               <selectedFormat.Component
                 key={radioOption}
                 assembly1={assembly1}
@@ -81,7 +83,11 @@ const ImportSyntenyOpenCustomTrack = observer(
                       value: {
                         trackId,
                         name: result.name,
-                        assemblyNames: [assembly2, assembly1],
+                        // [query, target] per the comparative-adapters
+                        // convention (util.ts): assembly1 is the query row, so
+                        // it stays index 0, matching the adapter's own
+                        // queryAssembly/targetAssembly order
+                        assemblyNames: [assembly1, assembly2],
                         type: 'SyntenyTrack',
                         adapter: result.adapter,
                       },

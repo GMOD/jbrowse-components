@@ -9,7 +9,8 @@ import {
 } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
-import { Button, IconButton, Tooltip } from '@mui/material'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
+import { Button, CircularProgress, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import QuickSelectSyntenyTrack from './QuickSelectSyntenyTrack.tsx'
@@ -74,68 +75,88 @@ const AssemblyRows = observer(function AssemblyRows({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  return selectedAssemblyNames.map((assemblyName, idx) => (
-    // eslint-disable-next-line @eslint-react/no-array-index-key -- row position is the identity here; assembly names can repeat across rows
-    <div key={`${assemblyName}-${idx}`} className={classes.rel}>
-      <span>Row {idx + 1}: </span>
-      <AssemblySelector
-        label={`Row ${idx + 1} assembly`}
-        helperText=""
-        selected={assemblyName}
-        onChange={newAssembly => {
-          setSelectedAssemblyNames(
-            selectedAssemblyNames.map((asm, idx2) =>
-              idx2 === idx ? newAssembly : asm,
-            ),
-          )
-        }}
-        session={session}
-      />
-      <Tooltip
-        title={
-          selectedAssemblyNames.length <= 2
-            ? 'Synteny view requires at least 2 rows'
-            : 'Remove this row'
-        }
-      >
-        <span>
-          <IconButton
-            disabled={selectedAssemblyNames.length <= 2}
-            onClick={() => {
-              model.importFormRemoveRow(idx)
-              setSelectedAssemblyNames(
-                selectedAssemblyNames.filter((_, idx2) => idx2 !== idx),
-              )
-              if (selectedRow >= selectedAssemblyNames.length - 2) {
-                setSelectedRow(0)
-              }
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </span>
-      </Tooltip>
-      {idx !== selectedAssemblyNames.length - 1 ? (
-        <Tooltip title="Click to configure synteny track for this row pair">
-          <IconButton
-            data-testid="synbutton"
-            className={cx(
-              classes.synbutton,
-              idx === selectedRow ? classes.bg : undefined,
-              rowNeedsConfiguration(model, session, selectedAssemblyNames, idx)
-                ? classes.synbuttonNeedsConfig
-                : undefined,
-            )}
-            onClick={() => {
-              setSelectedRow(idx)
-            }}
-          >
-            <ArrowForwardIosIcon />
-          </IconButton>
+  return selectedAssemblyNames.map((assemblyName, idx) => {
+    const isPairRow = idx !== selectedAssemblyNames.length - 1
+    const needsConfig =
+      isPairRow &&
+      rowNeedsConfiguration(model, session, selectedAssemblyNames, idx)
+    // a self-alignment pair is valid, but only if a synteny track references the
+    // assembly against itself; call it out so an unsatisfied same-assembly pair
+    // doesn't read like the generic "pick a track" warning
+    const sameAssembly =
+      isPairRow && assemblyName === selectedAssemblyNames[idx + 1]
+    const needsConfigTitle =
+      needsConfig && sameAssembly
+        ? `Rows ${idx + 1} and ${idx + 2} both use ${assemblyName} — add a self-alignment synteny track or pick a different assembly`
+        : `Synteny track not configured between row ${idx + 1} and ${idx + 2} — click to configure`
+    return (
+      // eslint-disable-next-line @eslint-react/no-array-index-key -- row position is the identity here; assembly names can repeat across rows
+      <div key={`${assemblyName}-${idx}`} className={classes.rel}>
+        <AssemblySelector
+          label={`Row ${idx + 1} assembly`}
+          helperText=""
+          selected={assemblyName}
+          onChange={newAssembly => {
+            setSelectedAssemblyNames(
+              selectedAssemblyNames.map((asm, idx2) =>
+                idx2 === idx ? newAssembly : asm,
+              ),
+            )
+          }}
+          session={session}
+        />
+        <Tooltip
+          title={
+            selectedAssemblyNames.length <= 2
+              ? 'Synteny view requires at least 2 rows'
+              : 'Remove this row'
+          }
+        >
+          <span>
+            <IconButton
+              aria-label={`Remove row ${idx + 1}`}
+              disabled={selectedAssemblyNames.length <= 2}
+              onClick={() => {
+                model.importFormRemoveRow(idx)
+                setSelectedAssemblyNames(
+                  selectedAssemblyNames.filter((_, idx2) => idx2 !== idx),
+                )
+                if (selectedRow >= selectedAssemblyNames.length - 2) {
+                  setSelectedRow(0)
+                }
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </span>
         </Tooltip>
-      ) : null}
-    </div>
-  ))
+        {isPairRow ? (
+          <Tooltip
+            title={
+              needsConfig
+                ? needsConfigTitle
+                : `Configure synteny track between row ${idx + 1} and ${idx + 2}`
+            }
+          >
+            <IconButton
+              data-testid="synbutton"
+              aria-label={`Configure synteny track between row ${idx + 1} and ${idx + 2}`}
+              className={cx(
+                classes.synbutton,
+                idx === selectedRow ? classes.bg : undefined,
+                needsConfig ? classes.synbuttonNeedsConfig : undefined,
+              )}
+              onClick={() => {
+                setSelectedRow(idx)
+              }}
+            >
+              {needsConfig ? <WarningAmberIcon /> : <ArrowForwardIosIcon />}
+            </IconButton>
+          </Tooltip>
+        ) : null}
+      </div>
+    )
+  })
 })
 
 const LeftPanel = observer(function LeftPanel({
@@ -145,6 +166,7 @@ const LeftPanel = observer(function LeftPanel({
   selectedRow,
   setSelectedRow,
   defaultAssemblyName,
+  submitting,
   onLaunch,
 }: {
   model: LinearSyntenyViewModel
@@ -153,6 +175,7 @@ const LeftPanel = observer(function LeftPanel({
   selectedRow: number
   setSelectedRow: (row: number) => void
   defaultAssemblyName: string
+  submitting: boolean
   onLaunch: () => void
 }) {
   const { classes } = useStyles()
@@ -226,15 +249,32 @@ const LeftPanel = observer(function LeftPanel({
             </Button>
           </Tooltip>
         ) : null}
-        <Button
-          className={classes.button}
-          disabled={!canLaunch}
-          onClick={onLaunch}
-          variant="contained"
-          color="primary"
+        <Tooltip
+          title={
+            canLaunch
+              ? ''
+              : 'Configure a synteny track for each highlighted row pair before launching'
+          }
         >
-          Launch
-        </Button>
+          <span>
+            <Button
+              className={classes.button}
+              disabled={!canLaunch || submitting}
+              startIcon={
+                submitting ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : undefined
+              }
+              onClick={() => {
+                onLaunch()
+              }}
+              variant="contained"
+              color="primary"
+            >
+              {submitting ? 'Launching…' : 'Launch'}
+            </Button>
+          </span>
+        </Tooltip>
       </div>
     </>
   )
