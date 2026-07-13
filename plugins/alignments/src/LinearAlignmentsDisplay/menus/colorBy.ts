@@ -12,7 +12,7 @@ import { modificationThresholdField } from '../../shared/types.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
-import type { SessionDefaultControl } from '@jbrowse/core/configuration'
+import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -68,7 +68,7 @@ interface ColorByMenuOptions {
   // returns the pin control for making that exact scheme the session-wide
   // default, so each scheme radio carries its own pin (like every other
   // promotable setting) instead of a standalone mouthful checkbox.
-  sessionDefault?: (colorBy: ColorBy) => SessionDefaultControl
+  displayTypeDefault?: (colorBy: ColorBy) => DisplayTypeDefaultControl
 }
 
 // Derived from the shared COLOR_SCHEMES registry (single source of menu
@@ -327,7 +327,7 @@ function buildAdvancedItem(model: ModificationsModel): MenuItem {
 function colorRadio(
   model: AnyColorByModel,
   { label, type }: ColorOption,
-  sessionDefault: ColorByMenuOptions['sessionDefault'],
+  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem {
   return promotableRadioItem({
     label,
@@ -335,17 +335,17 @@ function colorRadio(
     onClick: () => {
       model.setColorScheme({ type })
     },
-    sessionDefault: sessionDefault?.({ type }),
+    displayTypeDefault: displayTypeDefault?.({ type }),
   })
 }
 
 function schemeRadios(
   model: AnyColorByModel,
   colorOptions: ColorOption[] | undefined,
-  sessionDefault: ColorByMenuOptions['sessionDefault'],
+  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
   return (colorOptions ?? basicColorOptions).map(o =>
-    colorRadio(model, o, sessionDefault),
+    colorRadio(model, o, displayTypeDefault),
   )
 }
 
@@ -369,14 +369,14 @@ function tagSection(model: AnyColorByModel, include: boolean): MenuItem[] {
 
 function pairedEndSection(
   model: ModificationsModel | undefined,
-  sessionDefault: ColorByMenuOptions['sessionDefault'],
+  displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
   return model
     ? [
         {
           label: 'Paired end',
           subMenu: pairedEndColorOptions.map(o =>
-            colorRadio(model, o, sessionDefault),
+            colorRadio(model, o, displayTypeDefault),
           ),
         },
       ]
@@ -450,9 +450,9 @@ export function getColorByMenuItem(
     type: 'subMenu' as const,
     icon: Palette,
     subMenu: [
-      schemeRadios(model, options.colorOptions, options.sessionDefault),
+      schemeRadios(model, options.colorOptions, options.displayTypeDefault),
       tagSection(model, options.includeTagOption ?? false),
-      pairedEndSection(mods, options.sessionDefault),
+      pairedEndSection(mods, options.displayTypeDefault),
       modificationsSection(mods),
       arcColorSection(options.arcColor),
       supplementarySection(options.supplementaryColoring),

@@ -6,8 +6,8 @@ import {
   getConfResolved,
   isPromotableDefault,
   isSlotCustomized,
-  makeCurrentValueSessionDefaultControl,
-  makeSlotsValueSessionDefaultControl,
+  makeCurrentValueDisplayTypeDefaultControl,
+  makeSlotsValueDisplayTypeDefaultControl,
   resetSlotsToInherit,
   resolvePromotableConfigSnapshot,
   tracksDifferingFrom,
@@ -237,7 +237,7 @@ describe('apply a promoted default to open tracks', () => {
     const self = displayOf(0, 0)
     const otherView = displayOf(1, 0)
 
-    makeCurrentValueSessionDefaultControl(self, ['customHeight']).toggle()
+    makeCurrentValueDisplayTypeDefaultControl(self, ['customHeight']).toggle()
 
     // setting the default doesn't touch the customized track in the other view
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
@@ -268,7 +268,7 @@ describe('apply a promoted default to open tracks', () => {
     const otherView = displayOf(1, 0)
     const entries = [{ slot: 'customHeight', value: 10 }]
 
-    makeSlotsValueSessionDefaultControl(self, entries).toggle()
+    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
 
     // default set; the track with its own different value keeps it until applied
     expect(isPromotableDefault(self, entries)).toBe(true)
@@ -287,15 +287,12 @@ describe('apply a promoted default to open tracks', () => {
     // view 1's track has no own value, so setting the default moves it with no
     // "apply to open tracks" click needed — that action only targets tracks that
     // aren't already showing the value
-    const { session, displayOf } = createViews([
-      [{ customHeight: 10 }],
-      [{}],
-    ])
+    const { session, displayOf } = createViews([[{ customHeight: 10 }], [{}]])
     const self = displayOf(0, 0)
     const follower = displayOf(1, 0)
     expect(getConfResolved(follower, 'customHeight')).toBeUndefined()
 
-    makeSlotsValueSessionDefaultControl(self, [
+    makeSlotsValueDisplayTypeDefaultControl(self, [
       { slot: 'customHeight', value: 10 },
     ]).toggle()
 
@@ -307,7 +304,7 @@ describe('apply a promoted default to open tracks', () => {
     const { session, displayOf } = createViews([[{ customHeight: 10 }]])
     const self = displayOf(0, 0)
 
-    makeSlotsValueSessionDefaultControl(self, [
+    makeSlotsValueDisplayTypeDefaultControl(self, [
       { slot: 'customHeight', value: 10 },
     ]).toggle()
 
@@ -326,7 +323,7 @@ describe('apply a promoted default to open tracks', () => {
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
 
     // control is active (default already 10), so toggle clears it
-    makeSlotsValueSessionDefaultControl(self, entries).toggle()
+    makeSlotsValueDisplayTypeDefaultControl(self, entries).toggle()
 
     expect(isPromotableDefault(self, entries)).toBe(false)
     expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
@@ -426,15 +423,17 @@ describe('promotable maybeBoolean slot', () => {
     const { session, display } = createDisplay(configSchema, {
       chevrons: false,
     })
-    const control = makeCurrentValueSessionDefaultControl(display, ['chevrons'])
+    const control = makeCurrentValueDisplayTypeDefaultControl(display, [
+      'chevrons',
+    ])
     expect(control.active).toBe(false)
     control.toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'chevrons')).toBe(false)
     expect(
-      makeCurrentValueSessionDefaultControl(display, ['chevrons']).active,
+      makeCurrentValueDisplayTypeDefaultControl(display, ['chevrons']).active,
     ).toBe(true)
 
-    makeCurrentValueSessionDefaultControl(display, ['chevrons']).toggle()
+    makeCurrentValueDisplayTypeDefaultControl(display, ['chevrons']).toggle()
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'chevrons'),
     ).toBeUndefined()
@@ -505,7 +504,7 @@ describe('promotable frozen slot structural equality', () => {
       tag: 'XT',
     })
     expect(
-      makeCurrentValueSessionDefaultControl(display, ['colorBy']).active,
+      makeCurrentValueDisplayTypeDefaultControl(display, ['colorBy']).active,
     ).toBe(true)
   })
 
@@ -513,16 +512,16 @@ describe('promotable frozen slot structural equality', () => {
     const { session, display } = createDisplay(configSchema, {
       colorBy: { tag: 'XT', type: 'tag' },
     })
-    makeCurrentValueSessionDefaultControl(display, ['colorBy']).toggle()
+    makeCurrentValueDisplayTypeDefaultControl(display, ['colorBy']).toggle()
     expect(session.getDisplayTypeDefault('TestDisplay', 'colorBy')).toEqual({
       tag: 'XT',
       type: 'tag',
     })
     expect(
-      makeCurrentValueSessionDefaultControl(display, ['colorBy']).active,
+      makeCurrentValueDisplayTypeDefaultControl(display, ['colorBy']).active,
     ).toBe(true)
 
-    makeCurrentValueSessionDefaultControl(display, ['colorBy']).toggle()
+    makeCurrentValueDisplayTypeDefaultControl(display, ['colorBy']).toggle()
     expect(
       session.getDisplayTypeDefault('TestDisplay', 'colorBy'),
     ).toBeUndefined()

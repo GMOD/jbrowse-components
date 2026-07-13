@@ -95,7 +95,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'stringEnum',
         model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
         description:
-          'Track-height strategy (shared vocabulary with the canvas feature display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and scrolls; `grow` resizes the track to fit every read at the configured height; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
+          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight`/`featureSpacing` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`/`featureSpacing`',
         // `inherit` is the CSS-style sentinel default (the inherit state);
         // `promotedBase` ('fixed') is what it resolves to when nothing is
         // promoted. Being a sentinel lets a track customize `fixed` back over a

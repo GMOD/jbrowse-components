@@ -1,12 +1,11 @@
 import { lazy } from 'react'
 
-import { makeSlotsValueSessionDefaultControl } from '@jbrowse/core/configuration'
+import { makeSlotsValueDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import { promotableRadioItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { heightModeMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import HeightIcon from '@mui/icons-material/Height'
 
-import type { HeightModeMenuModel } from '@jbrowse/plugin-linear-genome-view'
+import type { PromotableDisplay } from '@jbrowse/core/configuration'
 
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
@@ -29,10 +28,11 @@ export const COMPACTNESS_PRESETS = {
   },
 } as const
 
-// Extends HeightModeMenuModel (heightMode + setHeightMode + PromotableDisplay),
-// so passing the model straight to the shared heightModeMenuItems builder
-// typechecks without re-listing those members.
-interface FeatureHeightModel extends HeightModeMenuModel {
+// This menu is only the per-read SIZE axis (the height/spacing presets); the
+// container-sizing axis is the sibling "Track sizing" entry built by the shared
+// getTrackSizingMenuItem. PromotableDisplay carries the pin plumbing
+// makeSlotsValueDisplayTypeDefaultControl needs.
+interface FeatureHeightModel extends PromotableDisplay {
   featureHeight: number
   featureSpacing: number
   configuredFeatureHeight: number
@@ -51,11 +51,14 @@ export function getFeatureHeightMenuItem(
   // when neither auto-sizing flag is set; the preset radios and the Custom radio
   // are all meaningless otherwise, so they check against this.
   const fixedHeight = !model.fitHeightToDisplay && !model.autoHeight
-  const matchesPreset = (preset: { featureHeight: number; featureSpacing: number }) =>
+  const matchesPreset = (preset: {
+    featureHeight: number
+    featureSpacing: number
+  }) =>
     model.featureHeight === preset.featureHeight &&
     model.featureSpacing === preset.featureSpacing
   return {
-    label: 'Set feature height...',
+    label: 'Read height',
     icon: HeightIcon,
     type: 'subMenu' as const,
     disabled: opts?.disabled,
@@ -74,17 +77,17 @@ export function getFeatureHeightMenuItem(
             model.setFeatureHeight(preset.featureHeight)
             model.setFeatureSpacing(preset.featureSpacing)
           },
-          sessionDefault: makeSlotsValueSessionDefaultControl(model, [
+          displayTypeDefault: makeSlotsValueDisplayTypeDefaultControl(model, [
             { slot: 'featureHeight', value: preset.featureHeight },
             { slot: 'featureSpacing', value: preset.featureSpacing },
             { slot: 'heightMode', value: 'fixed' },
           ]),
         }),
       ),
-      // Custom sits with the presets as a peer radio (not below the divider): it
-      // writes the same (featureHeight, featureSpacing) pair, and is checked when
-      // a fixed height is active but matches none of the presets — otherwise a
-      // custom value would leave the whole group unchecked with no cue.
+      // Custom sits with the presets as a peer radio: it writes the same
+      // (featureHeight, featureSpacing) pair, and is checked when a fixed height
+      // is active but matches none of the presets — otherwise a custom value
+      // would leave the whole group unchecked with no cue.
       {
         label: 'Custom...',
         type: 'radio' as const,
@@ -100,16 +103,6 @@ export function getFeatureHeightMenuItem(
             },
           ])
         },
-      },
-      { type: 'divider' as const },
-      // The container-sizing strategy (fixed/grow/fit) lives under a nested
-      // "Track height" entry with effect-describing labels, mirroring the canvas
-      // display so the two present an identical menu. The shared
-      // heightModeMenuItems builder makes the radios identical by construction —
-      // same labels, checked/onClick wiring, and per-mode session-default pin.
-      {
-        label: 'Track height',
-        subMenu: heightModeMenuItems(model, 'reads'),
       },
     ],
   }

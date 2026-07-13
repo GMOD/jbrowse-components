@@ -20,7 +20,7 @@ function theme(node: React.ReactNode) {
 }
 
 // A session with one open FeatureTrack (GPU LinearBasicDisplay, which
-// implements sessionDefaultChanges) plus its track selector, so the badge runs
+// implements displayTypeDefaultChanges) plus its track selector, so the badge runs
 // against real display models.
 function openTrackSelector() {
   const session = createTestSession()
@@ -92,7 +92,7 @@ describe('TrackSettingsChangesDialog session-default section', () => {
       theme(
         <TrackSettingsChangesDialog
           changes={[]}
-          sessionDefaults={[
+          displayTypeDefaults={[
             { path: ['displayMode'], from: 'normal', to: 'compact' },
           ]}
           trackName="Genes"
@@ -118,7 +118,7 @@ describe('TrackSettingsChangesDialog session-default section', () => {
       theme(
         <TrackSettingsChangesDialog
           changes={[]}
-          sessionDefaults={[
+          displayTypeDefaults={[
             {
               path: ['colorBy'],
               from: { type: 'normal' },
@@ -142,7 +142,7 @@ describe('TrackSettingsChangesDialog session-default section', () => {
       theme(
         <TrackSettingsChangesDialog
           changes={[{ path: ['name'], from: 'Genes', to: 'My genes' }]}
-          sessionDefaults={[
+          displayTypeDefaults={[
             { path: ['displayMode'], from: 'normal', to: 'compact' },
           ]}
           trackName="Genes"

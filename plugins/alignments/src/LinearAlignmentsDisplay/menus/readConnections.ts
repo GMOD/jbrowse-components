@@ -4,7 +4,7 @@ import PolylineIcon from '@mui/icons-material/Polyline'
 import { checkboxItem } from './menuHelpers.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
-import type { SessionDefaultControl } from '@jbrowse/core/configuration'
+import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export const PAIR_OVERLAY_OPTIONS: {
@@ -19,14 +19,14 @@ export const PAIR_OVERLAY_OPTIONS: {
 interface ReadConnectionsModel {
   linkedReads: LinkedReadsMode
   setLinkedReads: (mode: LinkedReadsMode) => void
-  pairsSessionDefault: SessionDefaultControl
+  pairsDisplayTypeDefault: DisplayTypeDefaultControl
   readConnections: ReadConnectionsMode
   setReadConnections: (mode: ReadConnectionsMode) => void
-  arcsSessionDefault: SessionDefaultControl
-  readCloudSessionDefault: SessionDefaultControl
+  arcsDisplayTypeDefault: DisplayTypeDefaultControl
+  readCloudDisplayTypeDefault: DisplayTypeDefaultControl
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  readConnectionsDownSessionDefault: SessionDefaultControl
+  readConnectionsDownDisplayTypeDefault: DisplayTypeDefaultControl
   drawLongRange: boolean
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
@@ -52,7 +52,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
       onToggle: () => {
         model.setLinkedReads(linked ? 'off' : 'normal')
       },
-      sessionDefault: model.pairsSessionDefault,
+      displayTypeDefault: model.pairsDisplayTypeDefault,
     }),
     // Arcs and read cloud share one band and the read cloud repurposes the
     // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
@@ -67,7 +67,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           model.readConnections === 'arc' ? 'off' : 'arc',
         )
       },
-      sessionDefault: model.arcsSessionDefault,
+      displayTypeDefault: model.arcsDisplayTypeDefault,
     }),
     promotableToggleItem({
       label: 'Show read cloud',
@@ -77,7 +77,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           model.readConnections === 'samplot' ? 'off' : 'samplot',
         )
       },
-      sessionDefault: model.readCloudSessionDefault,
+      displayTypeDefault: model.readCloudDisplayTypeDefault,
     }),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup
     // or a chain layout, so this is always offered.
@@ -103,7 +103,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           onToggle: () => {
             model.setReadConnectionsDown(!model.readConnectionsDown)
           },
-          sessionDefault: model.readConnectionsDownSessionDefault,
+          displayTypeDefault: model.readConnectionsDownDisplayTypeDefault,
         }),
         checkboxItem(
           'Show off-screen mate connections',

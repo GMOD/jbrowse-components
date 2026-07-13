@@ -10,9 +10,9 @@ import {
   ConfigurationReference,
   getConf,
   getConfResolved,
-  makeCurrentValueSessionDefaultControl,
-  makeSessionDefaultControl,
-  makeSlotsValueSessionDefaultControl,
+  makeCurrentValueDisplayTypeDefaultControl,
+  makeDisplayTypeDefaultControl,
+  makeSlotsValueDisplayTypeDefaultControl,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -36,6 +36,7 @@ import {
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
+  getTrackSizingMenuItem,
   installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
@@ -310,7 +311,7 @@ export default function stateModelFactory(
         TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
-        PromotableDefaultsMixin(),
+        PromotableDefaultsMixin(configSchema),
         // Track-menu settings are config slots (read via getConf, written via
         // configuration.setSlot) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
@@ -346,8 +347,8 @@ export default function stateModelFactory(
         /** #getter */
         // "make view-as-pairs the default for all tracks" control (pin): active
         // when 'normal' is the session default for this display type
-        get pairsSessionDefault() {
-          return makeSessionDefaultControl(self, 'linkedReads', 'normal')
+        get pairsDisplayTypeDefault() {
+          return makeDisplayTypeDefaultControl(self, 'linkedReads', 'normal')
         },
         /** #getter */
         get showBezierConnections(): boolean {
@@ -413,14 +414,18 @@ export default function stateModelFactory(
         // "make arcs the default for all tracks" control (pin): active when
         // 'arc' is the session default. Independent of read cloud (both toggles
         // share the readConnections slot but target different on-values).
-        get arcsSessionDefault() {
-          return makeSessionDefaultControl(self, 'readConnections', 'arc')
+        get arcsDisplayTypeDefault() {
+          return makeDisplayTypeDefaultControl(self, 'readConnections', 'arc')
         },
         /** #getter */
         // "make read cloud the default for all tracks" control (pin): active when
         // 'samplot' is the session default
-        get readCloudSessionDefault() {
-          return makeSessionDefaultControl(self, 'readConnections', 'samplot')
+        get readCloudDisplayTypeDefault() {
+          return makeDisplayTypeDefaultControl(
+            self,
+            'readConnections',
+            'samplot',
+          )
         },
         /** #getter */
         // Resolved through the promotable-slot tiers (getConfResolved): a plain
@@ -432,8 +437,12 @@ export default function stateModelFactory(
         /** #getter */
         // "make this the default for all tracks" control (pin) for drawing arcs
         // below the coverage band
-        get readConnectionsDownSessionDefault() {
-          return makeSessionDefaultControl(self, 'readConnectionsDown', true)
+        get readConnectionsDownDisplayTypeDefault() {
+          return makeDisplayTypeDefaultControl(
+            self,
+            'readConnectionsDown',
+            true,
+          )
         },
         /** #getter */
         get showSashimiArcs(): boolean {
@@ -451,14 +460,14 @@ export default function stateModelFactory(
         // (pin): active when 'down' is the session default. Independent of
         // auto-placement (both share the sashimiArcsMode slot but target
         // different on-values).
-        get sashimiDownSessionDefault() {
-          return makeSessionDefaultControl(self, 'sashimiArcsMode', 'down')
+        get sashimiDownDisplayTypeDefault() {
+          return makeDisplayTypeDefaultControl(self, 'sashimiArcsMode', 'down')
         },
         /** #getter */
         // "make auto-placement the default for all tracks" control (pin):
         // active when 'auto' is the session default
-        get sashimiAutoSessionDefault() {
-          return makeSessionDefaultControl(self, 'sashimiArcsMode', 'auto')
+        get sashimiAutoDisplayTypeDefault() {
+          return makeDisplayTypeDefaultControl(self, 'sashimiArcsMode', 'auto')
         },
         /** #getter */
         get minSashimiScore(): number {
@@ -486,8 +495,8 @@ export default function stateModelFactory(
         // "make the current soft-clipping state the default for all tracks"
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
-        get softClippingSessionDefault() {
-          return makeCurrentValueSessionDefaultControl(self, [
+        get softClippingDisplayTypeDefault() {
+          return makeCurrentValueDisplayTypeDefaultControl(self, [
             'showSoftClipping',
           ])
         },
@@ -835,8 +844,8 @@ export default function stateModelFactory(
          * "make this the default for all tracks" control (pin) for sashimi
          * arc labels
          */
-        get showSashimiLabelsSessionDefault() {
-          return makeSessionDefaultControl(self, 'showSashimiLabels', true)
+        get showSashimiLabelsDisplayTypeDefault() {
+          return makeDisplayTypeDefaultControl(self, 'showSashimiLabels', true)
         },
 
         /**
@@ -871,8 +880,10 @@ export default function stateModelFactory(
         // "make the current fade-by-quality state the default for all tracks"
         // control (pin): symmetric, so it promotes whichever value the track
         // currently shows.
-        get mismatchAlphaSessionDefault() {
-          return makeCurrentValueSessionDefaultControl(self, ['mismatchAlpha'])
+        get mismatchAlphaDisplayTypeDefault() {
+          return makeCurrentValueDisplayTypeDefaultControl(self, [
+            'mismatchAlpha',
+          ])
         },
 
         /**
@@ -2923,8 +2934,8 @@ export default function stateModelFactory(
                   self.setColorSupplementaryChains(flag)
                 },
               },
-              sessionDefault: (colorBy: ColorBy) =>
-                makeSlotsValueSessionDefaultControl(self, [
+              displayTypeDefault: (colorBy: ColorBy) =>
+                makeSlotsValueDisplayTypeDefaultControl(self, [
                   { slot: 'colorBy', value: colorBy },
                 ]),
             }),
@@ -2937,8 +2948,11 @@ export default function stateModelFactory(
             getReadsMenuItem(self),
             getFeatureHeightMenuItem(self, {
               disabled: !self.showPileup,
-              disabledHelpText:
-                'Turn on "Show pileup" to change feature height',
+              disabledHelpText: 'Turn on "Show pileup" to change read height',
+            }),
+            getTrackSizingMenuItem(self, 'reads', {
+              disabled: !self.showPileup,
+              disabledHelpText: 'Turn on "Show pileup" to change track sizing',
             }),
             getCoverageMenuItem(self),
             getReadConnectionsMenuItem(self),

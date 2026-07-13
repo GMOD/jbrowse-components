@@ -23,10 +23,10 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// Persistent bottom-right track-height switcher (Fixed / Auto / Compressed),
+// Persistent bottom-right track-sizing switcher (scroll / expand / squeeze),
 // shared by every display that exposes the `heightMode` slot so the fixed/grow/
 // fit choice is discoverable on-screen, not only buried in the track menu. Opens
-// the same options as the track menu's "Track height" radio group (labels from
+// the same options as the track menu's "Track sizing" radio group (labels from
 // the shared getHeightModeOptions, so the two can't drift); `noun` names what the
 // track holds ('features', 'reads'). The tooltip surfaces the scroll hint while
 // content overflows under scrollZoom — where a plain wheel zooms the view, so
@@ -46,7 +46,7 @@ export default function TrackHeightIndicator({
 }) {
   const { classes } = useStyles()
   const tooltip = [
-    'Track height',
+    'Track sizing',
     hasOverflow && scrollZoom ? 'shift+wheel to scroll' : undefined,
   ]
     .filter(Boolean)

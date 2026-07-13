@@ -149,7 +149,8 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   // `colorBy` naming a since-removed scheme) reads as not customized and degrades
   // to the inherited value in lockstep, instead of reaching a consumer that
   // trusts every value it sees.
-  const customized = !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
+  const customized =
+    !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
   const inherited = isUsableValue(def, promoted) ? promoted : base
   const value = customized ? own : inherited
   return { base, customized, promoted, value }
@@ -219,7 +220,7 @@ export interface PromotableEntry {
  * tracks" action for any open tracks not already showing this value (see
  * `applyDefaultToggle`).
  */
-export interface SessionDefaultControl {
+export interface DisplayTypeDefaultControl {
   active: boolean
   toggle: () => void
 }
@@ -365,10 +366,10 @@ function applyDefaultToggle(
  * preset = height + spacing + mode) gets its own independent control. The base
  * builder the single-value / promote-current wrappers below delegate to.
  */
-export function makeSlotsValueSessionDefaultControl(
+export function makeSlotsValueDisplayTypeDefaultControl(
   self: PromotableDisplay,
   entries: PromotableEntry[],
-): SessionDefaultControl {
+): DisplayTypeDefaultControl {
   const active = isPromotableDefault(self, entries)
   return {
     active,
@@ -385,12 +386,14 @@ export function makeSlotsValueSessionDefaultControl(
  * value — so an always-visible control never promotes a meaningless value, and
  * two toggles sharing one slot (arcs vs read cloud) stay independent.
  */
-export function makeSessionDefaultControl(
+export function makeDisplayTypeDefaultControl(
   self: PromotableDisplay,
   slot: string,
   onValue: unknown,
-): SessionDefaultControl {
-  return makeSlotsValueSessionDefaultControl(self, [{ slot, value: onValue }])
+): DisplayTypeDefaultControl {
+  return makeSlotsValueDisplayTypeDefaultControl(self, [
+    { slot, value: onValue },
+  ])
 }
 
 /**
@@ -400,11 +403,11 @@ export function makeSessionDefaultControl(
  * multi-mode slot like displayMode) where the pin means "whatever I'm showing",
  * not a fixed on-value. Groups multiple slots behind one control.
  */
-export function makeCurrentValueSessionDefaultControl(
+export function makeCurrentValueDisplayTypeDefaultControl(
   self: PromotableDisplay,
   slots: string[],
-): SessionDefaultControl {
-  return makeSlotsValueSessionDefaultControl(
+): DisplayTypeDefaultControl {
+  return makeSlotsValueDisplayTypeDefaultControl(
     self,
     slots.map(slot => ({ slot, value: getConfResolved(self, slot) })),
   )
@@ -416,7 +419,7 @@ export function makeCurrentValueSessionDefaultControl(
  * defaults, one per promotable slot whose inherited value differs from its schema
  * default. Drives the track-selector "affected by a session default" badge.
  */
-export function displaySessionDefaultChanges(
+export function getDisplayTypeDefaultChanges(
   self: PromotableDisplay,
 ): TrackConfigChange[] {
   return promotableSlots(self).flatMap(slot => {
@@ -432,7 +435,7 @@ export function displaySessionDefaultChanges(
  * Clear every promoted default for this display type, so sibling tracks revert
  * to their own config values. Backs the badge's "clear default" action.
  */
-export function clearDisplaySessionDefaults(self: PromotableDisplay): void {
+export function clearPromotedDefaults(self: PromotableDisplay): void {
   const session = getSession(self)
   for (const slot of promotableSlots(self)) {
     session.setDisplayTypeDefault?.(self.type, slot, undefined)

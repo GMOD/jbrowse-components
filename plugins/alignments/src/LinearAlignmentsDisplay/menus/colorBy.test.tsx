@@ -3,7 +3,7 @@ import { isValidElement } from 'react'
 import { getColorByMenuItem } from './colorBy.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
-import type { SessionDefaultControl } from '@jbrowse/core/configuration'
+import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
@@ -26,10 +26,10 @@ function makeModel() {
 type Model = ReturnType<typeof makeModel>
 
 // A per-value pin control backed by the model's `pinned` set, keyed on the
-// colorBy value — mirrors makeSlotsValueSessionDefaultControl over the colorBy
+// colorBy value — mirrors makeSlotsValueDisplayTypeDefaultControl over the colorBy
 // slot.
-function sessionDefault(model: Model) {
-  return (colorBy: ColorBy): SessionDefaultControl => {
+function displayTypeDefault(model: Model) {
+  return (colorBy: ColorBy): DisplayTypeDefaultControl => {
     const key = JSON.stringify(colorBy)
     return {
       active: model.pinned.has(key),
@@ -70,7 +70,7 @@ describe('color by menu', () => {
   test('basic scheme radios carry a session-default pin when promotable', () => {
     const model = makeModel()
     const strand = byLabel(model, 'Strand', {
-      sessionDefault: sessionDefault(model),
+      displayTypeDefault: displayTypeDefault(model),
     })
     expect(
       strand && 'endAdornment' in strand && strand.endAdornment,
@@ -80,14 +80,16 @@ describe('color by menu', () => {
   test('paired-end radios (First of pair strand) carry a pin', () => {
     const model = makeModel()
     const item = byLabel(model, 'First of pair strand', {
-      sessionDefault: sessionDefault(model),
+      displayTypeDefault: displayTypeDefault(model),
     })
     expect(item && 'endAdornment' in item && item.endAdornment).toBeTruthy()
   })
 
   test('no standalone "Make ... the default" checkbox remains', () => {
     const model = makeModel()
-    const labels = allItems(model, { sessionDefault: sessionDefault(model) })
+    const labels = allItems(model, {
+      displayTypeDefault: displayTypeDefault(model),
+    })
       .map(i => ('label' in i ? i.label : ''))
       .filter(Boolean)
     expect(labels.some(l => /Make .* the default/.test(String(l)))).toBe(false)
@@ -96,7 +98,7 @@ describe('color by menu', () => {
   test('a scheme pin promotes that exact scheme value', () => {
     const model = makeModel()
     const item = byLabel(model, 'Strand', {
-      sessionDefault: sessionDefault(model),
+      displayTypeDefault: displayTypeDefault(model),
     })
     const adornment =
       item && 'endAdornment' in item ? item.endAdornment : undefined
@@ -108,7 +110,7 @@ describe('color by menu', () => {
     expect(model.pinned.has(JSON.stringify({ type: 'strand' }))).toBe(true)
   })
 
-  test('no pins when the display is not promotable (synteny omits sessionDefault)', () => {
+  test('no pins when the display is not promotable (synteny omits displayTypeDefault)', () => {
     const model = makeModel()
     const strand = byLabel(model, 'Strand')
     expect(

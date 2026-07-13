@@ -57,19 +57,19 @@ const OverrideBadge = observer(function OverrideBadge({
     : undefined
 
   const displays = openDisplays(model, trackId)
-  const sessionDefaults = displays.flatMap(d =>
-    d.sessionDefaultChanges ? d.sessionDefaultChanges() : [],
+  const displayTypeDefaults = displays.flatMap(d =>
+    d.displayTypeDefaultChanges ? d.displayTypeDefaultChanges() : [],
   )
-  const onClearDefaults = displays.some(d => d.clearSessionDefaults)
+  const onClearDefaults = displays.some(d => d.clearDisplayTypeDefaults)
     ? () => {
         for (const d of displays) {
-          d.clearSessionDefaults?.()
+          d.clearDisplayTypeDefaults?.()
         }
       }
     : undefined
 
   const edited = changes.length > 0
-  const affectedByDefault = sessionDefaults.length > 0
+  const affectedByDefault = displayTypeDefaults.length > 0
   if (!edited && !affectedByDefault) {
     return null
   }
@@ -90,7 +90,7 @@ const OverrideBadge = observer(function OverrideBadge({
             TrackSettingsChangesDialog,
             {
               changes,
-              sessionDefaults,
+              displayTypeDefaults,
               trackName: name,
               onReset,
               onClearDefaults,

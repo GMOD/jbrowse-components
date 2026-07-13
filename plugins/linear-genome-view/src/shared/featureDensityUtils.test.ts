@@ -5,6 +5,7 @@ import {
   evaluateRegionTooLarge,
   raiseLimitPast,
   resolveByteLimit,
+  scaleByteEstimate,
 } from './featureDensityUtils.ts'
 import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
@@ -80,6 +81,58 @@ describe('resolveByteLimit', () => {
         configFetchSizeLimit: 30,
       }),
     ).toBe(0)
+  })
+})
+
+describe('scaleByteEstimate', () => {
+  it('returns undefined when there is no estimate yet', () => {
+    expect(
+      scaleByteEstimate({ bytes: undefined, captureBp: 10, visibleBp: 5 }),
+    ).toBeUndefined()
+    expect(
+      scaleByteEstimate({ bytes: 0, captureBp: 10, visibleBp: 5 }),
+    ).toBeUndefined()
+  })
+
+  it('falls back to the raw estimate when the capture span is unknown', () => {
+    expect(
+      scaleByteEstimate({ bytes: 1000, captureBp: undefined, visibleBp: 5 }),
+    ).toBe(1000)
+  })
+
+  it('scales proportionally: zoom-in (smaller visibleBp) shrinks the estimate', () => {
+    // captured 1MB at bpPerPx-span 100; zooming in to span 25 → quarter the data
+    expect(
+      scaleByteEstimate({ bytes: 1_000_000, captureBp: 100, visibleBp: 25 }),
+    ).toBe(250_000)
+  })
+
+  it('is a no-op at the capture span', () => {
+    expect(
+      scaleByteEstimate({ bytes: 1_000_000, captureBp: 100, visibleBp: 100 }),
+    ).toBe(1_000_000)
+  })
+
+  // The whole point of scaling: a too-large verdict captured while zoomed out
+  // must self-release once the user zooms in, without any imperative re-clear.
+  it('lets the too-large verdict self-release on zoom-in', () => {
+    const byteLimit = 500_000
+    const captured = { bytes: 2_000_000, captureBp: 200 }
+
+    const zoomedOut = evaluateRegionTooLarge({
+      visibleBp: AUTO_FORCE_LOAD_BP * 2,
+      bytes: scaleByteEstimate({ ...captured, visibleBp: 200 }),
+      byteLimit,
+    })
+    expect(zoomedOut.tooLarge).toBe(true)
+
+    // zoom in 5× (span 200 → 40): scaled estimate 400_000 < 500_000 limit
+    const zoomedIn = evaluateRegionTooLarge({
+      visibleBp: AUTO_FORCE_LOAD_BP * 2,
+      bytes: scaleByteEstimate({ ...captured, visibleBp: 40 }),
+      byteLimit,
+    })
+    expect(zoomedIn.tooLarge).toBe(false)
   })
 })
 

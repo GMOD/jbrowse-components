@@ -3,8 +3,8 @@ import { lazy } from 'react'
 import {
   getConf,
   getConfResolved,
-  makeCurrentValueSessionDefaultControl,
-  makeSessionDefaultControl,
+  makeCurrentValueDisplayTypeDefaultControl,
+  makeDisplayTypeDefaultControl,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { promotableRadioItem, promotableToggleItem } from '@jbrowse/core/ui'
@@ -183,7 +183,7 @@ export default function stateModelFactory(
                   onClick: () => {
                     self.setSubfeatureLabels(option.value)
                   },
-                  sessionDefault: makeSessionDefaultControl(
+                  displayTypeDefault: makeDisplayTypeDefaultControl(
                     self,
                     'subfeatureLabels',
                     option.value,
@@ -207,9 +207,10 @@ export default function stateModelFactory(
                   !self.displayDirectionalChevrons,
                 )
               },
-              sessionDefault: makeCurrentValueSessionDefaultControl(self, [
-                'displayDirectionalChevrons',
-              ]),
+              displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(
+                self,
+                ['displayDirectionalChevrons'],
+              ),
             }),
           ]
         },

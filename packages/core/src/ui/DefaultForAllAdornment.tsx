@@ -4,7 +4,7 @@ import { ToggleButton, Tooltip } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 
-import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
 
 const useStyles = makeStyles()(theme => ({
   // compact enough to sit inline with the value check: drop the default
@@ -31,7 +31,7 @@ export function DefaultForAllAdornment({
   control,
   label,
 }: {
-  control: SessionDefaultControl
+  control: DisplayTypeDefaultControl
   // the setting this pin promotes (e.g. a preset name); names it in the
   // tooltip/aria-label so screen readers and tests can tell sibling pins apart
   label?: string

@@ -23,15 +23,15 @@ export {
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
 export {
-  clearDisplaySessionDefaults,
-  displaySessionDefaultChanges,
+  clearPromotedDefaults,
   getConfResolved,
-  makeCurrentValueSessionDefaultControl,
-  makeSessionDefaultControl,
-  makeSlotsValueSessionDefaultControl,
+  getDisplayTypeDefaultChanges,
+  makeCurrentValueDisplayTypeDefaultControl,
+  makeDisplayTypeDefaultControl,
+  makeSlotsValueDisplayTypeDefaultControl,
   resolvePromotableConfigSnapshot,
 } from './promotableDefaults.ts'
 export type {
+  DisplayTypeDefaultControl,
   PromotableDisplay,
-  SessionDefaultControl,
 } from './promotableDefaults.ts'

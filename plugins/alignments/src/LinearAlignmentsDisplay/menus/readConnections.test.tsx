@@ -2,11 +2,11 @@ import { isValidElement } from 'react'
 
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
-import type { SessionDefaultControl } from '@jbrowse/core/configuration'
+import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 
-// stateful stand-in for a SessionDefaultControl (the menu builder and the promote
+// stateful stand-in for a DisplayTypeDefaultControl (the menu builder and the promote
 // path only touch active/toggle)
-function control(): SessionDefaultControl {
+function control(): DisplayTypeDefaultControl {
   return {
     active: false,
     toggle() {
@@ -21,18 +21,18 @@ function makeModel() {
     setLinkedReads(mode: 'off' | 'normal') {
       this.linkedReads = mode
     },
-    pairsSessionDefault: control(),
+    pairsDisplayTypeDefault: control(),
     readConnections: 'off' as 'off' | 'arc' | 'samplot',
     setReadConnections(mode: 'off' | 'arc' | 'samplot') {
       this.readConnections = mode
     },
-    arcsSessionDefault: control(),
-    readCloudSessionDefault: control(),
+    arcsDisplayTypeDefault: control(),
+    readCloudDisplayTypeDefault: control(),
     readConnectionsDown: false,
     setReadConnectionsDown(v: boolean) {
       this.readConnectionsDown = v
     },
-    readConnectionsDownSessionDefault: control(),
+    readConnectionsDownDisplayTypeDefault: control(),
     drawLongRange: true,
     setDrawLongRange(v: boolean) {
       this.drawLongRange = v
@@ -176,19 +176,19 @@ describe('promote-as-default (default for all) pin', () => {
   test('the pin toggles the view-as-pairs session default', () => {
     const model = makeModel()
     promoteDefaultForAll(model, pairs)
-    expect(model.pairsSessionDefault.active).toBe(true)
+    expect(model.pairsDisplayTypeDefault.active).toBe(true)
   })
 
   test('arcs and read cloud pins toggle independent session defaults', () => {
     const model = makeModel()
     promoteDefaultForAll(model, 'Show read arcs')
-    expect(model.arcsSessionDefault.active).toBe(true)
-    expect(model.readCloudSessionDefault.active).toBe(false)
+    expect(model.arcsDisplayTypeDefault.active).toBe(true)
+    expect(model.readCloudDisplayTypeDefault.active).toBe(false)
   })
 
   test('"Draw arcs below coverage band" also carries a pin, even while disabled', () => {
     const model = makeModel()
     promoteDefaultForAll(model, 'Draw arcs below coverage band')
-    expect(model.readConnectionsDownSessionDefault.active).toBe(true)
+    expect(model.readConnectionsDownDisplayTypeDefault.active).toBe(true)
   })
 })

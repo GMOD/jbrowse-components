@@ -1,4 +1,4 @@
-import { makeCurrentValueSessionDefaultControl } from '@jbrowse/core/configuration'
+import { makeCurrentValueDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
@@ -29,7 +29,7 @@ export function makeScatterPointSizeMenuItem(
     onReset: () => {
       self.setScatterPointSize(undefined)
     },
-    sessionDefault: makeCurrentValueSessionDefaultControl(self, [
+    displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(self, [
       'scatterPointSize',
     ]),
   })

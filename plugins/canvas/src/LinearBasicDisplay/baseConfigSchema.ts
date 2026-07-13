@@ -40,7 +40,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         type: 'stringEnum',
         model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
         description:
-          'Track-height strategy (shared vocabulary with the alignments display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` resizes the track to fit all features, `fit` shrinks features to fill the current height. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
+          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
         // Sentinel promotable slot (see promotableDefaults.ts / displayMode):
         // `inherit` is the inherit state, `promotedBase` ('fixed') is what it
         // resolves to when nothing is promoted — so every real mode, `fixed`

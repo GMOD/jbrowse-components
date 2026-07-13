@@ -14,7 +14,7 @@ import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
 import type { SliderScale } from './sliderScale.ts'
-import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -52,7 +52,7 @@ const SizeSliderRow = observer(function SizeSliderRow({
   commitOnRelease,
   onChange,
   onReset,
-  sessionDefault,
+  displayTypeDefault,
 }: {
   title: string
   getValue: () => number
@@ -65,7 +65,7 @@ const SizeSliderRow = observer(function SizeSliderRow({
   commitOnRelease?: boolean
   onChange: (n: number) => void
   onReset: () => void
-  sessionDefault?: SessionDefaultControl
+  displayTypeDefault?: DisplayTypeDefaultControl
 }) {
   const { classes } = useStyles()
   const modelValue = getValue()
@@ -89,14 +89,14 @@ const SizeSliderRow = observer(function SizeSliderRow({
             onReset()
           }}
         />
-        {sessionDefault ? (
+        {displayTypeDefault ? (
           // include the current value so the pin's tooltip reads as a concrete
           // value ("Line width (2px)") — the copy assumes the label is a value,
           // but a bare setting name reads oddly ("Use 'Line width' as the
           // default")
           <DefaultForAllAdornment
             label={`${title} (${format(value)})`}
-            control={sessionDefault}
+            control={displayTypeDefault}
           />
         ) : null}
       </div>
@@ -137,7 +137,7 @@ const SizeSliderRow = observer(function SizeSliderRow({
 // accessors + a title (which also derives the slider's test id). Used by wiggle
 // point-size/line-width, GWAS Manhattan point-size, arc width, the alignments
 // modification threshold and GC-content window/step sizes, so the
-// slider/reset/pin behavior can't drift. Pass `sessionDefault` for a promotable
+// slider/reset/pin behavior can't drift. Pass `displayTypeDefault` for a promotable
 // slot to surface the "default for all tracks of this type" pin, `scale: 'log'`
 // for values spanning orders of magnitude, and `format` to label non-`px`
 // units.
@@ -155,7 +155,7 @@ export function makeSizeMenu(opts: {
   commitOnRelease?: boolean
   onChange: (n: number) => void
   onReset: () => void
-  sessionDefault?: SessionDefaultControl
+  displayTypeDefault?: DisplayTypeDefaultControl
 }): MenuItem {
   const {
     label,
@@ -171,7 +171,7 @@ export function makeSizeMenu(opts: {
     commitOnRelease,
     onChange,
     onReset,
-    sessionDefault,
+    displayTypeDefault,
   } = opts
   return {
     label,
@@ -189,7 +189,7 @@ export function makeSizeMenu(opts: {
         commitOnRelease={commitOnRelease}
         onChange={onChange}
         onReset={onReset}
-        sessionDefault={sessionDefault}
+        displayTypeDefault={displayTypeDefault}
       />
     ),
   }

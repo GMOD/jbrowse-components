@@ -28,7 +28,10 @@ export {
   getHeightModeOptions,
 } from './models/heightMode.ts'
 export type { HeightMode } from './models/heightMode.ts'
-export { heightModeMenuItems } from './models/heightModeMenu.ts'
+export {
+  getTrackSizingMenuItem,
+  heightModeMenuItems,
+} from './models/heightModeMenu.ts'
 export type { HeightModeMenuModel } from './models/heightModeMenu.ts'
 
 export { default as RegionTooLargeMixin } from '../shared/RegionTooLargeMixin.tsx'
@@ -66,6 +69,7 @@ export {
   getDisplayStr,
   raiseLimitPast,
   resolveByteLimit,
+  scaleByteEstimate,
 } from '../shared/featureDensityUtils.ts'
 export type { RegionTooLargeStatus } from '../shared/featureDensityUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'

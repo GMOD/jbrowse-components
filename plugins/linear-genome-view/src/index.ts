@@ -109,12 +109,14 @@ export {
   fetchEachRegion,
   getDisplayStr,
   getHeightModeOptions,
+  getTrackSizingMenuItem,
   heightModeMenuItems,
   installGlobalFetchAutorun,
   installGrowExitBake,
   onDisplayedRegionsChange,
   raiseLimitPast,
   resolveByteLimit,
+  scaleByteEstimate,
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {

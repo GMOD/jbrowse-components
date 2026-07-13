@@ -28,7 +28,7 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   return (
     <SubmitDialog
       open
-      title="Set feature height"
+      title="Custom read height"
       submitDisabled={!ok}
       onCancel={handleClose}
       onSubmit={() => {

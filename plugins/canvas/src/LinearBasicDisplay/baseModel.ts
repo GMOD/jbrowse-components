@@ -4,7 +4,7 @@ import {
   ConfigurationReference,
   getConf,
   getConfResolved,
-  makeSessionDefaultControl,
+  makeDisplayTypeDefaultControl,
   readConfObject,
   resolvePromotableConfigSnapshot,
 } from '@jbrowse/core/configuration'
@@ -31,7 +31,7 @@ import {
   TrackHeightMixin,
   autorunOnReadyView,
   evaluateRegionTooLarge,
-  heightModeMenuItems,
+  getTrackSizingMenuItem,
   installGrowExitBake,
   onDisplayedRegionsChange,
   raiseLimitPast,
@@ -288,7 +288,7 @@ export default function baseStateModelFactory(
         TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
-        PromotableDefaultsMixin(),
+        PromotableDefaultsMixin(configSchema),
         types.model({
           /**
            * #property
@@ -2808,50 +2808,41 @@ export default function baseStateModelFactory(
 
         /**
          * #method
-         * The "Feature height" submenu. The top level is only the three intuitive
-         * size presets (the one thing ~everyone wants). The less-obvious
-         * container-sizing strategy lives under a "Track height" nested entry
-         * with effect-describing labels, so a first-time user never has to parse
-         * "fixed/grow/fit". Shared by every canvas display (genes, variants).
+         * Two sibling menu entries for the two independent height questions: the
+         * "Feature height" size presets (how tall each feature is drawn) and the
+         * "Track sizing" entry (how the track responds when there are more
+         * features than fit — scroll / expand / squeeze). Keeping them side by
+         * side, rather than one nested inside the other, keeps each a shallow hop
+         * away and stops the two "height" ideas from blurring together. Shared by
+         * every canvas display (genes, variants).
          */
         featureHeightMenuItems() {
           return [
             {
               label: 'Feature height',
               icon: HeightIcon,
-              subMenu: [
+              subMenu:
                 // Each preset row carries its own pin (endAdornment): the radio
                 // selects the mode for this track, the pin promotes that preset
                 // as the session-wide default for this display type. displayMode
                 // is a sentinel promotable slot, so every preset — `normal`
                 // included — is customizable back over another session default.
-                ...displayModeOptions.map(option =>
+                displayModeOptions.map(option =>
                   promotableRadioItem({
                     label: option.label,
                     checked: self.displayMode === option.value,
                     onClick: () => {
                       self.setDisplayMode(option.value)
                     },
-                    sessionDefault: makeSessionDefaultControl(
+                    displayTypeDefault: makeDisplayTypeDefaultControl(
                       self,
                       'displayMode',
                       option.value,
                     ),
                   }),
                 ),
-                { type: 'divider' as const },
-                {
-                  // Each track-height mode carries its own pin: the radio sets
-                  // the mode for this track, the pin promotes it as the
-                  // session-wide default. heightMode is a sentinel promotable
-                  // slot, so every mode — `fixed` included — is customizable back
-                  // over another session default. Shared builder with the
-                  // alignments menu.
-                  label: 'Track height',
-                  subMenu: heightModeMenuItems(self, 'features'),
-                },
-              ],
             },
+            getTrackSizingMenuItem(self, 'features'),
           ]
         },
       }))

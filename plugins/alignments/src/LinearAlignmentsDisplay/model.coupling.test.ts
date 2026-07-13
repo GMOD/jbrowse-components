@@ -246,7 +246,7 @@ describe('Arc color menu visibility', () => {
 // pattern. Group-by and filters are NOT gated: both still affect the coverage
 // band when the pileup is off.
 describe('pileup-only menus grey out when the pileup is hidden', () => {
-  test.each(['Sort by...', 'Set feature height...'])(
+  test.each(['Sort by...', 'Read height'])(
     '%s is enabled with the pileup shown, disabled when hidden',
     label => {
       const display = createDisplay()

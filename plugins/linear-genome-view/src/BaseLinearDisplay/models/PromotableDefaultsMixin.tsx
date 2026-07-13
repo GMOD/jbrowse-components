@@ -1,10 +1,11 @@
 import {
-  clearDisplaySessionDefaults,
-  displaySessionDefaultChanges,
+  ConfigurationReference,
+  clearPromotedDefaults,
+  getDisplayTypeDefaultChanges,
 } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { PromotableDisplay } from '@jbrowse/core/configuration'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { TrackConfigChange } from '@jbrowse/core/util'
 
 /**
@@ -17,10 +18,19 @@ import type { TrackConfigChange } from '@jbrowse/core/util'
  * display. A display whose config schema has any `promotable` slot composes
  * this so the "affected by a session default" badge and its "clear default"
  * action work without re-implementing the two delegations per display type.
+ *
+ * It re-declares the `type`/`configuration` props it reads (`compose` merges
+ * them last-wins with the concrete display's own declarations) so `self` is
+ * typed as a promotable display and the two delegations stay cast-free.
  */
-export default function PromotableDefaultsMixin() {
+export default function PromotableDefaultsMixin(
+  configSchema: AnyConfigurationSchemaType,
+) {
   return types
-    .model({})
+    .model({
+      type: types.string,
+      configuration: ConfigurationReference(configSchema),
+    })
     .views(self => ({
       /**
        * #method
@@ -28,21 +38,19 @@ export default function PromotableDefaultsMixin() {
        * session-wide defaults (distinct from per-track config edits /
        * trackConfigDeltas). Drives the "affected by a session default" badge.
        */
-      sessionDefaultChanges(): TrackConfigChange[] {
-        return displaySessionDefaultChanges(
-          self as unknown as PromotableDisplay,
-        )
+      displayTypeDefaultChanges(): TrackConfigChange[] {
+        return getDisplayTypeDefaultChanges(self)
       },
     }))
     .actions(self => ({
       /**
        * #action
-       * Clear the session-wide defaults reported by `sessionDefaultChanges` so
+       * Clear the session-wide defaults reported by `displayTypeDefaultChanges` so
        * this display (and its siblings of the same type) revert to their config
        * values. Backs the "clear default" action on the selector badge.
        */
-      clearSessionDefaults() {
-        clearDisplaySessionDefaults(self as unknown as PromotableDisplay)
+      clearDisplayTypeDefaults() {
+        clearPromotedDefaults(self)
       },
     }))
 }

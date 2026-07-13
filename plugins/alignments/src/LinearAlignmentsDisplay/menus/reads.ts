@@ -6,7 +6,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { checkboxItem } from './menuHelpers.ts'
 
-import type { SessionDefaultControl } from '@jbrowse/core/configuration'
+import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SetMaxHeightDialog = lazy(
@@ -24,12 +24,12 @@ interface ReadsModel {
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   setShowSoftClipping: (show: boolean) => void
-  softClippingSessionDefault: SessionDefaultControl
+  softClippingDisplayTypeDefault: DisplayTypeDefaultControl
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
   setMismatchAlpha: (value: boolean) => void
-  mismatchAlphaSessionDefault: SessionDefaultControl
+  mismatchAlphaDisplayTypeDefault: DisplayTypeDefaultControl
   drawProperPairs: boolean
   setDrawProperPairs: (v: boolean) => void
   drawSingletons: boolean
@@ -64,7 +64,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         onToggle: () => {
           model.setMismatchAlpha(!model.mismatchAlpha)
         },
-        sessionDefault: model.mismatchAlphaSessionDefault,
+        displayTypeDefault: model.mismatchAlphaDisplayTypeDefault,
       }),
       promotableToggleItem({
         label: 'Show soft clipping',
@@ -72,7 +72,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         onToggle: () => {
           model.setShowSoftClipping(!model.showSoftClipping)
         },
-        sessionDefault: model.softClippingSessionDefault,
+        displayTypeDefault: model.softClippingDisplayTypeDefault,
       }),
       checkboxItem(
         'Show interbase indicators',

@@ -1,4 +1,4 @@
-import { makeCurrentValueSessionDefaultControl } from '@jbrowse/core/configuration'
+import { makeCurrentValueDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 
 import { defaultArcLineWidth } from './configSchema.ts'
@@ -25,6 +25,8 @@ export function makeLineWidthMenuItem(
     onReset: () => {
       self.setLineWidth(undefined)
     },
-    sessionDefault: makeCurrentValueSessionDefaultControl(self, ['lineWidth']),
+    displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(self, [
+      'lineWidth',
+    ]),
   })
 }

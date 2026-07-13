@@ -1,12 +1,12 @@
 import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { SessionDefaultControl } from '@jbrowse/core/configuration'
+import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// stateful stand-in for a SessionDefaultControl (the menu builder only touches
+// stateful stand-in for a DisplayTypeDefaultControl (the menu builder only touches
 // active/toggle)
-function control(): SessionDefaultControl {
+function control(): DisplayTypeDefaultControl {
   return {
     active: false,
     toggle() {
@@ -23,13 +23,13 @@ function makeModel() {
     },
     showSashimiLabels: false,
     setShowSashimiLabels() {},
-    showSashimiLabelsSessionDefault: control(),
+    showSashimiLabelsDisplayTypeDefault: control(),
     sashimiArcsMode: 'auto' as SashimiArcsMode,
     setSashimiArcsMode(mode: SashimiArcsMode) {
       this.sashimiArcsMode = mode
     },
-    sashimiDownSessionDefault: control(),
-    sashimiAutoSessionDefault: control(),
+    sashimiDownDisplayTypeDefault: control(),
+    sashimiAutoDisplayTypeDefault: control(),
     minSashimiScore: 0,
     setMinSashimiScore() {},
   }

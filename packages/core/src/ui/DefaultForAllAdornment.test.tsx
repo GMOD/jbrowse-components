@@ -4,7 +4,7 @@ import { fireEvent, render } from '@testing-library/react'
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 import { createJBrowseTheme } from './theme.ts'
 
-import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
 
 const theme = createJBrowseTheme()
 
@@ -12,11 +12,11 @@ const theme = createJBrowseTheme()
 function fakeControl(
   active: boolean,
   toggle: () => void = () => {},
-): SessionDefaultControl {
+): DisplayTypeDefaultControl {
   return { active, toggle }
 }
 
-function renderAdornment(control: SessionDefaultControl, label?: string) {
+function renderAdornment(control: DisplayTypeDefaultControl, label?: string) {
   return render(
     <ThemeProvider theme={theme}>
       <DefaultForAllAdornment control={control} label={label} />

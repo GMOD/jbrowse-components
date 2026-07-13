@@ -56,6 +56,31 @@ export function raiseLimitPast(estimate: number) {
   return Math.ceil(estimate * FORCE_LOAD_HEADROOM)
 }
 
+/**
+ * Scale a captured byte estimate from the span it was measured over
+ * (`captureBp`) to the currently visible span (`visibleBp`). The estimate is
+ * roughly proportional to span, so scaling makes the too-large verdict a pure
+ * function of the current view — it self-releases on zoom-in instead of a large
+ * zoomed-out estimate staying above the limit forever and gating refetch. The
+ * derived `regionTooLarge` getter on the canvas and LD displays feeds the result
+ * to `evaluateRegionTooLarge`. Returns undefined when there's no estimate yet;
+ * falls back to the raw estimate when the capture span is unknown.
+ */
+export function scaleByteEstimate({
+  bytes,
+  captureBp,
+  visibleBp,
+}: {
+  bytes?: number
+  captureBp?: number
+  visibleBp: number
+}) {
+  if (!bytes) {
+    return undefined
+  }
+  return captureBp ? (bytes * visibleBp) / captureBp : bytes
+}
+
 export interface RegionTooLargeStatus {
   tooLarge: boolean
   reason: string

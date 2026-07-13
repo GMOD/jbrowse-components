@@ -8,7 +8,7 @@ import AltRouteIcon from '@mui/icons-material/AltRoute'
 import { checkboxItem } from './menuHelpers.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { SessionDefaultControl } from '@jbrowse/core/configuration'
+import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // 'up' is the base (inherit) value (mirrors readConnections's 'off'), so it
@@ -16,18 +16,19 @@ import type { MenuItem } from '@jbrowse/core/ui'
 const SASHIMI_MODE_OPTIONS: {
   value: SashimiArcsMode
   label: string
-  sessionDefaultKey?: 'sashimiDownSessionDefault' | 'sashimiAutoSessionDefault'
+  displayTypeDefaultKey?:
+    'sashimiDownDisplayTypeDefault' | 'sashimiAutoDisplayTypeDefault'
 }[] = [
   {
     value: 'auto',
     label: 'Auto (minimize overlap)',
-    sessionDefaultKey: 'sashimiAutoSessionDefault',
+    displayTypeDefaultKey: 'sashimiAutoDisplayTypeDefault',
   },
   { value: 'up', label: 'Above coverage' },
   {
     value: 'down',
     label: 'Below coverage',
-    sessionDefaultKey: 'sashimiDownSessionDefault',
+    displayTypeDefaultKey: 'sashimiDownDisplayTypeDefault',
   },
 ]
 
@@ -36,11 +37,11 @@ interface SashimiModel {
   setShowSashimiArcs: (show: boolean) => void
   showSashimiLabels: boolean
   setShowSashimiLabels: (show: boolean) => void
-  showSashimiLabelsSessionDefault: SessionDefaultControl
+  showSashimiLabelsDisplayTypeDefault: DisplayTypeDefaultControl
   sashimiArcsMode: SashimiArcsMode
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
-  sashimiDownSessionDefault: SessionDefaultControl
-  sashimiAutoSessionDefault: SessionDefaultControl
+  sashimiDownDisplayTypeDefault: DisplayTypeDefaultControl
+  sashimiAutoDisplayTypeDefault: DisplayTypeDefaultControl
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
 }
@@ -61,7 +62,7 @@ export function getSashimiMenuItem(model: SashimiModel) {
             onToggle: () => {
               model.setShowSashimiLabels(!model.showSashimiLabels)
             },
-            sessionDefault: model.showSashimiLabelsSessionDefault,
+            displayTypeDefault: model.showSashimiLabelsDisplayTypeDefault,
           }),
           {
             label: 'Arc placement',
@@ -73,8 +74,8 @@ export function getSashimiMenuItem(model: SashimiModel) {
                 onClick: () => {
                   model.setSashimiArcsMode(option.value)
                 },
-                sessionDefault: option.sessionDefaultKey
-                  ? model[option.sessionDefaultKey]
+                displayTypeDefault: option.displayTypeDefaultKey
+                  ? model[option.displayTypeDefaultKey]
                   : undefined,
               }),
             ),

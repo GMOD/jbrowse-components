@@ -2,10 +2,11 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Structural coverage for the "Feature height" submenu: its top level is only
-// the three size presets, with the track-height modes nested under "Track
-// height". The mutual-exclusion invariants are covered in
-// squeezeToDisplayHeight.test.ts; here we assert the menu wires up to them.
+// Structural coverage for the two sibling height menus: "Feature height" holds
+// only the three size presets, and "Track sizing" (its own top-level entry, not
+// nested) holds the scroll/expand/squeeze modes. The mutual-exclusion
+// invariants are covered in squeezeToDisplayHeight.test.ts; here we assert the
+// menu wires up to them.
 
 function hasLabel(item: MenuItem, label: string) {
   return 'label' in item && item.label === label
@@ -24,6 +25,10 @@ function featureHeightSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
   return subMenuOf(display.trackMenuItems(), 'Feature height')
 }
 
+function trackSizingSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
+  return subMenuOf(display.trackMenuItems(), 'Track sizing')
+}
+
 function radio(subMenu: MenuItem[], label: string) {
   const item = subMenu.find(i => hasLabel(i, label))
   if (item?.type === 'radio') {
@@ -34,18 +39,13 @@ function radio(subMenu: MenuItem[], label: string) {
 }
 
 describe('Feature height submenu', () => {
-  it('top level is only the three size presets plus Track height', () => {
+  it('top level is only the three size presets', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const subMenu = featureHeightSubMenu(display)
 
     const labels = subMenu.flatMap(i => ('label' in i ? [i.label] : []))
-    expect(labels).toEqual([
-      'Normal',
-      'Compact',
-      'Super-compact',
-      'Track height',
-    ])
+    expect(labels).toEqual(['Normal', 'Compact', 'Super-compact'])
     // no subheaders; each size preset carries a "make default" pin
     expect(subMenu.some(i => i.type === 'subHeader')).toBe(false)
     expect(radio(subMenu, 'Normal').endAdornment).toBeDefined()
@@ -82,45 +82,38 @@ describe('Feature height submenu', () => {
     expect(radio(subMenu, 'Compact').checked).toBe(true)
   })
 
-  it('Track height submenu holds only the track-height radios, tracking heightMode', () => {
+  it('Track sizing submenu holds only the track-sizing radios, tracking heightMode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setDisplayMode('compact')
-    const advanced = subMenuOf(featureHeightSubMenu(display), 'Track height')
+    const sizing = trackSizingSubMenu(display)
 
-    // exactly the three track-height modes, each a radio carrying its own pin
-    const labels = advanced.flatMap(i => ('label' in i ? [i.label] : []))
+    // exactly the three track-sizing modes, each a radio carrying its own pin
+    const labels = sizing.flatMap(i => ('label' in i ? [i.label] : []))
     expect(labels).toEqual([
-      'Fixed height — scroll to see all features',
-      'Auto height — grow to fit all features',
-      'Compressed — squeeze all features into view',
+      'Scroll to see all features',
+      'Expand to fit all features',
+      'Squeeze all features into view',
     ])
-    expect(advanced.some(i => i.type === 'checkbox')).toBe(false)
-    expect(
-      radio(advanced, 'Fixed height — scroll to see all features').checked,
-    ).toBe(true)
+    expect(sizing.some(i => i.type === 'checkbox')).toBe(false)
+    expect(radio(sizing, 'Scroll to see all features').checked).toBe(true)
     // each mode carries a "make default" pin, like the size presets
     expect(
-      radio(advanced, 'Fixed height — scroll to see all features').endAdornment,
+      radio(sizing, 'Scroll to see all features').endAdornment,
     ).toBeDefined()
     expect(
-      radio(advanced, 'Auto height — grow to fit all features').endAdornment,
+      radio(sizing, 'Expand to fit all features').endAdornment,
     ).toBeDefined()
     expect(
-      radio(advanced, 'Compressed — squeeze all features into view')
-        .endAdornment,
+      radio(sizing, 'Squeeze all features into view').endAdornment,
     ).toBeDefined()
 
     display.setHeightMode('grow')
-    const advanced2 = subMenuOf(featureHeightSubMenu(display), 'Track height')
-    expect(
-      radio(advanced2, 'Auto height — grow to fit all features').checked,
-    ).toBe(true)
-    expect(
-      radio(advanced2, 'Fixed height — scroll to see all features').checked,
-    ).toBe(false)
+    const sizing2 = trackSizingSubMenu(display)
+    expect(radio(sizing2, 'Expand to fit all features').checked).toBe(true)
+    expect(radio(sizing2, 'Scroll to see all features').checked).toBe(false)
     // density is orthogonal — still Compact while the track grows
-    // (verified via the model getter; the size radios live one level up)
+    // (verified via the model getter; the size radios live in a sibling menu)
     expect(display.displayMode).toBe('compact')
   })
 })

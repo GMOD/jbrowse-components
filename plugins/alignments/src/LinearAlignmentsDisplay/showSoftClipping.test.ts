@@ -11,6 +11,7 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,
+  getTrackSizingMenuItem,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -141,18 +142,16 @@ function createDisplay(displayConfig: Record<string, unknown> = {}) {
   return { session, display: view.tracks[0]!.displays[0]! }
 }
 
-// The fixed/grow/fit radios live under the nested "Track height" entry
-// (mirroring the canvas display), so their pins are one level deeper than the
-// size-preset pins. Module-level so tests in every describe block can reach it.
+// The fixed/grow/fit radios live in the sibling "Track sizing" menu (built by
+// the shared getTrackSizingMenuItem, mirroring the canvas display), separate
+// from the "Read height" size presets. Module-level so tests in every describe
+// block can reach it.
 function heightModePinProps(
   display: ReturnType<typeof createDisplay>['display'],
   label: string,
 ) {
-  const trackHeight = getFeatureHeightMenuItem(display).subMenu.find(
-    i => i.label === 'Track height',
-  )
-  const sub =
-    trackHeight && 'subMenu' in trackHeight ? (trackHeight.subMenu ?? []) : []
+  const trackSizing = getTrackSizingMenuItem(display, 'reads')
+  const sub = 'subMenu' in trackSizing ? trackSizing.subMenu : []
   const row = sub.find(i => 'label' in i && i.label === label)
   const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
   return isValidElement(adornment)
@@ -167,7 +166,7 @@ describe('alignments showSoftClipping session default', () => {
   it('is off by default with no config and no session default', () => {
     const { display } = createDisplay()
     expect(display.showSoftClipping).toBe(false)
-    expect(display.softClippingSessionDefault.active).toBe(false)
+    expect(display.softClippingDisplayTypeDefault.active).toBe(false)
   })
 
   it('follows a session-wide default of on when the track is not customized', () => {
@@ -178,8 +177,8 @@ describe('alignments showSoftClipping session default', () => {
       true,
     )
     expect(display.showSoftClipping).toBe(true)
-    expect(display.softClippingSessionDefault.active).toBe(true)
-    expect(display.sessionDefaultChanges()).toEqual([
+    expect(display.softClippingDisplayTypeDefault.active).toBe(true)
+    expect(display.displayTypeDefaultChanges()).toEqual([
       { path: ['showSoftClipping'], from: false, to: true },
     ])
   })
@@ -193,7 +192,7 @@ describe('alignments showSoftClipping session default', () => {
     )
     // customized on regardless of the session default; not "affected by a default"
     expect(display.showSoftClipping).toBe(true)
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 
   it('a track can pin off over an on session default (symmetric maybeBoolean)', () => {
@@ -247,27 +246,27 @@ describe('alignments showSoftClipping session default', () => {
     expect(display.showSoftClipping).toBe(false)
   })
 
-  describe('softClippingSessionDefault', () => {
+  describe('softClippingDisplayTypeDefault', () => {
     it('promotes soft-clipping-on as the session default', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
-      expect(display.softClippingSessionDefault.active).toBe(false)
+      expect(display.softClippingDisplayTypeDefault.active).toBe(false)
 
-      display.softClippingSessionDefault.toggle()
+      display.softClippingDisplayTypeDefault.toggle()
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
           'showSoftClipping',
         ),
       ).toBe(true)
-      expect(display.softClippingSessionDefault.active).toBe(true)
+      expect(display.softClippingDisplayTypeDefault.active).toBe(true)
     })
 
     it('clears the session default when toggled off', () => {
       const { session, display } = createDisplay({ showSoftClipping: true })
-      display.softClippingSessionDefault.toggle()
-      expect(display.softClippingSessionDefault.active).toBe(true)
+      display.softClippingDisplayTypeDefault.toggle()
+      expect(display.softClippingDisplayTypeDefault.active).toBe(true)
 
-      display.softClippingSessionDefault.toggle()
+      display.softClippingDisplayTypeDefault.toggle()
       expect(
         session.getDisplayTypeDefault(
           'LinearAlignmentsDisplay',
@@ -277,7 +276,7 @@ describe('alignments showSoftClipping session default', () => {
     })
   })
 
-  it('clearSessionDefaults reverts inheriting tracks and empties the changes', () => {
+  it('clearDisplayTypeDefaults reverts inheriting tracks and empties the changes', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -286,7 +285,7 @@ describe('alignments showSoftClipping session default', () => {
     )
     expect(display.showSoftClipping).toBe(true)
 
-    display.clearSessionDefaults()
+    display.clearDisplayTypeDefaults()
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',
@@ -294,7 +293,7 @@ describe('alignments showSoftClipping session default', () => {
       ),
     ).toBeUndefined()
     expect(display.showSoftClipping).toBe(false)
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 })
 
@@ -302,7 +301,7 @@ describe('alignments showSoftClipping session default', () => {
 // slots. Each resolves independently through getConfResolved (same rule as
 // showSoftClipping): a slot at its schema default follows the
 // session-wide default; any other value pins it. heightMode='fixed' equals its
-// promotedBase, so it never shows up as a sessionDefaultChanges diff. The menu's
+// promotedBase, so it never shows up as a displayTypeDefaultChanges diff. The menu's
 // per-preset pins that promote these values are exercised below.
 const setCompact = (session: {
   setDisplayTypeDefault: (t: string, s: string, v: unknown) => void
@@ -328,7 +327,7 @@ describe('alignments compactness session default', () => {
     setCompact(session)
     expect(display.featureHeight).toBe(3)
     expect(display.featureSpacing).toBe(0)
-    expect(display.sessionDefaultChanges()).toEqual([
+    expect(display.displayTypeDefaultChanges()).toEqual([
       { path: ['featureHeight'], from: 7, to: 3 },
       { path: ['featureSpacing'], from: 1, to: 0 },
     ])
@@ -342,7 +341,7 @@ describe('alignments compactness session default', () => {
     session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight', 1)
     // customized regardless of the (super-compact) session default
     expect(display.featureHeight).toBe(3)
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 
   it('reacts to the session default changing after creation', () => {
@@ -374,7 +373,7 @@ describe('alignments compactness session default', () => {
     expect(display.featureHeight).toBe(7)
   })
 
-  it('clearSessionDefaults reverts inheriting tracks and empties changes', () => {
+  it('clearDisplayTypeDefaults reverts inheriting tracks and empties changes', () => {
     const { session, display } = createDisplay()
     setCompact(session)
     session.setDisplayTypeDefault(
@@ -385,10 +384,10 @@ describe('alignments compactness session default', () => {
     expect(display.featureHeight).toBe(3)
     expect(display.showSoftClipping).toBe(true)
 
-    display.clearSessionDefaults()
+    display.clearDisplayTypeDefaults()
     expect(display.featureHeight).toBe(7)
     expect(display.showSoftClipping).toBe(false)
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 
   it('reports both soft-clipping and compactness changes together', () => {
@@ -400,7 +399,7 @@ describe('alignments compactness session default', () => {
       true,
     )
     // promotable slots reported in schema-definition order
-    expect(display.sessionDefaultChanges()).toEqual([
+    expect(display.displayTypeDefaultChanges()).toEqual([
       { path: ['featureHeight'], from: 7, to: 3 },
       { path: ['featureSpacing'], from: 1, to: 0 },
       { path: ['showSoftClipping'], from: false, to: true },
@@ -408,7 +407,7 @@ describe('alignments compactness session default', () => {
   })
 })
 
-// The "Set feature height..." submenu surfaces the promote-as-default control as
+// The "Read height" submenu surfaces the promote-as-default control as
 // a per-preset pin (endAdornment) on each value row — not the former standalone
 // "Use X as the default" checkbox. Each pin's isDefault/onToggleDefault is
 // independent, so only the promoted preset reads as customized.
@@ -449,9 +448,9 @@ describe('feature-height menu per-preset pins', () => {
   it('gives every track-height mode its own pin', () => {
     const { display } = createDisplay()
     for (const label of [
-      'Fixed height — scroll to see all reads',
-      'Auto height — grow to fit all reads',
-      'Compressed — squeeze all reads into view',
+      'Scroll to see all reads',
+      'Expand to fit all reads',
+      'Squeeze all reads into view',
     ]) {
       expect(heightModePinProps(display, label)).toBeDefined()
     }
@@ -464,12 +463,11 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Normal')?.control.active).toBe(false)
     expect(pinProps(display, 'Super-compact')?.control.active).toBe(false)
     expect(
-      heightModePinProps(display, 'Compressed — squeeze all reads into view')
-        ?.control.active,
+      heightModePinProps(display, 'Squeeze all reads into view')?.control
+        .active,
     ).toBe(false)
     expect(
-      heightModePinProps(display, 'Auto height — grow to fit all reads')
-        ?.control.active,
+      heightModePinProps(display, 'Expand to fit all reads')?.control.active,
     ).toBe(false)
   })
 
@@ -490,10 +488,7 @@ describe('feature-height menu per-preset pins', () => {
 
   it("the fit pin promotes heightMode='fit'", () => {
     const { session, display } = createDisplay()
-    heightModePinProps(
-      display,
-      'Compressed — squeeze all reads into view',
-    )?.control.toggle()
+    heightModePinProps(display, 'Squeeze all reads into view')?.control.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('fit')
@@ -629,7 +624,7 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
   it('the pin promotes the current value as the session default', () => {
     const { session, display } = createDisplay()
     display.setMismatchAlpha(true)
-    display.mismatchAlphaSessionDefault.toggle()
+    display.mismatchAlphaDisplayTypeDefault.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'mismatchAlpha'),
     ).toBe(true)
@@ -719,10 +714,7 @@ describe('alignments grow (auto-height) mode', () => {
 
   it("the grow pin promotes heightMode='grow'", () => {
     const { session, display } = createDisplay()
-    heightModePinProps(
-      display,
-      'Auto height — grow to fit all reads',
-    )?.control.toggle()
+    heightModePinProps(display, 'Expand to fit all reads')?.control.toggle()
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'heightMode'),
     ).toBe('grow')
@@ -812,7 +804,7 @@ describe('alignments colorBy session default', () => {
       methylation,
     )
     expect(display.colorBy).toEqual(methylation)
-    expect(display.sessionDefaultChanges()).toEqual([
+    expect(display.displayTypeDefaultChanges()).toEqual([
       { path: ['colorBy'], from: { type: 'normal' }, to: methylation },
     ])
   })
@@ -827,9 +819,9 @@ describe('alignments colorBy session default', () => {
     // sentinel slot: `{type:'normal'}` differs from the `{type:'inherit'}`
     // default, so it customizes the track — normal is forced over the methylation
     // default (impossible with the old plain-default slot). Not an inherited
-    // change, so sessionDefaultChanges is empty.
+    // change, so displayTypeDefaultChanges is empty.
     expect(display.colorBy).toEqual({ type: 'normal' })
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 
   it('setColorScheme(normal) pins normal over an opposite session default', () => {
@@ -852,7 +844,7 @@ describe('alignments colorBy session default', () => {
       methylation,
     )
     expect(display.colorBy).toEqual({ type: 'strand' })
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 
   it('reacts to the session default changing after creation', () => {
@@ -895,7 +887,7 @@ describe('alignments colorBy session default', () => {
       type: 'a-removed-color-scheme',
     })
     expect(display.colorBy).toEqual({ type: 'normal' })
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 
   // Leaving pairs mode discards the now-meaningless pairing scheme by resetting
@@ -927,7 +919,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
   it('resolves to off by default with no config and no session default', () => {
     const { display } = createDisplay()
     expect(display.linkedReads).toBe('off')
-    expect(display.pairsSessionDefault.active).toBe(false)
+    expect(display.pairsDisplayTypeDefault.active).toBe(false)
   })
 
   it('follows a session-wide normal (pairs) default when not customized', () => {
@@ -938,8 +930,8 @@ describe('alignments linkedReads (view as pairs) session default', () => {
       'normal',
     )
     expect(display.linkedReads).toBe('normal')
-    expect(display.pairsSessionDefault.active).toBe(true)
-    expect(display.sessionDefaultChanges()).toEqual([
+    expect(display.pairsDisplayTypeDefault.active).toBe(true)
+    expect(display.displayTypeDefaultChanges()).toEqual([
       { path: ['linkedReads'], from: 'off', to: 'normal' },
     ])
   })
@@ -954,7 +946,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     // the whole reason for the sentinel: a track explicitly set to 'off' holds
     // off even under a session-wide pairs default, and reads as its own choice
     expect(display.linkedReads).toBe('off')
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 
   it('ignores a malformed (non-enum) session default', () => {
@@ -967,22 +959,22 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     expect(display.linkedReads).toBe('off')
   })
 
-  describe('pairsSessionDefault', () => {
+  describe('pairsDisplayTypeDefault', () => {
     it('promotes view-as-pairs as the session default', () => {
       const { session, display } = createDisplay({ linkedReads: 'normal' })
-      expect(display.pairsSessionDefault.active).toBe(false)
+      expect(display.pairsDisplayTypeDefault.active).toBe(false)
 
-      display.pairsSessionDefault.toggle()
+      display.pairsDisplayTypeDefault.toggle()
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBe('normal')
-      expect(display.pairsSessionDefault.active).toBe(true)
+      expect(display.pairsDisplayTypeDefault.active).toBe(true)
     })
 
     it('promotes pairs even when this track has them off (per-value)', () => {
       const { session, display } = createDisplay()
       expect(display.linkedReads).toBe('off')
-      display.pairsSessionDefault.toggle()
+      display.pairsDisplayTypeDefault.toggle()
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBe('normal')
@@ -992,10 +984,10 @@ describe('alignments linkedReads (view as pairs) session default', () => {
 
     it('clears the session default when toggled off', () => {
       const { session, display } = createDisplay({ linkedReads: 'normal' })
-      display.pairsSessionDefault.toggle()
-      expect(display.pairsSessionDefault.active).toBe(true)
+      display.pairsDisplayTypeDefault.toggle()
+      expect(display.pairsDisplayTypeDefault.active).toBe(true)
 
-      display.pairsSessionDefault.toggle()
+      display.pairsDisplayTypeDefault.toggle()
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBeUndefined()
@@ -1008,8 +1000,8 @@ describe('alignments readConnections (arcs) session default', () => {
   it('resolves to off by default with no config and no session default', () => {
     const { display } = createDisplay()
     expect(display.readConnections).toBe('off')
-    expect(display.arcsSessionDefault.active).toBe(false)
-    expect(display.readCloudSessionDefault.active).toBe(false)
+    expect(display.arcsDisplayTypeDefault.active).toBe(false)
+    expect(display.readCloudDisplayTypeDefault.active).toBe(false)
   })
 
   it('follows a session-wide arc default when not customized', () => {
@@ -1020,10 +1012,10 @@ describe('alignments readConnections (arcs) session default', () => {
       'arc',
     )
     expect(display.readConnections).toBe('arc')
-    expect(display.arcsSessionDefault.active).toBe(true)
+    expect(display.arcsDisplayTypeDefault.active).toBe(true)
     // the read-cloud pin targets a different on-value, so it stays inactive
-    expect(display.readCloudSessionDefault.active).toBe(false)
-    expect(display.sessionDefaultChanges()).toEqual([
+    expect(display.readCloudDisplayTypeDefault.active).toBe(false)
+    expect(display.displayTypeDefaultChanges()).toEqual([
       { path: ['readConnections'], from: 'off', to: 'arc' },
     ])
   })
@@ -1036,12 +1028,12 @@ describe('alignments readConnections (arcs) session default', () => {
       'arc',
     )
     expect(display.readConnections).toBe('off')
-    expect(display.sessionDefaultChanges()).toEqual([])
+    expect(display.displayTypeDefaultChanges()).toEqual([])
   })
 
   it('the arcs pin promotes arc and clears it (per-value)', () => {
     const { session, display } = createDisplay({ readConnections: 'arc' })
-    display.arcsSessionDefault.toggle()
+    display.arcsDisplayTypeDefault.toggle()
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',
@@ -1049,7 +1041,7 @@ describe('alignments readConnections (arcs) session default', () => {
       ),
     ).toBe('arc')
 
-    display.arcsSessionDefault.toggle()
+    display.arcsDisplayTypeDefault.toggle()
     expect(
       session.getDisplayTypeDefault(
         'LinearAlignmentsDisplay',

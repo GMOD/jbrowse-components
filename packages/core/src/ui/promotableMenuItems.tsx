@@ -1,7 +1,7 @@
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 
 import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
-import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
 
 // A promotable setting as one native checkbox menu row: the value toggles the
 // track (inheriting native hover/sizing/keyboard), and a trailing pin
@@ -12,13 +12,13 @@ export function promotableToggleItem({
   helpText,
   checked,
   onToggle,
-  sessionDefault,
+  displayTypeDefault,
 }: {
   label: string
   helpText?: string
   checked: boolean
   onToggle: () => void
-  sessionDefault: SessionDefaultControl
+  displayTypeDefault: DisplayTypeDefaultControl
 }): CheckboxMenuItem {
   return {
     label,
@@ -29,13 +29,13 @@ export function promotableToggleItem({
       onToggle()
     },
     endAdornment: (
-      <DefaultForAllAdornment label={label} control={sessionDefault} />
+      <DefaultForAllAdornment label={label} control={displayTypeDefault} />
     ),
   }
 }
 
 // A radio row in a promotable-value group (e.g. one option of a multi-value enum
-// slot). `sessionDefault` is omitted for the base (inherit) value (e.g. the
+// slot). `displayTypeDefault` is omitted for the base (inherit) value (e.g. the
 // `up`/`normal` base of a mode enum) — only the non-base values are promotable.
 export function promotableRadioItem({
   label,
@@ -43,14 +43,14 @@ export function promotableRadioItem({
   helpText,
   checked,
   onClick,
-  sessionDefault,
+  displayTypeDefault,
 }: {
   label: string
   subLabel?: string
   helpText?: string
   checked: boolean
   onClick: () => void
-  sessionDefault?: SessionDefaultControl
+  displayTypeDefault?: DisplayTypeDefaultControl
 }): RadioMenuItem {
   return {
     label,
@@ -59,9 +59,9 @@ export function promotableRadioItem({
     type: 'radio',
     checked,
     onClick,
-    ...(sessionDefault && {
+    ...(displayTypeDefault && {
       endAdornment: (
-        <DefaultForAllAdornment label={label} control={sessionDefault} />
+        <DefaultForAllAdornment label={label} control={displayTypeDefault} />
       ),
     }),
   }

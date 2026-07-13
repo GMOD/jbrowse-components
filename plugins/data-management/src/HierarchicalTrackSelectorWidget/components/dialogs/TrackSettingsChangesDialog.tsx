@@ -26,20 +26,20 @@ const useStyles = makeStyles()(theme => ({
 
 // Lists both sources that make a track's effective settings differ from its
 // configured defaults: per-track edits (`changes`, resettable) and settings
-// imposed by a session-wide displayTypeDefault (`sessionDefaults`, clearable).
+// imposed by a session-wide displayTypeDefault (`displayTypeDefaults`, clearable).
 // The two are kept visually separate so a global preference never reads as an
 // individual edit of this track.
 const TrackSettingsChangesDialog = observer(
   function TrackSettingsChangesDialog({
     changes,
-    sessionDefaults = [],
+    displayTypeDefaults = [],
     trackName,
     onReset,
     onClearDefaults,
     handleClose,
   }: {
     changes: TrackConfigChange[]
-    sessionDefaults?: TrackConfigChange[]
+    displayTypeDefaults?: TrackConfigChange[]
     trackName: string
     onReset?: () => void
     onClearDefaults?: () => void
@@ -67,7 +67,7 @@ const TrackSettingsChangesDialog = observer(
               <SettingsChangesTable changes={changes} />
             </>
           ) : null}
-          {sessionDefaults.length ? (
+          {displayTypeDefaults.length ? (
             <div className={classes.section}>
               <Typography variant="subtitle2" className={classes.heading}>
                 Session-wide default
@@ -76,10 +76,10 @@ const TrackSettingsChangesDialog = observer(
                 These come from a default you set for all tracks of this type,
                 not from an edit to this track.
               </DialogContentText>
-              <SettingsChangesTable changes={sessionDefaults} />
+              <SettingsChangesTable changes={displayTypeDefaults} />
             </div>
           ) : null}
-          {changes.length || sessionDefaults.length ? null : (
+          {changes.length || displayTypeDefaults.length ? null : (
             <Typography>This track has no setting changes.</Typography>
           )}
         </DialogContent>
@@ -96,7 +96,7 @@ const TrackSettingsChangesDialog = observer(
               Reset to default
             </Button>
           ) : null}
-          {sessionDefaults.length && onClearDefaults ? (
+          {displayTypeDefaults.length && onClearDefaults ? (
             <Button
               variant="contained"
               color="secondary"
