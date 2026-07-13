@@ -1,7 +1,4 @@
-import {
-  buildColorLegend,
-  resolveConfiguredLegend,
-} from './colorLegend.ts'
+import { buildColorLegend, resolveConfiguredLegend } from './colorLegend.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 
@@ -9,7 +6,9 @@ import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 const region: MultiRowRegionData = {
   featureStarts: Uint32Array.from([10, 20, 30, 40]),
   featureEnds: Uint32Array.from([15, 25, 35, 45]),
-  featureColors: Uint32Array.from([0xff0000ff, 0xff00ff00, 0xff0000ff, 0xff00ff00]),
+  featureColors: Uint32Array.from([
+    0xff0000ff, 0xff00ff00, 0xff0000ff, 0xff00ff00,
+  ]),
   partitionValues: ['E001', 'E002'],
   featurePartitionIndex: Uint32Array.from([0, 0, 1, 1]),
   featureNames: ['TssA', 'Quies', 'TssA', 'Quies'],
@@ -22,7 +21,9 @@ const rowIndexByValue = new Map([
 ])
 
 test('distinct (name -> color) pairs, first-seen order', () => {
-  expect(buildColorLegend([region], rowIndexByValue, [undefined, undefined])).toEqual([
+  expect(
+    buildColorLegend([region], rowIndexByValue, [undefined, undefined]),
+  ).toEqual([
     { label: 'TssA', color: 0xff0000ff },
     { label: 'Quies', color: 0xff00ff00 },
   ])
@@ -30,17 +31,23 @@ test('distinct (name -> color) pairs, first-seen order', () => {
 
 test('rows with a per-row color override contribute nothing', () => {
   // row 0 overridden -> only row 1 (E002) features count
-  expect(buildColorLegend([region], rowIndexByValue, [0xff123456, undefined])).toEqual([
+  expect(
+    buildColorLegend([region], rowIndexByValue, [0xff123456, undefined]),
+  ).toEqual([
     { label: 'TssA', color: 0xff0000ff },
     { label: 'Quies', color: 0xff00ff00 },
   ])
   // both rows overridden -> empty (per-row mode, sidebar is the legend)
-  expect(buildColorLegend([region], rowIndexByValue, [0xff123456, 0xff654321])).toEqual([])
+  expect(
+    buildColorLegend([region], rowIndexByValue, [0xff123456, 0xff654321]),
+  ).toEqual([])
 })
 
 test('unnamed features produce no legend', () => {
   const unnamed = { ...region, featureNames: ['', '', '', ''] }
-  expect(buildColorLegend([unnamed], rowIndexByValue, [undefined, undefined])).toEqual([])
+  expect(
+    buildColorLegend([unnamed], rowIndexByValue, [undefined, undefined]),
+  ).toEqual([])
 })
 
 test('configured legend converts CSS colors to ABGR, drops malformed', () => {
@@ -66,5 +73,7 @@ test('too many distinct labels is treated as non-categorical', () => {
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
   }
-  expect(buildColorLegend([many], new Map([['E001', 0]]), [undefined])).toEqual([])
+  expect(buildColorLegend([many], new Map([['E001', 0]]), [undefined])).toEqual(
+    [],
+  )
 })
