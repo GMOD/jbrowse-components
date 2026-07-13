@@ -23,12 +23,16 @@ import { getFeatureName } from '../RenderFeatureDataRPC/labelUtils.ts'
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
 import { findSubfeatureById } from './baseModelHelpers.ts'
+import { exportRCode } from './exportRCode.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 
 const CollapseIntronsDialog = lazy(
   () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
@@ -261,6 +265,15 @@ export default function stateModelFactory(
         return items.length > 0 && !self.colorLegendDismissed
           ? { items, dismiss: self.dismissColorLegend }
           : undefined
+      },
+
+      /**
+       * #method
+       * Build the R ggplot gene-model panel for the view's "Export R script",
+       * regenerating this feature track from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment {
+        return exportRCode(self as LinearBasicDisplayModel)
       },
     }))
     .views(self => {

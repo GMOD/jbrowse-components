@@ -21,6 +21,7 @@ import {
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
 
+import { exportRCode } from './exportRCode.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import { wiggleColorAdornment } from '../shared/wiggleColorAdornment.tsx'
@@ -45,7 +46,10 @@ import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
 export type { Region } from '@jbrowse/core/util'
@@ -227,6 +231,16 @@ export default function stateModelFactory(
           bicolorPivot: self.bicolorPivot,
           maxGapMultiple: self.maxGapMultiple,
         }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Build the R ggplot fragment for this track, used by the view's "Export
+       * R script" to regenerate the wiggle panel from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment {
+        return exportRCode(self as LinearWiggleDisplayModel)
       },
     }))
     .actions(self => ({
