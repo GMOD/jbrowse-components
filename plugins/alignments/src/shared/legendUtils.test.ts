@@ -46,6 +46,17 @@ describe('getReadDisplayLegendItems', () => {
     expect(labels('strand', ['fwdStrand'])).toEqual(['Forward strand'])
   })
 
+  test('lists "No strand" reads (strand 0 / unpaired pair-orientation)', () => {
+    expect(labels('strand', ['fwdStrand', 'noStrand'])).toEqual([
+      'Forward strand',
+      'No strand',
+    ])
+    expect(labels('pairOrientation', ['pairLR', 'noStrand'])).toEqual([
+      'No strand',
+      'LR - Normal pair orientation',
+    ])
+  })
+
   test('includes "Supplementary/split" only when that bucket occurs', () => {
     expect(labels('insertSize', ['normalInsert', 'supplementary'])).toContain(
       'Supplementary/split',

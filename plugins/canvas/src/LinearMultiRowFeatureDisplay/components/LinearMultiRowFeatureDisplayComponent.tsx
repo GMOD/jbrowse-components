@@ -29,7 +29,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
     sidebarOffset,
     showLegend,
     colorLegend,
-    hiddenCategories,
+    hiddenCategorySet,
   } = model
   function onMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -121,7 +121,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           <MultiRowColorLegend
             entries={colorLegend}
             canvasWidth={view.width}
-            hiddenLabels={new Set(hiddenCategories)}
+            hiddenLabels={hiddenCategorySet}
           />
         </svg>
       ) : null}

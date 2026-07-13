@@ -16,15 +16,23 @@ export interface ConfiguredLegendEntry {
   color: string
 }
 
+function isConfiguredLegendEntry(e: unknown): e is ConfiguredLegendEntry {
+  return (
+    typeof e === 'object' &&
+    e !== null &&
+    typeof (e as Record<string, unknown>).label === 'string' &&
+    typeof (e as Record<string, unknown>).color === 'string'
+  )
+}
+
 // Convert the admin-declared `{label, color}` legend (CSS colors) to the ABGR
-// LegendEntry the renderer uses, dropping malformed entries. Used when the
-// category is encoded only in the block color, so there's no feature attribute
-// to auto-derive from (see buildColorLegend).
-export function resolveConfiguredLegend(
-  entries: ConfiguredLegendEntry[],
-): LegendEntry[] {
+// LegendEntry the renderer uses, dropping malformed entries. Fed the raw
+// (untyped) `legend` config slot, so it validates each entry at runtime. Used
+// when the category is encoded only in the block color, so there's no feature
+// attribute to auto-derive from (see buildColorLegend).
+export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
   return (Array.isArray(entries) ? entries : [])
-    .filter(e => typeof e.label === 'string' && typeof e.color === 'string')
+    .filter(isConfiguredLegendEntry)
     .map(e => ({ label: e.label, color: cssColorToABGR(e.color) }))
 }
 

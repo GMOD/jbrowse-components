@@ -34,6 +34,7 @@ function hslRamp(
 const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
   { category: 'fwdStrand', label: 'Forward strand' },
   { category: 'revStrand', label: 'Reverse strand' },
+  { category: 'noStrand', label: 'No strand' },
   { category: 'pairLR', label: 'LR - Normal pair orientation' },
   { category: 'pairRL', label: 'RL - Mates point outward' },
   { category: 'pairLL', label: 'LL - Both mates forward strand' },
@@ -57,6 +58,11 @@ const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
   { key: 'colorBaseN', label: 'N' },
 ]
 
+// Tags that encode strand rather than a categorical value; buildReadTagColors
+// paints these from the fixed strand colors (not colorTagMap), so their legend
+// is the strand key, not a per-value list.
+const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
+
 /**
  * Legend items for the alignments display. `presentCategories` is the set of
  * read buckets actually seen in the rendered reads (from readColorCategory), so
@@ -64,11 +70,6 @@ const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
  * swatch colors match the painted reads exactly. Modification swatches come from
  * `visibleModifications`; mapping/per-base quality are fixed hue ramps.
  */
-// Tags that encode strand rather than a categorical value; buildReadTagColors
-// paints these from the fixed strand colors (not colorTagMap), so their legend
-// is the strand key, not a per-value list.
-const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
-
 export function getReadDisplayLegendItems(
   colorBy: ColorBy | undefined,
   presentCategories: ReadonlySet<ReadColorCategory>,

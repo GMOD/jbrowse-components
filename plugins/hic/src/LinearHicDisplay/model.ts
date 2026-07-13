@@ -286,22 +286,6 @@ export default function stateModelFactory(
       },
 
       /**
-       * #method
-       * The binsize that `stepResolution(dir)` would land on, or undefined
-       * if no valid step exists in that direction. Consumed by both the UI
-       * (button disabled state) and `stepResolution` itself, so there's one
-       * source of truth for "what's the next resolution".
-       */
-      nextResolution(dir: -1 | 1): number | undefined {
-        const avail = self.availableResolutions
-        if (!avail?.length) {
-          return undefined
-        }
-        const next = self.effectiveResolutionIdx + dir
-        return next >= 0 && next < avail.length ? avail[next] : undefined
-      },
-
-      /**
        * #getter
        * Forward transform { scale, viewOffsetX } shared by GPU render,
        * mouse hit-test, and SVG export. See `computeRenderTransform` for
@@ -468,22 +452,6 @@ export default function stateModelFactory(
         // makes "Finer" = idx-1 = smaller binsize and "Coarser" = idx+1 =
         // larger binsize.
         self.availableResolutions = [...f].sort((a, b) => a - b)
-      },
-      /**
-       * #action
-       * dir = -1 → finer (smaller binsize); dir = +1 → coarser. Re-grounds
-       * the bias against the *current* effective index so repeated clicks
-       * at a clamped boundary don't accumulate stale bias the user can't
-       * see — the bias always reflects what's actually on screen.
-       */
-      stepResolution(dir: -1 | 1) {
-        if (self.nextResolution(dir) === undefined) {
-          return
-        }
-        self.configuration.setSlot(
-          'resolutionBias',
-          self.effectiveResolutionIdx + dir - self.autoResolutionIdx,
-        )
       },
       /**
        * #action

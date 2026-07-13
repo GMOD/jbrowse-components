@@ -25,7 +25,7 @@ export default function MultiRowColorLegend({
   canvasWidth: number
   // labels toggled off — rendered dimmed (the row-filter itself lives in the
   // model; this is just the visual cue)
-  hiddenLabels?: ReadonlySet<string>
+  hiddenLabels: ReadonlySet<string>
 }) {
   let maxLabelWidth = 0
   for (const e of entries) {
@@ -40,7 +40,7 @@ export default function MultiRowColorLegend({
     <g transform={`translate(${x} 0)`}>
       {entries.map((entry, idx) => {
         const y = idx * ROW_HEIGHT
-        const hidden = hiddenLabels?.has(entry.label)
+        const hidden = hiddenLabels.has(entry.label)
         return (
           <g key={entry.label} opacity={hidden ? 0.35 : 1}>
             <rect

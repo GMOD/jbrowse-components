@@ -113,11 +113,9 @@ export function generateColorRamp(colorScheme?: HicColorScheme): Uint8Array {
   return RAMPS[colorScheme ?? DEFAULT_HIC_COLOR_SCHEME]
 }
 
-// Sample N evenly-spaced legend stops from the same source as the GPU ramp.
-export function getLegendStops(
-  colorScheme: HicColorScheme | undefined,
-  n = 11,
-) {
+// Sample 11 evenly-spaced legend stops from the same source as the GPU ramp.
+export function getLegendStops(colorScheme: HicColorScheme | undefined) {
+  const n = 11
   const scheme = getScheme(colorScheme)
   const out: { offset: number; rgba: RGBA }[] = []
   for (let i = 0; i < n; i++) {

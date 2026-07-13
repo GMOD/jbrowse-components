@@ -340,16 +340,28 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * `hiddenCategories` as a Set for O(1) membership; shared by the on-screen
+       * and SVG-export legends (dimmed rows) and by `hiddenColors`.
+       */
+      get hiddenCategorySet(): ReadonlySet<string> {
+        return new Set(self.hiddenCategories)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * ABGR colors currently hidden via the legend's category toggles: the
        * `colorLegend` colors whose label is in `hiddenCategories`. Both render
        * paths and the hit-test skip features painted in one of these, so toggling
-       * a category off drops it everywhere without a refetch.
+       * a category off drops it everywhere without a refetch. Assumes each legend
+       * category maps to a distinct color (true for chromHMM-style paintings); a
+       * color shared by two categories can't be toggled independently.
        */
       get hiddenColors(): ReadonlySet<number> {
         if (!self.hiddenCategories.length) {
           return new Set<number>()
         }
-        const hidden = new Set(self.hiddenCategories)
+        const hidden = self.hiddenCategorySet
         return new Set(
           self.colorLegend.filter(e => hidden.has(e.label)).map(e => e.color),
         )
