@@ -26,6 +26,9 @@ export interface MultiRowRenderState {
   // dialog; `undefined` rows use the worker-baked per-feature color. The GPU
   // path bakes this into its buffer and ignores it here.
   rowColorsByIndex?: readonly (number | undefined)[]
+  // per-feature ABGR colors of legend categories toggled off; the Canvas2D
+  // fallback skips matching features (the GPU path omits them at encode time).
+  hiddenColors?: ReadonlySet<number>
 }
 
 // Pre-encoded GPU instance buffer ({startBp,endBp,rowIndex,color} per feature),

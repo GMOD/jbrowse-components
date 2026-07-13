@@ -59,6 +59,22 @@ test('skips features whose partition value has no assigned row', () => {
   expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 30])
 })
 
+test('skips features whose color is a hidden category', () => {
+  const rowIndexByValue = new Map([
+    ['momHP0', 0],
+    ['dadHP1', 1],
+  ])
+  // hide 0xff00ff00 (feature 1, on dadHP1); features 0 and 2 remain
+  const { buffer, count } = buildMultiRowInstanceBuffer(
+    region,
+    rowIndexByValue,
+    undefined,
+    new Set([0xff00ff00]),
+  )
+  expect(count).toBe(2)
+  expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 30])
+})
+
 test('rowColorsByIndex overrides the baked color for that row only', () => {
   const rowIndexByValue = new Map([
     ['momHP0', 0],

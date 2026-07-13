@@ -128,6 +128,13 @@ export default function stateModelFactory(
         sortRowsBy: types.maybe(
           types.frozen<{ refName: string; pos: number }>(),
         ),
+        /**
+         * #property
+         * Legend categories toggled off (by label). Features painted in a hidden
+         * category's color are dropped from both render paths and the hit-test.
+         * See `hiddenColors` / `toggleCategory`.
+         */
+        hiddenCategories: types.array(types.string),
       }),
     )
     .volatile(() => ({
@@ -309,6 +316,48 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * Categorical color key. The explicit `legend` config slot wins when set
+       * (for color-encoded categories with no feature attribute to key on, e.g.
+       * an itemRgb ancestry painting); otherwise it's auto-derived from the
+       * loaded data as distinct `(featureName -> per-feature color)` pairs among
+       * per-feature-colored rows. Empty in per-row palette / sampleColorMap mode
+       * (where the sidebar labels are the key) and for non-categorical (unnamed /
+       * all-distinct) data. See resolveConfiguredLegend / buildColorLegend.
+       */
+      get colorLegend() {
+        const configured = resolveConfiguredLegend(
+          readConfObject(self.conf, 'legend'),
+        )
+        return configured.length
+          ? configured
+          : buildColorLegend(
+              self.rpcDataMap.values(),
+              self.rowIndexByValue,
+              self.rowColorsByIndex,
+            )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * ABGR colors currently hidden via the legend's category toggles: the
+       * `colorLegend` colors whose label is in `hiddenCategories`. Both render
+       * paths and the hit-test skip features painted in one of these, so toggling
+       * a category off drops it everywhere without a refetch.
+       */
+      get hiddenColors(): ReadonlySet<number> {
+        if (!self.hiddenCategories.length) {
+          return new Set<number>()
+        }
+        const hidden = new Set(self.hiddenCategories)
+        return new Set(
+          self.colorLegend.filter(e => hidden.has(e.label)).map(e => e.color),
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Resolved per-row height. `rowHeightSetting === 0` auto-fits: the display
        * height split evenly across rows so all rows stay visible as the row count
        * grows. Any positive value is a pinned px height. Every consumer reads
@@ -378,29 +427,8 @@ export default function stateModelFactory(
           rowProportion: self.rowProportion,
           rowIndexByValue: self.rowIndexByValue,
           rowColorsByIndex: self.rowColorsByIndex,
+          hiddenColors: self.hiddenColors,
         }
-      },
-      /**
-       * #getter
-       * Categorical color key. The explicit `legend` config slot wins when set
-       * (for color-encoded categories with no feature attribute to key on, e.g.
-       * an itemRgb ancestry painting); otherwise it's auto-derived from the
-       * loaded data as distinct `(featureName -> per-feature color)` pairs among
-       * per-feature-colored rows. Empty in per-row palette / sampleColorMap mode
-       * (where the sidebar labels are the key) and for non-categorical (unnamed /
-       * all-distinct) data. See resolveConfiguredLegend / buildColorLegend.
-       */
-      get colorLegend() {
-        const configured = resolveConfiguredLegend(
-          readConfObject(self.conf, 'legend'),
-        )
-        return configured.length
-          ? configured
-          : buildColorLegend(
-              self.rpcDataMap.values(),
-              self.rowIndexByValue,
-              self.rowColorsByIndex,
-            )
       },
       /**
        * #method
@@ -442,11 +470,13 @@ export default function stateModelFactory(
         const {
           featureStarts,
           featureEnds,
+          featureColors,
           partitionValues,
           featurePartitionIndex,
           featureNames,
           featureIds,
         } = region
+        const hiddenColors = self.hiddenColors
         // Resolve this region's local partition indices to global display rows
         // via the same helper both render paths use, so the hit-test can't drift
         // from where a feature actually paints.
@@ -461,7 +491,8 @@ export default function stateModelFactory(
           if (
             rowForLocal[featurePartitionIndex[i]!] === targetRow &&
             featureStarts[i]! <= bp &&
-            bp < featureEnds[i]!
+            bp < featureEnds[i]! &&
+            !hiddenColors.has(featureColors[i]!)
           ) {
             return {
               id: featureIds[i]!,
@@ -489,6 +520,22 @@ export default function stateModelFactory(
        */
       setShowLegend(f: boolean) {
         self.configuration.setSlot('showLegend', f)
+      },
+      /**
+       * #action
+       * Show/hide a legend category by label (render-time, no refetch).
+       */
+      toggleCategory(label: string) {
+        const next = self.hiddenCategories.includes(label)
+          ? self.hiddenCategories.filter(l => l !== label)
+          : [...self.hiddenCategories, label]
+        self.hiddenCategories.replace(next)
+      },
+      /**
+       * #action
+       */
+      setHiddenCategories(labels: string[]) {
+        self.hiddenCategories.replace(labels)
       },
       /**
        * #action
@@ -653,6 +700,7 @@ export default function stateModelFactory(
               regionData,
               self.rowIndexByValue,
               self.rowColorsByIndex,
+              self.hiddenColors,
             )
             return { instanceBuffer: buffer, instanceCount: count }
           },

@@ -19,9 +19,13 @@ const TEXT_LEFT = 16
 export default function MultiRowColorLegend({
   entries,
   canvasWidth,
+  hiddenLabels,
 }: {
   entries: LegendEntry[]
   canvasWidth: number
+  // labels toggled off — rendered dimmed (the row-filter itself lives in the
+  // model; this is just the visual cue)
+  hiddenLabels?: ReadonlySet<string>
 }) {
   let maxLabelWidth = 0
   for (const e of entries) {
@@ -36,8 +40,9 @@ export default function MultiRowColorLegend({
     <g transform={`translate(${x} 0)`}>
       {entries.map((entry, idx) => {
         const y = idx * ROW_HEIGHT
+        const hidden = hiddenLabels?.has(entry.label)
         return (
-          <g key={entry.label}>
+          <g key={entry.label} opacity={hidden ? 0.35 : 1}>
             <rect
               x={0}
               y={y}
@@ -52,7 +57,13 @@ export default function MultiRowColorLegend({
               height={SWATCH}
               fill={abgrToCssRgba(entry.color)}
             />
-            <text x={TEXT_LEFT} y={y + 11} fontSize={FONT_SIZE} fill="black">
+            <text
+              x={TEXT_LEFT}
+              y={y + 11}
+              fontSize={FONT_SIZE}
+              fill="black"
+              textDecoration={hidden ? 'line-through' : undefined}
+            >
               {entry.label}
             </text>
           </g>

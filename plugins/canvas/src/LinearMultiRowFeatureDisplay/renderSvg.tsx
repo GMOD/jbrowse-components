@@ -42,6 +42,7 @@ export interface RenderSvgModel extends SvgExportable {
   hierarchy: ClusterHierarchyNode | undefined
   showLegend: boolean
   colorLegend: LegendEntry[]
+  hiddenCategories: readonly string[]
 }
 
 export async function renderSvg(
@@ -105,6 +106,7 @@ function MultiRowSvgBody({
         <MultiRowColorLegend
           entries={self.colorLegend}
           canvasWidth={view.width}
+          hiddenLabels={new Set(self.hiddenCategories)}
         />
       ) : null}
     </>

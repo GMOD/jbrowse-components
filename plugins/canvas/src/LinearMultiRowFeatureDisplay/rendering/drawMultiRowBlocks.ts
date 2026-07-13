@@ -29,6 +29,7 @@ export function drawMultiRowBlocks(
     rowProportion,
     rowIndexByValue,
     rowColorsByIndex,
+    hiddenColors,
   } = state
   const h = rowHeight * rowProportion
   const offset = (rowHeight - h) / 2
@@ -58,7 +59,7 @@ export function drawMultiRowBlocks(
 
         for (let i = 0; i < featureStarts.length; i++) {
           const rowIndex = rowForLocal[featurePartitionIndex[i]!]
-          if (rowIndex !== undefined) {
+          if (rowIndex !== undefined && !hiddenColors?.has(featureColors[i]!)) {
             const xa = bpToPx(featureStarts[i]!)
             const xb = bpToPx(featureEnds[i]!)
             const left = Math.min(xa, xb)

@@ -26,6 +26,7 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   showTree: boolean
   showLegend: boolean
   colorLegend: LegendEntry[]
+  hiddenCategories: readonly string[]
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
@@ -36,6 +37,7 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   rowHeightSetting: number
   setShowTree: (f: boolean) => void
   setShowLegend: (f: boolean) => void
+  toggleCategory: (label: string) => void
   setShowBranchLength: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MultiRowSource[]) => void
@@ -76,6 +78,17 @@ export function buildMultiRowTrackMenuItems(
             onClick: () => {
               self.setShowLegend(!self.showLegend)
             },
+          },
+          {
+            label: 'Categories',
+            subMenu: self.colorLegend.map(entry => ({
+              label: entry.label,
+              type: 'checkbox' as const,
+              checked: !self.hiddenCategories.includes(entry.label),
+              onClick: () => {
+                self.toggleCategory(entry.label)
+              },
+            })),
           },
         ]
       : []),

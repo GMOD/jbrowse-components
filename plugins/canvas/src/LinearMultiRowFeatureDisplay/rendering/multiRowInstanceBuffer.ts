@@ -17,11 +17,16 @@ import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
  * `rowColorsByIndex` (indexed by global row) overrides the worker-baked
  * per-feature color for rows whose color was set in the arrangement dialog, so
  * a row recolor re-encodes here too — no RPC roundtrip.
+ *
+ * `hiddenColors` are the per-feature ABGR colors of legend categories toggled
+ * off; matching features are omitted from the buffer, so hiding a category
+ * re-encodes here without a refetch.
  */
 export function buildMultiRowInstanceBuffer(
   data: MultiRowRegionData,
   rowIndexByValue: ReadonlyMap<string, number>,
   rowColorsByIndex?: readonly (number | undefined)[],
+  hiddenColors?: ReadonlySet<number>,
 ): { buffer: ArrayBuffer; count: number } {
   const { featureStarts, featureEnds, featureColors, partitionValues } = data
   const n = featureStarts.length
@@ -31,7 +36,7 @@ export function buildMultiRowInstanceBuffer(
   let count = 0
   for (let i = 0; i < n; i++) {
     const rowIndex = rowForLocal[data.featurePartitionIndex[i]!]
-    if (rowIndex !== undefined) {
+    if (rowIndex !== undefined && !hiddenColors?.has(featureColors[i]!)) {
       const base = count * INSTANCE_STRIDE_F32
       u32[base + FIELD_OFFSET_F32.startBp] = featureStarts[i]!
       u32[base + FIELD_OFFSET_F32.endBp] = featureEnds[i]!

@@ -104,6 +104,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     hierarchy: undefined,
     showLegend: false,
     colorLegend: [],
+    hiddenCategories: [],
     ...overrides,
   }
 }

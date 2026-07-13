@@ -88,6 +88,17 @@ test('skips features whose row is filtered out of rowIndexByValue', () => {
   ])
 })
 
+test('skips features whose color is a hidden category', () => {
+  const { ctx, calls } = mockCtx()
+  drawMultiRowBlocks(ctx, new Map([[0, region]]), [block], {
+    ...state,
+    hiddenColors: new Set([BLUE]),
+  })
+  expect(calls).toEqual([
+    { x: 100, y: 0, w: 100, h: 20, fillStyle: abgrToCssRgba(RED) },
+  ])
+})
+
 test('rowColorsByIndex overrides the baked feature color per row', () => {
   const GREEN = 0xff00ff00
   const { ctx, calls } = mockCtx()
