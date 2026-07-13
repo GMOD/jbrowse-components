@@ -127,14 +127,20 @@ export function getLegendStops(
   return out
 }
 
-function rgbaCss([r, g, b, a]: RGBA) {
-  return `rgba(${r},${g},${b},${(a / 255).toFixed(3)})`
+// Flatten a ramp color onto a white legend background so the CSS gradient uses
+// plain opaque stops. The juicebox scheme fades alpha 0->255; a translucent
+// start stop rasterizes to a faint darker sliver at the bar's left edge, so
+// compositing here keeps the legend a clean white->red with no such artifact.
+function rgbOverWhite([r, g, b, a]: RGBA) {
+  const t = a / 255
+  const flat = (c: number) => Math.round(c * t + 255 * (1 - t))
+  return `rgb(${flat(r)},${flat(g)},${flat(b)})`
 }
 
 export function getLegendCssGradient(colorScheme: HicColorScheme | undefined) {
   const stops = getLegendStops(colorScheme)
   const parts = stops.map(
-    s => `${rgbaCss(s.rgba)} ${(s.offset * 100).toFixed(0)}%`,
+    s => `${rgbOverWhite(s.rgba)} ${(s.offset * 100).toFixed(0)}%`,
   )
   return `linear-gradient(to right, ${parts.join(', ')})`
 }

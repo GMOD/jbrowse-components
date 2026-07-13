@@ -69,7 +69,7 @@ const HicTrackConfigFactory = () => {
        */
       showLegend: {
         type: 'boolean',
-        defaultValue: true,
+        defaultValue: false,
         description: 'show the color scale legend',
       },
       /**

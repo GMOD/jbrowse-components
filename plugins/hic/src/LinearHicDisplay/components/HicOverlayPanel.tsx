@@ -11,42 +11,38 @@ import type { LinearHicDisplayModel } from '../model.ts'
 const useStyles = makeStyles()(theme => ({
   panel: {
     position: 'absolute',
-    right: 10,
-    top: 10,
+    right: 4,
+    top: 4,
     background: theme.palette.background.paper,
     color: theme.palette.text.primary,
     border: `1px solid ${theme.palette.divider}`,
-    borderRadius: 4,
-    padding: 8,
-    fontSize: 11,
+    padding: 4,
+    fontSize: 10,
     zIndex: 100,
     display: 'flex',
     flexDirection: 'column',
-    gap: 4,
+    gap: 2,
   },
-  caption: {
-    fontSize: 10,
-    color: theme.palette.text.secondary,
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  close: {
+    padding: 0,
   },
   gradientBar: {
     width: 100,
-    height: 12,
-    borderRadius: 2,
+    height: 10,
     border: `1px solid ${theme.palette.divider}`,
   },
   labels: {
     display: 'flex',
     justifyContent: 'space-between',
-    fontSize: 10,
   },
   normLabel: {
-    fontSize: 10,
-    textAlign: 'center',
     color: theme.palette.text.secondary,
-  },
-  legendHeader: {
-    display: 'flex',
-    justifyContent: 'flex-end',
   },
 }))
 
@@ -69,10 +65,13 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     return null
   }
 
+  const { minLabel, maxLabel } = getHicScaleLabels(colorMaxScore, useLogScale)
   return (
     <div className={classes.panel}>
-      <div className={classes.legendHeader}>
+      <div className={classes.header}>
+        <span>Contacts</span>
         <IconButton
+          className={classes.close}
           size="small"
           title="Hide legend"
           onClick={() => {
@@ -82,12 +81,14 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
           <CloseIcon fontSize="inherit" />
         </IconButton>
       </div>
-      <div className={classes.caption}>Contacts</div>
       <div
         className={classes.gradientBar}
         style={{ background: getLegendCssGradient(colorScheme) }}
       />
-      <Labels score={colorMaxScore} useLogScale={useLogScale} />
+      <div className={classes.labels}>
+        <span>{minLabel}</span>
+        <span>{maxLabel}</span>
+      </div>
       {availableNormalizations && availableNormalizations.length > 1 ? (
         <div
           className={classes.normLabel}
@@ -96,23 +97,6 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
           norm: {activeNormalization}
         </div>
       ) : null}
-    </div>
-  )
-})
-
-const Labels = observer(function Labels({
-  score,
-  useLogScale,
-}: {
-  score: number
-  useLogScale: boolean
-}) {
-  const { classes } = useStyles()
-  const { minLabel, maxLabel } = getHicScaleLabels(score, useLogScale)
-  return (
-    <div className={classes.labels}>
-      <span>{minLabel}</span>
-      <span>{maxLabel}</span>
     </div>
   )
 })

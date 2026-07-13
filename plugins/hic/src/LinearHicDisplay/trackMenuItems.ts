@@ -1,11 +1,26 @@
+import { getBpDisplayStr } from '@jbrowse/core/util'
+import { makeResolutionSubMenuItem } from '@jbrowse/wiggle-core'
 import GridOnIcon from '@mui/icons-material/GridOn'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import HicResolutionMenuRow from './components/HicResolutionMenuRow.tsx'
-
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+
+// e.g. "Resolution: 25kbp (auto)" or "Resolution: 25kbp (+1)"; the signed bias
+// suffix reflects how far the user has stepped off the zoom-derived binsize.
+function formatResolutionLabel(
+  effectiveResolution: number | undefined,
+  bias: number,
+) {
+  const value =
+    effectiveResolution !== undefined
+      ? getBpDisplayStr(effectiveResolution)
+      : '…'
+  const suffix =
+    bias === 0 ? ' (auto)' : ` (${bias > 0 ? '+' : '−'}${Math.abs(bias)})`
+  return `Resolution: ${value}${suffix}`
+}
 
 interface HicMenuSelf {
   useLogScale: boolean
@@ -72,12 +87,28 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
     },
     ...(self.availableResolutions
       ? [
-          {
-            label: 'Resolution',
+          makeResolutionSubMenuItem({
             icon: GridOnIcon,
-            type: 'custom' as const,
-            render: () => <HicResolutionMenuRow model={self} />,
-          },
+            resetTitle: 'Reset to auto (tracks zoom)',
+            getState: () => ({
+              label: formatResolutionLabel(
+                self.effectiveResolution,
+                self.resolutionBias,
+              ),
+              finerDisabled: self.nextResolution(-1) === undefined,
+              coarserDisabled: self.nextResolution(1) === undefined,
+              resetDisabled: self.resolutionBias === 0,
+            }),
+            onFiner: () => {
+              self.stepResolution(-1)
+            },
+            onCoarser: () => {
+              self.stepResolution(1)
+            },
+            onReset: () => {
+              self.resetResolutionBias()
+            },
+          }),
         ]
       : []),
     {

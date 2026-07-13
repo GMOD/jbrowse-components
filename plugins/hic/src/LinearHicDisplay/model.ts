@@ -20,7 +20,7 @@ import {
 
 import { generateColorRamp } from './components/colorRamp.ts'
 import { findContactAt } from './contactLookup.ts'
-import { buildHicTrackMenuItems } from './trackMenuItems.tsx'
+import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
   HicContactItem,

@@ -1,38 +1,17 @@
-import { makeCurrentValueSessionDefaultControl } from '@jbrowse/core/configuration'
-import {
-  INLINE_MENU_ROW_WIDTH,
-  ResetToDefaultButton,
-} from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { makeCurrentValueDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import {
   makeRadioSubMenu,
+  makeResolutionSubMenuItem,
   makeScatterPointSizeMenuItem,
   makeSizeMenu,
 } from '@jbrowse/wiggle-core'
-import AddIcon from '@mui/icons-material/Add'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
-import RemoveIcon from '@mui/icons-material/Remove'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { IconButton, Tooltip, Typography } from '@mui/material'
-import { observer } from 'mobx-react'
 
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-const useStyles = makeStyles()(theme => ({
-  row: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-    width: INLINE_MENU_ROW_WIDTH,
-  },
-  value: {
-    flex: 1,
-    textAlign: 'center',
-  },
-}))
 
 const SCATTER_POINT_SIZE_DEFAULT = 2
 const LINE_WIDTH_DEFAULT = 1
@@ -155,7 +134,7 @@ export function makeLineWidthMenuItems(
           onReset: () => {
             self.setLineWidth(undefined)
           },
-          sessionDefault: makeCurrentValueSessionDefaultControl(self, [
+          displayTypeDefault: makeCurrentValueDisplayTypeDefaultControl(self, [
             'lineWidth',
           ]),
         }),
@@ -177,67 +156,6 @@ function formatResolution(n: number) {
   return n >= 1 ? `${n}×` : `1/${Math.round(1 / n)}×`
 }
 
-const ResolutionStepper = observer(function ResolutionStepper({
-  getValue,
-  onFiner,
-  onCoarser,
-  onReset,
-}: {
-  getValue: () => number
-  onFiner: () => void
-  onCoarser: () => void
-  onReset: () => void
-}) {
-  const { classes } = useStyles()
-  const value = getValue()
-  return (
-    <div className={classes.row}>
-      <Tooltip title="Coarser resolution">
-        <span>
-          <IconButton
-            size="small"
-            sx={{ p: 0.25 }}
-            disabled={value <= RESOLUTION_MIN}
-            onClick={() => {
-              onCoarser()
-            }}
-          >
-            <RemoveIcon fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Typography
-        variant="caption"
-        color="textSecondary"
-        className={classes.value}
-      >
-        Resolution: {formatResolution(value)}
-      </Typography>
-      <Tooltip title="Finer resolution">
-        <span>
-          <IconButton
-            size="small"
-            sx={{ p: 0.25 }}
-            disabled={value >= RESOLUTION_MAX}
-            onClick={() => {
-              onFiner()
-            }}
-          >
-            <AddIcon fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <ResetToDefaultButton
-        title="Reset to default resolution"
-        disabled={value === 1}
-        onClick={() => {
-          onReset()
-        }}
-      />
-    </div>
-  )
-})
-
 interface WithResolution {
   hasResolution: boolean
   resolution: number
@@ -254,29 +172,23 @@ export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
     return []
   }
   return [
-    {
-      label: 'Resolution',
-      subMenu: [
-        {
-          label: 'Resolution stepper',
-          type: 'custom',
-          render: () => (
-            <ResolutionStepper
-              getValue={() => self.resolution}
-              onFiner={() => {
-                self.setResolution(self.resolution * RESOLUTION_STEP)
-              }}
-              onCoarser={() => {
-                self.setResolution(self.resolution / RESOLUTION_STEP)
-              }}
-              onReset={() => {
-                self.setResolution(1)
-              }}
-            />
-          ),
-        },
-      ],
-    },
+    makeResolutionSubMenuItem({
+      getState: () => ({
+        label: `Resolution: ${formatResolution(self.resolution)}`,
+        finerDisabled: self.resolution >= RESOLUTION_MAX,
+        coarserDisabled: self.resolution <= RESOLUTION_MIN,
+        resetDisabled: self.resolution === 1,
+      }),
+      onFiner: () => {
+        self.setResolution(self.resolution * RESOLUTION_STEP)
+      },
+      onCoarser: () => {
+        self.setResolution(self.resolution / RESOLUTION_STEP)
+      },
+      onReset: () => {
+        self.setResolution(1)
+      },
+    }),
   ]
 }
 
