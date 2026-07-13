@@ -57,6 +57,7 @@ function HicSvgBody({
   opts: ExportSvgDisplayOptions
 }) {
   const { rpcData, colorScheme, showLegend, useLogScale, colorMaxScore } = self
+  const hasLegendData = self.hasLegendData
   const renderState = self.renderState
   // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
   // this narrows the nullable fetch blob / render state for TS only —
@@ -110,7 +111,7 @@ function HicSvgBody({
           }}
         />
       </SvgClipRect>
-      {showLegend && colorMaxScore > 0 ? (
+      {showLegend && hasLegendData ? (
         <HicSVGColorLegend
           maxScore={colorMaxScore}
           colorScheme={colorScheme}

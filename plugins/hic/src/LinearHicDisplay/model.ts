@@ -209,6 +209,16 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * Whether there's a color scale worth drawing a legend for: data loaded
+       * with a positive saturation point. The single place the `colorMaxScore`
+       * "0 means nothing to show" sentinel is interpreted — legend consumers
+       * read this, not the raw score.
+       */
+      get hasLegendData(): boolean {
+        return this.colorMaxScore > 0
+      },
+      /**
+       * #getter
        * Index into `availableResolutions` that pure auto-mode would pick at
        * the current zoom — largest binsize ≤ 2*bpPerPx, falling back to the
        * finest binsize (idx 0) when nothing qualifies (very zoomed in).
@@ -353,7 +363,7 @@ export default function stateModelFactory(
        * when no legend will be drawn so the export framework can omit space.
        */
       svgLegendWidth(): number {
-        return self.showLegend && self.colorMaxScore > 0 ? 140 : 0
+        return self.showLegend && self.hasLegendData ? 140 : 0
       },
     }))
     .actions(self => ({

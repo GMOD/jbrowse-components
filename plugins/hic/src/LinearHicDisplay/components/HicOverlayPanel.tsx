@@ -119,13 +119,14 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     colorScheme,
     useLogScale,
     showLegend,
+    hasLegendData,
     showResolutionControls,
     availableResolutions,
     availableNormalizations,
     activeNormalization,
   } = model
 
-  const showLegendArea = showLegend && colorMaxScore > 0
+  const showLegendArea = showLegend && hasLegendData
   const showResArea =
     showResolutionControls && availableResolutions !== undefined
   if (!showLegendArea && !showResArea) {

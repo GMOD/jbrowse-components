@@ -43,6 +43,40 @@ test('rows with a per-row color override contribute nothing', () => {
   ).toEqual([])
 })
 
+test('two names sharing a color collapse to one first-seen entry', () => {
+  // TssA and TssAFlnk both painted red -> a single red row (keyed by color, so
+  // one legend swatch and one toggle covers both)
+  const shared: MultiRowRegionData = {
+    ...region,
+    featureNames: ['TssA', 'TssAFlnk', 'TssA', 'Quies'],
+    featureColors: Uint32Array.from([
+      0xff0000ff, 0xff0000ff, 0xff0000ff, 0xff00ff00,
+    ]),
+  }
+  expect(
+    buildColorLegend([shared], rowIndexByValue, [undefined, undefined]),
+  ).toEqual([
+    { label: 'TssA', color: 0xff0000ff },
+    { label: 'Quies', color: 0xff00ff00 },
+  ])
+})
+
+test('a name reused across two colors keeps its first-seen color', () => {
+  const reused: MultiRowRegionData = {
+    ...region,
+    featureNames: ['TssA', 'Quies', 'TssA', 'Quies'],
+    featureColors: Uint32Array.from([
+      0xff0000ff, 0xff00ff00, 0xffabcdef, 0xff00ff00,
+    ]),
+  }
+  expect(
+    buildColorLegend([reused], rowIndexByValue, [undefined, undefined]),
+  ).toEqual([
+    { label: 'TssA', color: 0xff0000ff },
+    { label: 'Quies', color: 0xff00ff00 },
+  ])
+})
+
 test('unnamed features produce no legend', () => {
   const unnamed = { ...region, featureNames: ['', '', '', ''] }
   expect(
@@ -67,7 +101,7 @@ test('too many distinct labels is treated as non-categorical', () => {
   const many: MultiRowRegionData = {
     featureStarts: Uint32Array.from({ length: n }, (_, i) => i * 10),
     featureEnds: Uint32Array.from({ length: n }, (_, i) => i * 10 + 5),
-    featureColors: Uint32Array.from({ length: n }, () => 0xff0000ff),
+    featureColors: Uint32Array.from({ length: n }, (_, i) => 0xff000000 + i),
     partitionValues: ['E001'],
     featurePartitionIndex: new Uint32Array(n),
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),

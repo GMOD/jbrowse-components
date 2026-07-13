@@ -42,22 +42,31 @@ export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
 const MAX_LEGEND_ENTRIES = 30
 
 /**
- * Derive the categorical color key for a per-feature-colored painting: the
- * distinct `(featureName -> per-feature color)` pairs, in first-seen order.
+ * Derive the categorical color key for a per-feature-colored painting: one entry
+ * per distinct per-feature color, labeled by the first name seen in that color,
+ * in first-seen order.
+ *
+ * Entries are keyed by color (not name) so each legend row is 1:1 with a color.
+ * Toggling a category hides features *by color* (see `hiddenColors`), so a color
+ * shared by two names must collapse to a single row — otherwise one swatch would
+ * appear twice and toggling either would hide both. A name reused across two
+ * colors keeps its first-seen color.
  *
  * Only per-feature color mode has an unlabeled vocabulary worth a legend. Rows
  * with a per-row color override (palette / sampleColorMap / arrangement dialog)
  * paint every block the row color and are already named by the sidebar labels,
  * so they contribute nothing here — the legend describes the `color` axis, not
  * the row axis. Returns `[]` when there's no categorical signal (unnamed
- * features, or more than `MAX_LEGEND_ENTRIES` distinct names).
+ * features, or more than `MAX_LEGEND_ENTRIES` distinct colors).
  */
 export function buildColorLegend(
   regions: Iterable<MultiRowRegionData>,
   rowIndexByValue: ReadonlyMap<string, number>,
   rowColorsByIndex: readonly (number | undefined)[],
 ): LegendEntry[] {
-  const byLabel = new Map<string, number>()
+  const entries: LegendEntry[] = []
+  const seenColors = new Set<number>()
+  const seenLabels = new Set<string>()
   for (const data of regions) {
     const rowForLocal = resolveLocalRowIndices(
       data.partitionValues,
@@ -67,18 +76,22 @@ export function buildColorLegend(
     for (let i = 0; i < featureNames.length; i++) {
       const row = rowForLocal[featurePartitionIndex[i]!]
       const label = featureNames[i]!
+      const color = featureColors[i]!
       if (
         row !== undefined &&
         rowColorsByIndex[row] === undefined &&
         label &&
-        !byLabel.has(label)
+        !seenLabels.has(label) &&
+        !seenColors.has(color)
       ) {
-        byLabel.set(label, featureColors[i]!)
-        if (byLabel.size > MAX_LEGEND_ENTRIES) {
+        seenLabels.add(label)
+        seenColors.add(color)
+        entries.push({ label, color })
+        if (entries.length > MAX_LEGEND_ENTRIES) {
           return []
         }
       }
     }
   }
-  return [...byLabel].map(([label, color]) => ({ label, color }))
+  return entries
 }

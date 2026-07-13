@@ -353,9 +353,9 @@ export default function stateModelFactory(
        * ABGR colors currently hidden via the legend's category toggles: the
        * `colorLegend` colors whose label is in `hiddenCategories`. Both render
        * paths and the hit-test skip features painted in one of these, so toggling
-       * a category off drops it everywhere without a refetch. Assumes each legend
-       * category maps to a distinct color (true for chromHMM-style paintings); a
-       * color shared by two categories can't be toggled independently.
+       * a category off drops it everywhere without a refetch. `colorLegend` has
+       * one entry per distinct color (see buildColorLegend), so each toggle maps
+       * to exactly one color.
        */
       get hiddenColors(): ReadonlySet<number> {
         if (!self.hiddenCategories.length) {
