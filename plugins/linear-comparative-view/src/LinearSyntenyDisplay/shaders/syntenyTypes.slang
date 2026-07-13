@@ -166,10 +166,13 @@ float perpCoverage(float2 localPos, float edge0, float edge1,
     (isCigar > 0.5 || isMarker > 0.5 || fadeThinAlignments < 0.5)
       ? 1.0
       : clamp(perpW, WIDTH_FADE_FLOOR, 1.0);
-  // Per-edge AA, ~1px each (fwidth of a true perpendicular distance ≈ 1),
-  // clamped to keep any residual derivative spike bounded.
-  float aaL = clamp(fwidth(dL), 1e-4, 1.5);
-  float aaR = clamp(fwidth(dR), 1e-4, 1.5);
+  // Per-edge AA, 1px each. dL/dR are already true perpendicular distances, so
+  // the AA width is the length of their screen-space gradient (= 1 at every
+  // slope) — NOT fwidth (=|ddx|+|ddy|), which overshoots by up to √2 on
+  // diagonals and softens slanted ribbon edges. Clamped to bound any residual
+  // derivative spike. See drewcassidy.me/2020/06/26/sdf-antialiasing/.
+  float aaL = clamp(length(float2(ddx(dL), ddy(dL))), 1e-4, 1.5);
+  float aaR = clamp(length(float2(ddx(dR), ddy(dR))), 1e-4, 1.5);
   return smoothstep(-aaL * 0.5, aaL * 0.5, dL)
        * smoothstep(-aaR * 0.5, aaR * 0.5, dR) * widthFade;
 }
@@ -209,7 +212,7 @@ public float fillCoverage(float2 localPos, float edge0, float edge1,
                           float h, float fadeThinAlignments) {
   float cx = perpCoverage(localPos, edge0, edge1, pf0, pf1, isCigar, isMarker,
                           fadeThinAlignments);
-  float ay = max(fwidth(localPos.y), 1e-4) * 0.5;
+  float ay = max(length(float2(ddx(localPos.y), ddy(localPos.y))), 1e-4) * 0.5;
   float cy = smoothstep(-ay, ay, localPos.y)
            - smoothstep(h - ay, h + ay, localPos.y);
   return cx * cy;
@@ -253,10 +256,18 @@ public float4 shadeFill(float4 color, float featureId, float coverage,
 }
 
 // Edge-pass fragment output: 1px antialiased black stroke at 0.4 alpha. `dist`
-// is the signed perpendicular distance from the edge centerline in px.
+// is the signed perpendicular distance from the edge centerline in px; the
+// geometry expands ±STROKE_WIDTH (±1px) around a 0.5px half-width, so the
+// analytic ramp reaches zero exactly at the quad boundary.
+//
+// Analytic SDF coverage (mirrors wiggle center-line, commit 06ea37ff44): divide
+// the edge distance by the true gradient magnitude (length of the screen-space
+// derivative, = 1 at every angle) rather than fwidth, and bias by +0.5 so the
+// core stays fully opaque. The old fwidth + symmetric-smoothstep form put
+// half-coverage ~0.75px out (a blurry ~1.5px stroke) and widened on diagonals.
 public float4 edgeStrokeColor(float dist) {
-  float aa = fwidth(dist);
-  float edgeAlpha = 1.0 - smoothstep(0.5 - aa * 0.5, 0.5 + aa, abs(dist));
+  float aa = max(length(float2(ddx(dist), ddy(dist))), 1e-4);
+  float edgeAlpha = clamp((0.5 - abs(dist)) / aa + 0.5, 0.0, 1.0);
   return float4(0.0, 0.0, 0.0, edgeAlpha * 0.4);
 }
 
