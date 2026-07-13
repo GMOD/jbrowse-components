@@ -1,6 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 
+import { exportRCode } from './exportRCode.ts'
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
 import {
   CONSEQUENCE_IMPACT_JEXL,
@@ -9,7 +10,10 @@ import {
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  RTrackFragment,
+} from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearVariantDisplay
@@ -128,6 +132,16 @@ export default function stateModelFactory(
             },
           },
         ]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Build the R ggplot fragment for this track, used by the view's "Export
+       * R script" to regenerate the variant panel from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment {
+        return exportRCode(self as LinearVariantDisplayModel)
       },
     }))
 }

@@ -26,6 +26,7 @@ import {
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import PaletteIcon from '@mui/icons-material/Palette'
 
+import { exportRCode } from './exportRCode.ts'
 import {
   buildEditableSources,
   buildSources,
@@ -55,6 +56,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
+  RTrackFragment,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
@@ -496,6 +498,16 @@ export default function stateModelFactory(
             },
           },
         ]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Build the R ggplot fragment for this track, used by the view's "Export
+       * R script" to regenerate the multi-wiggle panel from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment | undefined {
+        return exportRCode(self as MultiLinearWiggleDisplayModel)
       },
     }))
     .actions(self => ({
