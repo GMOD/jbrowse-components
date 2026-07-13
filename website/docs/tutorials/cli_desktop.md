@@ -105,6 +105,16 @@ In JBrowse Desktop, choose **File → Open config.json or .jbrowse file…** (or
 config's own folder, loading the copied files straight from local disk, with no
 web server and no re-adding tracks through the UI.
 
+Since you already have a terminal open, you can also hand the config straight to
+Desktop and skip the start screen entirely:
+
+```sh
+jbrowse-desktop myproject/config.json
+```
+
+(On macOS: `open -a "JBrowse 2" myproject/config.json`. See
+[launching from the command line](/docs/quickstart_desktop#launching-from-the-command-line).)
+
 (Prefer the GUI for a one-off file? Desktop's **Add track** picker still works.
 This CLI route is best when you want a scripted, repeatable setup, or the same
 config on both Desktop and the web.)

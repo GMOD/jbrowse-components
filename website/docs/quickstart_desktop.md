@@ -176,6 +176,35 @@ opened sessions" and choose **Add to quickstart list** (the playlist-add icon in
 list view, or the entry's action menu). It then appears in the **Quickstart
 list** on the left panel for one-click launching.
 
+## Launching from the command line
+
+If you start JBrowse Desktop from a terminal, you can pass a session (`.jbrowse`)
+or a configuration (`config.json`) file to open it straight away, skipping the
+start screen:
+
+```sh
+# Linux AppImage
+./jbrowse-desktop-*-linux.AppImage myproject/config.json
+
+# Linux (installed) / Windows
+jbrowse-desktop mysession.jbrowse
+
+# macOS
+open -a "JBrowse 2" myproject/config.json
+```
+
+Relative paths inside a `config.json` are resolved against that file's own
+folder, so a config the [CLI builds](/docs/tutorials/cli_desktop) opens with no
+extra setup. Double-clicking a `.jbrowse` file in your file explorer does the
+same thing.
+
+Two informational flags are also available:
+
+```sh
+jbrowse-desktop --version   # print the version and exit
+jbrowse-desktop --help      # print usage and exit
+```
+
 ## See also
 
 - [User guide](/docs/user_guide) - track types, views, and UI features

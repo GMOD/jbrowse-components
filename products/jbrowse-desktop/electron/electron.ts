@@ -25,9 +25,41 @@ debug({ showDevTools: false, isEnabled: true })
 
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL
 
-function findSessionPathArg(argv: readonly string[], cwd: string) {
-  const arg = argv.slice(1).find(a => a.endsWith('.jbrowse'))
+// A launch argument may be a saved session (.jbrowse) or a hand-written /
+// CLI-generated config (config.json); both are JSON snapshots loaded the same
+// way, and the start screen's "Open config.json or .jbrowse file" accepts the
+// same pair.
+const LAUNCH_FILE_EXTENSIONS = ['.jbrowse', '.json']
+
+const HELP_TEXT = `JBrowse 2 desktop
+
+Usage: jbrowse-desktop [options] [file]
+
+  file          Path to a session (.jbrowse) or configuration (config.json)
+                file to open on launch
+
+Options:
+  -h, --help    Print this help message and exit
+  --version     Print the version number and exit
+
+Documentation: https://jbrowse.org/jb2/docs/`
+
+function findLaunchFileArg(argv: readonly string[], cwd: string) {
+  const arg = argv
+    .slice(1)
+    .find(a => LAUNCH_FILE_EXTENSIONS.some(ext => a.endsWith(ext)))
   return arg ? path.resolve(cwd, arg) : undefined
+}
+
+// Text to print for an informational flag (--version/--help), or undefined when
+// the app should launch normally.
+function cliInfoOutput(argv: readonly string[]) {
+  const args = argv.slice(1)
+  return args.includes('--version')
+    ? app.getVersion()
+    : args.includes('--help') || args.includes('-h')
+      ? HELP_TEXT
+      : undefined
 }
 
 function showFatalError(title: string, error: unknown) {
@@ -50,7 +82,7 @@ function getInitialSession(): Promise<string | undefined> {
     app.once('open-file', onOpenFile)
     void app.whenReady().then(() => {
       app.off('open-file', onOpenFile)
-      resolve(findSessionPathArg(process.argv, process.cwd()))
+      resolve(findLaunchFileArg(process.argv, process.cwd()))
     })
   })
 }
@@ -142,7 +174,7 @@ function runApp() {
       // launch or macOS open-file that fires during filesystem init is not
       // dropped for lack of a listener
       app.on('second-instance', (_event, argv, workingDirectory) => {
-        wm.ensureWindow(findSessionPathArg(argv, workingDirectory)).catch(
+        wm.ensureWindow(findLaunchFileArg(argv, workingDirectory)).catch(
           logError,
         )
       })
@@ -162,7 +194,13 @@ function runApp() {
   })
 }
 
-if (app.requestSingleInstanceLock()) {
+// --version/--help print and exit before acquiring the single-instance lock so
+// they never disturb an already-running window.
+const infoOutput = cliInfoOutput(process.argv)
+if (infoOutput !== undefined) {
+  console.log(infoOutput)
+  app.exit(0)
+} else if (app.requestSingleInstanceLock()) {
   runApp()
 } else {
   app.quit()
