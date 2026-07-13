@@ -174,7 +174,7 @@ export function makeResolutionSubMenu(self: WithResolution): MenuItem[] {
   return [
     makeResolutionSubMenuItem({
       getState: () => ({
-        label: `Resolution: ${formatResolution(self.resolution)}`,
+        label: formatResolution(self.resolution),
         finerDisabled: self.resolution >= RESOLUTION_MAX,
         coarserDisabled: self.resolution <= RESOLUTION_MIN,
         resetDisabled: self.resolution === 1,

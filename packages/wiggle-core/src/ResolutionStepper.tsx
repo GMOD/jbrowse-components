@@ -2,9 +2,7 @@ import type React from 'react'
 
 import { INLINE_MENU_ROW_WIDTH, ResetToDefaultButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import AddIcon from '@mui/icons-material/Add'
-import RemoveIcon from '@mui/icons-material/Remove'
-import { IconButton, Tooltip, Typography } from '@mui/material'
+import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -15,6 +13,13 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     gap: theme.spacing(0.5),
     width: INLINE_MENU_ROW_WIDTH,
+  },
+  // subtle text buttons: no uppercase, minimal padding, inherit text color so
+  // "Coarser"/"Finer" read as quiet affordances rather than prominent CTAs
+  step: {
+    textTransform: 'none',
+    minWidth: 0,
+    padding: '0 4px',
   },
   value: {
     flex: 1,
@@ -52,20 +57,17 @@ const ResolutionStepper = observer(function ResolutionStepper({
   const { label, finerDisabled, coarserDisabled, resetDisabled } = getState()
   return (
     <div className={classes.row}>
-      <Tooltip title="Coarser resolution">
-        <span>
-          <IconButton
-            size="small"
-            sx={{ p: 0.25 }}
-            disabled={coarserDisabled}
-            onClick={() => {
-              onCoarser()
-            }}
-          >
-            <RemoveIcon fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
+      <Button
+        className={classes.step}
+        size="small"
+        color="inherit"
+        disabled={coarserDisabled}
+        onClick={() => {
+          onCoarser()
+        }}
+      >
+        Coarser
+      </Button>
       <Typography
         variant="caption"
         color="textSecondary"
@@ -73,20 +75,17 @@ const ResolutionStepper = observer(function ResolutionStepper({
       >
         {label}
       </Typography>
-      <Tooltip title="Finer resolution">
-        <span>
-          <IconButton
-            size="small"
-            sx={{ p: 0.25 }}
-            disabled={finerDisabled}
-            onClick={() => {
-              onFiner()
-            }}
-          >
-            <AddIcon fontSize="small" />
-          </IconButton>
-        </span>
-      </Tooltip>
+      <Button
+        className={classes.step}
+        size="small"
+        color="inherit"
+        disabled={finerDisabled}
+        onClick={() => {
+          onFiner()
+        }}
+      >
+        Finer
+      </Button>
       <ResetToDefaultButton
         title={resetTitle}
         disabled={resetDisabled}

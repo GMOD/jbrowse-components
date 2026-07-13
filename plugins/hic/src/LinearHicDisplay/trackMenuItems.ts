@@ -7,8 +7,9 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// e.g. "Resolution: 25kbp (auto)" or "Resolution: 25kbp (+1)"; the signed bias
-// suffix reflects how far the user has stepped off the zoom-derived binsize.
+// The stepper's centered value, e.g. "25kbp (auto)" or "25kbp (+1)" (the "Resolution"
+// prefix is redundant under the submenu of that name); the signed bias suffix
+// reflects how far the user has stepped off the zoom-derived binsize.
 function formatResolutionLabel(
   effectiveResolution: number | undefined,
   bias: number,
@@ -19,7 +20,7 @@ function formatResolutionLabel(
       : '…'
   const suffix =
     bias === 0 ? ' (auto)' : ` (${bias > 0 ? '+' : '−'}${Math.abs(bias)})`
-  return `Resolution: ${value}${suffix}`
+  return `${value}${suffix}`
 }
 
 interface HicMenuSelf {
