@@ -489,10 +489,19 @@ export const svSpecs: ScreenshotSpec[] = [
     settleMs: 40000,
     annotations: [
       {
+        // red->blue->red inversion reads
         type: 'text',
         x: 60,
         y: 300,
-        text: 'Each read spans the inversion: a reverse-strand core (blue) between forward-strand flanks (red). The magenta arc joins the two split-read breakpoints.',
+        text: 'Red flanks (forward) around a blue core (reverse strand).',
+        maxWidth: 470,
+      },
+      {
+        // arcs, stacked below with a gap
+        type: 'text',
+        x: 60,
+        y: 470,
+        text: 'Magenta arcs link split-read breakpoints.',
         maxWidth: 470,
       },
     ],
