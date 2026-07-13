@@ -138,6 +138,19 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Show the categorical color key (swatch + feature name per distinct
+       * per-feature color). Only appears in per-feature color mode with named,
+       * categorical features (e.g. chromHMM states); in per-row palette /
+       * sampleColorMap mode the sidebar labels are already the key, so nothing
+       * shows regardless.
+       */
+      showLegend: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'show the categorical color key for per-feature coloring',
+      },
+      /**
+       * #slot
        */
       showTree: {
         type: 'boolean',

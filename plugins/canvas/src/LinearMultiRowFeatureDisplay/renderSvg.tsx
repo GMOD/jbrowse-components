@@ -8,8 +8,10 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
+import MultiRowColorLegend from './components/MultiRowColorLegend.tsx'
 import { drawMultiRowBlocks } from './rendering/drawMultiRowBlocks.ts'
 
+import type { LegendEntry } from './rendering/colorLegend.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
@@ -38,6 +40,8 @@ export interface RenderSvgModel extends SvgExportable {
   treeAreaWidth: number
   showTree: boolean
   hierarchy: ClusterHierarchyNode | undefined
+  showLegend: boolean
+  colorLegend: LegendEntry[]
 }
 
 export async function renderSvg(
@@ -97,6 +101,12 @@ function MultiRowSvgBody({
         treeAreaWidth={self.treeAreaWidth}
         availableHeight={height}
       />
+      {self.showLegend ? (
+        <MultiRowColorLegend
+          entries={self.colorLegend}
+          canvasWidth={view.width}
+        />
+      ) : null}
     </>
   )
 }

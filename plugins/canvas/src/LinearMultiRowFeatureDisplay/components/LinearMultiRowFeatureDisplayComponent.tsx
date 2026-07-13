@@ -6,6 +6,7 @@ import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
+import MultiRowColorLegend from './MultiRowColorLegend.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
 
@@ -20,7 +21,15 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
   canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { hoveredFeature, height, sources, rowHeight, sidebarOffset } = model
+  const {
+    hoveredFeature,
+    height,
+    sources,
+    rowHeight,
+    sidebarOffset,
+    showLegend,
+    colorLegend,
+  } = model
   function onMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
     const rect = e.currentTarget.getBoundingClientRect()
     const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
@@ -94,6 +103,21 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             labelOffset={sidebarOffset}
             availableHeight={height}
           />
+        </svg>
+      ) : null}
+      {showLegend && colorLegend.length ? (
+        <svg
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: view.width,
+            height,
+            pointerEvents: 'none',
+            zIndex: 3,
+          }}
+        >
+          <MultiRowColorLegend entries={colorLegend} canvasWidth={view.width} />
         </svg>
       ) : null}
       <TreeSidebar model={model} />

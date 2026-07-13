@@ -102,6 +102,8 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     treeAreaWidth: 80,
     showTree: false,
     hierarchy: undefined,
+    showLegend: false,
+    colorLegend: [],
     ...overrides,
   }
 }

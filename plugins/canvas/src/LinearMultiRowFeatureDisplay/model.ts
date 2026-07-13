@@ -32,6 +32,7 @@ import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
+import { buildColorLegend } from './rendering/colorLegend.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
 import { resolveLocalRowIndices } from './rendering/resolveLocalRowIndices.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
@@ -158,6 +159,12 @@ export default function stateModelFactory(
        */
       get conf(): LinearMultiRowFeatureDisplayConfig {
         return self.configuration
+      },
+      /**
+       * #getter
+       */
+      get showLegend(): boolean {
+        return getConf(self, 'showLegend')
       },
       /**
        * #getter
@@ -371,6 +378,21 @@ export default function stateModelFactory(
         }
       },
       /**
+       * #getter
+       * Categorical color key derived from the loaded data: distinct
+       * `(featureName -> per-feature color)` pairs among per-feature-colored
+       * rows. Empty in per-row palette / sampleColorMap mode (where the sidebar
+       * labels are the key) and for non-categorical (unnamed / all-distinct)
+       * data. See buildColorLegend.
+       */
+      get colorLegend() {
+        return buildColorLegend(
+          self.rpcDataMap.values(),
+          self.rowIndexByValue,
+          self.rowColorsByIndex,
+        )
+      },
+      /**
        * #method
        * Fetch-input cache keys (tier-1, via SettingsInvalidate → refetch).
        * Color is resolved in the worker, so the raw color slot is a key.
@@ -451,6 +473,12 @@ export default function stateModelFactory(
        */
       setRowHeight(n: number) {
         self.configuration.setSlot('rowHeight', n)
+      },
+      /**
+       * #action
+       */
+      setShowLegend(f: boolean) {
+        self.configuration.setSlot('showLegend', f)
       },
       /**
        * #action

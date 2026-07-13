@@ -7,6 +7,7 @@ import HeightIcon from '@mui/icons-material/Height'
 
 import { radioSubMenu } from '../LinearBasicDisplay/baseModelHelpers.ts'
 
+import type { LegendEntry } from './rendering/colorLegend.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -23,6 +24,8 @@ const ROW_HEIGHT_COMPACT = 8
 
 interface MultiRowMenuSelf extends IAnyStateTreeNode {
   showTree: boolean
+  showLegend: boolean
+  colorLegend: LegendEntry[]
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
@@ -32,6 +35,7 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   runClustering?: boolean
   rowHeightSetting: number
   setShowTree: (f: boolean) => void
+  setShowLegend: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MultiRowSource[]) => void
@@ -63,6 +67,18 @@ export function buildMultiRowTrackMenuItems(
       },
     },
     treeBranchLengthMenuItem(self),
+    ...(self.colorLegend.length
+      ? [
+          {
+            label: 'Show color legend',
+            type: 'checkbox' as const,
+            checked: self.showLegend,
+            onClick: () => {
+              self.setShowLegend(!self.showLegend)
+            },
+          },
+        ]
+      : []),
     {
       icon: HeightIcon,
       ...radioSubMenu(
