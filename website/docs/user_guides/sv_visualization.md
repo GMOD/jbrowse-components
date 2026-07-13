@@ -85,10 +85,10 @@ breakpoints and splits into forward and reverse-strand alignments. With View as
 pairs / link supplementary alignments on, those segments chain onto one row: the
 inverted middle paints the reverse-strand color between forward-strand flanks,
 and the split junctions are joined by a magenta inversion arc. The figure below
-shows the same ~1.2 kb inversion in one 1000 Genomes sample (HG00151) with both
-technologies: Illumina high-coverage on top, Oxford Nanopore below.
+shows this ~1.2 kb inversion in one 1000 Genomes sample (HG00151) with Oxford
+Nanopore long reads, the 1KGP ensemble SV call marking the locus above.
 
-<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) shown with short and long reads from one sample, both with supplementary alignments linked. Top (Illumina paired-end): the inversion is only inferred, a minority of same-orientation pairs and split-read arcs clustering at the breakpoints. Bottom (Oxford Nanopore): each long read spans the whole segment, its reverse-strand middle painting a distinct color between forward-strand flanks with magenta split-read arcs at the junctions." src="/img/inversion_long_read.png" />
+<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, supplementary alignments linked. Each read's reverse-strand middle (blue) paints between its forward-strand flanks (red), and the magenta split-read arc joins the two breakpoints — both directly read out the inversion. The 1KGP ensemble VCF call marks the locus above." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 

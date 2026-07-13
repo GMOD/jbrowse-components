@@ -65,6 +65,13 @@ interface ArcSettings {
   samplot?: boolean
   drawInter: boolean
   drawLongRange: boolean
+  // Normalize a raw BAM refName (from an SA tag or RNEXT — which use the file's
+  // own naming, e.g. `chr1`) to the assembly-canonical refName the fetched
+  // reads carry (e.g. `1`). Without this a split junction between a fetched
+  // read (`1`) and its SA segment (`chr1`) reads as inter-chromosomal and paints
+  // as a connector tick instead of the intra-chromosomal split-inversion arc.
+  // Optional: omitted (tests / no assembly) means no aliasing — identity.
+  canonicalRefName?: (refName: string) => string
 }
 
 // Pairs at least this far apart paint with the dedicated long-insert color
@@ -403,13 +410,24 @@ function computePairingInfo(rpcDataMap: ReadonlyMap<number, PileupDataResult>) {
   return { hasPaired, stats }
 }
 
+// Dependencies threaded through pending-arc collection: the long-range gate and
+// the assembly refName normalizer. `canonicalRefName` maps a raw BAM refName
+// (SA tag / RNEXT — the file's own naming, e.g. `chr1`) to the assembly-
+// canonical name the fetched reads carry (e.g. `1`). Bundled so the whole chain
+// tree threads one value; keeping every SegAln/PendingArc refName canonical is
+// what stops a same-chr split junction from reading as inter-chromosomal.
+interface ArcChainContext {
+  drawLongRange: boolean
+  canonicalRefName: (refName: string) => string
+}
+
 // A lone read whose mate is mapped elsewhere: connect its 3' (read-trailing)
 // edge to the recorded mate position. Only PNEXT (the mate's leftmost/5' base)
 // is known off-screen — the mate's CIGAR/length isn't — so for a forward-strand
 // mate the endpoint lands at its 5' edge rather than its true 3' end (off by one
 // read length). Negligible at arc-view zoom; exact resolution would need the
 // off-screen mate's alignment.
-function mateArc(entry: ReadEntry): PendingArc {
+function mateArc(entry: ReadEntry, ctx: ArcChainContext): PendingArc {
   const { data, readIdx, refName } = entry
   const flags = data.readFlags[readIdx]!
   const strand = data.readStrands[readIdx]!
@@ -420,7 +438,7 @@ function mateArc(entry: ReadEntry): PendingArc {
     p1Ref: refName,
     p1Bp: readTrailingBp(strand, start, end),
     p1Strand: strand,
-    p2Ref: mateRef || refName,
+    p2Ref: mateRef ? ctx.canonicalRefName(mateRef) : refName,
     p2Bp: data.readNextPositions?.[readIdx] ?? 0,
     p2Strand: flags & SAM_FLAG_MATE_REVERSE ? -1 : 1,
     pairOrientationNum: data.readPairOrientations[readIdx]!,
@@ -443,19 +461,29 @@ function entrySeg(entry: ReadEntry): SegAln {
 
 // The unpaired read's complete segment chain: every on-screen segment (a fetched
 // entry) plus any segment named in a sibling's SA tag that no view currently
-// shows. Deduped by genomic position so a read fetched in two regions, or a
-// segment both on screen and named in a sibling SA, is counted once (the
-// on-screen record wins). This is what lets a connector step through an
-// off-screen segment rather than silently joining the two on-screen segments
-// that flank it. Sorted into read order by clip-at-start-of-read.
-function unpairedReadChain(entries: ReadEntry[]): SegAln[] {
+// shows. Sorted into read order by clip-at-start-of-read. Every segment's
+// refName is canonical — entries already are; SA segments are normalized here —
+// so the `${refName}:${start}` dedup collapses a fetched segment and its
+// SA-tag twin to one entry (first writer wins, and on-screen segments are added
+// first, so the on-screen record survives). That single canonical chain is what
+// lets a connector step through an off-screen segment and keeps a same-chr split
+// junction from reading as inter-chromosomal.
+function unpairedReadChain(
+  entries: ReadEntry[],
+  ctx: ArcChainContext,
+): SegAln[] {
   const byPos = new Map<string, SegAln>()
+  const addSeg = (seg: SegAln) => {
+    const key = `${seg.refName}:${seg.start}`
+    if (!byPos.has(key)) {
+      byPos.set(key, seg)
+    }
+  }
   for (const entry of entries) {
     // Secondary alignments are alternate mappings, not part of the read's split
     // chain — dropped here as the multi-entry path does.
     if (!(entry.data.readFlags[entry.readIdx]! & SAM_FLAG_SECONDARY)) {
-      const seg = entrySeg(entry)
-      byPos.set(`${seg.refName}:${seg.start}`, seg)
+      addSeg(entrySeg(entry))
     }
   }
   for (const { data, readIdx } of entries) {
@@ -467,10 +495,9 @@ function unpairedReadChain(entries: ReadEntry[]): SegAln[] {
     )) {
       // Drop truncated / placeholder-CIGAR / non-numeric-position SA entries —
       // they parse to a zero-length or NaN span and would emit a junk arc.
-      const key = `${sa.refName}:${sa.start}`
-      if (Number.isFinite(sa.start) && sa.end > sa.start && !byPos.has(key)) {
-        byPos.set(key, {
-          refName: sa.refName,
+      if (Number.isFinite(sa.start) && sa.end > sa.start) {
+        addSeg({
+          refName: ctx.canonicalRefName(sa.refName),
           start: sa.start,
           end: sa.end,
           strand: sa.strand,
@@ -493,14 +520,14 @@ function unpairedReadChain(entries: ReadEntry[]): SegAln[] {
 // off-screen segment (the flanking pair are not actually read-adjacent).
 function unpairedChainArcs(
   entries: ReadEntry[],
-  drawLongRange: boolean,
+  ctx: ArcChainContext,
 ): PendingArc[] {
-  const chain = unpairedReadChain(entries)
+  const chain = unpairedReadChain(entries, ctx)
   const arcs: PendingArc[] = []
   for (let j = 0; j < chain.length - 1; j++) {
     const a1 = chain[j]!
     const a2 = chain[j + 1]!
-    if ((a1.onScreen && a2.onScreen) || drawLongRange) {
+    if ((a1.onScreen && a2.onScreen) || ctx.drawLongRange) {
       const { bp1, bp2 } = connectionEndpointBps({
         s1: a1.strand,
         start1: a1.start,
@@ -554,7 +581,7 @@ function pendingArcFromConnection(c: ReadConnection<ReadEntry>): PendingArc {
 
 function collectPendingArcs(
   readsByName: Map<string, ReadEntry[]>,
-  drawLongRange: boolean,
+  ctx: ArcChainContext,
 ) {
   const pendingArcs: PendingArc[] = []
   for (const entries of readsByName.values()) {
@@ -566,14 +593,14 @@ function collectPendingArcs(
       // through any off-screen segment rather than joining across it. Handles
       // both the lone-read (single on-screen segment, junctions all long-range)
       // and the multi-segment on-screen cases uniformly.
-      pendingArcs.push(...unpairedChainArcs(entries, drawLongRange))
+      pendingArcs.push(...unpairedChainArcs(entries, ctx))
     } else if (entries.length === 1) {
       // A lone paired read connects to an off-screen mate / supplementary block —
       // only drawn when long-range connections are enabled. The two link kinds
       // are independent read properties, so it gets BOTH: its mate link (when
       // the mate is mapped) AND its SA split junctions (when it carries
       // supplementary alignments).
-      if (drawLongRange) {
+      if (ctx.drawLongRange) {
         const entry = entries[0]!
         const flags = entry.data.readFlags[entry.readIdx]!
         // Secondary alignments (0x100) are alternate mappings, not the read's
@@ -585,9 +612,9 @@ function collectPendingArcs(
         // would otherwise reach mateArc.
         if (!(flags & SAM_FLAG_SECONDARY)) {
           if (!(flags & SAM_FLAG_MATE_UNMAPPED)) {
-            pendingArcs.push(mateArc(entry))
+            pendingArcs.push(mateArc(entry, ctx))
           }
-          pendingArcs.push(...unpairedChainArcs(entries, drawLongRange))
+          pendingArcs.push(...unpairedChainArcs(entries, ctx))
         }
       }
     } else {
@@ -600,9 +627,9 @@ function collectPendingArcs(
       // bezier overlay, only chains the on-screen entries; the SA-tag off-screen
       // walk lives here so it doesn't leak pseudo-entries into that path.)
       const { first, second, hasPaired } = partitionReadGroup(entries)
-      pendingArcs.push(...unpairedChainArcs(first, drawLongRange))
+      pendingArcs.push(...unpairedChainArcs(first, ctx))
       if (hasPaired) {
-        pendingArcs.push(...unpairedChainArcs(second, drawLongRange))
+        pendingArcs.push(...unpairedChainArcs(second, ctx))
         if (first.length > 0 && second.length > 0) {
           pendingArcs.push(
             pendingArcFromConnection({
@@ -626,7 +653,10 @@ export function computeArcsFromPileupData(
   const { colorByType, samplot = false, drawInter, drawLongRange } = settings
   const readsByName = groupReadsByName(rpcDataMap, regions)
   const { hasPaired, stats } = computePairingInfo(rpcDataMap)
-  const pendingArcs = collectPendingArcs(readsByName, drawLongRange)
+  const pendingArcs = collectPendingArcs(readsByName, {
+    drawLongRange,
+    canonicalRefName: settings.canonicalRefName ?? (refName => refName),
+  })
 
   const longRangeThreshold = computeLongRangeThreshold(pendingArcs)
 

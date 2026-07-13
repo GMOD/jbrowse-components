@@ -78,7 +78,7 @@ See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
 
 <Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a CpG island on chr20." src="/img/alignments/modifications1.png" />
-<Figure caption="The same track in modification-type mode (top) and methylation mode (bottom) over a hypomethylated CpG island. Modification-type mode draws only the positive 5mC calls, so the region looks empty; methylation mode paints every CpG, filling the unmethylated ones blue." src="/img/alignments/modifications2.png" />
+<Figure caption="The same track in modification-type mode (top) and methylation mode (bottom) over a hypomethylated CpG island. Modification-type mode draws only the positive 5mC calls, so the region looks empty; methylation mode scans each read for CpG dinucleotides and paints every one — red where the MM tag calls it methylated, blue for the CpGs it leaves unmodified — filling the hypomethylated island blue." src="/img/alignments/modifications2.png" />
 
 ### Pair orientation and insert size
 
@@ -188,11 +188,18 @@ properly-paired reads. You can also filter to a specific read name or tag value
 
 Sashimi-style arcs are drawn automatically over spliced alignments (reads with
 `N` in the CIGAR), so RNA-seq and Iso-Seq splice junctions appear with no setup.
-When reads carry the XS tag, the arc strand follows it. Turn them off from the
-track menu. See the [RNA-seq tutorial](/docs/tutorials/rnaseq) for a worked
-splice-junction example.
+When reads carry the XS tag, the arc strand follows it. The track menu's
+**Sashimi arcs** submenu controls them: _Show labels_ prints each junction's
+supporting-read count on its arc, _Arc placement_ splits the arcs above/below
+the coverage row, and _Filter by score_ drops low-support junctions. Turn the
+arcs off from the same submenu. See the
+[RNA-seq tutorial](/docs/tutorials/rnaseq) for a worked splice-junction example.
 
-<Figure caption="Sashimi-style arcs over spliced alignments, drawn by default for short-read (RNA-seq) and long-read (Iso-Seq) data." src="/img/alignments_track_arcs.png" />
+When one exon-junction peak dominates the coverage histogram behind the arcs,
+switch the coverage to a log scale via the track menu's **Coverage → Scale type
+→ Log scale**, so the shallower junctions stay visible.
+
+<Figure caption="Sashimi arcs over B2M RNA-seq alignments with per-junction read-support labels enabled and the coverage histogram on a log scale, so the deep junction peak doesn't flatten the rest." src="/img/alignments_track_arcs.png" />
 
 ## Read connections
 

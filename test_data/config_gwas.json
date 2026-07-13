@@ -153,20 +153,20 @@
             "uri": "gwas/SLE_gwas.bed.gz.tbi",
             "locationType": "UriLocation"
           }
+        },
+        "ldAdapter": {
+          "type": "PlinkLDAdapter",
+          "ldLocation": {
+            "uri": "gwas/SLE.ld",
+            "locationType": "UriLocation"
+          }
         }
       },
       "displays": [
         {
           "displayId": "sle_gwas_ld-LinearManhattanDisplay",
           "type": "LinearManhattanDisplay",
-          "colorBy": "ld",
-          "ldAdapter": {
-            "type": "PlinkLDAdapter",
-            "ldLocation": {
-              "uri": "gwas/SLE.ld",
-              "locationType": "UriLocation"
-            }
-          }
+          "colorBy": "ld"
         }
       ]
     },
@@ -186,24 +186,24 @@
           "location": {
             "uri": "https://jbrowse.org/demos/gwas/gwas_giant-bmi_meta_women-only.gz.tbi"
           }
+        },
+        "ldAdapter": {
+          "type": "PlinkLDTabixAdapter",
+          "ldLocation": {
+            "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz"
+          },
+          "index": {
+            "indexType": "TBI",
+            "location": {
+              "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz.tbi"
+            }
+          }
         }
       },
       "displays": [
         {
           "displayId": "giant_bmi_locuszoom-LinearManhattanDisplay",
-          "type": "LinearManhattanDisplay",
-          "ldAdapter": {
-            "type": "PlinkLDTabixAdapter",
-            "ldLocation": {
-              "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz"
-            },
-            "index": {
-              "indexType": "TBI",
-              "location": {
-                "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz.tbi"
-              }
-            }
-          }
+          "type": "LinearManhattanDisplay"
         }
       ]
     },

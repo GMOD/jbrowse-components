@@ -378,10 +378,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
           // flagship sashimi shot: label each junction arc with its supporting-
           // read count, and use 'auto' placement so arcs split above/below by
-          // strand instead of all stacking upward
+          // strand instead of all stacking upward. super-compact
+          // (featureHeight 1 / spacing 0) packs the pileup so it fits in view
+          // instead of hitting "Max layout height reached". log coverage scale
+          // so a single tall pileup peak doesn't flatten the rest of the
+          // coverage histogram behind the arcs
           type: 'LinearAlignmentsDisplay',
           showSashimiLabels: true,
           sashimiArcsMode: 'auto',
+          scaleType: 'log',
+          featureHeight: 1,
+          featureSpacing: 0,
         },
       ],
     }),
@@ -539,7 +546,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 260,
         fontSize: 16,
-        text: 'Methylation mode: red = methylated CpG, blue = unmethylated.',
+        text: 'Methylation mode: scans each read for CpG sites — red = methylated, blue = CpGs the MM tag left unmodified.',
       },
     ],
   },

@@ -211,9 +211,12 @@ export const trioSpecs: ScreenshotSpec[] = [
           rightSource: 'Father hap1',
           palette: TRIO_PATERNAL_COLORS,
           paintingTopRow: 0,
+          // name the frame colour, not the painting colour: the painting's
+          // blue clashed with the blue variant track (reviewer)
           leftText:
-            'Left of the crossover, Child hap1 matches Father hap2 (light blue)',
-          rightText: 'Right of it, Child hap1 matches Father hap1 (dark blue)',
+            'Left of the crossover (yellow frame), Child hap1 matches Father hap2',
+          rightText:
+            'Right of it (purple frame), Child hap1 matches Father hap1',
         }),
       },
       {
@@ -229,9 +232,12 @@ export const trioSpecs: ScreenshotSpec[] = [
           rightSource: 'Mother hap1',
           palette: TRIO_MATERNAL_COLORS,
           paintingTopRow: 0,
+          // name the frame colour, not the painting colour: the painting's
+          // red/pink clashed with the blue variant track (reviewer)
           leftText:
-            'Left of the crossover, Child hap2 matches Mother hap2 (pink)',
-          rightText: 'Right of it, Child hap2 matches Mother hap1 (red)',
+            'Left of the crossover (green frame), Child hap2 matches Mother hap2',
+          rightText:
+            'Right of it (orange frame), Child hap2 matches Mother hap1',
         }),
       },
     ] satisfies {

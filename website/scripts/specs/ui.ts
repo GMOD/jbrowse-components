@@ -100,13 +100,19 @@ export const uiSpecs: ScreenshotSpec[] = [
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
       loc: 'ctgA:30,000..40,000',
-      tracks: ['gff3tabix_genes'],
+      tracks: [
+        {
+          trackId: 'gff3tabix_genes',
+          type: 'LinearBasicDisplay',
+          // collapse to gene glyphs so the pinned+highlighted EDEN gene reads
+          // cleanly against the stack (reviewer)
+          showOnlyGenes: true,
+        },
+      ],
     }),
     readyText: 'ctgA',
     viewportWidth: 1100,
-    // small page margin below the (content-sized) view for the callout, so it
-    // points up at the pinned-to-top highlight instead of overlapping the track
-    viewportHeight: 470,
+    viewportHeight: 400,
     settleMs: 4000,
     actions: [
       {
@@ -128,19 +134,6 @@ export const uiSpecs: ScreenshotSpec[] = [
         selector: '[data-testid="feature-highlight"]',
       },
       { type: 'delay', ms: 1200 },
-    ],
-    annotations: [
-      {
-        type: 'arrow',
-        from: { x: 510, y: 360 },
-        anchor: { selector: '[data-testid="feature-highlight"]' },
-      },
-      {
-        type: 'text',
-        text: 'The searched gene is pinned to the top, boxed, and tinted',
-        x: 510,
-        y: 400,
-      },
     ],
   },
 
@@ -829,9 +822,9 @@ export const uiSpecs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
       tracks: ['volvox_sv_test'],
     }),
-    viewportWidth: 1000,
-    // shorter browser in both stages
-    viewportHeight: 500,
+    viewportWidth: 1200,
+    // taller + wider browser so the opened track menu isn't clipped (reviewer)
+    viewportHeight: 680,
     readyText: 'ctgA',
     settleMs: 4000,
     actions: [
@@ -867,12 +860,12 @@ export const uiSpecs: ScreenshotSpec[] = [
           // ringed menu icons (reviewer: add arrows pointing at the circles)
           {
             type: 'arrow',
-            from: { x: 280, y: 430 },
+            from: { x: 340, y: 610 },
             anchor: { selector: '[data-testid="track_menu_icon"]' },
           },
           {
             type: 'arrow',
-            from: { x: 730, y: 420 },
+            from: { x: 880, y: 600 },
             anchor: {
               selector:
                 '[data-testid="htsTrackEntryMenu-Tracks,volvox_sv_test"]',

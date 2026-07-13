@@ -814,6 +814,44 @@ describe('computeArcsFromPileupData', () => {
     expect(arcs[0]!.p2.bp).toBe(3200) // SA rev (pos 3001→start 3000, end 3200): b.end
   })
 
+  test('canonicalRefName maps an SA-tag refName so a same-chr split reads as an arc, not an inter-chromosomal line', () => {
+    // The assembly uses `1`, so fetched reads carry `1`; the BAM's SA tag uses
+    // its own naming `chr1`. Without normalization the junction fails the
+    // p1Ref===p2Ref test and is misclassified inter-chromosomal (a connector
+    // line); the normalizer collapses `chr1`→`1` so it's the intended arc.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1500]),
+      readFlags: new Uint16Array([0]),
+      readStrands: new Int8Array([1]),
+      readInsertSizes: new Float32Array([0]),
+      readPairOrientations: new Uint8Array([0]),
+      readNames: ['readA'],
+      readSuppAlignments: ['chr1,3001,-,200M,60,0;'],
+    })
+    const regions = [
+      { refName: '1', start: 1000, end: 4000, displayedRegionIndex: 0 },
+    ]
+    const base = {
+      colorByType: 'insertSizeAndOrientation' as const,
+      drawInter: true,
+      drawLongRange: true,
+    }
+
+    const raw = computeArcsFromPileupData(new Map([[0, data]]), regions, base)
+    expect(raw.arcs).toHaveLength(0)
+    expect(raw.lines.length).toBeGreaterThan(0)
+
+    const norm = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      ...base,
+      canonicalRefName: r => (r === 'chr1' ? '1' : r),
+    })
+    expect(norm.arcs).toHaveLength(1)
+    expect(norm.arcs[0]!.p1.refName).toBe('1')
+    expect(norm.arcs[0]!.p2.refName).toBe('1')
+    expect(norm.lines).toHaveLength(0)
+  })
+
   test('3 split segments chain in read order (clip), not genomic order', () => {
     // Genomic order is seg0<seg1<seg2, but clip-at-start makes read order
     // seg1→seg2→seg0, so the two junctions are (seg1,seg2) and (seg2,seg0).

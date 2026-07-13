@@ -4,6 +4,7 @@ import {
   PTEN_RNASEQ_ADAPTER,
   VOLVOX,
   cascadeBoxes,
+  dismissMenus,
   lgvSession,
   menuCascade,
   openFeatureHeightSubmenu,
@@ -47,24 +48,24 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     viewportWidth: 1100,
-    viewportHeight: 560,
+    viewportHeight: 760,
     // alignments pileups keep re-laying-out while reads stream in; wait long
     // enough that the menu geometry is stable before the click sequence
     settleMs: 8000,
     hideTooltip: true,
+    // belt-and-suspenders: also strip any lingering MUI tooltip popper the menu
+    // driving leaves behind, so no tooltip bubbles into either frame (reviewer)
+    hideSelectors: ['.MuiTooltip-popper'],
     stages: [
       {
         // top frame: the "Read height" submenu open, with the Compact row's
         // trailing pin hovered + circled so the one affordance that promotes a
         // height to the default reads at a glance
+        // no hover on the pin: it's always rendered, and hovering pops its MUI
+        // tooltip into the frame (reviewer). The circle marks it instead.
         actions: [
           trackMenuIcon('volvox_alignments_pileup_coverage'),
           ...openFeatureHeightSubmenu(),
-          {
-            type: 'hover',
-            selector: '[aria-label="make Compact the default for all tracks"]',
-          },
-          { type: 'delay', ms: 300 },
         ],
         annotations: [
           {
@@ -88,7 +89,10 @@ export const featuresSpecs: ScreenshotSpec[] = [
         // bottom frame: clicking the pin immediately sets Compact as the
         // default for future alignments tracks; the resulting snackbar's
         // action (boxed, not clicked, so it stays on screen) applies it to the
-        // two already-open tracks that differ
+        // two already-open tracks that differ. Dismiss the menu afterward
+        // (reviewer: menu shouldn't linger) — a neutral title-bar click, not
+        // Escape, which would pop the snackbar. The snackbar ignores clickaway,
+        // so it survives the dismiss clicks.
         actions: [
           {
             type: 'click',
@@ -96,6 +100,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
           },
           { type: 'waitForText', text: 'Apply to 2 open tracks' },
           { type: 'delay', ms: 400 },
+          ...dismissMenus(),
         ],
         annotations: [
           {

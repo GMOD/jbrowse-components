@@ -1303,11 +1303,25 @@ export default function stateModelFactory(
               end: r.end,
               displayedRegionIndex,
             }))
+          // SA-tag / RNEXT refNames use the BAM's own naming (e.g. `chr1`);
+          // fetched reads carry the assembly-canonical name (e.g. `1`). Pass the
+          // assembly's normalizer so a same-chr split junction to an SA segment
+          // isn't misclassified inter-chromosomal.
+          const assembly = getSession(self).assemblyManager.get(
+            self.loadedRegions.values().next().value?.assemblyName ?? '',
+          )
           const settings = {
             colorByType: self.arcColorByType,
             samplot: self.readConnections === 'samplot',
             drawInter: self.drawInter,
             drawLongRange: self.drawLongRange,
+            // gate on `initialized` (== refNameAliases loaded): getCanonicalRefName
+            // throws otherwise. In practice rpcDataMap only has data once the
+            // assembly is loaded; when absent the arc compute falls back to
+            // identity (no aliasing).
+            canonicalRefName: assembly?.initialized
+              ? (refName: string) => assembly.getCanonicalRefName2(refName)
+              : undefined,
           }
           for (const [key, rawMap] of this.rawDataByGroup) {
             out.set(key, computeArcsRegionMap(rawMap, regionInfos, settings))

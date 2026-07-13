@@ -910,7 +910,10 @@ export default function MultiSampleVariantBaseModelF(
          * renderers. A resolved getter must never hand back a degenerate value.
          */
         get effectiveRowHeight() {
-          return Math.max(1, self.rowHeight === 0 ? this.autoRowHeight : self.rowHeight)
+          return Math.max(
+            1,
+            self.rowHeight === 0 ? this.autoRowHeight : self.rowHeight,
+          )
         },
         /**
          * #getter

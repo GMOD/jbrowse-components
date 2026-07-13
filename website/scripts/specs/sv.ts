@@ -236,6 +236,12 @@ export const svSpecs: ScreenshotSpec[] = [
     settleMs: 15000,
     // the two-row track is short; crop off the empty viewport below it
     crop: { x: 0, y: 0, width: 1500, height: 390 },
+    // the dense genome-wide multiscatter cloud (thousands of 1px points whose
+    // exact sub-pixel positions shift with the discrete BigWig zoom-level the
+    // resolution lands on) drifts a fraction of a percent between runs even
+    // when nothing changed, so raise the diff gate above that noise floor to
+    // stop the figure re-writing on every regen (reviewer)
+    diffThreshold: 0.03,
   },
 
   // The 27bp heterozygous deletion in HG002 ONT reads at ~1:63,006,xxx (hg19),
@@ -425,10 +431,12 @@ export const svSpecs: ScreenshotSpec[] = [
   // 1000G-ONT consortium's SV callers) is shown with HG00151 Oxford Nanopore
   // (long) reads: single reads span the whole inverted segment, so each crosses
   // both breakpoints and splits into a forward + a reverse-strand supplementary
-  // alignment — the split junctions arc in magenta (the split-read inversion
-  // color), directly reading out the inversion that short reads can only
-  // triangulate. The ONT reads are the minimap2 alignment (supplementary/split
-  // reads intact — see HG00151_ONT_1000G_ADAPTER).
+  // alignment — linked-read layout chains the segments inline so the reverse
+  // core paints its flipped-strand color between the forward flanks, and the
+  // split-read junctions arc in magenta between the breakpoints, directly
+  // reading out the inversion that short reads can only triangulate. The ONT
+  // reads are the minimap2 alignment (supplementary/split reads intact — see
+  // HG00151_ONT_1000G_ADAPTER).
   {
     mode: 'url',
     name: 'inversion_long_read',
@@ -452,12 +460,21 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'HG00151_ONT_1000g',
               // link supplementary alignments: chains each long read's split
-              // segments, so the reverse-strand piece of an inversion-spanning
-              // read paints the flipped-strand color (and the junction arcs
-              // magenta) instead of an uncolored plain pileup
+              // segments, so the reverse-strand core paints its flipped-strand
+              // color inline between the forward flanks.
               linkedReads: 'normal',
               readConnections: 'arc',
-              height: 560,
+              // Each inversion-spanning read's two split junctions land on the
+              // two breakpoints (~1.2 kb apart, on-screen) and color magenta.
+              // drawInter/drawLongRange OFF drop these reads' genuine
+              // cross-chromosome (chr4/chrX/...) and far-flank supplementary
+              // connectors, leaving just the clean local inversion arc. A tall
+              // dedicated band gives the magenta split-read domes room to read
+              // as arcs.
+              drawInter: false,
+              drawLongRange: false,
+              readConnectionsHeight: 130,
+              height: 640,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
               showLegend: true,
@@ -475,7 +492,7 @@ export const svSpecs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 300,
-        text: 'One read spans the inversion — reverse-strand core between forward flanks, magenta arcs at the split junctions.',
+        text: 'Each read spans the inversion: a reverse-strand core (blue) between forward-strand flanks (red). The magenta arc joins the two split-read breakpoints.',
         maxWidth: 470,
       },
     ],

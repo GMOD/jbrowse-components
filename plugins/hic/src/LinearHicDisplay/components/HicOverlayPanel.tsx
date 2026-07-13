@@ -139,32 +139,32 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     <TrackOverlayPortal>
       <div className={classes.panel}>
         {showResArea ? <ResolutionRow model={model} /> : null}
-      {showLegendArea ? (
-        <>
-          <div className={classes.row}>
-            <span>Contacts</span>
-            <span className={classes.spacer} />
-            <IconButton
-              className={classes.iconBtn}
-              size="small"
-              title="Hide legend"
-              onClick={() => {
-                model.setShowLegend(false)
-              }}
-            >
-              <CloseIcon className={classes.icon} />
-            </IconButton>
-          </div>
-          <div
-            className={classes.gradientBar}
-            style={{ background: getLegendCssGradient(colorScheme) }}
-          />
-          <div className={classes.labels}>
-            <span>{minLabel}</span>
-            <span>{maxLabel}</span>
-          </div>
-        </>
-      ) : null}
+        {showLegendArea ? (
+          <>
+            <div className={classes.row}>
+              <span>Contacts</span>
+              <span className={classes.spacer} />
+              <IconButton
+                className={classes.iconBtn}
+                size="small"
+                title="Hide legend"
+                onClick={() => {
+                  model.setShowLegend(false)
+                }}
+              >
+                <CloseIcon className={classes.icon} />
+              </IconButton>
+            </div>
+            <div
+              className={classes.gradientBar}
+              style={{ background: getLegendCssGradient(colorScheme) }}
+            />
+            <div className={classes.labels}>
+              <span>{minLabel}</span>
+              <span>{maxLabel}</span>
+            </div>
+          </>
+        ) : null}
         {availableNormalizations && availableNormalizations.length > 1 ? (
           <div
             className={classes.normLabel}

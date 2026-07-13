@@ -174,41 +174,41 @@ const FloatingLegend = observer(function FloatingLegend({
   return (
     <TrackOverlayPortal>
       <div className={cx(classes.legend, onDismiss && classes.withClose)}>
-      {onDismiss ? (
-        <IconButton
-          className={classes.closeButton}
-          size="small"
-          title="Hide legend"
-          onClick={() => {
-            onDismiss()
-          }}
-        >
-          <CloseIcon fontSize="inherit" />
-        </IconButton>
-      ) : null}
-      {title ? <div className={classes.topTitle}>{title}</div> : null}
-      {nonEmpty.map(section => (
-        <div key={section.id} className={classes.section}>
-          {multiSection && section.title ? (
-            <div className={classes.sectionHeader}>
-              <span className={classes.sectionTitle}>{section.title}</span>
-              {onDismissSection ? (
-                <IconButton
-                  className={classes.sectionClose}
-                  size="small"
-                  title={`Hide ${section.title}`}
-                  onClick={() => {
-                    onDismissSection(section.id)
-                  }}
-                >
-                  <CloseIcon fontSize="inherit" />
-                </IconButton>
-              ) : null}
-            </div>
-          ) : null}
-          <LegendItemList items={section.items} maxItems={maxItems} />
-        </div>
-      ))}
+        {onDismiss ? (
+          <IconButton
+            className={classes.closeButton}
+            size="small"
+            title="Hide legend"
+            onClick={() => {
+              onDismiss()
+            }}
+          >
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
+        ) : null}
+        {title ? <div className={classes.topTitle}>{title}</div> : null}
+        {nonEmpty.map(section => (
+          <div key={section.id} className={classes.section}>
+            {multiSection && section.title ? (
+              <div className={classes.sectionHeader}>
+                <span className={classes.sectionTitle}>{section.title}</span>
+                {onDismissSection ? (
+                  <IconButton
+                    className={classes.sectionClose}
+                    size="small"
+                    title={`Hide ${section.title}`}
+                    onClick={() => {
+                      onDismissSection(section.id)
+                    }}
+                  >
+                    <CloseIcon fontSize="inherit" />
+                  </IconButton>
+                ) : null}
+              </div>
+            ) : null}
+            <LegendItemList items={section.items} maxItems={maxItems} />
+          </div>
+        ))}
       </div>
     </TrackOverlayPortal>
   )

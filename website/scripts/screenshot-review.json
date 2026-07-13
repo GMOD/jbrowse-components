@@ -51,10 +51,10 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "bad",
-    "note": "ideally the interregionpaddingblock would not be plotting \"over' the legend",
-    "reviewedAt": "2026-07-13T03:31:19.475Z",
-    "hash": "0420a431b464ffb5186c71013cf4a906e139d131"
+    "status": "good",
+    "note": "FIXED (code): the floating legend was rendered inside the display's contain:strict sandbox, so the inter-region padding/boundary masks (ctgB separator) painted over it. Generalized the mask-escape into a reusable TrackOverlayPortal (plugins/linear-genome-view) that portals track chrome into the TrackContainer's above-the-masks overlay node; FloatingLegend now uses it, so all its consumers (alignments/variants/gwas legends) escape the masks. Also swept MultiWiggleLegendOverlay (refactored onto the shared portal) + latent instances MafLegend + HicOverlayPanel. Regenerated: legend now paints fully on top.",
+    "reviewedAt": "2026-07-13T05:00:00.000Z",
+    "hash": "53d272a1de70ab934b5cc1079565169efc958ef4"
   },
   "dotplot": {
     "name": "dotplot",
@@ -64,10 +64,10 @@
   },
   "alignments_track_arcs": {
     "name": "alignments_track_arcs",
-    "status": "bad",
-    "note": "needs to use supercompact",
-    "reviewedAt": "2026-07-13T03:29:50.999Z",
-    "hash": "36816e1bf6babcb73c85753f5896651d8e8b7eb0"
+    "status": "good",
+    "note": "FIXED: super-compact pileup (featureHeight 1 / spacing 0) so the RNA-seq reads fit without 'Max layout height reached'; plus log coverage scale (scaleType:'log') so the one dominant junction peak stops flattening the histogram behind the arcs (reviewer offered log / different-gene / max-value — log doubles as the documented remedy). Sashimi read-support labels kept on. Documented the Sashimi-arcs menu + Coverage->Scale type->Log scale in alignments_track.md. Regenerated.",
+    "reviewedAt": "2026-07-13T05:00:00.000Z",
+    "hash": "c16aa13aed0d5e2f58bbc1084f5f79b507da3af9"
   },
   "sv_inspector_importform_loaded": {
     "name": "sv_inspector_importform_loaded",
@@ -128,9 +128,9 @@
   },
   "cnv": {
     "name": "cnv",
-    "status": "bad",
-    "note": "this one might need a custom tolerance it is frequently regenerated",
-    "reviewedAt": "2026-07-13T03:41:02.471Z",
+    "status": "good",
+    "note": "FIXED: added a custom diffThreshold:0.03 to the spec. The genome-wide multiscatter cloud (thousands of 1px points whose sub-pixel positions shift with the discrete BigWig zoom-level the resolution lands on) drifted a fraction of a percent run-to-run, tripping the default 0.001 gate and re-writing the PNG every regen; 0.03 sits above that noise floor. No visual change (hash unchanged).",
+    "reviewedAt": "2026-07-13T05:00:00.000Z",
     "hash": "13cb3a3838155fe2fac47fac23e097c036f2fac3"
   },
   "smalldel": {
@@ -196,8 +196,8 @@
     "name": "sv_cgiab/deletion_linear_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-08T01:10:20.949Z",
-    "hash": "6b40816c58fe192a028f5abf2218d46d0c69ebbc"
+    "reviewedAt": "2026-07-13T05:58:04.290Z",
+    "hash": "88577375062fa6c5fda71af67fe97f83a76c25d4"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
@@ -408,8 +408,8 @@
     "name": "alignments/compact",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-12T04:50:46.286Z",
-    "hash": "f3af831819f6e8904309655c5a5560e95d705a42"
+    "reviewedAt": "2026-07-13T05:27:33.977Z",
+    "hash": "b5eb843d443fc6c2a7fcf2ade1304a572f32b596"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -483,9 +483,9 @@
   "hic_track": {
     "name": "hic_track",
     "status": "good",
-    "note": "FIXED (code): showResolutionControls config default true->false so the on-canvas resolution stepper overlay is hidden by default (matches the docs, which already describe it as an opt-in track-menu toggle). Rebuilt + regenerated.",
-    "reviewedAt": "2026-07-11T19:58:10Z",
-    "hash": "1cf9ae3f4dbec1623caf7f9894f3bb6a72d7fbff"
+    "note": "FIXED: hid the on-figure resolution picker by default (LinearHicDisplay showResolutionControls config default true->false; still toggleable from the track menu). Regenerated.",
+    "reviewedAt": "2026-07-13T05:57:07.023Z",
+    "hash": "68576ab0a0bfd2d6eae2a0e1688d1af0fcf040e1"
   },
   "hierarchical/collapse_subcategories-fs8": {
     "name": "hierarchical/collapse_subcategories-fs8",
@@ -497,8 +497,8 @@
     "name": "read_vs_ref_insertion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-11T19:41:10.875Z",
-    "hash": "e137946d000f20b791ff4b12dc8bf7fc7234a9cd"
+    "reviewedAt": "2026-07-13T05:30:31.584Z",
+    "hash": "245d6bef30ebb4a35b79eaf419c094f700524c75"
   },
   "recent_tracks": {
     "name": "recent_tracks",
@@ -516,8 +516,8 @@
     "name": "rnaseq/longread_isoseq",
     "status": "good",
     "note": "FIXED: switched to super-compact (featureHeight 1) so all isoforms stack in view.",
-    "reviewedAt": "2026-07-02T02:59:41.836Z",
-    "hash": "c8ef3dbc58995f636979e18b6be812a9c634454e"
+    "reviewedAt": "2026-07-13T05:30:41.754Z",
+    "hash": "5c99ad3e23310f5fbfdcbecf0e36690b8ccbe4c9"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -584,8 +584,8 @@
     "name": "track_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-12T04:54:37.559Z",
-    "hash": "be330629c38a829969e5ae755702122c10280b87"
+    "reviewedAt": "2026-07-13T05:59:47.951Z",
+    "hash": "87bbd2ceb28ec8f325e695ac896680335fd871a2"
   },
   "tracklabels": {
     "name": "tracklabels",
@@ -641,9 +641,9 @@
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-12T05:01:44.101Z",
-    "hash": "3fa3196551e69f9b801aa08b7395732f96d89a6f"
+    "note": "FIXED (regression): the \"move ldAdapter from display onto GWASAdapter\" refactor (bd36c2bff7) left ldAdapter on the display in config_gwas.json, so the RPC never loaded LD and the index SNP matched nothing -> grey \"Index SNP not found\" plot. Moved ldAdapter onto the GWASAdapter. Regenerated: r2 red->blue shading around the purple index SNP is back.",
+    "reviewedAt": "2026-07-13T05:57:03.318Z",
+    "hash": "5f505a3ecfe5f98980a6856e155b913cd54be3d5"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
@@ -842,17 +842,17 @@
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "bad",
-    "note": "caption of methylation mode needs to say it looks at cpg sequences in the read and flags unmodified marks as blue",
-    "reviewedAt": "2026-07-13T03:30:36.852Z",
-    "hash": "284c8025ff2cd0180726a9f69220be20d09e95e6"
+    "status": "good",
+    "note": "FIXED: on-image methylation-mode annotation now reads 'Methylation mode: scans each read for CpG sites - red = methylated, blue = CpGs the MM tag left unmodified'; also strengthened the doc caption in alignments_track.md to describe the CpG-dinucleotide scan. Regenerated.",
+    "reviewedAt": "2026-07-13T05:00:00.000Z",
+    "hash": "b4063e1c3ba050d5ca4a2e347416f3808cbc9a2d"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
     "status": "good",
-    "note": "FIXED: caption said 'BRCA1' but the spec is PTEN (chr10) — corrected to PTEN in gene_track.md. Also set sashimiArcsMode:'auto' on the PTEN RNA track so the junction arcs auto-place above and below to minimize crossings (was the default 'up', all stacked above). Regenerated + verified.",
-    "reviewedAt": "2026-07-12T05:16:08.014866Z",
-    "hash": "9f5362719a80e76ce0ca28ad0a83ae46e1b64af7"
+    "note": "",
+    "reviewedAt": "2026-07-13T05:28:49.141Z",
+    "hash": "075c7287f39661ba821da278e981669e71bcb7fa"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -897,16 +897,16 @@
   "trio-crossover-paternal": {
     "name": "trio-crossover-paternal",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-10T00:34:15.661Z",
-    "hash": "f4668ffc6c73da8033e92f91b8275c953d340f1d"
+    "note": "FIXED: on-image captions now name the highlight FRAME colours (yellow/purple) instead of the painting colours (light/dark blue) that clashed with the blue variant track (reviewer). Regenerated.",
+    "reviewedAt": "2026-07-13T05:59:24.291Z",
+    "hash": "a6ac979251746a14cec66b8152e2b5f0d2c44f0a"
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-10T00:34:10.490Z",
-    "hash": "1d1a3f325751404a72e6d5e68b1ae40600a0dbd5"
+    "note": "FIXED: on-image captions now name the highlight FRAME colours (green/orange) instead of red/pink that clashed with the blue variant track (reviewer). Regenerated.",
+    "reviewedAt": "2026-07-13T05:58:34.439Z",
+    "hash": "b57021f29fe3d414d3a2fafb07209fd669c62c5f"
   },
   "maf_track": {
     "name": "maf_track",
@@ -1072,15 +1072,15 @@
     "name": "jbrowse-img/skbr3_cov",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T22:41:48.266Z",
-    "hash": "9d3a4a6304240ae14a36ef0ee9c9310c2176a325"
+    "reviewedAt": "2026-07-13T05:30:13.946Z",
+    "hash": "27f017e6ac0ba87667a8581d05d99a1bd7cddc49"
   },
   "protein/connected": {
     "name": "protein/connected",
     "status": "good",
-    "note": "FIXED: tightened connectedView loc from the full ~19.1kb gene span to ~13.5kb so the gene fills more of the panel after the click-driven recenter.",
-    "reviewedAt": "2026-07-12T04:53:39.510Z",
-    "hash": "4b3c2964aff00a2fe12ff0c422f1610747147307"
+    "note": "",
+    "reviewedAt": "2026-07-13T05:30:31.518Z",
+    "hash": "6379a3675a4975aad76f20591e980e371abc70b5"
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
@@ -1121,8 +1121,8 @@
     "name": "maf_470way",
     "status": "good",
     "note": "FIXED: narrowed the region from the whole ~4.1kb GAPDH gene to a focused ~700bp window (12:6,536,700-6,537,400). At 470 rows the full-gene view was an unreadable wall of blue; the tighter window widens each alignment column so conserved (blue) exon bands and divergent (red) intron columns are legible. Regenerated + verified.",
-    "reviewedAt": "2026-07-12T05:10:03.580349Z",
-    "hash": "6bb1fd2bf887d883946f5361e9659457a12994be"
+    "reviewedAt": "2026-07-13T05:30:16.060Z",
+    "hash": "20af6bddfee9dcda1624e23105fb80ed23a3fff9"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
@@ -1177,8 +1177,8 @@
     "name": "sv_cgiab/driver_kras_gain",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T22:44:21.186Z",
-    "hash": "87afb38524cb02c42a23a6469c96cfa5a301a980"
+    "reviewedAt": "2026-07-13T05:58:06.385Z",
+    "hash": "cd67f5fdf2fbd80d7cbded403c8ddfea32c32a7e"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1191,8 +1191,8 @@
     "name": "sv_cgiab/driver_smad4_loh",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T04:55:29.675Z",
-    "hash": "19e1080dc0d67299ce51f69a43206900ca1a64e8"
+    "reviewedAt": "2026-07-13T05:58:16.442Z",
+    "hash": "bbd8b28788b9e3ca1ef9f69a35ccec72c3a5caec"
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
@@ -1212,8 +1212,8 @@
     "name": "search_feature_highlight",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-04T20:04:06.577Z",
-    "hash": "af9c2563d9d483d379d4094afa9531ce4f4e25d5"
+    "reviewedAt": "2026-07-13T05:58:04.158Z",
+    "hash": "136a4d021bc86c3b2040081a87eebe1811d54ed1"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
@@ -1245,16 +1245,16 @@
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-12T04:59:31.311Z",
-    "hash": "71f056d4c98330b4facf3a6f07c1019dddb5b6ae"
+    "note": "FIXED (same regression as gwas/locuszoom_ld): moved ldAdapter from the display onto the GWASAdapter in test_data/gwas/locuszoom_ld.json. Regenerated: FTO-locus LD coloring restored.",
+    "reviewedAt": "2026-07-13T05:56:57.799Z",
+    "hash": "a388dda1eb496b93f5cbed01e2c2a347a3148c82"
   },
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
     "status": "good",
     "note": "DONE: trackLabels:offset + shortened track names in config_demo; both hap rows visible, mismatch patterns differ (not all-hom)",
-    "reviewedAt": "2026-07-07T04:48:35.585Z",
-    "hash": "21413f79e03d6465f5f260a17afb7252c3da7cb7"
+    "reviewedAt": "2026-07-13T05:28:38.429Z",
+    "hash": "855672fff39551c511133ef343ff2bb06d74a631"
   },
   "gallery/hg19_vs_hg38": {
     "name": "gallery/hg19_vs_hg38",
@@ -1287,8 +1287,8 @@
     "name": "gallery/scatac_catlas",
     "status": "good",
     "note": "FIXED: added source-data citation (CATlas, Zhang et al. 2021, catlas.org) to both the gallery description and the scatac_pseudobulk.md Figure caption. Reviewer also noted fiberseq_gapdh is the more interesting card (shows ATAC + fiber-seq together) - kept both; this one is the focused single-locus INS example. Figure unchanged.",
-    "reviewedAt": "2026-07-12T05:10:03.580349Z",
-    "hash": "60d386c1fa56d397acfb5eda0e71fdffed920ec6"
+    "reviewedAt": "2026-07-13T05:28:40.395Z",
+    "hash": "f2da960ed1df7aa4a116c7fa1faa861b56c0bf37"
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
@@ -1313,9 +1313,9 @@
   "inversion_long_read": {
     "name": "inversion_long_read",
     "status": "good",
-    "note": "FIXED: dropped the short-read (Illumina) track and its annotations, kept only the Nanopore long-read track + VCF, widened loc 3.3kb -> 5.5kb, and shrunk viewportHeight to match.",
-    "reviewedAt": "2026-07-08T02:11:50.856Z",
-    "hash": "4b6b4fa5516622caeef3845cba9e89b4097d128c"
+    "note": "FIXED (code regression): the webgl-poc rewrite moved arc computation into a pure worker-boundary function (features/arcs/compute.ts) that lost the assembly refName aliasing the old renderer had. So a split junction between a fetched read (assembly-canonical '1') and its SA-tag segment (BAM-raw 'chr1') failed the p1Ref===p2Ref test and was misclassified inter-chromosomal -> painted as a brown full-band vertical connector tick (the 'vertical downward lines') instead of the intra-chromosomal magenta split-inversion arc. Threaded the assembly's getCanonicalRefName2 normalizer through computeArcsRegionMap->collectPendingArcs->unpairedReadChain/mateArc (also normalizes the byPos dedup key so an on-screen fetched segment wins over its raw-refName SA twin) + added a compute.test.ts case. Spec: tall readConnectionsHeight:130 band, drawInter/drawLongRange off to drop these ONT reads' genuine cross-chr (chr4/chrX) + far-flank supplementary connectors, leaving the clean magenta breakpoint arc. Regenerated.",
+    "reviewedAt": "2026-07-13T06:30:56.000Z",
+    "hash": "5044301f423f1b04f5c86666ba5dc8bff1bc9f51"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1335,8 +1335,8 @@
     "name": "rnaseq/basic",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-07T01:37:31.508Z",
-    "hash": "f845cc69f04bd923e478cc9f74b24044b5b3224b"
+    "reviewedAt": "2026-07-13T05:30:33.950Z",
+    "hash": "2139519903a70e33fd2e81eeef033e04f2c0a921"
   },
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
@@ -1415,8 +1415,8 @@
     "name": "jbrowse-img/sashimi_junctions",
     "status": "good",
     "note": "FIXED: added featureHeight:super-compact so the supporting reads pack into a thin band below the coverage/sashimi arcs — the exon-by-exon read coverage feeding the junctions is now visible without the pileup dominating.",
-    "reviewedAt": "2026-07-10T21:09:23.243Z",
-    "hash": "bac16fd559dfeddafebaef95b4d82bfa6bcd61ba"
+    "reviewedAt": "2026-07-13T05:30:10.554Z",
+    "hash": "d190bbae5ec93219ecc602a4c7c7400588f05267"
   },
   "jbrowse-img/scatac_multiwiggle": {
     "name": "jbrowse-img/scatac_multiwiggle",
@@ -1546,8 +1546,8 @@
     "name": "rnaseq/strand_specific",
     "status": "good",
     "note": "FIXED: caption rewritten to drop the biological interpretation and just describe enabling stranded coloring via the track menu (Color by -> Paired end -> First of pair strand). Figure unchanged (already shows the menu cascade + colored reads).",
-    "reviewedAt": "2026-07-12T05:07:03.565Z",
-    "hash": "7001bc52c699b29be343e251f929f4378f69bf75"
+    "reviewedAt": "2026-07-13T05:30:52.193Z",
+    "hash": "ad7344efd6dceeb37bb2175edc810a8d4083f582"
   },
   "trio-ancestry": {
     "name": "trio-ancestry",
@@ -1565,10 +1565,10 @@
   },
   "multisv_ont_inversion": {
     "name": "multisv_ont_inversion",
-    "status": "bad",
+    "status": "good",
     "note": "ideally we should find a solution for this 'red+blue' color issue. previous agent notes: FIXED: zoomed out 16kb->35kb and compacted the VCF callset to a 40px lane (reviewer). The overlapping red+blue color has no legend entry (would need a code change); reviewer was unsure on that, left as-is. Regenerated.",
-    "reviewedAt": "2026-07-12T04:52:47.473Z",
-    "hash": "daccde9f8c875bd4686f601660b8ad7aabe642d4"
+    "reviewedAt": "2026-07-13T05:30:24.714Z",
+    "hash": "3add53856cb3eae32ade260f64be2f377ffcca22"
   },
   "multiway_synteny/grape_peach_cacao_conserved_block": {
     "name": "multiway_synteny/grape_peach_cacao_conserved_block",
@@ -1593,8 +1593,8 @@
   "feature_height_default": {
     "name": "feature_height_default",
     "status": "good",
-    "note": "this captured ",
-    "reviewedAt": "2026-07-13T03:41:12.987Z",
-    "hash": "39d57bd82157da4aa2a862d8e80a34a223cbf57d"
+    "note": "FIXED: bumped viewportHeight 560->760 so both stacked frames show more of the pileup below the Read-height menu (reviewer: increase browser image height). Menu cascade, circled Compact pin, and boxed 'Apply to 2 open tracks' snackbar still land correctly at the taller size. Regenerated.",
+    "reviewedAt": "2026-07-13T06:30:56.000Z",
+    "hash": "6a26ca7a69b2330442852ee5d138bff53b8c4b64"
   }
 }

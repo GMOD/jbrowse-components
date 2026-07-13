@@ -60,6 +60,18 @@
           "location": {
             "uri": "https://jbrowse.org/demos/gwas/gwas_giant-bmi_meta_women-only.gz.tbi"
           }
+        },
+        "ldAdapter": {
+          "type": "PlinkLDTabixAdapter",
+          "ldLocation": {
+            "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz"
+          },
+          "index": {
+            "indexType": "TBI",
+            "location": {
+              "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz.tbi"
+            }
+          }
         }
       },
       "displays": [
@@ -68,19 +80,7 @@
           "type": "LinearManhattanDisplay",
           "height": 250,
           "colorBy": "ld",
-          "scatterPointSize": 8,
-          "ldAdapter": {
-            "type": "PlinkLDTabixAdapter",
-            "ldLocation": {
-              "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz"
-            },
-            "index": {
-              "indexType": "TBI",
-              "location": {
-                "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz.tbi"
-              }
-            }
-          }
+          "scatterPointSize": 8
         }
       ]
     },
