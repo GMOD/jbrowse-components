@@ -78,7 +78,6 @@ export interface Source {
   name: string
   source: string
   color?: string
-  labelColor?: string
   group?: string
 }
 

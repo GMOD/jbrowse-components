@@ -8,7 +8,7 @@ export function SvgRowLabels({
   scrollTop = 0,
   availableHeight,
 }: {
-  sources: { name: string; label?: string; labelColor?: string }[]
+  sources: { name: string; label?: string }[]
   rowHeight: number
   labelOffset: number
   scrollTop?: number
@@ -28,7 +28,7 @@ export function SvgRowLabels({
     10,
   )
 
-  const defaultBackground = alpha(theme.palette.background.paper, 0.8)
+  const background = alpha(theme.palette.background.paper, 0.8)
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {
@@ -39,10 +39,6 @@ export function SvgRowLabels({
         ) {
           return null
         }
-        const lc = source.labelColor
-        const fg = lc
-          ? theme.palette.getContrastText(lc)
-          : theme.palette.text.primary
         return (
           <g key={source.name}>
             <rect
@@ -50,14 +46,14 @@ export function SvgRowLabels({
               y={y}
               width={boxWidth}
               height={boxHeight}
-              {...getFillProps(lc ?? defaultBackground)}
+              {...getFillProps(background)}
             />
             <text
               x={4}
               y={y + boxHeight / 2}
               fontSize={fontSize}
               dominantBaseline="central"
-              {...getFillProps(fg)}
+              {...getFillProps(theme.palette.text.primary)}
             >
               {source.label ?? source.name}
             </text>

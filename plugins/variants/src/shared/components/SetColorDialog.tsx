@@ -23,7 +23,6 @@ export default function MultiSampleVariantSetColorDialog({
       title="Multi-sample variant display - Color/arrangement editor"
       enableBulkEdit
       enableRowPalettizer
-      showTipsStorageKey="multivariant-showTips"
       reservedFields={RESERVED_EXTRA}
     />
   )

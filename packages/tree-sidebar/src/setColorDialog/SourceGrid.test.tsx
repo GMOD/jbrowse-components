@@ -6,7 +6,6 @@ import SourceGrid from './SourceGrid.tsx'
 interface Src {
   name: string
   color?: string
-  labelColor?: string
 }
 
 // These tests deliberately drive the @mui/x-data-grid interaction surface
@@ -21,7 +20,6 @@ function renderGrid(rows: Src[]) {
     <SourceGrid
       rows={rows}
       onChange={onChange}
-      showTips
       colorColumns={[{ field: 'color', headerName: 'Color' }]}
     />,
   )
@@ -51,34 +49,6 @@ test('checkbox selection feeds the move-to-bottom action (arg.ids wiring)', () =
     { name: 'c' },
     { name: 'a' },
   ])
-})
-
-test('advanced color columns are hidden until the toggle is checked', () => {
-  const onChange = jest.fn()
-  render(
-    <SourceGrid
-      rows={[
-        { name: 'a', color: '', labelColor: '' },
-        { name: 'b', color: '', labelColor: '' },
-      ]}
-      onChange={onChange}
-      showTips
-      colorColumns={[
-        { field: 'color', headerName: 'Color' },
-        { field: 'labelColor', headerName: 'Label color', advanced: true },
-      ]}
-    />,
-  )
-
-  expect(
-    screen.queryByRole('columnheader', { name: /Label color/ }),
-  ).not.toBeInTheDocument()
-
-  fireEvent.click(screen.getByRole('checkbox', { name: /Show label color/ }))
-
-  expect(
-    screen.getByRole('columnheader', { name: /Label color/ }),
-  ).toBeInTheDocument()
 })
 
 test('clicking the Name header sorts rows through onSortModelChange', () => {

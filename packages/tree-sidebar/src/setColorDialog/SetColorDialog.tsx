@@ -1,13 +1,11 @@
 import { useState } from 'react'
 
 import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
-import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
-import HelpfulTips from './HelpfulTips.tsx'
 import RowPalettizer from './RowPalettizer.tsx'
 import SourceGrid from './SourceGrid.tsx'
 
@@ -49,7 +47,6 @@ export interface SetColorDialogProps<
   title?: string
   enableBulkEdit?: boolean
   enableRowPalettizer?: boolean
-  showTipsStorageKey?: string
   // Plugin-specific field names that are internal plumbing (e.g. variants'
   // `sampleName`/`HP`): hidden from both the auto-derived "extras" column
   // list and the palettizer's per-field buttons.
@@ -65,14 +62,12 @@ export default function SetColorDialog<
   title = 'Color/arrangement editor',
   enableBulkEdit = false,
   enableRowPalettizer = false,
-  showTipsStorageKey = 'setColorDialog-showTips',
   reservedFields,
 }: SetColorDialogProps<S>) {
   const { classes } = useStyles()
   const getSources = () => model.editableSources ?? []
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(getSources)
-  const [showTips, setShowTips] = useLocalStorage(showTipsStorageKey, false)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
 
   const submit = () => {
@@ -110,14 +105,13 @@ export default function SetColorDialog<
         <>
           <DialogContent className={classes.content}>
             <div className={classes.fr}>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  setShowTips(!showTips)
-                }}
-              >
-                {showTips ? 'Hide tips' : 'Show tips'}
-              </Button>
+              {enableRowPalettizer ? (
+                <RowPalettizer
+                  currLayout={currLayout}
+                  setCurrLayout={setCurrLayout}
+                  excludedFields={reservedFields}
+                />
+              ) : null}
               {enableBulkEdit ? (
                 <Button
                   color="secondary"
@@ -126,27 +120,14 @@ export default function SetColorDialog<
                     setShowBulkEditor(true)
                   }}
                 >
-                  Show Bulk row editor
+                  Bulk row editor
                 </Button>
               ) : null}
             </div>
 
-            {showTips ? <HelpfulTips /> : null}
-            {enableRowPalettizer ? (
-              <>
-                <br />
-                <RowPalettizer
-                  currLayout={currLayout}
-                  setCurrLayout={setCurrLayout}
-                  excludedFields={reservedFields}
-                />
-              </>
-            ) : null}
-
             <SourceGrid
               rows={currLayout}
               onChange={setCurrLayout}
-              showTips={showTips}
               colorColumns={colorColumns}
               reservedExtra={reservedFields}
             />

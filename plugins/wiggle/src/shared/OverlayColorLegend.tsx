@@ -4,7 +4,6 @@ interface LegendSource {
   name: string
   label?: string
   color?: string
-  labelColor?: string
   group?: string
 }
 
@@ -12,7 +11,6 @@ interface LegendEntry {
   key: string
   label: string
   color?: string
-  labelColor?: string
 }
 
 // When sources have groups and every source within a group shares the same
@@ -26,12 +24,10 @@ function buildLegendEntries(sources: LegendSource[]): LegendEntry[] {
       key: s.name,
       label: s.label ?? s.name,
       color: s.color,
-      labelColor: s.labelColor,
     }))
   }
 
   const groupColor = new Map<string, string | undefined>()
-  const groupLabelColor = new Map<string, string | undefined>()
   const groupConsistent = new Map<string, boolean>()
 
   for (const s of sources) {
@@ -40,7 +36,6 @@ function buildLegendEntries(sources: LegendSource[]): LegendEntry[] {
     }
     if (!groupColor.has(s.group)) {
       groupColor.set(s.group, s.color)
-      groupLabelColor.set(s.group, s.labelColor)
       groupConsistent.set(s.group, true)
     } else if (groupColor.get(s.group) !== s.color) {
       groupConsistent.set(s.group, false)
@@ -57,7 +52,6 @@ function buildLegendEntries(sources: LegendSource[]): LegendEntry[] {
           key: `group:${s.group}`,
           label: s.group,
           color: groupColor.get(s.group),
-          labelColor: groupLabelColor.get(s.group),
         })
       }
     } else {
@@ -65,7 +59,6 @@ function buildLegendEntries(sources: LegendSource[]): LegendEntry[] {
         key: s.name,
         label: s.label ?? s.name,
         color: s.color,
-        labelColor: s.labelColor,
       })
     }
   }
@@ -112,12 +105,7 @@ export default function OverlayColorLegend({
               height={10}
               fill={entry.color ?? fallbackColor}
             />
-            <text
-              x={textLeft}
-              y={y + 11}
-              fontSize={10}
-              fill={entry.labelColor ?? 'black'}
-            >
+            <text x={textLeft} y={y + 11} fontSize={10} fill="black">
               {entry.label}
             </text>
           </g>

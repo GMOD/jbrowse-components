@@ -29,9 +29,9 @@ export function buildSourceColumns<S extends { name: string; color?: string }>({
           width: 100,
           renderCell: ({ value, id }) => (
             <PopoverPicker
-              // Unset rows show the effective color they actually render with
-              // (auto), so the swatch never misrepresents on-screen state.
-              color={value || c.defaultColor || 'auto'}
+              // Unset rows show an "auto" swatch, so the grid never
+              // misrepresents on-screen state with a placeholder color.
+              color={value || 'auto'}
               unset={!value}
               onChange={color => {
                 onChange(

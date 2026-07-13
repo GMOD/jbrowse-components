@@ -1,7 +1,6 @@
 export interface SourceInfo {
   name: string
   color?: string
-  labelColor?: string
   label?: string
   group?: string
   baseUri?: string
