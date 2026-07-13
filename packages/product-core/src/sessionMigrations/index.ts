@@ -53,30 +53,11 @@ function isObject(v: unknown): v is Record<string, unknown> {
 }
 
 // The standalone `methylation` colorBy scheme was removed; it is now the
-// `modifications` scheme with `fillUnmarked` set (see plugins/alignments
-// ModificationColorBy — "fill in unmarked cytosines"). Rewrite any persisted
-// colorBy so no snapshot carries the dead type; the alignments model no longer
-// normalizes at read time. Returns the input by identity when unaffected.
-function migrateColorBy(value: unknown): unknown {
-  if (isObject(value) && value.type === 'methylation') {
-    const modifications = isObject(value.modifications)
-      ? value.modifications
-      : {}
-    return {
-      type: 'modifications',
-      modifications: { ...modifications, fillUnmarked: true },
-    }
-  }
-  return value
-}
-
-function migrateDisplayColorBy(
-  display: Record<string, unknown>,
-): Record<string, unknown> {
-  const colorBy = migrateColorBy(display.colorBy)
-  return colorBy === display.colorBy ? display : { ...display, colorBy }
-}
-
+// `modifications` scheme with `fillUnmarked` set. It is NOT rewritten here: the
+// alignments model normalizes it at read time (`normalizeColorBy`, applied in
+// its `colorBy` getter), which covers every persistence path — instance slot,
+// session-wide promoted default, and config-file display default — so session
+// migration deliberately leaves a `methylation` colorBy untouched.
 function migrateDisplayType(display: Record<string, unknown>) {
   const oldType = display.type as string
   const newType = displayTypeMap[oldType]
