@@ -44,8 +44,10 @@ is moot since we're not pixel-perfect).
 | Track | Display | R approach |
 | --- | --- | --- |
 | wiggle | `LinearWiggleDisplay` | `geom_rect` (solid), `geom_step` (line), `scale_fill_manual` on `score >= pivot` (bicolor), viridis strip (density) |
+| multi-wiggle | `MultiLinearWiggleDisplay` | `read_multibigwig` long data.frame (`source` factor); overlay = one panel colored by source, multi-row = `facet_grid(rows = vars(source))`, density = per-source viridis strip; geom picked from `renderingType` (area/step/line/point) |
 | alignments BAM/CRAM | `LinearAlignmentsDisplay` | coverage `geom_area` panel + strand-colored `geom_rect` pileup panel; rows from `IRanges::disjointBins` (not JBrowse's `placeRect`) |
 | genes GFF3/BED | `LinearBasicDisplay` | `geom_segment` bodies + `geom_rect` leaf exons/CDS; `gene_layout` groups by top-level parent then `disjointBins` |
+| variants VCF | `LinearVariantDisplay` | `read_vcf` = Rsamtools `scanTabix` (NO VariantAnnotation) → classify SNV/INS/DEL/MNV/SV; `geom_segment` span + `geom_point` lollipop head colored by type; `vcf_layout` `disjointBins` row-pack |
 
 Every panel ends with `coord_cartesian(xlim = c(start, end))` so stacked tracks
 share one x-range (features/reads overhang the fetch region; without this the
@@ -67,12 +69,16 @@ panels don't vertically align).
 ## Verifying (the real accuracy technique)
 
 `Rscript` **is installed in this environment** with ggplot2, patchwork,
-rtracklayer, GenomicRanges, GenomicAlignments, Rsamtools — **but NOT
-VariantAnnotation** (so variants can't be tested here yet). The
+rtracklayer, GenomicRanges, GenomicAlignments, Rsamtools. The
 `exportRRun.test.ts` files execute the actual generated script against
 `test_data/volvox/*`; run them locally. This is what catches real bugs
 (execution, not just codegen string checks) — e.g. it caught `g[[nm]]` failing
-on a `GRanges` (must use `mcols(g)[[nm]]`; GRanges has `$` but no `[[`).
+on a `GRanges` (must use `mcols(g)[[nm]]`; GRanges has `$` but no `[[`), and that
+`VariantAnnotation::readVcf(which=)` rejects a region whose seqname isn't in the
+VCF header's `##contig` seqinfo — which is why variants read via Rsamtools
+`scanTabix` instead (no VariantAnnotation dependency at all; test VCFs live at
+`test_data/volvox/volvox.filtered.vcf.gz` (SNV+indel) and `volvox.sv.vcf.gz`
+(symbolic `<DEL>`/`<INV>`/`<INS>`)).
 
 ## Gotchas
 
@@ -83,12 +89,21 @@ on a `GRanges` (must use `mcols(g)[[nm]]`; GRanges has `$` but no `[[`).
 - **Shared worktree** — multiple agents share this tree. Stage explicit
   pathspecs when committing; don't sweep up unrelated changes.
 
+A small gallery of rendered example figures (one per track type + a combined
+multi-panel) lives in `website/static/img/rexport/` with a `README.md` index;
+regenerate with the scripts noted there.
+
+**Advanced / multi-dimensional displays** (multi-sample variant matrix, Hi-C
+contact maps, and other 2-D/heatmap track types) are a separate, larger effort —
+see `agent-docs/R_EXPORT_ADVANCED.md` for the design handoff.
+
 ## Next
 
-- Variants (`VariantAnnotation` — install to test; VCF → lollipop/`geom_point`
-  or box).
 - CRAM reference resolution (emits the same `read_bam`; untested — needs the
   reference FASTA/2bit).
 - Pileup mismatch coloring + `colorBy` fidelity (currently strand only).
 - Gene label de-clutter (avoid a ggrepel dep; maybe only label top-level).
-- Multi-wiggle (`MultiLinearWiggleDisplay`) has no `exportRCode` yet.
+- Multi-wiggle: the per-source color uses `source.color ?? posColor`; the
+  pos/neg bicolor split (row-mode neg keeps the shared `negColor`, see
+  `buildSourceRenderData` ADR-016) is not reproduced — signed data colors by
+  source only. Groups/clustering tree order isn't reflected either.
