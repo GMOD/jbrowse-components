@@ -4,6 +4,10 @@ import {
   generateBedMethylFeature,
   isBedMethylFeature,
 } from './generateBedMethylFeature.ts'
+import {
+  generateRastairMethylFeature,
+  isRastairMethylFeature,
+} from './generateRastairMethylFeature.ts'
 import { parseRepeatMaskerDescription } from './generateRepeatMaskerFeature.ts'
 import {
   generateUcscTranscript,
@@ -243,6 +247,18 @@ export function featureData({
   if (isBedMethylFeature({ splitLine, start, end })) {
     return generateBedMethylFeature({
       splitLine,
+      uniqueId,
+      refName,
+      start,
+      end,
+    })
+  }
+
+  // rastair methylation is identified by its header column names
+  if (names !== undefined && isRastairMethylFeature(names)) {
+    return generateRastairMethylFeature({
+      splitLine,
+      names,
       uniqueId,
       refName,
       start,

@@ -1,6 +1,7 @@
 import BED from '@gmod/bed'
 
 import { isBedMethylFeature } from './generateBedMethylFeature.ts'
+import { isRastairMethylFeature } from './generateRastairMethylFeature.ts'
 import {
   arrayify,
   bedFeatureLocus,
@@ -356,5 +357,81 @@ describe('isBedMethylFeature', () => {
         end: 200,
       }),
     ).toBe(false)
+  })
+})
+
+// #chr start end name beta_est strand unmod mod no_snp snp coverage genotype
+// gt_p_score gt_conf_score cpg
+const rastairNames = [
+  'chr',
+  'start',
+  'end',
+  'name',
+  'beta_est',
+  'strand',
+  'unmod',
+  'mod',
+  'no_snp',
+  'snp',
+  'coverage',
+  'genotype',
+  'gt_p_score',
+  'gt_conf_score',
+  'cpg',
+]
+
+describe('isRastairMethylFeature', () => {
+  it('matches the rastair per-site methylation header columns', () => {
+    expect(isRastairMethylFeature(rastairNames)).toBe(true)
+  })
+
+  it('does not match a plain BED header', () => {
+    expect(isRastairMethylFeature(['chrom', 'start', 'end', 'name'])).toBe(
+      false,
+    )
+  })
+})
+
+describe('generateRastairMethylFeature via featureData', () => {
+  const splitLine = [
+    'chr20',
+    '100000',
+    '100002',
+    'CpG1',
+    '0.82',
+    '+',
+    '3',
+    '14',
+    '17',
+    '0',
+    '17',
+    'C/C',
+    '20',
+    '0.99',
+    'REF',
+  ]
+
+  const result = featureData({
+    splitLine,
+    refName: 'chr20',
+    start: 100000,
+    end: 100002,
+    parser: new BED(),
+    uniqueId: 'r-1',
+    scoreColumn: '',
+    names: rastairNames,
+  })
+
+  it('scales beta_est (0-1) to a 0-100 methylation percentage', () => {
+    expect(result.score).toBeCloseTo(82)
+    expect(result.fraction_modified).toBeCloseTo(82)
+  })
+
+  it('maps rastair counts onto the shared bedMethyl fields', () => {
+    expect(result.code).toBe('m')
+    expect(result.strand).toBe(1)
+    expect(result.n_mod).toBe('14')
+    expect(result.n_canonical).toBe('3')
+    expect(result.n_valid_cov).toBe('17')
   })
 })
