@@ -22,12 +22,16 @@ export interface AuthWindowParams {
 export function buildAppUrl(
   devServerUrl: string | undefined,
   sessionPath?: string,
+  renderer?: string,
 ) {
   const url = app.isPackaged
     ? pathToFileURL(path.join(app.getAppPath(), 'index.html'))
     : new URL(devServerUrl ?? DEFAULT_DEV_SERVER_URL)
   if (sessionPath) {
     url.searchParams.set('config', sessionPath)
+  }
+  if (renderer) {
+    url.searchParams.set('renderer', renderer)
   }
   return url
 }
@@ -64,6 +68,7 @@ export async function createMainWindow(
   autoUpdater: AppUpdater,
   devServerUrl: string | undefined,
   initialSessionPath: string | undefined,
+  renderer: string | undefined,
 ): Promise<BrowserWindow> {
   const mainWindowState = windowStateKeeper({
     defaultWidth: DEFAULT_WINDOW_WIDTH,
@@ -95,7 +100,9 @@ export async function createMainWindow(
     })
   }
 
-  await mainWindow.loadURL(buildAppUrl(devServerUrl, initialSessionPath).href)
+  await mainWindow.loadURL(
+    buildAppUrl(devServerUrl, initialSessionPath, renderer).href,
+  )
 
   mainWindow.webContents.setWindowOpenHandler(edata => {
     shell.openExternal(edata.url).catch(logError)

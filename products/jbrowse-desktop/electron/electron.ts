@@ -39,8 +39,11 @@ Usage: jbrowse-desktop [options] [file]
                 file to open on launch
 
 Options:
-  -h, --help    Print this help message and exit
-  --version     Print the version number and exit
+  --renderer <mode>  Force a rendering backend: "webgl" or "canvas" instead of
+                     auto-detecting WebGPU. Useful over X11 / remote desktops
+                     where WebGPU is unavailable.
+  -h, --help         Print this help message and exit
+  --version          Print the version number and exit
 
 Documentation: https://jbrowse.org/jb2/docs/`
 
@@ -49,6 +52,19 @@ function findLaunchFileArg(argv: readonly string[], cwd: string) {
     .slice(1)
     .find(a => LAUNCH_FILE_EXTENSIONS.some(ext => a.endsWith(ext)))
   return arg ? path.resolve(cwd, arg) : undefined
+}
+
+// Accepts either --renderer=webgl or --renderer webgl. The value is forwarded
+// to the renderer as a ?renderer= query param and consumed by setGpuOverride.
+function findRendererArg(argv: readonly string[]) {
+  const args = argv.slice(1)
+  const inline = args.find(a => a.startsWith('--renderer='))
+  const flagIndex = args.indexOf('--renderer')
+  return inline
+    ? inline.slice('--renderer='.length)
+    : flagIndex === -1
+      ? undefined
+      : args[flagIndex + 1]
 }
 
 // Text to print for an informational flag (--version/--help), or undefined when
@@ -61,6 +77,10 @@ function cliInfoOutput(argv: readonly string[]) {
       ? HELP_TEXT
       : undefined
 }
+
+// Parsed once at launch; forwarded to every window/session load so a session
+// reopened via second-instance keeps the same backend override.
+const RENDERER_OVERRIDE = findRendererArg(process.argv)
 
 function showFatalError(title: string, error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
@@ -88,7 +108,9 @@ function getInitialSession(): Promise<string | undefined> {
 }
 
 function loadSession(win: BrowserWindow, sessionPath: string) {
-  win.loadURL(buildAppUrl(DEV_SERVER_URL, sessionPath).href).catch(logError)
+  win
+    .loadURL(buildAppUrl(DEV_SERVER_URL, sessionPath, RENDERER_OVERRIDE).href)
+    .catch(logError)
 }
 
 // Tracks the single main window. Concurrent ensureWindow calls during creation
@@ -104,6 +126,7 @@ function createWindowManager() {
         autoUpdater,
         DEV_SERVER_URL,
         sessionPath,
+        RENDERER_OVERRIDE,
       )
       mainWindow = win
       win.on('closed', () => {

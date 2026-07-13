@@ -197,12 +197,18 @@ Relative paths inside a `config.json` are resolved against that file's own
 folder, so a config the [CLI builds](/docs/tutorials/cli_desktop) opens with no
 extra setup.
 
-Two informational flags are also available:
+Other flags:
 
 ```sh
-jbrowse-desktop --version   # print the version and exit
-jbrowse-desktop --help      # print usage and exit
+jbrowse-desktop --renderer webgl   # force WebGL instead of auto-detecting WebGPU
+jbrowse-desktop --renderer canvas  # force the Canvas2D fallback
+jbrowse-desktop --version          # print the version and exit
+jbrowse-desktop --help             # print usage and exit
 ```
+
+`--renderer` is useful when WebGPU is unavailable or misbehaving, for example
+running over X11 forwarding or a remote desktop. Use `webgl` first, and `canvas`
+only if WebGL is also unavailable.
 
 ## See also
 
