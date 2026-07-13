@@ -109,9 +109,9 @@ reference's and labels the change synonymous or nonsynonymous.
 
 The sidebar at the left shows the species labels, drawn as a dendrogram when the
 track is configured with a Newick guide tree. **Show sidebar with tree and
-labels** toggles it, and you can show branch lengths from the track menu.
-**Edit row arrangement...** lets you reorder or hand-pick rows, and the **Row
-height** submenu offers squeeze-to-fit, normal, compact, and custom row heights.
+labels** toggles it, and you can show branch lengths from the track menu. **Edit
+row arrangement...** lets you reorder or hand-pick rows, and the **Row height**
+submenu offers squeeze-to-fit, normal, compact, and custom row heights.
 
 ### Selecting a subtree
 

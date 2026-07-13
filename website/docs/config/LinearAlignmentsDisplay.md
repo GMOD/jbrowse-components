@@ -38,7 +38,9 @@ See [configuring displays](/docs/config_guides/tracks#configuring-displays):
   name: 'Methylation',
   assemblyNames: ['hg38'],
   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
-  displayDefaults: { colorBy: { type: 'methylation' } },
+  displayDefaults: {
+    colorBy: { type: 'modifications', modifications: { fillUnmarked: true } },
+  },
 }
 ```
 

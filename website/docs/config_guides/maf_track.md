@@ -62,9 +62,9 @@ location:
 
 - **`summaryAdapter`** — a UCSC `bigMafSummary` (a `BigBedAdapter` over
   `bigMafSummary.bb`) used for cheap rendering when zoomed far out. Its bars are
-  shaded by the summary's normalized alignment score, which is a different metric
-  from the per-base percent identity the conservation band computes from the
-  alignment itself (that needs no file).
+  shaded by the summary's normalized alignment score, which is a different
+  metric from the per-base percent identity the conservation band computes from
+  the alignment itself (that needs no file).
 - **`annotationAdapter`** — a UCSC `mafFrames` file (a `BigBedAdapter` over
   `multiz<N>wayFrames.bb`) carrying each gene's CDS reading frame projected
   through the alignment, one record per (species, region), keyed by `src`

@@ -491,7 +491,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             },
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram',
-              colorBy: { type: 'methylation' },
+              // the methylation view is now modifications + fillUnmarked (the
+              // "fill in unmarked cytosines" checkbox): every CpG painted, with
+              // implicit-unmethylated ones blue
+              colorBy: {
+                type: 'modifications',
+                modifications: { fillUnmarked: true },
+              },
               userByteSizeLimit: 500_000_000,
             },
           ],

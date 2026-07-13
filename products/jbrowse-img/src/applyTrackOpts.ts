@@ -240,6 +240,14 @@ const displayTypeAliases: Record<string, string> = {
   multivariantmatrix: 'LinearMultiSampleVariantMatrixDisplay',
 }
 
+// The pileup sort types the layout recognizes (`sortLayout.ts`). `base` is the
+// intuitive spelling the docs example uses, but the layout keys on `basePair` —
+// an unrecognized type sorts nothing silently (it just falls through), so
+// normalize the alias here rather than let `sort:base` become a no-op.
+const sortTypeAliases: Record<string, string> = {
+  base: 'basePair',
+}
+
 // Parse a modifier's numeric argument, failing loudly on a typo instead of
 // writing NaN into the snapshot (which renders as a blank/broken track). Mirrors
 // the validation featureHeight/heightMode already do for their numeric args.
@@ -274,7 +282,7 @@ function applyModifier(
     }
     case 'sort': {
       if (isAlignments) {
-        result.sort = { type: val1, tag: val2 }
+        result.sort = { type: sortTypeAliases[val1] ?? val1, tag: val2 }
       }
       break
     }

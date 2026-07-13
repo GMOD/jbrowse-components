@@ -308,8 +308,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
 
   // Per-read view behind the aggregate SNRPN profiles: the same HG002 ONT reads
   // modkit summarized, plotted individually. groupBy HP splits the pileup into
-  // the two phased haplotypes and colorBy methylation paints each CpG call
-  // (red = 5mC, blue = unmethylated), so the allele-specific split is visible
+  // the two phased haplotypes and the fill-unmarked modifications view (formerly
+  // the standalone "methylation" scheme) paints each CpG call (red = 5mC,
+  // blue = unmethylated), so the allele-specific split is visible
   // read-by-read — one haplotype's reads are methylated across the CpG island
   // while the other's are not, the read-level source of the ~87%/~5% aggregate.
   // Reads are the chr15 SNRPN slice of the GIAB HG002 ONT alignment, haplotagged
@@ -337,7 +338,10 @@ export const methylationSpecs: ScreenshotSpec[] = [
           height: 560,
           userByteSizeLimit: 200_000_000,
           groupBy: { type: 'tag', tag: 'HP' },
-          colorBy: { type: 'methylation' },
+          colorBy: {
+            type: 'modifications',
+            modifications: { fillUnmarked: true },
+          },
         },
       ],
     }),

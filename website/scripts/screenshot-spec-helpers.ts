@@ -793,31 +793,42 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // Circular structural-variant chord plot (bundled volvox SV VCF).
+  // Circular structural-variant chord plot: SKBR3 (breast-cancer cell line,
+  // hg19) long-read Sniffles SV calls, where each inter-chromosomal chord is a
+  // translocation — the classic dense rearranged-cancer-genome view. (The cgiab
+  // HG008 somatic benchmark the reviewer pointed at draws an empty ring: its
+  // PASS calls are intra-chromosomal DEL/DUP/CNV with no BND translocations, so
+  // no chords.) --fasta only reads the .fai for chrom names/lengths; the circular
+  // view fetches no sequence.
   cliSpec('circular_chords', [
     'circular',
     '--fasta',
-    'data/volvox/volvox.fa',
+    'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
     '--vcfgz',
-    'data/volvox/volvox.dup.vcf.gz',
+    'https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz',
     '--width',
     '800',
   ]),
 
   // Gene/feature track over the reference sequence: hosted hg38 NCBI RefSeq
   // (--hub, --track) with --refseq adding the DNA-base + six-frame-translation
-  // sequence track below it. Zoomed to a TP53 coding exon so the CDS lines up
-  // with the reference bases and translation frames (docs "Gene tracks and the
-  // reference sequence"). Supersedes the old standalone `sequence` refseq spec.
+  // sequence track below it. Zoomed to a TP53 intron/CDS boundary (not mid-exon)
+  // at base level, so the gene track shows readable structure — the intron thins
+  // to a line, the CDS exon begins as a solid block, and that block edge lines up
+  // with a specific reference base and the translation frame (docs "Gene tracks
+  // and the reference sequence"). showOnlyGenes keeps the RefSeq rows to gene
+  // features; the taller track leaves each isoform legible. Supersedes the old
+  // standalone `sequence` refseq spec.
   cliSpec('gene_track', [
     '--hub',
     'hg38',
     '--track',
     'hg38-ncbiRefSeqCurated',
-    'height:110',
+    'height:150',
+    '{"showOnlyGenes":true}',
     '--refseq',
     '--loc',
-    'chr17:7,676,045-7,676,130',
+    'chr17:7,675,018-7,675,098',
     '--width',
     '1500',
   ]),
@@ -871,9 +882,11 @@ export const jbrowseImgSpecs: CliSpec[] = [
   ]),
 
   // sort:base — HG008-T PacBio HiFi reads over CUZD1 sorted by the base at the
-  // center position, so every read carrying the ~1.8 kb somatic deletion pulls
-  // into one contiguous band (matches the README "sort:base" example; the
-  // legacy `alignments_readgroup` filename is kept for the doc image URL).
+  // center position, so every read carrying the ~1.8 kb somatic deletion
+  // (chr10:122,835,345-122,837,143) pulls into one contiguous band. The window
+  // is centered on the deletion midpoint so the sort pivot lands inside it (a
+  // pivot outside the deletion doesn't group the deletion reads). The legacy
+  // `alignments_readgroup` filename is kept for the doc image URL.
   cliSpec('alignments_readgroup', [
     '--hub',
     'hg38',
@@ -885,7 +898,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'sort:base',
     'height:420',
     '--loc',
-    'chr10:122,830,900-122,840,000',
+    'chr10:122,831,700-122,840,800',
     '--width',
     '1200',
   ]),

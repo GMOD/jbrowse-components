@@ -49,7 +49,8 @@ dendrogram + reorder) is the shared `TreeSidebarMixin`.
 | [fitTargetHeight](#getter-fittargetheight)                         | Getters    | LinearMultiRowFeatureDisplay                          | The track height that auto-fit mode divides among rows: the `height` config slot (its default, or a drag-resized value written to it).                                                                                                                                                                                                                                                                                                                                                                             |
 | [rowHeightSetting](#getter-rowheightsetting)                       | Getters    | LinearMultiRowFeatureDisplay                          | Resolved fixed row-height setting: `0` is auto-fit, any positive value is a pinned px height. Drag-resize / fit-toggle write it via `setSlot`.                                                                                                                                                                                                                                                                                                                                                                     |
 | [colorLegend](#getter-colorlegend)                                 | Getters    | LinearMultiRowFeatureDisplay                          | Categorical color key. The explicit `legend` config slot wins when set (for color-encoded categories with no feature attribute to key on, e.g. an itemRgb ancestry painting); otherwise it's auto-derived from the loaded data as distinct `(featureName -> per-feature color)` pairs among per-feature-colored rows. Empty in per-row palette / sampleColorMap mode (where the sidebar labels are the key) and for non-categorical (unnamed / all-distinct) data. See resolveConfiguredLegend / buildColorLegend. |
-| [hiddenColors](#getter-hiddencolors)                               | Getters    | LinearMultiRowFeatureDisplay                          | ABGR colors currently hidden via the legend's category toggles: the `colorLegend` colors whose label is in `hiddenCategories`. Both render paths and the hit-test skip features painted in one of these, so toggling a category off drops it everywhere without a refetch.                                                                                                                                                                                                                                         |
+| [hiddenCategorySet](#getter-hiddencategoryset)                     | Getters    | LinearMultiRowFeatureDisplay                          | `hiddenCategories` as a Set for O(1) membership; shared by the on-screen and SVG-export legends (dimmed rows) and by `hiddenColors`.                                                                                                                                                                                                                                                                                                                                                                               |
+| [hiddenColors](#getter-hiddencolors)                               | Getters    | LinearMultiRowFeatureDisplay                          | ABGR colors currently hidden via the legend's category toggles: the `colorLegend` colors whose label is in `hiddenCategories`. Both render paths and the hit-test skip features painted in one of these, so toggling a category off drops it everywhere without a refetch. `colorLegend` has one entry per distinct color (see buildColorLegend), so each toggle maps to exactly one color.                                                                                                                        |
 | [rowHeight](#getter-rowheight)                                     | Getters    | LinearMultiRowFeatureDisplay                          | Resolved per-row height. `rowHeightSetting === 0` auto-fits: the display height split evenly across rows so all rows stay visible as the row count grows. Any positive value is a pinned px height. Every consumer reads this, never `rowHeightSetting`.                                                                                                                                                                                                                                                           |
 | [height](#getter-height)                                           | Getters    | LinearMultiRowFeatureDisplay                          | Override BaseLinearDisplay.height so the track container matches the rendering canvas (numRows × rowHeight). In auto-fit mode this resolves to `fitTargetHeight`; in fixed mode it grows with the row count.                                                                                                                                                                                                                                                                                                       |
 | [hierarchy](#getter-hierarchy)                                     | Getters    | LinearMultiRowFeatureDisplay                          | Positioned dendrogram (when a cluster tree exists and rows are loaded). Leaves spaced over `height`, branches over `treeAreaWidth`.                                                                                                                                                                                                                                                                                                                                                                                |
@@ -443,12 +444,22 @@ resolveConfiguredLegend / buildColorLegend.
 type colorLegend = LegendEntry[]
 ```
 
+#### getter: hiddenCategorySet
+
+`hiddenCategories` as a Set for O(1) membership; shared by the on-screen and
+SVG-export legends (dimmed rows) and by `hiddenColors`.
+
+```ts
+type hiddenCategorySet = ReadonlySet<string>
+```
+
 #### getter: hiddenColors
 
 ABGR colors currently hidden via the legend's category toggles: the
 `colorLegend` colors whose label is in `hiddenCategories`. Both render paths and
 the hit-test skip features painted in one of these, so toggling a category off
-drops it everywhere without a refetch.
+drops it everywhere without a refetch. `colorLegend` has one entry per distinct
+color (see buildColorLegend), so each toggle maps to exactly one color.
 
 ```ts
 type hiddenColors = ReadonlySet<number>

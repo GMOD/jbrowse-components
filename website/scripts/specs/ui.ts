@@ -228,7 +228,9 @@ export const uiSpecs: ScreenshotSpec[] = [
           assembly: 'hg19',
           loc: '1:55,705,770-55,706,090',
           tracks: [
-            'nstd175.GRCh37.variant_call.vcf',
+            // single <INS> call — a short lane is plenty (reviewer: the default
+            // height left a tall empty variant band above the reads)
+            { trackId: 'nstd175.GRCh37.variant_call.vcf', height: 60 },
             { trackId: 'hg002_nanopore', height: 200 },
             {
               trackId: 'hg002_pacbio_chr1_insertion_slice',
@@ -716,9 +718,10 @@ export const uiSpecs: ScreenshotSpec[] = [
       tracks: ['ncbi_gff_hg19'],
     }),
     readyText: 'NCBI RefSeq',
-    // smaller window so the File menu + add-track drawer are easy to read
-    viewportWidth: 1000,
-    viewportHeight: 560,
+    // reviewer: the 1000x560 capture read too small — a bit larger so the File
+    // menu path and the (now denser) add-track form are legible
+    viewportWidth: 1200,
+    viewportHeight: 620,
     settleMs: 3000,
     actions: [
       { type: 'click', text: 'File' },

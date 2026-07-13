@@ -46,7 +46,7 @@ CRAM colored by CpG methylation (modBAM MM/ML tags):
     {
       type: 'LinearAlignmentsDisplay',
       displayId: 'methylation-LinearAlignmentsDisplay',
-      colorBy: { type: 'methylation' },
+      colorBy: { type: 'modifications', modifications: { fillUnmarked: true } },
     },
   ],
 }

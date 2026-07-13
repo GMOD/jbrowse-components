@@ -45,8 +45,15 @@ describe('alignments modifiers', () => {
 
   test('sort is returned as an intent (resolved against the view)', () => {
     const { sort, snap } = buildDisplaySnapshot('alignments', ['sort:base'])
-    expect(sort).toEqual({ type: 'base', tag: undefined })
+    // `base` normalizes to the layout's `basePair` key so the sort isn't a
+    // silent no-op (the layout only recognizes `basePair`)
+    expect(sort).toEqual({ type: 'basePair', tag: undefined })
     expect(snap.sortedBy).toBeUndefined()
+  })
+
+  test('sort:basePair passes through unchanged', () => {
+    const { sort } = buildDisplaySnapshot('alignments', ['sort:strand'])
+    expect(sort).toEqual({ type: 'strand', tag: undefined })
   })
 
   test('force is returned as a flag (volatile, not a snapshot value)', () => {

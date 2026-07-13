@@ -221,7 +221,7 @@ coverage dip) pops out of the pileup:
 ```bash
 jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
   --bam https://jbrowse.org/demos/cgiab/HG008-T_chr10_CUZD1_deletion.bam sort:base height:420 \
-  --loc chr10:122,830,900-122,840,000 --width 1200 --out sorted.png
+  --loc chr10:122,831,700-122,840,800 --width 1200 --out sorted.png
 ```
 
 ![HG008-T PacBio HiFi reads over CUZD1, sorted by the base at the center position so the reads carrying a ~1.8 kb somatic deletion cluster into one band](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_readgroup.png)
@@ -426,15 +426,17 @@ Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`, or a hosted `--track`) render
 their glyphs with labels, and `--refseq` adds the assembly's reference-sequence
 track — which, zoomed to base level, shows the DNA bases and the six-frame
 translation (green start codons, red stops). This human example zooms into a
-`TP53` coding exon so the NCBI RefSeq CDS lines up with the reference sequence
-and its translation frames:
+`TP53` intron/CDS boundary so the gene track's structure reads at base level:
+the intron thins to a connector line, the coding exon begins as a solid CDS
+block, and that block edge lines up with a specific reference base and reading
+frame. `showOnlyGenes` keeps the RefSeq track to its gene features:
 
 ```bash
-jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:110 --refseq \
-  --loc chr17:7,676,045-7,676,130 --width 1500 --out gene_track.png
+jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:150 '{"showOnlyGenes":true}' --refseq \
+  --loc chr17:7,675,018-7,675,098 --width 1500 --out gene_track.png
 ```
 
-![A TP53 coding exon at base level: the reference sequence track's DNA bases and six-frame translation above the NCBI RefSeq CDS](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/gene_track.png)
+![A TP53 intron/CDS boundary at base level: the reference sequence's DNA bases and six-frame translation above the NCBI RefSeq gene track, whose CDS exon block begins where the intron connector ends](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/gene_track.png)
 
 ### Themes
 
@@ -718,15 +720,19 @@ genome (no `--loc`); each track picks its chord display automatically.
 jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out circular.svg
 ```
 
-Reproducible with the bundled volvox structural-variant VCF:
+This example uses SKBR3 (a breast-cancer cell line) long-read Sniffles SV calls
+on hg19 — each inter-chromosomal chord is a translocation, the classic dense
+rearranged-cancer-genome view. `--fasta` reads only the `.fai` for chromosome
+names and lengths (the circular view fetches no sequence):
 
 ```bash
 jb2export circular \
-  --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.dup.vcf.gz \
+  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --vcfgz https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz \
   --width 800 --out circular.png
 ```
 
-![Circular chord plot of structural variants (volvox SV VCF)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/circular_chords.png)
+![Circular chord plot of SKBR3 structural variants on hg19, inter-chromosomal chords marking translocations](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/circular_chords.png)
 
 Run `jb2export circular --help` for the full list of options.
 

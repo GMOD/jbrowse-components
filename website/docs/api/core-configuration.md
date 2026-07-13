@@ -24,9 +24,10 @@ their own config values. Backs the badge's "clear default" action.
 A promotable "default for all tracks of this type" control, bundled so a menu
 row's trailing pin consumes it as a single prop. `active` = this value is
 currently the session default (a filled pin); `toggle` sets it as the default or
-clears it. On set, `toggle` raises a snackbar with an "Apply to N open tracks"
-action for any open tracks not already showing this value (see
-`applyDefaultToggle`).
+clears it. On set, `toggle` immediately applies the value to the display the pin
+was clicked from (so the active track updates with one click) and raises a
+snackbar with an "Apply to N open tracks" action for the remaining open tracks
+not already showing this value (see `applyDefaultToggle`).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 

@@ -5,9 +5,33 @@ import {
   hpyloriUrl,
   lgvSession,
   menuCascade,
+  sessionSpec,
 } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// The volvox microarray BigWig, absolute-hosted so it resolves both in the local
+// generator and in the live-link session (session tracks don't inherit the
+// config's baseUri). Reused across the "all plot types" comparison figure.
+const MICROARRAY_BW_ADAPTER = {
+  type: 'BigWigAdapter',
+  bigWigLocation: {
+    uri: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox_microarray.bw',
+    locationType: 'UriLocation',
+  },
+}
+
+// One QuantitativeTrack per rendering style, all wrapping the same BigWig, so a
+// single figure shows every plot type rendered live side by side. The rendering
+// style itself is applied via the flat `defaultRendering` key on the view's
+// track reference (routes into the display's configOverrides).
+const wigModeTrack = (rendering: string, name: string) => ({
+  type: 'QuantitativeTrack',
+  trackId: `wiggle_mode_${rendering}`,
+  name,
+  assemblyNames: ['volvox'],
+  adapter: MICROARRAY_BW_ADAPTER,
+})
 
 export const bigwigSpecs: ScreenshotSpec[] = [
   {
@@ -22,16 +46,60 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
+  // reviewer: the plain line-render figure was boring on its own, and a single
+  // "plot type" menu screenshot doesn't show what each mode looks like. Instead
+  // render the same BigWig in every plot type at once — one compact track per
+  // style — so the figure teaches all the rendering options live, side by side.
   {
     mode: 'url',
     name: 'bigwig_line',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1-50000',
-      tracks: ['volvox_microarray_line'],
+    url: sessionSpec(VOLVOX, {
+      sessionTracks: [
+        wigModeTrack('xyplot', 'XY plot'),
+        wigModeTrack('density', 'Density'),
+        wigModeTrack('line', 'Line (step)'),
+        wigModeTrack('linecenter', 'Line (interpolated)'),
+        wigModeTrack('scatter', 'Scatter'),
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: [
+            {
+              trackId: 'wiggle_mode_xyplot',
+              defaultRendering: 'xyplot',
+              height: 90,
+            },
+            {
+              trackId: 'wiggle_mode_density',
+              defaultRendering: 'density',
+              height: 60,
+            },
+            {
+              trackId: 'wiggle_mode_line',
+              defaultRendering: 'line',
+              height: 90,
+            },
+            {
+              trackId: 'wiggle_mode_linecenter',
+              defaultRendering: 'linecenter',
+              height: 90,
+            },
+            {
+              trackId: 'wiggle_mode_scatter',
+              defaultRendering: 'scatter',
+              height: 90,
+            },
+          ],
+        },
+      ],
     }),
-    readyText: 'ctgA',
-    settleMs: 4000,
+    readyText: 'Scatter',
+    readyTimeout: 60000,
+    settleMs: 6000,
+    viewportHeight: 640,
   },
 
   // GC content / GC skew computed on the fly from the reference sequence — the

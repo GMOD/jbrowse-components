@@ -19,15 +19,17 @@ slot) offers these styles:
   compact for browsing many tracks at once
 - Line (step) - traces the tops of the bars as a stepped line; best for dense
   binned data where each pixel is a real bin
-- Line (connect points) - joins the midpoint of each data point straight to the
+- Line (interpolated) - joins the midpoint of each data point straight to the
   next; smoother for sparse or discrete signals where the stepped plateaus look
   wrong
 - Scatter - draws individual points without filling; useful for sparse data and
   seeing single values
 
+Switch between them from the track menu's **Plot type** submenu.
+
 <Figure caption="XY plot (bar) rendering for a wiggle/BigWig track. Each bar represents the signal value at that position; colored mismatches relative to the reference appear in the coverage of alignment-derived BigWigs." src="/img/bigwig_xyplot.png" />
 
-<Figure caption="Line rendering for the same track. The line style emphasizes the shape of the signal rather than amplitude, and is useful for comparing multiple overlapping tracks." src="/img/bigwig_line.png" />
+<Figure caption="The same BigWig rendered in every plot type at once — XY plot, Density, Line (step), Line (interpolated), and Scatter — so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
 
 ## Autoscale options
 

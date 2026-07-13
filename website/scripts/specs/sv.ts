@@ -370,6 +370,9 @@ export const svSpecs: ScreenshotSpec[] = [
     // plus headroom for the annotation callouts pushed down off the pileup
     viewportHeight: 1850,
     settleMs: 30000,
+    // suppress the hover tooltip the click leaves over the variant track
+    // (reviewer: a stray mouseover tooltip was captured on the variant lane)
+    hideTooltip: true,
     // click the HGSV_2721 variant's floating feature label (stable per-feature
     // testid) to open its feature details
     actions: [
