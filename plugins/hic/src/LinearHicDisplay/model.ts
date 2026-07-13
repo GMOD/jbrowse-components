@@ -492,6 +492,23 @@ export default function stateModelFactory(
       resetResolutionBias() {
         self.configuration.setSlot('resolutionBias', 0)
       },
+      /**
+       * #action
+       * Lock to a specific binsize (from the overlay dropdown) by converting it
+       * to the bias offset from the current auto pick, so the choice still
+       * shifts consistently as the user zooms. No-op if the binsize isn't one
+       * the file offers.
+       */
+      setResolution(binSize: number) {
+        const avail = self.availableResolutions
+        const idx = avail ? avail.indexOf(binSize) : -1
+        if (idx !== -1) {
+          self.configuration.setSlot(
+            'resolutionBias',
+            idx - self.autoResolutionIdx,
+          )
+        }
+      },
     }))
     .views(self => {
       const { trackMenuItems: superTrackMenuItems } = self
