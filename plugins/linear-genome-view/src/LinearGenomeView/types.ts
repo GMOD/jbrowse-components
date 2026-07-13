@@ -129,4 +129,10 @@ export interface RTrackFragment {
   plotExpr: string
   // relative patchwork height for this panel (default 1)
   heightWeight?: number
+  // JBrowse refname aliases for this track's file: canonical refName -> the
+  // name the file actually uses (chr1 vs 1 vs NC_000001.11), only entries that
+  // differ. Attached by the view (not the per-display builder) from the
+  // assembly's per-adapter refName map, so the emitted script translates the
+  // canonical `chrom` before reading each file. Empty/undefined = no aliasing.
+  refNameMap?: Record<string, string>
 }

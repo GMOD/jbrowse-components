@@ -8,6 +8,7 @@ const base: VariantMatrixRParams = {
   uri: 'https://example.com/panel.vcf.gz',
   minMaf: 0,
   maxMissing: 1,
+  phased: false,
 }
 
 test('reads genotypes with read_vcf_gt and emits no bespoke package', () => {
@@ -22,7 +23,16 @@ test('reads genotypes with read_vcf_gt and emits no bespoke package', () => {
     'patchwork',
   ])
   expect(f.packages).not.toContain('VariantAnnotation')
-  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end)')
+  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end, FALSE)')
+})
+
+test('phased mode reads per-haplotype genotypes and uses the phased palette', () => {
+  const f = variantMatrixFragment({ ...base, phased: true })
+  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end, TRUE)')
+  expect(f.plotExpr).toContain('levels = c("ref", "alt", "other", "nocall")')
+  expect(f.plotExpr).toContain('alt = "#377eb8"')
+  // collapsed het/hom dosage shades are not used per-haplotype
+  expect(f.plotExpr).not.toContain('het = "#6699cc"')
 })
 
 test('draws a geom_tile matrix clustered by hclust with a dendrogram panel', () => {

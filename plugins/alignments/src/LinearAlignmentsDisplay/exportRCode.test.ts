@@ -10,6 +10,10 @@ const base: AlignmentsRParams = {
   showPileup: true,
   colorBy: 'normal',
   showLowFreqMismatches: false,
+  modificationThreshold: 0.1,
+  linkReads: false,
+  isCram: false,
+  reference: '',
 }
 
 test('emits a coverage panel and a pileup panel, coverage on top', () => {
@@ -54,22 +58,89 @@ test('pileup colors reads by the resolved color-by scheme', () => {
   expect(normal!.helpers).toContain('read_fill_colors')
   expect(normal!.plotExpr).toContain('read_fill_colors(reads, "normal")')
 
-  // strand / mapping quality / insert size each thread through
+  // strand / mapping quality / insert size / pair orientation each thread through
   expect(
     alignmentsFragments({ ...base, colorBy: 'strand' })[1]!.plotExpr,
   ).toContain('read_fill_colors(reads, "strand")')
   expect(
     alignmentsFragments({ ...base, colorBy: 'mappingQuality' })[1]!.plotExpr,
   ).toContain('read_fill_colors(reads, "mappingQuality")')
-
-  // unsupported paired-end orientation schemes fall back to normal grey
   expect(
     alignmentsFragments({ ...base, colorBy: 'pairOrientation' })[1]!.plotExpr,
-  ).toContain('read_fill_colors(reads, "normal")')
+  ).toContain('read_fill_colors(reads, "pairOrientation")')
+  // pileup reads the mate-derived orientation columns from read_bam
+  expect(
+    alignmentsFragments({ ...base, colorBy: 'pairOrientation' })[1]!.helpers,
+  ).toContain('pair_orientation')
   // insert-size family collapses onto the insertSize scheme
   expect(
     alignmentsFragments({ ...base, colorBy: 'insertSizeGradient' })[1]!.plotExpr,
   ).toContain('read_fill_colors(reads, "insertSize")')
+})
+
+test('modifications scheme overlays MM/ML mod ticks instead of mismatches', () => {
+  const [, pileup] = alignmentsFragments({ ...base, colorBy: 'modifications' })
+  // grey read bodies (mods stand out), mod ticks colored by modification type
+  expect(pileup!.plotExpr).toContain('read_fill_colors(reads, "normal")')
+  expect(pileup!.helpers).toEqual(
+    expect.arrayContaining(['bam_modifications', 'mod_colors']),
+  )
+  expect(pileup!.helpers).not.toContain('bam_mismatches')
+  expect(pileup!.plotExpr).toContain('bam_modifications(aln, chrom, start, end, min_prob)')
+  expect(pileup!.plotExpr).toContain('mod_colors(mm$modtype)')
+  expect(pileup!.plotExpr).toContain('reads$row[mm$read_index]')
+  // the probability threshold is emitted as an editable var (JBrowse default 0.1)
+  expect(pileup!.plotExpr).toContain('min_prob <- 0.1')
+
+  // methylation resolves to the same modifications overlay
+  expect(
+    alignmentsFragments({ ...base, colorBy: 'methylation' })[1]!.helpers,
+  ).toContain('bam_modifications')
+})
+
+test('modification threshold flows from the model to the emitted min_prob var', () => {
+  const [, pileup] = alignmentsFragments({
+    ...base,
+    colorBy: 'modifications',
+    modificationThreshold: 0.5,
+  })
+  expect(pileup!.plotExpr).toContain('min_prob <- 0.5')
+})
+
+test('linkReads uses chain layout with mate/supplementary connectors', () => {
+  // default flat pileup
+  const [, flat] = alignmentsFragments(base)
+  expect(flat!.helpers).toContain('pileup_layout')
+  expect(flat!.plotExpr).toContain('pileup_layout(read_bam(aln, chrom, start, end))')
+  expect(flat!.plotExpr).not.toContain('link_reads')
+
+  // linkReads: group by read name into chains + draw gap connectors
+  const [, linked] = alignmentsFragments({ ...base, linkReads: true })
+  expect(linked!.helpers).toContain('link_reads')
+  expect(linked!.helpers).not.toContain('pileup_layout')
+  expect(linked!.plotExpr).toContain('link_reads(read_bam(aln, chrom, start, end))')
+  // connector segments drawn from linked$links, under the read rects
+  expect(linked!.plotExpr).toContain('geom_segment(data = linked$links')
+  expect(linked!.plotExpr.indexOf('geom_segment')).toBeLessThan(
+    linked!.plotExpr.indexOf('geom_rect'),
+  )
+})
+
+test('pileup draws soft/hard clip indicator bars at read ends', () => {
+  const [, pileup] = alignmentsFragments(base)
+  expect(pileup!.helpers).toEqual(
+    expect.arrayContaining(['bam_clips', 'clip_colors']),
+  )
+  expect(pileup!.plotExpr).toContain('bam_clips(aln, chrom, start, end)')
+  // vertical bars joined to the read's row, colored by clip type, via a color
+  // (not fill) identity scale so they compose with the read/mismatch fill scale
+  expect(pileup!.plotExpr).toContain('clips$row <- reads$row[clips$read_index]')
+  expect(pileup!.plotExpr).toContain('clip_colors[clips$type]')
+  expect(pileup!.plotExpr).toContain('scale_color_identity()')
+  // clip bars are orthogonal to color scheme — drawn under modifications too
+  expect(
+    alignmentsFragments({ ...base, colorBy: 'modifications' })[1]!.plotExpr,
+  ).toContain('bam_clips(aln, chrom, start, end)')
 })
 
 test('SNP coverage thresholds low-frequency mismatches by default', () => {

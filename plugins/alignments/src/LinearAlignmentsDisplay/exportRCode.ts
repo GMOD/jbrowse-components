@@ -1,12 +1,42 @@
+import { getConf } from '@jbrowse/core/configuration'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { firstUri, getTrackRMeta, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
+
+import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 
 interface AdapterConf {
+  type?: string
   bamLocation?: { uri?: string }
   cramLocation?: { uri?: string }
   uri?: string
+}
+
+interface SequenceAdapterConf {
+  fastaLocation?: { uri?: string }
+  uri?: string
+}
+
+/**
+ * The reference FASTA uri from the display's assembly sequence adapter, so a
+ * CRAM track can be decoded (cram_to_bam passes it to `samtools view -T`). The
+ * CRAM adapter's own sequenceAdapter is injected at runtime and isn't in its
+ * static config, so resolve it via the assembly instead. Empty string when it
+ * can't be found (or the sequence isn't a plain/bgzipped FASTA) — cram_to_bam
+ * then falls back to the CRAM's UR header / REF_PATH.
+ */
+function referenceFastaUri(self: LinearAlignmentsDisplayModel): string {
+  const view = getContainingView(self) as { assemblyNames?: string[] }
+  const assemblyName = view.assemblyNames?.[0]
+  const assembly = assemblyName
+    ? getSession(self).assemblyManager.get(assemblyName)
+    : undefined
+  const seq = assembly
+    ? (getConf(assembly, ['sequence', 'adapter']) as SequenceAdapterConf)
+    : undefined
+  return seq?.fastaLocation?.uri ?? seq?.uri ?? ''
 }
 
 export interface AlignmentsRParams {
@@ -16,17 +46,32 @@ export interface AlignmentsRParams {
   showCoverage: boolean
   showPileup: boolean
   // resolved color-by scheme (self.colorBy.type): normal/strand/mappingQuality/
-  // insertSize are reproduced; other schemes fall back to normal grey
+  // insertSize/pairOrientation/modifications are reproduced; other schemes fall
+  // back to grey
   colorBy: string
   // when false (JBrowse default), the SNP coverage track hides low-frequency
   // mismatches via snp_freq_threshold(); when true, every mismatch is drawn
   showLowFreqMismatches: boolean
+  // minimum MM/ML modification-call probability drawn in the modifications
+  // scheme (0..1); JBrowse's default is 0.1 (a 10% threshold slider)
+  modificationThreshold: number
+  // JBrowse linkedReads === 'normal': group mates + supplementary segments by
+  // read name onto one row with connector lines (link_reads) instead of the flat
+  // per-read pileup (pileup_layout)
+  linkReads: boolean
+  // CRAM track: Rsamtools can't read CRAM, so each panel decodes its region to a
+  // temporary BAM via cram_to_bam() before the bam_* helpers run
+  isCram: boolean
+  // reference FASTA uri for CRAM decoding (from the assembly's sequence adapter);
+  // empty falls back to the CRAM's own UR header / REF_PATH inside cram_to_bam
+  reference: string
 }
 
 // JBrowse exposes ~a dozen color-by schemes; map each to the closest scheme the
-// R script bakes as literal read-body colors (see read_fill_colors). Paired-end
-// orientation schemes need mate analysis the export doesn't do, so they resolve
-// to normal grey rather than silently mislabeling.
+// R script reproduces. Most bake literal read-body colors (see read_fill_colors);
+// modifications/methylation instead keep grey bodies and overlay MM/ML mod ticks
+// (see bam_modifications). Schemes needing signal the export can't recover
+// (per-base quality) resolve to normal grey rather than silently mislabeling.
 function resolveColorScheme(colorBy: string) {
   const map: Record<string, string> = {
     strand: 'strand',
@@ -36,6 +81,9 @@ function resolveColorScheme(colorBy: string) {
     insertSize: 'insertSize',
     insertSizeGradient: 'insertSize',
     insertSizeAndOrientation: 'insertSize',
+    pairOrientation: 'pairOrientation',
+    modifications: 'modifications',
+    methylation: 'modifications',
   }
   return map[colorBy] ?? 'normal'
 }
@@ -45,7 +93,7 @@ function resolveColorScheme(colorBy: string) {
  * panels using plain ggplot2 + inline helpers (no bespoke package): SNP coverage
  * (grey `bam_coverage` total with per-base mismatch counts stacked on top, above
  * a depth-dependent frequency threshold like JBrowse) and a color-by pileup
- * (`read_fill_colors`: normal/strand/mappingQuality/insertSize) with per-base
+ * (`read_fill_colors`: normal/strand/mappingQuality/insertSize/pairOrientation) with per-base
  * mismatch ticks — both derived from the MD tag by `bam_mismatches()`
  * (reference-free, the same signal JBrowse's canvas renderer shows). Row layout
  * is the visible, editable `pileup_layout()` helper. Panels read `chrom`,
@@ -54,7 +102,19 @@ function resolveColorScheme(colorBy: string) {
 export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
   const scheme = resolveColorScheme(p.colorBy)
   const pathVar = safeVarName(p.trackId)
-  const setup = `${pathVar} <- ${rStr(p.uri)}`
+  const refVar = `${pathVar}_ref`
+  // Rsamtools can't read CRAM, so a CRAM track reads through a per-region
+  // temporary BAM (cram_to_bam) in a distinct variable; a BAM reads its path
+  // directly. bamVar is what every bam_* helper call is handed.
+  const bamVar = p.isCram ? `${pathVar}_bam` : pathVar
+  const setup = p.isCram
+    ? `${pathVar} <- ${rStr(p.uri)}\n${refVar} <- ${p.reference ? rStr(p.reference) : 'NULL'}`
+    : `${pathVar} <- ${rStr(p.uri)}`
+  const cramPrelude = p.isCram
+    ? `  # Rsamtools can't read CRAM: decode this region to a temporary BAM first
+  ${bamVar} <- cram_to_bam(${pathVar}, chrom, start, end, ${refVar})\n`
+    : ''
+  const cramHelpers = p.isCram ? ['cram_to_bam'] : []
   const packages = ['Rsamtools', 'GenomicAlignments', 'ggplot2']
   const fragments: RTrackFragment[] = []
 
@@ -64,6 +124,7 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
       trackName: p.trackName,
       packages,
       helpers: [
+        ...cramHelpers,
         'bam_coverage',
         'bam_mismatches',
         'base_colors',
@@ -74,10 +135,10 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
       plotVariable: `p_${pathVar}_coverage`,
       heightWeight: 1,
       plotExpr: `{
-  # keep every mismatch (TRUE) or hide low-frequency noise like JBrowse (FALSE)
+${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JBrowse (FALSE)
   show_low_freq <- ${p.showLowFreqMismatches ? 'TRUE' : 'FALSE'}
-  cov <- bam_coverage(${pathVar}, chrom, start, end)
-  mm <- bam_mismatches(${pathVar}, chrom, start, end)
+  cov <- bam_coverage(${bamVar}, chrom, start, end)
+  mm <- bam_mismatches(${bamVar}, chrom, start, end)
   p <- ggplot() +
     geom_area(data = cov, aes(pos, depth), fill = "#888888") +
     bp_axis() +
@@ -104,26 +165,81 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
   }
 
   if (p.showPileup) {
+    // modifications/methylation keeps grey read bodies and overlays MM/ML mod
+    // ticks (bam_modifications); every other scheme bakes read-body colors and
+    // overlays MD-tag mismatch ticks (bam_mismatches).
+    const isMods = scheme === 'modifications'
+    const bodyScheme = isMods ? 'normal' : scheme
+    const overlay = isMods
+      ? `  # per-base modification ticks (MM/ML), joined to their pileup row and colored
+  # by modification type; raise to hide low-confidence calls like JBrowse
+  min_prob <- ${p.modificationThreshold}
+  mm <- bam_modifications(${bamVar}, chrom, start, end, min_prob)
+  if (!is.null(mm) && nrow(mm)) {
+    mm$row <- reads$row[mm$read_index]
+    mm$fill <- mod_colors(mm$modtype)
+    p <- p + geom_rect(data = mm,
+      aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
+  }`
+      : `  # per-base mismatch ticks, joined to their pileup row and colored by read base
+  mm <- bam_mismatches(${bamVar}, chrom, start, end)
+  if (!is.null(mm) && nrow(mm)) {
+    mm$row <- reads$row[mm$read_index]
+    mm$fill <- base_colors[toupper(mm$base)]
+    p <- p + geom_rect(data = mm,
+      aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
+  }`
+    // chain layout groups mates + supplementary segments onto one row and draws
+    // a connector across each gap (under the read rects, which paint on top)
+    const layout = p.linkReads
+      ? `  linked <- link_reads(read_bam(${bamVar}, chrom, start, end))
+  reads <- linked$reads`
+      : `  reads <- pileup_layout(read_bam(${bamVar}, chrom, start, end))`
+    const connector = p.linkReads
+      ? `
+    geom_segment(data = linked$links,
+      aes(x = xstart, xend = xend, y = row + 0.4, yend = row + 0.4),
+      color = "#999999", linewidth = 0.3) +`
+      : ''
+    // soft-clip (blue) / hard-clip (red) indicator bars at read ends: a
+    // fixed-width vertical mark where a read carries unaligned sequence, the
+    // same breakpoint signal JBrowse's clip indicators show. Independent of the
+    // color scheme, so it draws under every scheme.
+    const clipOverlay = `  # clip indicator bars (soft = blue, hard = red) at read ends
+  clips <- bam_clips(${bamVar}, chrom, start, end)
+  if (!is.null(clips) && nrow(clips)) {
+    clips$row <- reads$row[clips$read_index]
+    clips$color <- clip_colors[clips$type]
+    p <- p + geom_segment(data = clips,
+      aes(x = pos, xend = pos, y = row, yend = row + 0.8, color = color),
+      linewidth = 1) +
+      scale_color_identity()
+  }`
     fragments.push({
       trackId: p.trackId,
       trackName: p.trackName,
       packages,
       helpers: [
+        ...cramHelpers,
         'read_bam',
-        'pileup_layout',
+        'pair_orientation',
+        p.linkReads ? 'link_reads' : 'pileup_layout',
         'read_fill_colors',
-        'bam_mismatches',
-        'base_colors',
+        ...(isMods
+          ? ['bam_modifications', 'mod_colors']
+          : ['bam_mismatches', 'base_colors']),
+        'bam_clips',
+        'clip_colors',
         'bp_axis',
       ],
       setup,
       plotVariable: `p_${pathVar}_pileup`,
       heightWeight: 3,
       plotExpr: `{
-  reads <- pileup_layout(read_bam(${pathVar}, chrom, start, end))
+${cramPrelude}${layout}
   # color reads by the track's color-by scheme (edit to try another scheme)
-  reads$fill <- read_fill_colors(reads, ${rStr(scheme)})
-  p <- ggplot(reads) +
+  reads$fill <- read_fill_colors(reads, ${rStr(bodyScheme)})
+  p <- ggplot(reads) +${connector}
     geom_rect(aes(xmin = start, xmax = end, ymin = row, ymax = row + 0.8, fill = fill)) +
     scale_fill_identity() +
     scale_y_reverse() +
@@ -132,14 +248,8 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
     labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL) +
     theme_minimal() +
     theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
-  # per-base mismatch ticks, joined to their pileup row and colored by read base
-  mm <- bam_mismatches(${pathVar}, chrom, start, end)
-  if (!is.null(mm) && nrow(mm)) {
-    mm$row <- reads$row[mm$read_index]
-    mm$fill <- base_colors[toupper(mm$base)]
-    p <- p + geom_rect(data = mm,
-      aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
-  }
+${overlay}
+${clipOverlay}
   p
 }`,
     })
@@ -153,6 +263,7 @@ export function exportRCode(
   self: LinearAlignmentsDisplayModel,
 ): RTrackFragment[] {
   const { trackId, trackName, adapter } = getTrackRMeta<AdapterConf>(self)
+  const isCram = adapter.type === 'CramAdapter' || !!adapter.cramLocation?.uri
   return alignmentsFragments({
     trackId,
     trackName,
@@ -161,9 +272,17 @@ export function exportRCode(
       adapter.cramLocation?.uri,
       adapter.uri,
     ),
+    isCram,
+    reference: isCram ? referenceFastaUri(self) : '',
     showCoverage: self.showCoverage,
     showPileup: self.showPileup,
     colorBy: self.colorBy.type,
     showLowFreqMismatches: self.showLowFreqMismatches,
+    linkReads: self.linkedReads !== 'off',
+    // JBrowse stores the threshold as a percent (default 10); the R helper wants
+    // a 0..1 probability
+    modificationThreshold:
+      (self.colorBy.modifications?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) /
+      100,
   })
 }

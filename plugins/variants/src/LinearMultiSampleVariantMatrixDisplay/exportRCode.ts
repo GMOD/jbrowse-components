@@ -16,21 +16,30 @@ export interface VariantMatrixRParams {
   // slots), emitted as editable script variables
   minMaf: number
   maxMissing: number
+  // renderingMode === 'phased': one row per haplotype ("<sample> HP<n>") classed
+  // ref/alt/other, instead of one collapsed row per sample classed ref/het/hom
+  phased: boolean
 }
 
 /**
  * Pure builder for the R panel of a multi-sample variant matrix. Reads per-
- * sample genotypes with the inline `read_vcf_gt()` helper (Rsamtools scanTabix,
- * no VariantAnnotation), classes each cell ref/het/hom/other/nocall by dosage of
- * the site's most-frequent ALT, orders samples by `hclust`, and draws a
- * `geom_tile` heatmap with columns laid out by site index (matching JBrowse's
- * matrix layout, not genomic position). A hand-rolled dendrogram
+ * sample (or per-haplotype in phased mode) genotypes with the inline
+ * `read_vcf_gt()` helper (Rsamtools scanTabix, no VariantAnnotation), classes
+ * each cell by dosage of the site's most-frequent ALT, orders rows by `hclust`,
+ * and draws a `geom_tile` heatmap with columns laid out by site index (matching
+ * JBrowse's matrix layout, not genomic position). A hand-rolled dendrogram
  * (`dendro_segments()`) is composed as a left patchwork panel. MAF / missingness
  * filters are emitted as visible thresholds the user can edit. Reads `chrom`,
  * `start`, `end` from the enclosing `plot_region()`.
  */
 export function variantMatrixFragment(p: VariantMatrixRParams): RTrackFragment {
   const v = safeVarName(p.trackId)
+  const levels = p.phased
+    ? `c("ref", "alt", "other", "nocall")`
+    : `c("ref", "het", "hom", "other", "nocall")`
+  const pal = p.phased
+    ? `c(ref = "#cccccc", alt = "#377eb8", other = "#e41a1c", nocall = "#f2f2b3")`
+    : `c(ref = "#cccccc", het = "#6699cc", hom = "#265973", other = "#660000", nocall = "#f2f2b3")`
   return {
     trackId: p.trackId,
     trackName: p.trackName,
@@ -42,11 +51,11 @@ ${v}_max_missing <- ${p.maxMissing}    # drop sites with more than this no-call 
     plotVariable: `p_${v}`,
     heightWeight: 6,
     plotExpr: `{
-  gt <- read_vcf_gt(${v}, chrom, start, end)
+  gt <- read_vcf_gt(${v}, chrom, start, end, ${p.phased ? 'TRUE' : 'FALSE'})
   keep <- gt$has_alt & gt$maf >= ${v}_min_maf & gt$missingness <= ${v}_max_missing
   cls <- gt$cls[keep, , drop = FALSE]
   dose <- gt$dose[keep, , drop = FALSE]
-  # cluster samples (columns) into a row order; needs >2 samples and >0 sites
+  # cluster rows (columns of the matrix) into an order; needs >2 rows and >0 sites
   hc <- if (ncol(dose) > 2 && nrow(dose) > 0)
     hclust(dist(t(replace(dose, is.na(dose), 0)))) else NULL
   ord <- if (is.null(hc)) seq_along(gt$samples) else hc$order
@@ -54,8 +63,8 @@ ${v}_max_missing <- ${p.maxMissing}    # drop sites with more than this no-call 
   names(long)[1:2] <- c("site", "sample")
   long$site <- factor(long$site, levels = rownames(cls))
   long$sample <- factor(long$sample, levels = gt$samples[ord])
-  long$class <- factor(long$class, levels = c("ref", "het", "hom", "other", "nocall"))
-  pal <- c(ref = "#cccccc", het = "#6699cc", hom = "#265973", other = "#660000", nocall = "#f2f2b3")
+  long$class <- factor(long$class, levels = ${levels})
+  pal <- ${pal}
   tiles <- ggplot(long, aes(site, sample, fill = class)) +
     geom_tile() +
     scale_fill_manual(values = pal, drop = FALSE, name = "Genotype") +
@@ -89,5 +98,6 @@ export function exportRCode(
     uri: firstUri(adapter.vcfGzLocation?.uri, adapter.uri),
     minMaf: self.minorAlleleFrequencyFilter,
     maxMissing: self.maxMissingnessFilter,
+    phased: self.renderingMode === 'phased',
   })
 }

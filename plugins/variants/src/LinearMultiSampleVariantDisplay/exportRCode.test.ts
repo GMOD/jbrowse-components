@@ -8,6 +8,7 @@ const base: VariantRowRParams = {
   uri: 'https://example.com/panel.vcf.gz',
   minMaf: 0,
   maxMissing: 1,
+  phased: false,
 }
 
 test('reads genotypes with read_vcf_gt and emits no bespoke package', () => {
@@ -18,8 +19,16 @@ test('reads genotypes with read_vcf_gt and emits no bespoke package', () => {
   expect(f.packages).not.toContain('VariantAnnotation')
   // no patchwork / dendrogram — this is a plain 1-D panel, not the matrix
   expect(f.packages).not.toContain('patchwork')
-  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end)')
+  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end, FALSE)')
   expect(f.plotExpr).not.toContain('dendro_segments')
+})
+
+test('phased mode reads per-haplotype genotypes and uses the phased palette', () => {
+  const f = variantRowFragment({ ...base, phased: true })
+  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end, TRUE)')
+  expect(f.plotExpr).toContain('levels = c("ref", "alt", "other", "nocall")')
+  expect(f.plotExpr).toContain('alt = "#377eb8"')
+  expect(f.plotExpr).not.toContain('het = "#6699cc"')
 })
 
 test('draws one genotype row per sample at genomic position', () => {
