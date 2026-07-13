@@ -1,4 +1,4 @@
-import { execSync } from 'child_process'
+import { execFileSync } from 'child_process'
 import {
   copyFileSync,
   existsSync,
@@ -46,13 +46,16 @@ function fp(f) {
 const binPath = resolve('./node_modules/.bin')
 const env = { ...process.env, PATH: `${binPath}:${process.env.PATH}` }
 
-const jb2exportCmd = existsSync(join(binPath, 'jb2export'))
-  ? 'jb2export'
-  : 'node ./node_modules/@jbrowse/img/esm/bin.js'
+const [jb2exportFile, jb2exportBaseArgs] = existsSync(
+  join(binPath, 'jb2export'),
+)
+  ? ['jb2export', []]
+  : ['node', ['./node_modules/@jbrowse/img/esm/bin.js']]
 
-function run(cmd) {
+function run(args) {
+  const fullArgs = [...jb2exportBaseArgs, ...args]
   try {
-    return execSync(cmd, {
+    return execFileSync(jb2exportFile, fullArgs, {
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe'],
       env,
@@ -61,7 +64,9 @@ function run(cmd) {
     const stderr = error.stderr
       ? `\n  stderr: ${error.stderr.slice(0, 500)}`
       : ''
-    throw new Error(`Command failed: ${cmd}${stderr}`)
+    throw new Error(
+      `Command failed: ${jb2exportFile} ${fullArgs.join(' ')}${stderr}`,
+    )
   }
 }
 
@@ -78,7 +83,7 @@ const paf = fp('volvox_fake_synteny.paf')
 // --- CLI tests ---
 
 await test('jb2export --help shows usage', async () => {
-  const output = run(`${jb2exportCmd} --help`)
+  const output = run(['--help'])
   if (!output.includes('jb2export')) {
     throw new Error('Expected jb2export in help output')
   }
@@ -91,9 +96,16 @@ await test('jb2export with local files creates SVG output', async () => {
   const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
   try {
     const outFile = join(tmpDir, 'test-local.svg')
-    run(
-      `${jb2exportCmd} --fasta data/volvox.fa --bam data/volvox-sorted.bam --loc ctgA:1-5000 --out ${outFile}`,
-    )
+    run([
+      '--fasta',
+      'data/volvox.fa',
+      '--bam',
+      'data/volvox-sorted.bam',
+      '--loc',
+      'ctgA:1-5000',
+      '--out',
+      outFile,
+    ])
     if (!existsSync(outFile)) {
       throw new Error(`Expected output file at ${outFile}`)
     }
@@ -110,9 +122,18 @@ await test('jb2export with remote files creates SVG output', async () => {
   const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
   try {
     const outFile = join(tmpDir, 'test.svg')
-    run(
-      `${jb2exportCmd} --fasta ${FASTA} --bam ${BAM} --gffgz ${GFF} --loc ctgA:1-10000 --out ${outFile}`,
-    )
+    run([
+      '--fasta',
+      FASTA,
+      '--bam',
+      BAM,
+      '--gffgz',
+      GFF,
+      '--loc',
+      'ctgA:1-10000',
+      '--out',
+      outFile,
+    ])
     if (!existsSync(outFile)) {
       throw new Error(`Expected output file at ${outFile}`)
     }
@@ -129,9 +150,16 @@ await test('jb2export can render a larger region', async () => {
   const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
   try {
     const outFile = join(tmpDir, 'test-large.svg')
-    run(
-      `${jb2exportCmd} --fasta ${FASTA} --bam ${BAM} --loc ctgA:1-50000 --out ${outFile}`,
-    )
+    run([
+      '--fasta',
+      FASTA,
+      '--bam',
+      BAM,
+      '--loc',
+      'ctgA:1-50000',
+      '--out',
+      outFile,
+    ])
     if (!existsSync(outFile)) {
       throw new Error(`Expected output file at ${outFile}`)
     }
@@ -150,9 +178,15 @@ await test('jb2export circular subcommand renders SV chords', async () => {
   const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
   try {
     const outFile = join(tmpDir, 'circular.svg')
-    run(
-      `${jb2exportCmd} circular --fasta data/volvox.fa --vcfgz data/volvox.dup.vcf.gz --out ${outFile}`,
-    )
+    run([
+      'circular',
+      '--fasta',
+      'data/volvox.fa',
+      '--vcfgz',
+      'data/volvox.dup.vcf.gz',
+      '--out',
+      outFile,
+    ])
     if (!existsSync(outFile)) {
       throw new Error(`Expected output file at ${outFile}`)
     }
@@ -168,9 +202,17 @@ await test('jb2export dotplot subcommand renders two assemblies', async () => {
   const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
   try {
     const outFile = join(tmpDir, 'dotplot.svg')
-    run(
-      `${jb2exportCmd} dotplot --fasta data/volvox.fa --fasta2 ${fasta2} --paf ${paf} --out ${outFile}`,
-    )
+    run([
+      'dotplot',
+      '--fasta',
+      'data/volvox.fa',
+      '--fasta2',
+      fasta2,
+      '--paf',
+      paf,
+      '--out',
+      outFile,
+    ])
     if (!existsSync(outFile)) {
       throw new Error(`Expected output file at ${outFile}`)
     }
@@ -186,9 +228,21 @@ await test('jb2export synteny subcommand renders a region pair', async () => {
   const tmpDir = mkdtempSync(join(tmpdir(), 'jb2export-test-'))
   try {
     const outFile = join(tmpDir, 'synteny.svg')
-    run(
-      `${jb2exportCmd} synteny --fasta data/volvox.fa --fasta2 ${fasta2} --paf ${paf} --loc ctgA --loc2 ctgA --out ${outFile}`,
-    )
+    run([
+      'synteny',
+      '--fasta',
+      'data/volvox.fa',
+      '--fasta2',
+      fasta2,
+      '--paf',
+      paf,
+      '--loc',
+      'ctgA',
+      '--loc2',
+      'ctgA',
+      '--out',
+      outFile,
+    ])
     if (!existsSync(outFile)) {
       throw new Error(`Expected output file at ${outFile}`)
     }
@@ -203,7 +257,7 @@ await test('jb2export synteny subcommand renders a region pair', async () => {
 await test('jb2export unknown subcommand exits nonzero', async () => {
   let threw = false
   try {
-    run(`${jb2exportCmd} bogus --fasta data/volvox.fa`)
+    run(['bogus', '--fasta', 'data/volvox.fa'])
   } catch {
     threw = true
   }
