@@ -69,9 +69,10 @@ export interface AlignmentsRParams {
 
 // JBrowse exposes ~a dozen color-by schemes; map each to the closest scheme the
 // R script reproduces. Most bake literal read-body colors (see read_fill_colors);
-// modifications/methylation instead keep grey bodies and overlay MM/ML mod ticks
-// (see bam_modifications). Schemes needing signal the export can't recover
-// (per-base quality) resolve to normal grey rather than silently mislabeling.
+// modifications/methylation keep grey bodies and overlay MM/ML mod ticks (see
+// bam_modifications); perBaseQuality keeps grey bodies and overlays a per-base
+// Phred-colored rect (see bam_base_quality). Anything else resolves to normal
+// grey rather than silently mislabeling.
 function resolveColorScheme(colorBy: string) {
   const map: Record<string, string> = {
     strand: 'strand',
@@ -84,6 +85,7 @@ function resolveColorScheme(colorBy: string) {
     pairOrientation: 'pairOrientation',
     modifications: 'modifications',
     methylation: 'modifications',
+    perBaseQuality: 'perBaseQuality',
   }
   return map[colorBy] ?? 'normal'
 }
@@ -166,12 +168,13 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
 
   if (p.showPileup) {
     // modifications/methylation keeps grey read bodies and overlays MM/ML mod
-    // ticks (bam_modifications); every other scheme bakes read-body colors and
-    // overlays MD-tag mismatch ticks (bam_mismatches).
+    // ticks (bam_modifications); perBaseQuality keeps grey bodies and overlays a
+    // per-base Phred-colored rect (bam_base_quality); every other scheme bakes
+    // read-body colors and overlays MD-tag mismatch ticks (bam_mismatches).
     const isMods = scheme === 'modifications'
-    const bodyScheme = isMods ? 'normal' : scheme
-    const overlay = isMods
-      ? `  # per-base modification ticks (MM/ML), joined to their pileup row and colored
+    const isQual = scheme === 'perBaseQuality'
+    const bodyScheme = isMods || isQual ? 'normal' : scheme
+    const modsOverlay = `  # per-base modification ticks (MM/ML), joined to their pileup row and colored
   # by modification type; raise to hide low-confidence calls like JBrowse
   min_prob <- ${p.modificationThreshold}
   mm <- bam_modifications(${bamVar}, chrom, start, end, min_prob)
@@ -181,7 +184,24 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
     p <- p + geom_rect(data = mm,
       aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
   }`
-      : `  # per-base mismatch ticks, joined to their pileup row and colored by read base
+    const qualOverlay = `  # per-base quality: color every aligned base by its Phred score on JBrowse's
+  # perBaseQuality ramp (red low -> green high), joined to its pileup row. This is
+  # one rect per aligned base, so like JBrowse it only makes sense zoomed in; over
+  # a wide region it would emit millions of rects and exhaust ggplot's memory, so
+  # cap it (raise max_quality_rects if you really want a wider view).
+  max_quality_rects <- 200000
+  bq <- bam_base_quality(${bamVar}, chrom, start, end)
+  if (!is.null(bq) && nrow(bq)) {
+    if (nrow(bq) > max_quality_rects) {
+      message(sprintf("perBaseQuality: %d aligned bases in view exceeds max_quality_rects (%d); skipping the per-base overlay. Narrow the region to draw it.", nrow(bq), max_quality_rects))
+    } else {
+      bq$row <- reads$row[bq$read_index]
+      bq$fill <- quality_colors(bq$score)
+      p <- p + geom_rect(data = bq,
+        aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
+    }
+  }`
+    const mismatchOverlay = `  # per-base mismatch ticks, joined to their pileup row and colored by read base
   mm <- bam_mismatches(${bamVar}, chrom, start, end)
   if (!is.null(mm) && nrow(mm)) {
     mm$row <- reads$row[mm$read_index]
@@ -189,6 +209,7 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
     p <- p + geom_rect(data = mm,
       aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
   }`
+    const overlay = isMods ? modsOverlay : isQual ? qualOverlay : mismatchOverlay
     // chain layout groups mates + supplementary segments onto one row and draws
     // a connector across each gap (under the read rects, which paint on top)
     const layout = p.linkReads
@@ -263,7 +284,9 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
         'read_fill_colors',
         ...(isMods
           ? ['bam_modifications', 'mod_colors']
-          : ['bam_mismatches', 'base_colors']),
+          : isQual
+            ? ['bam_base_quality', 'quality_colors']
+            : ['bam_mismatches', 'base_colors']),
         'bam_indels',
         'gap_colors',
         'bam_clips',

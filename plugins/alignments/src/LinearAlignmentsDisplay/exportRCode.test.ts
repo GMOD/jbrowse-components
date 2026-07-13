@@ -98,6 +98,22 @@ test('modifications scheme overlays MM/ML mod ticks instead of mismatches', () =
   ).toContain('bam_modifications')
 })
 
+test('perBaseQuality scheme overlays per-base Phred-colored rects', () => {
+  const [, pileup] = alignmentsFragments({ ...base, colorBy: 'perBaseQuality' })
+  // grey read bodies, every aligned base recolored by its quality score
+  expect(pileup!.plotExpr).toContain('read_fill_colors(reads, "normal")')
+  expect(pileup!.helpers).toEqual(
+    expect.arrayContaining(['bam_base_quality', 'quality_colors']),
+  )
+  expect(pileup!.helpers).not.toContain('bam_mismatches')
+  expect(pileup!.plotExpr).toContain('bam_base_quality(aln, chrom, start, end)')
+  expect(pileup!.plotExpr).toContain('quality_colors(bq$score)')
+  expect(pileup!.plotExpr).toContain('reads$row[bq$read_index]')
+  // one rect per base is dense; a visible cap skips the overlay over wide regions
+  // (like JBrowse only drawing per-base quality zoomed in) so R can't OOM
+  expect(pileup!.plotExpr).toContain('max_quality_rects <- 200000')
+})
+
 test('modification threshold flows from the model to the emitted min_prob var', () => {
   const [, pileup] = alignmentsFragments({
     ...base,
