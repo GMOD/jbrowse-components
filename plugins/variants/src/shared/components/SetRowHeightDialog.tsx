@@ -19,7 +19,7 @@ export default function SetRowHeight({
   return (
     <SubmitDialog
       open
-      title="Set row height"
+      title="Custom row height"
       onCancel={handleClose}
       submitDisabled={value === undefined}
       onSubmit={() => {

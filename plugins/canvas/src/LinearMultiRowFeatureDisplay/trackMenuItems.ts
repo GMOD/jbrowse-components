@@ -69,7 +69,7 @@ export function buildMultiRowTrackMenuItems(
         'Row height',
         rowHeightChoice,
         [
-          { value: 'fit', label: 'Auto-fit to display height' },
+          { value: 'fit', label: 'Squeeze to fit view' },
           { value: 'normal', label: 'Normal' },
           { value: 'compact', label: 'Compact' },
         ],

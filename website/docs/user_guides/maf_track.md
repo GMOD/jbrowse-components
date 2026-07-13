@@ -100,8 +100,8 @@ clicking an internal node. Filtering also prunes the guide tree to just the kept
 species, so even a scattered, hand-picked selection (via **Edit row
 arrangement...**) draws a tree that matches the visible rows rather than the
 full species tree. **Edit row arrangement...** also lets you reorder rows, and
-the **Set feature height** submenu offers fit-to-display, normal, compact, and
-manual row heights.
+the **Row height** submenu offers squeeze-to-fit, normal, compact, and custom
+row heights.
 
 ## See also
 

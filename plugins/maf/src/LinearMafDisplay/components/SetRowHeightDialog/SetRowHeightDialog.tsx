@@ -27,7 +27,7 @@ const SetRowHeightDialog = observer(function (props: {
   return (
     <SubmitDialog
       open
-      title="Set row height"
+      title="Custom row height"
       onCancel={handleClose}
       submitDisabled={rowHeight === undefined || rowProportion === undefined}
       onSubmit={() => {

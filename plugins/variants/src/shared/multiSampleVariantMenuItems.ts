@@ -99,9 +99,23 @@ export function variantTrackMenuItems(
     {
       label: 'Row height',
       icon: HeightIcon,
+      // rowHeight is a single coupled axis: 0 is the fit-to-view sentinel, any
+      // positive value is a fixed row height. Expressed as one mutually-exclusive
+      // radio group; "Squeeze to fit view" shares the verb the MAF/multi-row
+      // displays use for the same idea.
       subMenu: [
         {
-          label: 'Manually set row height',
+          label: 'Squeeze to fit view',
+          type: 'radio',
+          checked: self.rowHeight === 0,
+          onClick: () => {
+            self.setFitToHeight()
+          },
+        },
+        {
+          label: 'Custom...',
+          type: 'radio',
+          checked: self.rowHeight !== 0,
           onClick: () => {
             getSession(self).queueDialog(handleClose => [
               SetRowHeightDialog,
@@ -110,14 +124,6 @@ export function variantTrackMenuItems(
                 handleClose,
               },
             ])
-          },
-        },
-        {
-          label: 'Fit to display height',
-          type: 'checkbox',
-          checked: self.rowHeight === 0,
-          onClick: () => {
-            self.setFitToHeight()
           },
         },
       ],

@@ -71,24 +71,33 @@ interface MafMenuSelf extends IAnyStateTreeNode {
 }
 
 export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
+  const { rowHeight } = self
+  // rowHeight is a single coupled axis: 0 is the fit-to-view sentinel, any
+  // positive value is a fixed row height (Normal/Compact/custom). So — unlike
+  // the alignments display, whose size and sizing are separable — MAF's options
+  // are one mutually-exclusive set, expressed as radios in one "Row height"
+  // menu. "Squeeze to fit view" shares the verb the alignments/canvas/multi-row
+  // displays use for the same idea.
+  const isCustomHeight =
+    rowHeight !== 0 && rowHeight !== DEFAULTS.rowHeight && rowHeight !== 8
   return [
     {
-      label: 'Set feature height',
+      label: 'Row height',
       icon: HeightIcon,
       type: 'subMenu',
       subMenu: [
         {
-          label: 'Fit to display height',
-          type: 'checkbox',
-          checked: self.rowHeight === 0,
+          label: 'Squeeze to fit view',
+          type: 'radio',
+          checked: rowHeight === 0,
           onClick: () => {
             self.setFitToHeight()
           },
         },
         {
           label: 'Normal',
-          type: 'checkbox',
-          checked: self.rowHeight === DEFAULTS.rowHeight,
+          type: 'radio',
+          checked: rowHeight === DEFAULTS.rowHeight,
           onClick: () => {
             self.setRowHeight(DEFAULTS.rowHeight)
             self.setRowProportion(DEFAULTS.rowProportion)
@@ -96,15 +105,17 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         },
         {
           label: 'Compact',
-          type: 'checkbox',
-          checked: self.rowHeight === 8,
+          type: 'radio',
+          checked: rowHeight === 8,
           onClick: () => {
             self.setRowHeight(8)
             self.setRowProportion(0.9)
           },
         },
         {
-          label: 'Manually set height',
+          label: 'Custom...',
+          type: 'radio',
+          checked: isCustomHeight,
           onClick: () => {
             getSession(self).queueDialog(handleClose => [
               SetRowHeightDialog,
