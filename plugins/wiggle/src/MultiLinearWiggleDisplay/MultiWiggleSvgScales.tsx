@@ -1,5 +1,6 @@
 import { SvgRowLabels } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
+import { observer } from 'mobx-react'
 
 import ScoreLegend from '../shared/ScoreLegend.tsx'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
@@ -31,7 +32,7 @@ interface ScaleModel {
   numSources: number
 }
 
-export default function MultiWiggleSvgScales({
+export default observer(function MultiWiggleSvgScales({
   model,
   canvasWidth,
   scalebarLeft,
@@ -97,4 +98,4 @@ export default function MultiWiggleSvgScales({
       {scalebars}
     </>
   )
-}
+})

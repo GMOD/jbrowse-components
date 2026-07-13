@@ -35,11 +35,11 @@ const useStyles = makeStyles()({
   },
 })
 
-function View({ view }: { view: LinearGenomeViewModel }) {
+const View = observer(function View({ view }: { view: LinearGenomeViewModel }) {
   const { pluginManager } = getEnv(view)
   const { ReactComponent } = pluginManager.getViewType(view.type)
   return <ReactComponent model={view} />
-}
+})
 
 const LinearComparativeRenderArea = observer(
   function LinearComparativeRenderArea({

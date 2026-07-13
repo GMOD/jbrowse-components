@@ -10,6 +10,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import ErrorBanner from './ErrorBanner.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
@@ -39,18 +40,7 @@ const fontFamilyOptions = [
   { value: 'system-ui, sans-serif', label: 'System UI' },
 ]
 
-function LoadingMessage({ format }: { format: string }) {
-  return (
-    <div>
-      <CircularProgress size={20} style={{ marginRight: 20 }} />
-      <Typography sx={{ display: 'inline' }}>
-        Creating {format.toUpperCase()}
-      </Typography>
-    </div>
-  )
-}
-
-export default function BaseExportSvgDialog({
+export default observer(function BaseExportSvgDialog({
   model,
   handleClose,
   exportSvg,
@@ -111,7 +101,12 @@ export default function BaseExportSvgDialog({
       {error ? (
         <ErrorBanner error={error} />
       ) : loading ? (
-        <LoadingMessage format={format} />
+        <div>
+          <CircularProgress size={20} style={{ marginRight: 20 }} />
+          <Typography sx={{ display: 'inline' }}>
+            Creating {format.toUpperCase()}
+          </Typography>
+        </div>
       ) : null}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -200,4 +195,4 @@ export default function BaseExportSvgDialog({
       </div>
     </SubmitDialog>
   )
-}
+})

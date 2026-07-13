@@ -212,7 +212,7 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
-  expect(svg).toContain('stroke="#0003"') // inter-row separators
+  expect(svg).toContain('stroke="#8888"') // inter-row separators
   expect(svg).toContain('stroke="rgb(200,200,200)"') // cross-hatches
   expect(svg).toContain('stroke-opacity="0.18"')
 }, 45000)

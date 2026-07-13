@@ -2,8 +2,9 @@ import { useState } from 'react'
 
 import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function SetMinMaxDialog(props: {
+export default observer(function SetMinMaxDialog(props: {
   model: {
     minScore: number
     maxScore: number
@@ -59,4 +60,4 @@ export default function SetMinMaxDialog(props: {
       />
     </SubmitDialog>
   )
-}
+})

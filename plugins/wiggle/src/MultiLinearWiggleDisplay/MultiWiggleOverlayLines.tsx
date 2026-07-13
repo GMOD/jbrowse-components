@@ -1,4 +1,5 @@
 import { CrossHatchLines } from '@jbrowse/wiggle-core'
+import { observer } from 'mobx-react'
 
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
@@ -18,7 +19,7 @@ interface OverlayModel {
   ticks?: YScaleTicks
 }
 
-export default function MultiWiggleOverlayLines({
+export default observer(function MultiWiggleOverlayLines({
   model,
   width,
 }: {
@@ -46,8 +47,8 @@ export default function MultiWiggleOverlayLines({
               y1={y}
               x2={width}
               y2={y}
-              stroke="#0003"
-              strokeWidth={1}
+              stroke="#8888"
+              strokeWidth={1.5}
             />
           )
         })
@@ -74,4 +75,4 @@ export default function MultiWiggleOverlayLines({
       {crossHatches}
     </>
   )
-}
+})

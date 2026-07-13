@@ -2,6 +2,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import LowPriorityIcon from '@mui/icons-material/LowPriority'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
+import { observer } from 'mobx-react'
 
 import { getTrackOrderSubMenu } from './trackLabelMenuItems.ts'
 
@@ -9,7 +10,11 @@ import type { LinearGenomeViewModel } from '../model.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
+const TrackLabelMenu = observer(function TrackLabelMenu({
+  track,
+}: {
+  track: BaseTrackModel
+}) {
   const view = getContainingView(track) as LinearGenomeViewModel
   const session = getSession(track)
 
@@ -49,6 +54,6 @@ function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
       <MoreVertIcon fontSize="small" />
     </CascadingMenuButton>
   )
-}
+})
 
 export default TrackLabelMenu

@@ -1,4 +1,5 @@
 import { SetColorDialog } from '@jbrowse/tree-sidebar'
+import { observer } from 'mobx-react'
 
 import type { Source } from '../../util.ts'
 import type { ColorColumn, TreeLayoutModel } from '@jbrowse/tree-sidebar'
@@ -22,7 +23,7 @@ const LABEL_COLOR: ColorColumn<Source> = {
 // doesn't bake unset colors into the persisted layout on Submit. setLayout
 // already clears the cluster tree on reorder (via willClearTree), but the
 // warning dialog surfaces that destruction to the user first.
-export default function MultiWiggleSetColorDialog({
+export default observer(function MultiWiggleSetColorDialog({
   model,
   handleClose,
 }: {
@@ -46,4 +47,4 @@ export default function MultiWiggleSetColorDialog({
       enableRowPalettizer
     />
   )
-}
+})

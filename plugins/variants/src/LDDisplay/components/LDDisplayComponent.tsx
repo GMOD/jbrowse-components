@@ -73,7 +73,7 @@ function LDTooltip({
   )
 }
 
-function RecombinationOverlay({
+const RecombinationOverlay = observer(function RecombinationOverlay({
   model,
   width,
   recombHeight,
@@ -115,7 +115,7 @@ function RecombinationOverlay({
       />
     </div>
   )
-}
+})
 
 const LDCanvas = observer(function LDCanvas({
   model,

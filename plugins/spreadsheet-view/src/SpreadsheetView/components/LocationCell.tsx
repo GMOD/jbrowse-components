@@ -1,13 +1,14 @@
 import { ActionLink } from '@jbrowse/core/ui'
 import { assembleLocString, getSession } from '@jbrowse/core/util'
 import { getParent } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
 import { locationLinkClick } from '../util.ts'
 import FeatureMenu from './FeatureMenu.tsx'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-export default function LocationCell({
+export default observer(function LocationCell({
   model,
   feature,
 }: {
@@ -47,4 +48,4 @@ export default function LocationCell({
   ) : (
     <>{locString}</>
   )
-}
+})

@@ -12,6 +12,7 @@ import {
   Switch,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { FilterStats } from '../../VariantRPC/getLDMatrix.ts'
 
@@ -25,7 +26,7 @@ interface LDFilterModel {
   setCallRateFilter: (arg: number) => void
 }
 
-export default function LDFilterDialog({
+export default observer(function LDFilterDialog({
   model,
   handleClose,
 }: {
@@ -210,4 +211,4 @@ export default function LDFilterDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
