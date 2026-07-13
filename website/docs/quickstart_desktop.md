@@ -195,8 +195,7 @@ open -a "JBrowse 2" myproject/config.json
 
 Relative paths inside a `config.json` are resolved against that file's own
 folder, so a config the [CLI builds](/docs/tutorials/cli_desktop) opens with no
-extra setup. Double-clicking a `.jbrowse` file in your file explorer does the
-same thing.
+extra setup.
 
 Two informational flags are also available:
 
