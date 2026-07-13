@@ -57,11 +57,11 @@ describe('Feature height submenu', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, session } = createDisplay()
 
-    // un-pinned track (displayMode at the `inherit` sentinel) resolves to normal
+    // a track following the default (displayMode at the `inherit` sentinel) resolves to normal
     expect(display.displayMode).toBe('normal')
 
     // promoting Compact as the display-type default flows through the resolved
-    // getter without the track pinning its own value
+    // getter without the track customizing its own value
     session.setDisplayTypeDefault(display.type, 'displayMode', 'compact')
     expect(display.displayMode).toBe('compact')
 

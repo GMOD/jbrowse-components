@@ -29,7 +29,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export type { Region } from '@jbrowse/core/util'
 
 // Radio options for the "Subfeature labels" submenu. 'none' is the promotedBase
-// of the promotable slot; every option is still pinnable so any mode can be
+// of the promotable slot; every option is still customizable so any mode can be
 // promoted back over another session default (mirrors the displayMode menu).
 const SUBFEATURE_LABEL_OPTIONS = [
   { value: 'none', label: 'Off' },

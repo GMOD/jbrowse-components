@@ -90,10 +90,10 @@ const SizeSliderRow = observer(function SizeSliderRow({
           }}
         />
         {sessionDefault ? (
-          // include the current value so the manage-default dialog/tooltip read
-          // as a concrete value ("Line width (2px)") — the copy assumes the
-          // label is a value, but a bare setting name reads oddly ("Use 'Line
-          // width' as the default")
+          // include the current value so the pin's tooltip reads as a concrete
+          // value ("Line width (2px)") — the copy assumes the label is a value,
+          // but a bare setting name reads oddly ("Use 'Line width' as the
+          // default")
           <DefaultForAllAdornment
             label={`${title} (${format(value)})`}
             control={sessionDefault}

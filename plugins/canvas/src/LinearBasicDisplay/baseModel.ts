@@ -36,6 +36,7 @@ import {
   onDisplayedRegionsChange,
   raiseLimitPast,
   resolveByteLimit,
+  scaleByteEstimate,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -525,7 +526,7 @@ export default function baseStateModelFactory(
          */
         // Feature height preset (normal/compact/superCompact). Promotable
         // sentinel enum (see baseConfigSchema.ts): getConfResolved walks the
-        // pinned-track -> session-default -> `normal` cascade and always returns
+        // customized-track -> session-default -> `normal` cascade and always returns
         // a concrete preset, never the `inherit` sentinel.
         get displayMode(): DisplayMode {
           return getConfResolved(self, 'displayMode')
@@ -940,14 +941,11 @@ export default function baseStateModelFactory(
          * banner.
          */
         get estimatedVisibleBytes() {
-          const stats = self.featureDensityStats
-          if (!stats?.bytes) {
-            return undefined
-          }
-          const captureBp = self.byteEstimateVisibleBp
-          return captureBp
-            ? (stats.bytes * getView(self).visibleBp) / captureBp
-            : stats.bytes
+          return scaleByteEstimate({
+            bytes: self.featureDensityStats?.bytes,
+            captureBp: self.byteEstimateVisibleBp,
+            visibleBp: getView(self).visibleBp,
+          })
         },
       }))
       .views(self => ({
@@ -2372,8 +2370,8 @@ export default function baseStateModelFactory(
             // consumers recompute when the laid-out content changes without ever
             // writing the height config slot. Leaving grow is the one write —
             // bake the grown height into the slot on any grow->non-grow exit
-            // (menu switch, un-pin, or a session-default change flipping an
-            // un-pinned track) so fixed/fit resume from the height the user was
+            // (menu switch, reset-to-default, or a session-default change flipping
+            // a track that follows the default) so fixed/fit resume from the height the user was
             // seeing, not the stale slot.
             addDisposer(self, installGrowExitBake(self, getView(self)))
 
@@ -2826,7 +2824,7 @@ export default function baseStateModelFactory(
                 // selects the mode for this track, the pin promotes that preset
                 // as the session-wide default for this display type. displayMode
                 // is a sentinel promotable slot, so every preset — `normal`
-                // included — is pinnable back over another session default.
+                // included — is customizable back over another session default.
                 ...displayModeOptions.map(option =>
                   promotableRadioItem({
                     label: option.label,
@@ -2846,7 +2844,7 @@ export default function baseStateModelFactory(
                   // Each track-height mode carries its own pin: the radio sets
                   // the mode for this track, the pin promotes it as the
                   // session-wide default. heightMode is a sentinel promotable
-                  // slot, so every mode — `fixed` included — is pinnable back
+                  // slot, so every mode — `fixed` included — is customizable back
                   // over another session default. Shared builder with the
                   // alignments menu.
                   label: 'Track height',

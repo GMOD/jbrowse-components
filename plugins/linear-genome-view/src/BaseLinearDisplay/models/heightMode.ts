@@ -3,7 +3,7 @@
 // display). Keeping the enum members, the resolved type, and the grow ceiling in
 // one place keeps the two plugins' modes identical rather than drifting.
 
-// Config-slot enum members. `inherit` is the promotable sentinel (the un-pinned
+// Config-slot enum members. `inherit` is the promotable sentinel (the inherit
 // state that resolves through the session-default cascade); the rest are the
 // real, concrete modes.
 export const HEIGHT_MODE_VALUES = ['inherit', 'fixed', 'grow', 'fit'] as const

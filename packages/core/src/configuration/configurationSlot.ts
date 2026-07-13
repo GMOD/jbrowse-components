@@ -54,7 +54,7 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   // value back over an opposite session default. A boolean has no spare in-band
   // value for "unset" — exactly the `maybeNumber` justification above — so an
   // undefined-defaulted boolean lets `undefined` mean "inherit" while both `true`
-  // and `false` stay pinnable. Pair with `promotedBase` for the value `undefined`
+  // and `false` stay customizable. Pair with `promotedBase` for the value `undefined`
   // resolves to. Read promotable slots with `getConfResolved` (never raw), which
   // always yields a concrete boolean.
   maybeBoolean: { model: types.maybe(types.boolean) },
@@ -91,11 +91,11 @@ export interface ConfigSlotDefinition {
   /**
    * a user can promote this slot's current value to a session-wide default for
    * all tracks of the same display type (track menu "make default"). A slot left
-   * at its `defaultValue` is un-pinned and inherits that promoted default; any
-   * other value pins the track. See `getConfResolved` / `promotableDefaults.ts`.
+   * at its `defaultValue` follows (inherits) that promoted default; any other
+   * value customizes the track. See `getConfResolved` / `promotableDefaults.ts`.
    *
    * By default the `defaultValue` doubles as the "inherit" signal, so a track
-   * can't pin that one value back over an opposite session default. A slot whose
+   * can't customize that one value back over an opposite session default. A slot whose
    * value space has no spare value to spend on that role sidesteps it with an
    * explicit inherit sentinel + `promotedBase` (see below).
    */
@@ -106,9 +106,9 @@ export interface ConfigSlotDefinition {
    * `undefined` of a `maybeBoolean`/`maybeNumber` — rather than a real value: the
    * concrete value that sentinel resolves to when a track inherits and nothing
    * is promoted. This is the CSS model — `defaultValue` is the `inherit` keyword
-   * (the un-pinned/stripped state), `promotedBase` is `initial` (the value at
+   * (the inherit/stripped state), `promotedBase` is `initial` (the value at
    * the bottom of the cascade). Its point is that every *real* value, including
-   * `promotedBase`, then becomes pinnable over a session default. Omit for an
+   * `promotedBase`, then becomes customizable over a session default. Omit for an
    * ordinary promotable slot whose `defaultValue` is itself a usable value.
    */
   promotedBase?: unknown

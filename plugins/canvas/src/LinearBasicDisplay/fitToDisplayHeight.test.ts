@@ -326,7 +326,7 @@ describe('canvas display fit-to-display-height', () => {
   })
 
   // The promotable cascade can flip a grow track out of grow mode WITHOUT
-  // setHeightMode — un-pinning it (clearPinsToInherit) or a session-default
+  // setHeightMode — resetting it to the inherit sentinel or a session-default
   // change. The bake is a reaction on the resolved mode, so that exit bakes too.
   it('bakes on a cascade-driven grow exit, not just the menu action', () => {
     const { createDisplay } = createTestEnvironment()
@@ -336,8 +336,8 @@ describe('canvas display fit-to-display-height', () => {
     const grown = display.grownHeight
     expect(display.height).toBe(grown)
 
-    // Un-pin exactly as clearPinsToInherit does: reset the slot to its 'inherit'
-    // sentinel. Resolved heightMode falls to 'fixed' with no setHeightMode call.
+    // Reset the slot to its 'inherit' sentinel, exactly as clearing a customized
+    // value does. Resolved heightMode falls to 'fixed' with no setHeightMode call.
     display.configuration.setSlot('heightMode', 'inherit')
     expect(display.autoHeight).toBe(false)
     expect(readConfObject(display.configuration, 'height')).toBe(grown)

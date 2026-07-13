@@ -11,8 +11,8 @@ import type { SashimiArcsMode } from '../constants.ts'
 import type { SessionDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// 'up' is the base/un-pinned value (mirrors readConnections's 'off'), so it
-// carries no session-default control — only 'down' and 'auto' are pinnable.
+// 'up' is the base (inherit) value (mirrors readConnections's 'off'), so it
+// carries no session-default control — only 'down' and 'auto' are promotable.
 const SASHIMI_MODE_OPTIONS: {
   value: SashimiArcsMode
   label: string

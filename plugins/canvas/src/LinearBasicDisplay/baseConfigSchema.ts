@@ -42,9 +42,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         description:
           'Track-height strategy (shared vocabulary with the alignments display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` resizes the track to fit all features, `fit` shrinks features to fill the current height. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
         // Sentinel promotable slot (see promotableDefaults.ts / displayMode):
-        // `inherit` is the un-pinned state, `promotedBase` ('fixed') is what it
+        // `inherit` is the inherit state, `promotedBase` ('fixed') is what it
         // resolves to when nothing is promoted — so every real mode, `fixed`
-        // included, is pinnable back over a session default. Read through the
+        // included, is customizable back over a session default. Read through the
         // resolved `heightMode` getter (getConfResolved), never raw.
         defaultValue: 'inherit',
         promotedBase: 'fixed',
@@ -140,12 +140,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'superCompact',
         ]),
         description:
-          'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` pin the track explicitly (including pinning `normal` back over a `compact` session default)',
+          'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default)',
         // Sentinel promotable slot (see promotableDefaults.ts / subfeatureLabels):
-        // `inherit` is the un-pinned state, `promotedBase` ('normal') is what it
+        // `inherit` is the inherit state, `promotedBase` ('normal') is what it
         // resolves to when nothing is promoted — so every real preset, `normal`
-        // included, is pinnable. Legacy stored normal/compact/superCompact are
-        // still valid members (pinned), so no snapshot migration is needed. Read
+        // included, is customizable. Legacy stored normal/compact/superCompact are
+        // still valid members (customized values), so no snapshot migration is needed. Read
         // through the resolved `displayMode` getter (getConfResolved), never raw.
         defaultValue: 'inherit',
         promotedBase: 'normal',
@@ -173,11 +173,11 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'overlay',
         ]),
         description:
-          'subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` pin the track explicitly',
+          'subfeature label display mode. `inherit` (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` customize the track explicitly',
         // Promotable sentinel enum (see promotableDefaults.ts / displayMode):
-        // `inherit` is the un-pinned state, `promotedBase` ('none') is what it
+        // `inherit` is the inherit state, `promotedBase` ('none') is what it
         // resolves to when nothing is promoted. Legacy stored none/below/overlay
-        // are still valid members (pinned), so no snapshot migration is needed.
+        // are still valid members (customized values), so no snapshot migration is needed.
         // Read through the resolved `subfeatureLabels` getter (getConfResolved),
         // never raw.
         defaultValue: 'inherit',
@@ -190,11 +190,11 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       displayDirectionalChevrons: {
         type: 'maybeBoolean',
         description:
-          'Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false pins the track (including pinning on over an off session default)',
+          'Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (including customizing on over an off session default)',
         // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
         // inherit state, `promotedBase` (true) is what it resolves to when
         // nothing is promoted. A legacy stored boolean is already a valid
-        // pinned value, so no snapshot migration is needed. Read through the
+        // customized value, so no snapshot migration is needed. Read through the
         // resolved `displayDirectionalChevrons` getter (getConfResolved), never
         // raw. See promotableDefaults.ts.
         defaultValue: undefined,

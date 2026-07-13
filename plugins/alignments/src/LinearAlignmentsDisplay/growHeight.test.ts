@@ -164,10 +164,10 @@ describe('alignments grow-mode reactive height', () => {
   })
 
   // The promotable cascade can flip a grow track out of grow mode WITHOUT
-  // setHeightMode — un-pinning it (clearPinsToInherit) or a session-default
-  // change flipping an un-pinned track. The bake is a reaction on the resolved
-  // mode, so that exit bakes too, instead of snapping to the stale slot.
-  it('bakes on a cascade-driven grow exit (un-pin), not just the menu action', () => {
+  // setHeightMode — resetting it to the inherit sentinel or a session-default
+  // change flipping a track that follows the default. The bake is a reaction on
+  // the resolved mode, so that exit bakes too, instead of snapping to the stale slot.
+  it('bakes on a cascade-driven grow exit (reset), not just the menu action', () => {
     const { view, display } = createEnv()
     view.setWidth(800)
     view.setDisplayedRegions([
@@ -180,8 +180,8 @@ describe('alignments grow-mode reactive height', () => {
     expect(display.height).toBe(grown)
     expect(readConfObject(display.configuration, 'height')).toBe(250)
 
-    // Un-pin exactly as clearPinsToInherit does: reset the slot to its 'inherit'
-    // sentinel default. Resolved heightMode falls to 'fixed' with no
+    // Reset the slot to its 'inherit' sentinel default, exactly as clearing a
+    // customized value does. Resolved heightMode falls to 'fixed' with no
     // setHeightMode call, so only the reaction can bake here.
     display.configuration.setSlot('heightMode', 'inherit')
     expect(display.autoHeight).toBe(false)

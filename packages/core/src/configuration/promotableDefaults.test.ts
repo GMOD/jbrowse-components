@@ -3,12 +3,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import {
-  clearPinsToInherit,
   getConfResolved,
   isPromotableDefault,
-  isSlotPinned,
+  isSlotCustomized,
   makeCurrentValueSessionDefaultControl,
   makeSlotsValueSessionDefaultControl,
+  resetSlotsToInherit,
   resolvePromotableConfigSnapshot,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
@@ -65,9 +65,9 @@ function createDisplay(
   return { session, display: session.display }
 }
 
-// Session holding several sibling displays of one type, so clearPinsToInherit
-// (the "apply a promoted default to the tracks that pin their own value" sweep)
-// can be exercised over a real sibling set.
+// Session holding several sibling displays of one type, so resetSlotsToInherit
+// (what the snackbar's "apply to open tracks" action runs) can be exercised over
+// a real sibling set.
 function createDisplays(
   configSchema: ReturnType<typeof ConfigurationSchema>,
   displayConfigs: Record<string, unknown>[],
@@ -127,30 +127,30 @@ describe('apply a promoted default to open tracks', () => {
     },
   })
 
-  test('clears a track pinned to a different value so it inherits the default', () => {
+  test('clears a track customized to a different value so it inherits the default', () => {
     const { session, displays } = createDisplays(configSchema, [
-      { customHeight: 10 }, // self: pinned the value being promoted
-      { customHeight: 20 }, // pinned a different value
+      { customHeight: 10 }, // self: customized to the value being promoted
+      { customHeight: 20 }, // customized to a different value
     ])
     const other = displays[1]!
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
 
-    expect(isSlotPinned(other, 'customHeight')).toBe(true)
-    clearPinsToInherit(displays, ['customHeight'])
-    expect(isSlotPinned(other, 'customHeight')).toBe(false)
+    expect(isSlotCustomized(other, 'customHeight')).toBe(true)
+    resetSlotsToInherit(displays, ['customHeight'])
+    expect(isSlotCustomized(other, 'customHeight')).toBe(false)
     expect(getConfResolved(other, 'customHeight')).toBe(10)
   })
 
   test('leaves an already-inheriting track untouched', () => {
     const { session, displays } = createDisplays(configSchema, [
       { customHeight: 10 },
-      {}, // un-pinned -> already inherits
+      {}, // no own value -> already follows the default
     ])
     const other = displays[1]!
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 10)
 
-    clearPinsToInherit(displays, ['customHeight'])
-    expect(isSlotPinned(other, 'customHeight')).toBe(false)
+    resetSlotsToInherit(displays, ['customHeight'])
+    expect(isSlotCustomized(other, 'customHeight')).toBe(false)
     expect(getConfResolved(other, 'customHeight')).toBe(10)
   })
 
@@ -172,8 +172,8 @@ describe('apply a promoted default to open tracks', () => {
         >({}),
         views: types.array(View),
       })
-      // records the last snackbar so the opt-in "apply to open tracks" action can
-      // be asserted and its onClick invoked (mirrors the real SnackbarModel path)
+      // records the last snackbar so the "apply to open tracks" action can be
+      // asserted and its onClick invoked (mirrors the real SnackbarModel path)
       .volatile(() => ({
         lastNotify: undefined as
           | { message: string; action?: { name: string; onClick: () => void } }
@@ -240,7 +240,7 @@ describe('apply a promoted default to open tracks', () => {
     makeCurrentValueSessionDefaultControl(self, ['customHeight']).toggle()
 
     // setting the default doesn't touch the customized track in the other view
-    expect(isSlotPinned(otherView, 'customHeight')).toBe(true)
+    expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
     expect(getConfResolved(otherView, 'customHeight')).toBe(20)
   })
 
@@ -259,7 +259,7 @@ describe('apply a promoted default to open tracks', () => {
     expect(differing[0]).toBe(otherView)
   })
 
-  test('toggling the default on sets it non-destructively and offers an opt-in sweep', () => {
+  test('toggling the default on offers "apply to open tracks" for tracks not showing it', () => {
     const { session, displayOf } = createViews([
       [{ customHeight: 10 }],
       [{ customHeight: 20 }],
@@ -270,20 +270,40 @@ describe('apply a promoted default to open tracks', () => {
 
     makeSlotsValueSessionDefaultControl(self, entries).toggle()
 
-    // default set, but the differing pinned track is NOT swept yet
+    // default set; the track with its own different value keeps it until applied
     expect(isPromotableDefault(self, entries)).toBe(true)
-    expect(isSlotPinned(otherView, 'customHeight')).toBe(true)
+    expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
 
-    // the snackbar offered an "apply to open tracks" action; running it un-pins
-    // the one differing track so it inherits the new default
+    // the snackbar offered "Apply to N open tracks"; running it makes the one
+    // track not already showing 10 follow the new default
     const action = session.lastNotify?.action
     expect(action?.name).toBe('Apply to 1 open track')
     action!.onClick()
-    expect(isSlotPinned(otherView, 'customHeight')).toBe(false)
+    expect(isSlotCustomized(otherView, 'customHeight')).toBe(false)
     expect(getConfResolved(otherView, 'customHeight')).toBe(10)
   })
 
-  test('toggling on with nothing differing notifies without a sweep action', () => {
+  test('a following track in another view picks up the new default automatically', () => {
+    // view 1's track has no own value, so setting the default moves it with no
+    // "apply to open tracks" click needed — that action only targets tracks that
+    // aren't already showing the value
+    const { session, displayOf } = createViews([
+      [{ customHeight: 10 }],
+      [{}],
+    ])
+    const self = displayOf(0, 0)
+    const follower = displayOf(1, 0)
+    expect(getConfResolved(follower, 'customHeight')).toBeUndefined()
+
+    makeSlotsValueSessionDefaultControl(self, [
+      { slot: 'customHeight', value: 10 },
+    ]).toggle()
+
+    expect(getConfResolved(follower, 'customHeight')).toBe(10)
+    expect(session.lastNotify?.action).toBeUndefined()
+  })
+
+  test('toggling on with every open track already showing it offers no action', () => {
     const { session, displayOf } = createViews([[{ customHeight: 10 }]])
     const self = displayOf(0, 0)
 
@@ -291,13 +311,11 @@ describe('apply a promoted default to open tracks', () => {
       { slot: 'customHeight', value: 10 },
     ]).toggle()
 
-    expect(session.lastNotify?.message).toBe(
-      'Set as the default for all tracks of this type',
-    )
+    expect(session.lastNotify?.message).toBe('Set as the default')
     expect(session.lastNotify?.action).toBeUndefined()
   })
 
-  test('clearing the default never sweeps open tracks', () => {
+  test('clearing the default just notifies, leaving open tracks alone', () => {
     const { session, displayOf } = createViews([
       [{ customHeight: 10 }],
       [{ customHeight: 20 }],
@@ -311,10 +329,8 @@ describe('apply a promoted default to open tracks', () => {
     makeSlotsValueSessionDefaultControl(self, entries).toggle()
 
     expect(isPromotableDefault(self, entries)).toBe(false)
-    expect(isSlotPinned(otherView, 'customHeight')).toBe(true)
-    expect(session.lastNotify?.message).toBe(
-      'Cleared the default for all tracks of this type',
-    )
+    expect(isSlotCustomized(otherView, 'customHeight')).toBe(true)
+    expect(session.lastNotify?.message).toBe('Cleared the default')
     expect(session.lastNotify?.action).toBeUndefined()
   })
 })
@@ -332,7 +348,7 @@ describe('promotable maybeNumber slot', () => {
     },
   })
 
-  test('an un-pinned track follows a numeric session-wide default', () => {
+  test('a track with no own value follows a numeric session-wide default', () => {
     const { session, display } = createDisplay(configSchema)
     expect(getConfResolved(display, 'customHeight')).toBeUndefined()
 
@@ -340,12 +356,12 @@ describe('promotable maybeNumber slot', () => {
     expect(getConfResolved(display, 'customHeight')).toBe(42)
   })
 
-  test('an explicit per-track value pins over the session default', () => {
+  test('an explicit per-track value overrides the session default', () => {
     const { session, display } = createDisplay(configSchema, {
       customHeight: 10,
     })
     session.setDisplayTypeDefault('TestDisplay', 'customHeight', 42)
-    expect(isSlotPinned(display, 'customHeight')).toBe(true)
+    expect(isSlotCustomized(display, 'customHeight')).toBe(true)
     expect(getConfResolved(display, 'customHeight')).toBe(10)
   })
 
@@ -363,7 +379,7 @@ describe('promotable maybeNumber slot', () => {
 })
 
 // A promotable `maybeBoolean` slot: its `undefined` default is the "unset —
-// inherit" sentinel, so BOTH `true` and `false` stay pinnable over an opposite
+// inherit" sentinel, so BOTH `true` and `false` stay customizable per-track over an opposite
 // session default — the symmetry a plain boolean (whose default doubles as the
 // inherit signal) can't offer. `promotedBase` supplies the value the unset
 // sentinel resolves to; `matchesSlotShape` keys the shape check on the `type`.
@@ -378,31 +394,31 @@ describe('promotable maybeBoolean slot', () => {
     },
   })
 
-  test('an un-pinned track resolves to promotedBase, never undefined', () => {
+  test('a track with no own value resolves to promotedBase, never undefined', () => {
     const { display } = createDisplay(configSchema)
     expect(getConfResolved(display, 'chevrons')).toBe(true)
-    expect(isSlotPinned(display, 'chevrons')).toBe(false)
+    expect(isSlotCustomized(display, 'chevrons')).toBe(false)
   })
 
-  test('an un-pinned track follows an off session default', () => {
+  test('a track with no own value follows an off session default', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
     expect(getConfResolved(display, 'chevrons')).toBe(false)
   })
 
-  test('a track can pin ON over an OFF session default (the symmetry win)', () => {
+  test('a track can override with ON over an OFF session default (the symmetry win)', () => {
     const { session, display } = createDisplay(configSchema, { chevrons: true })
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
-    expect(isSlotPinned(display, 'chevrons')).toBe(true)
+    expect(isSlotCustomized(display, 'chevrons')).toBe(true)
     expect(getConfResolved(display, 'chevrons')).toBe(true)
   })
 
-  test('a track can pin OFF over an ON session default', () => {
+  test('a track can override with OFF over an ON session default', () => {
     const { session, display } = createDisplay(configSchema, {
       chevrons: false,
     })
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', true)
-    expect(isSlotPinned(display, 'chevrons')).toBe(true)
+    expect(isSlotCustomized(display, 'chevrons')).toBe(true)
     expect(getConfResolved(display, 'chevrons')).toBe(false)
   })
 
@@ -460,7 +476,7 @@ describe('resolvePromotableConfigSnapshot', () => {
     expect(snap.color).toBe('red')
   })
 
-  test('keeps a pinned promotable value over the session default', () => {
+  test('keeps a customized promotable value over the session default', () => {
     const { session, display } = createDisplay(configSchema, { chevrons: true })
     session.setDisplayTypeDefault('TestDisplay', 'chevrons', false)
     expect(resolvePromotableConfigSnapshot(display).chevrons).toBe(true)
@@ -468,7 +484,7 @@ describe('resolvePromotableConfigSnapshot', () => {
 })
 
 // A frozen (object-valued) promotable slot's equality must be structural, not
-// key-order-sensitive: a promoted default and a track's own pinned value can be
+// key-order-sensitive: a promoted default and a track's own customized value can be
 // built by different code paths and still land with keys in a different order.
 describe('promotable frozen slot structural equality', () => {
   const configSchema = ConfigurationSchema('ColorByDisplay', {
@@ -479,7 +495,7 @@ describe('promotable frozen slot structural equality', () => {
     },
   })
 
-  test('recognizes a pinned value as the session default regardless of key order', () => {
+  test('recognizes a customized value as the session default regardless of key order', () => {
     const { session, display } = createDisplay(configSchema, {
       // keys in the opposite order from how the default is promoted below
       colorBy: { tag: 'XT', type: 'tag' },
@@ -513,13 +529,13 @@ describe('promotable frozen slot structural equality', () => {
   })
 
   test('a malformed own value of the wrong JS shape degrades to the base', () => {
-    // a frozen slot accepts any JSON, so a corrupt saved snapshot could pin a
+    // a frozen slot accepts any JSON, so a corrupt saved snapshot could hold a
     // string where an object is expected — the shape gate alone (no validate
-    // hook here) treats it as un-pinned so it falls back rather than flowing on
+    // hook here) treats it as not customized so it falls back rather than flowing on
     const { display } = createDisplay(configSchema, {
       colorBy: 'not-an-object',
     })
-    expect(isSlotPinned(display, 'colorBy')).toBe(false)
+    expect(isSlotCustomized(display, 'colorBy')).toBe(false)
     expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
   })
 })
@@ -559,30 +575,30 @@ describe('promotable slot validate hook', () => {
     expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
   })
 
-  test("a track's own pinned value that fails validate degrades to the base", () => {
-    // a saved session pinned a scheme that's since been removed — the same
+  test("a track's own customized value that fails validate degrades to the base", () => {
+    // a saved session customized to a scheme that's since been removed — the same
     // stale-name hazard as a promoted default, but on the track's own value
     const { display } = createDisplay(configSchema, {
       colorBy: { type: 'a-removed-scheme' },
     })
-    // an unusable pin reads as un-pinned so every consumer falls back in lockstep
-    expect(isSlotPinned(display, 'colorBy')).toBe(false)
+    // an unusable own value reads as not customized so every consumer falls back in lockstep
+    expect(isSlotCustomized(display, 'colorBy')).toBe(false)
     expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'normal' })
   })
 
-  test("a track's own pinned value that fails validate still follows a usable session default", () => {
+  test("a track's own customized value that fails validate still follows a usable session default", () => {
     const { session, display } = createDisplay(configSchema, {
       colorBy: { type: 'a-removed-scheme' },
     })
     session.setDisplayTypeDefault('TestDisplay', 'colorBy', { type: 'strand' })
-    // un-pinned by the failed validate, so it inherits the promoted default
+    // treated as not customized by the failed validate, so it inherits the promoted default
     expect(getConfResolved(display, 'colorBy')).toEqual({ type: 'strand' })
   })
 })
 
 // A sentinel slot's `defaultValue` is a dedicated `'inherit'` member (the "no
 // value — inherit" signal) and `promotedBase` is what it resolves to, so — unlike
-// a plain slot — every real value including `promotedBase` stays pinnable over an
+// a plain slot — every real value including `promotedBase` stays customizable per-track over an
 // opposite session default. Exercises `isConcreteValue`'s sentinel branch and
 // that `getConfResolved` never surfaces the `'inherit'` member.
 describe('promotable sentinel slot', () => {
@@ -596,22 +612,22 @@ describe('promotable sentinel slot', () => {
     },
   })
 
-  test('an un-pinned track resolves to promotedBase, never the inherit sentinel', () => {
+  test('a track with no own value resolves to promotedBase, never the inherit sentinel', () => {
     const { display } = createDisplay(configSchema)
     expect(getConfResolved(display, 'mode')).toBe('normal')
-    expect(isSlotPinned(display, 'mode')).toBe(false)
+    expect(isSlotCustomized(display, 'mode')).toBe(false)
   })
 
-  test('an un-pinned track follows a usable session default', () => {
+  test('a track with no own value follows a usable session default', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
     expect(getConfResolved(display, 'mode')).toBe('compact')
   })
 
-  test('a track can pin promotedBase over an opposite session default', () => {
+  test('a track can override with promotedBase over an opposite session default', () => {
     const { session, display } = createDisplay(configSchema, { mode: 'normal' })
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
-    expect(isSlotPinned(display, 'mode')).toBe(true)
+    expect(isSlotCustomized(display, 'mode')).toBe(true)
     expect(getConfResolved(display, 'mode')).toBe('normal')
   })
 

@@ -4,8 +4,8 @@ import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 import type { SessionDefaultControl } from '../configuration/promotableDefaults.ts'
 
 // A promotable setting as one native checkbox menu row: the value toggles the
-// track (inheriting native hover/sizing/keyboard), and a trailing control
-// (endAdornment) opens the manage-default dialog for this display type. Always
+// track (inheriting native hover/sizing/keyboard), and a trailing pin
+// (endAdornment) sets/clears this value as the display type's default. Always
 // shown so the capability is discoverable.
 export function promotableToggleItem({
   label,
@@ -35,7 +35,7 @@ export function promotableToggleItem({
 }
 
 // A radio row in a promotable-value group (e.g. one option of a multi-value enum
-// slot). `sessionDefault` is omitted for the base/un-pinned value (e.g. the
+// slot). `sessionDefault` is omitted for the base (inherit) value (e.g. the
 // `up`/`normal` base of a mode enum) — only the non-base values are promotable.
 export function promotableRadioItem({
   label,

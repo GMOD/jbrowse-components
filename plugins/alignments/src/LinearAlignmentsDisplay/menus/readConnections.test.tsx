@@ -85,8 +85,7 @@ function endAdornment(model: ReturnType<typeof makeModel>, label: string) {
 }
 
 // Read the promotable control off a row's "default for all" endAdornment and
-// promote it (what the manage-default dialog does on submit), exercising the
-// menu's promote wiring without opening the dialog.
+// promote it (what clicking the pin does), exercising the menu's promote wiring.
 function promoteDefaultForAll(
   model: ReturnType<typeof makeModel>,
   label: string,

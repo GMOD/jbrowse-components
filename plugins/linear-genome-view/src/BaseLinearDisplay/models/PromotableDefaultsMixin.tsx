@@ -24,7 +24,7 @@ export default function PromotableDefaultsMixin() {
     .views(self => ({
       /**
        * #method
-       * Effective config differences an un-pinned track inherits from
+       * Effective config differences a track following the default inherits from
        * session-wide defaults (distinct from per-track config edits /
        * trackConfigDeltas). Drives the "affected by a session default" badge.
        */

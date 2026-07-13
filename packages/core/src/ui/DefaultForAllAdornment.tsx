@@ -20,11 +20,11 @@ const useStyles = makeStyles()(theme => ({
 // Trailing "default for all tracks of this type" pin for a promotable setting,
 // rendered as a menu item's `endAdornment` beside the value check. A ToggleButton
 // (native button a11y + a clear selected tint) with a pin — distinct from the
-// value checkbox — reads as "pinned as the default": outline pin = not the
+// value checkbox — reads as "this is the default": outline pin = not the
 // default, filled pin on an accent-tinted button = the default. One click sets or
-// clears it (non-destructive; `control.toggle` raises the opt-in "apply to open
-// tracks" snackbar when open tracks differ). Always shown so the capability is
-// discoverable. stopPropagation keeps the click off the row value / menu
+// clears it; on set, `control.toggle` raises an "apply to open tracks" snackbar
+// for any open tracks not already showing this value. Always shown so the
+// capability is discoverable. stopPropagation keeps the click off the row value / menu
 // dismissal. "of this type" because a promoted default is scoped to the display
 // type (e.g. every LinearAlignmentsDisplay), not literally all tracks.
 export function DefaultForAllAdornment({

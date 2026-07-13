@@ -96,9 +96,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
         description:
           'Track-height strategy (shared vocabulary with the canvas feature display). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` uses `featureHeight`/`featureSpacing` and scrolls; `grow` resizes the track to fit every read at the configured height; `fit` sizes reads so every uncollapsed group fills the display without scrolling',
-        // `inherit` is the CSS-style sentinel default (the un-pinned state);
+        // `inherit` is the CSS-style sentinel default (the inherit state);
         // `promotedBase` ('fixed') is what it resolves to when nothing is
-        // promoted. Being a sentinel lets a track pin `fixed` back over a
+        // promoted. Being a sentinel lets a track customize `fixed` back over a
         // session-wide `fit`/`grow` default. See promotableDefaults.ts.
         defaultValue: 'inherit',
         promotedBase: 'fixed',
@@ -144,20 +144,20 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       colorBy: {
         type: 'frozen',
         // Sentinel promotable slot (see promotableDefaults.ts / displayMode):
-        // `{ type: 'inherit' }` is the un-pinned/stripped state, `promotedBase`
+        // `{ type: 'inherit' }` is the inherit/stripped state, `promotedBase`
         // (`{ type: 'normal' }`) is what it resolves to when nothing is promoted
-        // — so every real scheme, `normal` included, is pinnable over an opposite
-        // session-wide default (picking "Normal" pins normal, exactly as picking
-        // "Fixed" pins the heightMode base). `inherit` is not a registered scheme
+        // — so every real scheme, `normal` included, is customizable over an opposite
+        // session-wide default (picking "Normal" customizes to normal, exactly as picking
+        // "Fixed" customizes the heightMode base). `inherit` is not a registered scheme
         // and never reaches a COLOR_SCHEMES lookup: isConcreteValue drops it
         // before `validate`, and every read goes through the resolved
         // `colorBy` getter (getConfResolved). Legacy stored schemes stay valid
-        // members (pinned), so no snapshot migration is needed.
+        // members (customized values), so no snapshot migration is needed.
         defaultValue: { type: 'inherit' },
         promotedBase: { type: 'normal' },
         promotable: true,
         // Reject a `.type` that isn't (or no longer is) a registered scheme —
-        // whether pinned on this track or promoted session-wide — so a
+        // whether customized on this track or promoted session-wide — so a
         // stale/renamed scheme name in a saved session degrades to "not usable"
         // (falls back to the base) instead of reaching the total COLOR_SCHEMES
         // lookups and crashing color-by resolution.
@@ -242,11 +242,11 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       mismatchAlpha: {
         type: 'maybeBoolean',
         description:
-          'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+          'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
         // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
         // inherit state, `promotedBase` (false) is what it resolves to when
-        // nothing is promoted. A legacy stored boolean is already a valid pinned
-        // value, so no snapshot migration is needed. Read through the resolved
+        // nothing is promoted. A legacy stored boolean is already a valid
+        // customized value, so no snapshot migration is needed. Read through the resolved
         // `mismatchAlpha` getter (getConfResolved), never raw.
         defaultValue: undefined,
         promotedBase: false,
@@ -312,10 +312,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
           'off',
           'normal',
         ]),
-        // Sentinel promotable slot (like heightMode): `inherit` is the un-pinned
+        // Sentinel promotable slot (like heightMode): `inherit` is the inherit
         // state, resolving to the session-wide default for this display type,
         // falling back to `promotedBase` ('off'). Being a sentinel lets a track
-        // pin `off` back over a session-wide `normal` (view-as-pairs) default.
+        // customize `off` back over a session-wide `normal` (view-as-pairs) default.
         // See promotableDefaults.ts.
         defaultValue: 'inherit',
         promotedBase: 'off',
@@ -458,7 +458,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       readConnectionsDown: {
         type: 'boolean',
-        defaultValue: false,
+        defaultValue: true,
         description: 'Draw read connections below the coverage band',
         promotable: true,
       },
@@ -520,11 +520,11 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       showSoftClipping: {
         type: 'maybeBoolean',
         description:
-          'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false pins the track (either direction, including pinning off over an on session default)',
+          'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
         // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
         // inherit state, `promotedBase` (false) is what it resolves to when
-        // nothing is promoted. A legacy stored boolean is already a valid pinned
-        // value, so no snapshot migration is needed. Read through the resolved
+        // nothing is promoted. A legacy stored boolean is already a valid
+        // customized value, so no snapshot migration is needed. Read through the resolved
         // `showSoftClipping` getter (getConfResolved), never raw.
         defaultValue: undefined,
         promotedBase: false,

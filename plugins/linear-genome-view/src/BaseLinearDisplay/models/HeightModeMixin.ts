@@ -34,7 +34,7 @@ export default function HeightModeMixin<
       /**
        * #getter
        * The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable
-       * sentinel slot: getConfResolved walks the pinned-track -> session-default
+       * sentinel slot: getConfResolved walks the customized-track -> session-default
        * -> `fixed` cascade and never returns the `inherit` sentinel.
        */
       get heightMode(): HeightMode {
@@ -77,8 +77,8 @@ export default function HeightModeMixin<
  * so fixed/fit start from it rather than snapping to the stale slot value (grow
  * computes `height` reactively and never writes the slot). A reaction rather than
  * a call inside `setHeightMode` because the resolved `heightMode` also flips
- * without any imperative action — un-pinning a grow-pinned track, or changing the
- * session-wide default out from under un-pinned grow-following tracks (the
+ * without any imperative action — resetting a track customized to grow, or changing the
+ * session-wide default out from under grow-following tracks that inherit it (the
  * promotable cascade) — and every such exit must bake. Install from `afterAttach`
  * on both displays that own a `grownHeight`.
  *

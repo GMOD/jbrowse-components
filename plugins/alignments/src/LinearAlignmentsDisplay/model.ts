@@ -424,7 +424,7 @@ export default function stateModelFactory(
         },
         /** #getter */
         // Resolved through the promotable-slot tiers (getConfResolved): a plain
-        // boolean slot, so a session default of `true` can only be pinned back
+        // boolean slot, so a session default of `true` can only be customized back
         // off in the "on" direction (see showSoftClipping above).
         get readConnectionsDown(): boolean {
           return getConfResolved(self, 'readConnectionsDown')
@@ -474,9 +474,9 @@ export default function stateModelFactory(
         },
         /** #getter */
         // Resolved through the promotable-slot tiers (getConfResolved): an
-        // explicit track value pins soft clipping on or off; otherwise it
+        // explicit track value customizes soft clipping on or off; otherwise it
         // follows the session-wide default, falling back to off. A `maybeBoolean`
-        // slot, so (unlike the old plain boolean) an explicit "off" can be pinned
+        // slot, so (unlike the old plain boolean) an explicit "off" can be customized
         // back over a session default of "on".
         get showSoftClipping(): boolean {
           return getConfResolved(self, 'showSoftClipping')
@@ -736,7 +736,7 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // colorBy is a sentinel promotable slot: an un-pinned track (colorBy at
+        // colorBy is a sentinel promotable slot: a track following the default (colorBy at
         // its `{type:'inherit'}` default) follows the session-wide color default
         // (e.g. "color every alignments track by methylation"), resolving to the
         // `promotedBase` `{type:'normal'}` when nothing is promoted; picking any
@@ -800,7 +800,7 @@ export default function stateModelFactory(
          */
         // The configured fixed-mode read size, independent of the fit squeeze.
         // Consumers that EDIT the size (the "Set feature height" dialog) must
-        // start from the pinned value, not the fractional fit pitch that
+        // start from the configured value, not the fractional fit pitch that
         // `featureHeight`/`featureSpacing` resolve to in fit mode — otherwise
         // opening the dialog while compressed would bake the squeezed height.
         get configuredFeatureHeight(): number {
@@ -857,9 +857,9 @@ export default function stateModelFactory(
          * #getter
          */
         // Resolved through the promotable-slot tiers (getConfResolved): an
-        // explicit track value pins the fade on or off; otherwise it follows the
+        // explicit track value customizes the fade on or off; otherwise it follows the
         // session-wide default, falling back to off. A `maybeBoolean` slot, so
-        // (unlike showSoftClipping) a session default of "on" can be pinned back
+        // (unlike showSoftClipping) a session default of "on" can be customized back
         // off on a single track.
         get mismatchAlpha(): boolean {
           return getConfResolved(self, 'mismatchAlpha')
@@ -2617,10 +2617,10 @@ export default function stateModelFactory(
               const currentType = self.colorBy.type
               if (mode === 'off') {
                 // Leaving pairs: pairing-only schemes no longer have meaning, so
-                // un-pin colorBy back to inherit — falling back to the
+                // reset colorBy back to inherit — falling back to the
                 // session-wide color default, else the `normal` promotedBase.
-                // This cleanly undoes the enter-pairs pin rather than pinning
-                // `normal` over a default. Explicit non-pairing choices (tag,
+                // This cleanly undoes the enter-pairs customization rather than
+                // customizing `normal` over a default. Explicit non-pairing choices (tag,
                 // methylation, base quality, ...) are preserved by the gate.
                 if (PAIRING_COLOR_SCHEMES.has(currentType)) {
                   self.configuration.setSlot('colorBy', { type: 'inherit' })
@@ -2994,9 +2994,10 @@ export default function stateModelFactory(
           // returns `grownHeight` reactively (see the getter above), so consumers
           // recompute when the laid-out content changes without ever writing the
           // height config slot. Leaving grow is the one write — bake the grown
-          // height into the slot on any grow->non-grow exit (menu switch, un-pin,
-          // or a session-default change flipping an un-pinned track) so fixed/fit
-          // resume from the height the user was seeing, not the stale slot.
+          // height into the slot on any grow->non-grow exit (menu switch,
+          // reset-to-default, or a session-default change flipping a track that
+          // follows the default) so fixed/fit resume from the height the user was
+          // seeing, not the stale slot.
           addDisposer(
             self,
             installGrowExitBake(self, getContainingView(self) as LGV),

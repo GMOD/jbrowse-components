@@ -56,7 +56,7 @@ export interface SlotFacade {
    * wrapped, so an at-default slot is omitted from the config snapshot — the
    * same signal the persistence/delta layer uses (robust for map/array slots
    * where a live-value `deepEqual` against the plain default would misfire). For
-   * a promotable slot, "non-default" means pinned rather than inheriting.
+   * a promotable slot, "non-default" means customized rather than inheriting.
    */
   readonly modified: boolean
   set: (val: unknown) => void

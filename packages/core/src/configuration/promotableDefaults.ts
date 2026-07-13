@@ -18,23 +18,23 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * Session-wide "promoted defaults" for display-type config slots — a small CSS
  * cascade for one slot. A `promotable` slot resolves through three tiers:
  *
- *   pinned track value (differs from the slot default) -> session-wide promoted
- *   default for this display type -> the slot's base value
+ *   track's own value (differs from the slot default) -> session-wide default
+ *   for this display type -> the slot's base value
  *
  * A display marks a slot `promotable: true`, reads it with `getConfResolved`,
  * and the session store (`get/setDisplayTypeDefault`) holds the promoted value.
- * `stripDefault` collapses an at-default slot, so "un-pinned = at the slot
- * default" needs no stored flag. `resolveSlot` is the one place the cascade
+ * `stripDefault` collapses an at-default slot, so "at the slot default = follows
+ * the default" needs no stored flag. `resolveSlot` is the one place the cascade
  * lives; every exported function reads a field off it.
  *
- * Whether the default value itself is pinnable depends on the slot:
+ * Whether the default value itself can be customized per-track depends on the slot:
  *   - Plain (`showSoftClipping`): `defaultValue` is both the base and the
- *     inherit signal, so it can't be pinned over an opposite session default.
+ *     inherit signal, so it can't be customized over an opposite session default.
  *   - Sentinel (`displayMode`): `defaultValue` is a dedicated `'inherit'` member
  *     (CSS `inherit`) and `promotedBase` is what it resolves to (CSS `initial`),
- *     freeing every real value — base included — to be pinned.
+ *     freeing every real value — base included — to be customized.
  *
- * Every comparison below (pinned / at-default / at-promoted-default) uses
+ * Every comparison below (customized / at-default / at-promoted-default) uses
  * `deepEqual`, not `===`: needed once a promotable slot is `frozen`
  * (object-valued, e.g. alignments `colorBy`), where a fresh MST-reconstructed
  * value is never `===` the stored default.
@@ -126,10 +126,10 @@ function matchesSlotShape(def: ConfigSlotDefinition, value: unknown): boolean {
 }
 
 interface SlotResolution {
-  /** value an un-pinned track shows with nothing promoted (CSS `initial`) */
+  /** value a track following the default shows with nothing promoted (CSS `initial`) */
   base: unknown
-  /** track holds its own value rather than inheriting */
-  pinned: boolean
+  /** track holds its own value rather than following the default */
+  customized: boolean
   /** the raw session-wide promoted default, if any */
   promoted: unknown
   /** the final cascaded value (never a slot's inherit sentinel) */
@@ -143,25 +143,28 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
   const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-  // A track pins only when it holds a *usable* value other than the default.
-  // Routing `own` through the same `isUsableValue` gate as a promoted default
-  // means an own value that's malformed or fails `validate` (e.g. a saved
-  // `colorBy` naming a since-removed scheme) reads as un-pinned and degrades to
-  // the inherited value in lockstep, instead of reaching a consumer that trusts
-  // every value it sees.
-  const pinned = !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
+  // A track is customized only when it holds a *usable* value other than the
+  // default. Routing `own` through the same `isUsableValue` gate as a promoted
+  // default means an own value that's malformed or fails `validate` (e.g. a saved
+  // `colorBy` naming a since-removed scheme) reads as not customized and degrades
+  // to the inherited value in lockstep, instead of reaching a consumer that
+  // trusts every value it sees.
+  const customized = !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
   const inherited = isUsableValue(def, promoted) ? promoted : base
-  const value = pinned ? own : inherited
-  return { base, pinned, promoted, value }
+  const value = customized ? own : inherited
+  return { base, customized, promoted, value }
 }
 
 /**
- * Whether this track pins the slot (holds a non-default value) rather than
- * inheriting the session-wide promoted default. Module-internal (exercised by
- * promotableDefaults.test.ts); not part of the public barrel.
+ * Whether this track has customized the slot (holds a non-default value of its
+ * own) rather than following the display type's default. Module-internal
+ * (exercised by promotableDefaults.test.ts); not part of the public barrel.
  */
-export function isSlotPinned(self: PromotableDisplay, slot: string): boolean {
-  return resolveSlot(self, slot).pinned
+export function isSlotCustomized(
+  self: PromotableDisplay,
+  slot: string,
+): boolean {
+  return resolveSlot(self, slot).customized
 }
 
 /**
@@ -212,9 +215,9 @@ export interface PromotableEntry {
  * A promotable "default for all tracks of this type" control, bundled so a menu
  * row's trailing pin consumes it as a single prop. `active` = this value is
  * currently the session default (a filled pin); `toggle` sets it as the default
- * or clears it. Setting is non-destructive — open tracks pinned to their own
- * value keep it — but when open tracks would differ, `toggle` raises a snackbar
- * with an opt-in "apply to open tracks" action (see `applyDefaultToggle`).
+ * or clears it. On set, `toggle` raises a snackbar with an "Apply to N open
+ * tracks" action for any open tracks not already showing this value (see
+ * `applyDefaultToggle`).
  */
 export interface SessionDefaultControl {
   active: boolean
@@ -248,12 +251,13 @@ function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
 }
 
 /**
- * Clear each display's own value on `slots` back to the slot default, so it
- * un-pins and inherits the session-wide promoted default instead of baking in a
- * value that wouldn't track a later default change. Displays already at the
- * default are skipped. Takes the display set explicitly so it's unit-testable.
+ * Reset each display's own value on `slots` back to the slot default, so it
+ * follows the display type's default instead of baking in a value that wouldn't
+ * track a later default change. Backs the snackbar's "apply to open tracks"
+ * action. Displays already at the default are skipped. Takes the display set
+ * explicitly so it's unit-testable.
  */
-export function clearPinsToInherit(
+export function resetSlotsToInherit(
   displays: PromotableDisplay[],
   slots: string[],
 ): void {
@@ -270,7 +274,7 @@ export function clearPinsToInherit(
 /**
  * #api core/configuration
  * Whether every value in `entries` is the current session default for its slot.
- * The live state the manage-default dialog's checkbox reflects.
+ * The live state the pin's filled/outline reflects.
  */
 export function isPromotableDefault(
   self: PromotableDisplay,
@@ -284,8 +288,8 @@ export function isPromotableDefault(
 /**
  * #api core/configuration
  * Set (`on`) or clear (`!on`) this value combination as the session default for
- * the display type. Non-destructive: un-pinned open tracks inherit it via
- * `getConfResolved`; tracks pinned to their own value keep it.
+ * the display type. Non-destructive: tracks that follow the default inherit it
+ * via `getConfResolved`; tracks the user has customized keep their own value.
  */
 export function setPromotableDefault(
   self: PromotableDisplay,
@@ -301,8 +305,8 @@ export function setPromotableDefault(
 /**
  * #api core/configuration
  * Open tracks (across all views) whose resolved value differs from `entries` —
- * exactly the tracks "apply to open tracks" would visibly change. The
- * manage-default dialog counts these to name the overwrite scope before submit.
+ * the ones "apply to open tracks" would visibly change by resetting them to
+ * follow the default. Drives that action's count.
  */
 export function tracksDifferingFrom(
   self: PromotableDisplay,
@@ -316,41 +320,39 @@ export function tracksDifferingFrom(
 }
 
 /**
- * Set (or clear) a value combination as the session default, and — only when
- * setting, and only if any open track currently differs — raise a snackbar whose
- * opt-in action un-pins those tracks so they follow the new default. Setting is
- * otherwise non-destructive: future + already-un-pinned tracks inherit it via
- * `getConfResolved`; tracks pinned to their own value keep it until the user
- * clicks the snackbar action. Clearing never sweeps.
+ * Set (or clear) a value combination as the display type's default. Tracks that
+ * follow the default pick it up immediately via `getConfResolved`; tracks with
+ * their own value keep it. When setting, if any open track isn't already showing
+ * this value, the snackbar offers an "Apply to N open tracks" action that makes
+ * them follow the new default too. Clearing just notifies.
  */
 function applyDefaultToggle(
   self: PromotableDisplay,
   entries: PromotableEntry[],
   on: boolean,
 ): void {
-  setPromotableDefault(self, entries, on)
   const session = getSession(self)
-  const noun = 'tracks of this type'
+  setPromotableDefault(self, entries, on)
   if (on) {
-    // computed AFTER setting the default, so an un-pinned track (now following it)
-    // no longer differs — only tracks pinned to a different value remain.
-    const differing = tracksDifferingFrom(self, entries)
-    const n = differing.length
+    // open tracks not already showing this value — those the "apply to open
+    // tracks" action would visibly change by making them follow the new default
+    const tracks = tracksDifferingFrom(self, entries)
+    const n = tracks.length
     if (n) {
-      session.notify(`Set as the default for ${noun}`, 'info', {
+      session.notify('Set as the default', 'info', {
         name: `Apply to ${n} open track${n === 1 ? '' : 's'}`,
         onClick: () => {
-          clearPinsToInherit(
-            differing,
+          resetSlotsToInherit(
+            tracks,
             entries.map(e => e.slot),
           )
         },
       })
     } else {
-      session.notify(`Set as the default for all ${noun}`, 'info')
+      session.notify('Set as the default', 'info')
     }
   } else {
-    session.notify(`Cleared the default for all ${noun}`, 'info')
+    session.notify('Cleared the default', 'info')
   }
 }
 
@@ -410,16 +412,16 @@ export function makeCurrentValueSessionDefaultControl(
 
 /**
  * #api core/configuration
- * Effective differences an un-pinned track inherits from session-wide defaults,
- * one per promotable slot whose inherited value differs from its schema default.
- * Drives the track-selector "affected by a session default" badge.
+ * Effective differences a track following the default inherits from session-wide
+ * defaults, one per promotable slot whose inherited value differs from its schema
+ * default. Drives the track-selector "affected by a session default" badge.
  */
 export function displaySessionDefaultChanges(
   self: PromotableDisplay,
 ): TrackConfigChange[] {
   return promotableSlots(self).flatMap(slot => {
-    const { base, pinned, value } = resolveSlot(self, slot)
-    return !pinned && !deepEqual(value, base)
+    const { base, customized, value } = resolveSlot(self, slot)
+    return !customized && !deepEqual(value, base)
       ? [{ path: [slot], from: base, to: value } as TrackConfigChange]
       : []
   })

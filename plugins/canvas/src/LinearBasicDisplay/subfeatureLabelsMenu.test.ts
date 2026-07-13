@@ -4,7 +4,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 
 // Structural coverage for the "Subfeature labels" submenu: a three-way radio
 // (Off/Below/Overlay) over the promotable `subfeatureLabels` slot, each option
-// pinnable as the session-wide default. Render-side handling of `below` vs
+// promotable as the session-wide default. Render-side handling of `below` vs
 // `overlay` is covered in labelUtils.test.ts / glyphs/subfeatures.test.ts.
 
 function hasLabel(item: MenuItem, label: string) {
@@ -53,13 +53,13 @@ describe('Subfeature labels submenu', () => {
     const { createDisplay } = createTestEnvironment()
     const { display, session } = createDisplay()
 
-    // un-pinned track (subfeatureLabels at the `inherit` sentinel) resolves to
+    // a track following the default (subfeatureLabels at the `inherit` sentinel) resolves to
     // the `none` base
     expect(display.subfeatureLabels).toBe('none')
     expect(radio(showSubMenu(display), 'Off').checked).toBe(true)
 
     // a display-type default flows through the resolved getter without the track
-    // pinning its own value
+    // customizing its own value
     session.setDisplayTypeDefault(display.type, 'subfeatureLabels', 'overlay')
     expect(display.subfeatureLabels).toBe('overlay')
     expect(radio(showSubMenu(display), 'Overlay').checked).toBe(true)

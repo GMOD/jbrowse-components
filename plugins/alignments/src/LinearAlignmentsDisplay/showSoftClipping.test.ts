@@ -170,7 +170,7 @@ describe('alignments showSoftClipping session default', () => {
     expect(display.softClippingSessionDefault.active).toBe(false)
   })
 
-  it('follows a session-wide default of on when the track is not pinned', () => {
+  it('follows a session-wide default of on when the track is not customized', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -184,14 +184,14 @@ describe('alignments showSoftClipping session default', () => {
     ])
   })
 
-  it('a config-pinned on wins and reads as its own choice, not the default', () => {
+  it('a config-customized on wins and reads as its own choice, not the default', () => {
     const { session, display } = createDisplay({ showSoftClipping: true })
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
       'showSoftClipping',
       false,
     )
-    // pinned on regardless of the session default; not "affected by a default"
+    // customized on regardless of the session default; not "affected by a default"
     expect(display.showSoftClipping).toBe(true)
     expect(display.sessionDefaultChanges()).toEqual([])
   })
@@ -300,7 +300,7 @@ describe('alignments showSoftClipping session default', () => {
 
 // Compactness is the featureHeight + featureSpacing + heightMode promotable
 // slots. Each resolves independently through getConfResolved (same rule as
-// showSoftClipping): a slot at its schema default is un-pinned and follows the
+// showSoftClipping): a slot at its schema default follows the
 // session-wide default; any other value pins it. heightMode='fixed' equals its
 // promotedBase, so it never shows up as a sessionDefaultChanges diff. The menu's
 // per-preset pins that promote these values are exercised below.
@@ -323,7 +323,7 @@ describe('alignments compactness session default', () => {
     expect(display.featureSpacing).toBe(1)
   })
 
-  it('follows a session-wide compact default when the track is not pinned', () => {
+  it('follows a session-wide compact default when the track is not customized', () => {
     const { session, display } = createDisplay()
     setCompact(session)
     expect(display.featureHeight).toBe(3)
@@ -340,7 +340,7 @@ describe('alignments compactness session default', () => {
       featureSpacing: 0,
     })
     session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight', 1)
-    // pinned regardless of the (super-compact) session default
+    // customized regardless of the (super-compact) session default
     expect(display.featureHeight).toBe(3)
     expect(display.sessionDefaultChanges()).toEqual([])
   })
@@ -411,7 +411,7 @@ describe('alignments compactness session default', () => {
 // The "Set feature height..." submenu surfaces the promote-as-default control as
 // a per-preset pin (endAdornment) on each value row — not the former standalone
 // "Use X as the default" checkbox. Each pin's isDefault/onToggleDefault is
-// independent, so only the promoted preset reads as pinned.
+// independent, so only the promoted preset reads as customized.
 describe('feature-height menu per-preset pins', () => {
   function pinProps(
     display: ReturnType<typeof createDisplay>['display'],
@@ -518,7 +518,7 @@ describe('alignments fit-to-display-height session default', () => {
     expect(display.fitHeightToDisplay).toBe(true)
   })
 
-  it('follows a session-wide fit default when the track is not pinned', () => {
+  it('follows a session-wide fit default when the track is not customized', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -584,14 +584,14 @@ describe('alignments fit-to-display-height session default', () => {
 // promotable `maybeBoolean` slot: resolved through getConfResolved (track pin →
 // session default → off), reaches the renderers via renderState (tier-4
 // rerender), and its "make default" pin is symmetric (unlike showSoftClipping,
-// an explicit off can be pinned over an on session default).
+// an explicit off can be customized over an on session default).
 describe('alignments mismatchAlpha (fade by base quality)', () => {
   it('is off by default', () => {
     const { display } = createDisplay()
     expect(display.mismatchAlpha).toBe(false)
   })
 
-  it('setMismatchAlpha pins the config slot on and off', () => {
+  it('setMismatchAlpha sets the config slot on and off', () => {
     const { display } = createDisplay()
     display.setMismatchAlpha(true)
     expect(display.mismatchAlpha).toBe(true)
@@ -604,7 +604,7 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     expect(display.mismatchAlpha).toBe(true)
   })
 
-  it('follows a session-wide default when the track is unpinned', () => {
+  it('follows a session-wide default when the track is not customized', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -677,7 +677,7 @@ describe('alignments grow (auto-height) mode', () => {
     expect(display.fitHeightToDisplay).toBe(false)
   })
 
-  it('follows a session-wide grow default when the track is not pinned', () => {
+  it('follows a session-wide grow default when the track is not customized', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -792,9 +792,9 @@ describe('alignments fit-to-display-height split', () => {
 })
 
 // colorBy is a sentinel (object-valued) promotable slot: `{ type: 'inherit' }`
-// is the un-pinned default and `promotedBase` (`{ type: 'normal' }`) is what it
-// resolves to, so an un-pinned track follows a session-wide color default while
-// every real scheme — `normal` included — is pinnable over it. Exercises the
+// is the inherit default and `promotedBase` (`{ type: 'normal' }`) is what it
+// resolves to, so a track following the default follows a session-wide color default while
+// every real scheme — `normal` included — is customizable over it. Exercises the
 // structural (not identity) comparison in promotableDefaults.
 describe('alignments colorBy session default', () => {
   const methylation = { type: 'methylation' }
@@ -804,7 +804,7 @@ describe('alignments colorBy session default', () => {
     expect(display.colorBy).toEqual({ type: 'normal' })
   })
 
-  it('follows a session-wide scheme when the track is not pinned', () => {
+  it('follows a session-wide scheme when the track is not customized', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -817,7 +817,7 @@ describe('alignments colorBy session default', () => {
     ])
   })
 
-  it('a track pinned to normal wins over an opposite session default', () => {
+  it('a track customized to normal wins over an opposite session default', () => {
     const { session, display } = createDisplay({ colorBy: { type: 'normal' } })
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -825,7 +825,7 @@ describe('alignments colorBy session default', () => {
       methylation,
     )
     // sentinel slot: `{type:'normal'}` differs from the `{type:'inherit'}`
-    // default, so it pins the track — normal is forced over the methylation
+    // default, so it customizes the track — normal is forced over the methylation
     // default (impossible with the old plain-default slot). Not an inherited
     // change, so sessionDefaultChanges is empty.
     expect(display.colorBy).toEqual({ type: 'normal' })
@@ -898,13 +898,13 @@ describe('alignments colorBy session default', () => {
     expect(display.sessionDefaultChanges()).toEqual([])
   })
 
-  // Leaving pairs mode discards the now-meaningless pairing scheme by un-pinning
-  // colorBy to the `inherit` sentinel — NOT by pinning `{type:'normal'}`, which
+  // Leaving pairs mode discards the now-meaningless pairing scheme by resetting
+  // colorBy to the `inherit` sentinel — NOT by customizing `{type:'normal'}`, which
   // (under the sentinel slot) would override a session-wide default. Proven by
   // an active default: after the round-trip the track must FOLLOW it, not sit on
-  // a pinned normal. A no-default variant would resolve to normal either way and
+  // a customized normal. A no-default variant would resolve to normal either way and
   // so wouldn't guard the distinction.
-  it('leaving pairs un-pins colorBy so it follows a session default, not pinned normal', () => {
+  it('leaving pairs resets colorBy so it follows a session default, not customized normal', () => {
     const { session, display } = createDisplay()
     display.setLinkedReads('normal')
     expect(display.colorBy.type).toBe('insertSizeAndOrientation')
@@ -920,7 +920,7 @@ describe('alignments colorBy session default', () => {
 })
 
 // linkedReads (view-as-pairs) is a sentinel promotable slot: 'inherit' is the
-// un-pinned state (resolving to the session-wide default, else promotedBase
+// inherit state (resolving to the session-wide default, else promotedBase
 // 'off'), so a track can pin 'off' back over a session-wide 'normal' default —
 // which a plain slot could not. getConfResolved never returns 'inherit'.
 describe('alignments linkedReads (view as pairs) session default', () => {
@@ -930,7 +930,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     expect(display.pairsSessionDefault.active).toBe(false)
   })
 
-  it('follows a session-wide normal (pairs) default when un-pinned', () => {
+  it('follows a session-wide normal (pairs) default when not customized', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -944,7 +944,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
     ])
   })
 
-  it('a track pinned off wins over a session-wide normal default (the sentinel win)', () => {
+  it('a track customized off wins over a session-wide normal default (the sentinel win)', () => {
     const { session, display } = createDisplay({ linkedReads: 'off' })
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -986,7 +986,7 @@ describe('alignments linkedReads (view as pairs) session default', () => {
       expect(
         session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'linkedReads'),
       ).toBe('normal')
-      // an un-pinned track then follows the promoted default
+      // a not-customized track then follows the promoted default
       expect(display.linkedReads).toBe('normal')
     })
 
@@ -1012,7 +1012,7 @@ describe('alignments readConnections (arcs) session default', () => {
     expect(display.readCloudSessionDefault.active).toBe(false)
   })
 
-  it('follows a session-wide arc default when un-pinned', () => {
+  it('follows a session-wide arc default when not customized', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -1028,7 +1028,7 @@ describe('alignments readConnections (arcs) session default', () => {
     ])
   })
 
-  it('a track pinned off wins over a session-wide arc default', () => {
+  it('a track customized off wins over a session-wide arc default', () => {
     const { session, display } = createDisplay({ readConnections: 'off' })
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
