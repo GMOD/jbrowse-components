@@ -116,7 +116,7 @@ counts, so off-diagonal contacts read more strongly.
 show the on-figure resolution stepper in the overlay
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true`
+`false`
 
 #### slot: selectedNormalization
 
