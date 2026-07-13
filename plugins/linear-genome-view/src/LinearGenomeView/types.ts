@@ -99,3 +99,34 @@ export interface LinearGenomeViewLaunchProps {
   // otherwise off by default, leaving a bare colored band)
   showHighlightChips?: boolean
 }
+
+export interface ExportRCodeOptions {
+  filename?: string
+}
+
+/**
+ * One track's contribution to the exported R script. The generated code is pure
+ * `rtracklayer` + base `ggplot2` (no bespoke package) so it can be edited with
+ * ordinary ggplot2 knowledge. A display returns the R expression that builds its
+ * ggplot panel (referencing `chrom`, `start`, `end` from the enclosing
+ * `plot_region()` function), so the whole figure regenerates for any region.
+ */
+export interface RTrackFragment {
+  trackId: string
+  trackName: string
+  // R packages the panel needs library()'d, e.g. ['rtracklayer', 'ggplot2']
+  packages: string[]
+  // names of inline helper definitions this panel uses (keys of the codegen
+  // HELPERS table, e.g. 'read_bigwig', 'bp_axis'); emitted once, deduped
+  helpers: string[]
+  // top-level R statement(s) run once before plot_region(), e.g. the track's
+  // file-path variable assignment
+  setup: string
+  // name of the R variable the panel is assigned to, e.g. 'p_coverage'
+  plotVariable: string
+  // multi-line R expression assigned to plotVariable inside plot_region(); may
+  // reference `chrom`, `start`, `end` and the track's setup variable
+  plotExpr: string
+  // relative patchwork height for this panel (default 1)
+  heightWeight?: number
+}

@@ -78,6 +78,7 @@ import {
 
 import type {
   BpOffset,
+  ExportRCodeOptions,
   ExportSvgOptions,
   HighlightType,
   InitState,
@@ -1411,6 +1412,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
         const html = await renderToSvg(self as LinearGenomeViewModel, opts)
         const { saveSvgAsImage } = await import('@jbrowse/core/util')
         await saveSvgAsImage(html, opts)
+      },
+
+      /**
+       * #method
+       * generates a reproducible R (ggplot2) script for the current view and
+       * saves it using FileSaver
+       */
+      async exportR(opts: ExportRCodeOptions = {}) {
+        const { exportR } = await import('./exportR.ts')
+        await exportR(self as LinearGenomeViewModel, opts)
       },
     }))
     .actions(self => {

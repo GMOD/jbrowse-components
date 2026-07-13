@@ -35,6 +35,7 @@ import {
   type LinearGenomeViewModel,
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
+  type RTrackFragment,
   TrackHeightMixin,
   installGrowExitBake,
   onDisplayedRegionsChange,
@@ -51,6 +52,7 @@ import {
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { ColorScheme } from './constants.ts'
+import { exportRCode } from './exportRCode.ts'
 import {
   anyRegionTruncated,
   groupMaxY,
@@ -83,6 +85,7 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
+import { computeArcBand } from './renderers/rendererTypes.ts'
 import {
   belowCoverageBandsGeometry,
   buildSectionRenders,
@@ -109,7 +112,6 @@ import {
   normalizeFilterBy,
 } from '../shared/types.ts'
 import { getColorForModification } from '../util.ts'
-import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadColorCategory } from './colorUtils.ts'
 import type {
@@ -3123,6 +3125,15 @@ export default function stateModelFactory(
         async renderSvg(opts?: ExportSvgDisplayOptions) {
           const { renderSvg } = await import('./renderSvg.tsx')
           return renderSvg(self as LinearAlignmentsDisplayModel, opts)
+        },
+
+        /**
+         * #method
+         * Build the R ggplot panels (coverage + pileup) for the view's "Export R
+         * script", regenerating the alignments view from source in ggplot2.
+         */
+        exportRCode(): RTrackFragment[] {
+          return exportRCode(self as LinearAlignmentsDisplayModel)
         },
 
         afterAttach() {

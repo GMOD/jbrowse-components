@@ -16,6 +16,7 @@ import SegmentIcon from '@mui/icons-material/Segment'
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
 import { radioSubMenu } from './baseModelHelpers.ts'
+import { exportRCode } from './exportRCode.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 
 const CollapseIntronsDialog = lazy(
@@ -25,6 +26,7 @@ const CollapseIntronsDialog = lazy(
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
 
 export type { Region } from '@jbrowse/core/util'
 
@@ -185,6 +187,15 @@ export default function stateModelFactory(
 
       setDisplayDirectionalChevrons(value: boolean) {
         self.configuration.setSlot('displayDirectionalChevrons', value)
+      },
+
+      /**
+       * #method
+       * Build the R ggplot gene-model panel for the view's "Export R script",
+       * regenerating this feature track from source in ggplot2.
+       */
+      exportRCode(): RTrackFragment {
+        return exportRCode(self as LinearBasicDisplayModel)
       },
     }))
     .views(self => {

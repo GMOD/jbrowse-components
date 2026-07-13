@@ -164,10 +164,12 @@ export { normalizeTrackInit } from './LinearGenomeView/normalizeTrackInit.ts'
 export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {
   BpOffset,
+  ExportRCodeOptions,
   ExportSvgOptions,
   HighlightType,
   InitState,
   NavLocation,
+  RTrackFragment,
   TrackInit,
   TrackLabelMode,
   VolatileGuide,
@@ -179,6 +181,7 @@ export {
   SVGView,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
+export { assembleRScript } from './LinearGenomeView/exportR.ts'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
 export { default as ConnectedHoverHighlight } from './LinearGenomeView/components/ConnectedHoverHighlight.tsx'
