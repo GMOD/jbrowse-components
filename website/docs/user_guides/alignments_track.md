@@ -64,8 +64,7 @@ Three schemes surface per-read or per-base signal directly on the pileup:
 ### Modifications and methylation
 
 If a BAM/CRAM carries MM/ML modification calls (common in nanopore and PacBio
-data), **Color by → Modifications** paints them. It offers two
-modes:
+data), **Color by → Modifications** paints them. It offers two modes:
 
 - Type draws a mark _only_ where the MM tag reports a modified base, each type
   in its own color, so an unmethylated region looks empty. Use **Advanced

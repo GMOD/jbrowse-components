@@ -80,8 +80,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 | Slot                                                       | Type                                                             | Description                                                                                                                                                                |
 | ---------------------------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [featureHeight](#slot-featureheight)                       | `number`                                                         | Height of each feature (read) in pixels                                                                                                                                    |
-| [featureSpacing](#slot-featurespacing)                     | `number`                                                         | Spacing between features in pixels                                                                                                                                         |
+| [featureHeight](#slot-featureheight)                       | `maybeNumber`                                                    | Height of each feature (read) in pixels.                                                                                                                                   |
 | [heightMode](#slot-heightmode)                             | `stringEnum`                                                     | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). |
 | [readConnectionsLineWidth](#slot-readconnectionslinewidth) | `number`                                                         | Line width for read-connection arcs/lines in pixels                                                                                                                        |
 | [showSashimiLabels](#slot-showsashimilabels)               | `boolean`                                                        | Draw the supporting-read count on each sashimi arc                                                                                                                         |
@@ -137,28 +136,39 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 
 #### slot: featureHeight
 
-Height of each feature (read) in pixels
+Height of each feature (read) in pixels. Unset (the default) follows the
+session-wide default for this display type, falling back to 7; an explicit
+number customizes the track (including customizing 7 back over a compact session
+default)
 
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `7` ·
-_promotable_
+**Type:** `maybeNumber` · **Default:** `undefined` · _promotable_
 
-#### slot: featureSpacing
+```js
+{
+  type: 'maybeNumber',
+  description:
+    'Height of each feature (read) in pixels. Unset (the default) follows the session-wide default for this display type, falling back to 7; an explicit number customizes the track (including customizing 7 back over a compact session default)',
 
-Spacing between features in pixels
 
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
-_promotable_
+
+
+
+
+  defaultValue: undefined,
+  promotedBase: 7,
+  promotable: true,
+}
+```
 
 #### slot: heightMode
 
 Track-sizing strategy — how the track responds when there are more reads than
 fit (shared vocabulary with the canvas feature display, exposed in the "Track
 sizing" menu). `inherit` (the default) follows the session-wide default for this
-display type, falling back to `fixed`; `fixed` keeps
-`featureHeight`/`featureSpacing` and scrolls; `grow` expands the track to show
-every read at the configured height; `fit` squeezes reads so every uncollapsed
-group fills the display without scrolling. Orthogonal to the per-read size set
-by `featureHeight`/`featureSpacing`
+display type, falling back to `fixed`; `fixed` keeps `featureHeight` and
+scrolls; `grow` expands the track to show every read at the configured height;
+`fit` squeezes reads so every uncollapsed group fills the display without
+scrolling. Orthogonal to the per-read size set by `featureHeight`
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) ·
 **Default:** `'inherit'` · _promotable_
@@ -168,7 +178,7 @@ by `featureHeight`/`featureSpacing`
   type: 'stringEnum',
   model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
   description:
-    'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight`/`featureSpacing` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`/`featureSpacing`',
+    'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
 
 
 

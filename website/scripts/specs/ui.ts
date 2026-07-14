@@ -951,7 +951,10 @@ export const uiSpecs: ScreenshotSpec[] = [
         ],
         // box the settings widget (ConfigurationEditor drawer) that just opened
         annotations: [
-          { type: 'box', anchor: { selector: '[data-testid="drawer-widget"]' } },
+          {
+            type: 'box',
+            anchor: { selector: '[data-testid="drawer-widget"]' },
+          },
         ],
       },
     ],

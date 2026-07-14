@@ -81,7 +81,6 @@ export function getReadsMenuItem(model: ReadsModel) {
           model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
         },
       ),
-      { type: 'divider' as const },
       // Which reads populate the pileup. These change what's fetched (they also
       // thin the coverage histogram), but they read as visibility toggles, so
       // they live in "Show..." rather than a filter submenu.

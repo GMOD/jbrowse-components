@@ -833,11 +833,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       },
       ...menuCascade(['Color by...', 'Modifications', 'Type'], 800),
     ],
-    annotations: cascadeBoxes([
-      'Color by...',
-      'Modifications',
-      'Type',
-    ]),
+    annotations: cascadeBoxes(['Color by...', 'Modifications', 'Type']),
   },
 
   // ────────────────────────────────────────────────────────────────────────

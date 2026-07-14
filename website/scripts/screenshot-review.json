@@ -266,24 +266,24 @@
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
-    "status": "good",
-    "note": "FIXED: removed the persistent \"2 characters\" helperText from TagTextField (default off; audited all four tag dialogs), so Tag name/Tag value are the same height and vertically centered (tagRow alignItems center); both fields now variant=outlined. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "0118cc4101ee2df78c69948460bf4cb6837cb526"
+    "status": "bad",
+    "note": "remove the 'filter by read name', and consider just making this a right click item from right clicking read",
+    "reviewedAt": "2026-07-14T03:47:25.696Z",
+    "hash": "66134b6ee309d9cf5a7007bf1d0721842a3cd91d"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T03:40:37.996Z",
-    "hash": "90d1c5722c029084b9f81bd82170650874aab308"
+    "status": "bad",
+    "note": "we may want to consider adopting the 'one color' vs 'two color'  concept. also, i dont even know what two color would imply with multiple modifications. i'm really confused by recent changes we've made to this also and i tnk we need to achieve clarity. we may want to undo the movement of setttings into the advanced  dialog also",
+    "reviewedAt": "2026-07-14T03:48:55.098Z",
+    "hash": "6f69b4444f137f759ace50df578171a32ff99d39"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T15:49:29.881Z",
-    "hash": "0693f2ed4baf223f9b74a2694e9cf36a73f79f05"
+    "reviewedAt": "2026-07-14T03:49:05.557Z",
+    "hash": "b6b1d177587c007d55cbd5aea55521ec39f839b1"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -413,10 +413,10 @@
   },
   "alignments/compact": {
     "name": "alignments/compact",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T05:27:33.977Z",
-    "hash": "b5eb843d443fc6c2a7fcf2ade1304a572f32b596"
+    "status": "bad",
+    "note": "might want to red box 'read height' also",
+    "reviewedAt": "2026-07-14T03:35:35.887Z",
+    "hash": "fca6d6c8f488600a74f71d08ece26d5d31b90558"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -471,9 +471,9 @@
   "edit_track_settings": {
     "name": "edit_track_settings",
     "status": "good",
-    "note": "FIXED: stage 2 now boxes the settings widget (ConfigurationEditor drawer, data-testid drawer-widget). Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "f2c606114efefa51beb00a37e57700f5293300f0"
+    "note": "",
+    "reviewedAt": "2026-07-14T03:49:22.227Z",
+    "hash": "233dca223c2d115b0d43d95c9a28c8fe05bdc856"
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
@@ -929,8 +929,8 @@
     "name": "alignments/haplotype_groupby",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T03:30:39.659Z",
-    "hash": "8eefc4b27741e9e8ada7589ad05ffc9fef2e97d4"
+    "reviewedAt": "2026-07-14T03:47:29.792Z",
+    "hash": "7e1049ecd6e94665784aa05728e780fca8e52883"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1327,9 +1327,9 @@
   "inversion_long_read": {
     "name": "inversion_long_read",
     "status": "good",
-    "note": "FIXED: on-image annotation no longer uses \"flanks\" (now \"red forward-strand segments on either side of a blue reverse-strand core\"). Also fixed the root pairOrientation coloring so single-end ONT reads color by strand instead of grey \"no strand\" — annotation updated to match, misleading showLegend:false removed. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "8fb262cd2d82bb17f46cbe204d326a9f92353024"
+    "note": "no, we dont want to use 'colorby;strand'. our 'colorby;normal' uses i guess 'color_nostrand' but this is inaccurate to say the reads have no strand. FIXED: on-image annotation no longer uses \"flanks\" (now \"red forward-strand segments on either side of a blue reverse-strand core\"). Also fixed the root pairOrientation coloring so single-end ONT reads color by strand instead of grey \"no strand\" — annotation updated to match, misleading showLegend:false removed. Regenerated.",
+    "reviewedAt": "2026-07-14T03:26:00.951Z",
+    "hash": "79f736ad351600797dd7f0acdc917f93480f35b4"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",

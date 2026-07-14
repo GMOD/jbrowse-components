@@ -505,13 +505,12 @@ Overlays & subtracks:
 
 Layout & sizing:
 
-| Modifier                     | Example                                          | Description                                                                      |
-| ---------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `featureHeight:preset\|N`    | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
-| `noSpacing:true\|false`      | `noSpacing:true`                                 | Remove gap between reads                                                         |
-| `coverageHeight:N`           | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
-| `readConnectionsHeight:N`    | `readConnectionsHeight:120`                      | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
-| `readConnectionsLineWidth:N` | `readConnectionsLineWidth:2`                     | Stroke width for read-connection arcs/lines in pixels                            |
+| Modifier                     | Example                                          | Description                                                                                                                 |
+| ---------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `featureHeight:preset\|N`    | `featureHeight:super-compact`, `featureHeight:4` | Per-read height (spacing between reads is derived from it). Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
+| `coverageHeight:N`           | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)                                                    |
+| `readConnectionsHeight:N`    | `readConnectionsHeight:120`                      | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`                                                   |
+| `readConnectionsLineWidth:N` | `readConnectionsLineWidth:2`                     | Stroke width for read-connection arcs/lines in pixels                                                                       |
 
 Available `color:type` values:
 

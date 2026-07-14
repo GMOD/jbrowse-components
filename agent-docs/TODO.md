@@ -59,4 +59,14 @@ This reversed-block Canvas2D issue is real but niche. Let me now verify a higher
 
 ## odd 'blinking' or 'processing' stage of setting grow trackheight mode where it intermittently tries a couple different read height settings?
 
-## interplay of rowheight vs trackheight settings (mutual exclusions e.g. normal height cant be with fit to display)
+## fit read height to display should have max height ~7px like normal mode
+
+## make center line a localstorage setting only volatile
+
+## changing line width in plugins/wiggle triggering rerenderings of other tracks
+
+## the 'fit to display height' button at bottom right of tracks overlaps the scrollbar and mouseover of feature can et stuck when hovering this button
+
+## adjust tests to use one color/two colorwording
+
+## audit slowness of zoom with force load banner

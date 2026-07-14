@@ -189,7 +189,7 @@ function buildModificationsMenu(
       'Color the ONT/PacBio modification calls in these reads: by modification type, or red/blue by probability (methylated red, unmethylated blue). Probability threshold, cytosine context and per-type filtering are under Advanced settings.',
     subMenu: [
       promotableRadioItem({
-        label: 'Type',
+        label: 'One color',
         subLabel: 'each modification its own color (5mC, 5hmC, 6mA…)',
         helpText: `Colors each call by its modification type. Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn.`,
         checked: isByType,
@@ -199,8 +199,8 @@ function buildModificationsMenu(
         displayTypeDefault: displayTypeDefault?.(byTypeColorBy()),
       }),
       promotableRadioItem({
-        label: 'Probability (red / blue)',
-        subLabel: 'methylated red, unmethylated blue',
+        label: 'Two color (red / blue)',
+        subLabel: 'Colors each position red/blue by modification probability',
         helpText:
           'Colors each position red/blue by modification probability. For methylation data this is the methylation view: every cytosine in context is colored, including the ones the basecaller left implicit (shown blue). For other modifications only the called positions are drawn.',
         checked: isProbability,

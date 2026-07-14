@@ -51,12 +51,12 @@ match an assembly already configured in JBrowse (see the
 }
 ```
 
-From the track menu, choose **Color by → Modifications**, then pick
-**Type** to paint the calls listed in the MM tag, or **Probability (red /
-blue)** to additionally scan the read sequence for CpG dinucleotides and paint
-any CpG the MM tag left uncalled (the difference is exactly what the figure
-below shows). In Type mode each modification renders in its own color, with
-intensity reflecting the modification probability (ML tag value).
+From the track menu, choose **Color by → Modifications**, then pick **Type** to
+paint the calls listed in the MM tag, or **Probability (red / blue)** to
+additionally scan the read sequence for CpG dinucleotides and paint any CpG the
+MM tag left uncalled (the difference is exactly what the figure below shows). In
+Type mode each modification renders in its own color, with intensity reflecting
+the modification probability (ML tag value).
 
 <Figure caption="The same nanopore track colored by type (top) and by probability (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls in the MM tag, so the region looks nearly empty; by-probability mode scans the read for CpG dinucleotides and paints any the MM tag left uncalled in blue, filling the region." src="/img/alignments/modifications2.png" />
 

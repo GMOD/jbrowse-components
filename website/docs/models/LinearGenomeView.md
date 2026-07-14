@@ -20,21 +20,24 @@ defaultSession: {
   views: [
     {
       type: 'LinearGenomeView',
+      // plain persisted props sit alongside init, not inside it
+      colorByCDS: true,
       init: {
         assembly: 'hg38',
         loc: 'chr1:1,000,000-1,100,000',
         tracks: ['genes', 'alignments'],
-        colorByCDS: true,
       },
     },
   ],
 }
 ```
 
-Other `init` fields: `tracklist`, `nav`, `highlight`, `showCenterLine`,
-`trackLabels` — see the `init` property below for the full list. At runtime the
-same model is driven imperatively — every property and action below is reachable
-on `viewState.session.views[0]`:
+`init` holds only keys that need on-attach resolution — also `tracklist`, `nav`,
+`highlight` (see the `init` property below). Plain view props like `colorByCDS`,
+`showCenterLine`, `trackLabels`, `showHighlightChips` are set directly on the
+view (MST restores them natively). At runtime the same model is driven
+imperatively — every property and action below is reachable on
+`viewState.session.views[0]`:
 
 ```js
 const view = viewState.session.views[0]
