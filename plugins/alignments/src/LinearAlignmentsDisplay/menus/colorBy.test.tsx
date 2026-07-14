@@ -1,6 +1,6 @@
 import { isValidElement } from 'react'
 
-import { getColorByMenuItem } from './colorBy.ts'
+import { getColorByMenuItem } from './colorBy.tsx'
 
 import type { ColorBy } from '../../shared/types.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
@@ -138,7 +138,11 @@ function clickRadio(model: Model, label: string) {
 }
 
 describe('color by modifications menu', () => {
-  const controls = ['Type', 'Probability (red / blue)', 'Advanced settings…']
+  const controls = [
+    'Color by type',
+    'Color by probability',
+    'Probability threshold',
+  ]
 
   test.each([
     ['by type', { type: 'modifications' }],
@@ -161,7 +165,7 @@ describe('color by modifications menu', () => {
   test('the Probability view fills unmarked cytosines for methylation data', () => {
     const model = makeModModel(['m', 'h'])
     model.colorBy = { type: 'modifications' }
-    clickRadio(model, 'Probability (red / blue)')
+    clickRadio(model, 'Color by probability')
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { fillUnmarked: true },
@@ -171,30 +175,30 @@ describe('color by modifications menu', () => {
   test('the Probability view is plain two-color for non-cytosine modifications', () => {
     const model = makeModModel(['a'])
     model.colorBy = { type: 'modifications' }
-    clickRadio(model, 'Probability (red / blue)')
+    clickRadio(model, 'Color by probability')
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { twoColor: true },
     })
   })
 
-  test('the fill view reads as the "Probability" radio, not a separate row', () => {
+  test('the fill view reads as the "Color by probability" radio, not a separate row', () => {
     const model = makeModModel()
     model.colorBy = {
       type: 'modifications',
       modifications: { fillUnmarked: true },
     }
-    const prob = byLabel(model, 'Probability (red / blue)')
+    const prob = byLabel(model, 'Color by probability')
     expect(prob && 'checked' in prob && prob.checked).toBe(true)
   })
 
-  test('switching views preserves Advanced refinements (cytosine context)', () => {
+  test('switching views preserves refinements (cytosine context)', () => {
     const model = makeModModel()
     model.colorBy = {
       type: 'modifications',
       modifications: { fillUnmarked: true, cytosineContext: 'CHH' },
     }
-    clickRadio(model, 'Type')
+    clickRadio(model, 'Color by type')
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { cytosineContext: 'CHH' },
@@ -203,7 +207,7 @@ describe('color by modifications menu', () => {
 
   test('the probability pin promotes the methylation view for cytosine data', () => {
     const model = makeModModel(['m', 'h'])
-    const item = byLabel(model, 'Probability (red / blue)', {
+    const item = byLabel(model, 'Color by probability', {
       displayTypeDefault: displayTypeDefault(model),
     })
     const adornment =
@@ -221,5 +225,52 @@ describe('color by modifications menu', () => {
         }),
       ),
     ).toBe(true)
+  })
+
+  test('the per-type filter is surfaced inline and limits to one type', () => {
+    const model = makeModModel(['m', 'h'])
+    model.colorBy = { type: 'modifications' }
+    const item = subMenuOf(byLabel(model, 'Types shown')).find(
+      i => 'label' in i && i.label === '5hmC',
+    )
+    if (!item || !('onClick' in item)) {
+      throw new Error('no 5hmC filter radio')
+    }
+    item.onClick({})
+    expect(model.colorBy).toEqual({
+      type: 'modifications',
+      modifications: { shownModifications: ['h'] },
+    })
+  })
+
+  test('the per-type filter is hidden when only one type is detected', () => {
+    const model = makeModModel(['m'])
+    expect(byLabel(model, 'Types shown')).toBeFalsy()
+  })
+
+  test('the threshold slider commits a non-default value inline', () => {
+    const model = makeModModel(['m', 'h'])
+    model.colorBy = { type: 'modifications' }
+    const item = subMenuOf(byLabel(model, 'Probability threshold')).find(
+      i => 'render' in i,
+    )
+    if (!item || !('render' in item)) {
+      throw new Error('no threshold slider')
+    }
+    const rendered = item.render(() => {})
+    if (!isValidElement(rendered)) {
+      throw new Error('threshold slider did not render')
+    }
+    const { onCommit } = rendered.props as { onCommit: (v: number) => void }
+    onCommit(80)
+    expect(model.colorBy).toEqual({
+      type: 'modifications',
+      modifications: { threshold: 80 },
+    })
+  })
+
+  test('cytosine context is shown only for cytosine methylation data', () => {
+    expect(byLabel(makeModModel(['m', 'h']), 'Cytosine context')).toBeTruthy()
+    expect(byLabel(makeModModel(['a']), 'Cytosine context')).toBeFalsy()
   })
 })

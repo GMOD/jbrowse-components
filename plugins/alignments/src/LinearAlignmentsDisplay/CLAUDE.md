@@ -71,7 +71,8 @@ stays independent (you can autogrow at any fixed size). Everything awkward flows
 from that:
 
 - `sizeActive = heightMode !== 'fit'` (`featureSize.ts`) hides the preset
-  checkmarks while fitting — no fixed size is "selected" when the size is derived.
+  checkmarks while fitting — no fixed size is "selected" when the size is
+  derived.
 - `setFeatureHeight` drops `fit → fixed` — a chosen size would be dormant under
   fit, so picking one exits fit to make it take effect.
 - The fit cap in `fittedFeatureHeight` uses the **Normal** height, NOT
@@ -84,16 +85,19 @@ from that:
 resolved value is confusingly named like the raw slot:
 
 - `getConf(self, 'featureHeight')` is the **raw configured** slot value, but the
-  `self.featureHeight` _getter_ is the **effective** (fit-squeezed) render value.
-  Editors that mutate the size (the dialog) must read `configuredFeatureHeight`,
-  never `featureHeight`, or they bake the squeezed height.
+  `self.featureHeight` _getter_ is the **effective** (fit-squeezed) render
+  value. Editors that mutate the size (the dialog) must read
+  `configuredFeatureHeight`, never `featureHeight`, or they bake the squeezed
+  height.
 - `fittedHeightPx` / `fittedFeatureHeight` are **pitches** (body + spacing);
-  `featureHeight` is a **body**. `featureHeight = fittedHeightPx -
-  featureSpacing`. Don't conflate pitch and body.
+  `featureHeight` is a **body**.
+  `featureHeight = fittedHeightPx - featureSpacing`. Don't conflate pitch and
+  body.
 - `fittedHeightPx` is a volatile bridged by an `afterAttach` autorun purely to
   break a MobX cycle: `fittedFeatureHeight` reads _late_ layout getters, but
-  `featureHeight` is an _early_ getter the layout depends on. The volatile is the
-  seam; don't try to make `featureHeight` read `fittedFeatureHeight` directly.
+  `featureHeight` is an _early_ getter the layout depends on. The volatile is
+  the seam; don't try to make `featureHeight` read `fittedFeatureHeight`
+  directly.
 
 ## Layout architecture
 
