@@ -184,8 +184,7 @@ function buildModificationsMenu(
   const probability = probabilityColorBy(model)
 
   return {
-    label: 'Modifications (MM/ML tag)',
-    subLabel: 'base modification calls (5mC, 5hmC, 6mA…)',
+    label: 'Modifications',
     helpText:
       'Color the ONT/PacBio modification calls in these reads: by modification type, or red/blue by probability (methylated red, unmethylated blue). Probability threshold, cytosine context and per-type filtering are under Advanced settings.',
     subMenu: [
@@ -258,7 +257,7 @@ function buildBisulfiteItem(model: ModificationsModel): MenuItem {
   const isBis = model.colorBy.type === 'bisulfite'
   const context = model.colorBy.modifications?.cytosineContext ?? 'CG'
   return {
-    label: 'Bisulfite / EM-seq (no MM/ML tags)',
+    label: 'Bisulfite / EM-seq',
     helpText:
       'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated red, unmethylated blue, by cytosine context.',
     subMenu: radioItems<CytosineContext>(
