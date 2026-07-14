@@ -54,6 +54,45 @@ describe('row height resolution', () => {
     expect(m.scrollableHeight).toBe(rh * 2)
   })
 
+  // With more samples than pixels (e.g. a 3202-sample cohort in a 200px
+  // display), the auto-fit height is legitimately sub-1px. effectiveRowHeight
+  // must return that fractional value, not floor it to 1 -- flooring here
+  // would make totalHeight balloon past availableHeight and falsely report
+  // overflow/scroll in a mode that's documented to never scroll.
+  it('fit mode keeps a sub-1px row height when samples outnumber pixels', () => {
+    const m = createDisplay()
+    m.setSources(
+      Array.from({ length: 3202 }, (_, i) => ({ name: `sample${i}` })),
+    )
+    const expected = m.availableHeight / 3202
+    expect(expected).toBeLessThan(1)
+    expect(m.effectiveRowHeight).toBe(expected)
+    expect(m.hasOverflow).toBe(false)
+    expect(m.scrollableHeight).toBe(0)
+  })
+
+  // lineZoneHeight (matrix only) is user-draggable independently of height --
+  // e.g. dragging the connector-line zone taller, then shrinking the display
+  // -- so it can swallow the whole display. availableHeight floors at 0
+  // rather than going negative (every consumer treats it as a real pixel
+  // dimension: canvas height, CSS height, scroll viewport height), and
+  // effectiveRowHeight floors the resulting 0-height row to 1 rather than
+  // propagating a NaN/Infinity divide-by-zero downstream.
+  it('floors availableHeight/effectiveRowHeight when lineZoneHeight swallows the display', () => {
+    const configSchema = matrixConfigFactory()
+    const m = matrixStateModelFactory(configSchema).create({
+      type: 'LinearMultiSampleVariantMatrixDisplay',
+      configuration: configSchema.create({
+        type: 'LinearMultiSampleVariantMatrixDisplay',
+        displayId: 'test-matrix-degenerate',
+      }),
+    })
+    m.setHeight(20)
+    m.setLineZoneHeight(1000)
+    expect(m.availableHeight).toBe(0)
+    expect(m.effectiveRowHeight).toBe(1)
+  })
+
   it('setFitToHeight returns to fit mode', () => {
     const m = createDisplay()
     m.setRowHeight(20)

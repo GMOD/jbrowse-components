@@ -876,10 +876,15 @@ export default function MultiSampleVariantBaseModelF(
         // across related displays.
         /**
          * #getter
-         * Available height for rows (total height minus lineZoneHeight)
+         * Available height for rows (total height minus lineZoneHeight).
+         * Floored at 0: `lineZoneHeight` (matrix only, user-draggable up to
+         * 1000 independently of `height`) can exceed a shrunk display height.
+         * Every consumer treats this as a real pixel dimension (canvas
+         * height, CSS `height`, scroll viewport height), so it must never go
+         * negative.
          */
         get availableHeight() {
-          return self.height - self.lineZoneHeight
+          return Math.max(0, self.height - self.lineZoneHeight)
         },
         /**
          * #getter
@@ -903,17 +908,20 @@ export default function MultiSampleVariantBaseModelF(
          * display-resize stay in sync without snap-back fuzziness. Every consumer
          * reads this, never the raw `rowHeight` property.
          *
-         * Floored at 1px: `availableHeight` can go <= 0 when `lineZoneHeight`
-         * (independently settable up to 1000) exceeds a shrunk display height,
-         * which would make the auto-fit height 0/negative and propagate
-         * NaN/Infinity into the `/ rowHeight` in applyRowResizeWheel and the
-         * renderers. A resolved getter must never hand back a degenerate value.
+         * Floored at 1px only when non-positive: `availableHeight` floors at
+         * 0 (see above), so `autoRowHeight` can still be exactly 0 when
+         * `lineZoneHeight` swallows the whole display — dividing by it
+         * elsewhere (`/ rowHeight` in applyRowResizeWheel, the renderers)
+         * would propagate NaN/Infinity. A resolved getter must never hand
+         * back a degenerate value. The floor must not catch legitimate
+         * sub-1px auto-fit heights (many-sample tracks squeezed into a short
+         * display) — that's the normal case `hasOverflow` relies on staying
+         * false for.
          */
         get effectiveRowHeight() {
-          return Math.max(
-            1,
-            self.rowHeight === 0 ? this.autoRowHeight : self.rowHeight,
-          )
+          const height =
+            self.rowHeight === 0 ? this.autoRowHeight : self.rowHeight
+          return height > 0 ? height : 1
         },
         /**
          * #getter

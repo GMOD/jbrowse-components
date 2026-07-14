@@ -61,11 +61,6 @@ This reversed-block Canvas2D issue is real but niche. Let me now verify a higher
 
 
 
-## changing line width in plugins/wiggle triggering rerenderings of other tracks
-
-## the 'fit to display height' button at bottom right of tracks overlaps the scrollbar and mouseover of feature can et stuck when hovering this button
-
 
 ## audit slowness of zoom with force load banner
 
-## show only split alignments flag

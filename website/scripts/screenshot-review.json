@@ -260,9 +260,9 @@
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T18:28:57.575Z",
-    "hash": "e85667d0ab999199ed46835d01642ec212e989f6"
+    "note": "the second sc",
+    "reviewedAt": "2026-07-14T20:15:43.660Z",
+    "hash": "e1ef738434f091da962643a5d8865b0137f08947"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
