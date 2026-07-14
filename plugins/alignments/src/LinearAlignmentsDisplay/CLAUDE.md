@@ -49,6 +49,52 @@ it back through `rpcProps()` makes a discover→assign→refetch loop. It's now
 tier-2 — worker reports raw `readTagValues`, main thread bakes `readTagColors`
 in `laidOutPileupMap`. Keep `colorTagMap` out of `rpcProps()`.
 
+## Read height vs track height: two axes, one crossover
+
+The "Read height" menu drives **two orthogonal axes**, and almost every subtle
+rule below is a _consequence_ of one exception. Learn the model once and the
+special-cases stop being surprising.
+
+- **Read-height axis** — how tall each read is drawn. The `featureHeight` slot:
+  Normal (7) / Compact (3) / Super-compact (1) / Custom. Spacing is _derived_
+  from it, never stored (`featureSpacing` = `h > 3 ? 1 : 0`).
+- **Track-height axis** — how the track absorbs more content than fits. The
+  `heightMode` slot (shared vocabulary with the canvas display via
+  `HeightModeMixin`): `fixed` scrolls, `grow` autogrows the track (up to
+  `GROW_MAX_HEIGHT`), `fit` shrinks reads to fill the current height.
+
+**The one crossover: `fit` is the sole `heightMode` that also drives the
+read-height axis.** `fixed` and `grow` both render reads at the configured
+`featureHeight`; only `fit` _derives_ the size. So `fit` and the compactness
+presets are mutually exclusive answers to "how tall are reads?", while `grow`
+stays independent (you can autogrow at any fixed size). Everything awkward flows
+from that:
+
+- `sizeActive = heightMode !== 'fit'` (`featureSize.ts`) hides the preset
+  checkmarks while fitting — no fixed size is "selected" when the size is derived.
+- `setFeatureHeight` drops `fit → fixed` — a chosen size would be dormant under
+  fit, so picking one exits fit to make it take effect.
+- The fit cap in `fittedFeatureHeight` uses the **Normal** height, NOT
+  `configuredFeatureHeight` — fit _overrides_ the compactness preset, so a
+  Compact selection must not clamp the fit (else Compact would override fit).
+- `isFitting = fitHeightToDisplay && fittedHeightPx > 0` gates the derived path;
+  when nothing fits (no rows / no room) the getters fall back to the config.
+
+**Naming traps in the read-height getters** (all in `model.ts`), because the
+resolved value is confusingly named like the raw slot:
+
+- `getConf(self, 'featureHeight')` is the **raw configured** slot value, but the
+  `self.featureHeight` _getter_ is the **effective** (fit-squeezed) render value.
+  Editors that mutate the size (the dialog) must read `configuredFeatureHeight`,
+  never `featureHeight`, or they bake the squeezed height.
+- `fittedHeightPx` / `fittedFeatureHeight` are **pitches** (body + spacing);
+  `featureHeight` is a **body**. `featureHeight = fittedHeightPx -
+  featureSpacing`. Don't conflate pitch and body.
+- `fittedHeightPx` is a volatile bridged by an `afterAttach` autorun purely to
+  break a MobX cycle: `fittedFeatureHeight` reads _late_ layout getters, but
+  `featureHeight` is an _early_ getter the layout depends on. The volatile is the
+  seam; don't try to make `featureHeight` read `fittedFeatureHeight` directly.
+
 ## Layout architecture
 
 Pileup and chain layout are computed on the **main thread**, not in the RPC
