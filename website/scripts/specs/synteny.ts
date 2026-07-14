@@ -336,6 +336,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 1000 },
         ],
         annotations: [
+          // box the whole auto-filled assembly-rows stack (reviewer)
+          {
+            type: 'box',
+            anchor: { selector: '[data-testid="synteny-assembly-rows"]' },
+          },
           {
             type: 'text',
             text: 'Every assembly in the track becomes a row, then Launch',

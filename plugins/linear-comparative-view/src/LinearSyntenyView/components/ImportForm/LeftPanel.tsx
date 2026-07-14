@@ -197,13 +197,15 @@ const LeftPanel = observer(function LeftPanel({
       <div className={classes.mb}>
         Select assemblies for linear synteny view
       </div>
-      <AssemblyRows
-        model={model}
-        selectedAssemblyNames={selectedAssemblyNames}
-        setSelectedAssemblyNames={setSelectedAssemblyNames}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
-      />
+      <div data-testid="synteny-assembly-rows">
+        <AssemblyRows
+          model={model}
+          selectedAssemblyNames={selectedAssemblyNames}
+          setSelectedAssemblyNames={setSelectedAssemblyNames}
+          selectedRow={selectedRow}
+          setSelectedRow={setSelectedRow}
+        />
+      </div>
 
       <div>
         <Button

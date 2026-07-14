@@ -107,22 +107,25 @@ describe('readColorCategory', () => {
     expect(cat(4)).toBe('pairLL')
   })
 
-  test('pairOrientation with no orientation falls back to read strand', () => {
-    // Unpaired/single-end reads (po=0) still have a strand — never grey noStrand.
+  test('pairOrientation with no orientation is the non-split bucket', () => {
+    // A read with no pair orientation (long single reads, po=0) that isn't a
+    // split segment gets the neutral non-split bucket. Only SPLIT alignments
+    // (chained supplementary) show strand coloring, covered by the chainHasSupp
+    // tests below.
     expect(
       readColorCategory(
         0,
         makeData({ pairOrientation: 0, strand: 1 }),
         ColorScheme.pairOrientation,
       ),
-    ).toBe('fwdStrand')
+    ).toBe('nonSplit')
     expect(
       readColorCategory(
         0,
         makeData({ pairOrientation: 0, strand: -1 }),
         ColorScheme.pairOrientation,
       ),
-    ).toBe('revStrand')
+    ).toBe('nonSplit')
   })
 
   test('insertSizeAndOrientation: short insert wins, else orientation, else insert', () => {

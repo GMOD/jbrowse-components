@@ -746,7 +746,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       ...menuCascade(['Read height', 'Compact'], 800),
     ],
-    annotations: [{ type: 'box', anchor: { text: 'Compact' } }],
+    // box both the "Read height" parent submenu and the "Compact" item it opens
+    annotations: [
+      { type: 'box', anchor: { text: 'Read height' } },
+      { type: 'box', anchor: { text: 'Compact' } },
+    ],
   },
 
   // Read connections (arc display): two-stage figure on the volvox-sv CRAM (whose

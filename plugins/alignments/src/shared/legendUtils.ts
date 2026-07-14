@@ -46,6 +46,7 @@ const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
   { category: 'fwdStrand', label: 'Forward strand' },
   { category: 'revStrand', label: 'Reverse strand' },
   { category: 'noStrand', label: 'No strand' },
+  { category: 'nonSplit', label: 'Unsplit read' },
   { category: 'pairLR', label: 'LR - Normal pair orientation' },
   { category: 'pairRL', label: 'RL - Mates point outward' },
   { category: 'pairLL', label: 'LL - Both mates forward strand' },
@@ -59,6 +60,14 @@ const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
   { category: 'unmappedMate', label: 'Unmapped mate' },
   { category: 'supplementary', label: 'Supplementary/split' },
 ]
+
+// Under the pair-orientation scheme, fwd/rev-strand buckets can only come from
+// split-read (chained-supplementary) segments, so the legend names them as such
+// rather than by the plain-strand wording.
+const PAIR_ORIENTATION_LABELS: Partial<Record<SwatchCategory, string>> = {
+  fwdStrand: 'Split read (forward)',
+  revStrand: 'Split read (reverse)',
+}
 
 // Per-base nucleotide swatches, colored from the live palette base colors.
 const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
@@ -179,12 +188,18 @@ export function getReadDisplayLegendItems(
   }
 
   // Every remaining scheme (strand, insert size, orientation, tag, …) is
-  // described entirely by which fixed-swatch buckets occurred.
+  // described entirely by which fixed-swatch buckets occurred. Under the
+  // pair-orientation scheme the only source of fwd/rev-strand buckets is the
+  // split-read (chained-supplementary) branch, so relabel them from the plain
+  // strand wording to the split-read framing that scheme actually shows.
   const buckets = CATEGORY_LEGEND.filter(({ category }) =>
     presentCategories.has(category),
   ).map(({ category, label }) => ({
     color: categorySwatchColor(category, palette),
-    label,
+    label:
+      colorType === 'pairOrientation'
+        ? (PAIR_ORIENTATION_LABELS[category] ?? label)
+        : label,
   }))
 
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),

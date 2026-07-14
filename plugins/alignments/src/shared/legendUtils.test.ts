@@ -46,13 +46,22 @@ describe('getReadDisplayLegendItems', () => {
     expect(labels('strand', ['fwdStrand'])).toEqual(['Forward strand'])
   })
 
-  test('lists "No strand" reads (strand 0 / unpaired pair-orientation)', () => {
+  test('lists "No strand" reads (strand 0) in the strand scheme', () => {
     expect(labels('strand', ['fwdStrand', 'noStrand'])).toEqual([
       'Forward strand',
       'No strand',
     ])
-    expect(labels('pairOrientation', ['pairLR', 'noStrand'])).toEqual([
-      'No strand',
+  })
+
+  test('pair-orientation scheme: split-read strand framing + non-split bucket', () => {
+    // fwd/rev come only from split segments here, and po=0 non-split reads are
+    // their own grey bucket.
+    expect(
+      labels('pairOrientation', ['fwdStrand', 'revStrand', 'nonSplit', 'pairLR']),
+    ).toEqual([
+      'Split read (forward)',
+      'Split read (reverse)',
+      'Unsplit read',
       'LR - Normal pair orientation',
     ])
   })

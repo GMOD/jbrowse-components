@@ -119,14 +119,15 @@ float3 firstOfPairColor(uint flags, int s, Uniforms u) {
   return strandColor(eff, u);
 }
 
-float3 pairOrientColor(uint po, int strand, Uniforms u) {
+float3 pairOrientColor(uint po, Uniforms u) {
   if (po == 1u) { return unpackRGBA(u.colorPairLR).xyz; }
   if (po == 2u) { return unpackRGBA(u.colorPairRL).xyz; }
   if (po == 3u) { return unpackRGBA(u.colorPairRR).xyz; }
   if (po == 4u) { return unpackRGBA(u.colorPairLL).xyz; }
-  // No computed pair orientation (single-end/unpaired reads): still color by the
-  // read's own strand, never a meaningless grey "no strand". Mirrors colorUtils.
-  return strandColor(strand, u);
+  // No computed pair orientation (single-end/unpaired reads): neutral "no strand".
+  // Only SPLIT alignments show strand coloring — via the chained-supplementary
+  // branch in getReadColor, not here. Mirrors colorUtils.ts.
+  return unpackRGBA(u.colorNostrand).xyz;
 }
 
 float3 isAndOrientColor(float is, uint po, Uniforms u) {
@@ -210,7 +211,7 @@ float3 getReadColor(Instance inst, Uniforms u) {
   if (cs == CS_MAPQ)          { return hueRampHalfSat(float(inst.mapq)); }
   if (cs == CS_INSERT_SIZE)   { return insertSizeColor(inst.insertSize, u); }
   if (cs == CS_FIRST_OF_PAIR) { return firstOfPairColor(inst.flags, inst.strand, u); }
-  if (cs == CS_PAIR_ORIENT)   { return pairOrientColor(inst.pairOrient, inst.strand, u); }
+  if (cs == CS_PAIR_ORIENT)   { return pairOrientColor(inst.pairOrient, u); }
   if (cs == CS_IS_AND_ORIENT) { return isAndOrientColor(inst.insertSize, inst.pairOrient, u); }
   if (cs == CS_MODIFICATIONS) { return modificationsColor(inst.flags, u); }
   if (cs == CS_TAG) {

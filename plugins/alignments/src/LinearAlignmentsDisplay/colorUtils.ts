@@ -46,6 +46,7 @@ export type ReadColorCategory =
   | 'fwdStrand'
   | 'revStrand'
   | 'noStrand'
+  | 'nonSplit'
   | 'pairLR'
   | 'pairRL'
   | 'pairRR'
@@ -70,8 +71,12 @@ const pairOrientationCategories: Record<number, ReadColorCategory> = {
   4: 'pairLL',
 }
 
+// po=0 means no computed pair orientation. Under the pairOrientation scheme the
+// chained-supplementary (split) branch runs first, so a read that falls through
+// to here is a non-split read (long single reads, or a pair with no orientation)
+// — grey, distinct from the strand-colored split segments.
 function pairOrientationCategory(po: number): ReadColorCategory {
-  return pairOrientationCategories[po] ?? 'noStrand'
+  return pairOrientationCategories[po] ?? 'nonSplit'
 }
 
 // Map the shared insert-size class onto the render/legend category vocabulary.
@@ -225,11 +230,10 @@ export function readColorCategory(
     }
 
     case ColorScheme.pairOrientation: {
-      // A read with no computed pair orientation (single-end/unpaired long
-      // reads, po=0) still has a strand — color it by that rather than a
-      // meaningless grey "no strand" bucket.
-      const po = data.readPairOrientations[i]!
-      return po ? pairOrientationCategory(po) : strandCategory(strand)
+      // Only SPLIT alignments show strand coloring (via the chained-supplementary
+      // branch above). A read reaching here has no pair orientation and isn't a
+      // split segment, so it's a non-split read → grey.
+      return pairOrientationCategory(data.readPairOrientations[i]!)
     }
 
     // Short-insert pairs always show pink, even with abnormal orientation;
@@ -363,6 +367,9 @@ const swatchPaletteKeys = {
   fwdStrand: 'colorFwdStrand',
   revStrand: 'colorRevStrand',
   noStrand: 'colorNostrand',
+  // non-split read under the pair-orientation scheme: reuses the neutral grey,
+  // but a distinct category so the legend can label it "Non-split read"
+  nonSplit: 'colorNostrand',
   pairLR: 'colorPairLR',
   pairRL: 'colorPairRL',
   pairRR: 'colorPairRR',
