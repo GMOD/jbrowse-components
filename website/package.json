@@ -15,7 +15,7 @@
     "check-llms": "node --experimental-strip-types scripts/check-llms.ts",
     "snapshot": "node --experimental-strip-types scripts/snapshot.ts",
     "screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
-    "screenshots:build": "pnpm --filter @jbrowse/web build && node --experimental-strip-types scripts/generate-screenshots.ts",
+    "screenshots:build": "pnpm --filter @jbrowse/web build && pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack && node --experimental-strip-types scripts/generate-screenshots.ts",
     "gen:gallery-links": "node --experimental-strip-types scripts/gen-gallery-links.ts",
     "gen:gallery-links-check": "node --experimental-strip-types scripts/gen-gallery-links.ts --check",
     "review-screenshots-web": "node --experimental-strip-types scripts/review-screenshots-web.ts",
