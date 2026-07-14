@@ -385,6 +385,14 @@ Draw properly-paired reads
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `true`
 
+#### slot: showOnlySplitAlignments
+
+Only draw reads that are part of a split/chimeric alignment (have a
+supplementary segment, SAM flag 0x800)
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
+
 #### slot: flipStrandLongReadChains
 
 Flip strand coloring for reverse long-read chains

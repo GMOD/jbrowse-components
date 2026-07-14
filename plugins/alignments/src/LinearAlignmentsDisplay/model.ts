@@ -388,6 +388,10 @@ export default function stateModelFactory(
           return getConf(self, 'drawProperPairs')
         },
         /** #getter */
+        get showOnlySplitAlignments(): boolean {
+          return getConf(self, 'showOnlySplitAlignments')
+        },
+        /** #getter */
         get flipStrandLongReadChains(): boolean {
           return getConf(self, 'flipStrandLongReadChains')
         },
@@ -1918,6 +1922,7 @@ export default function stateModelFactory(
             showCoverage: self.showCoverage,
             drawSingletons: self.drawSingletons,
             drawProperPairs: self.drawProperPairs,
+            showOnlySplitAlignments: self.showOnlySplitAlignments,
             linkedReads: self.linkedReads,
           }
         },
@@ -2617,6 +2622,13 @@ export default function stateModelFactory(
            */
           setDrawProperPairs(flag: boolean) {
             self.configuration.setSlot('drawProperPairs', flag)
+          },
+
+          /**
+           * #action
+           */
+          setShowOnlySplitAlignments(flag: boolean) {
+            self.configuration.setSlot('showOnlySplitAlignments', flag)
           },
 
           /**

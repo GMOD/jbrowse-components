@@ -84,6 +84,38 @@ describe('filterChainFeatures drawProperPairs=false', () => {
   })
 })
 
+describe('filterChainFeatures showOnlySplitAlignments=true', () => {
+  test('hides chains with no supplementary segment', () => {
+    const features = pair('plain', 'F1R2', 0)
+    expect(
+      filterChainFeatures(features, true, true, true),
+    ).toHaveLength(0)
+  })
+
+  test('keeps chains containing a supplementary segment', () => {
+    const chain = [
+      ...pair('chimeric', 'F1R2', PROPER_PAIR),
+      new SimpleFeature({
+        uniqueId: 'chimeric-supp',
+        refName: 'ctgA',
+        start: 5000,
+        end: 5100,
+        name: 'chimeric',
+        flags: SUPPLEMENTARY,
+        pair_orientation: 'F1R2',
+      }),
+    ]
+    expect(names(filterChainFeatures(chain, true, true, true))).toEqual([
+      'chimeric',
+    ])
+  })
+
+  test('keeps everything when showOnlySplitAlignments is false', () => {
+    const features = pair('plain', 'F1R2', 0)
+    expect(filterChainFeatures(features, true, true, false)).toHaveLength(2)
+  })
+})
+
 describe('filterChainFeatures dedup guard', () => {
   test('collapses records sharing an id (duplicate index-chunk emit)', () => {
     const [a, b] = pair('dup', 'F1R2', 0)

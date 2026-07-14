@@ -113,15 +113,25 @@ function dedupeById(features: Feature[]) {
   return out
 }
 
+// A chain is "split" when any of its members carries the supplementary flag —
+// i.e. the read has a chimeric/split segment elsewhere.
+function isSplitChain(chain: Feature[]) {
+  return chain.some((f: Feature) => {
+    const flags = (f.get('flags') as number | undefined) ?? 0
+    return !!(flags & SAM_FLAG_SUPPLEMENTARY)
+  })
+}
+
 // Chain mode groups reads into chains by name, then optionally drops
-// singletons (chains of one) and proper pairs.
+// singletons (chains of one), proper pairs, and/or non-split chains.
 export function filterChainFeatures(
   features: Feature[],
   drawSingletons: boolean,
   drawProperPairs: boolean,
+  showOnlySplitAlignments = false,
 ) {
   const deduped = dedupeById(features)
-  if (drawSingletons && drawProperPairs) {
+  if (drawSingletons && drawProperPairs && !showOnlySplitAlignments) {
     return deduped
   }
   const byChain = groupBy(deduped, (f: Feature) =>
@@ -137,6 +147,9 @@ export function filterChainFeatures(
   }
   if (!drawProperPairs) {
     rawChains = rawChains.filter(c => !isProperPairChain(c))
+  }
+  if (showOnlySplitAlignments) {
+    rawChains = rawChains.filter(c => isSplitChain(c))
   }
   const keptIds = new Set<string>()
   for (const chain of rawChains) {
@@ -445,6 +458,7 @@ export async function executeRenderAlignmentData({
     linkedReads = 'off',
     drawSingletons = true,
     drawProperPairs = true,
+    showOnlySplitAlignments = false,
     statusCallback = () => {},
     stopToken,
   } = args
@@ -483,6 +497,7 @@ export async function executeRenderAlignmentData({
     featuresArray,
     drawSingletons,
     drawProperPairs,
+    showOnlySplitAlignments,
   )
   if (!isChain && colorBy?.type === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({

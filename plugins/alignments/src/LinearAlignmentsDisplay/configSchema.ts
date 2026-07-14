@@ -394,6 +394,15 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      showOnlySplitAlignments: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          'Only draw reads that are part of a split/chimeric alignment (have a supplementary segment, SAM flag 0x800)',
+      },
+      /**
+       * #slot
+       */
       flipStrandLongReadChains: {
         type: 'boolean',
         defaultValue: true,

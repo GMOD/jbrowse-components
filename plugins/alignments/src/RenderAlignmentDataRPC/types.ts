@@ -16,8 +16,8 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 // pileup (`'off'`) vs chain (`'normal'`) path inside the worker — the same flag
 // the client already tracks, so no separate `mode` is needed.
 // `sortTag`/`showSoftClipping` are pileup-only; `drawSingletons`/
-// `drawProperPairs` (singleton / proper-pair filter, grouped by read name)
-// apply in both modes.
+// `drawProperPairs`/`showOnlySplitAlignments` (grouped-by-read-name chain
+// filters) apply in both modes.
 export interface RenderAlignmentDataArgs {
   sessionId: string
   adapterConfig: Record<string, unknown>
@@ -45,6 +45,7 @@ export interface RenderAlignmentDataArgs {
   linkedReads?: 'off' | 'normal'
   drawSingletons?: boolean
   drawProperPairs?: boolean
+  showOnlySplitAlignments?: boolean
   statusCallback?: StatusCallback
   stopToken?: StopToken
 }

@@ -100,6 +100,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [showInterbaseIndicators](#slot-showinterbaseindicators)   | `boolean`                                                        | Draw interbase insertion/clip count bars and indicator triangles                                                                                                           |
 | [drawSingletons](#slot-drawsingletons)                     | `boolean`                                                        | Draw reads whose mate is unmapped                                                                                                                                          |
 | [drawProperPairs](#slot-drawproperpairs)                   | `boolean`                                                        | Draw properly-paired reads                                                                                                                                                 |
+| [showOnlySplitAlignments](#slot-showonlysplitalignments)   | `boolean`                                                        | Only draw reads that are part of a split/chimeric alignment (have a supplementary segment, SAM flag 0x800)                                                                 |
 | [flipStrandLongReadChains](#slot-flipstrandlongreadchains) | `boolean`                                                        | Flip strand coloring for reverse long-read chains                                                                                                                          |
 | [colorSupplementaryChains](#slot-colorsupplementarychains) | `boolean`                                                        | Paint paired supplementary chains a flat supplementary color                                                                                                               |
 | [drawInter](#slot-drawinter)                               | `boolean`                                                        | Draw inter-chromosomal read-connection arcs                                                                                                                                |
@@ -447,6 +448,14 @@ Draw properly-paired reads
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `true`
+
+#### slot: showOnlySplitAlignments
+
+Only draw reads that are part of a split/chimeric alignment (have a
+supplementary segment, SAM flag 0x800)
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: flipStrandLongReadChains
 

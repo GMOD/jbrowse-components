@@ -34,6 +34,8 @@ interface ReadsModel {
   setDrawProperPairs: (v: boolean) => void
   drawSingletons: boolean
   setDrawSingletons: (v: boolean) => void
+  showOnlySplitAlignments: boolean
+  setShowOnlySplitAlignments: (v: boolean) => void
   maxHeight: number
   setMaxHeight: (height?: number) => void
 }
@@ -111,6 +113,20 @@ export function getReadsMenuItem(model: ReadsModel) {
             'segment is not present in the view, so the read stands alone ' +
             '(samtools calls these "singletons"). Grouped by read name, so ' +
             'it applies to a plain pileup too.',
+        },
+      ),
+      checkboxItem(
+        'Show only split alignments',
+        model.showOnlySplitAlignments,
+        () => {
+          model.setShowOnlySplitAlignments(!model.showOnlySplitAlignments)
+        },
+        {
+          helpText:
+            'Only show reads that are part of a chimeric/split alignment ' +
+            '(the aligner emitted a supplementary segment for the read, ' +
+            'SAM flag 0x800) — chimeric SV/breakpoint evidence. Grouped by ' +
+            'read name, so it applies to a plain pileup too.',
         },
       ),
       { type: 'divider' as const },
