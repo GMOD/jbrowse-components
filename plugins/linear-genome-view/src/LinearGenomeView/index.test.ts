@@ -11,7 +11,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
@@ -2096,10 +2096,11 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     })
   })
 
-  test('showCenterLine is a direct view prop, restored from the snapshot', async () => {
-    // showCenterLine is a plain persisted prop, not an init key — MST restores
-    // it natively from the view snapshot (LaunchView forwards it as a sibling of
-    // init, never inside it)
+  test('showCenterLine restores from an input snapshot but is stripped from getSnapshot', async () => {
+    // showCenterLine is a direct view prop, not an init key — MST restores it
+    // natively from the view snapshot (LaunchView forwards it as a sibling of
+    // init, never inside it). It's purely a localStorage-backed preference
+    // though, so postProcessSnapshot strips it back out of session saves.
     const { Session, LinearGenomeModel } = initialize()
     const model = Session.create({ configuration: {} }).setView(
       LinearGenomeModel.create({
@@ -2112,6 +2113,7 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     await waitFor(() => {
       expect(model.showCenterLine).toBe(true)
     })
+    expect(getSnapshot(model)).not.toHaveProperty('showCenterLine')
   })
 
   test('unknown init key warns instead of silently dropping', async () => {

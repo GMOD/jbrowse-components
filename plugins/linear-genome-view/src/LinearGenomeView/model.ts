@@ -2238,9 +2238,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // init is transient launch state, never persisted. The remaining fields
-      // are localStorage-backed: their strip baseline is the universal default
-      // (hardcoded here), not the localStorage-derived creation default, so a
+      // init is transient launch state, never persisted. showCenterLine is
+      // purely a localStorage-backed preference (see setupLocalStorageAutorun
+      // in afterAttach.ts) and is never persisted into session snapshots. The
+      // remaining fields are also localStorage-backed, but still persist when
+      // non-default: their strip baseline is the universal default (hardcoded
+      // here), not the localStorage-derived creation default, so a
       // localStorage-set value stays portable across browsers.
       const {
         init,
@@ -2261,7 +2264,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         // the optional chain is runtime-necessary despite the non-nullish type.
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         ...(init && !snap.displayedRegions?.length ? { init } : {}),
-        ...(showCenterLine ? { showCenterLine } : {}),
         ...(!showCytobands ? { showCytobands } : {}),
         ...(trackLabels ? { trackLabels } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
