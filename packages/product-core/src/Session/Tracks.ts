@@ -1,4 +1,5 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { autorun, observable } from 'mobx'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { isSessionWithConnections } from './Connections.ts'
@@ -11,6 +12,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { ConnectionInstance } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type { ObservableMap } from 'mobx'
 
 /**
  * #stateModel TracksManagerSessionMixin
@@ -29,6 +31,24 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
       get tracks(): AnyConfigurationModel[] {
         return self.jbrowse.tracks
       },
+    }))
+    .volatile(() => ({
+      // Stable trackId → config map, reconciled in place from getTracksById()
+      // (see the reconcile autorun). Held as one persistent ObservableMap rather
+      // than rebuilt per change so a config edit only notifies the *edited*
+      // track's entry: unchanged tracks keep their identity, so re-`set`ting
+      // them is a no-op. Every display resolves its config through
+      // TrackConfigurationReference, which reads `tracksById.get(id)` on every
+      // access — a wholesale-recomputed map made each such read depend on every
+      // track, so one track's edit re-rendered all of them.
+      //
+      // `deep: false` stores each config by reference: the default deep enhancer
+      // would wrap every plain frozen config in a fresh observable, breaking the
+      // identity the hydration cache keys on (and re-`set`ting an unchanged entry
+      // would then always notify).
+      tracksByIdMap: observable.map<string, AnyConfigurationModel>(undefined, {
+        deep: false,
+      }),
     }))
     .views(self => ({
       /**
@@ -80,11 +100,57 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
-       * MobX-cached map of trackId → config for all tracks, assemblies, and
-       * connections. Recomputes only when dependencies change.
+       * Stable, per-entry-observable map of trackId → config for all tracks,
+       * assemblies, and connections. Reading `.get(id)` subscribes only to that
+       * entry, so editing one track no longer invalidates every consumer (see
+       * `tracksByIdMap`). Kept current by the reconcile autorun below.
        */
-      get tracksById(): Record<string, AnyConfigurationModel> {
-        return self.getTracksById()
+      get tracksById(): ObservableMap<string, AnyConfigurationModel> {
+        return self.tracksByIdMap
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Reconcile `tracksByIdMap` to the given trackId → config snapshot: set
+       * new/changed entries, drop removed ones. Mutation only — the tracked read
+       * of `getTracksById()` happens in the driving autorun, NOT here, because a
+       * MobX action untracks its reads (so reading the sources here would leave
+       * the autorun with no dependencies and it would never re-fire). `set` on an
+       * unchanged (identity-equal) entry doesn't notify, so only genuinely-changed
+       * tracks wake their observers.
+       */
+      applyTracksById(desired: Record<string, AnyConfigurationModel>) {
+        const map = self.tracksByIdMap
+        // collect stale keys in a read-only pass, then delete — mutating the map
+        // mid-iteration over its own keys would be unsafe
+        const stale: string[] = []
+        for (const key of map.keys()) {
+          if (!(key in desired)) {
+            stale.push(key)
+          }
+        }
+        for (const key of stale) {
+          map.delete(key)
+        }
+        for (const [key, value] of Object.entries(desired)) {
+          map.set(key, value)
+        }
+      },
+    }))
+    .actions(self => ({
+      // afterAttach, not afterCreate: getTracksById reads `self.jbrowse`
+      // (= getParent(self).jbrowse), which throws while the session is still a
+      // detached root during creation. By attach time the session is under the
+      // root, so getParent resolves. The read stays in the autorun (not the
+      // action) so its observables are tracked and the map stays current.
+      afterAttach() {
+        addDisposer(
+          self,
+          autorun(() => {
+            self.applyTracksById(self.getTracksById())
+          }),
+        )
       },
     }))
     .actions(self => ({

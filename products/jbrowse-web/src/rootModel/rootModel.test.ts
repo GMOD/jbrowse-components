@@ -128,8 +128,8 @@ describe('tracksById hydration', () => {
 
   test('returns the same MST instance across reads', () => {
     const session = makeRoot().session!
-    const first = session.tracksById.frozenTrack1
-    const second = session.tracksById.frozenTrack1
+    const first = session.tracksById.get('frozenTrack1')
+    const second = session.tracksById.get('frozenTrack1')
     expect(first).toBe(second)
     expect(readConfObject(first, 'name')).toBe('first')
   })
@@ -137,13 +137,13 @@ describe('tracksById hydration', () => {
   test('yields a new instance after updateTrackConf replaces the frozen entry', () => {
     const root = makeRoot()
     const session = root.session!
-    const before = session.tracksById.frozenTrack1
+    const before = session.tracksById.get('frozenTrack1')
     root.jbrowse.updateTrackConf({
       type: 'FeatureTrack',
       trackId: 'frozenTrack1',
       name: 'renamed',
     })
-    const after = session.tracksById.frozenTrack1
+    const after = session.tracksById.get('frozenTrack1')
     expect(after).not.toBe(before)
     expect(readConfObject(after, 'name')).toBe('renamed')
   })
@@ -151,13 +151,13 @@ describe('tracksById hydration', () => {
   test('unchanged entries keep identity when a sibling is edited', () => {
     const root = makeRoot()
     const session = root.session!
-    const track2Before = session.tracksById.frozenTrack2
+    const track2Before = session.tracksById.get('frozenTrack2')
     root.jbrowse.updateTrackConf({
       type: 'FeatureTrack',
       trackId: 'frozenTrack1',
       name: 'renamed',
     })
-    const track2After = session.tracksById.frozenTrack2
+    const track2After = session.tracksById.get('frozenTrack2')
     expect(track2After).toBe(track2Before)
   })
 })
@@ -251,7 +251,7 @@ describe('connection track persistence', () => {
     root2.setSession(snap)
     const session2 = root2.session!
     expect(session2.connectionInstances.length).toBe(0)
-    const resolved = session2.tracksById.connTrack1
+    const resolved = session2.tracksById.get('connTrack1')
     expect(readConfObject(resolved, 'name')).toBe('Conn Track 1')
   })
 

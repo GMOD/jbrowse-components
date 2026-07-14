@@ -99,7 +99,7 @@ function createDisplay(displayConfig: Record<string, unknown> = {}) {
         return { test_track: trackConfig }
       },
       get tracksById() {
-        return this.getTracksById()
+        return new Map(Object.entries(this.getTracksById()))
       },
       getDisplayTypeDefault(displayType: string, slot: string): unknown {
         return self.displayTypeDefaults[displayType]?.[slot]

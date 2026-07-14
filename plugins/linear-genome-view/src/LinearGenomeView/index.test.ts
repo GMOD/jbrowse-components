@@ -159,7 +159,7 @@ function initialize() {
         return {}
       },
       get tracksById() {
-        return this.getTracksById()
+        return new Map(Object.entries(this.getTracksById()))
       },
     }))
     .actions(self => ({
@@ -1569,7 +1569,7 @@ describe('TrackInit with display configuration', () => {
           return trackConfigs
         },
         get tracksById() {
-          return this.getTracksById()
+          return new Map(Object.entries(this.getTracksById()))
         },
       }))
       .actions(self => ({

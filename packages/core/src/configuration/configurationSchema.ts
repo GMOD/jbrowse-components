@@ -340,7 +340,15 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     get(id, parent) {
       const session = getSession(parent)
       let ret: unknown =
-        session.tracksById[id] ??
+        // `tracksById` is a fine-grained map reconciled by a reaction, so it's
+        // stale while a mutation's own action is still on the stack — most
+        // importantly during session hydration, when every reference resolves
+        // inside the creation action before the reaction can fire. Fall back to
+        // `getTracksById()` (always fresh, but a coarse dependency) on a miss:
+        // steady-state reads hit the map and stay fine-grained; only these
+        // transient-window / hydration misses pay the coarse read.
+        session.tracksById.get(String(id)) ??
+        session.getTracksById()[String(id)] ??
         // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
         // generic can't narrow. Tree-wide MST identifier lookup; see the
         // function-level JSDoc for why this fallback is required.

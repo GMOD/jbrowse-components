@@ -539,7 +539,7 @@ export function showTrackGeneric(
   // snackbars. Config is validated before the push so the open set never holds
   // a broken track.
   try {
-    const rawConf = inlineConf ?? session.tracksById[trackId]
+    const rawConf = inlineConf ?? session.tracksById.get(trackId)
     if (!rawConf) {
       throw new Error(`Could not resolve identifier "${trackId}"`)
     }

@@ -548,6 +548,9 @@ describe('ConfigurationReference', () => {
       })
       .views(self => ({
         get tracksById() {
+          return new Map(self._tracks.map(t => [t.trackId, t]))
+        },
+        getTracksById() {
           return Object.fromEntries(self._tracks.map(t => [t.trackId, t]))
         },
       }))
@@ -615,7 +618,7 @@ describe('ConfigurationReference', () => {
         },
         { pluginManager },
       )
-      expect(session.tracksById['view-local']).toBeUndefined()
+      expect(session.tracksById.get('view-local')).toBeUndefined()
       expect(readConfObject(session.holder.ref, 'name')).toBe('ephemeral')
     })
 
@@ -631,7 +634,7 @@ describe('ConfigurationReference', () => {
         },
         { pluginManager },
       )
-      expect(session.tracksById.inline1).toBeUndefined()
+      expect(session.tracksById.get('inline1')).toBeUndefined()
       expect(readConfObject(session.holder.ref, 'name')).toBe('inline-name')
       expect(getSnapshot(session.holder)).toEqual({
         ref: { trackId: 'inline1', name: 'inline-name' },
@@ -660,6 +663,9 @@ describe('ConfigurationReference', () => {
         })
         .views(self => ({
           get tracksById() {
+            return new Map(self._tracks.map(t => [t.trackId, t]))
+          },
+          getTracksById() {
             return Object.fromEntries(self._tracks.map(t => [t.trackId, t]))
           },
         }))
@@ -677,7 +683,7 @@ describe('ConfigurationReference', () => {
         { _tracks: [{ trackId: 'f1', name: 'frozen' }], holder: { ref: 'f1' } },
         { pluginManager },
       )
-      expect(isStateTreeNode(session.tracksById.f1)).toBe(false)
+      expect(isStateTreeNode(session.tracksById.get('f1'))).toBe(false)
     })
 
     test('resolves and hydrates a frozen plain object to an MST node', () => {

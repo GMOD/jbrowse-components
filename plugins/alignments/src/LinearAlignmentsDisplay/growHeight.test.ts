@@ -100,7 +100,7 @@ function createEnv() {
         return { test_track: trackConfig }
       },
       get tracksById() {
-        return this.getTracksById()
+        return new Map(Object.entries(this.getTracksById()))
       },
     }))
     .actions(self => ({

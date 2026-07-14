@@ -40,7 +40,7 @@ async function setupView(trackIds: string[]) {
 test('session.tracksById does not eagerly hydrate frozen tracks', () => {
   const { rootModel } = getPluginManager()
   const session = rootModel.session!
-  const conf = session.tracksById.volvox_gc
+  const conf = session.tracksById.get('volvox_gc')
   expect(isStateTreeNode(conf)).toBe(false)
   expect(conf?.trackId).toBe('volvox_gc')
 })
@@ -158,4 +158,40 @@ test('unrelated tracks keep identity across edits to a sibling', async () => {
   const svAfter = sv!.configuration
   expect(svAfter).toBe(svBefore)
   expect(readConfObject(gc!.configuration, 'name')).toBe('GCContent v3')
+}, 40000)
+
+// Regression: editing one track must not re-render sibling tracks. Every
+// display resolves its config through TrackConfigurationReference, which reads
+// session.tracksById; when that was a wholesale-recomputed object, one track's
+// edit invalidated every consumer. tracksById is now a per-entry-observable map
+// so an autorun reading only a sibling's config does not re-fire.
+test('editing one track does not re-fire an autorun reading only a sibling', async () => {
+  const { rootModel, view } = await setupView(['volvox_gc', 'volvox_sv_test'])
+  const sv = view.tracks.find(
+    t => t.configuration.trackId === 'volvox_sv_test',
+  )!
+
+  let reads = 0
+  const dispose = autorun(() => {
+    readConfObject(sv.configuration, 'name')
+    reads++
+  })
+  const initial = reads
+
+  rootModel.jbrowse.updateTrackConf({
+    type: 'GCContentTrack',
+    trackId: 'volvox_gc',
+    assemblyNames: ['volvox'],
+    name: 'GCContent v4',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: {
+        uri: 'volvox.2bit',
+        locationType: 'UriLocation',
+      },
+    },
+  })
+
+  expect(reads).toBe(initial)
+  dispose()
 }, 40000)
