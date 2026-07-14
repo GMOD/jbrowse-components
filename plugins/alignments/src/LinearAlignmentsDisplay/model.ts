@@ -1827,6 +1827,13 @@ export default function stateModelFactory(
          * instead. 0 when there's nothing to fit (no data / no room), signalling
          * "leave the configured height as-is".
          *
+         * Also clamped down to the pitch `configuredFeatureHeight` renders at in
+         * fixed mode — a handful of reads in a tall display would otherwise
+         * stretch to fill it, e.g. one read blown up to 100px. Fit should only
+         * ever squeeze reads smaller than normal, never grow them past it; once
+         * there's more room than reads need, the extra space is left blank
+         * (`laidOutByGroup` already scrolls/pads for the shortfall).
+         *
          * Reads the `fitTargetHeight` slot, NOT the reactive `height` getter — the
          * same anti-cycle rule `laidOutByGroup` follows. Fit mode only, where the
          * two are equal, but the slot can never chain back through
@@ -1846,8 +1853,11 @@ export default function stateModelFactory(
           const pileupSpace =
             self.fitTargetHeight -
             self.groupOrder.length * self.coverageDisplayHeight
+          const configuredHeight = self.configuredFeatureHeight
+          const maxPitch =
+            configuredHeight + (configuredHeight > 3 ? 1 : 0)
           return rows > 0 && pileupSpace > 0
-            ? Math.max(1, pileupSpace / rows)
+            ? Math.min(maxPitch, Math.max(1, pileupSpace / rows))
             : 0
         },
 
