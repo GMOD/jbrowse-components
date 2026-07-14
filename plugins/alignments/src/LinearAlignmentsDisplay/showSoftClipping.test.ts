@@ -584,7 +584,7 @@ describe('alignments fit-to-display-height session default', () => {
     expect(display.fitHeightToDisplay).toBe(true)
   })
 
-  it('picking a size leaves the mode alone (size and mode are independent)', () => {
+  it('picking a size exits fit to fixed, even over a promoted fit default', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -594,18 +594,19 @@ describe('alignments fit-to-display-height session default', () => {
     expect(display.fitHeightToDisplay).toBe(true)
 
     display.setFeatureHeight(3)
-    // still fit — the size is a separate axis, set underneath for when fit is left
-    expect(display.fitHeightToDisplay).toBe(true)
+    // fit derives the size, so a chosen size drops back to fixed and takes effect
+    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.heightMode).toBe('fixed')
     expect(display.configuredFeatureHeight).toBe(3)
   })
 
-  it('setFeatureHeight sets the size without leaving fit mode', () => {
+  it('setFeatureHeight exits fit mode', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
     expect(display.fitHeightToDisplay).toBe(true)
 
     display.setFeatureHeight(20)
-    expect(display.fitHeightToDisplay).toBe(true)
+    expect(display.fitHeightToDisplay).toBe(false)
     expect(display.configuredFeatureHeight).toBe(20)
   })
 

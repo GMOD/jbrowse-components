@@ -2406,12 +2406,16 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Set the per-read pixel size only — the track-sizing mode
-           * (fixed/grow/fit) is an independent axis, changed via setHeightMode.
-           * Picking a size in grow keeps growing at the new size; in fit the
-           * size is dormant until the mode leaves fit.
+           * Set the per-read pixel size. The track-sizing mode is a mostly
+           * independent axis (changed via setHeightMode): grow keeps growing at
+           * the new size. Fit is the exception — it derives the size, so a chosen
+           * size would be dormant; picking one drops back to fixed so the pick
+           * takes effect.
            */
           setFeatureHeight(height?: number) {
+            if (self.fitHeightToDisplay) {
+              self.configuration.setSlot('heightMode', 'fixed')
+            }
             self.configuration.setSlot('featureHeight', height)
             self.scrollTop = 0
           },

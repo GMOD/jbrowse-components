@@ -49,6 +49,9 @@ export function getFeatureHeightMenuItem(
   opts?: { disabled?: boolean; disabledHelpText?: string },
 ) {
   const mode = model.heightMode
+  // fit derives the size, so no size reads as selected while fitting; picking one
+  // drops back to fixed (setFeatureHeight) and then lights up.
+  const sizeActive = mode !== 'fit'
   const height = model.configuredFeatureHeight
   const matchesPreset = (preset: { featureHeight: number }) =>
     height === preset.featureHeight
@@ -59,14 +62,13 @@ export function getFeatureHeightMenuItem(
     disabled: opts?.disabled,
     disabledHelpText: opts?.disabledHelpText,
     subMenu: [
-      // Size presets: each writes only its exact height, leaving the mode alone;
-      // the pin promotes that height as the session default. Reflects the
-      // configured size in every mode (in fit it's the size used once fit is
-      // left). keepMenuOpen so size + mode can be set in one open menu.
+      // Size presets: each writes its exact height (preserving grow, dropping fit
+      // back to fixed); the pin promotes that height as the session default.
+      // keepMenuOpen so size + mode can be set in one open menu.
       ...Object.values(COMPACTNESS_PRESETS).map(preset =>
         promotableRadioItem({
           label: preset.label,
-          checked: matchesPreset(preset),
+          checked: sizeActive && matchesPreset(preset),
           keepMenuOpen: true,
           onClick: () => {
             model.setFeatureHeight(preset.featureHeight)
@@ -83,7 +85,8 @@ export function getFeatureHeightMenuItem(
       {
         label: 'Custom...',
         type: 'radio' as const,
-        checked: !Object.values(COMPACTNESS_PRESETS).some(matchesPreset),
+        checked:
+          sizeActive && !Object.values(COMPACTNESS_PRESETS).some(matchesPreset),
         onClick: () => {
           getSession(model).queueDialog(handleClose => [
             SetFeatureHeightDialog,
