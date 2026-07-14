@@ -817,15 +817,17 @@ export const jbrowseImgSpecs: CliSpec[] = [
   // to a line, the CDS exon begins as a solid block, and that block edge lines up
   // with a specific reference base and the translation frame (docs "Gene tracks
   // and the reference sequence"). showOnlyGenes keeps the RefSeq rows to gene
-  // features; the taller track leaves each isoform legible. Supersedes the old
-  // standalone `sequence` refseq spec.
+  // features; geneGlyphMode:longestCoding collapses TP53's isoform thicket to
+  // its single longest coding transcript, so one clean structure reads instead
+  // of a stack of near-identical rows. Supersedes the old standalone `sequence`
+  // refseq spec.
   cliSpec('gene_track', [
     '--hub',
     'hg38',
     '--track',
     'hg38-ncbiRefSeqCurated',
-    'height:150',
-    '{"showOnlyGenes":true}',
+    'height:60',
+    '{"showOnlyGenes":true,"geneGlyphMode":"longestCoding"}',
     '--refseq',
     '--loc',
     'chr17:7,675,018-7,675,098',

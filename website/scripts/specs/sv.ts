@@ -480,7 +480,11 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 640,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
-              showLegend: true,
+              // the auto pairOrientation legend labels uncolored reads "No
+              // strand", which is wrong here — grey reads are simply not
+              // split-aligned. The text callouts below carry the correct
+              // reading, so the misleading legend stays off.
+              showLegend: false,
             },
           ],
         },
@@ -490,21 +494,23 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 800,
     settleMs: 40000,
+    // ordered top-to-bottom to match the layout: arcs sit above the pileup, the
+    // colored split reads below, so each callout reads next to what it describes
     annotations: [
       {
-        // red->blue->red inversion reads
+        // arcs band (above the pileup)
         type: 'text',
         x: 60,
-        y: 300,
-        text: 'Red flanks (forward) around a blue core (reverse strand).',
+        y: 380,
+        text: 'Magenta arcs link split-read breakpoints.',
         maxWidth: 470,
       },
       {
-        // arcs, stacked below with a gap
+        // the split-aligned reads themselves, lower in the pileup
         type: 'text',
         x: 60,
-        y: 470,
-        text: 'Magenta arcs link split-read breakpoints.',
+        y: 520,
+        text: 'Split-aligned reads: red flanks (forward) around a blue core (reverse strand). Grey reads are not split-aligned.',
         maxWidth: 470,
       },
     ],
@@ -551,7 +557,11 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 560,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
-              showLegend: true,
+              // the auto pairOrientation legend has no entry for the key signal
+              // (a read that flips red→blue across the breakpoint) and mislabels
+              // the grey non-split reads "No strand"; the callout below carries
+              // the correct reading, so the legend stays off
+              showLegend: false,
               // lift the force-load byte gate so the reads auto-load headless
               userByteSizeLimit: 200_000_000,
             },
@@ -563,6 +573,15 @@ export const svSpecs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportHeight: 780,
     settleMs: 40000,
+    annotations: [
+      {
+        type: 'text',
+        x: 70,
+        y: 430,
+        text: 'Each inversion-spanning read flips forward (red) → reverse (blue) at the breakpoint. Grey reads cross the region without a strand flip.',
+        maxWidth: 400,
+      },
+    ],
   },
 
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)

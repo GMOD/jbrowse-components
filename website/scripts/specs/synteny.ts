@@ -291,11 +291,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
     settleMs: 1000,
-    viewportHeight: 500,
-    // crop to the left "Quick start" column; the right-hand "Synteny dataset to
-    // display between row 1 and 2" panel is auto-handled by the quick-start path
-    // and only adds noise, so it's cropped out
-    crop: { x: 0, y: 0, width: 720, height: 470 },
+    viewportHeight: 470,
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear synteny view' },
@@ -307,6 +303,26 @@ export const syntenySpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 1000 },
     ],
     stages: [
+      // Stage 1: the freshly-opened import form, dropdown closed. One plain
+      // callout points at the "Quick start" track picker.
+      {
+        annotations: [
+          {
+            type: 'text',
+            text: 'Start here: pick your all-vs-all synteny track',
+            x: 760,
+            y: 150,
+            maxWidth: 320,
+          },
+          {
+            type: 'arrow',
+            from: { x: 750, y: 165 },
+            anchor: { text: 'Select a synteny track to auto-fill assemblies' },
+          },
+        ],
+      },
+      // Stage 2: after the track is picked, every assembly it spans auto-fills
+      // as a row; the arrow points at Launch.
       {
         actions: [
           {
@@ -315,46 +331,23 @@ export const syntenySpecs: ScreenshotSpec[] = [
           },
           { type: 'waitForSelector', selector: 'li[data-value="ecoli_ava"]' },
           { type: 'delay', ms: 500 },
-        ],
-        annotations: [
-          {
-            type: 'circle',
-            text: '1',
-            anchor: { text: 'Quick start from a synteny track' },
-            dx: -45,
-          },
-          { type: 'box', anchor: { selector: 'li[data-value="ecoli_ava"]' } },
-          {
-            type: 'text',
-            text: 'Pick your all-vs-all track',
-            x: 400,
-            y: 130,
-            maxWidth: 300,
-          },
-        ],
-      },
-      {
-        actions: [
           { type: 'click', selector: 'li[data-value="ecoli_ava"]' },
           { type: 'waitForText', text: 'Row 4 assembly' },
           { type: 'delay', ms: 1000 },
         ],
         annotations: [
           {
-            type: 'circle',
-            text: '2',
-            anchor: { text: 'Select assemblies for linear synteny view' },
-            dx: -45,
+            type: 'text',
+            text: 'Every assembly in the track becomes a row, then Launch',
+            x: 760,
+            y: 250,
+            maxWidth: 340,
           },
           {
-            type: 'text',
-            text: 'Every assembly becomes a row, then Launch',
-            x: 400,
-            y: 200,
-            maxWidth: 300,
+            type: 'arrow',
+            from: { x: 760, y: 300 },
+            anchor: { text: 'Launch' },
           },
-          { type: 'circle', text: '3', anchor: { text: 'Launch' }, dx: 58 },
-          { type: 'box', anchor: { text: 'Launch' } },
         ],
       },
     ],

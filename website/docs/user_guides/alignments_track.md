@@ -67,16 +67,17 @@ If a BAM/CRAM carries MM/ML modification calls (common in nanopore and PacBio
 data), **Color by → Modifications (MM/ML tag)** paints them. It offers two
 modes:
 
-- Type draws a mark _only_ where the MM tag reports a modified base, each type in
-  its own color, so an unmethylated region looks empty. Use **Advanced settings…**
-  to raise the probability threshold or restrict to a single type such as 5mC.
-- Probability (red / blue) colors each position by its modification
-  probability — methylated red, unmethylated blue. For methylation (cytosine)
-  data it fills every CpG in context, including the ones the basecaller left
-  implicit (drawn blue). Those blue positions aren't in the MM tag; JBrowse
-  infers them from the reference CpG context. That's why a hypomethylated island
-  fills with solid blue here but looks nearly empty in the by-type mode. The
-  cytosine context (CpG/CHG/CHH) also lives under **Advanced settings…**.
+- Type draws a mark _only_ where the MM tag reports a modified base, each type
+  in its own color, so an unmethylated region looks empty. Use **Advanced
+  settings…** to raise the probability threshold or restrict to a single type
+  such as 5mC.
+- Probability (red / blue) colors each position by its modification probability
+  — methylated red, unmethylated blue. For methylation (cytosine) data it fills
+  every CpG in context, including the ones the basecaller left implicit (drawn
+  blue). Those blue positions aren't in the MM tag; JBrowse infers them from the
+  reference CpG context. That's why a hypomethylated island fills with solid
+  blue here but looks nearly empty in the by-type mode. The cytosine context
+  (CpG/CHG/CHH) also lives under **Advanced settings…**.
 
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.

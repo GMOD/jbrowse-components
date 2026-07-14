@@ -86,6 +86,17 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // Drawn below the coverage band (readConnectionsDown) so the cloud doesn't
   // overlap the coverage histogram. Read arcs in an SV context are shown by the
   // multi-sv-trio spec.
+  //
+  // The two contigs carry different synthetic SV signatures (verified via
+  // `samtools view -T volvox.fa volvox-sv.cram <ctg>`):
+  //   ctgA — a normal FR band (~450 bp insert) plus a cluster of long-insert
+  //     (~32 kb TLEN) deletion pairs and short-insert pairs, so its cloud spreads
+  //     from the y=0 baseline up to the deletion signal — the rich samplot story.
+  //   ctgB — ALL pairs are RL/outward-facing (mates point outward, the teal
+  //     "RL" class) at a narrow 300-550 bp insert, an inversion-style signature.
+  //     There are zero normal small-insert pairs, so the ctgB cloud is one flat
+  //     RL band with nothing at the y=0 baseline — that empty baseline is the
+  //     data, not a layout gap (the pileup below still fills from row 0).
   {
     mode: 'url',
     name: 'alignments/read_cloud',
@@ -820,10 +831,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         selector:
           '[data-testid="track_menu_icon"][data-trackid="COLO829_tumor.ht"]',
       },
-      ...menuCascade(
-        ['Color by...', 'Modifications (MM/ML tag)', 'Type'],
-        800,
-      ),
+      ...menuCascade(['Color by...', 'Modifications (MM/ML tag)', 'Type'], 800),
     ],
     annotations: cascadeBoxes([
       'Color by...',

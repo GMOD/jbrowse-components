@@ -199,6 +199,9 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hpylori_26695',
           loc: 'NC_018939.1',
+          // interactive chip on each highlight band uses the link icon (chips are
+          // opt-in; default off draws a bare band)
+          showHighlightChips: true,
           // Faint vertical guides at the two replication landmarks the origin
           // track names above, so the eye connects each marker to the GC-skew
           // sign transition far below it (labels live on the feature track, not

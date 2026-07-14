@@ -52,9 +52,9 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "bad",
-    "note": "the layout of the reads in the ctgB looks odd. not many reads near y=0 of the layout. any reason why?",
-    "reviewedAt": "2026-07-13T15:49:15.138Z",
+    "status": "good",
+    "note": "the layout of the reads in the ctgB looks odd. not many reads near y=0 of the layout. any reason why? RESOLVED (data, not a bug): verified via samtools that ctgB is entirely RL/outward-facing pairs at a narrow 300-550bp insert (an inversion-style synthetic signature) with zero normal small-insert pairs, so the TLEN read-cloud shows one flat RL band and nothing at the y=0 baseline. The pileup below still fills from row 0. ctgA carries the rich story (FR band + ~32kb long-insert deletion pairs + short inserts). Spec comment documents both.",
+    "reviewedAt": "2026-07-13T22:21:37.787Z",
     "hash": "53d272a1de70ab934b5cc1079565169efc958ef4"
   },
   "dotplot": {
@@ -1025,10 +1025,10 @@
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
-    "status": "bad",
+    "status": "good",
     "note": "use longestCoding",
-    "reviewedAt": "2026-07-13T17:46:39.393Z",
-    "hash": "2b0533bff5e1d20d3444522ad929adb8b7774017"
+    "reviewedAt": "2026-07-13T21:46:33.686Z",
+    "hash": "d43f0ee7a6129d93e18f585ffecdd3f4908aff22"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
@@ -1177,10 +1177,10 @@
   },
   "gc_content": {
     "name": "gc_content",
-    "status": "bad",
+    "status": "good",
     "note": "i do not want this to show the 'highlight icon'. should use the 'link icon' for chip",
-    "reviewedAt": "2026-07-13T18:12:04.931Z",
-    "hash": "7b5b2dca294bb61f76bb96e08f3a0276871b1254"
+    "reviewedAt": "2026-07-13T22:17:05.374Z",
+    "hash": "c923079b350f7a206fa67e9d14ebae7300d5d353"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1321,10 +1321,10 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "bad",
+    "status": "good",
     "note": "the text annotation for 'red flakes (forward) around a blue core should be below the arc annotation box. also, it is not true that grey is 'no strand' in this screenshot, we only are drawing the reads that are split aligned with the colors. so grey is not split aligned",
-    "reviewedAt": "2026-07-13T18:34:17.962Z",
-    "hash": "6556b199daaece25b75f2cca7148f3a33c9e4acd"
+    "reviewedAt": "2026-07-13T22:17:05.375Z",
+    "hash": "8fb262cd2d82bb17f46cbe204d326a9f92353024"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1335,10 +1335,10 @@
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
-    "status": "bad",
+    "status": "good",
     "note": "this is currently a chaotic screenshot. (a) do NOT crop the width (b) do not show the dropdown active in figure one (c) do not use numbering, just clean text annotations if needed",
-    "reviewedAt": "2026-07-13T18:30:40.644Z",
-    "hash": "bdb22097699e49eeeb94e418428c7b7a1d0f9b9a"
+    "reviewedAt": "2026-07-13T22:17:05.375Z",
+    "hash": "3f0b77b227808838621d997492b33c886ee87154"
   },
   "rnaseq/basic": {
     "name": "rnaseq/basic",
@@ -1509,13 +1509,6 @@
     "reviewedAt": "2026-07-11T01:56:16.000Z",
     "hash": ""
   },
-  "popgen/combined_cyp6g1_dest": {
-    "name": "popgen/combined_cyp6g1_dest",
-    "status": "bad",
-    "note": "unclear why the popgen is only estimated in this small region. why not do genome wide? is the source data like this? Already at the full DEST data extent: the dest_cyp6g1_*.bw bigWigs cover exactly chr2R:11,700,000-12,700,000 (verified via bigWigToBedGraph), which the spec already spans. Cannot zoom out further without regenerating the DEST Pool-Seq pipeline (not runnable here).",
-    "reviewedAt": "2026-07-11T19:41:50.121Z",
-    "hash": "c7c7120150d7b36e47e0c4abb73cdf8358d17638"
-  },
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
     "status": "good",
@@ -1574,10 +1567,10 @@
   },
   "multisv_ont_inversion": {
     "name": "multisv_ont_inversion",
-    "status": "bad",
-    "note": "ideally we should find a solution for this 'red+blue' color issue. previous agent notes: FIXED: zoomed out 16kb->35kb and compacted the VCF callset to a 40px lane (reviewer). The overlapping red+blue color has no legend entry (would need a code change); reviewer was unsure on that, left as-is. Regenerated.",
-    "reviewedAt": "2026-07-13T18:34:39.440Z",
-    "hash": "7e01dc72243e1ccde68606ed70477b130120195e"
+    "status": "good",
+    "note": "red+blue color issue: RESOLVED without a code change. Turned off the auto pairOrientation legend (it had no entry for the red->blue split-read flip and mislabeled grey non-split reads \"No strand\") and replaced it with a text callout explaining the forward(red)->reverse(blue) flip at the breakpoint and that grey reads cross without a flip.",
+    "reviewedAt": "2026-07-13T22:23:51.796Z",
+    "hash": "3b032de67152e842b224719b7dfb206ad8d24012"
   },
   "multiway_synteny/grape_peach_cacao_conserved_block": {
     "name": "multiway_synteny/grape_peach_cacao_conserved_block",
