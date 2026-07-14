@@ -65,6 +65,7 @@ import {
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
+  COMPACTNESS_PRESETS,
   getColorByMenuItem,
   getContextMenuItems,
   getCoverageMenuItem,
@@ -1827,12 +1828,15 @@ export default function stateModelFactory(
          * instead. 0 when there's nothing to fit (no data / no room), signalling
          * "leave the configured height as-is".
          *
-         * Also clamped down to the pitch `configuredFeatureHeight` renders at in
-         * fixed mode — a handful of reads in a tall display would otherwise
-         * stretch to fill it, e.g. one read blown up to 100px. Fit should only
-         * ever squeeze reads smaller than normal, never grow them past it; once
-         * there's more room than reads need, the extra space is left blank
-         * (`laidOutByGroup` already scrolls/pads for the shortfall).
+         * Also clamped down to the NORMAL read pitch — not the currently
+         * configured height — because fit OVERRIDES the compactness preset: a
+         * handful of reads in a tall display would otherwise stretch to fill it,
+         * e.g. one read blown up to 100px. Capping at the configured height would
+         * instead let a Compact/Super-compact selection clamp the fit expansion
+         * (compact overriding fit), so a fit under Compact could never grow past
+         * 3px. Fit should only ever squeeze reads smaller than normal, never grow
+         * them past it; once there's more room than reads need, the extra space is
+         * left blank (`laidOutByGroup` already scrolls/pads for the shortfall).
          *
          * Reads the `fitTargetHeight` slot, NOT the reactive `height` getter — the
          * same anti-cycle rule `laidOutByGroup` follows. Fit mode only, where the
@@ -1853,9 +1857,13 @@ export default function stateModelFactory(
           const pileupSpace =
             self.fitTargetHeight -
             self.groupOrder.length * self.coverageDisplayHeight
-          const configuredHeight = self.configuredFeatureHeight
-          const maxPitch =
-            configuredHeight + (configuredHeight > 3 ? 1 : 0)
+          // Cap at the pitch a NORMAL read renders at (body + its 1px spacing),
+          // never the configured Compact/Super-compact size: choosing "fit"
+          // overrides the compactness preset, so a small configured height must
+          // not clamp the fit — otherwise Compact would override fit instead of
+          // the reverse. The cap only stops a handful of reads ballooning past
+          // normal in a tall display; below normal, fit squeezes freely.
+          const maxPitch = COMPACTNESS_PRESETS.normal.featureHeight + 1
           return rows > 0 && pileupSpace > 0
             ? Math.min(maxPitch, Math.max(1, pileupSpace / rows))
             : 0
