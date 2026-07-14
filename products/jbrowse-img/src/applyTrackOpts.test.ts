@@ -61,11 +61,12 @@ describe('alignments modifiers', () => {
     expect(buildDisplaySnapshot('alignments', []).force).toBe(false)
   })
 
-  test('featureHeight preset maps to per-read height/spacing', () => {
+  test('featureHeight preset maps to per-read height (spacing is derived)', () => {
     const { snap } = buildDisplaySnapshot('alignments', [
       'featureHeight:super-compact',
     ])
-    expect(snap).toMatchObject({ featureHeight: 1, featureSpacing: 0 })
+    expect(snap).toMatchObject({ featureHeight: 1 })
+    expect(snap).not.toHaveProperty('featureSpacing')
   })
 
   test('featureHeight numeric sets featureHeight', () => {

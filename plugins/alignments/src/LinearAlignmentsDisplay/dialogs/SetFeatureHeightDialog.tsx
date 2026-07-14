@@ -7,9 +7,7 @@ import { observer } from 'mobx-react'
 const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   model: {
     setFeatureHeight: (arg?: number) => void
-    setFeatureSpacing: (arg?: number) => void
     configuredFeatureHeight: number
-    configuredFeatureSpacing: number
   }
   handleClose: () => void
 }) {
@@ -20,10 +18,7 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
   const [height, setHeight] = useState<number | undefined>(
     model.configuredFeatureHeight,
   )
-  const [spacing, setSpacing] = useState<number | undefined>(
-    model.configuredFeatureSpacing,
-  )
-  const ok = height !== undefined && spacing !== undefined
+  const ok = height !== undefined
 
   return (
     <SubmitDialog
@@ -33,26 +28,19 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
       onCancel={handleClose}
       onSubmit={() => {
         model.setFeatureHeight(height)
-        model.setFeatureSpacing(spacing)
         handleClose()
       }}
     >
       <Typography>
-        Adjust the feature height and the spacing between features. Setting
-        feature height to 1 and spacing to 0 makes the display very compact.
+        Adjust the feature height. The spacing between reads is derived from it
+        — a 1px gap once reads are tall enough, otherwise flush. Setting the
+        height to 1 makes the display very compact.
       </Typography>
       <NumberTextField
         defaultValue={model.configuredFeatureHeight}
         onValueChange={setHeight}
         label="Feature height (px)"
         autoFocus
-        min={0}
-        errorText="Must be a non-negative number"
-      />
-      <NumberTextField
-        defaultValue={model.configuredFeatureSpacing}
-        onValueChange={setSpacing}
-        label="Feature spacing (px)"
         min={0}
         errorText="Must be a non-negative number"
       />

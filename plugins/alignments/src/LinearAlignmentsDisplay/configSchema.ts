@@ -75,9 +75,13 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      // The single "compactness" axis. Spacing between reads is derived from
+      // this (`featureSpacing` getter: height > 3 ? 1 : 0), not stored — the
+      // presets (7/3/1) and the fit-mode squeeze all key off this one value.
       featureHeight: {
         type: 'maybeNumber',
-        description: 'Height of each feature (read) in pixels',
+        description:
+          'Height of each feature (read) in pixels. Unset (the default) follows the session-wide default for this display type, falling back to 7; an explicit number customizes the track (including customizing 7 back over a compact session default)',
         // Sentinel promotable slot (like heightMode): `undefined` is the inherit
         // state, `promotedBase` (7) is what it resolves to when nothing is
         // promoted. A plain `number` slot would spend its default value (7 =
@@ -91,22 +95,11 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
-      featureSpacing: {
-        type: 'maybeNumber',
-        description: 'Spacing between features in pixels',
-        // Sentinel promotable slot; see featureHeight above (promotedBase = 1).
-        defaultValue: undefined,
-        promotedBase: 1,
-        promotable: true,
-      },
-      /**
-       * #slot
-       */
       heightMode: {
         type: 'stringEnum',
         model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
         description:
-          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight`/`featureSpacing` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`/`featureSpacing`',
+          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `inherit` (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
         // `inherit` is the CSS-style sentinel default (the inherit state);
         // `promotedBase` ('fixed') is what it resolves to when nothing is
         // promoted. Being a sentinel lets a track customize `fixed` back over a

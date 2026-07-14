@@ -783,14 +783,14 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // featureHeight/featureSpacing are promotable slots: each resolves
+        // featureHeight is the one promotable "compactness" slot: it resolves
         // through getConfResolved (track value, else session-wide default, else
-        // schema default). "Compactness" is just these two slots moved together.
-        // In fit-to-height mode they instead split the autorun-cached fit pitch
-        // (`fittedHeightPx` = pileupSpace/rows) into a read body plus spacing, so
-        // every read-height consumer sees the fitted values without threading a
-        // separate getter. body + spacing === pitch by construction (body is the
-        // pitch minus the spacing), so the fill stays exact regardless of spacing.
+        // schema base 7). featureSpacing is derived from it, never stored. In
+        // fit-to-height mode featureHeight instead splits the autorun-cached fit
+        // pitch (`fittedHeightPx` = pileupSpace/rows) into a read body plus the
+        // derived spacing, so every read-height consumer sees the fitted values
+        // without threading a separate getter. body + spacing === pitch by
+        // construction (body is the pitch minus the spacing).
         get featureHeight(): number {
           return this.isFitting
             ? self.fittedHeightPx - this.featureSpacing
@@ -800,15 +800,16 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // Once the fitted pitch clears 3px there's room to spare a pixel for a
-        // gap between reads (leaving a >2px body); below that reads stay flush so
-        // no pixel is wasted on spacing.
+        // Spacing is a pure function of the read height, not an independent
+        // setting: a 1px gap once there's room for it (pitch/height > 3, leaving
+        // a >2px body), else flush. This one rule drives both the fixed-mode
+        // presets (7->1, 3->0, 1->0) and the fit-mode squeeze, so the two paths
+        // can't disagree.
         get featureSpacing(): number {
-          return this.isFitting
-            ? self.fittedHeightPx > 3
-              ? 1
-              : 0
-            : this.configuredFeatureSpacing
+          const h = this.isFitting
+            ? self.fittedHeightPx
+            : this.configuredFeatureHeight
+          return h > 3 ? 1 : 0
         },
 
         /**
@@ -817,16 +818,10 @@ export default function stateModelFactory(
         // The configured fixed-mode read size, independent of the fit squeeze.
         // Consumers that EDIT the size (the "Set feature height" dialog) must
         // start from the configured value, not the fractional fit pitch that
-        // `featureHeight`/`featureSpacing` resolve to in fit mode — otherwise
-        // opening the dialog while compressed would bake the squeezed height.
+        // `featureHeight` resolves to in fit mode — otherwise opening the dialog
+        // while compressed would bake the squeezed height.
         get configuredFeatureHeight(): number {
           return getConfResolved(self, 'featureHeight')
-        },
-        /**
-         * #getter
-         */
-        get configuredFeatureSpacing(): number {
-          return getConfResolved(self, 'featureSpacing')
         },
 
         /**
@@ -2422,15 +2417,6 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setFeatureSpacing(spacing?: number) {
-            self.configuration.setSlot('heightMode', 'fixed')
-            self.configuration.setSlot('featureSpacing', spacing)
-            self.scrollTop = 0
-          },
-
-          /**
-           * #action
-           */
           setMaxHeight(height?: number) {
             self.configuration.setSlot('maxHeight', height)
             self.scrollTop = 0
@@ -2459,7 +2445,8 @@ export default function stateModelFactory(
           /**
            * #action
            * Cache the fitted read height so the `featureHeight`/`featureSpacing`
-           * getters can resolve to it. Written only by the driving autorun.
+           * getters can split it into a body + derived gap. Written only by the
+           * driving autorun.
            */
           setFittedHeightPx(px: number) {
             self.fittedHeightPx = px

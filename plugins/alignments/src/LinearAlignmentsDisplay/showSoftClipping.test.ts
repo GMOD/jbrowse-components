@@ -297,17 +297,16 @@ describe('alignments showSoftClipping session default', () => {
   })
 })
 
-// Compactness is the featureHeight + featureSpacing + heightMode promotable
-// slots. Each resolves independently through getConfResolved (same rule as
-// showSoftClipping): a slot at its schema default follows the
-// session-wide default; any other value pins it. heightMode='fixed' equals its
-// promotedBase, so it never shows up as a displayTypeDefaultChanges diff. The menu's
-// per-preset pins that promote these values are exercised below.
+// Compactness is the featureHeight + heightMode promotable slots (spacing is
+// derived from height, not stored). Each resolves independently through
+// getConfResolved (same rule as showSoftClipping): a slot at its schema default
+// follows the session-wide default; any other value pins it. heightMode='fixed'
+// equals its promotedBase, so it never shows up as a displayTypeDefaultChanges
+// diff. The menu's per-preset pins that promote these values are exercised below.
 const setCompact = (session: {
   setDisplayTypeDefault: (t: string, s: string, v: unknown) => void
 }) => {
   session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight', 3)
-  session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureSpacing', 0)
   session.setDisplayTypeDefault(
     'LinearAlignmentsDisplay',
     'heightMode',
@@ -326,17 +325,16 @@ describe('alignments compactness session default', () => {
     const { session, display } = createDisplay()
     setCompact(session)
     expect(display.featureHeight).toBe(3)
+    // spacing is derived from the resolved height (3 -> 0)
     expect(display.featureSpacing).toBe(0)
     expect(display.displayTypeDefaultChanges()).toEqual([
       { path: ['featureHeight'], from: 7, to: 3 },
-      { path: ['featureSpacing'], from: 1, to: 0 },
     ])
   })
 
   it('an explicit per-track size wins over the session default', () => {
     const { session, display } = createDisplay({
       featureHeight: 3,
-      featureSpacing: 0,
     })
     session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight', 1)
     // customized regardless of the (super-compact) session default
@@ -401,7 +399,6 @@ describe('alignments compactness session default', () => {
     // promotable slots reported in schema-definition order
     expect(display.displayTypeDefaultChanges()).toEqual([
       { path: ['featureHeight'], from: 7, to: 3 },
-      { path: ['featureSpacing'], from: 1, to: 0 },
       { path: ['showSoftClipping'], from: false, to: true },
     ])
   })
@@ -463,14 +460,11 @@ describe('feature-height menu per-preset pins', () => {
     expect(pinProps(display, 'Normal')?.control.active).toBe(false)
     expect(pinProps(display, 'Super-compact')?.control.active).toBe(false)
     expect(
-      heightModePinProps(display, 'Fit read height to display')?.control
-        .active,
+      heightModePinProps(display, 'Fit read height to display')?.control.active,
     ).toBe(false)
     expect(
-      heightModePinProps(
-        display,
-        'Fixed read height + autogrow track height',
-      )?.control.active,
+      heightModePinProps(display, 'Fixed read height + autogrow track height')
+        ?.control.active,
     ).toBe(false)
   })
 
@@ -480,19 +474,13 @@ describe('feature-height menu per-preset pins', () => {
     expect(
       session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight'),
     ).toBe(3)
-    expect(
-      session.getDisplayTypeDefault(
-        'LinearAlignmentsDisplay',
-        'featureSpacing',
-      ),
-    ).toBe(0)
     expect(pinProps(display, 'Compact')?.control.active).toBe(true)
   })
 
   it("clicking a preset's pin applies it to the clicked track at once", () => {
     // a track customized to a taller height: clicking Compact's pin makes it
     // Compact immediately, without the user having to also click the snackbar
-    const { display } = createDisplay({ featureHeight: 12, featureSpacing: 4 })
+    const { display } = createDisplay({ featureHeight: 12 })
     expect(display.featureHeight).toBe(12)
 
     pinProps(display, 'Compact')?.control.toggle()
@@ -500,7 +488,6 @@ describe('feature-height menu per-preset pins', () => {
     // the clicked track now resolves to the promoted Compact preset, in fixed
     // (not fit/grow) mode — so it renders shorter, not taller
     expect(display.configuredFeatureHeight).toBe(3)
-    expect(display.configuredFeatureSpacing).toBe(0)
     expect(display.featureHeight).toBe(3)
     expect(display.heightMode).toBe('fixed')
     expect(display.fitHeightToDisplay).toBe(false)
@@ -518,10 +505,10 @@ describe('feature-height menu per-preset pins', () => {
   }
 
   it('clicking Normal overrides a Compact session default (#regression)', () => {
-    // Normal's values (7,1) equal the schema defaults; when featureHeight was a
-    // plain number slot, clicking Normal stripped to default and re-inherited
-    // the Compact default, so Normal could never be selected. The sentinel
-    // maybeNumber slot lets a real value 7/1 win over the session default.
+    // Normal's height (7) is the schema base; when featureHeight was a plain
+    // number slot, clicking Normal stripped to default and re-inherited the
+    // Compact default, so Normal could never be selected. The sentinel
+    // maybeNumber slot lets the real value 7 win over the session default.
     const { session, display } = createDisplay()
     setCompact(session)
     expect(display.featureHeight).toBe(3)
@@ -536,6 +523,36 @@ describe('feature-height menu per-preset pins', () => {
     expect(presetRow(display, 'Compact')?.checked).toBe(false)
   })
 
+  it('a track that clicked Normal stays Normal when a Compact default is set later', () => {
+    // Clicking a preset customizes the track (writes explicit 7/1), so a
+    // subsequently-promoted Compact default does not move it — the same
+    // per-track-wins semantics every other sentinel slot has.
+    const { session, display } = createDisplay()
+    presetRow(display, 'Normal')?.onClick?.()
+    expect(display.featureHeight).toBe(7)
+
+    setCompact(session)
+    expect(display.featureHeight).toBe(7)
+    expect(display.featureSpacing).toBe(1)
+    expect(presetRow(display, 'Normal')?.checked).toBe(true)
+    // it holds its own value, so it is not flagged as merely following the default
+    expect(display.displayTypeDefaultChanges()).toEqual([])
+  })
+
+  it('clicking Super-compact then Normal lands on Normal over a Compact default', () => {
+    // exercises the value-not-equal-to-any-default path too
+    const { session, display } = createDisplay()
+    setCompact(session)
+    presetRow(display, 'Super-compact')?.onClick?.()
+    expect(display.featureHeight).toBe(1)
+    expect(presetRow(display, 'Super-compact')?.checked).toBe(true)
+
+    presetRow(display, 'Normal')?.onClick?.()
+    expect(display.featureHeight).toBe(7)
+    expect(display.featureSpacing).toBe(1)
+    expect(presetRow(display, 'Normal')?.checked).toBe(true)
+  })
+
   it("the fit pin promotes heightMode='fit'", () => {
     const { session, display } = createDisplay()
     heightModePinProps(display, 'Fit read height to display')?.control.toggle()
@@ -547,8 +564,8 @@ describe('feature-height menu per-preset pins', () => {
 
 // Fit-to-display-height is the `heightMode` sentinel promotable slot
 // ('inherit' | 'fit' | 'fixed', promotedBase 'fixed'). It rides the same
-// "make default" grouping as featureHeight/featureSpacing so promoting a fit
-// track persists fit — not a frozen pixel size. Being a sentinel lets a track
+// "make default" grouping as featureHeight so promoting a fit track persists
+// fit — not a frozen pixel size. Being a sentinel lets a track
 // pin 'fixed' back over a session-wide 'fit' default, which a plain boolean
 // could not (false would collapse to the default and re-inherit fit).
 describe('alignments fit-to-display-height session default', () => {
@@ -598,8 +615,8 @@ describe('alignments fit-to-display-height session default', () => {
   })
 
   // The "Set feature height" dialog edits the fixed config, so it must seed from
-  // `configuredFeature*` — the resolved `featureHeight`/`featureSpacing` become
-  // the fractional fit pitch in Compressed mode, which the dialog would then bake.
+  // `configuredFeatureHeight` — the resolved `featureHeight` becomes the
+  // fractional fit pitch in Compressed mode, which the dialog would then bake.
   it('exposes configured feature size independent of the fit squeeze', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
@@ -609,9 +626,8 @@ describe('alignments fit-to-display-height session default', () => {
     expect(display.featureHeight).toBe(3)
     expect(display.featureSpacing).toBe(1)
 
-    // ...but the configured size the dialog edits stays at the config defaults
+    // ...but the configured size the dialog edits stays at the config base
     expect(display.configuredFeatureHeight).toBe(7)
-    expect(display.configuredFeatureSpacing).toBe(1)
   })
 
   it('ignores a malformed (non-enum) session default', () => {

@@ -125,14 +125,15 @@ export function resolveTrackId(
   return resolved
 }
 
-// Per-read height/spacing for the alignments compactness presets. Mirrors
-// COMPACTNESS_PRESETS in plugin-alignments (kept local to avoid a cross-plugin
-// value import for two stable numbers); the canvas feature display expresses the
-// same idea through its `displayMode` config slot instead.
+// Per-read height for the alignments compactness presets (spacing is derived
+// from the height in the display, not stored). Mirrors COMPACTNESS_PRESETS in
+// plugin-alignments (kept local to avoid a cross-plugin value import for three
+// stable numbers); the canvas feature display expresses the same idea through
+// its `displayMode` config slot instead.
 const ALIGNMENTS_COMPACTNESS = {
-  normal: { featureHeight: 7, featureSpacing: 1 },
-  compact: { featureHeight: 3, featureSpacing: 0 },
-  'super-compact': { featureHeight: 1, featureSpacing: 0 },
+  normal: 7,
+  compact: 3,
+  'super-compact': 1,
 }
 
 // The `heightMode` config-slot values the canvas feature + alignments displays
@@ -152,7 +153,6 @@ interface DisplaySnapshot {
   // alignments + feature
   colorBy?: { type: string; tag?: string }
   featureHeight?: number
-  featureSpacing?: number
   // feature (canvas) + alignments — shared fixed/grow/fit vocabulary, gated per
   // display type by HEIGHT_MODES
   displayMode?: 'normal' | 'compact' | 'superCompact'
@@ -375,12 +375,10 @@ function applyModifier(
     case 'featureHeight': {
       if (val1 === 'normal' || val1 === 'compact' || val1 === 'super-compact') {
         // The compactness presets map onto different fields per display:
-        // featureHeight/spacing for alignments, the displayMode slot for canvas
+        // featureHeight for alignments, the displayMode slot for canvas
         // features. Both are still plain snapshot values.
         if (isAlignments) {
-          const { featureHeight, featureSpacing } = ALIGNMENTS_COMPACTNESS[val1]
-          snap.featureHeight = featureHeight
-          snap.featureSpacing = featureSpacing
+          snap.featureHeight = ALIGNMENTS_COMPACTNESS[val1]
         } else if (category === 'feature') {
           snap.displayMode = val1 === 'super-compact' ? 'superCompact' : val1
         }
@@ -392,22 +390,6 @@ function applyModifier(
           )
         }
         snap.featureHeight = n
-      }
-      break
-    }
-    case 'featureSpacing': {
-      if (val1 && hasFeatureSize) {
-        snap.featureSpacing = parseNum('featureSpacing', val1)
-      }
-      break
-    }
-    case 'noSpacing': {
-      // Legacy boolean: true → 0px spacing, false → 2px spacing (the value the
-      // pre-unification override branch baked in for noSpacing=false).
-      if (hasFeatureSize) {
-        snap.featureSpacing = getBooleanValue(val1 || 'true', 'noSpacing')
-          ? 0
-          : 2
       }
       break
     }
