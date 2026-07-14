@@ -36,7 +36,6 @@ import {
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
-  getTrackSizingMenuItem,
   installGrowExitBake,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
@@ -2407,9 +2406,12 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Set the per-read pixel size only — the track-sizing mode
+           * (fixed/grow/fit) is an independent axis, changed via setHeightMode.
+           * Picking a size in grow keeps growing at the new size; in fit the
+           * size is dormant until the mode leaves fit.
            */
           setFeatureHeight(height?: number) {
-            self.configuration.setSlot('heightMode', 'fixed')
             self.configuration.setSlot('featureHeight', height)
             self.scrollTop = 0
           },
@@ -2954,13 +2956,9 @@ export default function stateModelFactory(
             getFiltersMenuItem(self),
             getGroupByMenuItem(self),
             getReadsMenuItem(self),
-            getFeatureHeightMenuItem(self, {
+            getFeatureHeightMenuItem(self, 'read', {
               disabled: !self.showPileup,
               disabledHelpText: 'Turn on "Show pileup" to change read height',
-            }),
-            getTrackSizingMenuItem(self, 'read', {
-              disabled: !self.showPileup,
-              disabledHelpText: 'Turn on "Show pileup" to change track sizing',
             }),
             getCoverageMenuItem(self),
             getReadConnectionsMenuItem(self),

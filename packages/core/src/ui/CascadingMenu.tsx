@@ -233,7 +233,7 @@ function CascadingMenuItem({
           // model state that closing clears (e.g. a right-click menu's ephemeral
           // hit/context fields): capture that state when the menu items are
           // built, not live inside onClick.
-          if (closeAfterItemClick) {
+          if (closeAfterItemClick && !item.keepMenuOpen) {
             onCloseRoot()
           }
           onMenuItemClick(item.onClick)

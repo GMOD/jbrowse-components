@@ -44,6 +44,7 @@ export function promotableRadioItem({
   checked,
   onClick,
   displayTypeDefault,
+  keepMenuOpen,
 }: {
   label: string
   subLabel?: string
@@ -51,6 +52,7 @@ export function promotableRadioItem({
   checked: boolean
   onClick: () => void
   displayTypeDefault?: DisplayTypeDefaultControl
+  keepMenuOpen?: boolean
 }): RadioMenuItem {
   return {
     label,
@@ -59,6 +61,7 @@ export function promotableRadioItem({
     type: 'radio',
     checked,
     onClick,
+    keepMenuOpen,
     ...(displayTypeDefault && {
       endAdornment: (
         <DefaultForAllAdornment label={label} control={displayTypeDefault} />

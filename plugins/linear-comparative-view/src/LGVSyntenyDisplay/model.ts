@@ -14,7 +14,6 @@ import {
   linearAlignmentsDisplayStateModelFactory,
   pickColorOptions,
 } from '@jbrowse/plugin-alignments'
-import { getTrackSizingMenuItem } from '@jbrowse/plugin-linear-genome-view'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
@@ -170,8 +169,7 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         trackMenuItems() {
           const groupedByMate = self.groupBy?.type === 'mateAssembly'
           return [
-            getFeatureHeightMenuItem(self),
-            getTrackSizingMenuItem(self, 'feature'),
+            getFeatureHeightMenuItem(self, 'feature'),
             getColorByMenuItem(self, {
               colorOptions: pickColorOptions(
                 'normal',

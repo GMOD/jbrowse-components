@@ -11,7 +11,6 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   BaseLinearDisplayComponent,
-  getTrackSizingMenuItem,
   linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -142,16 +141,14 @@ function createDisplay(displayConfig: Record<string, unknown> = {}) {
   return { session, display: view.tracks[0]!.displays[0]! }
 }
 
-// The fixed/grow/fit radios live in the sibling "Track sizing" menu (built by
-// the shared getTrackSizingMenuItem, mirroring the canvas display), separate
-// from the "Read height" size presets. Module-level so tests in every describe
-// block can reach it.
+// The grow/fit radios live in the same merged "Read height" menu as the fixed
+// size presets (one mutually-exclusive group), below a divider. Module-level so
+// tests in every describe block can reach them.
 function heightModePinProps(
   display: ReturnType<typeof createDisplay>['display'],
   label: string,
 ) {
-  const trackSizing = getTrackSizingMenuItem(display, 'read')
-  const sub = 'subMenu' in trackSizing ? trackSizing.subMenu : []
+  const sub = getFeatureHeightMenuItem(display, 'read').subMenu
   const row = sub.find(i => 'label' in i && i.label === label)
   const adornment = row && 'endAdornment' in row ? row.endAdornment : undefined
   return isValidElement(adornment)
@@ -413,8 +410,8 @@ describe('feature-height menu per-preset pins', () => {
     display: ReturnType<typeof createDisplay>['display'],
     label: string,
   ) {
-    const row = getFeatureHeightMenuItem(display).subMenu.find(
-      i => i.label === label,
+    const row = getFeatureHeightMenuItem(display, 'read').subMenu.find(
+      i => 'label' in i && i.label === label,
     )
     const adornment =
       row && 'endAdornment' in row ? row.endAdornment : undefined
@@ -429,8 +426,8 @@ describe('feature-height menu per-preset pins', () => {
   it('has no standalone "as the default" checkbox row', () => {
     const { display } = createDisplay()
     expect(
-      getFeatureHeightMenuItem(display).subMenu.some(i =>
-        String(i.label).includes('as the default'),
+      getFeatureHeightMenuItem(display, 'read').subMenu.some(
+        i => 'label' in i && String(i.label).includes('as the default'),
       ),
     ).toBe(false)
   })
@@ -442,7 +439,7 @@ describe('feature-height menu per-preset pins', () => {
     }
   })
 
-  it('gives every track-height mode its own pin', () => {
+  it('gives every track-sizing mode its own pin', () => {
     const { display } = createDisplay()
     for (const label of [
       'Fixed read height',
@@ -485,21 +482,18 @@ describe('feature-height menu per-preset pins', () => {
 
     pinProps(display, 'Compact')?.control.toggle()
 
-    // the clicked track now resolves to the promoted Compact preset, in fixed
-    // (not fit/grow) mode — so it renders shorter, not taller
+    // the clicked track now resolves to the promoted Compact height at once — the
+    // size pin promotes only featureHeight, leaving the track-sizing mode alone
     expect(display.configuredFeatureHeight).toBe(3)
     expect(display.featureHeight).toBe(3)
-    expect(display.heightMode).toBe('fixed')
-    expect(display.fitHeightToDisplay).toBe(false)
-    expect(display.autoHeight).toBe(false)
   })
 
   function presetRow(
     display: ReturnType<typeof createDisplay>['display'],
     label: string,
   ) {
-    const row = getFeatureHeightMenuItem(display).subMenu.find(
-      i => i.label === label,
+    const row = getFeatureHeightMenuItem(display, 'read').subMenu.find(
+      i => 'label' in i && i.label === label,
     )
     return row as { checked?: boolean; onClick?: () => void } | undefined
   }
@@ -590,7 +584,7 @@ describe('alignments fit-to-display-height session default', () => {
     expect(display.fitHeightToDisplay).toBe(true)
   })
 
-  it('picking a preset pins fixed and escapes even a promoted fit default', () => {
+  it('picking a size leaves the mode alone (size and mode are independent)', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -600,18 +594,19 @@ describe('alignments fit-to-display-height session default', () => {
     expect(display.fitHeightToDisplay).toBe(true)
 
     display.setFeatureHeight(3)
-    // the sentinel win: 'fixed' pins over the 'fit' session default
-    expect(display.fitHeightToDisplay).toBe(false)
-    expect(display.featureHeight).toBe(3)
+    // still fit — the size is a separate axis, set underneath for when fit is left
+    expect(display.fitHeightToDisplay).toBe(true)
+    expect(display.configuredFeatureHeight).toBe(3)
   })
 
-  it('setFeatureHeight escapes fit mode', () => {
+  it('setFeatureHeight sets the size without leaving fit mode', () => {
     const { display } = createDisplay()
     display.setHeightMode('fit')
     expect(display.fitHeightToDisplay).toBe(true)
 
     display.setFeatureHeight(20)
-    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.fitHeightToDisplay).toBe(true)
+    expect(display.configuredFeatureHeight).toBe(20)
   })
 
   // The "Set feature height" dialog edits the fixed config, so it must seed from
@@ -764,7 +759,7 @@ describe('alignments grow (auto-height) mode', () => {
     expect(display.autoHeight).toBe(false)
   })
 
-  it('picking a preset pins fixed and escapes even a promoted grow default', () => {
+  it('picking a size keeps grow mode (grows at the new size)', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -774,8 +769,8 @@ describe('alignments grow (auto-height) mode', () => {
     expect(display.autoHeight).toBe(true)
 
     display.setFeatureHeight(3)
-    expect(display.autoHeight).toBe(false)
-    expect(display.featureHeight).toBe(3)
+    expect(display.autoHeight).toBe(true)
+    expect(display.configuredFeatureHeight).toBe(3)
   })
 
   it("the grow pin promotes heightMode='grow'", () => {
