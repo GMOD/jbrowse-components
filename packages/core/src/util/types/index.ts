@@ -115,8 +115,7 @@ export type AnimationMode = 'system' | 'enabled' | 'disabled'
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
-  tracksById: ReadonlyMap<string, AnyConfigurationModel>
-  getTracksById: () => Record<string, AnyConfigurationModel>
+  getTrackById: (id: string) => AnyConfigurationModel | undefined
   jbrowse: IAnyStateTreeNode
   drawerPosition?: string
   configuration: AnyConfigurationModel

@@ -155,11 +155,8 @@ function initialize() {
       get views() {
         return self.view ? [self.view] : []
       },
-      getTracksById() {
-        return {}
-      },
-      get tracksById() {
-        return new Map(Object.entries(this.getTracksById()))
+      getTrackById(_id: string) {
+        return undefined
       },
     }))
     .actions(self => ({
@@ -1565,11 +1562,8 @@ describe('TrackInit with display configuration', () => {
         },
       }))
       .views(() => ({
-        getTracksById() {
-          return trackConfigs
-        },
-        get tracksById() {
-          return new Map(Object.entries(this.getTracksById()))
+        getTrackById(id: string) {
+          return trackConfigs[id]
         },
       }))
       .actions(self => ({

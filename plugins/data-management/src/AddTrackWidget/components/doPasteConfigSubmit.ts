@@ -22,7 +22,7 @@ export function doPasteConfigSubmit({
     // addTrackConf silently returns the existing track on a trackId collision,
     // so a pasted config reusing an id would be a confusing no-op; reject it up
     // front instead.
-    const existing = confs.find(conf => session.tracksById.get(conf.trackId))
+    const existing = confs.find(conf => session.getTrackById(conf.trackId))
     if (existing) {
       throw new Error(
         `A track with trackId "${existing.trackId}" already exists; change the trackId or remove the existing track`,

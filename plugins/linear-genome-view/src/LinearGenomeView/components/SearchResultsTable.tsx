@@ -42,10 +42,9 @@ const SearchResultsTable = observer(function SearchResultsTable({
     throw new Error(`assembly ${assemblyName} not found`)
   }
 
-  const tracksById = session.getTracksById()
-
   function getTrackName(trackId: string | undefined) {
-    const conf = trackId !== undefined ? tracksById[trackId] : undefined
+    const conf =
+      trackId !== undefined ? session.getTrackById(trackId) : undefined
     return conf ? (readConfObject(conf, 'name') as string) : ''
   }
 

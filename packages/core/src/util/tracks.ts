@@ -539,15 +539,7 @@ export function showTrackGeneric(
   // snackbars. Config is validated before the push so the open set never holds
   // a broken track.
   try {
-    // tracksById is an ObservableMap reconciled by an autorun, which doesn't
-    // fire until the enclosing action completes; when a track is added and
-    // shown in the same action (e.g. addGCContentTrack) the map is still stale,
-    // so fall back to the always-fresh getTracksById() (same dual-path the
-    // config resolver uses)
-    const rawConf =
-      inlineConf ??
-      session.tracksById.get(trackId) ??
-      session.getTracksById()[trackId]
+    const rawConf = inlineConf ?? session.getTrackById(trackId)
     if (!rawConf) {
       throw new Error(`Could not resolve identifier "${trackId}"`)
     }

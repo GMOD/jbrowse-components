@@ -134,13 +134,8 @@ export function createTestEnvironment() {
       },
     }))
     .views(self => ({
-      getTracksById() {
-        return {
-          test_track: trackConfig,
-        }
-      },
-      get tracksById() {
-        return new Map(Object.entries(this.getTracksById()))
+      getTrackById(id: string) {
+        return id === 'test_track' ? trackConfig : undefined
       },
       getDisplayTypeDefault(displayType: string, slot: string): unknown {
         return self.displayTypeDefaults[displayType]?.[slot]

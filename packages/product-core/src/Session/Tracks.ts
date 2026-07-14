@@ -1,5 +1,5 @@
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { autorun, observable } from 'mobx'
+import { types } from '@jbrowse/mobx-state-tree'
+import { computed } from 'mobx'
 
 import { BaseSessionModel, isBaseSession } from './BaseSession.ts'
 import { isSessionWithConnections } from './Connections.ts'
@@ -12,7 +12,7 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { ConnectionInstance } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { ObservableMap } from 'mobx'
+import type { IComputedValue } from 'mobx'
 
 /**
  * #stateModel TracksManagerSessionMixin
@@ -32,127 +32,83 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
         return self.jbrowse.tracks
       },
     }))
-    .volatile(() => ({
-      // Stable trackId → config map, reconciled in place from getTracksById()
-      // (see the reconcile autorun). Held as one persistent ObservableMap rather
-      // than rebuilt per change so a config edit only notifies the *edited*
-      // track's entry: unchanged tracks keep their identity, so re-`set`ting
-      // them is a no-op. Every display resolves its config through
-      // TrackConfigurationReference, which reads `tracksById.get(id)` on every
-      // access — a wholesale-recomputed map made each such read depend on every
-      // track, so one track's edit re-rendered all of them.
-      //
-      // `deep: false` stores each config by reference: the default deep enhancer
-      // would wrap every plain frozen config in a fresh observable, breaking the
-      // identity the hydration cache keys on (and re-`set`ting an unchanged entry
-      // would then always notify).
-      tracksByIdMap: observable.map<string, AnyConfigurationModel>(undefined, {
-        deep: false,
-      }),
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Map of trackId → config for all tracks, assemblies, and connections.
-       * Frozen jbrowse.tracks are returned as plain objects here; hydration to
-       * MST models happens lazily in TrackConfigurationReference on first access.
-       * MobX caches this until any dependency changes.
-       */
-      // method rather than getter so subclasses can override it
-      getTracksById(): Record<string, AnyConfigurationModel> {
-        const temporaryAssemblies =
-          'temporaryAssemblies' in self
-            ? (self.temporaryAssemblies as { sequence: { trackId: string } }[])
-            : []
+    .views(self => {
+      // One index trackId → config for all tracks, assembly sequences, and
+      // connection tracks. Frozen jbrowse.tracks entries stay plain objects
+      // here; hydration to MST nodes happens lazily in TrackConfigurationReference
+      // on first access. Cached, so the N per-id lookups below share one rebuild
+      // per change rather than each re-scanning.
+      const tracksByIdRecord = computed<Record<string, AnyConfigurationModel>>(
+        () => {
+          const temporaryAssemblies =
+            'temporaryAssemblies' in self
+              ? (self.temporaryAssemblies as {
+                  sequence: { trackId: string }
+                }[])
+              : []
 
-        const connectionInstances =
-          'connectionInstances' in self
-            ? (self.connectionInstances as ConnectionInstance[])
-            : []
+          const connectionInstances =
+            'connectionInstances' in self
+              ? (self.connectionInstances as ConnectionInstance[])
+              : []
 
-        const connectionTrackConfigs =
-          'connectionTrackConfigs' in self
-            ? (self.connectionTrackConfigs as Record<
-                string,
-                { config: AnyConfigurationModel }
-              >)
-            : {}
+          const connectionTrackConfigs =
+            'connectionTrackConfigs' in self
+              ? (self.connectionTrackConfigs as Record<
+                  string,
+                  { config: AnyConfigurationModel }
+                >)
+              : {}
 
-        return Object.fromEntries([
-          ...self.tracks.map(t => [t.trackId, t]),
-          // Include assembly sequence tracks so they can be resolved by trackId
-          ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
-          // Include temporary assembly sequence tracks
-          ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
-          ...connectionInstances.flatMap(c =>
-            c.tracks.map(t => [t.trackId, t]),
-          ),
-          // Persisted configs of opened connection tracks. Placed last so they
-          // win over the live connection instance: identity-stable across
-          // reload, and resolves even when the connection isn't re-established.
-          ...Object.entries(connectionTrackConfigs).map(([trackId, e]) => [
-            trackId,
-            e.config,
-          ]),
-        ])
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Stable, per-entry-observable map of trackId → config for all tracks,
-       * assemblies, and connections. Reading `.get(id)` subscribes only to that
-       * entry, so editing one track no longer invalidates every consumer (see
-       * `tracksByIdMap`). Kept current by the reconcile autorun below.
-       */
-      get tracksById(): ObservableMap<string, AnyConfigurationModel> {
-        return self.tracksByIdMap
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * Reconcile `tracksByIdMap` to the given trackId → config snapshot: set
-       * new/changed entries, drop removed ones. Mutation only — the tracked read
-       * of `getTracksById()` happens in the driving autorun, NOT here, because a
-       * MobX action untracks its reads (so reading the sources here would leave
-       * the autorun with no dependencies and it would never re-fire). `set` on an
-       * unchanged (identity-equal) entry doesn't notify, so only genuinely-changed
-       * tracks wake their observers.
-       */
-      applyTracksById(desired: Record<string, AnyConfigurationModel>) {
-        const map = self.tracksByIdMap
-        // collect stale keys in a read-only pass, then delete — mutating the map
-        // mid-iteration over its own keys would be unsafe
-        const stale: string[] = []
-        for (const key of map.keys()) {
-          if (!(key in desired)) {
-            stale.push(key)
+          return Object.fromEntries([
+            ...self.tracks.map(t => [t.trackId, t]),
+            // assembly sequence tracks, so they resolve by trackId
+            ...self.assemblies.map(a => [a.sequence.trackId, a.sequence]),
+            ...temporaryAssemblies.map(a => [a.sequence.trackId, a.sequence]),
+            ...connectionInstances.flatMap(c =>
+              c.tracks.map(t => [t.trackId, t]),
+            ),
+            // Persisted configs of opened connection tracks. Placed last so they
+            // win over the live connection instance: identity-stable across
+            // reload, and resolves even when the connection isn't re-established.
+            ...Object.entries(connectionTrackConfigs).map(([trackId, e]) => [
+              trackId,
+              e.config,
+            ]),
+          ])
+        },
+      )
+      // Per-id computed cache backing getTrackById. Resolving one track's config
+      // subscribes only to that id's computed, so editing track A leaves track
+      // B's observers untouched: an unedited id's entry keeps its object identity
+      // across a sibling edit, so its computed re-evaluates equal and MobX
+      // short-circuits — B never wakes. Derived on read (no reconcile autorun),
+      // so it is never stale mid-action: session hydration and add-and-show
+      // resolve straight through it. Not evicted — bounded by the distinct ids
+      // resolved this session, and holds no authoritative state.
+      const trackByIdComputeds = new Map<
+        string,
+        IComputedValue<AnyConfigurationModel | undefined>
+      >()
+      return {
+        /**
+         * #method
+         * Config for one trackId — a track, assembly sequence, or connection
+         * track — or undefined. Per-id reactive: every display resolves its
+         * config through this (via TrackConfigurationReference) and subscribes
+         * only to its own id, so one track's settings edit doesn't re-render the
+         * others.
+         */
+        getTrackById(id: string): AnyConfigurationModel | undefined {
+          let c = trackByIdComputeds.get(id)
+          if (!c) {
+            c = computed(() => tracksByIdRecord.get()[id])
+            trackByIdComputeds.set(id, c)
           }
-        }
-        for (const key of stale) {
-          map.delete(key)
-        }
-        for (const [key, value] of Object.entries(desired)) {
-          map.set(key, value)
-        }
-      },
-    }))
-    .actions(self => ({
-      // afterAttach, not afterCreate: getTracksById reads `self.jbrowse`
-      // (= getParent(self).jbrowse), which throws while the session is still a
-      // detached root during creation. By attach time the session is under the
-      // root, so getParent resolves. The read stays in the autorun (not the
-      // action) so its observables are tracked and the map stays current.
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(() => {
-            self.applyTracksById(self.getTracksById())
-          }),
-        )
-      },
-    }))
+          return c.get()
+        },
+      }
+    })
     .actions(self => ({
       /**
        * #action

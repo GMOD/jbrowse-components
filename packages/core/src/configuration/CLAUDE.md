@@ -90,8 +90,8 @@ Two load-bearing complications, both for views that hold ephemeral track configs
 without registering them in `session.tracks`. Canaries are named so future
 agents catch breakage fast:
 
-- **`get` falls back from `tracksById` to MST `resolveIdentifier`.** Required by
-  `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef). Canary:
+- **`get` falls back from `session.getTrackById(id)` to MST `resolveIdentifier`.**
+  Required by `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef). Canary:
   `ReadVsRef.test.tsx`.
 - **`types.union(trackRef, schemaType)` accepts string id OR full snapshot.**
   Required by `CircularView.addTrackConf` / `SvInspectorView`, which push

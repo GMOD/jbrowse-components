@@ -96,11 +96,8 @@ function createEnv() {
       },
     }))
     .views(() => ({
-      getTracksById() {
-        return { test_track: trackConfig }
-      },
-      get tracksById() {
-        return new Map(Object.entries(this.getTracksById()))
+      getTrackById(id: string) {
+        return id === 'test_track' ? trackConfig : undefined
       },
     }))
     .actions(self => ({

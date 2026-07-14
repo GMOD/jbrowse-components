@@ -33,14 +33,14 @@ async function setupView(trackIds: string[]) {
   return { rootModel, session, view }
 }
 
-// This is the regression test for eager hydration: accessing tracksById must
+// This is the regression test for eager hydration: accessing getTrackById must
 // NOT create MST models for all frozen tracks. If hydrateTrack-style eager
-// initialization were re-introduced in getTracksById(), this test would fail
+// initialization were re-introduced in the trackId index, this test would fail
 // because the entry would be an MST node instead of a plain frozen object.
-test('session.tracksById does not eagerly hydrate frozen tracks', () => {
+test('session.getTrackById does not eagerly hydrate frozen tracks', () => {
   const { rootModel } = getPluginManager()
   const session = rootModel.session!
-  const conf = session.tracksById.get('volvox_gc')
+  const conf = session.getTrackById('volvox_gc')
   expect(isStateTreeNode(conf)).toBe(false)
   expect(conf?.trackId).toBe('volvox_gc')
 })
@@ -162,8 +162,8 @@ test('unrelated tracks keep identity across edits to a sibling', async () => {
 
 // Regression: editing one track must not re-render sibling tracks. Every
 // display resolves its config through TrackConfigurationReference, which reads
-// session.tracksById; when that was a wholesale-recomputed object, one track's
-// edit invalidated every consumer. tracksById is now a per-entry-observable map
+// session.getTrackById; when that was a wholesale-recomputed object, one track's
+// edit invalidated every consumer. getTrackById is now a per-id computed
 // so an autorun reading only a sibling's config does not re-fire.
 test('editing one track does not re-fire an autorun reading only a sibling', async () => {
   const { rootModel, view } = await setupView(['volvox_gc', 'volvox_sv_test'])

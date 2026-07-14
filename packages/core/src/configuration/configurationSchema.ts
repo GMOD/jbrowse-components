@@ -319,7 +319,7 @@ function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
  * Two load-bearing complications, both for views that hold ephemeral track
  * configs without registering them in `session.tracks`:
  *
- * 1. **`get` falls back from `tracksById` to MST `resolveIdentifier`.**
+ * 1. **`get` falls back from `getTrackById` to MST `resolveIdentifier`.**
  *    Required by `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef);
  *    `ReadVsRef.test.tsx` is the canary.
  *
@@ -340,15 +340,10 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     get(id, parent) {
       const session = getSession(parent)
       let ret: unknown =
-        // `tracksById` is a fine-grained map reconciled by a reaction, so it's
-        // stale while a mutation's own action is still on the stack — most
-        // importantly during session hydration, when every reference resolves
-        // inside the creation action before the reaction can fire. Fall back to
-        // `getTracksById()` (always fresh, but a coarse dependency) on a miss:
-        // steady-state reads hit the map and stay fine-grained; only these
-        // transient-window / hydration misses pay the coarse read.
-        session.tracksById.get(String(id)) ??
-        session.getTracksById()[String(id)] ??
+        // Per-id lookup: subscribes only to this trackId's derivation, so
+        // resolving one track's config doesn't re-render the others. Derived on
+        // read, so it's fresh during hydration and add-and-show — no dual path.
+        session.getTrackById(String(id)) ??
         // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
         // generic can't narrow. Tree-wide MST identifier lookup; see the
         // function-level JSDoc for why this fallback is required.
@@ -458,7 +453,7 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
 
 /**
  * Dispatch by the schema's identifier: `trackId` → track-ref (resolves through
- * `session.tracksById`), `displayId` → display-ref (resolves through the
+ * `session.getTrackById`), `displayId` → display-ref (resolves through the
  * parent track's displays array), anything else → plain reference.
  *
  * Display schemas must declare `explicitIdentifier: 'displayId'` (directly or

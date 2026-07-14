@@ -209,8 +209,9 @@ config via `ConfigurationReference(schemaType)`, dispatched on the schema's
 Authoritative docs (with named canary tests) live alongside the code at
 `packages/core/src/configuration/CLAUDE.md`. Highlights:
 
-- **TrackConfigurationReference** resolves through `session.tracksById`,
-  falling back to MST `resolveIdentifier`, and the return is a
+- **TrackConfigurationReference** resolves through `session.getTrackById(id)`
+  (a per-id computed — resolving one track's config subscribes only to that
+  id), falling back to MST `resolveIdentifier`, and the return is a
   `types.union(ref, schema)`. Both the fallback and the union exist for
   views that hold ephemeral track configs outside `session.tracks`
   (LinearSyntenyView, CircularView/SvInspectorView). Canaries:

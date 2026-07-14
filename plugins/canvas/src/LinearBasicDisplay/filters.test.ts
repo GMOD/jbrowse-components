@@ -87,11 +87,8 @@ function createDisplay(jexlFilters: string[] = []) {
       assemblyManager: { get: () => undefined },
     }))
     .views(() => ({
-      getTracksById() {
-        return { test_track: trackConfig }
-      },
-      get tracksById() {
-        return new Map(Object.entries(this.getTracksById()))
+      getTrackById(id: string) {
+        return id === 'test_track' ? trackConfig : undefined
       },
       get themeOptions() {
         return undefined

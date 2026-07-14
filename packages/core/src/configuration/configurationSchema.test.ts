@@ -526,7 +526,7 @@ describe('union error scoping', () => {
 
 describe('ConfigurationReference', () => {
   // Minimal session shim. isSessionModel needs `rpcManager` + `configuration`;
-  // tracksById is what TrackConfigurationReference reads.
+  // getTrackById is what TrackConfigurationReference reads.
   function buildTrackEnv() {
     const TrackConfig = ConfigurationSchema(
       'TestTrack',
@@ -541,24 +541,21 @@ describe('ConfigurationReference', () => {
         rpcManager: types.frozen({}),
         configuration: types.frozen({}),
         _tracks: types.array(TrackConfig),
-        // tree-resident configs deliberately NOT surfaced via tracksById, to
+        // tree-resident configs deliberately NOT surfaced via getTrackById, to
         // exercise the resolveIdentifier fallback (the viewTrackConfigs case)
         _viewTrackConfigs: types.array(TrackConfig),
         holder: Holder,
       })
       .views(self => ({
-        get tracksById() {
-          return new Map(self._tracks.map(t => [t.trackId, t]))
-        },
-        getTracksById() {
-          return Object.fromEntries(self._tracks.map(t => [t.trackId, t]))
+        getTrackById(id: string) {
+          return self._tracks.find(t => t.trackId === id)
         },
       }))
     return { TrackConfig, Holder, Session }
   }
 
   describe('TrackConfigurationReference', () => {
-    test('resolves a known trackId via session.tracksById', () => {
+    test('resolves a known trackId via session.getTrackById', () => {
       const { Session } = buildTrackEnv()
       const session = Session.create(
         {
@@ -609,7 +606,7 @@ describe('ConfigurationReference', () => {
     // Fast unit canary for the tree-wide resolveIdentifier fallback documented
     // in configuration/CLAUDE.md — otherwise only covered by the slow
     // ReadVsRef.test.tsx integration test (LinearSyntenyView.viewTrackConfigs).
-    test('falls back to tree-wide resolveIdentifier when the id is absent from tracksById', () => {
+    test('falls back to tree-wide resolveIdentifier when the id is absent from getTrackById', () => {
       const { Session } = buildTrackEnv()
       const session = Session.create(
         {
@@ -618,7 +615,7 @@ describe('ConfigurationReference', () => {
         },
         { pluginManager },
       )
-      expect(session.tracksById.get('view-local')).toBeUndefined()
+      expect(session.getTrackById('view-local')).toBeUndefined()
       expect(readConfObject(session.holder.ref, 'name')).toBe('ephemeral')
     })
 
@@ -634,7 +631,7 @@ describe('ConfigurationReference', () => {
         },
         { pluginManager },
       )
-      expect(session.tracksById.get('inline1')).toBeUndefined()
+      expect(session.getTrackById('inline1')).toBeUndefined()
       expect(readConfObject(session.holder.ref, 'name')).toBe('inline-name')
       expect(getSnapshot(session.holder)).toEqual({
         ref: { trackId: 'inline1', name: 'inline-name' },
@@ -643,7 +640,7 @@ describe('ConfigurationReference', () => {
   })
 
   describe('TrackConfigurationReference with frozen tracks', () => {
-    // Session where tracksById returns plain frozen objects, not MST nodes.
+    // Session where getTrackById returns plain frozen objects, not MST nodes.
     // This is the real production path: jbrowse.tracks is types.frozen.
     function buildFrozenTrackEnv() {
       const TrackConfig = ConfigurationSchema(
@@ -662,11 +659,8 @@ describe('ConfigurationReference', () => {
           holder: Holder,
         })
         .views(self => ({
-          get tracksById() {
-            return new Map(self._tracks.map(t => [t.trackId, t]))
-          },
-          getTracksById() {
-            return Object.fromEntries(self._tracks.map(t => [t.trackId, t]))
+          getTrackById(id: string) {
+            return self._tracks.find(t => t.trackId === id)
           },
         }))
         .actions(self => ({
@@ -677,13 +671,13 @@ describe('ConfigurationReference', () => {
       return { TrackConfig, Session }
     }
 
-    test('tracksById entry is a plain object before any reference is resolved', () => {
+    test('getTrackById entry is a plain object before any reference is resolved', () => {
       const { Session } = buildFrozenTrackEnv()
       const session = Session.create(
         { _tracks: [{ trackId: 'f1', name: 'frozen' }], holder: { ref: 'f1' } },
         { pluginManager },
       )
-      expect(isStateTreeNode(session.tracksById.get('f1'))).toBe(false)
+      expect(isStateTreeNode(session.getTrackById('f1'))).toBe(false)
     })
 
     test('resolves and hydrates a frozen plain object to an MST node', () => {
