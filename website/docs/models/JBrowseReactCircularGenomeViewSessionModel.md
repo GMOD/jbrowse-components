@@ -96,9 +96,11 @@ see [pluggable elements](/docs/developer_guide/) for concepts.
 | [setConnectionTrackConfig](#action-setconnectiontrackconfig)       | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Upsert one opened connection track's persisted config.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [pruneConnectionTrackConfig](#action-pruneconnectiontrackconfig)   | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Drop a connection track's persisted config once no open view still references it, so the session doesn't accumulate closed tracks.                                                                                                                                                                                                                                                                                                                                                                                     |
 | [hydrateConnection](#action-hydrateconnection)                     | Actions    | [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin) | Lazily establish a single connection by id if it isn't already live — used when its category is expanded in the track selector. Fetches silently (no view launch / success snackbar); already-open tracks keep rendering from `connectionTrackConfigs` meanwhile. Idempotent.                                                                                                                                                                                                                                          |
+| [tracksByIdMap](#volatile-tracksbyidmap)                           | Volatiles  | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [tracks](#getter-tracks)                                           | Getters    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [getTracksById](#getter-gettracksbyid)                             | Getters    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               | Map of trackId → config for all tracks, assemblies, and connections. Frozen jbrowse.tracks are returned as plain objects here; hydration to MST models happens lazily in TrackConfigurationReference on first access. MobX caches this until any dependency changes.                                                                                                                                                                                                                                                   |
-| [tracksById](#getter-tracksbyid)                                   | Getters    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               | MobX-cached map of trackId → config for all tracks, assemblies, and connections. Recomputes only when dependencies change.                                                                                                                                                                                                                                                                                                                                                                                             |
+| [tracksById](#getter-tracksbyid)                                   | Getters    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               | Stable, per-entry-observable map of trackId → config for all tracks, assemblies, and connections. Reading `.get(id)` subscribes only to that entry, so editing one track no longer invalidates every consumer (see `tracksByIdMap`). Kept current by the reconcile autorun below.                                                                                                                                                                                                                                      |
+| [applyTracksById](#action-applytracksbyid)                         | Actions    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               | Reconcile `tracksByIdMap` to the given trackId → config snapshot: set new/changed entries, drop removed ones. Mutation only — the tracked read of `getTracksById()` happens in the driving autorun, NOT here, because a MobX action untracks its reads (so reading the sources here would leave the autorun with no dependencies and it would never re-fire). `set` on an unchanged (identity-equal) entry doesn't notify, so only genuinely-changed tracks wake their observers.                                      |
 | [addTrackConf](#action-addtrackconf)                               | Actions    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [updateTrackConfiguration](#action-updatetrackconfiguration)       | Actions    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               | Persist edited track config back to the in-memory jbrowse config. The session-tracks mixin overrides this so a non-admin's edits become a shareable session-track override instead.                                                                                                                                                                                                                                                                                                                                    |
 | [deleteTrackConf](#action-deletetrackconf)                         | Actions    | [TracksManagerSessionMixin](../tracksmanagersessionmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -899,6 +901,19 @@ type hydrateConnection = (connectionId: string) => void
 
 [TracksManagerSessionMixin →](../tracksmanagersessionmixin)
 
+**Volatiles**
+
+#### volatile: tracksByIdMap
+
+```ts
+// type signature
+type tracksByIdMap = ObservableMap<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+// code
+tracksByIdMap: observable.map<string, AnyConfigurationModel>(undefined, {
+        deep: false,
+      })
+```
+
 **Getters**
 
 #### getter: tracks
@@ -920,14 +935,30 @@ type getTracksById = () => Record<string, ModelInstanceTypeProps<Record<string, 
 
 #### getter: tracksById
 
-MobX-cached map of trackId → config for all tracks, assemblies, and connections.
-Recomputes only when dependencies change.
+Stable, per-entry-observable map of trackId → config for all tracks, assemblies,
+and connections. Reading `.get(id)` subscribes only to that entry, so editing
+one track no longer invalidates every consumer (see `tracksByIdMap`). Kept
+current by the reconcile autorun below.
 
 ```ts
-type tracksById = Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+type tracksById = ObservableMap<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
 **Actions**
+
+#### action: applyTracksById
+
+Reconcile `tracksByIdMap` to the given trackId → config snapshot: set
+new/changed entries, drop removed ones. Mutation only — the tracked read of
+`getTracksById()` happens in the driving autorun, NOT here, because a MobX
+action untracks its reads (so reading the sources here would leave the autorun
+with no dependencies and it would never re-fire). `set` on an unchanged
+(identity-equal) entry doesn't notify, so only genuinely-changed tracks wake
+their observers.
+
+```ts
+type applyTracksById = (desired: Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>) => void
+```
 
 #### action: addTrackConf
 

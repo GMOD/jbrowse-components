@@ -93,9 +93,9 @@
   "sv_synteny/dotplot_import": {
     "name": "sv_synteny/dotplot_import",
     "status": "good",
-    "note": "FIXED: the dotplot import form no longer shows a red \"No synteny tracks found\" ErrorBanner on open — when no pre-configured track connects the two assemblies it now shows a gentle grey guidance message (pick \"New track\", or choose two different assemblies). Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "67f657a605d75a955aec0eaa784be4bb0d1ae2a3"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:13:20.358Z",
+    "hash": "b173b65dc742932f1d5b65130ec4427f7a581058"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -145,9 +145,9 @@
   "insertion": {
     "name": "insertion",
     "status": "good",
-    "note": "FIXED: increased browse height (viewportHeight 1000->1200, taller nanopore/pacbio/illumina read tracks) so more read context shows around the HG002 chr1 insertion. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "0c550cba494b6c1da3f31eece095055439202935"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:09:05.694Z",
+    "hash": "f96f792faee8de64d326e826c1caccd012cd209f"
   },
   "multisv": {
     "name": "multisv",
@@ -860,9 +860,9 @@
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
     "status": "good",
-    "note": "FIXED: converted to the reviewer-requested three-stage workflow figure — (1) right-click the gene with Collapse introns boxed, (2) the Select-transcript dialog boxed, (3) the reshaped view with introns collapsed + sashimi arcs. Doc caption updated. Regenerated.",
-    "reviewedAt": "2026-07-14T03:14:08.914Z",
-    "hash": "f8b2ae73106a9ce403ed26b0ade7ed34637aafd0"
+    "note": "the first stage ",
+    "reviewedAt": "2026-07-14T11:09:03.499Z",
+    "hash": "c6fbe2f62d124fe2b531cfe5cbeb193554988181"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -1085,9 +1085,9 @@
   "jbrowse-img/skbr3_cov": {
     "name": "jbrowse-img/skbr3_cov",
     "status": "good",
-    "note": "FIXED: widened the figure (jbrowse-img --width 1400->1900) so the whole-genome SKBR3 coverage karyotype spreads out. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "27f017e6ac0ba87667a8581d05d99a1bd7cddc49"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:09:39.427Z",
+    "hash": "cc35d2d237982f4850fabe682c175923edfc33fb"
   },
   "protein/connected": {
     "name": "protein/connected",
@@ -1169,9 +1169,9 @@
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "good",
-    "note": "FIXED: decreased the fine-scale coverage wiggle height (200->120; viewportHeight 1040->960) so the homozygous CDKN2A deletion still reads clearly without the wiggle dominating. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "2574daa0cb7069467c7061e0d7f445417227b3b0"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:13:08.295Z",
+    "hash": "e7278e0bd5c35bed1848f4de5aa0705afb012038"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1183,9 +1183,9 @@
   "gc_content": {
     "name": "gc_content",
     "status": "good",
-    "note": "FIXED: the link-icon highlight chip is now hidden when a highlight band is narrower than the chip (Highlight.tsx CHIP_MIN_WIDTH=24) — the thin oriC/terminus bands no longer carry a clipped chip; feature-track labels still name them. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "c923079b350f7a206fa67e9d14ebae7300d5d353"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:08:37.540Z",
+    "hash": "487d83f008993bc087a44910dac1a4bcf33c915a"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1245,9 +1245,9 @@
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
     "status": "good",
-    "note": "FIXED: added the NCBI RefSeq gene track above the PUR copy-number panel for genomic context (reviewer); scoped the cluster action to the copy-number track menu by data-trackid. Regenerated with clustering applied.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "15e061d4d005400a283d025c8651ba814e4fa6f7"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:13:35.144Z",
+    "hash": "181bdc6320fdcaedb594f900b401fae56246664f"
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
@@ -1259,9 +1259,9 @@
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
     "status": "good",
-    "note": "FIXED (same regression as gwas/locuszoom_ld): moved ldAdapter from the display onto the GWASAdapter in test_data/gwas/locuszoom_ld.json. Regenerated: FTO-locus LD coloring restored.",
-    "reviewedAt": "2026-07-13T05:56:57.799Z",
-    "hash": "a388dda1eb496b93f5cbed01e2c2a347a3148c82"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:08:35.935Z",
+    "hash": "333b1b8a2cac579a8230e698eaaf3c30c9c7c9e9"
   },
   "gallery/hg002_dipcall": {
     "name": "gallery/hg002_dipcall",
@@ -1340,10 +1340,10 @@
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
-    "status": "good",
-    "note": "FIXED: same import-form messaging fix in the LinearSyntenyView pre-configured selector (ImportSyntenyPreConfigured) — soft guidance instead of the red \"No synteny tracks found for K12,K12\" banner. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "3f0b77b227808838621d997492b33c886ee87154"
+    "status": "bad",
+    "note": "may want to add box around all the assemblies",
+    "reviewedAt": "2026-07-14T11:12:14.198Z",
+    "hash": "79fa83b5092763dc4bfec8f5401ff1fea8962d39"
   },
   "rnaseq/basic": {
     "name": "rnaseq/basic",
@@ -1383,9 +1383,9 @@
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
     "status": "good",
-    "note": "FIXED: increased browser height (viewportHeight 620->780; Fst 200->280, pi 150->200) so the whole-genome In(2L)t Fst block reads with more vertical room. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "66cbf758609520aa6b461577e9c07c47d7ad18ae"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:12:30.538Z",
+    "hash": "0bfa28518448b671c2f41e1b945321512742b791"
   },
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
@@ -1435,9 +1435,9 @@
   "jbrowse-img/scatac_multiwiggle": {
     "name": "jbrowse-img/scatac_multiwiggle",
     "status": "good",
-    "note": "FIXED: the multiwiggle track is now named \"CATlas single-cell ATAC (accessibility by cell type)\" instead of scatac_catlas.json — added a name: option to jbrowse-img --multiwig (makeMultiWiggleTrackConfig/readData). Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "a6bb85ddf201053d6d72a0b4f405d3cba87f470b"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:09:32.756Z",
+    "hash": "53b95d01d5d480d0c1b22e78a0a61db0ca96363f"
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
@@ -1447,10 +1447,10 @@
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
-    "status": "good",
-    "note": "FIXED: regenerated with arcs:down (the current default arc direction) so the split-read breakpoint arcs draw in a band below coverage.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "fea935a1545174a51a45b104fbcb25df6a9f3a89"
+    "status": "bad",
+    "note": "we may want to audit whether the 'orange' arcs seen in this image are valid. it might be plotting a purple arc wrong",
+    "reviewedAt": "2026-07-14T11:10:08.678Z",
+    "hash": "babde82c2f7e3fb4a8873046439977fe0b3df34e"
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
@@ -1517,9 +1517,9 @@
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
     "status": "good",
-    "note": "FIXED: zoomed out further (~1Mb->~2Mb, chr2R:11.2-13.2Mb) so the joint Tajima D + pi dip at Cyp6g1 reads as a sharper localized trough against more arm background. Regenerated.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "778a370cb1e23e2471e230f08a06acbc9601b5a4"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:12:50.994Z",
+    "hash": "a02f43529bdae3ea1fa9e625e2f9162a29bec671"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
@@ -1552,9 +1552,9 @@
   "rnaseq/strand_specific": {
     "name": "rnaseq/strand_specific",
     "status": "good",
-    "note": "FIXED: caption rewritten to drop the biological interpretation and just describe enabling stranded coloring via the track menu (Color by -> Paired end -> First of pair strand). Figure unchanged (already shows the menu cascade + colored reads).",
-    "reviewedAt": "2026-07-13T18:30:43.207Z",
-    "hash": "d910a84009cd0c3fd6cd5ca03b33072309b2a402"
+    "note": "",
+    "reviewedAt": "2026-07-14T11:13:05.741Z",
+    "hash": "795a4eadb95198f63ed5c8a270cf942266c0e8cb"
   },
   "trio-ancestry": {
     "name": "trio-ancestry",
@@ -1572,10 +1572,10 @@
   },
   "multisv_ont_inversion": {
     "name": "multisv_ont_inversion",
-    "status": "good",
-    "note": "FIXED at the root (not papered over): pairOrientation coloring now falls back to the read strand for single-end/unpaired reads (colorUtils.ts + read.slang GPU twin) instead of grey \"no strand\" — reads always show a strand. Legend re-enabled, annotation updated. Regenerated + colorUtils test added.",
-    "reviewedAt": "2026-07-14T03:08:55.649Z",
-    "hash": "3b032de67152e842b224719b7dfb206ad8d24012"
+    "status": "bad",
+    "note": "previous agents note: \"pairOrientation coloring now falls back to the read strand for single-end/unpaired reads\" <-- no we want only split alignments should show strand coloring",
+    "reviewedAt": "2026-07-14T11:11:11.802Z",
+    "hash": "8dbe7a78ce21c8632911ee2615fce0a9ac1c3acf"
   },
   "multiway_synteny/grape_peach_cacao_conserved_block": {
     "name": "multiway_synteny/grape_peach_cacao_conserved_block",

@@ -281,40 +281,39 @@ export function variantContextMenuItems(
   self: MultiSampleVariantBaseModel,
 ): MenuItem[] {
   const feat = self.contextMenuFeature
-  if (!feat) {
-    return []
-  }
-  return [
-    {
-      label: 'Open feature details',
-      icon: MenuOpenIcon,
-      onClick: () => {
-        self.selectFeature(feat)
-      },
-    },
-    {
-      label: 'Copy to clipboard',
-      icon: ContentCopyIcon,
-      onClick: async () => {
-        try {
-          const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
-          const id = feat.get('name') || feat.id()
-          const { default: copy } =
-            await import('@jbrowse/core/util/copyToClipboard')
-          copy(`${id} ${loc}`)
-          getSession(self).notify('Copied to clipboard', 'info')
-        } catch (e) {
-          console.error(e)
-          getSession(self).notifyError(`${e}`, e)
-        }
-      },
-    },
-    {
-      label: 'Sort by genotype',
-      icon: SwapVertIcon,
-      onClick: () => {
-        self.sortByGenotype(feat.id())
-      },
-    },
-  ]
+  return feat
+    ? [
+        {
+          label: 'Open feature details',
+          icon: MenuOpenIcon,
+          onClick: () => {
+            self.selectFeature(feat)
+          },
+        },
+        {
+          label: 'Copy to clipboard',
+          icon: ContentCopyIcon,
+          onClick: async () => {
+            try {
+              const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
+              const id = feat.get('name') || feat.id()
+              const { default: copy } =
+                await import('@jbrowse/core/util/copyToClipboard')
+              copy(`${id} ${loc}`)
+              getSession(self).notify('Copied to clipboard', 'info')
+            } catch (e) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          },
+        },
+        {
+          label: 'Sort by genotype',
+          icon: SwapVertIcon,
+          onClick: () => {
+            self.sortByGenotype(feat.id())
+          },
+        },
+      ]
+    : []
 }

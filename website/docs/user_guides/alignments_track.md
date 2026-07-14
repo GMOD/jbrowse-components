@@ -66,17 +66,18 @@ Three schemes surface per-read or per-base signal directly on the pileup:
 If a BAM/CRAM carries MM/ML modification calls (common in nanopore and PacBio
 data), **Color by → Modifications** paints them. It offers two modes:
 
-- Type draws a mark _only_ where the MM tag reports a modified base, each type
-  in its own color, so an unmethylated region looks empty. Use **Advanced
-  settings…** to raise the probability threshold or restrict to a single type
-  such as 5mC.
-- Probability (red / blue) colors each position by its modification probability
-  — methylated red, unmethylated blue. For methylation (cytosine) data it fills
+- Color by type draws a mark _only_ where the MM tag reports a modified base,
+  each type in its own color, so an unmethylated region looks empty. Use the
+  **Threshold** slider to raise the probability cutoff, or **Types shown** to
+  restrict to a single type such as 5mC — both sit directly beneath the two mode
+  radios.
+- Color by probability colors each position by its modification probability —
+  methylated red, unmethylated blue. For methylation (cytosine) data it fills
   every CpG in context, including the ones the basecaller left implicit (drawn
   blue). Those blue positions aren't in the MM tag; JBrowse infers them from the
   reference CpG context. That's why a hypomethylated island fills with solid
   blue here but looks nearly empty in the by-type mode. The cytosine context
-  (CpG/CHG/CHH) also lives under **Advanced settings…**.
+  (CpG/CHG/CHH) is a **Cytosine context** submenu in the same list.
 
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
