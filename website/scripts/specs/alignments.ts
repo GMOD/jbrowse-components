@@ -531,12 +531,12 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         selector:
           '[data-testid="track_menu_icon"][data-trackid="human_chr20_mod_call_5mC_5hmC_CG_cram_modifications"]',
       },
-      // open "Color by... → Modifications (MM/ML tag)" and leave the submenu up
+      // open "Color by... → Modifications" and leave the submenu up
       // (wait on its two radios rather than clicking anything). The former
       // top-level "Color by methylation" / "Color by modification type" items are
       // now the two radios "Type" and "Probability (red / blue)" inside this
       // submenu.
-      ...menuCascade(['Color by...', 'Modifications (MM/ML tag)']),
+      ...menuCascade(['Color by...', 'Modifications']),
     ],
     annotations: [
       // box the two colour modes in the open submenu; each row is labeled with
@@ -790,7 +790,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a
   // UCSC CpG island on chr20 (use COLO829_tumor.ht at a CpG island + add
   // a CpG island track). Declarative `colorBy: {type:'modifications'}` — the same
-  // state the track menu's Color by → Modifications (MM/ML tag) → Type
+  // state the track menu's Color by → Modifications → Type
   // applies — because driving that 3-level hover menu live is unreliable over the
   // COLO829 GPU display (its mod-data load keeps repainting the canvas, which
   // closes the MUI menu mid-cascade). userByteSizeLimit auto-loads the reads.
@@ -817,9 +817,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 35000,
     // colorBy:modifications is set declaratively so the mod data is already
     // loaded and painted by the time the menu opens. Then drive the live Color
-    // by → Modifications (MM/ML tag) → Type path so the figure shows the menu
+    // by → Modifications → Type path so the figure shows the menu
     // route, not just the result (reviewer asked to actually open the menu). The
-    // MM/ML modes now live in a "Modifications (MM/ML tag)" submenu with two
+    // MM/ML modes now live in a "Modifications" submenu with two
     // radios ("Type" / "Probability"); per-type filtering moved into its
     // "Advanced settings…" dialog. The selector is scoped by
     // data-trackid to the COLO829 alignments track — the bare track_menu_icon
@@ -831,11 +831,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         selector:
           '[data-testid="track_menu_icon"][data-trackid="COLO829_tumor.ht"]',
       },
-      ...menuCascade(['Color by...', 'Modifications (MM/ML tag)', 'Type'], 800),
+      ...menuCascade(['Color by...', 'Modifications', 'Type'], 800),
     ],
     annotations: cascadeBoxes([
       'Color by...',
-      'Modifications (MM/ML tag)',
+      'Modifications',
       'Type',
     ]),
   },

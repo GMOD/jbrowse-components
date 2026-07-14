@@ -167,7 +167,7 @@ function setBisulfiteContext(
   })
 }
 
-// --- "Modifications (MM/ML tag)": one consistent menu ------------------------
+// --- "Modifications": one consistent menu ------------------------------------
 // Two radios (by type vs by probability) plus the Advanced dialog — the
 // same rows regardless of the active view or the detected mod types. There is no
 // separate "methylation" or "fill" mode: the red/blue view just fills unmarked
@@ -251,7 +251,7 @@ function showModificationItems(model: ModificationsModel): boolean {
 
 // Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
 // MM/ML tags and applies to any alignments display (even one with no MM mods, so
-// it sits beside "Modifications (MM/ML tag)" rather than inside it). Picking a
+// it sits beside "Modifications" rather than inside it). Picking a
 // cytosine context activates it; the CpG default is omitted from the scheme.
 function buildBisulfiteItem(model: ModificationsModel): MenuItem {
   const isBis = model.colorBy.type === 'bisulfite'

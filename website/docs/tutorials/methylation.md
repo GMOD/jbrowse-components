@@ -51,7 +51,7 @@ match an assembly already configured in JBrowse (see the
 }
 ```
 
-From the track menu, choose **Color by → Modifications (MM/ML tag)**, then pick
+From the track menu, choose **Color by → Modifications**, then pick
 **Type** to paint the calls listed in the MM tag, or **Probability (red /
 blue)** to additionally scan the read sequence for CpG dinucleotides and paint
 any CpG the MM tag left uncalled (the difference is exactly what the figure
@@ -124,19 +124,6 @@ JBrowse reads the modification type from the `name` column (e.g. `m` for 5mC,
 The Y-axis shows the percent methylation (0–100). Each CpG position appears as a
 vertical bar. The two subtracks (`h` for 5hmC and `m` for 5mC) are stacked in
 multirow mode by default so their scales are independent.
-
-### Example: COLO829 tumor with CRAM and bedMethyl
-
-The screenshot below shows the COLO829 melanoma tumor ONT dataset at
-chr20:21,505,200–21,514,000, spanning two adjacent CpG islands. Top: the UCSC
-CpG-island annotation. Middle: the CRAM alignment with reads colored by 5mC
-methylation (the sparser 5hmC calls are hidden here so the per-read band reads
-cleanly). Bottom: the modkit bedMethyl file as a `MultiQuantitativeTrack` with
-`h` (5hmC) and `m` (5mC) subtracks. The per-read 5mC calls and the aggregate
-fractions track each other, and both drop over the leftmost, hypomethylated
-island.
-
-<Figure caption="COLO829 tumor ONT alignments (top) with per-read 5mC methylation coloring, alongside the modkit bedMethyl MultiQuantitativeTrack (bottom) showing 5hmC ('h') and 5mC ('m') methylation fractions at individual CpG positions." src="/img/methylation/colo829_cram_and_bedmethyl.png" />
 
 ## Allele-specific methylation by haplotype
 
