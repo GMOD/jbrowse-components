@@ -184,11 +184,13 @@ export function readData(
     } else if (!file) {
       throw new Error('no file specified')
     } else if (type === 'multiwig') {
+      const name = rest.find(r => r.startsWith('name:'))?.slice('name:'.length)
       configData.tracks.push(
         makeMultiWiggleTrackConfig(
           readMultiWiggleSources(file),
           file,
           configData.assembly,
+          name,
         ),
       )
     } else {

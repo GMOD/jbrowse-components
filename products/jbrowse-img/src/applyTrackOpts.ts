@@ -439,6 +439,11 @@ function applyModifier(
     case 'index': {
       break
     }
+    // `name:` sets the track's display name (consumed at config-build time in
+    // readData); a no-op here for the same reason as `index:`.
+    case 'name': {
+      break
+    }
     case 'autoscale': {
       if (isScore) {
         snap.autoscale = val1

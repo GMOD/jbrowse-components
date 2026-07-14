@@ -32,10 +32,16 @@ export const gallerySpecs: ScreenshotSpec[] = [
     readyText: 'PUR',
     readySelector: '[data-testid="multi-wiggle-display-done"]',
     readyTimeout: 90000,
-    viewportHeight: 620,
+    viewportHeight: 720,
     settleMs: 15000,
     actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      // scope to the copy-number track's menu (the gene track added above also
+      // has a track_menu_icon, so target by trackid)
+      {
+        type: 'click',
+        selector:
+          '[data-testid="track_menu_icon"][data-trackid="pur_copynumber_1000g"]',
+      },
       { type: 'waitForText', text: 'Clustering' },
       { type: 'hover', text: 'Clustering' },
       { type: 'waitForText', text: 'Cluster rows by score...' },

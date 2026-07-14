@@ -20,7 +20,12 @@ interface OwnProps {
    * tag, or undefined otherwise. The parent gates submission on undefined.
    */
   onValueChange: (value: string | undefined) => void
-  /** Hint shown under the input until two characters fail validation. */
+  /**
+   * Optional hint shown under the input. Off by default — the field is capped at
+   * two characters and the quick-pick chips already teach the common tags, so a
+   * persistent hint just adds a line that misaligns the field against its
+   * siblings. The invalid-tag error still shows regardless.
+   */
   helperText?: TextFieldProps['helperText']
   /** data-testid forwarded to the inner <input> (used by screenshot specs). */
   inputTestId?: string
@@ -51,7 +56,7 @@ export default function TagTextField(props: Props) {
   const {
     defaultValue = '',
     onValueChange,
-    helperText = '2 characters, e.g. XS, HP, RG',
+    helperText,
     inputTestId,
     quickPicks,
     ...rest

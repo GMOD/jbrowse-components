@@ -224,8 +224,13 @@ export function readColorCategory(
       return strandCategory(isSecond ? -strand : strand)
     }
 
-    case ColorScheme.pairOrientation:
-      return pairOrientationCategory(data.readPairOrientations[i]!)
+    case ColorScheme.pairOrientation: {
+      // A read with no computed pair orientation (single-end/unpaired long
+      // reads, po=0) still has a strand — color it by that rather than a
+      // meaningless grey "no strand" bucket.
+      const po = data.readPairOrientations[i]!
+      return po ? pairOrientationCategory(po) : strandCategory(strand)
+    }
 
     // Short-insert pairs always show pink, even with abnormal orientation;
     // otherwise orientation wins, falling back to long-/normal-insert.

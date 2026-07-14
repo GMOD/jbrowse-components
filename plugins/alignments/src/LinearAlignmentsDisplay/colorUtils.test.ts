@@ -107,6 +107,24 @@ describe('readColorCategory', () => {
     expect(cat(4)).toBe('pairLL')
   })
 
+  test('pairOrientation with no orientation falls back to read strand', () => {
+    // Unpaired/single-end reads (po=0) still have a strand — never grey noStrand.
+    expect(
+      readColorCategory(
+        0,
+        makeData({ pairOrientation: 0, strand: 1 }),
+        ColorScheme.pairOrientation,
+      ),
+    ).toBe('fwdStrand')
+    expect(
+      readColorCategory(
+        0,
+        makeData({ pairOrientation: 0, strand: -1 }),
+        ColorScheme.pairOrientation,
+      ),
+    ).toBe('revStrand')
+  })
+
   test('insertSizeAndOrientation: short insert wins, else orientation, else insert', () => {
     // Short insert overrides abnormal orientation (stays pink)
     expect(

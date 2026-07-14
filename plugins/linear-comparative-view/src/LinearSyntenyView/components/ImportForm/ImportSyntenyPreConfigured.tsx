@@ -1,4 +1,3 @@
-import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { getSyntenyTracks, pickSyntenyTrackId } from '@jbrowse/synteny-core'
@@ -29,32 +28,35 @@ const ImportSyntenyTrackSelector = observer(
     const value = pickSyntenyTrackId(picked, filteredTracks) ?? ''
     return (
       <Paper style={{ padding: 12 }}>
-        <Typography>
-          Select a track from the select box below, the track will be shown when
-          you hit "Launch".
-        </Typography>
-
         {filteredTracks.length ? (
-          <Select
-            value={value}
-            inputProps={{ 'aria-label': 'Synteny track' }}
-            onChange={event => {
-              model.setImportFormSyntenyTrack(selectedRow, {
-                type: 'preConfigured',
-                value: event.target.value,
-              })
-            }}
-          >
-            {filteredTracks.map(track => (
-              <MenuItem key={track.trackId} value={track.trackId}>
-                {getTrackName(track, session)}
-              </MenuItem>
-            ))}
-          </Select>
+          <>
+            <Typography>
+              Select a track from the select box below, the track will be shown
+              when you hit "Launch".
+            </Typography>
+            <Select
+              value={value}
+              inputProps={{ 'aria-label': 'Synteny track' }}
+              onChange={event => {
+                model.setImportFormSyntenyTrack(selectedRow, {
+                  type: 'preConfigured',
+                  value: event.target.value,
+                })
+              }}
+            >
+              {filteredTracks.map(track => (
+                <MenuItem key={track.trackId} value={track.trackId}>
+                  {getTrackName(track, session)}
+                </MenuItem>
+              ))}
+            </Select>
+          </>
         ) : (
-          <ErrorBanner
-            error={`No synteny tracks found for ${assembly1},${assembly2}`}
-          />
+          <Typography color="text.secondary">
+            {assembly1 === assembly2
+              ? 'Choose two different assemblies, or use "Quick start" above to auto-fill from a synteny track.'
+              : `No pre-configured synteny track connects ${assembly1} and ${assembly2}. Choose "New track" to add one, or use "Quick start" above.`}
+          </Typography>
         )}
       </Paper>
     )

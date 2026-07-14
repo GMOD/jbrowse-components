@@ -231,16 +231,16 @@ export const uiSpecs: ScreenshotSpec[] = [
             // single <INS> call — a short lane is plenty (reviewer: the default
             // height left a tall empty variant band above the reads)
             { trackId: 'nstd175.GRCh37.variant_call.vcf', height: 60 },
-            { trackId: 'hg002_nanopore', height: 200 },
+            { trackId: 'hg002_nanopore', height: 260 },
             {
               trackId: 'hg002_pacbio_chr1_insertion_slice',
-              height: 200,
+              height: 260,
             },
             {
               trackId: 'illumina_hg002',
               // show soft clipping so the clipped bases flanking the insertion
               // are visible on the Illumina reads
-              height: 250,
+              height: 320,
               showSoftClipping: true,
             },
           ],
@@ -249,7 +249,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG002',
     readyTimeout: 60000,
-    viewportHeight: 1000,
+    viewportHeight: 1200,
     settleMs: 20000,
   },
 
@@ -948,6 +948,10 @@ export const uiSpecs: ScreenshotSpec[] = [
           { type: 'click', text: 'Settings' },
           { type: 'waitForText', text: 'Filter options' },
           { type: 'delay', ms: 1000 },
+        ],
+        // box the settings widget (ConfigurationEditor drawer) that just opened
+        annotations: [
+          { type: 'box', anchor: { selector: '[data-testid="drawer-widget"]' } },
         ],
       },
     ],

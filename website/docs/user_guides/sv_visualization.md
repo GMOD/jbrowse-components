@@ -83,12 +83,13 @@ or split pairs arcing across the two junctions in an otherwise concordant (grey)
 pileup. Long reads span the whole event, so a single read crosses both
 breakpoints and splits into forward and reverse-strand alignments. With View as
 pairs / link supplementary alignments on, those segments chain onto one row: the
-inverted middle paints the reverse-strand color between forward-strand flanks,
-and the split junctions are joined by a magenta inversion arc. The figure below
+inverted middle paints the reverse-strand color between the forward-strand
+segments on either side, and the split junctions are joined by a magenta
+inversion arc. The figure below
 shows this ~1.2 kb inversion in one 1000 Genomes sample (HG00151) with Oxford
 Nanopore long reads, the 1KGP ensemble SV call marking the locus above.
 
-<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, supplementary alignments linked. Each read's reverse-strand middle (blue) paints between its forward-strand flanks (red), and the magenta split-read arc joins the two breakpoints — both directly read out the inversion. The 1KGP ensemble VCF call marks the locus above." src="/img/inversion_long_read.png" />
+<Figure caption="The same inversion (HGSV_10047, chr1:197,787,660-197,788,855) in HG00151 Oxford Nanopore long reads, supplementary alignments linked. Each read's reverse-strand middle (blue) paints between its forward-strand ends (red), and the magenta split-read arc joins the two breakpoints — both directly read out the inversion. The 1KGP ensemble VCF call marks the locus above." src="/img/inversion_long_read.png" />
 
 ### Insert size color scheme
 

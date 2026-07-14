@@ -326,35 +326,56 @@ export const featuresSpecs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 90000,
     settleMs: 6000,
-    viewportHeight: 600,
+    viewportHeight: 480,
     hideTooltip: true,
+    // Three-stage walkthrough (reviewer): (1) right-click the gene to reveal the
+    // Collapse introns menu item, (2) the confirmation dialog, (3) the reshaped
+    // view with introns collapsed and the sashimi arcs connecting adjacent exons.
     actions: [
       // `readyText: 'NCBI RefSeq'` matches the track *name*, which appears before
       // the remote GFF finishes loading — so wait for the PTEN label itself to
       // render before acting on it.
       { type: 'waitForText', text: 'PTEN' },
-      // right-click the gene's floating-label DOM element (not a raw pixel) —
-      // robust and exercises the label's real context-menu affordance
-      { type: 'rightclick', text: 'PTEN' },
-      { type: 'waitForText', text: 'Collapse introns' },
-      { type: 'delay', ms: 600 },
-      { type: 'click', text: 'Collapse introns' },
-      { type: 'waitForText', text: 'Replace current view' },
-      { type: 'delay', ms: 600 },
-      // the dialog's help paragraph also contains the literal phrase "Replace
-      // current view", so a bare text click resolves to that (unclickable) prose
-      // first and the dialog never closes. Scope the click to the actual button.
-      { type: 'click', selector: 'button::-p-text(Replace current view)' },
-      { type: 'waitForText', text: 'Replace current view', hidden: true },
-      // let the reshaped view kick off its refetch, then wait for the (now tiny,
-      // sliced) RNA BAM to load so the sashimi arcs are present in the capture
-      { type: 'delay', ms: 2000 },
+    ],
+    stages: [
       {
-        type: 'waitForSelector',
-        selector: '[data-testid="loading-overlay"]',
-        hidden: true,
+        // stage 1: right-click the gene's floating-label DOM element (not a raw
+        // pixel), revealing the context menu with Collapse introns boxed
+        actions: [
+          { type: 'rightclick', text: 'PTEN' },
+          { type: 'waitForText', text: 'Collapse introns' },
+          { type: 'delay', ms: 600 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Collapse introns' } }],
       },
-      { type: 'delay', ms: 3000 },
+      {
+        // stage 2: click Collapse introns → the confirmation dialog; box it
+        actions: [
+          { type: 'click', text: 'Collapse introns' },
+          { type: 'waitForText', text: 'Replace current view' },
+          { type: 'delay', ms: 600 },
+        ],
+        annotations: [{ type: 'box', anchor: { selector: '[role="dialog"]' } }],
+      },
+      {
+        // stage 3: confirm → the reshaped view with introns collapsed. The
+        // dialog's help paragraph also contains the literal phrase "Replace
+        // current view", so a bare text click resolves to that (unclickable)
+        // prose first and the dialog never closes — scope to the actual button.
+        actions: [
+          { type: 'click', selector: 'button::-p-text(Replace current view)' },
+          { type: 'waitForText', text: 'Replace current view', hidden: true },
+          // let the reshaped view refetch, then wait for the (tiny, sliced) RNA
+          // BAM to load so the sashimi arcs are present in the capture
+          { type: 'delay', ms: 2000 },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="loading-overlay"]',
+            hidden: true,
+          },
+          { type: 'delay', ms: 3000 },
+        ],
+      },
     ],
   },
   // Gene feature-details sequence panel on a human gene (reviewer asked for a

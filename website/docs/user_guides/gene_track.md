@@ -38,7 +38,7 @@ This pairs especially well with an [RNA-seq track](/docs/tutorials/rnaseq): the
 spliced reads draw **sashimi arcs** connecting splice donors and acceptors, and
 with the introns collapsed those arcs span directly between the adjacent exons.
 
-<Figure caption="PTEN (hg38) with its introns collapsed, so the exons sit side by side. The NA12878 direct-RNA nanopore track below shows per-exon coverage and sashimi arcs (auto-placed above and below to minimize crossings) joining the spliced exon junctions." src="/img/gene_track_collapse_introns.png" />
+<Figure caption="Collapsing introns on PTEN (hg38), in three steps. Top: right-click the gene and choose Collapse introns. Middle: the dialog to pick the window size and (optionally) a single transcript. Bottom: the reshaped view with the exons side by side — the NA12878 direct-RNA nanopore track's sashimi arcs (auto-placed above and below to minimize crossings) now span directly between adjacent exons." src="/img/gene_track_collapse_introns.png" />
 
 ## Display density and labels
 

@@ -148,12 +148,6 @@ export const gallerySections: readonly GallerySection[] = [
           'A large chr19 inversion in the 1000 Genomes SV VCF, found with the in-app clustering workflow.',
       },
       {
-        label: 'Read vs reference insertion (SKBR3 PacBio)',
-        spec: 'read_vs_ref_insertion',
-        description:
-          'A ~500bp insertion in SKBR3 PacBio reads. "Read vs reference" opens the alignment as a synteny view (lower panel) where the diagonal gap marks the insertion; drag to extract any read\'s sequence.',
-      },
-      {
         label: 'Inversion ("single row" breakpoint view)',
         session:
           '?config=test_data%2Fconfig_demo.json&session=share-sA7riIQWhJ&password=3pkHd',

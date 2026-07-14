@@ -480,11 +480,6 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 640,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
-              // the auto pairOrientation legend labels uncolored reads "No
-              // strand", which is wrong here — grey reads are simply not
-              // split-aligned. The text callouts below carry the correct
-              // reading, so the misleading legend stays off.
-              showLegend: false,
             },
           ],
         },
@@ -510,7 +505,7 @@ export const svSpecs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 520,
-        text: 'Split-aligned reads: red flanks (forward) around a blue core (reverse strand). Grey reads are not split-aligned.',
+        text: 'Split-aligned reads: red forward-strand segments on either side of a blue reverse-strand core. Reads that cross without a flip stay one solid strand color.',
         maxWidth: 470,
       },
     ],
@@ -557,11 +552,6 @@ export const svSpecs: ScreenshotSpec[] = [
               height: 560,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
-              // the auto pairOrientation legend has no entry for the key signal
-              // (a read that flips red→blue across the breakpoint) and mislabels
-              // the grey non-split reads "No strand"; the callout below carries
-              // the correct reading, so the legend stays off
-              showLegend: false,
               // lift the force-load byte gate so the reads auto-load headless
               userByteSizeLimit: 200_000_000,
             },
@@ -578,7 +568,7 @@ export const svSpecs: ScreenshotSpec[] = [
         type: 'text',
         x: 70,
         y: 430,
-        text: 'Each inversion-spanning read flips forward (red) → reverse (blue) at the breakpoint. Grey reads cross the region without a strand flip.',
+        text: 'Each inversion-spanning read flips forward (red) → reverse (blue) at the breakpoint. Reads that cross without a flip stay one solid strand color.',
         maxWidth: 400,
       },
     ],
@@ -1232,7 +1222,7 @@ export const svSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               minScore: 0,
               maxScore: 100,
-              height: 200,
+              height: 120,
             },
             {
               // raw long-read pileup: the homozygous deletion is a
@@ -1262,7 +1252,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr9',
     readyTimeout: 120000,
     viewportWidth: 1500,
-    viewportHeight: 1040,
+    viewportHeight: 960,
     settleMs: 30000,
   },
 

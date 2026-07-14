@@ -34,18 +34,6 @@ const wigModeTrack = (rendering: string, name: string) => ({
 })
 
 export const bigwigSpecs: ScreenshotSpec[] = [
-  {
-    mode: 'url',
-    name: 'bigwig_xyplot',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1-50000',
-      tracks: ['volvox_microarray'],
-    }),
-    readyText: 'ctgA',
-    settleMs: 4000,
-  },
-
   // reviewer: the plain line-render figure was boring on its own, and a single
   // "plot type" menu screenshot doesn't show what each mode looks like. Instead
   // render the same BigWig in every plot type at once — one compact track per

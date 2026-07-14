@@ -27,8 +27,6 @@ slot) offers these styles:
 
 Switch between them from the track menu's **Plot type** submenu.
 
-<Figure caption="XY plot (bar) rendering for a wiggle/BigWig track. Each bar represents the signal value at that position; colored mismatches relative to the reference appear in the coverage of alignment-derived BigWigs." src="/img/bigwig_xyplot.png" />
-
 <Figure caption="The same BigWig rendered in every plot type at once — XY plot, Density, Line (step), Line (interpolated), and Scatter — so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
 
 ## Autoscale options

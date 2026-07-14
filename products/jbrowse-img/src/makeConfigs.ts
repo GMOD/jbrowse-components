@@ -246,12 +246,13 @@ export function makeMultiWiggleTrackConfig(
   sources: unknown[],
   file: string,
   assembly: Assembly,
+  name?: string,
 ): Track {
   const allStrings = sources.every(s => typeof s === 'string')
   return {
     type: 'MultiQuantitativeTrack',
     trackId: path.basename(file),
-    name: path.basename(file),
+    name: name ?? path.basename(file),
     assemblyNames: [assembly.name],
     adapter: {
       type: 'MultiWiggleAdapter',

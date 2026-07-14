@@ -121,12 +121,12 @@ export const popgenSpecs: ScreenshotSpec[] = [
             {
               trackId: 'fst_in2lt',
               type: 'LinearWiggleDisplay',
-              height: 200,
+              height: 280,
             },
             {
               trackId: 'pi_all',
               type: 'LinearWiggleDisplay',
-              height: 150,
+              height: 200,
             },
           ],
         },
@@ -135,8 +135,8 @@ export const popgenSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="wiggle-display-done"]',
     readyText: 'π (whole panel)',
     readyTimeout: 90000,
-    // inversion(40) + fst(200) + pi(150) + headers clear the crop
-    viewportHeight: 620,
+    // inversion(40) + fst(280) + pi(200) + headers clear the crop
+    viewportHeight: 780,
     settleMs: 14000,
   },
 
@@ -156,11 +156,11 @@ export const popgenSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
-          // widened from 550 kb to ~1 Mb so the joint Tajima's D + π dip at
-          // Cyp6g1 reads as a sharp, localized trough against more arm-background
-          // on both sides (whole-panel bigWigs cover the whole arm, so zooming
-          // out just adds context, no empty flanks)
-          loc: 'chr2R:11,700,000-12,700,000',
+          // widened to ~2 Mb so the joint Tajima's D + π dip at Cyp6g1 reads as a
+          // sharp, localized trough against more arm-background on both sides
+          // (whole-panel bigWigs cover the whole arm, so zooming out just adds
+          // context, no empty flanks)
+          loc: 'chr2R:11,200,000-13,200,000',
           // band the full swept window (~12.13-12.20 Mb) rather than just the
           // gene body, so it visibly covers the whole joint Tajima's D + π dip
           // (reviewer: highlight the entire dip)

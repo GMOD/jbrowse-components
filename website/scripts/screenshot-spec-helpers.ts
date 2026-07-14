@@ -1016,18 +1016,19 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // SV read-connection arcs: arcs:up links the split-read breakpoints of a
-  // structural variant above the pileup. HG00151 ONT long reads (1000G-ONT S3,
-  // the MINIMAP2_ALIGNED_BAMS file that keeps the SA-tag split alignments) over
-  // a ~1.2 kb chr1 inversion — the two breakpoints show as clipped-read columns
-  // with the connecting arcs between them. (No color:pairOrientation: that's a
-  // paired-end concept, meaningless on long reads; the arcs are the SV signal.)
+  // SV read-connection arcs: arcs:down links the split-read breakpoints of a
+  // structural variant in a band below the coverage (the current default arc
+  // direction). HG00151 ONT long reads (1000G-ONT S3, the MINIMAP2_ALIGNED_BAMS
+  // file that keeps the SA-tag split alignments) over a ~1.2 kb chr1 inversion —
+  // the two breakpoints show as clipped-read columns with the connecting arcs
+  // between them. (No color:pairOrientation: that's a paired-end concept,
+  // meaningless on long reads; the arcs are the SV signal.)
   cliSpec('sv_read_arcs', [
     '--hub',
     'hg38',
     '--bam',
     HG00151_ONT_1000G_BAM,
-    'arcs:up',
+    'arcs:down',
     'coverageHeight:80',
     'height:440',
     '--loc',
@@ -1052,6 +1053,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'height:60',
     '--multiwig',
     'data/scatac_catlas.json',
+    'name:CATlas single-cell ATAC (accessibility by cell type)',
     // ~27px per row across the 16 cell types — tighter rows than the old 520 so
     // the stack reads compactly (reviewer)
     'height:440',
@@ -1081,6 +1083,6 @@ export const jbrowseImgSpecs: CliSpec[] = [
     'color:purple',
     'minmax:1:1024',
     '--width',
-    '1400',
+    '1900',
   ]),
 ]

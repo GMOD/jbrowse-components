@@ -13,6 +13,10 @@ import type { HighlightType } from '../types.ts'
 
 type LGV = LinearGenomeViewModel
 
+// A band narrower than the link-icon chip clips it into a smudge, so below this
+// width the chip is dropped (the band itself still draws).
+const CHIP_MIN_WIDTH = 24
+
 const Highlight = observer(function Highlight({
   model,
   highlight,
@@ -31,7 +35,7 @@ const Highlight = observer(function Highlight({
       background={bandColor.toRgbString()}
       label={label}
     >
-      {model.showHighlightChips ? (
+      {model.showHighlightChips && coords.width >= CHIP_MIN_WIDTH ? (
         <HighlightChip
           color={bandColor}
           label={label}

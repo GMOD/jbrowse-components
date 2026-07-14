@@ -30,7 +30,7 @@ const useStyles = makeStyles()(theme => ({
   tagRow: {
     display: 'flex',
     gap: theme.spacing(1),
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   flagContainer: {
     display: 'flex',
@@ -136,6 +136,8 @@ function TagFilterSection(props: {
       <Typography>Filter by tag name and value</Typography>
       <div className={classes.tagRow}>
         <TagTextField
+          variant="outlined"
+          size="small"
           defaultValue={tag}
           onValueChange={value => {
             setTag(value ?? '')
@@ -143,6 +145,7 @@ function TagFilterSection(props: {
         />
         <TextField
           label="Tag value"
+          variant="outlined"
           size="small"
           value={tagValue}
           placeholder="Enter value or * for any"
