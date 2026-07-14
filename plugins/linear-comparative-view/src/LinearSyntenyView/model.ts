@@ -734,12 +734,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 )
 
                 self.setViews(
-                  assemblies.map(asm => ({
+                  assemblies.map((asm, idx) => ({
                     type: 'LinearGenomeView' as const,
                     bpPerPx: 1,
                     offsetPx: 0,
                     hideHeader: true,
                     displayedRegions: asm.regions,
+                    // trackLabels is a plain persisted prop — set it on the
+                    // snapshot directly rather than imperatively after attach
+                    ...(init.views[idx]?.trackLabels
+                      ? { trackLabels: init.views[idx].trackLabels }
+                      : {}),
                   })),
                 )
 
@@ -764,9 +769,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                           normalizeTrackInit(track)
                         view.showTrack(trackId, trackSnapshot, displaySnapshot)
                       }
-                    }
-                    if (viewInit.trackLabels) {
-                      view.setTrackLabels(viewInit.trackLabels)
                     }
                   }),
                 )

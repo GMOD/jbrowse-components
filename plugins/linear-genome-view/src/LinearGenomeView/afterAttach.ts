@@ -25,11 +25,8 @@ const knownInitKeyMap: Record<keyof InitState, true> = {
   tracklist: true,
   nav: true,
   highlight: true,
-  showCenterLine: true,
-  trackLabels: true,
-  colorByCDS: true,
 }
-const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
+export const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
 
 function tryParseJson(s: string): Record<string, unknown> | undefined {
   try {
@@ -240,15 +237,6 @@ async function applyInit(self: LinearGenomeViewModel, init: InitState) {
   showInitTracks(self, init)
   if (init.nav !== undefined) {
     self.setHideHeader(!init.nav)
-  }
-  if (init.showCenterLine !== undefined) {
-    self.setShowCenterLine(init.showCenterLine)
-  }
-  if (init.trackLabels !== undefined) {
-    self.setTrackLabels(init.trackLabels)
-  }
-  if (init.colorByCDS !== undefined) {
-    self.setColorByCDS(init.colorByCDS)
   }
   backfillHighlightAssemblies(self)
   applyInitHighlights(self, session, init)

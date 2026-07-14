@@ -46,7 +46,6 @@ view) before their `renderSvg` resolves.
 
 ## sort by mismatch subitem of sort by menu
 
-## unify checks in website and others
 
 ## check
 
@@ -56,61 +55,8 @@ The GPU shader computes both base edges (clip1, clip2) and applies flipX to the 
 
 This reversed-block Canvas2D issue is real but niche. Let me now verify a higher-impact path: the no-MD-tag reference comparison offset, which if wrong would shift all mismatches. Let me check how ref and refOffset are supplied.
 
-## slow virtual scroll
-## max height
+## rowseparators not very visible
 
+## odd 'blinking' or 'processing' stage of setting grow trackheight mode where it intermittently tries a couple different read height settings?
 
-When we use 'grow to fit all reads' this can make incredible tall tracks that might blow up gpu memory usage, we probably need a cap to like screen height
-
-I'll investigate how "grow to fit all reads" works and where track height gets computed, to find the right place to add a cap.
-
-  Searched for 1 pattern, ran 2 shell commands
-
-The feature is "Auto height — grow to fit all reads" in the alignments display, using fitHeightToDisplay and fittedHeightPx. Let me examine the model.
-
-  Searched for 2 patterns, ran 1 shell command
-
-There's already a GROW_MAX_HEIGHT cap. Let me find where it's defined and its current value.
-
-  Searched for 2 patterns, read 1 file, ran 2 shell commands
-Loaded plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md
-
-There's already an 800px cap (GROW_MAX_HEIGHT). Let me understand why the user is still seeing incredibly tall tracks — perhaps the GPU canvas or a layout path bypasses the cap. Let me read the relevant model sections.
-
-  Read 1 file
-Loaded plugins/alignments/src/LinearAlignmentsDisplay/CLAUDE.md
-
-The 800px cap exists for the display height, but GPU memory depends on the canvas/texture size that's actually rendered. Let me check whether the GPU canvas is sized from the capped height or the full content height.
-
-  Searched for 1 pattern, read 1 file
-
-Let me check layoutGroupsToViewport to see how many rows actually get laid out in grow mode, and confirm the cap constrains layout not just display.
-
-  Searched for 1 pattern, read 1 file
-
-Now let me check the git history of this cap and whether it's actually committed/applied on this branch, plus how the GPU canvas gets sized.
-
-  Ran 1 shell command
-
-Both canvas and alignments already GHT = 800 (committed). So thedisplay/viewport height is bounded. The real GPU-memory question is whether the canvas backing store
-or a scroll texture is sized from te check the PileupComponent canvassizing and how scroll is handled.
-
-  Read 1 file
-
-The canvas uses self.height (viewport, ≤800) and scroll is a windowed render, so GPU is bounded
-there. Let me confirm nothing in thcapped contentHeight for a buffer,and check what autoHeight resolves to.
-
-  Searched for 1 pattern
-
-The canvas display's FeatureComponent sets a canvas height={model.contentHeight} at line 265 —
-potentially uncapped. Let me examinht getter and that component.
-
-  Read 1 file
-
-The peptide canvas uses contentHeigfeature canvas element and checkwhether its height is capped, since that's the primary GPU allocation.
-
-  Searched for 1 pattern, read 1 file
-
-The main GPU canvas in the canvas display also uses model.height (capped) with virtual scroll. So the cap is already effective for GPht layout-stacking default and readthe passing cap test to be certain the 800 cap engages.
-
-## unable to click normal when 'compact' pinned alignments
+## interplay of rowheight vs trackheight settings (mutual exclusions e.g. normal height cant be with fit to display)

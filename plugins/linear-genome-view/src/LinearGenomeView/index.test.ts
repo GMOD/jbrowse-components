@@ -2096,12 +2096,19 @@ describe('declarative init: highlight, nav, unknown keys', () => {
     })
   })
 
-  test('init.showCenterLine enables the center line', async () => {
-    const model = makeModel({
-      assembly: 'volvox',
-      loc: 'ctgA:1-1000',
-      showCenterLine: true,
-    })
+  test('showCenterLine is a direct view prop, restored from the snapshot', async () => {
+    // showCenterLine is a plain persisted prop, not an init key — MST restores
+    // it natively from the view snapshot (LaunchView forwards it as a sibling of
+    // init, never inside it)
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        showCenterLine: true,
+        init: { assembly: 'volvox', loc: 'ctgA:1-1000' },
+      }),
+    )
+    model.setWidth(800)
     await waitFor(() => {
       expect(model.showCenterLine).toBe(true)
     })

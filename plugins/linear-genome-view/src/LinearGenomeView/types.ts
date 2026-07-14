@@ -58,6 +58,15 @@ export type TrackInit =
       [key: string]: unknown
     }
 
+// A declarative LGV `init` blob holds ONLY keys that need on-attach
+// resolution/conversion and have no direct MST representation — `loc` (→
+// offsetPx/bpPerPx once the assembly loads), tracks (→ showTrack), highlight (→
+// coercion), etc. — and is discarded once applied. Plain persisted view props
+// (showCenterLine, trackLabels, colorByCDS, showHighlightChips) are NOT init:
+// LaunchView sets them directly on the view snapshot, where MST restores them
+// natively and they round-trip on save. Add a resolution field here + a case in
+// afterAttach's applyInit + an entry in its knownInitKeyMap; add a plain prop to
+// LinearGenomeViewLaunchProps (LaunchView forwards it automatically).
 export interface InitState {
   loc?: string
   assembly: string
@@ -73,6 +82,12 @@ export interface InitState {
   // wire-format); programmatic callers (createViewState/session JSON) can pass
   // a HighlightType object directly
   highlight?: (string | HighlightType)[]
+}
+
+// Plain persisted view props a launch spec may set inline alongside init keys.
+// Unlike InitState these need no resolution — LaunchView forwards them straight
+// onto the view snapshot.
+export interface LinearGenomeViewLaunchProps {
   showCenterLine?: boolean
   // track-label placement mode, matching the view's setTrackLabels action (not
   // the ExportSvg TrackLabelMode enum)
@@ -80,4 +95,7 @@ export interface InitState {
   // color CDS segments by reading frame and draw amino acid lettering on gene
   // tracks (matches the view's setColorByCDS action)
   colorByCDS?: boolean
+  // draw the interactive link-icon chip on each highlight band (chips are
+  // otherwise off by default, leaving a bare colored band)
+  showHighlightChips?: boolean
 }

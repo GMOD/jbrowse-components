@@ -19,9 +19,10 @@
   },
   "bigwig_xyplot": {
     "name": "bigwig_xyplot",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-02T07:09:34.213Z"
+    "status": "bad",
+    "note": "delete figure. also \" colored mismatches relative to the reference appear in the coverage of alignment-derived BigWigs.\" that is inaccurate prose, bigwigs only contain quantitative signal no mismatches. eliminate the figure and such prose. ",
+    "reviewedAt": "2026-07-14T02:06:02.506Z",
+    "hash": "16e61ce3b0383c116a0f41ade58ce2bc56b4835c"
   },
   "bigwig_line": {
     "name": "bigwig_line",
@@ -52,9 +53,9 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "good",
-    "note": "the layout of the reads in the ctgB looks odd. not many reads near y=0 of the layout. any reason why? RESOLVED (data, not a bug): verified via samtools that ctgB is entirely RL/outward-facing pairs at a narrow 300-550bp insert (an inversion-style synthetic signature) with zero normal small-insert pairs, so the TLEN read-cloud shows one flat RL band and nothing at the y=0 baseline. The pileup below still fills from row 0. ctgA carries the rich story (FR band + ~32kb long-insert deletion pairs + short inserts). Spec comment documents both.",
-    "reviewedAt": "2026-07-13T22:21:37.787Z",
+    "status": "bad",
+    "note": "the layout of the reads in the ctgB looks odd. not many reads near y=0 of the layout. there iso a weird \"whitespace'. i am referring to the pileup not the read cloud.",
+    "reviewedAt": "2026-07-14T02:07:21.232Z",
     "hash": "53d272a1de70ab934b5cc1079565169efc958ef4"
   },
   "dotplot": {
@@ -91,9 +92,10 @@
   },
   "sv_synteny/dotplot_import": {
     "name": "sv_synteny/dotplot_import",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-20T21:13:26.644Z"
+    "status": "bad",
+    "note": "this shows 'no synteny tracks found for ...' which is undesirable",
+    "reviewedAt": "2026-07-14T01:53:05.332Z",
+    "hash": "67f657a605d75a955aec0eaa784be4bb0d1ae2a3"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -142,9 +144,9 @@
   },
   "insertion": {
     "name": "insertion",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T18:29:07.994Z",
+    "status": "bad",
+    "note": "increase browse height",
+    "reviewedAt": "2026-07-14T02:01:25.143Z",
     "hash": "0c550cba494b6c1da3f31eece095055439202935"
   },
   "multisv": {
@@ -264,9 +266,9 @@
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-12T04:50:48.302Z",
+    "status": "bad",
+    "note": "tag name and tag value are not vedrtically centered due to tag name having a helptext. please fix. remove helptext probably, unneeded. audit other usages also. use variant outlined also.",
+    "reviewedAt": "2026-07-14T02:08:17.963Z",
     "hash": "0118cc4101ee2df78c69948460bf4cb6837cb526"
   },
   "alignments/modifications1": {
@@ -468,9 +470,10 @@
   },
   "edit_track_settings": {
     "name": "edit_track_settings",
-    "status": "good",
-    "note": "fixed: added viewportHeight 640 (shorter in both stages); regenerated",
-    "reviewedAt": "2026-06-21T17:36:31.000Z"
+    "status": "bad",
+    "note": "add red box around settings widget in second screenshot",
+    "reviewedAt": "2026-07-14T02:04:08.002Z",
+    "hash": "f2c606114efefa51beb00a37e57700f5293300f0"
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
@@ -500,9 +503,9 @@
   },
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T05:30:31.584Z",
+    "status": "bad",
+    "note": "might remove from gallery, not that significant anymore",
+    "reviewedAt": "2026-07-14T01:51:09.376Z",
     "hash": "245d6bef30ebb4a35b79eaf419c094f700524c75"
   },
   "recent_tracks": {
@@ -664,9 +667,9 @@
   },
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
-    "status": "good",
-    "note": "FIXED: decluttered per \"chaotic screenshot\" - hid the sparse 5hmC (h) calls on the reads (the magenta mixed with dense red 5mC read as noise) and made the pileup a compact fixed-height band. The aggregate bedMethyl below still teaches both h and m subtracks. Doc caption updated. Regenerated.",
-    "reviewedAt": "2026-07-11T20:04:08.974Z",
+    "status": "bad",
+    "note": "this is unfortunately a chaotic screenshot. just delete",
+    "reviewedAt": "2026-07-14T01:55:30.355Z",
     "hash": "9ba893486fbd076f170ed6450d02331d5c34f11f"
   },
   "methylation/per_read_mod_bam": {
@@ -768,9 +771,10 @@
   },
   "desktop-open-genome": {
     "name": "desktop-open-genome",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T15:42:12.229Z"
+    "status": "bad",
+    "note": "cancel should be variant contained",
+    "reviewedAt": "2026-07-14T02:04:33.127Z",
+    "hash": "357d4c5b655c4d20457706e1be82206e498730bf"
   },
   "desktop-session": {
     "name": "desktop-session",
@@ -855,9 +859,9 @@
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T18:28:57.672Z",
+    "status": "bad",
+    "note": "if possible we may want a multi-stage screenshot procedure for performing the \"fig 1. right click feature to see collapse introns menu fig 2. dialog box fig 3. figure with introns collapsed\" workflow",
+    "reviewedAt": "2026-07-14T02:02:41.156Z",
     "hash": "f8b2ae73106a9ce403ed26b0ade7ed34637aafd0"
   },
   "gene_track_color_by_cds": {
@@ -977,15 +981,15 @@
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
     "status": "good",
-    "note": "FIXED: added showOnlyGenes to the NCBI RefSeq gene track (raw-JSON display modifier) so it reads as gene models rather than dense mRNA/exon speckle. Regenerated + verified.",
-    "reviewedAt": "2026-07-10T05:27:19.534Z",
+    "note": "",
+    "reviewedAt": "2026-07-14T02:00:47.986Z",
     "hash": "8abfccf6e6d0e548fa76c125acc586e980b76e72"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
-    "note": "DONE: per-group HP:1 / HP:2 labels are shown on the left of each grouped subtrack in the current build; note was stale.",
-    "reviewedAt": "2026-07-09T22:39:40.023Z",
+    "note": "",
+    "reviewedAt": "2026-07-14T02:00:41.811Z",
     "hash": "8b763e1f700611c4b16dbe5162d221f6e886ba4a"
   },
   "jbrowse-img/dark_theme": {
@@ -1019,15 +1023,15 @@
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-10T18:58:04.802Z",
+    "note": "we might want to make a filter to ",
+    "reviewedAt": "2026-07-14T02:00:24.401Z",
     "hash": "79d1e4dcbd24725244f769f5e0bd90eb3cddcc6f"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
     "status": "good",
-    "note": "use longestCoding",
-    "reviewedAt": "2026-07-13T21:46:33.686Z",
+    "note": "",
+    "reviewedAt": "2026-07-14T02:00:32.412Z",
     "hash": "d43f0ee7a6129d93e18f585ffecdd3f4908aff22"
   },
   "jbrowse-img/circular_chords": {
@@ -1047,8 +1051,9 @@
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
     "status": "good",
-    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
-    "reviewedAt": "2026-06-21T17:36:31.000Z"
+    "note": "",
+    "reviewedAt": "2026-07-14T02:00:39.063Z",
+    "hash": "c355b2553ce0461f9dc0b24141aa00a2a4dd9b91"
   },
   "hg38_assembly_table": {
     "name": "hg38_assembly_table",
@@ -1079,9 +1084,9 @@
   },
   "jbrowse-img/skbr3_cov": {
     "name": "jbrowse-img/skbr3_cov",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T05:30:13.946Z",
+    "status": "bad",
+    "note": "you can consider increasing width of figure manually",
+    "reviewedAt": "2026-07-14T01:59:05.414Z",
     "hash": "27f017e6ac0ba87667a8581d05d99a1bd7cddc49"
   },
   "protein/connected": {
@@ -1163,9 +1168,9 @@
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "good",
-    "note": "Applied heightMode:fit so the ~116x pileup packs into the fixed height without clipping. \"Sort split reads to bottom\" was not applied -- confirmed with the user there is no sort/group-by option that supports it while linkedReads chain mode is on (a chain's members must share one group key; \"is-part-of-a-chain\" is not a groupable dimension).",
-    "reviewedAt": "2026-07-08T02:55:28.417Z",
+    "status": "bad",
+    "note": "decrease height of wiggle track",
+    "reviewedAt": "2026-07-14T01:52:28.151Z",
     "hash": "2574daa0cb7069467c7061e0d7f445417227b3b0"
   },
   "maf_codon_tooltip": {
@@ -1177,9 +1182,9 @@
   },
   "gc_content": {
     "name": "gc_content",
-    "status": "good",
-    "note": "i do not want this to show the 'highlight icon'. should use the 'link icon' for chip",
-    "reviewedAt": "2026-07-13T22:17:05.374Z",
+    "status": "bad",
+    "note": "if the highlights are quite thin hide the link icon chip",
+    "reviewedAt": "2026-07-14T02:03:01.483Z",
     "hash": "c923079b350f7a206fa67e9d14ebae7300d5d353"
   },
   "sv_cgiab/driver_kras_gain": {
@@ -1239,9 +1244,9 @@
   },
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-08T21:25:21.572Z",
+    "status": "bad",
+    "note": "add ncbi gene track",
+    "reviewedAt": "2026-07-14T02:03:33.876Z",
     "hash": "15e061d4d005400a283d025c8651ba814e4fa6f7"
   },
   "gallery/fiberseq_gapdh": {
@@ -1302,8 +1307,8 @@
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
     "status": "good",
-    "note": "SATISFIED: autoDiagonalize:true already in spec, PNG shows clean main diagonal.",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
+    "note": "",
+    "reviewedAt": "2026-07-14T02:03:26.740Z",
     "hash": "a10e4e8d227b8640cff3b542eadb3e482a6c3b42"
   },
   "introgression": {
@@ -1321,9 +1326,9 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "good",
-    "note": "the text annotation for 'red flakes (forward) around a blue core should be below the arc annotation box. also, it is not true that grey is 'no strand' in this screenshot, we only are drawing the reads that are split aligned with the colors. so grey is not split aligned",
-    "reviewedAt": "2026-07-13T22:17:05.375Z",
+    "status": "bad",
+    "note": "avoid the term 'flanks' in text annotation",
+    "reviewedAt": "2026-07-14T02:01:20.512Z",
     "hash": "8fb262cd2d82bb17f46cbe204d326a9f92353024"
   },
   "methylation/chromatin_accessibility_6ma": {
@@ -1335,9 +1340,9 @@
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
-    "status": "good",
-    "note": "this is currently a chaotic screenshot. (a) do NOT crop the width (b) do not show the dropdown active in figure one (c) do not use numbering, just clean text annotations if needed",
-    "reviewedAt": "2026-07-13T22:17:05.375Z",
+    "status": "bad",
+    "note": "this shows 'no synteny tracks found for ...' which is undesirable. not sure if we need to reimagine import form",
+    "reviewedAt": "2026-07-14T01:54:01.353Z",
     "hash": "3f0b77b227808838621d997492b33c886ee87154"
   },
   "rnaseq/basic": {
@@ -1377,9 +1382,9 @@
   },
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
-    "status": "good",
-    "note": "reduce biological prose, explain the colors in figure. ",
-    "reviewedAt": "2026-07-11T02:00:52.388Z",
+    "status": "bad",
+    "note": "increase browser height",
+    "reviewedAt": "2026-07-14T01:49:05.197Z",
     "hash": "66cbf758609520aa6b461577e9c07c47d7ad18ae"
   },
   "popgen/pi_cyp6g1": {
@@ -1429,9 +1434,9 @@
   },
   "jbrowse-img/scatac_multiwiggle": {
     "name": "jbrowse-img/scatac_multiwiggle",
-    "status": "good",
-    "note": "FIXED (2026-07): reduced multiwig height 520->440 (~27px/row) for tighter rows; Alpha/GCG peak still reads. Cell-type-specificity (one active row) is the intended point (spec comment).",
-    "reviewedAt": "2026-07-11T01:43:44.196Z",
+    "status": "bad",
+    "note": "can we 'name' the multiwiggle track something insteadof scatac-catlas.json",
+    "reviewedAt": "2026-07-14T01:59:41.559Z",
     "hash": "a6bb85ddf201053d6d72a0b4f405d3cba87f470b"
   },
   "methylation/arabidopsis_wgbs_boundary": {
@@ -1442,16 +1447,16 @@
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
-    "status": "good",
-    "note": "FIXED (caption): the arcs are CLI-rendered (no in-figure annotation possible), so explained the color coding in the README prose + Figure caption — purple arcs = split-read inversion junctions (read halves in opposite orientation, the inversion signature), orange arcs = same-strand deletion-type splits. Verified against the linkedReadColorPalette source (idx6 colorSplitReadInversion, idx5 colorSupplementary). Regenerated jbrowse-img.md.",
-    "reviewedAt": "2026-07-10T18:27:12.000Z",
+    "status": "bad",
+    "note": "likely needs regenerating. it should use arcs pointed down (which is the current default)",
+    "reviewedAt": "2026-07-14T01:58:48.353Z",
     "hash": "fea935a1545174a51a45b104fbcb25df6a9f3a89"
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
-    "status": "good",
-    "note": "Removed the on-image annotation (reviewer). One-color methylation was left as-is: bisulfite always emits both methylated/unmethylated marks and a one-color mode would need a code change altering the global default. Regenerated.",
-    "reviewedAt": "2026-07-12T04:52:17.327Z",
+    "status": "bad",
+    "note": "might add text annotations for the three rows of multiwiggle and three alignments tracks showing simple one line \"CpG\" \"CHG\" \"CHH\" and same with the reads. the multi wiggle display in fact should have per-row labels too",
+    "reviewedAt": "2026-07-14T01:57:01.598Z",
     "hash": "89f6f507b9a38cbb3c6a4d97b91f5cc9f905e577"
   },
   "methylation/arabidopsis_wgbs_chh": {
@@ -1511,23 +1516,23 @@
   },
   "popgen/tajimad_cyp6g1": {
     "name": "popgen/tajimad_cyp6g1",
-    "status": "good",
-    "note": "use compact in gene track. use bicolor pivot in wiggle track. that should be automatic i think",
-    "reviewedAt": "2026-07-12T04:53:36.529Z",
+    "status": "bad",
+    "note": "might consider zooming out further still",
+    "reviewedAt": "2026-07-14T01:49:19.664Z",
     "hash": "778a370cb1e23e2471e230f08a06acbc9601b5a4"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
     "status": "good",
-    "note": "KEEP: this is the \"Input order\" (before) part of the two-part compose figure qtl/bxd_sort_before_after used in bxd_qtl.md — already a normal two-part before/after figure. The review tool just surfaces compose parts individually.",
-    "reviewedAt": "2026-07-13T18:34:57.858Z",
+    "note": "unclear to me why this is not a normal 'two stage' spec, we dont want figures that arent referenced in any doc / page. previous agent notes; KEEP: this is the \"Input order\" (before) part of the two-part compose figure qtl/bxd_sort_before_after used in bxd_qtl.md — already a normal two-part before/after figure. The review tool just surfaces compose parts individually.",
+    "reviewedAt": "2026-07-14T01:50:31.547Z",
     "hash": "9099181b3011796f6d01a1cd0b59285a1dc8fc41"
   },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
-    "status": "good",
-    "note": "KEEP / IS on the doc page: it appears as the bottom (\"sorted at peak\") half of the bxd_sort_before_after compose embedded in bxd_qtl.md, plus its own \"Sorted at peak\" open-live link. No separate embed needed.",
-    "reviewedAt": "2026-07-13T18:35:00.146Z",
+    "status": "bad",
+    "note": "unclear to me why this is not a normal 'two stage' spec, we dont want figures that arent referenced in any doc / page. previous agent notes; KEEP: this is the \"Input order\" (before) part of the two-part compose figure qtl/bxd_sort_before_after used in bxd_qtl.md — already a normal two-part before/after figure. The review tool just surfaces compose parts individually.",
+    "reviewedAt": "2026-07-14T01:50:55.066Z",
     "hash": "dddf897998e9600b7d5460bf8db538c49a48f7af"
   },
   "qtl/bxd_sort_before_after": {
@@ -1567,9 +1572,9 @@
   },
   "multisv_ont_inversion": {
     "name": "multisv_ont_inversion",
-    "status": "good",
-    "note": "red+blue color issue: RESOLVED without a code change. Turned off the auto pairOrientation legend (it had no entry for the red->blue split-read flip and mislabeled grey non-split reads \"No strand\") and replaced it with a text callout explaining the forward(red)->reverse(blue) flip at the breakpoint and that grey reads cross without a flip.",
-    "reviewedAt": "2026-07-13T22:23:51.796Z",
+    "status": "bad",
+    "note": "it seems like we didn't \"solve\" the issue but just papered over it by hiding legend. it should not ever show reads as 'no strand' with grey. reads always have a strand. previous agents notes: red+blue color issue: RESOLVED without a code change. Turned off the auto pairOrientation legend (it had no entry for the red->blue split-read flip and mislabeled grey non-split reads \"No strand\") and replaced it with a text callout explaining the forward(red)->reverse(blue) flip at the breakpoint and that grey reads cross without a flip.",
+    "reviewedAt": "2026-07-14T01:55:04.126Z",
     "hash": "3b032de67152e842b224719b7dfb206ad8d24012"
   },
   "multiway_synteny/grape_peach_cacao_conserved_block": {
