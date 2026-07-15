@@ -381,6 +381,45 @@ describe('getScalebarRefNameLabels', () => {
     ])
   })
 
+  test('left-overscroll (offsetPx<0) clips sticky label at its region end, not viewport', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 800,
+        widthPx: 800,
+      }),
+    ]
+    const { labels } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: -50,
+      regionEndPx: regionEnds(blocks),
+      prefix: '',
+    })
+    // pinned at the region's left edge (screen 50), so available width runs from
+    // frame-x 0 to regionEnd 1600 → 1599, never the over-counted 1600-(-50)-1
+    expect(labels).toEqual([
+      {
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        transform: 50,
+        maxWidth: 1599,
+        paddingLeft: 0,
+        text: 'chr1',
+      },
+    ])
+  })
+
   test('too-narrow sticky region drops its label, prefix falls back to standalone', () => {
     const blocks = [
       refBlock({

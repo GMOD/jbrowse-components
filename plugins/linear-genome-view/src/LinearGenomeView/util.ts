@@ -168,7 +168,16 @@ function refLabelLayout(
   sticky: boolean,
 ) {
   const regionEnd = regionEndPx.get(displayedRegionIndex)
-  const labelStartPx = sticky ? offsetPx : block.offsetPx
+  const transform = sticky
+    ? Math.max(0, -offsetPx)
+    : block.offsetPx - offsetPx - 1
+  // block-frame x where the label actually starts. Derived from `transform` (=
+  // transform + offsetPx) so the width-to-region-end clip stays in lockstep
+  // with where the label is drawn: a sticky label pins to the region's left
+  // edge, not the viewport's, whenever the view is left-overscrolled
+  // (offsetPx < 0) — reading offsetPx directly there over-counted the available
+  // width by |offsetPx|, letting the name bleed past its region's right edge.
+  const labelStartPx = transform + offsetPx
   // A non-sticky label's transform anchors at the same x as the region
   // divider drawn just to its left (SVGRegionSeparators, a 3px bar spanning
   // local [0,3] from this same block.offsetPx edge), so paddingLeft must clear
@@ -182,9 +191,6 @@ function refLabelLayout(
   if (maxWidth !== undefined && maxWidth < 20) {
     return undefined
   }
-  const transform = sticky
-    ? Math.max(0, -offsetPx)
-    : block.offsetPx - offsetPx - 1
   return { transform, maxWidth, paddingLeft }
 }
 
