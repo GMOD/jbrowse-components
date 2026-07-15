@@ -241,6 +241,48 @@ describe('CascadingMenuButton', () => {
     expect(await screen.findByText('the explanation')).toBeTruthy()
   })
 
+  it('shares one trailing column when help and adornment never share a row', async () => {
+    const user = await setup([
+      {
+        label: 'Help row',
+        type: 'checkbox',
+        checked: false,
+        helpText: 'the explanation',
+        onClick: () => {},
+      },
+      {
+        label: 'Pin row',
+        type: 'checkbox',
+        checked: false,
+        endAdornment: <span>adorn-badge</span>,
+        onClick: () => {},
+      },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    const helpRow = (await screen.findByText('Help row')).closest('li')!
+    await user.click(within(helpRow).getByRole('button'))
+    expect(await screen.findByText('the explanation')).toBeTruthy()
+    expect(screen.getByText('adorn-badge')).toBeTruthy()
+  })
+
+  it('keeps help and adornment when a single row carries both', async () => {
+    const user = await setup([
+      {
+        label: 'Both row',
+        type: 'checkbox',
+        checked: false,
+        helpText: 'the explanation',
+        endAdornment: <span>adorn-badge</span>,
+        onClick: () => {},
+      },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    const row = (await screen.findByText('Both row')).closest('li')!
+    expect(within(row).getByText('adorn-badge')).toBeTruthy()
+    await user.click(within(row).getByRole('button'))
+    expect(await screen.findByText('the explanation')).toBeTruthy()
+  })
+
   it('should show a checked decoration for a checked checkbox item', async () => {
     const user = await setup([
       { label: 'Toggle', type: 'checkbox', checked: true, onClick: () => {} },

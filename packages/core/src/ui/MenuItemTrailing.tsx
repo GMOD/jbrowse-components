@@ -69,16 +69,21 @@ function MenuItemEndAdornmentSlot({ children }: { children: React.ReactNode }) {
 
 // Everything trailing a menu row's label: a flex spacer that right-aligns the
 // decorations, then the value glyph, help affordance, and endAdornment column.
-// The two flags are menu-wide (true if ANY row needs the column) so every row
-// reserves matching slots and the decorations stack into aligned columns.
+// The flags are menu-wide (true if ANY row needs the column) so every row
+// reserves matching slots and the decorations stack into aligned columns. When
+// `sharedActionColumn` is set, no row combines help with an adornment, so the two
+// share one trailing column (whichever this row has) rather than each claiming
+// its own.
 export function MenuItemTrailing({
   item,
   hasCheckboxOrRadioWithHelp,
   hasEndAdornment,
+  sharedActionColumn,
 }: {
   item: ClickableMenuItem
   hasCheckboxOrRadioWithHelp: boolean
   hasEndAdornment: boolean
+  sharedActionColumn: boolean
 }) {
   const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
   const hasActionColumn = hasCheckboxOrRadioWithHelp || hasEndAdornment
@@ -92,14 +97,31 @@ export function MenuItemTrailing({
           separated={hasActionColumn}
         />
       ) : null}
-      <MenuItemHelpSlot
-        item={item}
-        isCheckOrRadio={isCheckOrRadio}
-        reserveSpace={hasCheckboxOrRadioWithHelp}
-      />
-      {hasEndAdornment ? (
-        <MenuItemEndAdornmentSlot>{item.endAdornment}</MenuItemEndAdornmentSlot>
-      ) : null}
+      {sharedActionColumn ? (
+        <MenuItemEndAdornmentSlot>
+          {item.helpText && !item.disabled ? (
+            <CascadingMenuHelpIconButton
+              helpText={item.helpText}
+              label={item.label}
+            />
+          ) : item.endAdornment ? (
+            item.endAdornment
+          ) : null}
+        </MenuItemEndAdornmentSlot>
+      ) : (
+        <>
+          <MenuItemHelpSlot
+            item={item}
+            isCheckOrRadio={isCheckOrRadio}
+            reserveSpace={hasCheckboxOrRadioWithHelp}
+          />
+          {hasEndAdornment ? (
+            <MenuItemEndAdornmentSlot>
+              {item.endAdornment}
+            </MenuItemEndAdornmentSlot>
+          ) : null}
+        </>
+      )}
     </>
   )
 }

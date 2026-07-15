@@ -62,12 +62,33 @@ function MenuItemLeadingIcon({
 // (true if ANY row needs it) so every row reserves matching slots and the
 // decorations stack into aligned columns down the menu.
 function getMenuColumnFlags(menuItems: JBMenuItem[]) {
+  const hasCheckboxOrRadioWithHelp = menuItems.some(
+    m => (m.type === 'checkbox' || m.type === 'radio') && m.helpText,
+  )
+  const hasEndAdornment = menuItems.some(
+    m => 'endAdornment' in m && m.endAdornment,
+  )
+  // a single row carrying both a help "?" and a trailing adornment (e.g. pin) is
+  // the only case that genuinely needs help and adornment in separate columns
+  const hasRowWithHelpAndAdornment = menuItems.some(
+    m =>
+      'endAdornment' in m &&
+      m.endAdornment &&
+      'helpText' in m &&
+      m.helpText &&
+      !('disabled' in m && m.disabled),
+  )
   return {
     hasIcon: menuItems.some(m => 'icon' in m && m.icon),
-    hasCheckboxOrRadioWithHelp: menuItems.some(
-      m => (m.type === 'checkbox' || m.type === 'radio') && m.helpText,
-    ),
-    hasEndAdornment: menuItems.some(m => 'endAdornment' in m && m.endAdornment),
+    hasCheckboxOrRadioWithHelp,
+    hasEndAdornment,
+    // when help and adornment never collide on one row, they collapse into one
+    // shared trailing column instead of each claiming its own, so a menu mixing
+    // help-only and pin-only rows doesn't reserve a wasted third column
+    sharedActionColumn:
+      hasCheckboxOrRadioWithHelp &&
+      hasEndAdornment &&
+      !hasRowWithHelpAndAdornment,
   }
 }
 
@@ -205,6 +226,7 @@ function CascadingMenuItem({
   hasIcon,
   hasCheckboxOrRadioWithHelp,
   hasEndAdornment,
+  sharedActionColumn,
   closeAfterItemClick,
   onMenuItemClick,
   onCloseRoot,
@@ -215,6 +237,7 @@ function CascadingMenuItem({
   hasIcon: boolean
   hasCheckboxOrRadioWithHelp: boolean
   hasEndAdornment: boolean
+  sharedActionColumn: boolean
   closeAfterItemClick: boolean
   onMenuItemClick: (callback: () => void) => void
   onCloseRoot: () => void
@@ -258,6 +281,7 @@ function CascadingMenuItem({
           item={item}
           hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
           hasEndAdornment={hasEndAdornment}
+          sharedActionColumn={sharedActionColumn}
         />
       </MenuItem>
     </DisabledTooltip>
@@ -276,8 +300,12 @@ function CascadingMenuList({
     setOpenSubmenuIdx(undefined)
   }
 
-  const { hasIcon, hasCheckboxOrRadioWithHelp, hasEndAdornment } =
-    getMenuColumnFlags(menuItems)
+  const {
+    hasIcon,
+    hasCheckboxOrRadioWithHelp,
+    hasEndAdornment,
+    sharedActionColumn,
+  } = getMenuColumnFlags(menuItems)
 
   const sortedItems = menuItems.toSorted(
     (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
@@ -340,6 +368,7 @@ function CascadingMenuList({
             hasIcon={hasIcon}
             hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
             hasEndAdornment={hasEndAdornment}
+            sharedActionColumn={sharedActionColumn}
             closeAfterItemClick={closeAfterItemClick}
             onMenuItemClick={onMenuItemClick}
             onCloseRoot={onCloseRoot}
