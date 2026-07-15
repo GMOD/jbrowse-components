@@ -25,9 +25,8 @@ You can also extract or copy the sequence underlying selected features; see the
 
 ## Searching the reference sequence
 
-The sequence track menu's **Sequence / CRISPR search** item searches the
-reference sequence itself and adds the hits as a new track. It offers three
-modes:
+The sequence track menu's **Sequence search** item searches the reference
+sequence itself and adds the hits as a new track. It offers three modes:
 
 - Sequence pattern - find every occurrence of a single DNA motif or regex across
   the reference.
@@ -52,18 +51,19 @@ BamHI   G^GATCC
 PstI    CTGCA^G
 ```
 
-The panel is prefilled with common cloning enzymes, but nothing about the list is
-built in - wipe it and paste your own set from REBASE or anywhere else. Sites may
-use [IUPAC ambiguity codes](https://www.bioinformatics.org/sms/iupac.html) (e.g.
-`GGTNACC`), blank lines and `#` comments are ignored, and a bare site with no
-name simply names itself.
+The panel is prefilled with common cloning enzymes, but nothing about the list
+is built in - wipe it and paste your own set from REBASE or anywhere else. Sites
+may use [IUPAC ambiguity codes](https://www.bioinformatics.org/sms/iupac.html)
+(e.g. `GGTNACC`), blank lines and `#` comments are ignored, and a bare site with
+no name simply names itself.
 
 The `^` is what makes this more than a motif search: it pins the top-strand cut,
 and for a palindromic site (which most restriction sites are) the bottom-strand
 cut mirrors it, so each hit reports both cut positions and whether the enzyme
 leaves a 5' overhang, a 3' overhang, or a blunt end. Palindromic sites read the
-same on both strands, so they are reported once rather than twice, and the strand
-checkboxes only appear when the list contains a motif that is actually stranded.
+same on both strands, so they are reported once rather than twice, and the
+strand checkboxes only appear when the list contains a motif that is actually
+stranded.
 
 Because the list is just text, the same mode works for primers, adapters,
 polylinker sites, or any other named motif set - not only enzymes.

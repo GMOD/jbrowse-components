@@ -55,6 +55,7 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [diagonalizeStatus](#volatile-diagonalizestatus)                               | Volatiles  | LinearSyntenyView                                 | Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; undefined outside that wait.                                                                                                                                                                                                                                                                                                                                 |
 | [diagonalizeStopToken](#volatile-diagonalizestoptoken)                         | Volatiles  | LinearSyntenyView                                 | Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort it; undefined when none is running.                                                                                                                                                                                                                                                                                                                                                         |
 | [hasSomethingToShow](#getter-hassomethingtoshow)                               | Getters    | LinearSyntenyView                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [showAssemblyNameInSubviewScalebar](#getter-showassemblynameinsubviewscalebar) | Getters    | LinearSyntenyView                                 | Opt each sub-view's scalebar into prefixing its refName labels with the assembly name (e.g. "hg38:chr1"), so stacked genome rows of different assemblies stay distinguishable. Read duck-typed by the child LinearGenomeView (scalebarDisplayPrefix) to avoid an upward plugin dependency.                                                                                                                                                                                   |
 | [drawCIGAR](#getter-drawcigar)                                                 | Getters    | LinearSyntenyView                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [drawCIGARMatchesOnly](#getter-drawcigarmatchesonly)                           | Getters    | LinearSyntenyView                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | LinearSyntenyView                                 | True if any track on any level has an adapter that declares the 'lod' capability. Used to gate the LOD menu — adapters without tiered storage (e.g. PAFAdapter, BlastTabularAdapter) have nothing to switch between.                                                                                                                                                                                                                                                         |
@@ -392,6 +393,17 @@ importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
 
 <details>
 <summary>LinearSyntenyView - Getters</summary>
+
+#### getter: showAssemblyNameInSubviewScalebar
+
+Opt each sub-view's scalebar into prefixing its refName labels with the assembly
+name (e.g. "hg38:chr1"), so stacked genome rows of different assemblies stay
+distinguishable. Read duck-typed by the child LinearGenomeView
+(scalebarDisplayPrefix) to avoid an upward plugin dependency.
+
+```ts
+type showAssemblyNameInSubviewScalebar = boolean
+```
 
 #### getter: hasLodCapableAdapter
 

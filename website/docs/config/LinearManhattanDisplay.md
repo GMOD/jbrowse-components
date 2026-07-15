@@ -72,7 +72,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | ------------------------------------------ | ------------------------- | ---------------------------------------------------------------- |
 | [color](#slot-color)                       | `color`                   | CSS color or jexl callback for Manhattan points                  |
 | [colorBy](#slot-colorby)                   | `stringEnum` (normal, ld) | LocusZoom-style coloring.                                        |
-| [scatterPointSize](#slot-scatterpointsize) | `number`                  | Manhattan point diameter in px (adjustable from the track menu). |
+| [scatterPointSize](#slot-scatterpointsize) | `maybeNumber`             | Manhattan point diameter in px (adjustable from the track menu). |
 
 <details>
 <summary>LinearManhattanDisplay - Slots</summary>
@@ -97,8 +97,18 @@ r² to the index SNP, read from the `GWASAdapter`'s `ldAdapter` sub-adapter.
 Manhattan point diameter in px (adjustable from the track menu). Larger default
 than wiggle's since Manhattan points are the primary glyph.
 
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
-`DEFAULT_POINT_DIAMETER_PX` · _promotable_
+**Type:** `maybeNumber` · **Default:** `undefined` · _promotable_
+
+```js
+{
+  type: 'maybeNumber',
+  defaultValue: undefined,
+  promotedBase: DEFAULT_POINT_DIAMETER_PX,
+  description:
+    'Diameter in px of Manhattan points. Unset (the default) follows the session-wide default for this display type',
+  promotable: true,
+}
+```
 
 </details>
 

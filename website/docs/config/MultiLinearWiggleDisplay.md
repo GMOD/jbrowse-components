@@ -86,6 +86,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [showTree](#slot-showtree)                   | `boolean`                              | Show the subtrack clustering tree in the sidebar                                                   |
 | [showBranchLength](#slot-showbranchlength)   | `boolean`                              | Draw the clustering tree with branch lengths                                                       |
 | [showRowSeparators](#slot-showrowseparators) | `boolean`                              | Draw separator lines between subtrack rows                                                         |
+| [showLegend](#slot-showlegend)               | `boolean`                              | Draw the source color key in overlay mode                                                          |
 
 <details>
 <summary>Advanced slots (1)</summary>
@@ -168,5 +169,12 @@ Draw separator lines between subtrack rows
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `false`
+
+#### slot: showLegend
+
+Draw the source color key in overlay mode
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 </details>

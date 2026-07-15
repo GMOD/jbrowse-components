@@ -496,7 +496,7 @@ type loadingMessage = 'Loading' | undefined
 DotplotDisplays under each track, indexed to match `tracks`.
 
 ```ts
-type dotplotDisplays = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>)[]
+type dotplotDisplays = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: settled

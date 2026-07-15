@@ -97,6 +97,7 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [stickyViewHeaders](#getter-stickyviewheaders)                           | Getters    | LinearGenomeView                      | only uses sticky view headers when it is a 'top-level' view and session allows it                                                                                                                                                                                                                                                                                                                                                                       |
 | [rubberbandTop](#getter-rubberbandtop)                                   | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [pinnedTracksTop](#getter-pinnedtrackstop)                               | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [scalebarDisplayPrefix](#getter-scalebardisplayprefix)                   | Getters    | LinearGenomeView                      | Assembly-name prefix for the scalebar refName labels, or undefined for none. A container view (e.g. LinearSyntenyView) opts its sub-views in by exposing showAssemblyNameInSubviewScalebar; duck-typed rather than matching a concrete view type so no upward plugin dependency is needed and any container can opt in. A wrong nesting depth simply yields no prefix.                                                                                  |
 | [assembliesNotFound](#getter-assembliesnotfound)                         | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [assemblyErrors](#getter-assemblyerrors)                                 | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [assembliesInitialized](#getter-assembliesinitialized)                   | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -143,7 +144,6 @@ view.setBpPerPx(view.bpPerPx * 2) // zoom out 2x
 | [effectiveTotalBp](#getter-effectivetotalbp)                             | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [effectiveTotalBpDisplayStr](#getter-effectivetotalbpdisplaystr)         | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [centerLineInfo](#getter-centerlineinfo)                                 | Getters    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| [scalebarDisplayPrefix](#method-scalebardisplayprefix)                   | Methods    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [MiniControlsComponent](#method-minicontrolscomponent)                   | Methods    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [HeaderComponent](#method-headercomponent)                               | Methods    | LinearGenomeView                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [trackHeight](#method-trackheight)                                       | Methods    | LinearGenomeView                      | rendered height of a single track, collapsing to a fixed height when minimized. Shared by trackHeights and getTrackYOffset so the two can't disagree.                                                                                                                                                                                                                                                                                                   |
@@ -663,6 +663,18 @@ it
 
 ```ts
 type stickyViewHeaders = boolean
+```
+
+#### getter: scalebarDisplayPrefix
+
+Assembly-name prefix for the scalebar refName labels, or undefined for none. A
+container view (e.g. LinearSyntenyView) opts its sub-views in by exposing
+showAssemblyNameInSubviewScalebar; duck-typed rather than matching a concrete
+view type so no upward plugin dependency is needed and any container can opt in.
+A wrong nesting depth simply yields no prefix.
+
+```ts
+type scalebarDisplayPrefix = string | undefined
 ```
 
 #### getter: showLoading
@@ -1197,12 +1209,6 @@ type highlightMenuItems = (_highlight: HighlightType) => MenuItem[]
 
 <details>
 <summary>LinearGenomeView - Methods (other undocumented members)</summary>
-
-#### method: scalebarDisplayPrefix
-
-```ts
-type scalebarDisplayPrefix = () => string
-```
 
 #### method: MiniControlsComponent
 

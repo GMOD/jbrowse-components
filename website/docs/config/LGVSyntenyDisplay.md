@@ -187,8 +187,23 @@ Line width for read-connection arcs/lines in pixels
 
 Draw the supporting-read count on each sashimi arc
 
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _promotable_
+**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
+**Default:** `undefined` · _promotable_
+
+```js
+{
+  type: 'maybeBoolean',
+  description: 'Draw the supporting-read count on each sashimi arc',
+
+
+
+
+
+  defaultValue: undefined,
+  promotedBase: false,
+  promotable: true,
+}
+```
 
 #### slot: maxHeight
 

@@ -83,7 +83,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [featureHeight](#slot-featureheight)                       | `maybeNumber`                                                    | Height of each feature (read) in pixels.                                                                                                                                   |
 | [heightMode](#slot-heightmode)                             | `stringEnum`                                                     | Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). |
 | [readConnectionsLineWidth](#slot-readconnectionslinewidth) | `number`                                                         | Line width for read-connection arcs/lines in pixels                                                                                                                        |
-| [showSashimiLabels](#slot-showsashimilabels)               | `boolean`                                                        | Draw the supporting-read count on each sashimi arc                                                                                                                         |
+| [showSashimiLabels](#slot-showsashimilabels)               | `maybeBoolean`                                                   | Draw the supporting-read count on each sashimi arc                                                                                                                         |
 | [height](#slot-height)                                     | `number`                                                         |                                                                                                                                                                            |
 | [autoscale](#slot-autoscale)                               | `stringEnum` (local, localsd)                                    | Coverage autoscale type                                                                                                                                                    |
 | [scaleType](#slot-scaletype)                               | `stringEnum` (linear, log)                                       | Coverage scale type (linear or log)                                                                                                                                        |
@@ -200,8 +200,23 @@ Line width for read-connection arcs/lines in pixels
 
 Draw the supporting-read count on each sashimi arc
 
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false` · _promotable_
+**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
+**Default:** `undefined` · _promotable_
+
+```js
+{
+  type: 'maybeBoolean',
+  description: 'Draw the supporting-read count on each sashimi arc',
+
+
+
+
+
+  defaultValue: undefined,
+  promotedBase: false,
+  promotable: true,
+}
+```
 
 #### slot: maxHeight
 

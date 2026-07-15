@@ -117,7 +117,7 @@ type gpuRenderingBackend = SyntenyRenderingBackend | undefined
 All synteny displays under this level's tracks.
 
 ```ts
-type linearSyntenyDisplays = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 9 more ... & IStateTreeNode<...>)[]
+type linearSyntenyDisplays = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }, { ...; }>> & ... 9 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: settled
@@ -154,7 +154,7 @@ type syntenyRenderState = SyntenyRenderState | undefined
 Reverse lookup key → display, used to dispatch pick results.
 
 ```ts
-type displaysByKey = Map<number, ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 9 more ... & IStateTreeNode<...>>
+type displaysByKey = Map<number, ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }, { ...; }>> & ... 9 more ... & IStateTreeNode<...>>
 ```
 
 </details>
