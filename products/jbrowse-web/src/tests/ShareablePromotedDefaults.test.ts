@@ -182,6 +182,57 @@ test('a user-added (sessionTracks) track bakes into its own config, not a delta'
   ).toBeUndefined()
 })
 
+test('a promoted default merges into an existing delta without clobbering a prior edit', () => {
+  const { rootModel, session, display } = openVcfDisplay()
+  const s = session as unknown as TestSession & {
+    jbrowse: { tracks: { trackId: string; [k: string]: unknown }[] }
+    updateTrackConfiguration: (c: {
+      trackId: string
+      [k: string]: unknown
+    }) => void
+  }
+
+  // a prior per-track edit → an existing trackConfigDeltas entry the bake must
+  // merge into, not overwrite
+  const base = s.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
+  s.updateTrackConfiguration({ ...base, name: 'Edited name' })
+  expect(s.trackConfigDeltas[TRACK_ID]).toBeDefined()
+
+  // then follow a promoted default on a different (display-level) slot
+  session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
+
+  const snap = bakePromotedDefaultsIntoSnapshot(
+    session as never,
+    getSnapshot(rootModel.session),
+  )
+  const delta = (
+    snap.trackConfigDeltas as Record<
+      string,
+      { name?: string; displays?: Record<string, unknown>[] }
+    >
+  )[TRACK_ID]!
+  // the prior edit survives
+  expect(delta.name).toBe('Edited name')
+  // and the promoted value is merged in alongside it
+  const baked = delta.displays!.find(d => (d.displayId as string).length > 0)!
+  expect(baked[SLOT]).toBe(PROMOTED)
+  // the live display never changed — bake used it read-only
+  expect(getConfResolved(display, SLOT)).toBe(PROMOTED)
+})
+
+test('baking does not mutate the live session (cascade stays live)', () => {
+  const { rootModel, session, display } = openVcfDisplay()
+  session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
+
+  const before = getSnapshot(rootModel.session)
+  bakePromotedDefaultsIntoSnapshot(session as never, getSnapshot(rootModel.session))
+
+  // the live display still resolves through the cascade (no own value baked in)
+  expect(getConfResolved(display, SLOT)).toBe(PROMOTED)
+  // and the serialized live session is unchanged — no delta or flag leaked back
+  expect(getSnapshot(rootModel.session)).toEqual(before)
+})
+
 test('fidelity survives the real share encode/decode (long-URL round-trip)', async () => {
   const { rootModel, session, display } = openVcfDisplay()
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)

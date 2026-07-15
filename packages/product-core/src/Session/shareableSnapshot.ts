@@ -1,4 +1,7 @@
-import { getConf, getDisplayTypeDefaultChanges } from '@jbrowse/core/configuration'
+import {
+  getConf,
+  getDisplayTypeDefaultChanges,
+} from '@jbrowse/core/configuration'
 import {
   getContainingTrack,
   isViewContainer,
@@ -41,6 +44,12 @@ interface Bake {
  * Tracks the sender never opened carry no display state to resolve, so they're
  * left to pick up the recipient's defaults when opened — matching "export the
  * actual state of the (open) tracks".
+ *
+ * Reach is `session.views[].tracks[]` — the same set `openDisplaysOfType` (the
+ * cascade's own "apply to open tracks") walks, so the two stay consistent. A
+ * display nested inside a composite view (breakpoint-split, SV-inspector,
+ * synteny read-vs-ref) is therefore not baked; that's an accepted limitation
+ * shared with the rest of the subsystem, not a special case to add here.
  */
 export function bakePromotedDefaultsIntoSnapshot(
   session: AbstractSessionModel,
@@ -85,7 +94,10 @@ export function bakePromotedDefaultsIntoSnapshot(
 // A display state serializes its `configuration` reference as the displayId
 // string; stamp `ignorePromotedDefaults` on every open one so the recipient
 // resolves it from its own config only.
-function markIgnorePromotedDefaults(views: unknown, openDisplayIds: Set<string>) {
+function markIgnorePromotedDefaults(
+  views: unknown,
+  openDisplayIds: Set<string>,
+) {
   for (const view of asArray(views)) {
     for (const track of asArray(getField(view, 'tracks'))) {
       for (const display of asArray(getField(track, 'displays'))) {
