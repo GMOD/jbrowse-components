@@ -168,6 +168,17 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * LD coloring is actually in effect — the mode is on *and* there's an .ld
+       * adapter for it to read. `colorBy` alone can be 'ld' from config with no
+       * adapter configured, in which case the worker silently falls back to
+       * normal coloring, so every LD affordance (legend, missing-index warning)
+       * keys off this rather than off `colorBy`.
+       */
+      get ldColoringActive(): boolean {
+        return this.colorBy === 'ld' && this.hasLdData
+      },
+      /**
+       * #getter
        * nice-rounded [min, max] -log10 p domain across loaded regions, or
        * undefined before any data loads
        */
@@ -297,17 +308,11 @@ export function stateModelFactory(
        * single-region analysis, so "found in no loaded region" means missing.
        */
       get indexSnpMissing(): boolean {
-        let anyIndexFound = false
-        for (const d of self.rpcDataMap.values()) {
-          if (d.indexFound) {
-            anyIndexFound = true
-          }
-        }
         return (
-          self.colorBy === 'ld' &&
+          self.ldColoringActive &&
           self.indexSnp !== undefined &&
           self.rpcDataMap.size > 0 &&
-          !anyIndexFound
+          ![...self.rpcDataMap.values()].some(d => d.indexFound)
         )
       },
       /**
@@ -551,16 +556,27 @@ export function stateModelFactory(
           superAfterAttach()
           // LocusZoom-style default: while no index SNP is pinned, keep the
           // index anchored on the highest-scoring loaded SNP, re-tracking it as
-          // higher-scoring data streams in. Setting indexSnp triggers one
-          // recoloring fetch; topSnp is a fixpoint under recoloring (it depends
-          // only on positions/scores, which recoloring leaves unchanged), so
-          // this converges rather than looping.
+          // higher-scoring data lands.
+          //
+          // indexSnp is both a fetch input (rpcProps bakes per-feature color on
+          // the worker, so changing it clears every loaded region) and derived
+          // from the loaded data, so this only settles when it reads a
+          // *complete* load: mid-batch, topSnp is the winner among whatever
+          // arrived so far, and adopting it invalidates the very data that
+          // produced it. Unless the top hit is in the first region to land, the
+          // index then flips between each partial winner and the true one,
+          // refetching forever and never painting. loadedRegions is committed
+          // only once a batch fully resolves, making topSnp a fixpoint here, so
+          // adopting it costs one recolor fetch and converges. The && chain also
+          // keeps the topSnp rescan off the 'normal' coloring path.
           addDisposer(
             self,
             autorun(() => {
               if (
                 self.colorBy === 'ld' &&
                 !self.indexSnpPinned &&
+                self.viewportWithinLoadedData &&
+                !self.isLoading &&
                 self.topSnp &&
                 self.topSnp !== self.indexSnp
               ) {

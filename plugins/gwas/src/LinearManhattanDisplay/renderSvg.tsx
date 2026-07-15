@@ -9,7 +9,11 @@ import {
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { YSCALEBAR_LABEL_OFFSET, YScaleBar } from '@jbrowse/wiggle-core'
+import {
+  CrossHatchLines,
+  YSCALEBAR_LABEL_OFFSET,
+  YScaleBar,
+} from '@jbrowse/wiggle-core'
 
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 import SvgLdLegend from './components/SvgLdLegend.tsx'
@@ -35,8 +39,9 @@ interface RenderSvgModel extends SvgExportable {
   rpcDataMap: ReadonlyMap<number, ManhattanRpcResult>
   renderState: ManhattanRenderState
   regionTooLarge: boolean
-  colorBy: 'normal' | 'ld'
+  ldColoringActive: boolean
   showLdLegend: boolean
+  displayCrossHatches: boolean
 }
 
 export async function renderSvg(
@@ -72,7 +77,7 @@ function ManhattanSvgBody({
   const { offsetPx } = view
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)
-  const { ticks, rpcDataMap, renderState } = model
+  const { ticks, rpcDataMap, renderState, displayCrossHatches } = model
 
   // No data-size gate: renderState is always defined (a [0,1] stub until
   // autoscale resolves), so an empty region paints an empty scatter with the
@@ -84,7 +89,7 @@ function ManhattanSvgBody({
   ) : null
 
   const ldLegendEl =
-    model.colorBy === 'ld' && model.showLdLegend ? (
+    model.ldColoringActive && model.showLdLegend ? (
       <SvgLdLegend width={view.width} />
     ) : null
 
@@ -93,7 +98,11 @@ function ManhattanSvgBody({
   // full-genome totalWidthPx
   const canvasWidth = view.width
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  const state = { ...renderState, canvasWidth }
+  // canvasHeight tracks the export height, not the on-screen one, so an
+  // overrideHeight export scales the scatter instead of drawing it at the
+  // display's height inside a taller/shorter frame
+  const drawHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
+  const state = { ...renderState, canvasWidth, canvasHeight: drawHeight }
 
   return (
     <>
@@ -105,7 +114,7 @@ function ManhattanSvgBody({
         <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
           <PaintLayer
             width={canvasWidth}
-            height={renderState.canvasHeight}
+            height={drawHeight}
             opts={opts}
             paint={ctx => {
               drawManhattanBlocks(ctx, rpcDataMap, renderBlocks, state)
@@ -113,6 +122,12 @@ function ManhattanSvgBody({
           />
         </g>
       </SvgClipRect>
+      {/* Y-scale cross-hatches, shared with the on-screen path so an exported
+          SVG matches the track when the option is enabled. Tick y-positions
+          already include YSCALEBAR_LABEL_OFFSET, aligning with the canvas group. */}
+      {displayCrossHatches && ticks ? (
+        <CrossHatchLines ticks={ticks} width={canvasWidth} />
+      ) : null}
       {legendEl}
       {ldLegendEl}
     </>

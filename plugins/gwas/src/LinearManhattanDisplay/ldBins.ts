@@ -32,7 +32,7 @@ export const LD_MISSING_SWATCH: LdSwatch = {
 // Legend rows, top → bottom: index, then r² bins high→low, then the no-data grey.
 export const LD_LEGEND: LdSwatch[] = [
   LD_INDEX_SWATCH,
-  ...(LD_BIN_DEFS as LdSwatch[]),
+  ...LD_BIN_DEFS,
   LD_MISSING_SWATCH,
 ]
 

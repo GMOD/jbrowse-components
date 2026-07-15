@@ -14,8 +14,9 @@ import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 // Must match INDEX_GLYPH_SCALE in manhattan.slang: LocusZoom draws the
-// index/lead SNP visibly larger than the other points.
-const INDEX_GLYPH_SCALE = 1.6
+// index/lead SNP visibly larger than the other points. Exported so
+// glyphContract.test.ts can pin the two against each other.
+export const INDEX_GLYPH_SCALE = 1.6
 
 // Pure draw entry point — used both by on-screen streaming render and SVG
 // export. No per-region builder layer (the rpcDataMap entries are already

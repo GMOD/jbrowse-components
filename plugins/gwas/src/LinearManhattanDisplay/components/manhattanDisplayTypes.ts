@@ -24,7 +24,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   renderState: ManhattanRenderState
   scatterPointSize: number
   featureUnderMouse: ManhattanHit | undefined
-  colorBy: 'normal' | 'ld'
+  ldColoringActive: boolean
   indexSnpMissing: boolean
   indexSnpOffscreen: boolean
   showLdLegend: boolean
