@@ -250,6 +250,17 @@ export default function MultiRegionDisplayMixin() {
       getByteEstimateConfig(): ByteEstimateConfig | null {
         return null
       },
+
+      /**
+       * #action
+       * Overridable hook (no-op base): called when `regionTooLarge` transitions
+       * to true. Displays with transient hover/tooltip state override it to clear
+       * that state — the too-large banner replaces the rendered content, so a
+       * lingering hover would otherwise pin to a now-hidden feature. Wired to the
+       * `ClearHoverOnRegionTooLarge` autorun so it fires for the imperative and
+       * derived gates alike.
+       */
+      onRegionTooLarge() {},
     }))
     .actions(self => ({
       /**
@@ -433,6 +444,22 @@ export default function MultiRegionDisplayMixin() {
             }
           },
           { name: 'ClearBlockingStateOnViewportChange' },
+        )
+
+        // Clear display-specific transient state (hover/tooltip) whenever
+        // `regionTooLarge` becomes true — the banner replaces the rendered
+        // content, so a lingering hover would pin to a now-hidden feature.
+        // `regionTooLarge` is a computed (derived gate) or a flag (imperative
+        // gate); either way this fires the overridable `onRegionTooLarge` hook on
+        // the transition. No-op unless the display overrides the hook.
+        autorunOnReadyView(
+          self,
+          () => {
+            if (self.regionTooLarge) {
+              self.onRegionTooLarge()
+            }
+          },
+          { name: 'ClearHoverOnRegionTooLarge' },
         )
       },
     }))
