@@ -13,6 +13,7 @@ export interface MultiWiggleDisplayModel
   domain: [number, number] | undefined
   scaleType: string
   isOverlay: boolean
+  isDensityMode: boolean
   numSources: number
   rowHeight: number
   rowHeightTooSmallForScalebar: boolean
