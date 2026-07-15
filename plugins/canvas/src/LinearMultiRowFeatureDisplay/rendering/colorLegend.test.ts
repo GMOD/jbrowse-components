@@ -96,6 +96,15 @@ test('configured legend converts CSS colors to ABGR, drops malformed', () => {
   ])
 })
 
+test('configured legend dedupes repeated labels first-seen', () => {
+  expect(
+    resolveConfiguredLegend([
+      { label: 'Maternal', color: 'rgb(227,26,28)' },
+      { label: 'Maternal', color: 'rgb(31,120,180)' },
+    ]),
+  ).toEqual([{ label: 'Maternal', color: 0xff1c1ae3 }])
+})
+
 test('too many distinct labels is treated as non-categorical', () => {
   const n = 40
   const many: MultiRowRegionData = {

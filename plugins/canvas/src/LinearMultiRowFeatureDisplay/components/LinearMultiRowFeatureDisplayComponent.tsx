@@ -104,25 +104,14 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             labelOffset={sidebarOffset}
             availableHeight={height}
           />
-        </svg>
-      ) : null}
-      {showLegend && colorLegend.length ? (
-        <svg
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: view.width,
-            height,
-            pointerEvents: 'none',
-            zIndex: 3,
-          }}
-        >
-          <MultiRowColorLegend
-            entries={colorLegend}
-            canvasWidth={view.width}
-            hiddenLabels={hiddenCategorySet}
-          />
+          {/* painted after the labels so the legend stacks on top */}
+          {showLegend && colorLegend.length ? (
+            <MultiRowColorLegend
+              entries={colorLegend}
+              canvasWidth={view.width}
+              hiddenLabels={hiddenCategorySet}
+            />
+          ) : null}
         </svg>
       ) : null}
       <TreeSidebar model={model} />

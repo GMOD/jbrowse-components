@@ -30,10 +30,21 @@ function isConfiguredLegendEntry(e: unknown): e is ConfiguredLegendEntry {
 // (untyped) `legend` config slot, so it validates each entry at runtime. Used
 // when the category is encoded only in the block color, so there's no feature
 // attribute to auto-derive from (see buildColorLegend).
+//
+// Labels are deduped first-seen: a label is both the React key and the
+// `hiddenColors` toggle key (see model), so a repeated label would collide and
+// map one toggle to several colors. Matches buildColorLegend's per-label
+// uniqueness.
 export function resolveConfiguredLegend(entries: unknown): LegendEntry[] {
-  return (Array.isArray(entries) ? entries : [])
-    .filter(isConfiguredLegendEntry)
-    .map(e => ({ label: e.label, color: cssColorToABGR(e.color) }))
+  const seenLabels = new Set<string>()
+  const result: LegendEntry[] = []
+  for (const e of Array.isArray(entries) ? entries : []) {
+    if (isConfiguredLegendEntry(e) && !seenLabels.has(e.label)) {
+      seenLabels.add(e.label)
+      result.push({ label: e.label, color: cssColorToABGR(e.color) })
+    }
+  }
+  return result
 }
 
 // A key with more distinct labels than this isn't a categorical vocabulary

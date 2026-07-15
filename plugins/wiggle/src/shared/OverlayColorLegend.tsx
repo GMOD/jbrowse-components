@@ -1,4 +1,4 @@
-import { measureLegendText } from './measureLegendText.ts'
+import { SvgColorLegend } from '@jbrowse/core/ui'
 
 interface LegendSource {
   name: string
@@ -75,42 +75,14 @@ export default function OverlayColorLegend({
   canvasWidth: number
 }) {
   const entries = buildLegendEntries(sources)
-  let maxLabelWidth = 0
-  for (const e of entries) {
-    const w = measureLegendText(e.label, 10)
-    if (w > maxLabelWidth) {
-      maxLabelWidth = w
-    }
-  }
-  const textLeft = 16
-  const totalWidth = textLeft + maxLabelWidth + 6
-  const x = Math.max(0, canvasWidth - totalWidth - 4)
   return (
-    <g transform={`translate(${x} 0)`}>
-      {entries.map((entry, idx) => {
-        const y = idx * 14
-        return (
-          <g key={entry.key}>
-            <rect
-              x={0}
-              y={y}
-              width={totalWidth}
-              height={14}
-              fill="rgba(255,255,255,0.8)"
-            />
-            <rect
-              x={2}
-              y={y + 2}
-              width={10}
-              height={10}
-              fill={entry.color ?? fallbackColor}
-            />
-            <text x={textLeft} y={y + 11} fontSize={10} fill="black">
-              {entry.label}
-            </text>
-          </g>
-        )
-      })}
-    </g>
+    <SvgColorLegend
+      canvasWidth={canvasWidth}
+      entries={entries.map(e => ({
+        key: e.key,
+        label: e.label,
+        color: e.color ?? fallbackColor,
+      }))}
+    />
   )
 }
