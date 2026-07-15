@@ -23,7 +23,6 @@ function feat(
     pairOrientation: 0,
     strand: 1,
     nextRef: undefined,
-    templateLength: 0,
     ...partial,
   }
 }

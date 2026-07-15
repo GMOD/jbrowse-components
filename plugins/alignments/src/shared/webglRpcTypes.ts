@@ -12,7 +12,6 @@ export interface FeatureData {
 
 export interface ChainFeatureData extends FeatureData {
   nextRef: string | undefined
-  templateLength: number
 }
 
 export interface GapData {

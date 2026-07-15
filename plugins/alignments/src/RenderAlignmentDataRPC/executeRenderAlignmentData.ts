@@ -24,10 +24,7 @@ import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.t
 import { chainGroupingKey } from '../shared/chainGroupingKey.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
 import { isModificationScheme } from '../shared/colorSchemes.ts'
-import {
-  computeChainInsertSizeStats,
-  computePairedInsertSizeStats,
-} from '../shared/computePairedInsertSizeStats.ts'
+import { computePairedInsertSizeStats } from '../shared/computePairedInsertSizeStats.ts'
 import { extractFeatureArrays } from '../shared/extractFeatureArrays.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
 import { fetchReferenceSequence } from '../shared/fetchReferenceSequence.ts'
@@ -560,11 +557,10 @@ export async function executeRenderAlignmentData({
   // distribution is a property of the whole fetched read set, not of a group,
   // so a per-group scale would color the same insert size differently between
   // stacked sections. Same cross-section comparability as the simplex-mod set
-  // above. Chain keys on template length, pileup on the per-read insert size.
+  // above. `insertSize` is `abs(template_length)`, so chain and pileup share
+  // this one denominator.
   const allFeatures = extractions.flatMap(e => e.features)
-  const sharedInsertSizeStats = isChain
-    ? computeChainInsertSizeStats(allFeatures as ChainFeatureData[])
-    : computePairedInsertSizeStats(allFeatures)
+  const sharedInsertSizeStats = computePairedInsertSizeStats(allFeatures)
 
   checkStopToken2(stopTokenCheck)
 

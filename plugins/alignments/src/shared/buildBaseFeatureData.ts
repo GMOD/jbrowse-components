@@ -42,6 +42,5 @@ export function buildChainFeatureData(feature: Feature): ChainFeatureData {
   return {
     ...buildBaseFeatureData(feature),
     nextRef: feature.get('next_ref') as string | undefined,
-    templateLength: (feature.get('template_length') as number | undefined) ?? 0,
   }
 }

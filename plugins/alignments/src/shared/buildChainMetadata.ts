@@ -20,7 +20,7 @@ import type { ChainFeatureData } from './webglRpcTypes.ts'
  *
  * Insert-size stats are NOT computed here: they describe the whole region's
  * read set, not one group, so the worker entry computes one shared scale across
- * all groups (see computeChainInsertSizeStats).
+ * all groups (see computePairedInsertSizeStats).
  */
 export function buildChainMetadata(features: ChainFeatureData[]) {
   const featuresByChain = groupBy(features, f =>
@@ -120,7 +120,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     }
     let distance = maxEnd - minStart
     if (chain.length === 1) {
-      const tlen = Math.abs(chain[0]!.templateLength)
+      const tlen = chain[0]!.insertSize
       if (tlen > 0) {
         distance = tlen
       }
