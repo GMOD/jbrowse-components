@@ -105,7 +105,7 @@ Two fetch foundations — per-region (`MultiRegionDisplayMixin`) and single-glob
 
 | Foundation (composed on `BaseDisplay`) | Brings | Displays |
 | --- | --- | --- |
-| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the four fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, both multi-sample variant displays, `LinearReferenceSequenceDisplay`, plus the canvas displays (via `LinearCanvasBaseDisplay` — see below) |
+| `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the five fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, both multi-sample variant displays, `LinearReferenceSequenceDisplay`, plus the canvas displays (via `LinearCanvasBaseDisplay` — see below) |
 | `GlobalDataDisplayMixin()` = `GlobalFetchMixin()` + `RenderLifecycleMixin` | the single-global fetch foundation **plus** GPU render lifecycle + `displayPhase`; **no** fetch autoruns (each display installs its own `afterAttach` autorun via `installGlobalFetchAutorun`) | HiC (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`) |
 | `GlobalFetchMixin()` bare (via arc's `ArcFetchModel`) + main-thread SVG render | the same fetch foundation (`RegionTooLargeMixin` + `FetchMixin` + `reloadCounter`) with **no** `RenderLifecycleMixin` — a non-GPU display shouldn't drag in the render lifecycle to get fetch/cancel/too-large/reload | `LinearArcDisplay`, `LinearPairedArcDisplay` |
 
@@ -113,9 +113,9 @@ Two fetch foundations — per-region (`MultiRegionDisplayMixin`) and single-glob
 two rows: GPU global displays layer `RenderLifecycleMixin` on top of it
 (`GlobalDataDisplayMixin`), while arc composes it bare and paints main-thread SVG.
 `displayPhase` lives in `GlobalDataDisplayMixin`, not `GlobalFetchMixin`, because
-it reads `renderError` — the one genuinely GPU-only piece. Arc's `ArcFetchModel`
-shadows the imperative `RegionTooLargeMixin` getter with a **derived** one (see
-"regionTooLarge: imperative vs. derived").
+it reads `renderError` — the one genuinely GPU-only piece. `RegionTooLargeMixin`'s
+gate is derived and opt-in; arc's `ArcFetchModel` enables it like every other
+byte-gated display (see "The derived region-too-large gate").
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
@@ -145,14 +145,15 @@ wrapper, `rpcProps`, cancellation, byte gate).
 
 `MultiRegionDisplayMixin` (in
 `plugins/linear-genome-view/src/BaseLinearDisplay/`) drives RPC fetches for all
-LGV displays (alignments, canvas, wiggle, variants) via four autoruns:
+LGV displays (alignments, canvas, wiggle, variants) via five autoruns:
 
 | Autorun | Trigger | Action |
 | --- | --- | --- |
 | `DisplayedRegionsChange` | `view.displayedRegions` change | `clearAllRpcData()` |
 | `FetchVisibleRegions` | viewport / `fetchGeneration` (600ms debounce) | `fetchNeeded(needed)` for uncovered buffered regions; gated by `error`/`regionTooLarge` |
 | `SettingsInvalidate` | `rpcProps()` change | `clearAllRpcData()` |
-| `ClearBlockingStateOnViewportChange` | viewport change while `regionTooLarge` or `error` is set | `clearAllRpcData()` to unblock retry (no-op for canvas's derived `regionTooLarge`) |
+| `ClearBlockingStateOnViewportChange` | viewport change while `error` or `fetchCanceled` is set | `clearAllRpcData()` to unblock retry (the derived `regionTooLarge` self-releases, so it's not part of this) |
+| `ClearHoverOnRegionTooLarge` | `regionTooLarge` becomes true | fires the overridable `onRegionTooLarge()` hook (no-op base; alignments clears its hover) |
 
 Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`.
 `fetchRegions` runs an optional pre-flight byte estimate (via
@@ -161,7 +162,7 @@ RPC) before invoking the work callback. Oversize regions surface a banner:
 `DisplayChrome` renders `TooLargeMessage` from the model's
 `regionTooLargeReason`.
 
-The `error`/`regionTooLarge` reads in `ClearBlockingStateOnViewportChange` are
+The `error`/`fetchCanceled` reads in `ClearBlockingStateOnViewportChange` are
 `untracked` for correctness — tracking either would let `set…` re-fire the
 autorun and wipe the flag before any viewport change.
 
@@ -188,66 +189,73 @@ because the cross-region total exceeds one region's budget. The budget comes fro
 the display's `byteSizeLimit()` (`userByteSizeLimit ?? fetchSizeLimit`, only in
 the force-load zone).
 
-### regionTooLarge: imperative vs. derived
+### The derived region-too-large gate
 
-`regionTooLarge` is the flag that raises the "region too large" banner and holds
-off the fetch. It has two implementations, both read through the one
-`regionTooLarge` getter so consumers (`regionCannotBeRendered()`,
-`regionCannotBeRenderedText()`, the `FetchVisibleRegions` gate) work with either.
+`regionTooLarge` raises the "region too large" banner and holds off the fetch.
+It's a **derived** getter on `RegionTooLargeMixin` — a pure function of the
+cached byte estimate scaled to the current viewport — so it self-releases on
+zoom-in without an imperative clear and doesn't flicker on pan. The old
+`setRegionTooLarge` volatile-flag path was removed once every byte-gated display
+went derived; the mixin now owns the whole gate, and displays opt in through
+hooks rather than shadowing the getter per display.
 
-**Imperative** (`RegionTooLargeMixin` default; the displays that run a real byte
-pre-flight by overriding `getByteEstimateConfig` — alignments, maf,
-multi-sample-variant): `setRegionTooLarge(true)` flips a volatile flag inside
-`fetchRegions` when the byte estimate exceeds the limit.
-`ClearBlockingStateOnViewportChange` clears it on viewport change so
-`FetchVisibleRegions` can retry. (Wiggle inherits this default but never actually
-gates — its `alwaysRender` adapters make `evaluateRegionTooLarge` a no-op.)
+A byte-gated display opts in by overriding hooks on `RegionTooLargeMixin`:
 
-**Derived** (canvas's `LinearCanvasBaseDisplay`, LD's `LDDisplay`, and arc's
-`ArcFetchModel` — each a `get regionTooLarge()` that shadows the mixin default): a
-pure function of cached stats × current `bpPerPx` + visible regions.
+- `derivedRegionTooLargeEnabled` → `true`. Left false (wiggle, Manhattan,
+  sequence, synteny, HiC), `regionTooLarge` is a literal `false` and the LGV-only
+  `tooLargeStatus` getters below are never evaluated — so a non-byte or non-LGV
+  consumer of the mixin never reads `view.visibleBp`.
+- `configuredFetchSizeLimit` → `getConf(self, 'fetchSizeLimit')` (the mixin owns
+  no `configuration`).
+- `densityTooLargeForDerivedGate` → a second gating axis, if any. Canvas folds
+  its feature-density gate in here; byte-only displays (alignments, maf, LD, arc,
+  multi-sample-variant) leave it false.
 
-- `bytesEstimateTooLarge` tests `estimatedVisibleBytes` against
-  `resolveByteLimit()`. `applyFetchResults` records `featureDensityStats.bytes`
-  (per-region max) for the span visible at fetch time, as `byteEstimateVisibleBp`.
-  `estimatedVisibleBytes` rescales it to the current span (`bytes ×
-  view.visibleBp / byteEstimateVisibleBp`). The rescale makes the byte gate a
-  pure function of the view, so it self-releases on zoom-in. (Gate on
-  `estimatedVisibleBytes`, never raw `bytes` — a raw read never shrinks on
-  zoom-in, so the banner never clears.)
-- `densityTooLarge` walks `view.visibleRegions`, looks up
-  `densityStatsPerRegion[idx]` (populated for both successful fetches and
-  worker-side too-large responses), and tests `(featureCount/regionWidthBp) ×
-  bpPerPx > maxFeatureDensity`. Scoping to visible regions means panning past a
-  too-large area naturally releases the gate.
-- `regionTooLarge = bytesEstimateTooLarge || densityTooLarge`.
-- `laidOutDataMap` returns empty when `regionTooLarge` is true, so the GPU
-  upload pushes nothing — no stale-feature flash through the banner.
-- `FetchVisibleRegions` gates on `regionTooLarge` before calling `isCacheValid`,
-  so density-blocked regions are held back by the gate rather than inside
-  `isCacheValid`. When density drops (zoom in or force load), `regionTooLarge`
-  flips false, the gate opens, `isCacheValid` returns `false` (no rpcData), a
-  refetch fires and the banner clears.
-- A canvas-level autorun on `view.displayedRegions` clears
-  `densityStatsPerRegion`/`featureDensityStats` on chromosome navigation, since
-  `displayedRegionIndex` gets reused and stale entries would otherwise gate
-  against the wrong region's stats.
+How the verdict is built (all in `RegionTooLargeMixin`):
 
-Both `featureDensityStats` and `densityStatsPerRegion` survive `clearAllRpcData()`
-(they aren't in `clearDisplaySpecificData`'s path), so
-`ClearBlockingStateOnViewportChange` is a no-op for the derived banner — state
-recomputes the same value before and after.
+- `setFeatureDensityStats(stats)` commits the estimate AND records the span it was
+  measured at (`byteEstimateVisibleBp = view.visibleBp`). The estimate arrives
+  from the `fetchRegions` pre-flight (maf/alignments/multi-sample-variant, via
+  `getByteEstimateConfig` → `checkByteEstimate`) or, for canvas, from
+  `applyFetchResults` folding the byte check into the feature RPC (per-region
+  `bytes` **max**, not sum, so a multi-region view where each region fits isn't
+  blanked by the cross-region total).
+- `estimatedVisibleBytes` rescales the captured estimate to the current span
+  (`bytes × view.visibleBp / byteEstimateVisibleBp`), so the byte gate is a pure
+  function of the view and self-releases on zoom-in. Gate on this, never raw
+  `bytes` — a raw read never shrinks on zoom-in, so the banner would never clear.
+  Guarded on `view.initialized`: a bare getter must never throw, and `visibleBp`
+  reads `view.width`, which throws pre-init.
+- `tooLargeStatus` feeds the scaled estimate + `densityTooLargeForDerivedGate` to
+  the shared `evaluateRegionTooLarge` verdict; `regionTooLarge` /
+  `regionTooLargeReason` read it.
+- `fetchRegions` short-circuits on `self.regionTooLarge` immediately after
+  `setFeatureDensityStats` — the capture span *is* the current viewport, so the
+  derived verdict already reflects the just-captured estimate. No imperative flag,
+  and `FetchVisibleRegions` re-fires (it reads `regionTooLarge`) the moment a
+  zoom-in flips it false, opening the gate.
 
-`regionCannotBeRendered()` / `regionCannotBeRenderedText()` read through
-`self.regionTooLarge` (the getter), not `self.regionTooLargeState` (the
-volatile), so subclass overrides flow into both the banner UI and SVG export
-text.
+The estimate survives `clearAllRpcData()` (it isn't in `clearDisplaySpecificData`),
+so a viewport-change clear doesn't flicker the banner — `ClearBlockingStateOnViewportChange`
+no longer touches `regionTooLarge` at all (self-release replaces it). Only
+chromosome navigation drops the estimate, via each display's
+`onDisplayedRegionsChange(self, () => self.setFeatureDensityStats(undefined))` —
+`displayedRegionIndex` is reused across chromosomes, so a stale estimate would
+gate the new region against the wrong stats. (Canvas also clears its
+`densityStatsPerRegion` there; `laidOutDataMap` returns empty while
+`regionTooLarge`, so the GPU upload pushes nothing — no stale-feature flash.)
+
+`regionTooLarge` becoming true fires the overridable `onRegionTooLarge()` hook
+(via the `ClearHoverOnRegionTooLarge` autorun); alignments overrides it to clear
+its hover, since the banner replaces the pileup.
+`regionCannotBeRenderedText()` reads through `self.regionTooLarge`, so the banner
+UI and SVG-export text stay in agreement.
 
 ### Shared decision primitives
 
-The imperative, derived, and arc/React-SVG paths diverge only in *how* they
-measure bytes/density. The verdict, threshold, and banner text are unified in
-`shared/featureDensityUtils.ts` so they can't drift:
+The derived gate and canvas's in-RPC byte short-circuit diverge only in *how*
+they measure bytes/density. The verdict, threshold, and banner text are unified
+in `shared/featureDensityUtils.ts` so they can't drift:
 
 - `resolveByteLimit({ userByteSizeLimit, adapterFetchSizeLimit, configFetchSizeLimit })`
   — the one byte-budget resolution. A non-positive adapter limit means "no

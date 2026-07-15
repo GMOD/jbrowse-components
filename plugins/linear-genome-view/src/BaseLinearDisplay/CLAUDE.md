@@ -21,7 +21,7 @@ early-`return` + loading-thunk constraints.
 | `DisplayedRegionsChange`             | `view.displayedRegions` entries change (chromosome navigation)                                          | `clearAllRpcData()`                                       |
 | `FetchVisibleRegions`                | `fetchGeneration` (bumps at fetch end), `view.visibleRegions`, `error`, `regionTooLarge` (600 ms delay) | calls `fetchNeeded` with uncovered buffered regions       |
 | `SettingsInvalidate`                 | `self.rpcProps()` (any field it reads); installed only when subclass defines the method                 | `clearAllRpcData()`                                       |
-| `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `regionTooLarge` or `error` is set |
+| `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `error` or `fetchCanceled` is set (the derived `regionTooLarge` self-releases, so it isn't part of this) |
 | `ClearHoverOnRegionTooLarge`         | `self.regionTooLarge`                                                                                   | fires the overridable `onRegionTooLarge()` hook (no-op base) when it becomes true, so a display can drop its hover/tooltip when the banner replaces the content (alignments clears its mouseover) |
 
 All five are installed via `autorunOnReadyView(self, view => …, opts)`, which
@@ -67,12 +67,14 @@ for smooth scrolling), so subsequent pans within the buffer require no re-fetch.
 
 ### `clearAllRpcData` vs `invalidateLoadedRegions`
 
-`clearAllRpcData` — full reset: cancels fetch, clears error, regionTooLarge,
-loadedRegions, display-specific data, and canvas drawn flag.
+`clearAllRpcData` — full reset: cancels fetch, clears error, loadedRegions,
+display-specific data, and canvas drawn flag. It does NOT touch the too-large
+gate — that's derived (a pure function of the cached estimate × viewport) and
+self-releases, and the cached estimate deliberately survives so the banner
+doesn't flicker on a viewport-change clear.
 
 `invalidateLoadedRegions` — lighter reset: cancels fetch and clears
-loadedRegions, leaving error and regionTooLarge intact. Used by alignments after
-sort/group change.
+loadedRegions, leaving error intact. Used by alignments after sort/group change.
 
 ### `untracked` semantics
 
@@ -80,7 +82,7 @@ sort/group change.
 | ------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `untracked(() => self.isLoading)`                      | perf guard      | prevents extra fire on fetch start; `fetchGeneration` already covers post-fetch re-evaluation                                                |
 | `untracked(() => self.loadedRegions.get(...))`         | perf guard      | prevents autorun re-fire when regions are populated; `fetchGeneration` bump covers it                                                        |
-| `untracked(() => self.regionTooLarge \|\| self.error)` | **correctness** | if either were tracked, setting them would immediately re-fire `ClearBlockingStateOnViewportChange` and wipe them before any viewport change |
+| `untracked(() => self.error \|\| self.fetchCanceled)` | **correctness** | if either were tracked, setting them would immediately re-fire `ClearBlockingStateOnViewportChange` and wipe them before any viewport change |
 
 ### `isBlockCovered` / `viewportWithinLoadedData`
 

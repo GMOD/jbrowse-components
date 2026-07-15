@@ -192,13 +192,14 @@ export default function MultiRegionDisplayMixin() {
     .actions(self => ({
       /**
        * #action
-       * full reset: cancels fetch, clears error, regionTooLarge,
-       * loadedRegions, display-specific data, and the canvas-drawn flag
+       * full reset: cancels fetch, clears error, loadedRegions,
+       * display-specific data, and the canvas-drawn flag. The too-large gate is
+       * derived (a pure function of the cached estimate × viewport), so it needs
+       * no explicit clear here — it self-releases when the viewport changes.
        */
       clearAllRpcData() {
         self.cancelFetch()
         self.setError(undefined)
-        self.setRegionTooLarge(false)
         self.loadedRegions.clear()
         self.clearDisplaySpecificData()
         self.resetCanvasDrawn()
@@ -290,13 +291,15 @@ export default function MultiRegionDisplayMixin() {
             }
             if (result) {
               self.setFeatureDensityStats(result.stats)
-              if (result.tooLarge) {
-                self.setRegionTooLarge(true, result.reason)
+              // The derived regionTooLarge getter reflects the just-captured
+              // estimate (setFeatureDensityStats recorded the current viewport as
+              // its capture span), so short-circuit the download when it's over
+              // budget instead of writing an imperative flag.
+              if (self.regionTooLarge) {
                 return
               }
             }
           }
-          self.setRegionTooLarge(false)
           await work(ctx)
           if (!ctx.isStale()) {
             for (const { displayedRegionIndex, region } of needed) {
@@ -426,20 +429,18 @@ export default function MultiRegionDisplayMixin() {
           )
         }
 
-        // When zoom or viewport position changes while regionTooLarge,
-        // error, or fetchCanceled is set, clear so the fetch autorun
-        // retries. Reads them untracked so setting them doesn't trigger
-        // this autorun to immediately wipe them — only the viewport read
+        // When zoom or viewport position changes while an error or a canceled
+        // fetch is set, clear so the fetch autorun retries. (The too-large gate
+        // is derived — a pure function of the viewport — so it self-releases and
+        // needs no clear here; only the terminal error/cancel states, which are
+        // imperative flags, do.) Reads them untracked so setting them doesn't
+        // trigger this autorun to immediately wipe them — only the viewport read
         // should fire it.
         autorunOnReadyView(
           self,
           view => {
             void view.visibleRegions
-            if (
-              untracked(
-                () => self.regionTooLarge || self.fetchCanceled || self.error,
-              )
-            ) {
+            if (untracked(() => self.fetchCanceled || self.error)) {
               self.clearAllRpcData()
             }
           },
@@ -448,10 +449,9 @@ export default function MultiRegionDisplayMixin() {
 
         // Clear display-specific transient state (hover/tooltip) whenever
         // `regionTooLarge` becomes true — the banner replaces the rendered
-        // content, so a lingering hover would pin to a now-hidden feature.
-        // `regionTooLarge` is a computed (derived gate) or a flag (imperative
-        // gate); either way this fires the overridable `onRegionTooLarge` hook on
-        // the transition. No-op unless the display overrides the hook.
+        // content, so a lingering hover would pin to a now-hidden feature. Fires
+        // the overridable `onRegionTooLarge` hook on the transition; no-op unless
+        // the display overrides the hook.
         autorunOnReadyView(
           self,
           () => {

@@ -23,26 +23,25 @@ import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapte
  * Owns the state that TooLargeMessage reads: regionTooLarge,
  * regionTooLargeReason, forceLoad.
  *
- * ## Two gating architectures, one mixin
+ * ## Derived, self-releasing gate
  *
- * - **Imperative** (default): `setRegionTooLarge(true/false)` writes a volatile
- *   flag that `regionTooLarge` returns verbatim. `MultiRegionDisplayMixin`'s
- *   `ClearBlockingStateOnViewportChange` autorun clears it on any viewport move
- *   so the fetch retries. Used by alignments (and any display that hasn't opted
- *   into the derived gate).
- * - **Derived** (opt-in via `derivedRegionTooLargeEnabled`): `regionTooLarge`
- *   becomes a pure function of the cached byte estimate scaled to the current
- *   viewport (`tooLargeStatus`), so the banner self-releases on zoom-in without
- *   a flag-clear round trip and doesn't flicker on pan. Used by
- *   canvas/LD/arc/maf/MultiSampleVariant. A display opts in by overriding three
- *   hooks — `derivedRegionTooLargeEnabled` → true, `configuredFetchSizeLimit`
- *   (the mixin owns no `configuration`), and, if it has a second gating axis,
- *   `densityTooLargeForDerivedGate` (canvas's feature-density gate) — and
- *   clearing the cached estimate on chromosome nav with
- *   `onDisplayedRegionsChange(self, () => self.setFeatureDensityStats(undefined))`
- *   in its `afterAttach` (the estimate intentionally survives viewport-change
- *   clears, so only region navigation drops it). See
- *   `agent-docs`/`project` notes on the two-path split.
+ * `regionTooLarge` is a pure function of the cached byte estimate scaled to the
+ * current viewport (`tooLargeStatus`), so the banner self-releases on zoom-in
+ * without a flag-clear round trip and doesn't flicker on pan. A byte-gated
+ * display opts in by overriding three hooks — `derivedRegionTooLargeEnabled` →
+ * true, `configuredFetchSizeLimit` (the mixin owns no `configuration`), and, if
+ * it has a second gating axis, `densityTooLargeForDerivedGate` (canvas's
+ * feature-density gate) — and clears the cached estimate on chromosome nav with
+ * `onDisplayedRegionsChange(self, () => self.setFeatureDensityStats(undefined))`
+ * in its `afterAttach` (the estimate intentionally survives viewport-change
+ * clears, so only region navigation drops it). Used by
+ * canvas/LD/arc/maf/MultiSampleVariant/alignments.
+ *
+ * A display that leaves `derivedRegionTooLargeEnabled` false never gates on size
+ * (`regionTooLarge` is a literal false, so the LGV-only `tooLargeStatus` getters
+ * aren't evaluated — safe for non-byte / non-LGV consumers like synteny). The
+ * old imperative `setRegionTooLarge` flag path was removed once every byte-gated
+ * display went derived.
  *
  * #stateModel RegionTooLargeMixin
  * #category display
@@ -60,14 +59,6 @@ export default function RegionTooLargeMixin() {
       /**
        * #volatile
        */
-      regionTooLargeState: false,
-      /**
-       * #volatile
-       */
-      regionTooLargeReasonState: '',
-      /**
-       * #volatile
-       */
       featureDensityStats: undefined as FeatureDensityStats | undefined,
       /**
        * #volatile
@@ -81,10 +72,11 @@ export default function RegionTooLargeMixin() {
     .views(() => ({
       /**
        * #getter
-       * Opt-in switch: a display flips this true to get the derived,
-       * self-releasing byte gate instead of the imperative flag. Default false
-       * keeps the historical imperative behavior, so imperative/non-byte
-       * displays (alignments, wiggle) are unaffected by the shared derived path.
+       * Opt-in switch: a byte-gated display flips this true to enable the derived,
+       * self-releasing region-too-large gate. Default false means the display
+       * never gates on size (`regionTooLarge` is always false), so non-byte
+       * displays (wiggle, manhattan, sequence, synteny, …) don't evaluate the
+       * LGV-only `tooLargeStatus` getters at all.
        */
       get derivedRegionTooLargeEnabled(): boolean {
         return false
@@ -166,7 +158,7 @@ export default function RegionTooLargeMixin() {
       get regionTooLarge() {
         return self.derivedRegionTooLargeEnabled
           ? self.tooLargeStatus.tooLarge
-          : self.regionTooLargeState
+          : false
       },
 
       /**
@@ -175,7 +167,7 @@ export default function RegionTooLargeMixin() {
       get regionTooLargeReason() {
         return self.derivedRegionTooLargeEnabled
           ? self.tooLargeStatus.reason
-          : self.regionTooLargeReasonState
+          : ''
       },
     }))
     .views(self => ({
@@ -191,19 +183,9 @@ export default function RegionTooLargeMixin() {
     .actions(self => ({
       /**
        * #action
-       * Imperative-path setter. No-op on the derived verdict (which shadows it),
-       * but still written so a display can mix both while migrating.
-       */
-      setRegionTooLarge(val: boolean, reason?: string) {
-        self.regionTooLargeState = val
-        self.regionTooLargeReasonState = reason ?? ''
-      },
-
-      /**
-       * #action
        * Commits the byte estimate and records the span it was measured at
        * (`byteEstimateVisibleBp`) so the derived gate can scale it to the current
-       * view. The capture is harmless for imperative displays (they ignore it).
+       * view. The capture is harmless for non-gated displays (they ignore it).
        */
       setFeatureDensityStats(stats?: FeatureDensityStats) {
         self.byteEstimateVisibleBp = stats
@@ -214,28 +196,24 @@ export default function RegionTooLargeMixin() {
 
       /**
        * #action
-       * force-load: raise the byte limit past the current request and clear the
-       * too-large banner. The derived path raises past the estimate scaled to the
-       * *current* view (not the raw captured bytes), so it clears even if the
-       * view zoomed out after the estimate was captured; the imperative path
-       * raises past the raw bytes and clears the flag. Canvas (which also has a
-       * density force-load) overrides this entirely.
+       * force-load: raise the byte limit past the current request so the gate
+       * releases. Raises past the estimate scaled to the *current* view (not the
+       * raw captured bytes), so it clears even if the view zoomed out after the
+       * estimate was captured; `raiseLimitPast` is the raw fallback for a display
+       * with no scaled estimate. Canvas (which also has a density force-load)
+       * overrides this entirely.
        */
       setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
-        if (self.derivedRegionTooLargeEnabled) {
-          const limit = scaledForceLoadByteLimit({
-            scaledEstimate: self.estimatedVisibleBytes,
-            rawBytes: stats?.bytes,
-          })
-          if (limit !== undefined) {
-            self.userByteSizeLimit = limit
-          }
-        } else {
-          if (stats?.bytes) {
-            self.userByteSizeLimit = raiseLimitPast(stats.bytes)
-          }
-          self.regionTooLargeState = false
-          self.regionTooLargeReasonState = ''
+        const limit = self.derivedRegionTooLargeEnabled
+          ? scaledForceLoadByteLimit({
+              scaledEstimate: self.estimatedVisibleBytes,
+              rawBytes: stats?.bytes,
+            })
+          : stats?.bytes
+            ? raiseLimitPast(stats.bytes)
+            : undefined
+        if (limit !== undefined) {
+          self.userByteSizeLimit = limit
         }
       },
 
