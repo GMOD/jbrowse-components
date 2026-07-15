@@ -99,18 +99,18 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
 
   public async getData() {
     const refNames = await this.getRefNames()
-    const features = []
-    for (const refName of refNames) {
-      const f = await firstValueFrom(
-        this.getFeatures({
-          assemblyName: 'unknown',
-          refName,
-          start: 0,
-          end: Number.MAX_SAFE_INTEGER,
-        }).pipe(toArray()),
-      )
-      features.push(f)
-    }
+    const features = await Promise.all(
+      refNames.map(refName =>
+        firstValueFrom(
+          this.getFeatures({
+            assemblyName: 'unknown',
+            refName,
+            start: 0,
+            end: Number.MAX_SAFE_INTEGER,
+          }).pipe(toArray()),
+        ),
+      ),
+    )
     return features.flat()
   }
 
@@ -237,27 +237,29 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
       }
 
       for (const [name, subfeatures] of Object.entries(parentAggregation)) {
-        const groupStart = min(subfeatures.map(f => f.start))
-        const groupEnd = max(subfeatures.map(f => f.end))
-        if (
-          doesIntersect2(
-            groupStart,
-            groupEnd,
-            originalQuery.start,
-            originalQuery.end,
-          )
-        ) {
-          const subs = subfeatures.sort((a, b) =>
-            a.uniqueId.localeCompare(b.uniqueId),
-          )
-          const sortedByStart = [...subs].sort((a, b) => a.start - b.start)
-          const hasOverlaps = sortedByStart.some(
-            (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
-          )
-          // overlapping subs → one gene parent; non-overlapping → one parent per sub
-          // (handles bacterial GFF where two genes share a name but are distinct loci)
-          const groups = hasOverlaps ? [subs] : subs.map(sub => [sub])
-          for (const group of groups) {
+        const subs = subfeatures.sort((a, b) =>
+          a.uniqueId.localeCompare(b.uniqueId),
+        )
+        const sortedByStart = [...subs].sort((a, b) => a.start - b.start)
+        const hasOverlaps = sortedByStart.some(
+          (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
+        )
+        // overlapping subs → one gene parent; non-overlapping → one parent per sub
+        // (handles bacterial GFF where two genes share a name but are distinct loci)
+        const groups = hasOverlaps ? [subs] : subs.map(sub => [sub])
+        for (const group of groups) {
+          // gate on each parent's own extent: a distant non-overlapping locus
+          // sharing this name must not ride in on a sibling that intersects
+          const groupStart = min(group.map(f => f.start))
+          const groupEnd = max(group.map(f => f.end))
+          if (
+            doesIntersect2(
+              groupStart,
+              groupEnd,
+              originalQuery.start,
+              originalQuery.end,
+            )
+          ) {
             observer.next(
               new SimpleFeature({
                 id: `${this.id}-${group[0]!.uniqueId}-parent`,
@@ -266,8 +268,8 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
                   subfeatures: group,
                   strand: group.find(f => f.strand !== 0)?.strand ?? 1,
                   name,
-                  start: min(group.map(f => f.start)),
-                  end: max(group.map(f => f.end)),
+                  start: groupStart,
+                  end: groupEnd,
                   refName: query.refName,
                 },
               }),
@@ -276,8 +278,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
         }
       }
     })
-
-    observer.complete()
   }
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
@@ -288,6 +288,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
           observer,
           allowRedispatch: true,
         })
+        // complete once here, not in the helper: a redispatch recurses into the
+        // helper, so completing there would fire complete() twice
+        observer.complete()
       } catch (e) {
         observer.error(e)
       }
