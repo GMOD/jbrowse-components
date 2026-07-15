@@ -49,7 +49,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const { classes, cx } = useStyles()
   const [menuState, setMenuState] = useState<MenuState>()
 
-  const prefix = model.scalebarDisplayPrefix()
+  const prefix = model.scalebarDisplayPrefix
   const { labels, showPrefixFallback } = getScalebarRefNameLabels({
     blocks: model.staticBlocks.blocks,
     offsetPx: model.offsetPx,

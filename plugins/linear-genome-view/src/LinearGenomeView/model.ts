@@ -598,12 +598,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
-       * #method
+       * #getter
+       * Assembly-name prefix for the scalebar refName labels, or undefined for
+       * none. A container view (e.g. LinearSyntenyView) opts its sub-views in by
+       * exposing showAssemblyNameInSubviewScalebar; duck-typed rather than
+       * matching a concrete view type so no upward plugin dependency is needed
+       * and any container can opt in. A wrong nesting depth simply yields no
+       * prefix.
        */
-      scalebarDisplayPrefix() {
-        return getParent<{ type: string }>(self, 2).type === 'LinearSyntenyView'
+      get scalebarDisplayPrefix() {
+        const parent = getParent<{
+          showAssemblyNameInSubviewScalebar?: boolean
+        }>(self, 2)
+        return parent.showAssemblyNameInSubviewScalebar
           ? self.assemblyDisplayNames[0]
-          : ''
+          : undefined
       },
       /**
        * #method
