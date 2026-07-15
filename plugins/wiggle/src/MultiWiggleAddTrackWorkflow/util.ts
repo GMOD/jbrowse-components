@@ -28,11 +28,14 @@ export function itemToName(item: TrackItem) {
   return `${item.source ?? item.name ?? 'unnamed'}`
 }
 
-export function urlToSubadapter(uri: string, source = uri) {
+// A bare URL with no explicit source is left source-less so the adapter derives
+// the subtrack name from the filename (basename), matching the `bigWigs`
+// shorthand. Only a user-supplied rename pins an explicit source.
+export function urlToSubadapter(uri: string, source?: string) {
   return {
     type: 'BigWigAdapter',
     bigWigLocation: { uri },
-    source,
+    ...(source === undefined ? {} : { source }),
   }
 }
 

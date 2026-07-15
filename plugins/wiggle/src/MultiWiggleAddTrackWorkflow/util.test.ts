@@ -74,6 +74,23 @@ describe('canSubmit', () => {
   })
 })
 
+describe('urlToSubadapter', () => {
+  it('omits source for a bare URL so the adapter derives the basename', () => {
+    expect(urlToSubadapter('https://host/a.bw')).toEqual({
+      type: 'BigWigAdapter',
+      bigWigLocation: { uri: 'https://host/a.bw' },
+    })
+  })
+
+  it('pins an explicit source when renamed', () => {
+    expect(urlToSubadapter('https://host/a.bw', 'My sample')).toEqual({
+      type: 'BigWigAdapter',
+      bigWigLocation: { uri: 'https://host/a.bw' },
+      source: 'My sample',
+    })
+  })
+})
+
 describe('buildAdapterPayload', () => {
   it('uses bigWigs shortcut when all items are URL strings', () => {
     expect(buildAdapterPayload(['https://a.bw', 'https://b.bw'])).toEqual({
@@ -89,10 +106,13 @@ describe('buildAdapterPayload', () => {
     expect(buildAdapterPayload(objs)).toEqual({ subadapters: objs })
   })
 
-  it('normalizes URL strings into BigWigAdapter objects when items are mixed', () => {
+  it('normalizes URL strings into source-less BigWigAdapter objects when items are mixed', () => {
     const obj = { type: 'BigWigAdapter', source: 'b' }
     expect(buildAdapterPayload(['https://a.bw', obj])).toEqual({
-      subadapters: [urlToSubadapter('https://a.bw'), obj],
+      subadapters: [
+        { type: 'BigWigAdapter', bigWigLocation: { uri: 'https://a.bw' } },
+        obj,
+      ],
     })
   })
 })

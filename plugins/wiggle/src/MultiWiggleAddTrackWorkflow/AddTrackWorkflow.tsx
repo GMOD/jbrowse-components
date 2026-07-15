@@ -79,10 +79,14 @@ function doSubmit({
       assemblyNames: [assembly],
       adapter: buildAdapterPayload(tracks.map(t => applyName(t.item, t.name))),
     })
-  }
-  model.clearData()
-  if (isSessionModelWithWidgets(session)) {
-    session.hideWidget(model)
+    // only tear down the form once the track actually landed, so a failure
+    // leaves the user's input intact to retry
+    model.clearData()
+    if (isSessionModelWithWidgets(session)) {
+      session.hideWidget(model)
+    }
+  } else {
+    throw new Error('This session does not support adding tracks')
   }
 }
 
