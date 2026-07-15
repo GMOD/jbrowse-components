@@ -702,7 +702,7 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
     const items = display.trackMenuItems() as MenuNode[]
     const show = byLabel(items, 'Show...')
     // Top-level Show item, not nested under Advanced.
-    const item = byLabel(show?.subMenu, 'Fade mismatches by base quality')
+    const item = byLabel(show?.subMenu, 'Fade low quality mismatches')
     expect(item?.onClick).toBeDefined()
     item?.onClick?.()
     expect(display.mismatchAlpha).toBe(true)

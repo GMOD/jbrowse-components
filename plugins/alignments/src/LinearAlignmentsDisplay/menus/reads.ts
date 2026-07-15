@@ -61,7 +61,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         model.setShowMismatches(!model.showMismatches)
       }),
       promotableToggleItem({
-        label: 'Fade mismatches by base quality',
+        label: 'Fade low quality mismatches',
         checked: model.mismatchAlpha,
         onToggle: () => {
           model.setMismatchAlpha(!model.mismatchAlpha)
