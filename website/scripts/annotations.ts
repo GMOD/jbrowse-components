@@ -203,19 +203,30 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
             t.remove()
             return w
           }
+          // A newline in the text is a hard break, so a callout can author a
+          // list; each resulting paragraph then word-wraps on its own within
+          // maxWidth. (Splitting the whole string on /\s+/ instead silently
+          // flattened an authored list into one run-on paragraph.) An empty
+          // paragraph — from a blank line — becomes a '' entry, drawn below as
+          // a gap rather than a tspan.
           const lines: string[] = []
-          let cur = ''
-          for (const word of a.text.split(/\s+/)) {
-            const test = cur ? `${cur} ${word}` : word
-            if (cur && measure(test) > maxWidth) {
-              lines.push(cur)
-              cur = word
+          for (const paragraph of a.text.split('\n')) {
+            const words = paragraph.trim()
+            if (words === '') {
+              lines.push('')
             } else {
-              cur = test
+              let cur = ''
+              for (const word of words.split(/\s+/)) {
+                const test = cur ? `${cur} ${word}` : word
+                if (cur && measure(test) > maxWidth) {
+                  lines.push(cur)
+                  cur = word
+                } else {
+                  cur = test
+                }
+              }
+              lines.push(cur)
             }
-          }
-          if (cur) {
-            lines.push(cur)
           }
           const lineHeight = fontSize * 1.25
           const text = document.createElementNS(NS, 'text')
@@ -225,13 +236,23 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           text.setAttribute('font-family', fontFamily)
           text.setAttribute('font-size', String(fontSize))
           text.setAttribute('font-weight', fontWeight)
-          lines.forEach((ln, i) => {
-            const tspan = document.createElementNS(NS, 'tspan')
-            tspan.setAttribute('x', String(cx))
-            tspan.setAttribute('dy', i === 0 ? '0' : String(lineHeight))
-            tspan.textContent = ln
-            text.append(tspan)
-          })
+          // An empty tspan gets no layout, so a blank line can't be drawn as
+          // one: carry its half-line gap into the next real line's dy instead.
+          let gap = 0
+          let isFirst = true
+          for (const ln of lines) {
+            if (ln === '') {
+              gap += lineHeight * 0.5
+            } else {
+              const tspan = document.createElementNS(NS, 'tspan')
+              tspan.setAttribute('x', String(cx))
+              tspan.setAttribute('dy', isFirst ? '0' : String(lineHeight + gap))
+              tspan.textContent = ln
+              text.append(tspan)
+              gap = 0
+              isFirst = false
+            }
+          }
           svg.append(text)
           const bbox = text.getBBox()
           const padX = 10

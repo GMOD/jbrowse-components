@@ -67,7 +67,9 @@ export interface Annotation {
   // (background/textColor are ignored for 'text' to keep every callout uniform.)
   background?: string
   // for 'text': wrap the label onto multiple lines once it exceeds this width in
-  // CSS px (default 420)
+  // CSS px (default 420). A newline in `text` is a hard break — so a callout can
+  // author a list — and each line still wraps to maxWidth on its own; a blank
+  // line becomes a paragraph gap.
   maxWidth?: number
   fontSize?: number // text/circle label, default 22 for text (min 18)
   strokeWidth?: number // box/circle stroke width (default 5); arrow line+head (default 4)

@@ -548,10 +548,16 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram"]',
         },
         dx: 250,
-        dy: -60,
-        maxWidth: 260,
+        // this callout is 4 lines to the type callout's 1, and an anchored text
+        // grows downward from the container's mid-line, so it needs the extra
+        // lift to clear the frame bottom. maxWidth keeps the heading on one line.
+        dy: -110,
+        maxWidth: 340,
         fontSize: 16,
-        text: 'Probability mode: every CpG painted — red = methylated, blue = low probability or unmarked.',
+        text: `Probability mode: every CpG painted
+
+- red = methylated
+- blue = low probability or unmarked.`,
       },
     ],
   },

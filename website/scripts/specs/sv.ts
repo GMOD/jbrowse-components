@@ -1145,6 +1145,11 @@ export const svSpecs: ScreenshotSpec[] = [
           // loads (vs the whole ±60kb overview) while still showing CDKN2A and
           // flanking single-copy-loss context
           loc: 'chr9:21,930,000-21,990,000',
+          // highlight band over CDKN2A so the eye lands on the deleted driver
+          // rather than hunting for it among the neighboring genes (reviewer) —
+          // same device as the KRAS gain figure below. Spans the p16INK4a
+          // transcript (NM_000077), which is what the gene track draws here.
+          highlight: ['chr9:21,967,752-21,975,132'],
           // offset track labels onto their own line so the long track names
           // (fine-scale coverage / PacBio HiFi reads) don't overlap the data
           trackLabels: 'offset',
@@ -1177,11 +1182,12 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg008_t_reads_cdkn2a',
               type: 'LinearAlignmentsDisplay',
               linkedReads: 'normal',
-              // fit-to-display-height packs the ~116x pileup into the
-              // fixed 320px height without the fixed featureHeight/spacing
-              // clipping rows that don't fit
+              // fit-to-display-height packs the ~116x pileup into the fixed
+              // height without the fixed featureHeight/spacing clipping rows
+              // that don't fit — so a taller track buys taller, more legible
+              // reads rather than more rows (reviewer: increase the height)
               heightMode: 'fit',
-              height: 320,
+              height: 520,
             },
             'hg008_cnv_calls',
           ],
@@ -1191,7 +1197,7 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr9',
     readyTimeout: 120000,
     viewportWidth: 1500,
-    viewportHeight: 960,
+    viewportHeight: 1160,
     settleMs: 30000,
   },
 

@@ -53,10 +53,10 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "bad",
-    "note": "the layout of the reads in the ctgB looks odd. not many reads near y=0 of the layout. there iso a weird \"whitespace'. i am referring to the pileup not the read cloud.",
-    "reviewedAt": "2026-07-14T02:07:21.232Z",
-    "hash": "53d272a1de70ab934b5cc1079565169efc958ef4"
+    "status": "good",
+    "note": "FIXED (real bug, not a spec issue): computeMultiRegionLayout placed every region's reads on one genomic-coordinate axis, but refNames share it — ctgA:1-50,001 and ctgB:1-6,079 both start at bp 1 — while occupying disjoint screen space. Each ctgB read was therefore pushed below every ctgA read covering the same bp, leaving the whitespace wedge above ctgB's pileup. Added segmentExtentsByRefName (sortLayout.ts) shifting each refName onto its own disjoint span; proved with a unit test that previously put ctgB's lone read on row 3 instead of row 0. ctgB now fills from row 0. NB the spec comment already asserted 'the pileup below still fills from row 0' — that was false until this fix.",
+    "reviewedAt": "2026-07-15T03:11:55.432Z",
+    "hash": "1d2ae0ef37782f629faf98cd7419eafc9f94a15f"
   },
   "dotplot": {
     "name": "dotplot",
@@ -266,9 +266,9 @@
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
-    "status": "bad",
-    "note": "remove the 'filter by read name', and consider just making this a right click item from right clicking read",
-    "reviewedAt": "2026-07-14T03:47:25.696Z",
+    "status": "good",
+    "note": "WON'T FIX per reviewer's follow-up: they reconsidered and want the read-name field kept, since someone working outside JBrowse (e.g. holding a QNAME from samtools output) needs to paste a name — the right-click path can't serve that, as it requires already seeing the read. The suggested right-click item already exists anyway: 'Filter for this read' in LinearAlignmentsDisplay/menus/contextMenu.ts.",
+    "reviewedAt": "2026-07-15T03:11:55.433Z",
     "hash": "66134b6ee309d9cf5a7007bf1d0721842a3cd91d"
   },
   "alignments/modifications1": {
@@ -413,10 +413,10 @@
   },
   "alignments/compact": {
     "name": "alignments/compact",
-    "status": "bad",
-    "note": "might want to red box 'read height' also",
-    "reviewedAt": "2026-07-14T03:35:35.887Z",
-    "hash": "fca6d6c8f488600a74f71d08ece26d5d31b90558"
+    "status": "good",
+    "note": "FIXED: the \"Read height\" box was already in the spec but the committed PNG predated it AND the content-stable diff gate kept discarding the regen (the box is only 0.197% of the frame, under the 0.5% threshold). Force-regenerated: Read height and Compact are now both boxed.",
+    "reviewedAt": "2026-07-15T03:15:18.352Z",
+    "hash": "807242cbbc0ff3b9bb98844dfe42b717510dd854"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -686,10 +686,10 @@
   },
   "multi-sv-trio": {
     "name": "multi-sv-trio",
-    "status": "bad",
-    "note": "increase browser height",
-    "reviewedAt": "2026-07-15T02:42:47.337Z",
-    "hash": "c29e9e36692fb05a475800bae752eeda2e3ad343"
+    "status": "good",
+    "note": "FIXED: per-track height 180 -> 280 and viewportHeight 900 -> 1200, so each trio member shows ~55% more of its pileup and the father track clears the frame (content ends at CSS y~1146 of 1200). Regenerated + verified.",
+    "reviewedAt": "2026-07-15T03:15:18.352Z",
+    "hash": "9bcadde81ede12596cb612918f54dc1ceb44bfd9"
   },
   "product_architecture": {
     "name": "product_architecture",
@@ -853,17 +853,17 @@
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "bad",
-    "note": "the 'annotation' text for probability mode is (a) too long and (b) incaccurate. it implies blue is only 'cpg the mm tag left unmodified' but that does not address low probability MM tag modifications that are colored blue. instead of explaining this in detail though, it may be worth just providing easy-to-understand succinct sentence, even if glossing over details. also, at this stage, the track menu is not showing the colored boixes, but to do so, we'd have to open a third layer of track menu...which is just a sign of how complicated our colorby system is...sigh. could consider removing the track menu  from screenshot entirely. ",
-    "reviewedAt": "2026-07-15T02:36:57.683Z",
-    "hash": "6bf9b644dec3361ed4cce68a6ecba64683f30e67"
+    "status": "good",
+    "note": "FIXED all three points. (a) Probability text is now short: \"Probability mode: every CpG painted — red = methylated, blue = low probability or unmarked\" — reviewer supplied the wording. (b) Accurate now: verified in extract.ts that blue is every CpG whose most likely state is unmodified, i.e. both MM-uncalled AND low-probability calls; the old text claimed only the first. (c) Dropped the track menu from the frame entirely (reviewer): the mode radios carry no color swatches at that level, so the menu covered half the reads to show nothing the row labels do not. Both doc captions (alignments_track.md, methylation.md) carried the same inaccuracy and were corrected too.",
+    "reviewedAt": "2026-07-15T03:15:18.352Z",
+    "hash": "b5f2c049716479a76f0707783326a3a06c48de9c"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
-    "status": "bad",
-    "note": "the first stage of this screenshot is kind of messy. we might just 'zoom out' in the first screenshot so the arcs take up less broad screen real estate, skip the second sceenshot, and just show first and third screenshot as a result",
-    "reviewedAt": "2026-07-15T02:42:13.104Z",
-    "hash": "c6fbe2f62d124fe2b531cfe5cbeb193554988181"
+    "status": "good",
+    "note": "FIXED per reviewer: (a) stage 1 zoomed out from PTEN 109kb to 255kb, so the gene and its sashimi arcs occupy the middle ~40% instead of sprawling edge-to-edge behind the context menu; (b) dropped the confirmation-dialog stage (now driven through, uncaptured) so the figure is first + last only. gene_track.md caption updated from \"in three steps\" to the two frames.",
+    "reviewedAt": "2026-07-15T03:15:18.353Z",
+    "hash": "b37d7d2a0f23681c11e35c6e4547fb1297a31904"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -1169,10 +1169,10 @@
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "bad",
-    "note": "might consider highlighting cdkn2a, and increasing height of the alignments track",
-    "reviewedAt": "2026-07-15T02:45:22.380Z",
-    "hash": "e7278e0bd5c35bed1848f4de5aa0705afb012038"
+    "status": "good",
+    "note": "FIXED both asks: added a highlight band over CDKN2A (chr9:21,967,752-21,975,132, the p16INK4a transcript the gene track draws) — same device as the sibling driver_kras_gain figure — and raised the alignments track 320 -> 520 with viewportHeight 960 -> 1160. The track is heightMode:fit, so the extra height buys taller, legible reads rather than more rows. Regenerated + verified.",
+    "reviewedAt": "2026-07-15T03:15:18.353Z",
+    "hash": "b3d6f040edd966f18666bfb3689eb3af5c73ad81"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1327,10 +1327,10 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "bad",
-    "note": "increase browser height",
-    "reviewedAt": "2026-07-15T02:37:39.854Z",
-    "hash": "0097edfcf02d6085f101f5df4f094a3061b26c44"
+    "status": "good",
+    "note": "FIXED: viewportHeight 800 -> 1010 and track height 640 -> 800, so the pileup no longer runs off the bottom edge — the whole track now clears the frame. Regenerated + verified.",
+    "reviewedAt": "2026-07-15T03:15:18.351Z",
+    "hash": "1816fe534c351831fd36c2c3dc15713a8959f126"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1341,10 +1341,10 @@
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
-    "status": "bad",
-    "note": "may want to add box around all the assemblies",
-    "reviewedAt": "2026-07-14T11:12:14.198Z",
-    "hash": "79fa83b5092763dc4bfec8f5401ff1fea8962d39"
+    "status": "good",
+    "note": "FIXED: the box around the auto-filled assembly-rows stack was already in the spec (anchored to [data-testid=\"synteny-assembly-rows\"]) but the diff gate kept discarding the regen (0.444%, under the 0.5% threshold). Force-regenerated: all four E. coli assembly rows are now boxed in stage 2.",
+    "reviewedAt": "2026-07-15T03:15:18.352Z",
+    "hash": "d69e3de6d09ca3ebb6c78e04aa81840ccd0602ad"
   },
   "rnaseq/basic": {
     "name": "rnaseq/basic",
@@ -1396,9 +1396,9 @@
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
-    "status": "bad",
-    "note": "there is a weird white 'gap' (~40px wide) on the left side of the multirow canvas.  is this where labels would be drawn? if labels are hidden, likely should not have any gap",
-    "reviewedAt": "2026-07-15T02:43:46.307Z",
+    "status": "good",
+    "note": "NOT A BUG (measured): the ~34px gap is exactly chr4:1-3,528,709, where the BXD panel has no genotype markers (first chr4 record in bxd_painting.bed.gz starts at 3,528,709). Solved the bp->px mapping from two anchors — content origin x0=6.0 CSS, width 1487.7 CSS — and the painting first paints at 39.5 CSS, landing sub-pixel on the prediction. Not a label gutter: the multirow canvas is left:0 full width and SvgRowLabels is a left:0 overlay that reserves nothing; it also draws nothing here (rowHeight 500/198 = 2.5px, under its 6px cutoff), which reviewer confirmed is correct for bxd.",
+    "reviewedAt": "2026-07-15T03:11:55.433Z",
     "hash": "96fd0328f22253cde3ee29610cf3e329553693b8"
   },
   "qtl/bxd_tyrp1_locus": {
@@ -1448,17 +1448,17 @@
   },
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
-    "status": "bad",
-    "note": "increase track height of alignments track, so it shows more of the reads",
-    "reviewedAt": "2026-07-15T02:37:57.167Z",
-    "hash": "648ff8cba30e627f9db5f729aadca05e18dd4ff6"
+    "status": "good",
+    "note": "FIXED: CLI spec height 440 -> 820 so the whole pileup renders instead of running off the bottom of the image. Regenerated (41.85% diff).",
+    "reviewedAt": "2026-07-15T03:15:18.352Z",
+    "hash": "445c77355e28c8134c1fddd6087bde3f36496fdd"
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
-    "status": "bad",
-    "note": "might add text annotations for the three rows of multiwiggle and three alignments tracks showing simple one line \"CpG\" \"CHG\" \"CHH\" and same with the reads. the multi wiggle display in fact should have per-row labels too",
-    "reviewedAt": "2026-07-14T01:57:01.598Z",
-    "hash": "89f6f507b9a38cbb3c6a4d97b91f5cc9f905e577"
+    "status": "good",
+    "note": "FIXED: the multiwiggle per-row labels the reviewer asked for already existed (SvgRowLabels via MultiWiggleSvgScales) and render correctly at rowHeight 56 — the committed PNG was just STALE. The three labels are only 0.166% of the frame, under the 0.5% content-stable diff gate, so every regen reported \"kept\". Force-regenerated: CpG/CHG/CHH now label the three aggregate rows. The three per-read tracks already carry their context in their names (\"Per-read WGBS — CpG context\"), so no extra annotations were needed.",
+    "reviewedAt": "2026-07-15T03:11:55.433Z",
+    "hash": "39ca2a13656c667b83a99ccdb26178459bc69a51"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1524,9 +1524,9 @@
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
-    "status": "bad",
-    "note": "unclear to me why this is not a normal 'two stage' spec, we dont want figures that arent referenced in any doc / page. previous agent notes; KEEP: this is the \"Input order\" (before) part of the two-part compose figure qtl/bxd_sort_before_after used in bxd_qtl.md — already a normal two-part before/after figure. The review tool just surfaces compose parts individually.",
-    "reviewedAt": "2026-07-15T02:43:53.347Z",
+    "status": "good",
+    "note": "FIXED IN TOOLING rather than re-noted. It really is a compose part of qtl/bxd_sort_before_after (used in bxd_qtl.md, with per-state live links) — compose is the mechanism website/CLAUDE.md prefers over stages, since each half stays independently openable. It kept looking orphaned because screenshot-review-lib matched usages only by scanning docs for /img/<name>.png, which a compose part never appears as, so the review UI printed the scary \"not referenced in any doc\" warning. collectScreenshots now lends each compose part its parent figure usages.",
+    "reviewedAt": "2026-07-15T03:11:55.433Z",
     "hash": "9099181b3011796f6d01a1cd0b59285a1dc8fc41"
   },
   "qtl/bxd_painting_sorted": {
@@ -1571,13 +1571,6 @@
     "reviewedAt": "2026-07-10T19:00:03.331Z",
     "hash": "b813e45e78870337589405c316c647e27270c5aa"
   },
-  "multisv_ont_inversion": {
-    "name": "multisv_ont_inversion",
-    "status": "bad",
-    "note": "this is not a very interesting screenshot. we could consider looking for a 'better sv' but i dont think we need it. can delete probably. this was just to show the ONT vienna reads but we already have good sv demos",
-    "reviewedAt": "2026-07-15T02:38:36.313Z",
-    "hash": "187dc9c9dde380d2da1cdbbee24d27ab0dedaf38"
-  },
   "multiway_synteny/grape_peach_cacao_conserved_block": {
     "name": "multiway_synteny/grape_peach_cacao_conserved_block",
     "status": "good",
@@ -1600,9 +1593,9 @@
   },
   "feature_height_default": {
     "name": "feature_height_default",
-    "status": "bad",
-    "note": "could be worth making both top and bottom about 100px less tall",
-    "reviewedAt": "2026-07-15T02:37:29.358Z",
-    "hash": "46c28a575604e586d7f9f7629744ba3b7550442c"
+    "status": "good",
+    "note": "FIXED: viewportHeight 760 -> 660, trimming 100px off both frames as asked. MUI reflows the Read-height submenu upward to stay inside the shorter viewport (all rows through \"Fit read height to display\" still visible) and the pin circle anchors to the live element, so it followed. Regenerated + verified.",
+    "reviewedAt": "2026-07-15T03:15:18.351Z",
+    "hash": "5b01c89980a8e5a328330c19c8a8846c85c95123"
   }
 }
