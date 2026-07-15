@@ -5,6 +5,37 @@ import Scalebar from './Scalebar.tsx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
+// a LinearGenomeView nested in a LinearSyntenyView, which opts its sub-views
+// into the assembly-name scalebar prefix via showAssemblyNameInSubviewScalebar
+function syntenySubView(offsetPx: number) {
+  const session = createTestSession({
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              type: 'LinearGenomeView',
+              offsetPx,
+              bpPerPx: 1,
+              displayedRegions: [
+                { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+                { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
+              ],
+              tracks: [],
+              configuration: {},
+            },
+          ],
+          tracks: [],
+        },
+      ],
+    },
+  }) as any
+  const model = session.views[0].views[0]
+  model.setWidth(800)
+  return model
+}
+
 describe('Scalebar genome view component', () => {
   it('renders two regions', async () => {
     const session = createTestSession({
@@ -106,28 +137,7 @@ describe('Scalebar genome view component', () => {
   })
 
   it('displays assembly name prefix only on the leftmost label when no pinned block', async () => {
-    const session = createTestSession({
-      sessionSnapshot: {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            offsetPx: 0,
-            bpPerPx: 1,
-            displayedRegions: [
-              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
-            ],
-            tracks: [],
-            configuration: {},
-          },
-        ],
-      },
-    }) as any
-    const model = session.views[0]
-
-    // Mock scalebarDisplayPrefix to simulate being in a synteny view
-    const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
-    model.scalebarDisplayPrefix = () => 'volvox'
+    const model = syntenySubView(0)
 
     const { getByTestId, queryByTestId, container } = render(
       <Scalebar model={model} />,
@@ -144,35 +154,11 @@ describe('Scalebar genome view component', () => {
       // prefix must not also render (would show "volvox" twice)
       expect(queryByTestId('refLabel-prefix')).toBeNull()
     })
-
-    // Restore original function
-    model.scalebarDisplayPrefix = originalScaleBarDisplayPrefix
   })
 
   it('displays assembly name prefix only on pinned label when scrolled', async () => {
-    const session = createTestSession({
-      sessionSnapshot: {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            // Scrolled so ctgA is off-screen left (pinned)
-            offsetPx: 50,
-            bpPerPx: 1,
-            displayedRegions: [
-              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
-            ],
-            tracks: [],
-            configuration: {},
-          },
-        ],
-      },
-    }) as any
-    const model = session.views[0]
-
-    // Mock scalebarDisplayPrefix to simulate being in a synteny view
-    const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
-    model.scalebarDisplayPrefix = () => 'volvox'
+    // scrolled so ctgA is off-screen left (pinned)
+    const model = syntenySubView(50)
 
     const { queryByTestId, container } = render(<Scalebar model={model} />)
     await waitFor(() => {
@@ -188,12 +174,9 @@ describe('Scalebar genome view component', () => {
       // prefix must not also render
       expect(queryByTestId('refLabel-prefix')).toBeNull()
     })
-
-    // Restore original function
-    model.scalebarDisplayPrefix = originalScaleBarDisplayPrefix
   })
 
-  it('does not display assembly name prefix when scalebarDisplayPrefix returns empty string', async () => {
+  it('does not display assembly name prefix for a top-level view', async () => {
     const session = createTestSession({
       sessionSnapshot: {
         views: [
