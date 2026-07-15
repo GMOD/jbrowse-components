@@ -1,55 +1,65 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro'
+import DocsSidebarNav from '../components/DocsSidebarNav.astro'
+import SidebarLayout from '../layouts/SidebarLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import { gallerySections, guidedDemos, itemHref } from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
 ---
 
-<BaseLayout
+<SidebarLayout
   title="JBrowse 2 Demos"
   description="Live, in-browser JBrowse 2 demos covering structural variants, synteny, methylation, multi-sample variants, and more."
+  toggleLabel="Explore"
+  navLabel="Site navigation"
 >
-  <div class={page.content}>
-    <h1>JBrowse 2 demos</h1>
-    <p>
-      Live sessions you can open and try in the app. The{' '}
-      <a href={`${baseUrl}/gallery/`}>gallery page</a> shows many of these with screenshots
-      and descriptions. Everything here on the web can also be done in JBrowse desktop.
-    </p>
+  <DocsSidebarNav slot="nav" currentSlug="demos" />
+  <div class="showcase-main">
+    <div class={page.content}>
+      <h1>JBrowse 2 demos</h1>
+      <p>
+        Live sessions you can open and try in the app. The{' '}
+        <a href={`${baseUrl}/gallery/`}>gallery page</a> shows many of these with screenshots
+        and descriptions. Everything here on the web can also be done in JBrowse desktop.
+      </p>
 
-    {
-      gallerySections.map(s => (
-        <section>
-          <h2 id={s.id}>{s.title}</h2>
-          <ul>
-            {s.items.map(item => (
+      {
+        gallerySections.map(s => (
+          <section>
+            <h2 id={s.id}>{s.title}</h2>
+            <ul>
+              {s.items.map(item => (
+                <li>
+                  <a href={itemHref(item, baseUrl)}>{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+
+      <section>
+        <h2 id="guided">Conference and other guided demos</h2>
+        <ul>
+          {
+            guidedDemos.map(d => (
               <li>
-                <a href={itemHref(item, baseUrl)}>{item.label}</a>
+                <a href={d.href} target="_blank" rel="noopener">
+                  {d.label}
+                </a>
               </li>
-            ))}
-          </ul>
-        </section>
-      ))
-    }
-
-    <section>
-      <h2 id="guided">Conference and other guided demos</h2>
-      <ul>
-        {
-          guidedDemos.map(d => (
-            <li>
-              <a href={d.href} target="_blank" rel="noopener">
-                {d.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </section>
+            ))
+          }
+        </ul>
+      </section>
+    </div>
   </div>
-</BaseLayout>
+</SidebarLayout>
 
 <style>
+  .showcase-main {
+    flex: 1;
+    min-width: 0;
+  }
   h1 {
     font-size: 2rem;
     font-weight: 400;

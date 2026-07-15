@@ -1,5 +1,6 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro'
+import DocsSidebarNav from '../components/DocsSidebarNav.astro'
+import SidebarLayout from '../layouts/SidebarLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import { gallerySections, itemHref, itemImg } from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
@@ -16,16 +17,16 @@ const sections = gallerySections
   .filter(s => s.cards.length > 0 || s.links.length > 0)
 ---
 
-<BaseLayout
+<SidebarLayout
   title="JBrowse 2 Visualizations Gallery"
   description="A gallery of genome visualizations built with JBrowse 2, including synteny, structural variants, alignments, methylation, and Hi-C contact matrices."
+  toggleLabel="Explore"
+  navLabel="Site navigation"
 >
+  <DocsSidebarNav slot="nav" currentSlug="gallery" />
+  <div class="showcase-main">
   <div class={`${page.content} wide`}>
     <h1>JBrowse 2 visualizations gallery</h1>
-
-    <nav class="toc">
-      {sections.map(s => <a href={`#${s.id}`}>{s.title}</a>)}
-    </nav>
 
     {
       sections.map(s => (
@@ -80,6 +81,7 @@ const sections = gallerySections
       ))
     }
   </div>
+  </div>
 
   <div id="lightbox" class="lightbox" hidden>
     <button type="button" class="lightbox-close" aria-label="Close">×</button>
@@ -91,7 +93,7 @@ const sections = gallerySections
       </figcaption>
     </figure>
   </div>
-</BaseLayout>
+</SidebarLayout>
 
 <script>
   const lb = document.getElementById('lightbox')!
@@ -138,6 +140,10 @@ const sections = gallerySections
 </script>
 
 <style>
+  .showcase-main {
+    flex: 1;
+    min-width: 0;
+  }
   .wide {
     max-width: 1100px;
   }
@@ -154,18 +160,6 @@ const sections = gallerySections
     font-weight: 500;
     margin: 2.5rem 0 1rem;
     scroll-margin-top: 5rem;
-  }
-
-  .toc {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-    margin: 1.5rem 0;
-    padding: 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    background: var(--color-surface);
-    font-size: 0.9rem;
   }
 
   .grid {

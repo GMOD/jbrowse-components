@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content'
+
+import SidebarItem from './SidebarItem.astro'
+import { baseUrl } from '../lib/base-url.ts'
+import { buildSiteSidebar } from '../lib/docs-sidebar.ts'
+
+interface Props {
+  currentSlug: string
+}
+const { currentSlug } = Astro.props
+
+const allDocs = await getCollection('docs')
+const sidebar = buildSiteSidebar(allDocs, baseUrl)
+---
+
+<ul>
+  {sidebar.map(item => <SidebarItem item={item} currentSlug={currentSlug} />)}
+</ul>

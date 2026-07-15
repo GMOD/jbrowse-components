@@ -138,6 +138,29 @@ const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
     transform: rotate(45deg);
   }
 
+  /* A summary that is itself a page link (showcase groups): the summary supplies
+     the padding + caret, so the inner link is plain text that fills the row. */
+  .sidebar :global(summary > .summary-link) {
+    display: block;
+    flex: 1;
+    padding: 0;
+    color: inherit;
+    font-weight: inherit;
+    border-radius: 0;
+  }
+  .sidebar :global(summary > .summary-link:hover) {
+    background: none;
+    color: var(--color-navy);
+    text-decoration: underline;
+  }
+  .sidebar :global(summary > .summary-link.active) {
+    background: none;
+    border-left: none;
+    padding-left: 0;
+    color: var(--color-sidebar-active-text);
+    font-weight: 600;
+  }
+
   @media (max-width: 768px) {
     .sidebar-layout {
       flex-direction: column;

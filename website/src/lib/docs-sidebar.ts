@@ -1,3 +1,4 @@
+import { gallerySections } from './gallery.ts'
 import { GUIDE_CATEGORY_ORDER } from './guide-categories.ts'
 import sidebarsJson from '../../sidebars.json'
 
@@ -12,6 +13,11 @@ export interface SidebarGroup {
   type: 'group'
   label: string
   items: SidebarEntry[]
+  // A collapsible group whose summary is itself a link to a page (the showcase
+  // top-level entries: Gallery, Demos). `slug` marks it active/open when the
+  // current page matches. Plain docs categories omit both.
+  href?: string
+  slug?: string
 }
 
 export type SidebarEntry = SidebarLink | SidebarGroup
@@ -33,7 +39,7 @@ type DocusaurusSidebarItem =
 export function containsSlug(entry: SidebarEntry, slug: string): boolean {
   return entry.type === 'link'
     ? entry.slug === slug
-    : entry.items.some(child => containsSlug(child, slug))
+    : entry.slug === slug || entry.items.some(child => containsSlug(child, slug))
 }
 
 export function entrySlug(id: string): string {
@@ -192,6 +198,65 @@ export function buildSidebar(
     baseUrl,
     docsBySlug,
   )
+}
+
+// The "showcase" pages (Features / Gallery / Demos) hang off the same sidebar as
+// the docs, so navigation is identical everywhere on the site. Gallery and Demos
+// become collapsible groups whose summary links to the page and whose children
+// jump to the page's own section anchors (single-sourced from gallerySections);
+// Features has no enumerable sections, so it stays a plain top-level link.
+export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
+  const pageUrl = (path: string) => `${baseUrl}/${path}/`
+  const sectionLinks = (
+    path: string,
+    sections: typeof gallerySections,
+  ): SidebarLink[] =>
+    sections.map(s => ({
+      type: 'link',
+      label: s.title,
+      href: `${pageUrl(path)}#${s.id}`,
+      slug: `${path}#${s.id}`,
+    }))
+  const galleryVisible = gallerySections.filter(s =>
+    s.items.some(i => !i.demoOnly),
+  )
+  return [
+    {
+      type: 'link',
+      label: 'Features',
+      href: pageUrl('features'),
+      slug: 'features',
+    },
+    {
+      type: 'group',
+      label: 'Gallery',
+      href: pageUrl('gallery'),
+      slug: 'gallery',
+      items: sectionLinks('gallery', galleryVisible),
+    },
+    {
+      type: 'group',
+      label: 'Demos',
+      href: pageUrl('demos'),
+      slug: 'demos',
+      items: [
+        ...sectionLinks('demos', gallerySections),
+        {
+          type: 'link',
+          label: 'Conference and other guided demos',
+          href: `${pageUrl('demos')}#guided`,
+          slug: 'demos#guided',
+        },
+      ],
+    },
+  ]
+}
+
+export function buildSiteSidebar(
+  allDocs: DocEntry[],
+  baseUrl: string,
+): SidebarEntry[] {
+  return [...buildSidebar(allDocs, baseUrl), ...buildShowcaseGroups(baseUrl)]
 }
 
 // The /search page groups results into a handful of broad audience filters.

@@ -3,10 +3,10 @@ import { getCollection } from 'astro:content'
 
 import SidebarLayout from './SidebarLayout.astro'
 import CopyMarkdown from '../components/CopyMarkdown.astro'
-import SidebarItem from '../components/SidebarItem.astro'
+import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import TableOfContents from '../components/TableOfContents.astro'
 import { baseUrl } from '../lib/base-url.ts'
-import { buildSidebar, entrySlug } from '../lib/docs-sidebar.ts'
+import { entrySlug } from '../lib/docs-sidebar.ts'
 
 import type { TocItem } from '../lib/rehype-collect-toc.ts'
 
@@ -27,7 +27,6 @@ const {
 } = Astro.props
 
 const allDocs = await getCollection('docs')
-const sidebar = buildSidebar(allDocs, baseUrl)
 // Raw-Markdown alternate emitted by emit-raw-markdown.ts (introduction, whose
 // slug is "", lives at index.md). Only real doc-collection pages get one — a
 // landing page reusing this layout (e.g. /docs/tutorials/) has no emitted .md.
@@ -44,9 +43,7 @@ const mdHref = isRealDoc
   navLabel="Documentation navigation"
   mdHref={mdHref}
 >
-  <ul slot="nav">
-    {sidebar.map(item => <SidebarItem item={item} currentSlug={currentSlug} />)}
-  </ul>
+  <DocsSidebarNav slot="nav" currentSlug={currentSlug} />
   <article class="docs-content" data-pagefind-body>
     <h1>{title}</h1>
     <slot />
