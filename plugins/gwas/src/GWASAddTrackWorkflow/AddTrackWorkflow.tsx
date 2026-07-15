@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { FileSelector } from '@jbrowse/core/ui'
 import {
+  addAndShowTrack,
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
@@ -58,7 +59,8 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   function doSubmit() {
     if (gwasLocation && assembly && isSessionWithAddTracks(session)) {
       const trackId = makeTrackId({ name: trackName })
-      session.addTrackConf(
+      addAndShowTrack(
+        session,
         buildGwasTrackConfig({
           trackId,
           trackName,
@@ -71,8 +73,8 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           ldIndexLocation,
           displayId,
         }),
+        model.view,
       )
-      model.view?.showTrack(trackId)
       model.clearData()
       if (isSessionModelWithWidgets(session)) {
         session.hideWidget(model)

@@ -1,6 +1,7 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
+  addAndShowTrack,
   dedupe,
   getContainingTrack,
   getContainingView,
@@ -298,18 +299,20 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         const track = getContainingTrack(self)
         if (isSessionWithAddTracks(session)) {
           const name = 'GC content'
-          const trackId = makeTrackId({ name })
-          session.addTrackConf({
-            trackId,
-            type: 'GCContentTrack',
-            name,
-            assemblyNames: getTrackAssemblyNames(track),
-            adapter: {
-              type: 'GCContentAdapter',
-              sequenceAdapter: getConf(track, 'adapter'),
+          addAndShowTrack(
+            session,
+            {
+              trackId: makeTrackId({ name }),
+              type: 'GCContentTrack',
+              name,
+              assemblyNames: getTrackAssemblyNames(track),
+              adapter: {
+                type: 'GCContentAdapter',
+                sequenceAdapter: getConf(track, 'adapter'),
+              },
             },
-          })
-          ;(getContainingView(self) as LGV).showTrack(trackId)
+            getContainingView(self) as LGV,
+          )
         }
       },
     }))

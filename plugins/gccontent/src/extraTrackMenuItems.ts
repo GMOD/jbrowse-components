@@ -1,6 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { addExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
-import { isSessionWithAddTracks } from '@jbrowse/core/util'
+import { addAndShowTrack, isSessionWithAddTracks } from '@jbrowse/core/util'
 import { getConfAssemblyNames } from '@jbrowse/core/util/tracks'
 
 import { makeGCContentTrackConf } from './makeGCContentTrackConf.ts'
@@ -29,8 +29,7 @@ export default function GCContentExtraTrackMenuItemsF(
                 sequenceAdapter: readConfObject(config, 'adapter'),
                 gcMode: 'content',
               })
-              session.addTrackConf(conf)
-              view?.showTrack(conf.trackId)
+              addAndShowTrack(session, conf, view)
             },
           },
         ]

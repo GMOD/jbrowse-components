@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
+  addAndShowTrack,
   getSession,
   isSessionModelWithWidgets,
   isSessionWithAddTracks,
@@ -61,22 +62,25 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
       const sampleNames = parseSampleNames(samples)
       const trackId = makeTrackId({ name: trackName })
       if (isSessionWithAddTracks(session)) {
-        session.addTrackConf({
-          trackId,
-          type: 'MafTrack',
-          name: trackName,
-          assemblyNames: [model.assembly],
-          adapter: buildAdapterConfig({
-            fileTypeChoice,
-            indexTypeChoice,
-            loc,
-            indexLoc,
-            nhLoc,
-            summaryLoc,
-            sampleNames,
-          }),
-        })
-        model.view?.showTrack(trackId)
+        addAndShowTrack(
+          session,
+          {
+            trackId,
+            type: 'MafTrack',
+            name: trackName,
+            assemblyNames: [model.assembly],
+            adapter: buildAdapterConfig({
+              fileTypeChoice,
+              indexTypeChoice,
+              loc,
+              indexLoc,
+              nhLoc,
+              summaryLoc,
+              sampleNames,
+            }),
+          },
+          model.view,
+        )
       }
       model.clearData()
       if (isSessionModelWithWidgets(session)) {

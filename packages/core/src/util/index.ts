@@ -40,6 +40,7 @@ export * from './springAnimate.ts'
 export * from './hooks.ts'
 export * from './localStorage.ts'
 export * from './renameRegions.ts'
+export * from './addAndShowTrack.ts'
 export * from './makeTrackId.ts'
 export * from './matchTrackId.ts'
 

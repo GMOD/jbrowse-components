@@ -1,4 +1,4 @@
-import { makeTrackId } from '@jbrowse/core/util'
+import { addAndShowTrack, makeTrackId } from '@jbrowse/core/util'
 
 import type { SessionWithAddTracks } from '@jbrowse/core/util'
 
@@ -90,16 +90,18 @@ export function addMultiWiggleTrack({
   assemblyNames: string[]
   adapter: Record<string, unknown>
 }) {
-  const trackId = makeTrackId({ name })
-  session.addTrackConf({
-    trackId,
-    type: 'MultiQuantitativeTrack',
-    name,
-    assemblyNames,
-    adapter: {
-      type: 'MultiWiggleAdapter',
-      ...adapter,
+  addAndShowTrack(
+    session,
+    {
+      trackId: makeTrackId({ name }),
+      type: 'MultiQuantitativeTrack',
+      name,
+      assemblyNames,
+      adapter: {
+        type: 'MultiWiggleAdapter',
+        ...adapter,
+      },
     },
-  })
-  view?.showTrack(trackId)
+    view,
+  )
 }

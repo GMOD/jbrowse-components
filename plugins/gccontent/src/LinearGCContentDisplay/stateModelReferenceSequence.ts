@@ -1,5 +1,6 @@
 import { getConf } from '@jbrowse/core/configuration'
 import {
+  addAndShowTrack,
   getContainingView,
   getSession,
   isSessionWithAddTracks,
@@ -74,9 +75,10 @@ export default function stateModelF(
             windowSize: self.windowSize,
             windowDelta: self.windowDelta,
           })
-          session.addTrackConf(conf)
-          ;(getContainingView(self) as LinearGenomeViewModel).showTrack(
-            conf.trackId,
+          addAndShowTrack(
+            session,
+            conf,
+            getContainingView(self) as LinearGenomeViewModel,
           )
         }
       },
