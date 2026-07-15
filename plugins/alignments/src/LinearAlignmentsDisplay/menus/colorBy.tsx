@@ -116,13 +116,16 @@ const arcColorOptions: {
 const DIVIDER: MenuItem = { type: 'divider' }
 
 // --- modification coloring ---------------------------------------------------
-// Two mode radios (color by type / by state) and three refinement
-// submenus. The axis is identity vs. state — "which modification is this?" vs
-// "is this site modified?" — NOT probability: both views shade by probability,
-// which is why the mode is not named for it (and why "Probability threshold",
-// which gates only the by-type view, no longer collides with a mode name).
-// "2-color" (IGV's name, and the `twoColor` flag) is likewise not the label:
-// 5mC + 5hmC + unmodified is three colors, not two.
+// Two mode radios (color by type / 2-color) and three refinement submenus.
+//
+// The second radio is named for IGV's "base modification 2-color", the term its
+// users already search for, and its subLabel ("modified red, unmodified blue")
+// spells the name out. It is NOT named "probability": both views shade by
+// probability (see `prob` in features/modification/extract.ts), so that named a
+// shared axis — and it collided with "Probability threshold" below, which gates
+// only the by-type view. Strictly, 5mC + 5hmC + unmodified is three colors, not
+// two; that imprecision is IGV's too, and is worth less than the familiarity.
+//
 // `patchMods` is the single writer: it merges a patch into the current
 // modifications and normalizes, dropping defaults so a saved session carries no
 // redundant fields. Mode switches and refinement edits are both just patches, so
@@ -134,7 +137,7 @@ function currentMods(model: ModificationsModel) {
     : {}
 }
 
-// The by-state view fills unmarked cytosines when the data is methylation —
+// The 2-color view fills unmarked cytosines when the data is methylation —
 // the whole methylation view in one click (in the common MM "." mode the
 // unlisted cytosines are confident unmodified calls; hiding them under-paints
 // the data). getMethBins is cytosine-only, so other modifications (6mA…) fall
@@ -180,10 +183,10 @@ function modificationsMenu(
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem {
   const mods = currentMods(model)
-  const byState =
+  const byTwoColor =
     model.colorBy.type === 'modifications' &&
     (!!mods.twoColor || !!mods.fillUnmarked)
-  const stateView: ModificationColorBy = hasCytosineMeth(model)
+  const twoColorView: ModificationColorBy = hasCytosineMeth(model)
     ? { fillUnmarked: true }
     : { twoColor: true }
   const types = model.visibleModificationTypes
@@ -200,24 +203,24 @@ function modificationsMenu(
         label: 'Color by type',
         subLabel: 'each modification its own color (5mC, 5hmC, 6mA…)',
         helpText: `Colors each call by which modification it is. Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
-        checked: model.colorBy.type === 'modifications' && !byState,
+        checked: model.colorBy.type === 'modifications' && !byTwoColor,
         onClick: () => {
           patchMods(model, clearView)
         },
         displayTypeDefault: displayTypeDefault?.({ type: 'modifications' }),
       }),
       promotableRadioItem({
-        label: 'Color by state',
+        label: '2-color',
         subLabel: 'modified red, unmodified blue',
         helpText:
-          'Colors each site by its most likely state rather than by which modification it is: the modification color when modified, blue when not. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. IGV calls this view "base modification 2-color".',
-        checked: byState,
+          'Colors each site by whether it is modified rather than by which modification it is: the modification color when modified, blue when not. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. Named as in IGV ("base modification 2-color") — with both 5mC and 5hmC present the palette is strictly more than two colors.',
+        checked: byTwoColor,
         onClick: () => {
-          patchMods(model, { ...clearView, ...stateView })
+          patchMods(model, { ...clearView, ...twoColorView })
         },
         displayTypeDefault: displayTypeDefault?.({
           type: 'modifications',
-          modifications: stateView,
+          modifications: twoColorView,
         }),
       }),
       DIVIDER,
@@ -226,7 +229,7 @@ function modificationsMenu(
             {
               label: 'Types shown',
               helpText:
-                'Limit which modification types are drawn in the by-type and by-state views.',
+                'Limit which modification types are drawn in the by-type and 2-color views.',
               subMenu: radioItems(
                 [
                   { value: 'all', label: 'All detected types' },
@@ -248,7 +251,7 @@ function modificationsMenu(
       {
         label: 'Probability threshold',
         helpText:
-          'Hides low-confidence calls in the by-type view. The by-state view is not affected: it uses a fixed 50% cutoff, and the methylation fill paints every cytosine regardless.',
+          'Hides low-confidence calls in the by-type view. The 2-color view is not affected: it uses a fixed 50% cutoff, and the methylation fill paints every cytosine regardless.',
         subMenu: [
           {
             label: 'threshold',
@@ -269,7 +272,7 @@ function modificationsMenu(
             {
               label: 'Cytosine context',
               helpText:
-                'Which cytosines the by-state (methylation) view paints. Plants use CHG/CHH.',
+                'Which cytosines the 2-color (methylation) view paints. Plants use CHG/CHH.',
               subMenu: radioItems<CytosineContext>(
                 cytosineContextOptions,
                 mods.cytosineContext ?? 'CG',

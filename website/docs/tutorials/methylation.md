@@ -52,13 +52,13 @@ match an assembly already configured in JBrowse (see the
 ```
 
 From the track menu, choose **Color by → Modifications**, then pick **Color by
-type** to paint the calls listed in the MM tag, or **Color by state** to
-additionally scan the read sequence for CpG dinucleotides and paint any CpG the
-MM tag left uncalled (the difference is exactly what the figure below shows). In
-by-type mode each modification renders in its own color, with intensity
-reflecting the modification probability (ML tag value).
+type** to paint the calls listed in the MM tag, or **2-color** to additionally
+scan the read sequence for CpG dinucleotides and paint any CpG the MM tag left
+uncalled (the difference is exactly what the figure below shows). In by-type
+mode each modification renders in its own color, with intensity reflecting the
+modification probability (ML tag value).
 
-<Figure caption="The same nanopore track colored by type (top) and by state (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls in the MM tag, so the region looks nearly empty; by-state mode paints every CpG, filling the region with the blue of the low-probability and unmarked ones." src="/img/alignments/modifications2.png" />
+<Figure caption="The same nanopore track colored by type (top) and 2-color (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls in the MM tag, so the region looks nearly empty; the 2-color mode paints every CpG, filling the region with the blue of the low-probability and unmarked ones." src="/img/alignments/modifications2.png" />
 
 ## Aggregate methylation with modkit bedMethyl
 

@@ -558,7 +558,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -110,
         maxWidth: 340,
         fontSize: 16,
-        text: `Color by state: every CpG painted
+        text: `2-color: every CpG painted
 
 - red = methylated
 - blue = low probability or unmarked`,
@@ -819,7 +819,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // by → Modifications → Color by type path so the figure shows the menu
     // route, not just the result (reviewer asked to actually open the menu). The
     // MM/ML modes live in a "Modifications" submenu with two radios ("Color by
-    // type" / "Color by state"); the per-type filter, threshold slider and
+    // type" / "2-color"); the per-type filter, threshold slider and
     // cytosine context sit flat beneath them (no dialog). The selector is scoped
     // by data-trackid to the COLO829 alignments track — the bare track_menu_icon
     // matched the CpG-island feature track first, whose Color by menu has no
