@@ -1,280 +1,102 @@
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
+import { dedupe } from '@jbrowse/core/util'
+import {
+  type DiagonalizationResult,
+  diagonalizeRegions,
+} from '@jbrowse/core/util/diagonalizeRegions'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { extractAlignmentData } from '@jbrowse/synteny-core'
 
-import { Dotplot1DView } from './DotplotView/model.ts'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-import type { Dotplot1DViewModel } from './DotplotView/model.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
-
-// Copied types from linear-comparative-view to avoid cross-package imports
-interface AlignmentData {
-  queryRefName: string
-  refRefName: string
-  queryStart: number
-  queryEnd: number
-  refStart: number
-  refEnd: number
-  strand: number
-}
-
-interface DiagonalizationResult {
-  newRegions: Region[]
-  stats: {
-    totalAlignments: number
-    regionsProcessed: number
-    regionsReordered: number
-    regionsReversed: number
+declare module '@jbrowse/core/rpc/RpcRegistry' {
+  interface RpcRegistry {
+    DiagonalizeDotplot: {
+      args: DiagonalizeDotplotArgs
+      // null when there are no alignments to reorder (mirrors DiagonalizeSynteny)
+      return: DiagonalizationResult | null
+    }
   }
 }
 
-type ProgressCallback = (progress: number, message: string) => void
-
-/**
- * Diagonalize a set of regions based on alignment data.
- * Copied from linear-comparative-view to avoid cross-package imports.
- */
-async function diagonalizeRegions(
-  alignments: AlignmentData[],
-  currentRegions: Region[],
-  progressCallback?: ProgressCallback,
-): Promise<DiagonalizationResult> {
-  const updateProgress = (progress: number, message: string) => {
-    if (progressCallback) {
-      progressCallback(progress, message)
-    }
-  }
-
-  updateProgress(20, `Grouping ${alignments.length} alignments...`)
-
-  // Group alignments by the second view's refName (mate.refName)
-  const queryGroups = new Map<
-    string,
-    {
-      refAlignments: Map<string, { bases: number; positions: number[] }>
-      strandWeightedSum: number
-    }
-  >()
-
-  for (const aln of alignments) {
-    const targetRefName = aln.refRefName
-
-    if (!queryGroups.has(targetRefName)) {
-      queryGroups.set(targetRefName, {
-        refAlignments: new Map(),
-        strandWeightedSum: 0,
-      })
-    }
-
-    const group = queryGroups.get(targetRefName)!
-    const alnLength = Math.abs(aln.queryEnd - aln.queryStart)
-
-    if (!group.refAlignments.has(aln.queryRefName)) {
-      group.refAlignments.set(aln.queryRefName, {
-        bases: 0,
-        positions: [],
-      })
-    }
-
-    const refData = group.refAlignments.get(aln.queryRefName)!
-    refData.bases += alnLength
-    refData.positions.push((aln.queryStart + aln.queryEnd) / 2)
-
-    const direction = aln.strand >= 0 ? 1 : -1
-    group.strandWeightedSum += direction * alnLength
-  }
-
-  updateProgress(50, 'Determining optimal ordering and orientation...')
-
-  // Determine ordering and orientation for query regions
-  const queryOrdering: {
-    refName: string
-    bestRefName: string
-    bestRefPos: number
-    shouldReverse: boolean
-  }[] = []
-
-  for (const [targetRefName, group] of queryGroups) {
-    let bestRefName = ''
-    let maxBases = 0
-    let bestPositions: number[] = []
-
-    for (const [firstViewRefName, data] of group.refAlignments) {
-      if (data.bases > maxBases) {
-        maxBases = data.bases
-        bestRefName = firstViewRefName
-        bestPositions = data.positions
-      }
-    }
-
-    const bestRefPos =
-      bestPositions.reduce((a, b) => a + b, 0) / bestPositions.length
-    const shouldReverse = group.strandWeightedSum < 0
-
-    queryOrdering.push({
-      refName: targetRefName,
-      bestRefName,
-      bestRefPos,
-      shouldReverse,
-    })
-  }
-
-  updateProgress(70, `Sorting ${queryOrdering.length} query regions...`)
-
-  queryOrdering.sort((a, b) => {
-    if (a.bestRefName !== b.bestRefName) {
-      return a.bestRefName.localeCompare(b.bestRefName)
-    }
-    return a.bestRefPos - b.bestRefPos
-  })
-
-  updateProgress(85, 'Building new region layout...')
-
-  const newQueryRegions: Region[] = []
-  let regionsReversed = 0
-
-  for (const { refName, shouldReverse } of queryOrdering) {
-    const region = currentRegions.find(r => r.refName === refName)
-    if (region) {
-      newQueryRegions.push({
-        ...region,
-        reversed: shouldReverse,
-      })
-      if (shouldReverse !== region.reversed) {
-        regionsReversed++
-      }
-    }
-  }
-
-  // Preserve regions without alignments at the end
-  const regionsWithoutAlignments = currentRegions.filter(
-    r => !newQueryRegions.some(nr => nr.refName === r.refName),
-  )
-
-  updateProgress(100, 'Diagonalization complete!')
-
-  return {
-    newRegions: [...newQueryRegions, ...regionsWithoutAlignments],
-    stats: {
-      totalAlignments: alignments.length,
-      regionsProcessed: queryOrdering.length,
-      regionsReordered: newQueryRegions.length,
-      regionsReversed,
-    },
-  }
-}
-
-interface DiagonalizeDotplotArgs {
+export interface DiagonalizeDotplotArgs {
   sessionId: string
-  view: {
-    hview: { displayedRegions: Region[] }
-    vview: { displayedRegions: Region[] }
-  }
+  // horizontal axis (already renamed into the adapter's refName namespace on the
+  // main thread): drives the getFeatures query and the reference ordering
+  referenceRegions: Region[]
+  // vertical axis, kept in canonical namespace because the reordered result is
+  // handed straight back to the view
+  currentRegions: Region[]
+  // adapter refName -> canonical refName for the vertical axis, so fetched
+  // alignments line up with the canonical currentRegions
+  queryRefNameMap: Record<string, string>
   adapterConfig: Record<string, unknown>
-  stopToken?: string
-  statusCallback?: (message: string) => void
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
 }
 
-/**
- * RPC method to diagonalize a dotplot view on the webworker
- */
 export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'DiagonalizeDotplot'
 
   async execute(args: DiagonalizeDotplotArgs, rpcDriverClassName: string) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
-    const { view, sessionId, adapterConfig, stopToken, statusCallback } =
-      deserializedArgs
+    const {
+      referenceRegions,
+      currentRegions,
+      queryRefNameMap,
+      sessionId,
+      adapterConfig,
+      stopToken,
+      statusCallback,
+    } = await this.deserializeArguments(args, rpcDriverClassName)
 
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    statusCallback?.('Initializing diagonalization...')
-
-    // Create view instances on the worker to access features
-    const dimensions = [800, 800] // Dummy dimensions, we only need features
-    const views = [view.hview, view.vview].map((snap, idx) => {
-      const v = Dotplot1DView.create(snap)
-      v.setVolatileWidth(dimensions[idx]!)
-      return v
-    }) as [Dotplot1DViewModel, Dotplot1DViewModel]
-
-    const targetView = views[0]
-
     checkStopToken(stopToken)
-    statusCallback?.('Getting renderer...')
+    statusCallback?.('Fetching features')
 
-    // Get the renderer to access features
-    const rendererType = this.pluginManager.getRendererType('DotplotRenderer')
-    if (!rendererType) {
-      throw new Error('DotplotRenderer not found')
-    }
-
-    checkStopToken(stopToken)
-    statusCallback?.('Fetching features...')
-
-    // Get features from adapter - DotplotRenderer extends ComparativeRenderer
-    // which has getFeatures method
-    const feats = await (
-      rendererType as unknown as {
-        getFeatures: (args: {
-          regions: Region[]
-          adapterConfig: Record<string, unknown>
-          sessionId: string
-        }) => Promise<Map<string, Feature>>
-      }
-    ).getFeatures({
-      regions: targetView.dynamicBlocks.contentBlocks,
-      adapterConfig,
+    const dataAdapter = await getFeatureAdapterOrThrow({
+      pluginManager: this.pluginManager,
       sessionId,
+      adapterConfig,
     })
+    const feats = dedupe(
+      await dataAdapter.getFeaturesInMultipleRegionsArray(referenceRegions, {
+        sessionId,
+        stopToken,
+        statusCallback,
+      }),
+      f => f.id(),
+    )
 
     checkStopToken(stopToken)
-    statusCallback?.('Extracting alignment data...')
+    statusCallback?.('Extracting alignment data')
 
-    // Extract alignment data from features
-    const alignments: AlignmentData[] = []
+    // referenceRegions are already adapter-space (renamed on the main thread),
+    // so the reference axis needs no translation; only the query axis is mapped
+    // back to canonical to line up with the canonical currentRegions.
+    const alignments = extractAlignmentData(feats, { queryRefNameMap })
 
-    for (const feat of feats.values()) {
-      const mate = feat.get('mate') as
-        | {
-            refName: string
-            start: number
-            end: number
-          }
-        | undefined
-
-      if (mate) {
-        alignments.push({
-          queryRefName: feat.get('refName'),
-          refRefName: mate.refName,
-          queryStart: feat.get('start'),
-          queryEnd: feat.get('end'),
-          refStart: mate.start,
-          refEnd: mate.end,
-          strand: feat.get('strand')! || 1,
-        })
-      }
-    }
-
+    // return null rather than throw (like DiagonalizeSynteny) so an empty pair
+    // reads as "no regions to reorder", and an init-time auto-diagonalize still
+    // resolves and releases the `settled` gate instead of stalling capture.
     if (alignments.length === 0) {
-      throw new Error('No alignments found to diagonalize')
+      return null
     }
 
     statusCallback?.(
-      `Running diagonalization on ${alignments.length} alignments...`,
+      `Running diagonalization on ${alignments.length} alignments`,
     )
 
-    // Run diagonalization algorithm with progress callback
     const result = await diagonalizeRegions(
       alignments,
-      view.vview.displayedRegions,
-      (progress, message) => {
+      referenceRegions,
+      currentRegions,
+      () => {
         checkStopToken(stopToken)
-        statusCallback?.(message)
       },
     )
 
@@ -282,3 +104,5 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     return result
   }
 }
+
+export { type DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'

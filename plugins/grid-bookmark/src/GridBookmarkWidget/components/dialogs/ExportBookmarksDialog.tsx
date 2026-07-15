@@ -1,35 +1,14 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { SubmitDialog } from '@jbrowse/core/ui'
 import GetAppIcon from '@mui/icons-material/GetApp'
-import {
-  Alert,
-  Button,
-  DialogActions,
-  DialogContent,
-  MenuItem,
-  Select,
-  Typography,
-} from '@mui/material'
+import { MenuItem, Select, Stack, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
 import { downloadBookmarkFile } from '../../utils.ts'
 
 import type { GridBookmarkModel } from '../../model.ts'
-
-const useStyles = makeStyles()({
-  flexItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '5px',
-  },
-  container: {
-    display: 'flex',
-    flexFlow: 'column',
-    gap: '5px',
-  },
-})
 
 const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   model,
@@ -38,70 +17,35 @@ const ExportBookmarksDialog = observer(function ExportBookmarksDialog({
   model: GridBookmarkModel
   onClose: () => void
 }) {
-  const { classes } = useStyles()
   const [fileType, setFileType] = useState('BED')
-  const { selectedBookmarks } = model
-  const exportAll = selectedBookmarks.length === 0
+  const exportAll = model.selectedBookmarks.length === 0
   return (
-    <Dialog
+    <SubmitDialog
       open
       title="Export bookmarks"
-      onClose={() => {
+      submitText="Download"
+      submitStartIcon={<GetAppIcon />}
+      onCancel={onClose}
+      onSubmit={() => {
+        void downloadBookmarkFile(fileType, model)
         onClose()
       }}
     >
-      <DialogContent className={classes.container}>
-        <Alert severity="info">
-          {exportAll ? (
-            <>
-              <span>All bookmarks will be exported.</span>
-              <br />
-              <span>
-                Use the checkboxes to select individual bookmarks to export.
-              </span>
-            </>
-          ) : (
-            'Only selected bookmarks will be exported.'
-          )}
-        </Alert>
-        <div className={classes.flexItem}>
-          <Typography>Format to download:</Typography>
-          <Select
-            size="small"
-            value={fileType}
-            onChange={event => {
-              setFileType(event.target.value)
-            }}
-          >
-            <MenuItem value="BED">BED</MenuItem>
-            <MenuItem value="TSV">TSV</MenuItem>
-          </Select>
-        </div>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            onClose()
+      <BookmarkSelectionAlert all={exportAll} verb="exported" />
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 1, mt: 1 }}>
+        <Typography>Format to download:</Typography>
+        <Select
+          size="small"
+          value={fileType}
+          onChange={event => {
+            setFileType(event.target.value)
           }}
         >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<GetAppIcon />}
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            downloadBookmarkFile(fileType, model)
-            onClose()
-          }}
-        >
-          Download
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <MenuItem value="BED">BED</MenuItem>
+          <MenuItem value="TSV">TSV</MenuItem>
+        </Select>
+      </Stack>
+    </SubmitDialog>
   )
 })
 export default ExportBookmarksDialog

@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSession, notEmpty } from '@jbrowse/core/util'
 
-import { hasAllOverlap, hasAnyOverlap } from './util.ts'
+import { containsAll, intersects } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -23,30 +23,33 @@ export function filterTracks(
     const viewAssemblyNames = self.assemblyNames
       .map(a => assemblyManager.getCanonicalAssemblyName(a))
       .filter(notEmpty)
-    const { displayTypes } = pluginManager.getViewType(view.type)!
     const viewDisplaysSet = new Set(
-      displayTypes.map((d: { name: string }) => d.name),
+      pluginManager
+        .getViewType(view.type)
+        .displayTypes.map((d: { name: string }) => d.name),
     )
     return tracks.filter(c => {
       const trackConfigAssemblyNames = readConfObject(c, 'assemblyNames') as
-        | string[]
-        | undefined
+        string[] | undefined
       const trackCanonicalAssemblyNames = trackConfigAssemblyNames
         ?.map(name => assemblyManager.getCanonicalAssemblyName(name))
         .filter(notEmpty)
       if (viewAssemblyNames.length > 0) {
+        // by default a track shows only if it supports every assembly the view
+        // displays; any-overlap mode relaxes this to sharing any one assembly
         const assemblyMatch = view.trackSelectorAnyOverlap
-          ? hasAnyOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
-          : hasAllOverlap(trackCanonicalAssemblyNames, viewAssemblyNames)
+          ? intersects(trackCanonicalAssemblyNames, viewAssemblyNames)
+          : containsAll(trackCanonicalAssemblyNames, viewAssemblyNames)
         if (!assemblyMatch) {
           return false
         }
       }
-      if (viewDisplaysSet.size === 0) {
-        return true
-      }
-      const trackType = pluginManager.getTrackType(c.type)!
-      return trackType.displayTypes.some(d => viewDisplaysSet.has(d.name))
+      return (
+        viewDisplaysSet.size === 0 ||
+        pluginManager
+          .getTrackType(c.type)
+          .displayTypes.some(d => viewDisplaysSet.has(d.name))
+      )
     })
   }
   return []

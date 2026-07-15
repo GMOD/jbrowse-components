@@ -1,0 +1,232 @@
+{
+  "assembly": {
+    "name": "RSV-A",
+    "sequence": {
+      "type": "ReferenceSequenceTrack",
+      "trackId": "RSV-A-ReferenceSequenceTrack",
+      "adapter": {
+        "type": "IndexedFastaAdapter",
+        "fastaLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/rsv-a/rsv-a.fa"
+        },
+        "faiLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/rsv-a/rsv-a.fa.fai"
+        }
+      }
+    }
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "name": "Nextstrain annotations",
+      "trackId": "RSV-A-nextstrain-annotations",
+      "assemblyNames": ["RSV-A"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "FromConfigAdapter",
+        "features": [
+          {
+            "refName": "RSV-A",
+            "name": "NS1",
+            "uniqueId": 0,
+            "start": 69,
+            "end": 489,
+            "strand": 1,
+            "fill": "#511EA8"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "NS2",
+            "uniqueId": 1,
+            "start": 598,
+            "end": 973,
+            "strand": 1,
+            "fill": "#3F50CC"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "N",
+            "uniqueId": 2,
+            "start": 1110,
+            "end": 2286,
+            "strand": 1,
+            "fill": "#4174CE"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "P",
+            "uniqueId": 3,
+            "start": 2317,
+            "end": 3043,
+            "strand": 1,
+            "fill": "#529AB6"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "M",
+            "uniqueId": 4,
+            "start": 3225,
+            "end": 3996,
+            "strand": 1,
+            "fill": "#6DB388"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "SH",
+            "uniqueId": 5,
+            "start": 4265,
+            "end": 4460,
+            "strand": 1,
+            "fill": "#9ABE5C"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "G",
+            "uniqueId": 6,
+            "start": 4651,
+            "end": 5617,
+            "strand": 1,
+            "fill": "#B1BD4D"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "F",
+            "uniqueId": 7,
+            "start": 5696,
+            "end": 7421,
+            "strand": 1,
+            "fill": "#CFB541"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "M2-1",
+            "uniqueId": 8,
+            "start": 7639,
+            "end": 8224,
+            "strand": 1,
+            "fill": "#E29E39"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "M2-2",
+            "uniqueId": 9,
+            "start": 8192,
+            "end": 8465,
+            "strand": 1,
+            "fill": "#E4632E"
+          },
+          {
+            "refName": "RSV-A",
+            "name": "L",
+            "uniqueId": 10,
+            "start": 8531,
+            "end": 15029,
+            "strand": 1,
+            "fill": "#DC2F24"
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "RSV-A-nextstrain-color-display",
+          "renderer": {
+            "type": "SvgFeatureRenderer",
+            "color1": "jexl:get(feature,'fill') || 'black'"
+          }
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "name": "Diversity (entropy)",
+      "trackId": "RSV-A-entropy-score",
+      "assemblyNames": ["RSV-A"],
+      "category": ["Annotation"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/rsv-a/rsv-a_entropy.bw"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "name": "Sample genotypes",
+      "trackId": "RSV-A-genotypes",
+      "assemblyNames": ["RSV-A"],
+      "category": ["Nextstrain"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/rsv-a/rsv-a_genotypes.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/nextstrain/rsv-a/rsv-a_genotypes.vcf.gz.tbi"
+          }
+        },
+        "samplesTsvLocation": {
+          "uri": "https://jbrowse.org/demos/nextstrain/rsv-a/rsv-a_samples.tsv"
+        }
+      }
+    }
+  ],
+  "location": "RSV-A:1..15,225",
+  "defaultSession": {
+    "name": "My session",
+    "view": {
+      "id": "linearGenomeView",
+      "type": "LinearGenomeView",
+      "tracks": [
+        {
+          "type": "QuantitativeTrack",
+          "configuration": "RSV-A-entropy-score",
+          "displays": [
+            {
+              "type": "LinearWiggleDisplay",
+              "displayId": "RSV-A-entropy-score-LinearWiggleDisplay",
+              "renderers": {
+                "DensityRenderer": { "type": "DensityRenderer" },
+                "XYPlotRenderer": { "type": "XYPlotRenderer" },
+                "LinePlotRenderer": { "type": "LinePlotRenderer" }
+              }
+            }
+          ]
+        },
+        {
+          "type": "FeatureTrack",
+          "configuration": "RSV-A-nextstrain-annotations",
+          "displays": [
+            {
+              "type": "LinearBasicDisplay",
+              "configuration": "RSV-A-nextstrain-color-display"
+            }
+          ]
+        },
+        {
+          "type": "VariantTrack",
+          "configuration": "RSV-A-genotypes",
+          "displays": [
+            {
+              "type": "LinearMultiSampleVariantMatrixDisplay",
+              "displayId": "RSV-A-genotypes-LinearMultiSampleVariantMatrixDisplay",
+              "height": 400,
+              "colorBy": "region"
+            }
+          ]
+        },
+        {
+          "type": "ReferenceSequenceTrack",
+          "configuration": "RSV-A-ReferenceSequenceTrack",
+          "displays": [
+            {
+              "type": "LinearReferenceSequenceDisplay",
+              "configuration": "RSV-A-ReferenceSequenceTrack-LinearReferenceSequenceDisplay"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

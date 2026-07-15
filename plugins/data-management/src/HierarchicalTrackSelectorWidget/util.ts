@@ -1,31 +1,24 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
-import type { TreeNode, TreeTrackNode } from './types.ts'
+import type { TreeCategoryNode, TreeTrackNode } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-export function getAllChildren(subtree?: TreeNode): AnyConfigurationModel[] {
-  if (subtree?.type === 'category') {
-    return subtree.children.flatMap(t =>
-      t.type === 'category' ? getAllChildren(t) : t.conf,
-    )
-  }
-  return []
-}
 
 export function isUnsupported(name = '') {
   return name.endsWith('(Unsupported)') || name.endsWith('(Unknown)')
 }
 
-export function hasAnyOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  const s = new Set(a1)
-  return a2.some(a => s.has(a))
+// true if the two arrays share at least one element (symmetric)
+export function intersects<T>(a: T[] = [], b: T[] = []) {
+  const s = new Set(a)
+  return b.some(x => s.has(x))
 }
 
-export function hasAllOverlap<T>(a1: T[] = [], a2: T[] = []) {
-  const s1 = new Set(a1)
-  return a2.every(a => s1.has(a))
+// true if `superset` contains every element of `subset`; argument order matters
+export function containsAll<T>(superset: T[] = [], subset: T[] = []) {
+  const s = new Set(superset)
+  return subset.every(x => s.has(x))
 }
 
 // queryLower must be pre-lowercased by caller to avoid redundant per-track work
@@ -47,34 +40,25 @@ interface Node {
   id: string
 }
 
-function findSubCategoriesInner(
-  obj: Node[],
-  depth: number,
-): [paths: string[], hasDirectLeaves: boolean] {
+// Collects IDs of subcategories that contain tracks, not just more folders.
+// `obj` is the group level (depth 0, e.g. the "Tracks" group), so the user's
+// top-level categories are depth 1 and true subcategories are depth > 1 — those
+// are what "Collapse subcategories" targets, leaving top-level categories
+// (which collapseTopLevelCategories handles) alone even when they hold tracks.
+export function findSubCategories(obj: Node[]) {
   const paths: string[] = []
-  let hasDirectLeaves = false
-  for (const elt of obj) {
-    if (elt.children.length) {
-      const [subPaths, subHasDirectLeaves] = findSubCategoriesInner(
-        elt.children,
-        depth + 1,
-      )
-      // avoid pushing the root "Tracks" node by checking depth>0
-      if (subHasDirectLeaves && depth > 0) {
-        paths.push(elt.id)
+  function collect(nodes: Node[], depth: number) {
+    for (const node of nodes) {
+      if (node.children.length) {
+        if (depth > 1 && node.children.some(c => !c.children.length)) {
+          paths.push(node.id)
+        }
+        collect(node.children, depth + 1)
       }
-      for (const p of subPaths) {
-        paths.push(p)
-      }
-    } else {
-      hasDirectLeaves = true
     }
   }
-  return [paths, hasDirectLeaves]
-}
-
-export function findSubCategories(obj: Node[]) {
-  return findSubCategoriesInner(obj, 0)[0]
+  collect(obj, 0)
+  return paths
 }
 
 export function findTopLevelCategories(obj: Node[]) {
@@ -87,9 +71,24 @@ export function findTopLevelCategories(obj: Node[]) {
   return paths
 }
 
-export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {
+export function getAllSubcategories(node: TreeCategoryNode): string[] {
+  const categoryIds: string[] = []
+  const stack = [node] as TreeCategoryNode[]
+  while (stack.length > 0) {
+    const curr = stack.pop()!
+    for (const child of curr.children) {
+      if (child.type === 'category') {
+        categoryIds.push(child.id)
+        stack.push(child)
+      }
+    }
+  }
+  return categoryIds
+}
+
+export function getAllTrackNodes(subtree: TreeCategoryNode): TreeTrackNode[] {
   const result: TreeTrackNode[] = []
-  function collect(node: TreeNode) {
+  function collect(node: TreeCategoryNode) {
     for (const child of node.children) {
       if (child.type === 'track') {
         result.push(child)
@@ -98,8 +97,6 @@ export function getAllTrackNodes(subtree?: TreeNode): TreeTrackNode[] {
       }
     }
   }
-  if (subtree?.type === 'category') {
-    collect(subtree)
-  }
+  collect(subtree)
   return result
 }

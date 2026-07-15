@@ -1,105 +1,87 @@
 ---
 id: baseinternetaccountmodel
 title: BaseInternetAccountModel
+sidebar_label: Internet Account -> BaseInternetAccountModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/InternetAccountModel.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+## Members
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/InternetAccountModel.ts)
+| Member                                                                   | Kind       | Defined by               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------------------ | ---------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                                       | Properties | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [type](#property-type)                                                   | Properties | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [configuration](#property-configuration)                                 | Properties | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [name](#getter-name)                                                     | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [description](#getter-description)                                       | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [internetAccountId](#getter-internetaccountid)                           | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [authHeader](#getter-authheader)                                         | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [tokenType](#getter-tokentype)                                           | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [domains](#getter-domains)                                               | Getters    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [toggleContents](#getter-togglecontents)                                 | Getters    | BaseInternetAccountModel | Can use this to customize what is displayed in fileSelector's toggle box                                                                                                                                                                                                                                                                                                                                                                             |
+| [SelectorComponent](#getter-selectorcomponent)                           | Getters    | BaseInternetAccountModel | Can use this to customize what the fileSelector. It takes a prop called `setLocation` that should be used to set a UriLocation                                                                                                                                                                                                                                                                                                                       |
+| [selectorLabel](#getter-selectorlabel)                                   | Getters    | BaseInternetAccountModel | Can use this to add a label to the UrlChooser. Has no effect if a custom SelectorComponent is supplied                                                                                                                                                                                                                                                                                                                                               |
+| [tokenKey](#getter-tokenkey)                                             | Getters    | BaseInternetAccountModel | The key used to store this internetAccount's token in sessionStorage                                                                                                                                                                                                                                                                                                                                                                                 |
+| [handlesLocation](#method-handleslocation)                               | Methods    | BaseInternetAccountModel | Determine whether this internetAccount provides credentials for a URL                                                                                                                                                                                                                                                                                                                                                                                |
+| [getTokenFromUser](#action-gettokenfromuser)                             | Actions    | BaseInternetAccountModel | Must be implemented by a model extending or composing this one. Pass the user's token to `resolve`.                                                                                                                                                                                                                                                                                                                                                  |
+| [storeToken](#action-storetoken)                                         | Actions    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [retrieveToken](#action-retrievetoken)                                   | Actions    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [validateToken](#action-validatetoken)                                   | Actions    | BaseInternetAccountModel | This can be used by an internetAccount to validate a token works before it is used. This is run when preAuthorizationInformation is requested, so it can be used to check that a token is valid before sending it to a worker thread. It expects the token to be returned so that this action can also be used to generate a new token (e.g. by using a refresh token) if the original one was invalid. Should throw an error if a token is invalid. |
+| [removeToken](#action-removetoken)                                       | Actions    | BaseInternetAccountModel | Clears the stored token. Also drops the in-memory cached promise so a subsequent `getToken` re-prompts / re-derives rather than handing back the token that was just invalidated.                                                                                                                                                                                                                                                                    |
+| [getToken](#action-gettoken)                                             | Actions    | BaseInternetAccountModel | Try to get the token from the location pre-auth, from local storage, or from a previously cached promise. If token is not available, uses `getTokenFromUser`.                                                                                                                                                                                                                                                                                        |
+| [addAuthHeaderToInit](#action-addauthheadertoinit)                       | Actions    | BaseInternetAccountModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [getValidatedToken](#action-getvalidatedtoken)                           | Actions    | BaseInternetAccountModel | Fetch a token and, when a location is supplied, run it through `validateToken` so subclasses can refresh an expired token before it is used. Shared by the auth-aware fetchers.                                                                                                                                                                                                                                                                      |
+| [getPreAuthorizationInformation](#action-getpreauthorizationinformation) | Actions    | BaseInternetAccountModel | Gets the token and returns it along with the information needed to create a new internetAccount.                                                                                                                                                                                                                                                                                                                                                     |
+| [getFetcher](#action-getfetcher)                                         | Actions    | BaseInternetAccountModel | Get a fetch method that will add any needed authentication headers to the request before sending it. If location is provided, it will be checked to see if it includes a token in it pre-auth information.                                                                                                                                                                                                                                           |
+| [openLocation](#action-openlocation)                                     | Actions    | BaseInternetAccountModel | Gets a filehandle that uses a fetch that adds auth headers                                                                                                                                                                                                                                                                                                                                                                                           |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseInternetAccountModel.md)
-
-## Docs
-
-### BaseInternetAccountModel - Properties
+<details>
+<summary>BaseInternetAccountModel - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<string>
+type type = ISimpleType<string>
 // code
 type: types.string
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(BaseInternetAccountConfig)
 ```
 
-### BaseInternetAccountModel - Getters
+</details>
 
-#### getter: name
-
-```js
-// type
-string
-```
-
-#### getter: description
-
-```js
-// type
-string
-```
-
-#### getter: internetAccountId
-
-```js
-// type
-string
-```
-
-#### getter: authHeader
-
-```js
-// type
-string
-```
-
-#### getter: tokenType
-
-```js
-// type
-string
-```
-
-#### getter: domains
-
-```js
-// type
-string[]
-```
+<details>
+<summary>BaseInternetAccountModel - Getters</summary>
 
 #### getter: toggleContents
 
 Can use this to customize what is displayed in fileSelector's toggle box
 
-```js
-// type
-ReactNode
+```ts
+type toggleContents = ReactNode
 ```
 
 #### getter: SelectorComponent
@@ -107,9 +89,8 @@ ReactNode
 Can use this to customize what the fileSelector. It takes a prop called
 `setLocation` that should be used to set a UriLocation
 
-```js
-// type
-AnyReactComponentType | undefined
+```ts
+type SelectorComponent = AnyReactComponentType | undefined
 ```
 
 #### getter: selectorLabel
@@ -117,62 +98,87 @@ AnyReactComponentType | undefined
 Can use this to add a label to the UrlChooser. Has no effect if a custom
 SelectorComponent is supplied
 
-```js
-// type
-string | undefined
+```ts
+type selectorLabel = string | undefined
 ```
 
 #### getter: tokenKey
 
 The key used to store this internetAccount's token in sessionStorage
 
-```js
-// type
-string
+```ts
+type tokenKey = string
 ```
 
-### BaseInternetAccountModel - Methods
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Getters (other undocumented members)</summary>
+
+#### getter: name
+
+```ts
+type name = string
+```
+
+#### getter: description
+
+```ts
+type description = string
+```
+
+#### getter: internetAccountId
+
+```ts
+type internetAccountId = string
+```
+
+#### getter: authHeader
+
+```ts
+type authHeader = string
+```
+
+#### getter: tokenType
+
+```ts
+type tokenType = string
+```
+
+#### getter: domains
+
+```ts
+type domains = string[]
+```
+
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Methods</summary>
 
 #### method: handlesLocation
 
 Determine whether this internetAccount provides credentials for a URL
 
-```js
-// type signature
-handlesLocation: (location: UriLocation) => boolean
+```ts
+type handlesLocation = (location: UriLocation) => boolean
 ```
 
-### BaseInternetAccountModel - Actions
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Actions</summary>
 
 #### action: getTokenFromUser
 
 Must be implemented by a model extending or composing this one. Pass the user's
 token to `resolve`.
 
-```js
-// type signature
-getTokenFromUser: (_resolve: (token: string) => void, _reject: (error: Error) => void) => void
-```
-
-#### action: storeToken
-
-```js
-// type signature
-storeToken: (token: string) => void
-```
-
-#### action: removeToken
-
-```js
-// type signature
-removeToken: () => void
-```
-
-#### action: retrieveToken
-
-```js
-// type signature
-retrieveToken: () => string | null
+```ts
+type getTokenFromUser = (
+  _resolve: (token: string) => void,
+  _reject: (error: Error) => void,
+) => void
 ```
 
 #### action: validateToken
@@ -184,9 +190,18 @@ expects the token to be returned so that this action can also be used to
 generate a new token (e.g. by using a refresh token) if the original one was
 invalid. Should throw an error if a token is invalid.
 
-```js
-// type signature
-validateToken: (token: string, _loc: UriLocation) => Promise<string>
+```ts
+type validateToken = (token: string, _loc: UriLocation) => Promise<string>
+```
+
+#### action: removeToken
+
+Clears the stored token. Also drops the in-memory cached promise so a subsequent
+`getToken` re-prompts / re-derives rather than handing back the token that was
+just invalidated.
+
+```ts
+type removeToken = () => void
 ```
 
 #### action: getToken
@@ -194,16 +209,18 @@ validateToken: (token: string, _loc: UriLocation) => Promise<string>
 Try to get the token from the location pre-auth, from local storage, or from a
 previously cached promise. If token is not available, uses `getTokenFromUser`.
 
-```js
-// type signature
-getToken: (location?: UriLocation | undefined) => Promise<string>
+```ts
+type getToken = (location?: UriLocation | undefined) => Promise<string>
 ```
 
-#### action: addAuthHeaderToInit
+#### action: getValidatedToken
 
-```js
-// type signature
-addAuthHeaderToInit: (init?: RequestInit | undefined, token?: string | undefined) => { headers: Headers; body?: BodyInit | null | undefined; cache?: RequestCache | undefined; ... 10 more ...; window?: null | undefined; }
+Fetch a token and, when a location is supplied, run it through `validateToken`
+so subclasses can refresh an expired token before it is used. Shared by the
+auth-aware fetchers.
+
+```ts
+type getValidatedToken = (loc?: UriLocation | undefined) => Promise<string>
 ```
 
 #### action: getPreAuthorizationInformation
@@ -211,9 +228,11 @@ addAuthHeaderToInit: (init?: RequestInit | undefined, token?: string | undefined
 Gets the token and returns it along with the information needed to create a new
 internetAccount.
 
-```js
-// type signature
-getPreAuthorizationInformation: (location: UriLocation) => Promise<{ internetAccountType: string; authInfo: { token: string; configuration: any; }; }>
+```ts
+type getPreAuthorizationInformation = (location: UriLocation) => Promise<{
+  internetAccountType: string
+  authInfo: { token: string; configuration: any }
+}>
 ```
 
 #### action: getFetcher
@@ -222,16 +241,41 @@ Get a fetch method that will add any needed authentication headers to the
 request before sending it. If location is provided, it will be checked to see if
 it includes a token in it pre-auth information.
 
-```js
-// type signature
-getFetcher: (loc?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
+```ts
+type getFetcher = (
+  loc?: UriLocation | undefined,
+) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
 ```
 
 #### action: openLocation
 
 Gets a filehandle that uses a fetch that adds auth headers
 
-```js
-// type signature
-openLocation: (location: UriLocation) => RemoteFileWithRangeCache
+```ts
+type openLocation = (location: UriLocation) => RemoteFileWithRangeCache
 ```
+
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Actions (other undocumented members)</summary>
+
+#### action: storeToken
+
+```ts
+type storeToken = (token: string) => void
+```
+
+#### action: retrieveToken
+
+```ts
+type retrieveToken = () => string | null
+```
+
+#### action: addAuthHeaderToInit
+
+```ts
+type addAuthHeaderToInit = (init?: RequestInit | undefined, token?: string | undefined) => { headers: Headers; body?: BodyInit | null | undefined; cache?: RequestCache | undefined; ... 10 more ...; window?: null | undefined; }
+```
+
+</details>

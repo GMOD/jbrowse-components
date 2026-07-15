@@ -27,7 +27,7 @@ export function cigarToMismatches2(
 
   for (let i = 0, l = ops.length; i < l; i++) {
     const packed = ops[i]!
-    const len = packed >> 4
+    const len = packed >>> 4
     const op = packed & 0xf
 
     if (op === CIGAR_M || op === CIGAR_EQ) {

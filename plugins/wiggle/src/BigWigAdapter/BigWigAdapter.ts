@@ -1,57 +1,41 @@
-import { ArrayFeatureView, BigWig } from '@gmod/bbi'
+import { ArrayFeatureView, BigWig, BigWigFeature } from '@gmod/bbi'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   aggregateQuantitativeStats,
   blankStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import { updateStatus } from '@jbrowse/core/util'
+import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { rectifyStats } from '@jbrowse/core/util/stats'
+import { calcStdFromSums } from '@jbrowse/core/util/stats'
 
+import type { BigWigAdapterConfig } from './configSchema.ts'
+import type { RawFeatureArrays } from '../util.ts'
+import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
+import type { RectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
-
-interface WiggleOptions extends BaseOptions {
-  resolution?: number
-}
 
 function computeStatsFromView(
   view: ArrayFeatureView,
   targetStart: number,
   targetEnd: number,
-) {
-  const len = view.length
-
-  if (len === 0) {
-    return {
-      scoreMin: 0,
-      scoreMax: 0,
-      scoreSum: 0,
-      scoreSumSquares: 0,
-      scoreMean: 0,
-      scoreStdDev: 0,
-      featureCount: 0,
-      basesCovered: targetEnd - targetStart,
-      featureDensity: 0,
-    }
-  }
-
+): RectifiedQuantitativeStats {
+  const basesCovered = targetEnd - targetStart
+  // Number.MAX_VALUE not Infinity: precautionary, since Infinity serializes as
+  // null in JSON and these stats cross the RPC boundary. In practice the
+  // sentinels are always replaced (featureCount===0 returns zeros early).
   let scoreMin = Number.MAX_VALUE
-  let scoreMax = Number.MIN_VALUE
+  let scoreMax = -Number.MAX_VALUE
   let scoreMeanMin = Number.MAX_VALUE
-  let scoreMeanMax = Number.MIN_VALUE
+  let scoreMeanMax = -Number.MAX_VALUE
   let scoreSum = 0
   let scoreSumSquares = 0
   let featureCount = 0
 
-  for (let i = 0; i < len; i++) {
-    const featureStart = view.start(i)
-    const featureEnd = view.end(i)
-
-    // Skip features outside target range
-    if (featureEnd <= targetStart || featureStart >= targetEnd) {
+  for (let i = 0; i < view.length; i++) {
+    if (view.end(i) <= targetStart || view.start(i) >= targetEnd) {
       continue
     }
 
@@ -77,14 +61,21 @@ function computeStatsFromView(
       scoreMean: 0,
       scoreStdDev: 0,
       featureCount: 0,
-      basesCovered: targetEnd - targetStart,
+      basesCovered,
       featureDensity: 0,
     }
   }
 
   const scoreMean = scoreSum / featureCount
-  const scoreStdDev = Math.sqrt(
-    scoreSumSquares / featureCount - scoreMean * scoreMean,
+  // calcStdFromSums guards variance<0 (floating-point rounding can push it
+  // slightly negative when every score in the window is equal — a flat region —
+  // which a bare Math.sqrt would turn into NaN). population=true keeps the
+  // divide-by-n behavior this used to compute inline.
+  const scoreStdDev = calcStdFromSums(
+    scoreSum,
+    scoreSumSquares,
+    featureCount,
+    true,
   )
 
   return {
@@ -97,25 +88,21 @@ function computeStatsFromView(
     scoreMean,
     scoreStdDev,
     featureCount,
-    basesCovered: targetEnd - targetStart,
-    featureDensity: featureCount / (targetEnd - targetStart),
+    basesCovered,
+    featureDensity: featureCount / basesCovered,
   }
 }
 
-export default class BigWigAdapter extends BaseFeatureDataAdapter {
+export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterConfig> {
   private setupP?: Promise<{
     bigwig: BigWig
     header: Awaited<ReturnType<BigWig['getHeader']>>
   }>
 
-  public static capabilities = [
-    'hasResolution',
-    'hasLocalStats',
-    'hasGlobalStats',
-  ]
+  public static capabilities = ['hasResolution']
 
   private async setupPre(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts || {}
+    const { statusCallback = () => {} } = opts ?? {}
     const pluginManager = this.pluginManager
     const bigwig = new BigWig({
       filehandle: openLocation(this.getConf('bigWigLocation'), pluginManager),
@@ -131,12 +118,10 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
   }
 
   async setup(opts?: BaseOptions) {
-    if (!this.setupP) {
-      this.setupP = this.setupPre(opts).catch((e: unknown) => {
-        this.setupP = undefined
-        throw e
-      })
-    }
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
+      this.setupP = undefined
+      throw e
+    })
     return this.setupP
   }
 
@@ -150,55 +135,12 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return header.refsByNumber[refId]?.name
   }
 
-  public async getGlobalStats(opts?: BaseOptions) {
-    const { header } = await this.setup(opts)
-    return rectifyStats(header.totalSummary)
-  }
-
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
-    const { refName, start, end } = region
-    const {
-      bpPerPx = 0,
-      resolution = 1,
-      stopToken,
-      statusCallback = () => {},
-    } = opts
-    const source = this.getConf('source')
-    const resolutionMultiplier = this.getConf('resolutionMultiplier')
-
+    const { stopToken } = opts
     return ObservableCreate<Feature>(async observer => {
-      const { bigwig } = await this.setup(opts)
-
-      const arrays = await updateStatus(
-        'Downloading bigwig data',
-        statusCallback,
-        () =>
-          bigwig.getFeaturesAsArrays(refName, start, end, {
-            ...opts,
-            basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
-          }),
-      )
-
-      const view = new ArrayFeatureView(arrays, source, refName)
-
+      const view = await this.getArrayFeatureView(region, opts)
       for (let i = 0; i < view.length; i++) {
-        const uniqueId = view.id(i)
-        const idx = i
-        observer.next({
-          get: (str: string) => view.get(idx, str) as any,
-          id: () => uniqueId,
-          toJSON: () => ({
-            start: view.start(idx),
-            end: view.end(idx),
-            score: view.score(idx),
-            refName,
-            source,
-            uniqueId,
-            summary: view.isSummary,
-            minScore: view.minScore(idx),
-            maxScore: view.maxScore(idx),
-          }),
-        })
+        observer.next(new BigWigFeature(view, i))
       }
       observer.complete()
     }, stopToken)
@@ -215,17 +157,86 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
 
     const { bigwig } = await this.setup(opts)
 
-    const arrays = await updateStatus(
+    const arrays = await downloadStatus(
       'Downloading bigwig data',
       statusCallback,
-      () =>
+      onProgress =>
         bigwig.getFeaturesAsArrays(refName, start, end, {
           ...opts,
           basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+          onProgress,
         }),
     )
 
     return new ArrayFeatureView(arrays, source, refName)
+  }
+
+  // bicolorPivot is a display concern (pos/neg color split) and stays out of
+  // the adapter API. Callers run processFeaturesFromArrays themselves with the
+  // pivot — split happens inline with the data scan, no second pass.
+  public async getFeatureArrays(
+    region: Region,
+    opts: WiggleOptions = {},
+  ): Promise<RawFeatureArrays> {
+    const view = await this.getArrayFeatureView(region, opts)
+    return {
+      starts: view.starts,
+      ends: view.ends,
+      scores: view.scores,
+      minScores: view.minScores,
+      maxScores: view.maxScores,
+      count: view.length,
+    }
+  }
+
+  // Multi-region fast path: one bbi pass over all regions, coalescing adjacent
+  // on-disk blocks across region boundaries (fewer range requests than N
+  // independent getFeatureArrays calls — the win for collapsed-intron and
+  // whole-genome overviews). All regions share one zoom level, selected from the
+  // view's bpPerPx, so a single basesPerSpan is correct. The bbi result packs
+  // every region into one backing set of typed arrays plus regionOffsets;
+  // regionOffsets[i]..regionOffsets[i+1] is region i's copy-free slice.
+  public async getFeatureArraysMulti(
+    regions: Region[],
+    opts: WiggleOptions = {},
+  ): Promise<RawFeatureArrays[]> {
+    const { bpPerPx = 0, resolution = 1, statusCallback = () => {} } = opts
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+    const { bigwig } = await this.setup(opts)
+
+    const res = await downloadStatus(
+      'Downloading bigwig data',
+      statusCallback,
+      onProgress =>
+        bigwig.getFeaturesAsArraysMulti(
+          regions.map(r => ({
+            refName: r.refName,
+            start: r.start,
+            end: r.end,
+          })),
+          {
+            ...opts,
+            basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+            onProgress,
+          },
+        ),
+    )
+
+    const { starts, ends, scores, regionOffsets } = res
+    const minScores = res.isSummary ? res.minScores : undefined
+    const maxScores = res.isSummary ? res.maxScores : undefined
+    return regions.map((_region, i) => {
+      const lo = regionOffsets[i]!
+      const hi = regionOffsets[i + 1]!
+      return {
+        starts: starts.subarray(lo, hi),
+        ends: ends.subarray(lo, hi),
+        scores: scores.subarray(lo, hi),
+        minScores: minScores?.subarray(lo, hi),
+        maxScores: maxScores?.subarray(lo, hi),
+        count: hi - lo,
+      }
+    })
   }
 
   public async getRegionQuantitativeStats(
@@ -241,10 +252,11 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter {
     return computeStatsFromView(view, start, end)
   }
 
-  // always render bigwig instead of calculating a feature density for it
+  // bbi zoom levels cap returned data at screen resolution, so a bigwig is
+  // never too large to render — skip the density/byte estimate entirely
   async getMultiRegionFeatureDensityStats(_regions: Region[]) {
     return {
-      featureDensity: 0,
+      alwaysRender: true,
     }
   }
 

@@ -11,11 +11,7 @@ export default function MultiWiggleAdapterF(pluginManager: PluginManager) {
         name: 'MultiWiggleAdapter',
         displayName: 'Multi-wiggle adapter',
         configSchema,
-        adapterCapabilities: [
-          'hasResolution',
-          'hasLocalStats',
-          'hasGlobalStats',
-        ],
+        adapterCapabilities: ['hasResolution'],
         adapterMetadata: {
           hiddenFromGUI: true,
         },

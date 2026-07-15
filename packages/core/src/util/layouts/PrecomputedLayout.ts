@@ -70,10 +70,6 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     return this.totalHeight
   }
 
-  collides(_rect: Rectangle<T>, _top: number): boolean {
-    throw new Error('Method not implemented.')
-  }
-
   getByCoord(x: number, y: number) {
     if (!this.index) {
       return undefined
@@ -91,7 +87,12 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     return this.rectangles.get(id)
   }
 
-  addRectToBitmap(_rect: Rectangle<T>, _data: Record<string, T>): void {
+  // PrecomputedLayout has rectangles only; data was dropped during serialization
+  getDataByID(_id: string): T | undefined {
+    return undefined
+  }
+
+  addRectToBitmap(_rect: Rectangle<T>): void {
     throw new Error('Method not implemented.')
   }
 

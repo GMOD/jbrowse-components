@@ -44,11 +44,8 @@ test('returns nothing when assemblyName is absent', () => {
   expect(result.current.error).toBeUndefined()
 })
 
-test('fetches and returns seq/upstream/downstream', async () => {
-  mockFetchSeq
-    .mockResolvedValueOnce('ACGT')
-    .mockResolvedValueOnce('UP')
-    .mockResolvedValueOnce('DOWN')
+test('fetches seq and returns empty upstream/downstream when upDownBp is 0', async () => {
+  mockFetchSeq.mockResolvedValueOnce('ACGT')
 
   const { result } = renderHook(() => useFeatureSequence(baseArgs))
 
@@ -58,10 +55,11 @@ test('fetches and returns seq/upstream/downstream', async () => {
 
   expect(result.current.sequence).toEqual({
     seq: 'ACGT',
-    upstream: 'UP',
-    downstream: 'DOWN',
+    upstream: '',
+    downstream: '',
   })
   expect(result.current.error).toBeUndefined()
+  expect(mockFetchSeq).toHaveBeenCalledTimes(1)
 })
 
 test('returns error object (not thrown) when region exceeds BPLIMIT without forceLoad', async () => {
@@ -80,10 +78,7 @@ test('returns error object (not thrown) when region exceeds BPLIMIT without forc
 })
 
 test('fetches when region exceeds BPLIMIT but forceLoad is true', async () => {
-  mockFetchSeq
-    .mockResolvedValueOnce('SEQ')
-    .mockResolvedValueOnce('')
-    .mockResolvedValueOnce('')
+  mockFetchSeq.mockResolvedValueOnce('SEQ')
 
   const { result } = renderHook(() =>
     useFeatureSequence({
@@ -103,7 +98,7 @@ test('fetches when region exceeds BPLIMIT but forceLoad is true', async () => {
     upstream: '',
     downstream: '',
   })
-  expect(mockFetchSeq).toHaveBeenCalledTimes(3)
+  expect(mockFetchSeq).toHaveBeenCalledTimes(1)
 })
 
 test('upDownBp expands upstream/downstream fetch regions', async () => {

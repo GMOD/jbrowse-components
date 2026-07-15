@@ -1,37 +1,23 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
-import { configure } from 'mobx'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import {
+  handleRequest,
+  utilizeFetchMockForTest,
+  volvoxGetFile,
+} from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
-
-configure({ disableErrorBoundaries: true })
-
-const getFile = (url: string) => {
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/volvox/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
-
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-})
+utilizeFetchMockForTest(volvoxGetFile)
 
 async function createCircularViewWithInit(init: {
   assembly: string
@@ -143,7 +129,7 @@ test('CircularView init with 404 TwoBitAdapter shows error', async () => {
     if (`${url}`.includes('jb2=true')) {
       return new Response('{}')
     }
-    return handleRequest(() => getFile(`${url}`), args)
+    return handleRequest(() => volvoxGetFile(`${url}`), args)
   })
 
   const { rootModel } = getPluginManager(config404)
@@ -165,4 +151,33 @@ test('CircularView init with 404 TwoBitAdapter shows error', async () => {
   )
 
   expect(`${view.error}`).toMatch(/404|not found|failed/i)
+}, 40000)
+
+// Regression: a snapshot taken before the view materializes (e.g. autosave
+// firing while the init autorun hasn't set displayedRegions yet) must keep
+// init, so a reload/restore rebuilds instead of stranding on the import form.
+// Once displayedRegions exist, init is redundant and stripped.
+test('snapshot keeps init while not materialized, strips it once regions load', async () => {
+  const { rootModel } = getPluginManager()
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('CircularView', {
+    init: { assembly: 'volvox' },
+  })
+
+  // no width yet -> init autorun hasn't set displayedRegions
+  expect(view.displayedRegions.length).toBe(0)
+  const before: { init?: unknown } = getSnapshot(view)
+  expect(before.init).toBeDefined()
+
+  view.setWidth(800)
+  await waitFor(
+    () => {
+      expect(view.displayedRegions.length).toBeGreaterThan(0)
+    },
+    { timeout: 30000 },
+  )
+
+  const after: { init?: unknown } = getSnapshot(view)
+  expect(after.init).toBeUndefined()
 }, 40000)

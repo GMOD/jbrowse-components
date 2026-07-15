@@ -1,21 +1,85 @@
 ---
-id: linear_synteny_view
 title: Linear synteny view
-description: Linear alignment of two genomes
+description: Side-by-side alignment of two genomes
 guide_category: Views
 ---
 
-### Opening a linear synteny view
+The linear synteny view stacks two genomes horizontally, one above the other,
+and draws their alignments as ribbons connecting matching regions across the two
+panels. Each genome panel behaves like a linear genome view, so you can scroll,
+zoom, and add tracks to either side independently while the ribbons update to
+follow.
 
-1. Navigate on the header bar `Add` → `Linear synteny view`
-2. Select the genome assemblies of interest
-3. Optionally, add a .paf, .out (MashMap), .delta (Mummer), .chain, .anchors or
-   .anchors.simple (MCScan) file
+Forward-strand alignments are drawn in one color and inverted alignments in
+another, so a ribbon that twists or crosses between the panels marks an
+inversion or rearrangement relative to the other genome.
 
-<Figure caption="Screenshot of the import form of the synteny view. You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
+## Opening a linear synteny view
+
+Launch a new Linear synteny view and select the two assemblies to compare. You
+can optionally add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors, or
+.anchors.simple (MCScan) file.
+
+<Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
 
 <Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
 
-For a step-by-step walkthrough of loading assemblies, generating a PAF with
-minimap2, and using the dotplot and linear synteny views together, see the
-[Synteny and genome alignment tutorial](/docs/tutorials/synteny_visualization).
+## Navigating each panel
+
+Each genome panel is a full linear genome view and is controlled independently:
+
+- scroll, zoom, and pan either panel on its own; ribbons redraw to follow
+- type a region or gene name into a panel's search box to jump it there
+- add tracks (genes, alignments, coverage) to either side from its track
+  selector, useful for reading what a syntenic block actually contains
+
+## Interacting with the ribbons
+
+- Hover a ribbon to see a tooltip with the alignment's coordinates on both
+  genomes and, when zoomed in, the CIGAR operation under the cursor
+- Click a ribbon to highlight it across both panels
+- Right-click a ribbon for a context menu with **Center on feature**, which
+  recenters both panels on that alignment
+
+## View options
+
+The view's hamburger menu controls how the ribbons are drawn:
+
+- Show curved lines - draw ribbons as bezier curves instead of straight
+  connectors
+- CIGAR display mode - how per-base insertions and deletions inside each
+  alignment are shown: **Colored indels** paints them, **Transparent indels**
+  leaves them as see-through gaps in the ribbon, and **None** draws blocks only
+- Show location markers - vertical guides marking each alignment's endpoints
+- Show all regions - fit both whole assemblies into view
+- Square view - equalize the horizontal scale of the two panels
+- Add assembly row - compare three or more assemblies stacked vertically
+
+<Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length ~6 kb L1HS present in human is absent at the orthologous chimp intron. The 'Colored indels' CIGAR display mode paints the insertion as a wedge in the ribbon, with RepeatMasker naming the element at the indel." src="/img/synteny_human_chimp_cigar_modes.png" />
+
+### More lineage-specific insertions
+
+The same human/chimp synteny plus RepeatMasker resolves other lineage-specific
+transposon insertions. Each is a gap in the alignment with the element named at
+the indel:
+
+<Figure caption="A human-specific SVA_F (~2 kb) in an intron of VAPB, present in human and absent at the orthologous chimp intron." src="/img/synteny_te_vapb_sva.png" />
+
+<Figure caption="A human-specific AluYb8 (~0.3 kb) in PICALM, inserted downstream of a conserved AluY present in both species. A small insertion still reads clearly as an indel." src="/img/synteny_te_picalm_alu.png" />
+
+## See also
+
+- [Dotplot view](/docs/user_guides/dotplot_view) - whole-genome synteny overview
+  that can launch this view from a selection
+- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization) -
+  loading assemblies and generating a PAF with minimap2
+- [Synteny/dotplot configuration](/docs/config_guides/synteny_track) -
+  config-file options for synteny tracks
+- [LinearSyntenyDisplay config schema](/docs/config/linearsyntenydisplay) -
+  every display slot, autogenerated from source
+- [Multi-way synteny tutorial](/docs/tutorials/multiway_synteny) - worked
+  example of the "Add assembly row" 3+-genome workflow
+- [MAF track](/docs/user_guides/maf_track) - multi-species alignment against one
+  reference, complementary to this pairwise view
+- [Gallery: synteny examples](/gallery/#synteny) - live grape-vs-peach,
+  human-vs-mouse, and multi-way synteny views to open and explore

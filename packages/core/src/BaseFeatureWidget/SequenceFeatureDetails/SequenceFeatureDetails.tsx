@@ -1,19 +1,23 @@
 import { Suspense, lazy, useRef, useState } from 'react'
 
-import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
-import { ErrorBanner, LoadingEllipses } from '../../ui/index.ts'
-import { getSession } from '../../util/index.ts'
-import { useFeatureSequence } from '../../util/useFeatureSequence.ts'
+import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
+import {
+  getDefaultMode,
+  getTranscripts,
+  pickDefaultTranscriptIndex,
+} from './featureTypeUtil.ts'
+import { useSequenceFetch } from './useSequenceFetch.ts'
+import { LoadingEllipses } from '../../ui/index.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'
 
 // lazies
-const SequencePanel = lazy(() => import('./SequencePanel.tsx'))
+const SequenceBody = lazy(() => import('./SequenceBody.tsx'))
 const SequenceDialog = lazy(() => import('./dialogs/SequenceDialog.tsx'))
 
 const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
@@ -27,27 +31,51 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   const { upDownBp } = sequenceFeatureDetails
   const seqPanelRef = useRef<HTMLDivElement>(null)
 
+  // A container feature (e.g. a gene) has no CDS/exon of its own — one of its
+  // transcript children does. Default to the longest-coding transcript so CDS
+  // and Protein sequence types work without an extra click into Subfeatures,
+  // with a selector to switch transcripts when the gene has more than one.
+  const transcripts = getTranscripts(feature)
+  const [transcriptIndex, setTranscriptIndex] = useState(() =>
+    pickDefaultTranscriptIndex(transcripts),
+  )
+  const effectiveFeature = transcripts[transcriptIndex] ?? feature
+
+  // mode is per-panel state, not on the shared model, so each subfeature panel
+  // (e.g. coding vs noncoding transcripts of one gene) picks its own sequence
+  // type
+  const [mode, setMode] = useState(() => getDefaultMode(effectiveFeature))
   const [openInDialog, setOpenInDialog] = useState(false)
-  const [forceLoad, setForceLoad] = useState(false)
-  const session = getSession(model)
-  const assemblyName = model.view?.assemblyNames?.[0]
-  const { sequence, error } = useFeatureSequence({
-    assemblyName,
-    session,
-    start: feature.start,
-    end: feature.end,
-    refName: feature.refName,
-    upDownBp,
-    forceLoad,
-  })
+  const { sequence, error, assemblyGeneticCodeId, onForceLoad } =
+    useSequenceFetch({
+      model,
+      feature: effectiveFeature,
+      upDownBp,
+    })
 
   return (
     <>
       <div>
-        <SequenceTypeSelector model={sequenceFeatureDetails} />
+        {transcripts.length > 1 ? (
+          <TranscriptSelector
+            transcripts={transcripts}
+            transcriptIndex={transcriptIndex}
+            setTranscriptIndex={index => {
+              setTranscriptIndex(index)
+              setMode(getDefaultMode(transcripts[index]!))
+            }}
+          />
+        ) : null}
+        <SequenceTypeSelector
+          model={sequenceFeatureDetails}
+          feature={effectiveFeature}
+          mode={mode}
+          setMode={setMode}
+        />
         <SequenceFeatureMenu
           ref={seqPanelRef}
           model={sequenceFeatureDetails}
+          mode={mode}
           extraItems={[
             {
               label: 'Open in dialog',
@@ -59,54 +87,34 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
         />
       </div>
       {openInDialog ? (
-        <div>
-          Open in dialog...
-          <Suspense fallback={<LoadingEllipses />}>
-            <SequenceDialog
-              model={model}
-              sequenceFeatureDetails={sequenceFeatureDetails}
-              feature={feature}
-              handleClose={() => {
-                setOpenInDialog(false)
-              }}
-            />
-          </Suspense>
-        </div>
+        <Suspense fallback={<LoadingEllipses />}>
+          <SequenceDialog
+            sequenceFeatureDetails={sequenceFeatureDetails}
+            feature={effectiveFeature}
+            mode={mode}
+            setMode={setMode}
+            sequence={sequence}
+            error={error}
+            assemblyGeneticCodeId={assemblyGeneticCodeId}
+            onForceLoad={onForceLoad}
+            handleClose={() => {
+              setOpenInDialog(false)
+            }}
+          />
+        </Suspense>
       ) : (
-        <div>
-          {feature.type === 'gene' ? (
-            <Typography>
-              Note: inspect subfeature sequences for protein/CDS computations
-            </Typography>
-          ) : null}
-          {error ? (
-            <ErrorBanner error={error} />
-          ) : !sequence ? (
-            <LoadingEllipses />
-          ) : 'error' in sequence ? (
-            <>
-              <Typography color="error">{sequence.error}</Typography>
-              <Button
-                variant="contained"
-                color="inherit"
-                onClick={() => {
-                  setForceLoad(true)
-                }}
-              >
-                Force load
-              </Button>
-            </>
-          ) : (
-            <Suspense fallback={<LoadingEllipses />}>
-              <SequencePanel
-                ref={seqPanelRef}
-                feature={feature}
-                sequence={sequence}
-                model={sequenceFeatureDetails}
-              />
-            </Suspense>
-          )}
-        </div>
+        <Suspense fallback={<LoadingEllipses />}>
+          <SequenceBody
+            error={error}
+            sequence={sequence}
+            feature={effectiveFeature}
+            seqPanelRef={seqPanelRef}
+            model={sequenceFeatureDetails}
+            mode={mode}
+            assemblyGeneticCodeId={assemblyGeneticCodeId}
+            onForceLoad={onForceLoad}
+          />
+        </Suspense>
       )}
     </>
   )

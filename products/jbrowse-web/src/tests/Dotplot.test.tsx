@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json' with { type: 'json' }
 import dotplotSession from './dotplot_inverted_test.json' with { type: 'json' }
@@ -16,7 +16,7 @@ beforeEach(() => {
 
 test('open a dotplot view', async () => {
   const { findByTestId } = await createView(config)
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', ...opts))
+  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', ...opts))
 }, 50000)
 
 test('inverted dotplot', async () => {
@@ -24,7 +24,7 @@ test('inverted dotplot', async () => {
     ...config,
     defaultSession: dotplotSession.session,
   })
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', ...opts), 0)
+  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', ...opts), 0)
 }, 50000)
 
 test('inverted dotplot flip axes', async () => {
@@ -32,7 +32,7 @@ test('inverted dotplot flip axes', async () => {
     ...config,
     defaultSession: dotplotSessionFlipAxes.session,
   })
-  expectCanvasMatch(await findByTestId('prerendered_canvas_done', ...opts), 0)
+  expectCanvasMatch(await findByTestId('dotplot_webgl_canvas_done', ...opts), 0)
 }, 50000)
 
 // session with dotplots and linear synteny views with both orientations tested

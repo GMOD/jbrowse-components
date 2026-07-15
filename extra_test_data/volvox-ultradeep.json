@@ -1,0 +1,60 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "/test_data/volvox/volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "volvox_aliases",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": ["A", "contigA"]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": ["B", "contigB"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "volvox_ultradeep",
+      "name": "volvox ULTRA-DEEP (~2000x)",
+      "category": ["Perf"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "volvox-ultradeep.bam"
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "height": 600,
+          "displayId": "volvox_ultradeep_display"
+        }
+      ]
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  }
+}

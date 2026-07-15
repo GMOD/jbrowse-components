@@ -24,10 +24,12 @@ test('nav to volvox2', async () => {
 }, 30000)
 
 test('select volvox404', async () => {
+  jest.spyOn(console, 'error').mockImplementation(() => {})
   const { findByText } = await doSetupForImportForm()
   fireEvent.mouseDown(await findByText('volvox'))
   fireEvent.click(await findByText('volvox404'))
   await findByText(/HTTP 404/)
+  jest.restoreAllMocks()
 }, 30000)
 
 test('select misc', async () => {

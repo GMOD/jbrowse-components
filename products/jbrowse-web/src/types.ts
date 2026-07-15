@@ -2,6 +2,10 @@ import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type { SessionMetadata } from '@jbrowse/web-core'
 import type { DBSchema } from 'idb'
 
+// JSON-shaped snapshot used for configs and session payloads as they cross the
+// URL / IDB / network / MST boundaries.
+export type Snap = Record<string, unknown>
+
 export interface Session {
   name: string
   id: string
@@ -33,9 +37,12 @@ export type TrackInit =
 
 export interface ViewSpec {
   type: string
+  // optional explicit view id so another view in the spec can reference it
+  // (e.g. a connected MsaView pointing at this view via connectedViewId)
+  id?: string
   tracks?: TrackInit[]
   assembly: string
-  loc: string
+  loc?: string
 }
 
 /**
@@ -68,8 +75,22 @@ export interface LayoutNode {
 
 export interface SessionTriagedInfo {
   snap: Record<string, unknown>
-  origin: string
+  origin: 'session' | 'config'
   reason: PluginDefinition[]
 }
+
+/**
+ * The single resolved session the loader hands to createPluginManager. The
+ * loader's job is to turn whatever the URL/HMR/storage provided into exactly
+ * one of these variants; initSession then applies it. One discriminated value
+ * replaces the former scattered sessionSnapshot/sessionSpec/hubSpec/
+ * blankSession/sessionError flags.
+ */
+export type SessionSource =
+  | { type: 'snapshot'; snapshot: Snap }
+  | { type: 'spec'; spec: Snap }
+  | { type: 'hub'; hubSpec: Snap }
+  | { type: 'default' }
+  | { type: 'error'; error: unknown }
 
 export { type SessionMetadata } from '@jbrowse/web-core'

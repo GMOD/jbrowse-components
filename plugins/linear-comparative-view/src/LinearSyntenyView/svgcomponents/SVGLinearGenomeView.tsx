@@ -1,65 +1,74 @@
-import { getFillProps } from '@jbrowse/core/util'
-import {
-  SVGGridlines,
-  SVGRuler,
-  SVGTracks,
-} from '@jbrowse/plugin-linear-genome-view'
-import { useTheme } from '@mui/material'
+import type { ReactNode } from 'react'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { exportMargin } from '@jbrowse/core/svg/constants'
+import { getEnv } from '@jbrowse/core/util'
+import { SVGHighlights, SVGView } from '@jbrowse/plugin-linear-genome-view'
+
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  LinearGenomeViewModel,
+  TrackLabelMode,
+} from '@jbrowse/plugin-linear-genome-view'
+
+export interface ViewDisplayResults {
+  view: LinearGenomeViewModel
+  data: {
+    track: {
+      configuration: AnyConfigurationModel
+      displays: { height: number }[]
+    }
+    result: ReactNode
+  }[]
+}
 
 export default function SVGLinearGenomeView({
   trackLabelOffset,
   fontSize,
   textHeight,
   trackLabels,
-  view,
   displayResults,
   rulerHeight,
-  shift,
   showGridlines = false,
   tracksHeight,
 }: {
   textHeight: number
-  trackLabels: string
+  trackLabels: TrackLabelMode
   trackLabelOffset: number
   fontSize: number
-  view: LinearGenomeViewModel
-  displayResults: any
+  displayResults: ViewDisplayResults
   rulerHeight: number
-  shift: number
   showGridlines?: boolean
   tracksHeight: number
 }) {
-  const theme = useTheme()
+  const { view } = displayResults
+  const { pluginManager } = getEnv(view)
+  const clipId = `highlight-clip-${view.id}`
+  const bookmarkHighlights = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint LinearGenomeView-HighlightSVGComponent | sync | Add an SVG highlight overlay in the LGV SVG export */
+    'LinearGenomeView-HighlightSVGComponent',
+    [] as ReactNode[],
+    { model: view, height: tracksHeight },
+  )
   return (
-    <g transform={`translate(${shift} ${fontSize})`}>
-      <g transform={`translate(${trackLabelOffset})`}>
-        <text
-          x={0}
-          fontSize={fontSize}
-          {...getFillProps(theme.palette.text.primary)}
-        >
-          {view.assemblyNames.join(', ')}
-        </text>
-        <SVGRuler model={displayResults.view} fontSize={fontSize} />
-      </g>
-      {showGridlines ? (
-        <g
-          transform={`translate(${trackLabelOffset} ${rulerHeight + fontSize})`}
-        >
-          <SVGGridlines model={displayResults.view} height={tracksHeight} />
-        </g>
-      ) : null}
-      <g transform={`translate(0 ${rulerHeight + fontSize})`}>
-        <SVGTracks
-          textHeight={textHeight}
-          trackLabels={trackLabels}
-          fontSize={fontSize}
-          model={displayResults.view}
-          displayResults={displayResults.data}
-          trackLabelOffset={trackLabelOffset}
-        />
+    <g transform={`translate(${exportMargin} ${fontSize})`}>
+      <SVGView
+        view={view}
+        displayResults={displayResults.data}
+        fontSize={fontSize}
+        textHeight={textHeight}
+        trackLabels={trackLabels}
+        trackLabelOffset={trackLabelOffset}
+        contentTop={rulerHeight}
+        tracksHeight={tracksHeight}
+        showGridlines={showGridlines}
+        leftBuffer={exportMargin}
+      />
+      <g transform={`translate(${trackLabelOffset} ${rulerHeight})`}>
+        <SvgClipRect id={clipId} width={view.width} height={tracksHeight}>
+          <SVGHighlights model={view} height={tracksHeight} />
+          {bookmarkHighlights}
+        </SvgClipRect>
       </g>
     </g>
   )

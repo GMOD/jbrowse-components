@@ -1,8 +1,4 @@
-import fs from 'fs'
-import path from 'path'
-
-import { saveAs } from '@jbrowse/core/util'
-import { fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent } from '@testing-library/react'
 
 import {
   createView,
@@ -12,9 +8,7 @@ import {
   setup,
 } from './util.tsx'
 
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
-
+import './svgExportMocks.ts'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
@@ -46,21 +40,13 @@ test('export svg of lgv with gridlines', async () => {
     await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
   )
 
-  fireEvent.click(await findByTestId('view_menu_icon', ...opts))
-  fireEvent.click(await findByText('Export SVG', ...opts))
-
-  // Enable gridlines checkbox
-  fireEvent.click(await findByText('Show gridlines', ...opts))
-
-  fireEvent.click(await findByText('Submit', ...opts))
-
-  await waitFor(() => {
-    expect(saveAs).toHaveBeenCalled()
-  }, delay)
-
-  // @ts-expect-error
-  const svg = saveAs.mock.calls[0][0].content[0]
-  const dir = path.dirname(module.filename)
-  fs.writeFileSync(`${dir}/__image_snapshots__/lgv_gridlines_snapshot.svg`, svg)
-  expect(svg).toMatchSnapshot()
+  await exportAndVerifySvg({
+    findByTestId,
+    findByText,
+    filename: 'lgv_gridlines',
+    delay,
+    beforeSubmit: async () => {
+      fireEvent.click(await findByText('Show gridlines', ...opts))
+    },
+  })
 }, 45000)

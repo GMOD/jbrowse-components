@@ -1,16 +1,20 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { normalizeTrackInit } from '@jbrowse/plugin-linear-genome-view'
+import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
+import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import RemoveIcon from '@mui/icons-material/Remove'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable, when } from 'mobx'
 
-import { Curves } from './components/Icons.tsx'
 import baseModel from '../LinearComparativeView/model.ts'
+import { applyInitSettings, normalizeTrackLevels } from './util/initHelpers.ts'
 
 import type {
   ExportSvgOptions,
@@ -18,18 +22,39 @@ import type {
   LinearSyntenyViewInit,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcStatus } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
+
+const DEFAULT_OVERDRAW_PX = 1000
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const DiagonalizationProgressDialog = lazy(
   () => import('./components/DiagonalizationProgressDialog.tsx'),
 )
+const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
 
 /**
  * #stateModel LinearSyntenyView
- * extends
- * - [LinearComparativeView](../linearcomparativeview)
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. `init.views` declares the two
+ * member assemblies (stacked as linear views) and `tracks` the synteny feature
+ * track connecting them with a ribbon:
+ * ```js
+ * {
+ *   type: 'LinearSyntenyView',
+ *   init: {
+ *     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
+ *     tracks: ['hg38_vs_mm10.paf'],
+ *     drawCurves: true,
+ *   },
+ * }
+ * ```
+ * Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
+ * `autoDiagonalize` — see the `init` property below.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -42,21 +67,75 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          */
         type: types.literal('LinearSyntenyView'),
         /**
-         * #property/
+         * #property
          */
-        drawCIGAR: true,
-        /**
-         * #property/
-         */
-        drawCIGARMatchesOnly: false,
+        cigarMode: types.stripDefault(
+          types.enumeration(['off', 'matches', 'full']),
+          'full',
+        ),
         /**
          * #property
          */
-        drawCurves: false,
+        drawCurves: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        drawLocationMarkers: false,
+        drawLocationMarkers: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * pixels beyond the visible viewport edge that synteny lines are still drawn
+         */
+        overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX),
+        /**
+         * #property
+         */
+        alpha: types.stripDefault(types.number, 0.2),
+        /**
+         * #property
+         * Hide alignment blocks shorter than this many bp. Enforced per-feature
+         * by its own span in buildSyntenyGeometry, then culled in the shader
+         * (isCulled) and pick engine. Cuts whole-genome hairball noise.
+         */
+        minAlignmentLength: types.stripDefault(types.number, 0),
+        /**
+         * #property
+         * Level-of-detail tier selection for PIF adapters. 'auto' uses the
+         * adapter's bpPerPx threshold; 'fine' forces the per-row CIGAR tier
+         * (t/q); 'coarse' forces the no-CIGAR tier (T/Q) when present.
+         */
+        lodMode: types.stripDefault(
+          types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+          'auto',
+        ),
+        /**
+         * #property
+         */
+        colorBy: types.stripDefault(types.string, 'default'),
+        /**
+         * #property
+         * Show the floating color-by legend in the top-right of the synteny
+         * canvas. Dismissible via the legend's close button; re-enable from the
+         * color-by (palette) menu.
+         */
+        showColorLegend: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * Fade alignment blocks by per-feature identity (lower identity = more
+         * transparent). Orthogonal to colorBy — surfaces identity-dropoff zones
+         * without consuming the color channel.
+         */
+        opacityByIdentity: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * Fade a sub-pixel-thin ribbon's opacity by its on-screen width (see
+         * WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered
+         * whole-genome view doesn't read as a hard full-opacity hairball. Off
+         * restores full per-ribbon alpha regardless of width — needed for
+         * genuinely sparse comparisons (e.g. distant-species synteny) where
+         * every real alignment is sub-pixel at whole-genome zoom and the fade
+         * would wash the view out instead of decluttering it.
+         */
+        fadeThinAlignments: types.stripDefault(types.boolean, true),
         /**
          * #property
          * used for initializing the view from a session snapshot. tracks is
@@ -83,6 +162,42 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       importFormSyntenyTrackSelections:
         observable.array<ImportFormSyntenyTrack>(),
+      /**
+       * #volatile
+       * True while the init autorun is waiting for the first synteny RPC so
+       * it can diagonalize. Used to gate the canvas off — otherwise the user
+       * watches an undiagonalized hairball flash before the reorder kicks in.
+       */
+      awaitingAutoDiagonalize: false,
+      /**
+       * #volatile
+       * Set true as soon as an init-time autoDiagonalize is requested, before
+       * any render can paint. Gates `settled` (and thus the
+       * `synteny_canvas_done` test-id) so a screenshot / browser-test can't
+       * capture the pre-reorder hairball during the view-building await window,
+       * before `awaitingAutoDiagonalize` flips.
+       */
+      autoDiagonalizeRequested: false,
+      /**
+       * #volatile
+       * Set true only after the init-time DiagonalizeSynteny pass RESOLVES
+       * successfully. If the reorder is skipped or throws, this stays false so
+       * `settled` never reports done on an undiagonalized view — the capture
+       * fails loudly (times out) instead of committing a hairball.
+       */
+      autoDiagonalizeComplete: false,
+      /**
+       * #volatile
+       * Live status from the auto-diagonalize RPC (download %, parse, algorithm
+       * phase) shown on the reordering spinner; undefined outside that wait.
+       */
+      diagonalizeStatus: undefined as RpcStatus | undefined,
+      /**
+       * #volatile
+       * Stop token for the in-flight auto-diagonalize, so the spinner's Cancel
+       * can abort it; undefined when none is running.
+       */
+      diagonalizeStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       /**
@@ -91,6 +206,95 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get hasSomethingToShow() {
         return self.views.length > 0 || !!self.init
       },
+      /**
+       * #getter
+       * Opt each sub-view's scalebar into prefixing its refName labels with the
+       * assembly name (e.g. "hg38:chr1"), so stacked genome rows of different
+       * assemblies stay distinguishable. Read duck-typed by the child
+       * LinearGenomeView (scalebarDisplayPrefix) to avoid an upward plugin
+       * dependency.
+       */
+      get showAssemblyNameInSubviewScalebar() {
+        return true
+      },
+      /**
+       * #getter
+       */
+      get drawCIGAR() {
+        return self.cigarMode !== 'off'
+      },
+      /**
+       * #getter
+       */
+      get drawCIGARMatchesOnly() {
+        return self.cigarMode === 'matches'
+      },
+      /**
+       * #getter
+       * True if any track on any level has an adapter that declares the
+       * 'lod' capability. Used to gate the LOD menu — adapters without
+       * tiered storage (e.g. PAFAdapter, BlastTabularAdapter) have nothing
+       * to switch between.
+       */
+      get hasLodCapableAdapter() {
+        return self.levels
+          .flatMap(l => l.tracks)
+          .some(t => t.adapterType.adapterCapabilities.includes('lod'))
+      },
+      /**
+       * #getter
+       * True if any currently-loaded synteny display has at least one
+       * feature with a CIGAR. Used to gate CIGAR-related menu items —
+       * coarse-tier PIF files and CIGAR-less PAFs have nothing to show.
+       * Returns true while no data has loaded yet so the menu doesn't
+       * flicker between renders.
+       */
+      get hasCigarData() {
+        return self.levels
+          .flatMap(l => l.linearSyntenyDisplays)
+          .some(d => d.featureData?.hasCigar)
+      },
+      /**
+       * #getter
+       * Union across every loaded synteny display of which CIGAR indel ops are
+       * actually drawn on screen. The floating legend lists an indel chip only
+       * when a visible-width op of that kind is painted somewhere in the view.
+       */
+      get presentCigarKinds(): CigarOpMask {
+        return self.levels
+          .flatMap(l => l.linearSyntenyDisplays)
+          .reduce((mask, d) => mask | d.presentCigarKinds, 0)
+      },
+      /**
+       * #getter
+       * The "anchor" assembly for colorBy:'reference': the assembly bordering
+       * the most synteny levels. In a stacked ref-vs-A / ref-vs-B layout each
+       * interior assembly touches two levels and the ends touch one, so the
+       * max-adjacency assembly is the shared reference. Ties resolve to the
+       * topmost. Every level then colors by this assembly's chromosome names,
+       * so a region keeps its color as it's traced across levels.
+       */
+      get anchorAssemblyName() {
+        const asms = self.views.map(v => v.assemblyNames[0])
+        const counts = new Map<string, number>()
+        for (let i = 0; i < asms.length - 1; i++) {
+          for (const a of [asms[i], asms[i + 1]]) {
+            if (a) {
+              counts.set(a, (counts.get(a) ?? 0) + 1)
+            }
+          }
+        }
+        let best: string | undefined
+        let bestCount = -1
+        for (const a of asms) {
+          const c = a ? (counts.get(a) ?? 0) : 0
+          if (a && c > bestCount) {
+            bestCount = c
+            best = a
+          }
+        }
+        return best
+      },
     }))
     .views(self => ({
       /**
@@ -98,7 +302,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return self.isLoading || (!self.initialized && self.hasSomethingToShow)
+        return (
+          self.awaitingAutoDiagonalize ||
+          (!self.initialized && self.hasSomethingToShow)
+        )
+      },
+      /**
+       * #getter
+       * Label for the generic loading spinner. The auto-diagonalize wait is a
+       * separate render branch (DiagonalizeLoadingScreen), so this only covers
+       * the plain "view not ready" case.
+       */
+      get loadingMessage() {
+        return this.showLoading ? 'Loading' : undefined
       },
       /**
        * #getter
@@ -136,20 +352,62 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setDrawCIGAR(arg: boolean) {
-        self.drawCIGAR = arg
-      },
-      /**
-       * #action
-       */
-      setDrawCIGARMatchesOnly(arg: boolean) {
-        self.drawCIGARMatchesOnly = arg
+      setCigarMode(arg: 'off' | 'matches' | 'full') {
+        self.cigarMode = arg
       },
       /**
        * #action
        */
       setDrawLocationMarkers(arg: boolean) {
         self.drawLocationMarkers = arg
+      },
+      /**
+       * #action
+       */
+      setOverdrawPx(arg: number) {
+        self.overdrawPx = arg
+      },
+      /**
+       * #action
+       */
+      setAlpha(arg: number) {
+        self.alpha = arg
+      },
+      /**
+       * #action
+       */
+      setMinAlignmentLength(arg: number) {
+        self.minAlignmentLength = arg
+      },
+      /**
+       * #action
+       */
+      setLodMode(arg: 'auto' | 'fine' | 'coarse') {
+        self.lodMode = arg
+      },
+      /**
+       * #action
+       */
+      setColorBy(arg: SyntenyColorBy) {
+        self.colorBy = arg
+      },
+      /**
+       * #action
+       */
+      setShowColorLegend(arg: boolean) {
+        self.showColorLegend = arg
+      },
+      /**
+       * #action
+       */
+      setOpacityByIdentity(arg: boolean) {
+        self.opacityByIdentity = arg
+      },
+      /**
+       * #action
+       */
+      setFadeThinAlignments(arg: boolean) {
+        self.fadeThinAlignments = arg
       },
       /**
        * #action
@@ -165,6 +423,44 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       setInit(init?: LinearSyntenyViewInit) {
         self.init = init
       },
+      /**
+       * #action
+       */
+      setAwaitingAutoDiagonalize(arg: boolean) {
+        self.awaitingAutoDiagonalize = arg
+      },
+      /**
+       * #action
+       */
+      setAutoDiagonalizeRequested(arg: boolean) {
+        self.autoDiagonalizeRequested = arg
+      },
+      /**
+       * #action
+       */
+      setAutoDiagonalizeComplete(arg: boolean) {
+        self.autoDiagonalizeComplete = arg
+      },
+      /**
+       * #action
+       */
+      setDiagonalizeStatus(arg?: RpcStatus) {
+        self.diagonalizeStatus = arg
+      },
+      /**
+       * #action
+       */
+      setDiagonalizeStopToken(arg?: StopToken) {
+        self.diagonalizeStopToken = arg
+      },
+      /**
+       * #action
+       * Abort an in-flight auto-diagonalize; the runner's finally clears the
+       * wait flag, revealing the (undiagonalized) view.
+       */
+      cancelAutoDiagonalize() {
+        stopStopToken(self.diagonalizeStopToken)
+      },
     }))
     .actions(self => ({
       /**
@@ -174,51 +470,54 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGLinearSyntenyView.tsx')
         const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
-        const { saveAs } = await import('@jbrowse/core/util')
-
-        if (opts.format === 'png') {
-          const img = new Image()
-          const svgBlob = new Blob([html], { type: 'image/svg+xml' })
-          const url = URL.createObjectURL(svgBlob)
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => {
-              const canvas = document.createElement('canvas')
-              canvas.width = img.width
-              canvas.height = img.height
-              const ctx = canvas.getContext('2d')!
-              ctx.drawImage(img, 0, 0)
-              URL.revokeObjectURL(url)
-              canvas.toBlob(blob => {
-                if (blob) {
-                  saveAs(blob, opts.filename || 'image.png')
-                  resolve()
-                } else {
-                  reject(
-                    new Error(
-                      `Failed to create PNG. The image may be too large (${img.width}x${img.height}). Try reducing the view size or use SVG format.`,
-                    ),
-                  )
-                }
-              }, 'image/png')
-            }
-            img.onerror = () => {
-              URL.revokeObjectURL(url)
-              reject(new Error('Failed to load SVG for PNG conversion'))
-            }
-            img.src = url
-          })
-        } else {
-          saveAs(
-            new Blob([html], { type: 'image/svg+xml' }),
-            opts.filename || 'image.svg',
-          )
-        }
+        const { saveSvgAsImage } = await import('@jbrowse/core/util')
+        await saveSvgAsImage(html, opts)
       },
     }))
     .views(self => {
       const superHeaderMenuItems = self.headerMenuItems
+      const superShowMenuItems = self.showMenuItems
       const superMenuItems = self.menuItems
+      function openExportSvgDialog() {
+        getSession(self).queueDialog(handleClose => [
+          ExportSvgDialog,
+          {
+            model: self,
+            handleClose,
+          },
+        ])
+      }
       return {
+        /**
+         * #method
+         */
+        showMenuItems() {
+          return [
+            ...superShowMenuItems(),
+            {
+              label: 'Show all regions',
+              onClick: () => {
+                self.showAllRegions()
+              },
+            },
+            {
+              label: 'Show curved lines',
+              type: 'checkbox',
+              checked: self.drawCurves,
+              onClick: () => {
+                self.setDrawCurves(!self.drawCurves)
+              },
+            },
+            {
+              label: 'Show location markers',
+              type: 'checkbox',
+              checked: self.drawLocationMarkers,
+              onClick: () => {
+                self.setDrawLocationMarkers(!self.drawLocationMarkers)
+              },
+            },
+          ]
+        },
         /**
          * #method
          * includes a subset of view menu options because the full list is a
@@ -229,13 +528,35 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             ...superHeaderMenuItems(),
             {
               label: 'Square view',
-              onClick: self.squareView,
-              description:
-                'Makes both views use the same zoom level, adjusting to the average of each',
+              onClick: () => {
+                self.squareView()
+              },
               icon: CropFreeIcon,
-              helpText:
-                'Square view synchronizes the zoom levels of both genome views by calculating the average zoom level and applying it to both panels. This helps ensure features are displayed at comparable scales, making it easier to compare syntenic regions visually.',
             },
+            {
+              label: 'Add assembly row...',
+              icon: AddIcon,
+              onClick: () => {
+                getSession(self).queueDialog(handleClose => [
+                  AddRowDialog,
+                  {
+                    handleClose,
+                    model: self,
+                  },
+                ])
+              },
+            },
+            ...(self.views.length > 2
+              ? [
+                  {
+                    label: 'Remove bottom row',
+                    icon: RemoveIcon,
+                    onClick: () => {
+                      self.removeLastRow()
+                    },
+                  },
+                ]
+              : []),
             {
               label: 'Re-order chromosomes',
               onClick: () => {
@@ -248,81 +569,104 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ])
               },
               icon: ShuffleIcon,
-              description:
-                "Reorder and reorient query regions to minimize crossing lines, also known as 'diagonalizing'",
-              helpText:
-                "This operation 'diagonalizes' the data which algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process may take a few moments for large genomes.",
             },
-            {
-              label: 'Show...',
-              subMenu: [
-                {
-                  label: 'Show all regions',
-                  onClick: self.showAllRegions,
-                  description: 'Show entire genome assemblies',
-                  icon: VisibilityIcon,
-                  helpText:
-                    'This command will zoom out all views to display the entire genome assemblies. This is useful when you want to get a high-level overview of syntenic relationships across whole genomes or when you need to reset the view after zooming into specific regions.',
-                },
-                {
-                  label: 'Show dynamic controls',
-                  type: 'checkbox',
-                  checked: self.showDynamicControls,
-                  onClick: () => {
-                    self.setShowDynamicControls(!self.showDynamicControls)
+            ...(self.levels.length > 1
+              ? [
+                  {
+                    label: 'Auto-scale level heights',
+                    onClick: () => {
+                      self.autoScaleLevelHeights()
+                    },
                   },
-                  helpText:
-                    'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust synteny visualization parameters in real-time.',
-                },
-                {
-                  label: 'Show CIGAR insertions/deletions',
-                  checked: self.drawCIGAR,
-                  type: 'checkbox',
-                  description:
-                    'If disabled, only shows the broad scale CIGAR match',
-                  onClick: () => {
-                    self.setDrawCIGAR(!self.drawCIGAR)
+                ]
+              : []),
+            ...(self.views.length > 2
+              ? [
+                  {
+                    label: 'Genome views',
+                    subMenu: [
+                      {
+                        label: 'Compact all views',
+                        onClick: () => {
+                          self.compactAllViews()
+                        },
+                      },
+                      {
+                        label: 'Expand all views',
+                        onClick: () => {
+                          self.expandAllViews()
+                        },
+                      },
+                      ...self.views.map((view, idx) => ({
+                        label: view.assemblyNames[0] ?? `View ${idx + 1}`,
+                        type: 'checkbox' as const,
+                        checked: !self.isViewCompact(idx),
+                        onClick: () => {
+                          self.toggleCompactView(idx)
+                        },
+                      })),
+                    ],
                   },
-                  helpText:
-                    'CIGAR strings encode detailed alignment information including matches, insertions, and deletions. When enabled, this option visualizes the fine-scale variations in syntenic alignments. Disable this for a cleaner view that shows only broad syntenic blocks.',
-                },
-                {
-                  label: 'Show CIGAR matches only',
-                  checked: self.drawCIGARMatchesOnly,
-                  type: 'checkbox',
-                  description:
-                    'If enabled, hides the insertions and deletions in the CIGAR strings',
-                  onClick: () => {
-                    self.setDrawCIGARMatchesOnly(!self.drawCIGARMatchesOnly)
+                ]
+              : []),
+            ...(self.hasCigarData
+              ? [
+                  {
+                    label: 'CIGAR display mode',
+                    subMenu: (
+                      [
+                        { label: 'Colored indels', mode: 'full' },
+                        { label: 'Transparent indels', mode: 'matches' },
+                        { label: 'None', mode: 'off' },
+                      ] as const
+                    ).map(({ label, mode }) => ({
+                      label,
+                      type: 'radio' as const,
+                      checked: self.cigarMode === mode,
+                      onClick: () => {
+                        self.setCigarMode(mode)
+                      },
+                    })),
                   },
-                  helpText:
-                    'When comparing divergent genomes, showing all insertions and deletions can clutter the view. This option filters the CIGAR visualization to show only the matching regions, providing a cleaner view of conserved syntenic blocks while hiding small-scale indels.',
-                },
-                {
-                  label: 'Show curved lines',
-                  type: 'checkbox',
-                  checked: self.drawCurves,
-                  icon: Curves,
-                  onClick: () => {
-                    self.setDrawCurves(!self.drawCurves)
+                ]
+              : []),
+            ...(self.hasLodCapableAdapter
+              ? [
+                  {
+                    label: 'Level of detail',
+                    subMenu: (
+                      [
+                        {
+                          label: 'Automatic (by zoom)',
+                          value: 'auto',
+                          helpText:
+                            'Show base-level detail when zoomed in, blocks-only when zoomed out.',
+                        },
+                        {
+                          label: 'Indels + mismatches',
+                          value: 'fine',
+                          helpText:
+                            'Always load base-level indel/mismatch detail. Slower when zoomed far out.',
+                        },
+                        {
+                          label: 'Alignment blocks only',
+                          value: 'coarse',
+                          helpText:
+                            'Skip base-level detail for speed — no indel or mismatch coloring.',
+                        },
+                      ] as const
+                    ).map(({ label, value, helpText }) => ({
+                      helpText,
+                      label,
+                      type: 'radio' as const,
+                      checked: self.lodMode === value,
+                      onClick: () => {
+                        self.setLodMode(value)
+                      },
+                    })),
                   },
-                  helpText:
-                    'Toggle between straight lines and smooth bezier curves for synteny connections. Curved lines can make the visualization more aesthetically pleasing and may help reduce visual clutter when many syntenic regions are displayed. Straight lines provide a more direct representation.',
-                },
-                {
-                  label: 'Show location markers',
-                  type: 'checkbox',
-                  checked: self.drawLocationMarkers,
-                  description:
-                    'Draw periodic markers to show location within large matches',
-                  onClick: () => {
-                    self.setDrawLocationMarkers(!self.drawLocationMarkers)
-                  },
-                  helpText:
-                    'Location markers add periodic visual indicators along long syntenic blocks, helping you track position and scale within large conserved regions. This is particularly useful when examining very long syntenic matches where it can be difficult to gauge relative position.',
-                },
-              ],
-            },
+                ]
+              : []),
             {
               label: 'Link views',
               type: 'checkbox',
@@ -331,20 +675,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               onClick: () => {
                 self.setLinkViews(!self.linkViews)
               },
-              helpText:
-                'When linked, panning and zooming in one genome view will automatically adjust the other view to maintain the correspondence shown by synteny lines. This makes it easier to explore syntenic regions interactively. Unlink views to navigate each genome independently.',
             },
             {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
-              onClick: (): void => {
-                getSession(self).queueDialog(handleClose => [
-                  ExportSvgDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
+              onClick: () => {
+                openExportSvgDialog()
               },
             },
           ]
@@ -359,13 +695,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
               onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  ExportSvgDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
+                openExportSvgDialog()
               },
             },
           ]
@@ -374,19 +704,34 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     })
     .actions(self => ({
       afterAttach() {
+        // Serialize concurrent firings: dockview mount + React Strict Mode
+        // double-invoke cause width to settle in multiple steps. Each width
+        // change re-fires this autorun, and without the guard a second run's
+        // setViews() detaches the first run's view models — the first's
+        // `when(() => view.initialized)` then throws on the dead node, the
+        // catch clears init, and the import form appears.
+        let running = false
         addDisposer(
           self,
           autorun(
             async function initAutorun() {
               const { init, width } = self
-              if (!width || !init) {
+              if (!width || !init || running) {
                 return
               }
+              running = true
 
               const session = getSession(self)
               const { assemblyManager } = session
 
               try {
+                // flag the pending reorder before any track render can paint,
+                // so `settled` (→ synteny_canvas_done) can't fire on the
+                // pre-diagonalize hairball during the view-building await window
+                // below (before awaitingAutoDiagonalize flips the canvas off)
+                if (init.autoDiagonalize) {
+                  self.setAutoDiagonalizeRequested(true)
+                }
                 const assemblies = await Promise.all(
                   init.views.map(async v => {
                     const asm = await assemblyManager.waitForAssembly(
@@ -400,12 +745,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 )
 
                 self.setViews(
-                  assemblies.map(asm => ({
+                  assemblies.map((asm, idx) => ({
                     type: 'LinearGenomeView' as const,
                     bpPerPx: 1,
                     offsetPx: 0,
                     hideHeader: true,
                     displayedRegions: asm.regions,
+                    // trackLabels is a plain persisted prop — set it on the
+                    // snapshot directly rather than imperatively after attach
+                    ...(init.views[idx]?.trackLabels
+                      ? { trackLabels: init.views[idx].trackLabels }
+                      : {}),
                   })),
                 )
 
@@ -425,31 +775,65 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                       view.showAllRegionsInAssembly(viewInit.assembly)
                     }
                     if (viewInit.tracks) {
-                      for (const trackId of viewInit.tracks) {
-                        view.showTrack(trackId)
+                      for (const track of viewInit.tracks) {
+                        const { trackId, trackSnapshot, displaySnapshot } =
+                          normalizeTrackInit(track)
+                        view.showTrack(trackId, trackSnapshot, displaySnapshot)
                       }
                     }
                   }),
                 )
 
                 if (init.tracks) {
-                  // string[] is shorthand for level-0 tracks; string[][] is per-level
-                  const trackLevels: string[][] =
-                    typeof init.tracks[0] === 'string'
-                      ? [init.tracks as string[]]
-                      : (init.tracks as string[][])
-                  for (const [i, ids] of trackLevels.entries()) {
+                  for (const [i, ids] of normalizeTrackLevels(
+                    init.tracks,
+                  ).entries()) {
                     for (const trackId of ids) {
                       self.showTrack(trackId, i)
                     }
                   }
                 }
 
+                if (self.levels.length >= 4) {
+                  self.autoScaleLevelHeights()
+                }
+
+                applyInitSettings(self, init)
+
+                if (init.autoDiagonalize) {
+                  // The views are initialized and their displayedRegions are
+                  // populated by this point (above), and runDiagonalize fetches
+                  // the whole-genome alignments it needs in its own RPC — so we
+                  // diagonalize directly, no need to wait on the per-display
+                  // render fetch first. withDiagonalizeProgress drives the
+                  // reordering spinner + cancel and swallows the abort.
+                  await withDiagonalizeProgress(self, async opts => {
+                    const { runDiagonalize } =
+                      await import('./util/runDiagonalize.ts')
+                    await runDiagonalize(self, opts)
+                    // only now is the view truly diagonalized — release the
+                    // `settled` gate. If runDiagonalize threw,
+                    // withDiagonalizeProgress catches it and this line is
+                    // skipped, so `settled` stays false and the capture times
+                    // out loudly instead of committing an undiagonalized view.
+                    if (isAlive(self)) {
+                      self.setAutoDiagonalizeComplete(true)
+                    }
+                  })
+                }
+
                 self.setInit(undefined)
               } catch (e) {
                 console.error(e)
                 session.notifyError(`${e}`, e)
-                self.setInit(undefined)
+                // Keep init on failure: a transient error (assembly not yet
+                // registered, a network blip) must stay recoverable. Clearing
+                // it here, while views is still empty, permanently strands the
+                // view on the import form with no retry. Leaving init set lets
+                // a reload re-run this autorun (init is persisted while views
+                // is empty, see postProcessSnapshot).
+              } finally {
+                running = false
               }
             },
             { name: 'LinearSyntenyViewInit' },
@@ -462,22 +846,29 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      const {
-        init,
-        drawCIGAR,
-        drawCIGARMatchesOnly,
-        drawCurves,
-        drawLocationMarkers,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(!drawCIGAR ? { drawCIGAR } : {}),
-        ...(drawCIGARMatchesOnly ? { drawCIGARMatchesOnly } : {}),
-        ...(drawCurves ? { drawCurves } : {}),
-        ...(drawLocationMarkers ? { drawLocationMarkers } : {}),
-      } as typeof snap
+      // init is transient: once views have materialized it's redundant, so we
+      // strip it. But while views is still empty (a snapshot taken mid-load,
+      // or an init that errored before building views) init is the ONLY thing
+      // that can rebuild the view -> keep it so a reload/restore resumes
+      // instead of falling back to the import form.
+      if (snap.views.length) {
+        const { init, ...rest } = snap
+        return rest as typeof snap
+      }
+      return snap
     })
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>
 export type LinearSyntenyViewModel = Instance<LinearSyntenyViewStateModel>
+
+/**
+ * The synteny-specific header controls (colorBy, alpha, etc.) read state that
+ * only exists on a LinearSyntenyView. Gate on the MST type discriminator so a
+ * plain LinearComparativeView never renders those controls against a model that
+ * lacks the matching state/actions.
+ */
+export function asSyntenyModel(model: { type: string }) {
+  return model.type === 'LinearSyntenyView'
+    ? (model as LinearSyntenyViewModel)
+    : undefined
+}

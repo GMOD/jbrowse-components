@@ -1,38 +1,59 @@
 ---
-id: feature_sequence
 title: Feature sequence panel
 description: Sequence extraction for selected features
 guide_category: Track types
 ---
 
-### Gene features
+The feature detail sidebar can extract and display the sequence underlying a
+selected feature, with options that vary by feature type.
 
-If you have a track with gene or transcript level features, then the feature
-detail sidebar will automatically stitch together the sequence for that feature.
-Options include:
+## Gene features
 
-- CDS - the coding sequences, spliced together
-- Protein - performs protein translation on the CDS using the standard genetic
-  code (NCBI table 1); note that mitochondrial genes and certain organisms use
-  alternative codon tables which are not currently supported
-- cDNA - the CDS plus UTR, or just all exons if a non-coding gene
-- Gene w/ introns - the entire gene region sequence with the introns included
-- Gene w/ 10bp of introns - the spliced gene sequence with 10bp around the
-  splice sites shown
-- Gene w/ 500 up+down stream - the entire gene region with 500bp upstream and
-  downstream (shown in light red)
-- Gene w/ 500 up+down stream + 10bp of introns - the spliced gene sequence with
-  10bp around the splice sites shown and the up/down stream shown
+For gene or transcript features, the feature detail sidebar stitches the
+subfeature sequences together. The available types are:
 
-Some of the parameters such as 500bp and 10bp are arbitrarily chosen, if you are
-interested in adjusting these default parameters [let us know](/contact/).
+- CDS - the stitched-together coding sequences
+- Protein - protein translation of the CDS. The standard genetic code (NCBI
+  table 1) is used by default, but if the CDS has a `transl_table` attribute in
+  the GFF (e.g. `transl_table=2` for vertebrate mitochondria) the matching
+  alternative codon table is applied, including start-codon and `transl_except`
+  handling
+- cDNA - the complementary DNA of the transcript, formed from the exon sequences
+- Genomic w/ full introns - the entire gene region including introns, with UTR
+  and CDS highlighted
+- Genomic w/ full introns +/- Nbp up+down stream - the above plus N bases
+  upstream and downstream
+- Genomic w/ Nbp intron - the exon sequence plus N intronic bases flanking each
+  splice site
+- Genomic w/ Nbp intron +/- Nbp up+down stream - combines the
+  upstream/downstream extension with the splice-site flanks
 
-<Figure caption="The sequence for the upstream and downstream, exons, and intron sequences shown in the feature details." src="/img/feature_detail_sequence.png" />
+The sequence type is chosen from the dropdown at the top of the panel. The
+up/downstream extension defaults to 100bp and the intron flank to 10bp; both are
+configurable from the gear icon.
 
-### Other feature types
+<Figure caption="Sequence panel for the human SELENOP gene, color-coded by region: upstream/downstream (red), UTR (blue), CDS (yellow), and intronic (white)." src="/img/feature_detail_sequence.png" />
 
-Clicking on other types of features will have the "Feature sequence" button in
-the feature details widget, but will not automatically "stitch" together
-subfeature sequences, instead just giving the literal sequence underlying a
-feature. You can configure the number of flanking bases to include using the
-gear icon.
+When the **Protein** type is selected, residues whose translation was overridden
+by a `transl_except` attribute are highlighted (amber) and summarized in a
+legend. The example below is SELENOP, whose ten in-frame UGA stop codons are
+annotated as `transl_except=(...,aa:Sec)` and translate to selenocysteine (U).
+
+<Figure caption="Protein translation of SELENOP: the ten selenocysteine (U) residues recoded via transl_except are highlighted amber, with a legend summarizing the overrides." src="/img/feature_detail_protein.png" />
+
+<Figure caption="Choosing the sequence type for a volvox gene: the dropdown is set to 'Genomic w/ full introns +/- 100bp up+down stream', so the panel shows the upstream flank, the exons and introns, and the downstream flank." src="/img/upstream_downstream_details.png" />
+
+## Other feature types
+
+For non-gene features, the "Feature sequence" button shows the literal sequence
+underlying the feature, without subfeature stitching. The number of flanking
+bases is configurable from the gear icon.
+
+## See also
+
+- [Sequence track](/docs/user_guides/sequence_track) - the reference sequence
+  and six-frame translation
+- [Gene track](/docs/user_guides/gene_track) - color-by-CDS and peptide
+  lettering directly on the track
+- [Assembly configuration: alternative genetic codes](/docs/config_guides/assemblies#configuring-alternative-genetic-codes-translation-tables) -
+  `transl_table` and per-sequence translation tables

@@ -1,4 +1,4 @@
-import { renameRegionIfNeeded, renameRegionsIfNeeded } from './index.ts'
+import { renameRegionIfNeeded, renameRegionsIfNeeded } from './renameRegions.ts'
 
 import type { AssemblyManager, Region } from './types/index.ts'
 
@@ -17,14 +17,11 @@ function mockAssemblyManager({
   seqAdapterRefNameMap?: Record<string, string>
 }) {
   return {
-    getRefNameMapForAdapter: async () => refNameMap,
-    get: () =>
-      seqAdapterRefNameMap
-        ? {
-            getSeqAdapterRefName: (canonical: string) =>
-              seqAdapterRefNameMap[canonical] ?? canonical,
-          }
-        : undefined,
+    waitForAssembly: async () => ({
+      getRefNameMapForAdapter: async () => refNameMap,
+      getSeqAdapterRefName: (canonical: string) =>
+        seqAdapterRefNameMap?.[canonical] ?? canonical,
+    }),
   } as unknown as AssemblyManager
 }
 
@@ -71,15 +68,52 @@ test('renameRegionsIfNeeded sets originalRefName to FASTA name even when it diff
   expect(r.originalRefName).toBe('1')
 })
 
-test('renameRegionsIfNeeded leaves originalRefName as canonical when no assembly found', async () => {
-  // no seqAdapterRefNameMap → get() returns undefined
+test('renameRegionsIfNeeded leaves originalRefName as canonical when names are not remapped', async () => {
+  // no seqAdapterRefNameMap → getSeqAdapterRefName is identity
   const r = await renameRegion({ chr1: '1' })
   expect(r.refName).toBe('1')
   expect(r.originalRefName).toBe('chr1')
+})
+
+test('renameRegionsIfNeeded passes regions through unchanged when the assembly is not found', async () => {
+  // waitForAssembly resolves undefined (assembly never registered) → both the
+  // refName map and getSeqAdapterRefName are absent, so the region is untouched
+  const result = await renameRegionsIfNeeded(
+    { waitForAssembly: async () => undefined } as unknown as AssemblyManager,
+    { adapterConfig: {}, sessionId: 'test', regions: [region] },
+  )
+  expect(result.regions[0]!.refName).toBe('chr1')
+  expect(result.regions[0]!.originalRefName).toBeUndefined()
 })
 
 test('renameRegionsIfNeeded passes through regions that need no renaming', async () => {
   const r = await renameRegion({}, {})
   expect(r.refName).toBe('chr1')
   expect(r.originalRefName).toBeUndefined()
+})
+
+test('renameRegionsIfNeeded throws on a singular `region` with no `regions`', async () => {
+  // guards the silent-skip footgun: a `region` field is never renamed (only
+  // `regions` is), so fetching against it would use un-mapped refNames
+  await expect(
+    renameRegionsIfNeeded(mockAssemblyManager({ refNameMap: { chr1: '1' } }), {
+      adapterConfig: {},
+      sessionId: 'test',
+      region,
+    } as unknown as Parameters<typeof renameRegionsIfNeeded>[1]),
+  ).rejects.toThrow(/singular .region./)
+})
+
+test('renameRegionsIfNeeded allows `region` mirrored into a populated `regions`', async () => {
+  // the legitimate singular base class passes both; renaming uses `regions`
+  const result = await renameRegionsIfNeeded(
+    mockAssemblyManager({ refNameMap: { chr1: '1' } }),
+    {
+      adapterConfig: {},
+      sessionId: 'test',
+      region,
+      regions: [region],
+    } as unknown as Parameters<typeof renameRegionsIfNeeded>[1],
+  )
+  expect(result.regions[0]!.refName).toBe('1')
 })

@@ -1,19 +1,17 @@
-import { lazy } from 'react'
-
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
 import type { NotificationLevel, SnackAction } from '../util/types/index.ts'
 
-// lazies
-const ErrorMessageStackTraceDialog = lazy(
-  () => import('./ErrorMessageStackTraceDialog.tsx'),
-)
-
 export interface SnackbarMessage {
   message: string
   level?: NotificationLevel
   actions?: SnackAction[]
+}
+
+export interface ErrorDialogState {
+  error: unknown
+  extra?: unknown
 }
 
 /**
@@ -28,6 +26,13 @@ export default function SnackbarModel() {
        * #volatile
        */
       snackbarMessages: observable.array<SnackbarMessage>(),
+      /**
+       * #volatile
+       * the error currently shown in the stack-trace dialog. Kept off the
+       * dialog queue so it can stack on top of an already-open dialog (e.g. the
+       * one whose action raised the error) instead of waiting behind it
+       */
+      errorDialog: undefined as ErrorDialogState | undefined,
     }))
     .views(self => ({
       /**
@@ -52,7 +57,10 @@ export default function SnackbarModel() {
             : [action]
           : undefined
         this.pushSnackbarMessage(message, level, actions)
-        if (level === 'info' || level === 'success') {
+        // A plain info/success toast auto-hides; an actionable one persists
+        // until acted on or dismissed (5s is too short to read and click the
+        // action, and warning/error already persist).
+        if ((level === 'info' || level === 'success') && !actions?.length) {
           setTimeout(() => {
             this.removeSnackbarMessage(message)
           }, 5000)
@@ -71,19 +79,17 @@ export default function SnackbarModel() {
         const reportAction: SnackAction = {
           name: 'report',
           onClick: () => {
-            // @ts-expect-error
-            self.queueDialog((onClose: () => void) => [
-              ErrorMessageStackTraceDialog,
-              {
-                onClose,
-                error,
-                extra,
-              },
-            ])
+            this.setErrorDialog({ error, extra })
           },
         }
         const actions = action ? [reportAction, action] : [reportAction]
         this.pushSnackbarMessage(errorMessage, 'error', actions)
+      },
+      /**
+       * #action
+       */
+      setErrorDialog(state: ErrorDialogState | undefined) {
+        self.errorDialog = state
       },
       /**
        * #action

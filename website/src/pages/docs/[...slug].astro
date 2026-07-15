@@ -1,8 +1,9 @@
 ---
 import { getCollection } from 'astro:content'
+
 import DocsLayout from '../../layouts/DocsLayout.astro'
-import { renderMarkdown } from '../../lib/markdown.ts'
 import { entrySlug } from '../../lib/docs-sidebar.ts'
+import { renderMarkdown } from '../../lib/markdown.ts'
 
 export async function getStaticPaths() {
   const docs = await getCollection('docs')
@@ -14,13 +15,15 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props
 const currentSlug = Astro.params.slug ?? ''
-const { html, headings } = await renderMarkdown(entry.body)
+const { html, toc } = await renderMarkdown(entry.body ?? '', entry.id)
 ---
 
 <DocsLayout
   title={entry.data.title}
   currentSlug={currentSlug}
-  headings={headings}
+  description={entry.data.description}
+  toc={toc}
+  rawMarkdown={entry.body ?? ''}
 >
   <Fragment set:html={html} />
 </DocsLayout>

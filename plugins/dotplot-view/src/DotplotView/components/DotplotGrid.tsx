@@ -24,8 +24,8 @@ const DotplotGrid = observer(function DotplotGrid({
   const vbottom = vblocks[0]!.offsetPx - vview.offsetPx
   const stroke = theme.palette.divider
 
-  // Uses math.max/min avoid making very large SVG rect offscreen element,
-  // which can sometimes fail to draw
+  // Clamp the rect to the viewport with Math.max/min: very large offscreen
+  // SVG rects can sometimes fail to draw
   const rx = Math.max(hbottom, 0)
   const ry = Math.max(viewHeight - vtop, 0)
   const w = Math.min(htop - hbottom, viewWidth)

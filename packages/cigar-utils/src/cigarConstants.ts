@@ -12,3 +12,5 @@ export const CIGAR_X = 8
 // Bitmask for CIGAR operation categories (use with: (1 << op) & MASK)
 // Alignment match ops (M=0, ==7) — may contain mismatches, need MD tag
 export const CIGAR_M_EQ_MASK = 0b10000001 // (1<<0)|(1<<7) = 129
+// Indel ops (I=1, D=2, N=3) — each consumes only one axis (a gap on the other)
+export const CIGAR_INDEL_MASK = 0b00001110 // (1<<1)|(1<<2)|(1<<3) = 14

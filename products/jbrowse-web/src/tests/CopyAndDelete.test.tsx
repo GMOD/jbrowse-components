@@ -6,6 +6,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   getPluginManager,
   mockConsoleWarn,
   setup,
@@ -52,9 +53,8 @@ test('copy and delete track in admin mode', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-    )
+    const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+    expectCanvasMatch(findCanvasIn(displays[0]!))
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Track actions'))
     fireEvent.click(await findByText('Delete track'))
@@ -74,7 +74,9 @@ test('copy and delete reference sequence track disabled', () => {
     view.setNewView(0.05, 5000)
     const trackConf = getConf(assemblyManager.get('volvox')!, 'sequence')
 
-    const trackMenuItems = session.getTrackActionMenuItems!(trackConf)
+    const trackMenuItems = session.getTrackActionMenuItems!({
+      config: trackConf,
+    })
     const trackActionsSubMenu = trackMenuItems.find(
       item => 'label' in item && item.label === 'Track actions',
     )
@@ -130,9 +132,8 @@ test('copy and delete track to session tracks', () => {
     await waitFor(() => {
       expect(view.tracks.length).toBe(1)
     })
-    expectCanvasMatch(
-      (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-    )
+    const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+    expectCanvasMatch(findCanvasIn(displays[0]!))
     fireEvent.click(await findByTestId('track_menu_icon'))
     fireEvent.click(await findByText('Track actions'))
     fireEvent.click(await findByText('Delete track'))
@@ -143,7 +144,7 @@ test('copy and delete track to session tracks', () => {
 }, 40000)
 
 xtest('delete connection', async () => {
-  const pluginManager = getPluginManager(masterConfig, true)
+  const { pluginManager } = getPluginManager(masterConfig, true)
   const { findAllByTestId, findByText } = render(
     <JBrowse pluginManager={pluginManager} />,
   )

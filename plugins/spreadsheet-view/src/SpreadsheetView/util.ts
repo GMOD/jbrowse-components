@@ -14,8 +14,7 @@ export function locationLinkClick({
 }) {
   const newViewId = `${spreadsheetViewId}_${assemblyName}`
   let view = session.views.find(v => v.id === newViewId) as
-    | LinearGenomeViewModel
-    | undefined
+    LinearGenomeViewModel | undefined
   view ??= session.addView('LinearGenomeView', {
     id: newViewId,
   }) as LinearGenomeViewModel

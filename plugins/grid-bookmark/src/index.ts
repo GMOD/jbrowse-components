@@ -1,23 +1,25 @@
 import Plugin from '@jbrowse/core/Plugin'
-import {
-  getSession,
-  isAbstractMenuManager,
-  isSessionModelWithWidgets,
-} from '@jbrowse/core/util'
+import { getSession, isAbstractMenuManager } from '@jbrowse/core/util'
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
-import HighlightIcon from '@mui/icons-material/Highlight'
+import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 import LabelIcon from '@mui/icons-material/Label'
 
 import GridBookmarkWidgetF from './GridBookmarkWidget/index.ts'
+import {
+  activateBookmarkWidget,
+  ensureBookmarkWidget,
+  toggleHighlightChipsMenuItem,
+  toggleHighlightsMenuItem,
+} from './bookmarkViewUtils.ts'
 
-import type { GridBookmarkModel } from './GridBookmarkWidget/model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   PluggableElementType,
   ViewType,
 } from '@jbrowse/core/pluggableElementTypes'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
+import type { DotplotViewStateModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
 export default class GridBookmarkPlugin extends Plugin {
@@ -33,38 +35,12 @@ export default class GridBookmarkPlugin extends Plugin {
           const { stateModel } = pluggableElement as ViewType
           const lgv = stateModel as LinearGenomeViewStateModel
           const newStateModel = lgv
-            .props({
-              /**
-               * #property
-               */
-              bookmarkHighlightsVisible: true,
-            })
             .actions(self => ({
               /**
                * #action
                */
-              setBookmarkHighlightsVisible(arg: boolean) {
-                self.bookmarkHighlightsVisible = arg
-              },
-              /**
-               * #action
-               */
               activateBookmarkWidget() {
-                const session = getSession(self)
-                if (isSessionModelWithWidgets(session)) {
-                  let bookmarkWidget = session.widgets.get('GridBookmark')
-                  bookmarkWidget ??= session.addWidget(
-                    'GridBookmarkWidget',
-                    'GridBookmark',
-                  )
-
-                  session.showWidget(bookmarkWidget)
-                  return session.widgets.get(
-                    'GridBookmark',
-                  ) as GridBookmarkModel
-                }
-
-                throw new Error('Could not open bookmark widget')
+                return activateBookmarkWidget(self)
               },
             }))
             .actions(self => ({
@@ -88,19 +64,17 @@ export default class GridBookmarkPlugin extends Plugin {
                * #action
                */
               bookmarkCurrentRegion() {
-                if (self.id === getSession(self).focusedViewId) {
-                  const blocks = self.dynamicBlocks.contentBlocks
-                  const bookmarkWidget = self.activateBookmarkWidget()
-                  if (!blocks.length) {
-                    throw new Error('no region selected')
-                  } else {
-                    const block = blocks[0]!
-                    bookmarkWidget.addBookmark({
-                      ...block,
-                      start: Math.floor(block.start),
-                      end: Math.ceil(block.end),
-                    })
-                  }
+                const blocks = self.dynamicBlocks.contentBlocks
+                const bookmarkWidget = self.activateBookmarkWidget()
+                if (!blocks.length) {
+                  throw new Error('no region selected')
+                } else {
+                  const block = blocks[0]!
+                  bookmarkWidget.addBookmark({
+                    ...block,
+                    start: Math.floor(block.start),
+                    end: Math.ceil(block.end),
+                  })
                 }
               },
             }))
@@ -131,25 +105,8 @@ export default class GridBookmarkPlugin extends Plugin {
                             self.bookmarkCurrentRegion()
                           },
                         },
-                        {
-                          label: 'Toggle highlights',
-                          icon: HighlightIcon,
-                          type: 'checkbox',
-                          // checked when either kind is visible; toggle flips
-                          // both so users get a single switch for all
-                          // highlight overlays in the view
-                          checked:
-                            self.bookmarkHighlightsVisible ||
-                            self.highlightsVisible,
-                          onClick: () => {
-                            const next = !(
-                              self.bookmarkHighlightsVisible ||
-                              self.highlightsVisible
-                            )
-                            self.setBookmarkHighlightsVisible(next)
-                            self.setHighlightsVisible(next)
-                          },
-                        },
+                        toggleHighlightsMenuItem(self),
+                        toggleHighlightChipsMenuItem(self),
                         {
                           label: 'Toggle labels',
                           icon: LabelIcon,
@@ -173,7 +130,12 @@ export default class GridBookmarkPlugin extends Plugin {
                   return [
                     ...superHighlightMenuItems(highlight),
                     {
-                      label: 'Bookmark highlighted region',
+                      label: 'Open bookmark widget',
+                      icon: BookmarksIcon,
+                      onClick: () => self.activateBookmarkWidget(),
+                    },
+                    {
+                      label: 'Convert highlight to bookmark',
                       icon: BookmarkIcon,
                       onClick: () => {
                         if (highlight.assemblyName) {
@@ -181,6 +143,7 @@ export default class GridBookmarkPlugin extends Plugin {
                             ...highlight,
                             assemblyName: highlight.assemblyName,
                           })
+                          self.removeHighlight(highlight)
                         }
                       },
                     },
@@ -193,6 +156,20 @@ export default class GridBookmarkPlugin extends Plugin {
                 rubberBandMenuItems() {
                   return [
                     ...superRubberBandMenuItems(),
+                    {
+                      label: 'Highlight region (temporary)',
+                      icon: HighlightAltIcon,
+                      onClick: () => {
+                        const { leftOffset, rightOffset } = self
+                        const selectedRegions = self.getSelectedRegions(
+                          leftOffset,
+                          rightOffset,
+                        )
+                        if (selectedRegions.length) {
+                          self.addToHighlights(selectedRegions[0]!)
+                        }
+                      },
+                    },
                     {
                       label: 'Bookmark region',
                       icon: BookmarkIcon,
@@ -218,22 +195,32 @@ export default class GridBookmarkPlugin extends Plugin {
               const keydownListener = (e: KeyboardEvent) => {
                 const activationSequence =
                   (e.ctrlKey || e.metaKey) && e.shiftKey
-                // ctrl+shift+d or cmd+shift+d
-                if (activationSequence && e.code === 'KeyD') {
-                  e.preventDefault()
-                  self.activateBookmarkWidget()
-                  self.bookmarkCurrentRegion()
-                  getSession(self).notify('Bookmark created.', 'success')
-                }
-                // ctrl+shift+m or cmd+shift+m
-                if (activationSequence && e.code === 'KeyM') {
-                  e.preventDefault()
-                  self.navigateNewestBookmark()
+                // this listener is registered on document once per open LGV, so
+                // without a focus guard a single keypress fires the action once
+                // per view (duplicate toasts, every view navigating). only the
+                // focused view responds.
+                const focused = self.id === getSession(self).focusedViewId
+                if (activationSequence && focused) {
+                  // ctrl+shift+d or cmd+shift+d
+                  if (e.code === 'KeyD') {
+                    e.preventDefault()
+                    self.activateBookmarkWidget()
+                    self.bookmarkCurrentRegion()
+                    getSession(self).notify('Bookmark created.', 'success')
+                  }
+                  // ctrl+shift+m or cmd+shift+m
+                  if (e.code === 'KeyM') {
+                    e.preventDefault()
+                    self.navigateNewestBookmark()
+                  }
                 }
               }
               return {
                 afterCreate() {
                   document.addEventListener('keydown', keydownListener)
+                },
+                afterAttach() {
+                  ensureBookmarkWidget(self)
                 },
                 beforeDestroy() {
                   document.removeEventListener('keydown', keydownListener)
@@ -263,25 +250,68 @@ export default class GridBookmarkPlugin extends Plugin {
                 return snap
               }
               const {
-                bookmarkHighlightsVisible,
-                // strip dead bookmarkLabelsVisible from any pre-existing
-                // snapshots; labels are now controlled by base LGV labelsVisible
-                bookmarkLabelsVisible: _ignored,
-                // strip LGV defaults here too — postProcessSnapshot chain
+                // strip dead per-view flags from any pre-existing snapshots:
+                // highlight visibility is now a single session-wide flag, and
+                // labels are controlled by base LGV labelsVisible
+                bookmarkHighlightsVisible: _bhv,
+                bookmarkLabelsVisible: _blv,
+                highlightsVisible: _hv,
+                // strip the LGV default here too — postProcessSnapshot chain
                 // ordering isn't guaranteed, so we guard in both places
-                highlightsVisible,
                 labelsVisible,
                 ...rest
               } = snap as unknown as Record<string, unknown>
               return {
                 ...rest,
-                ...(bookmarkHighlightsVisible === false
-                  ? { bookmarkHighlightsVisible }
-                  : {}),
-                ...(!highlightsVisible ? { highlightsVisible } : {}),
                 ...(!labelsVisible ? { labelsVisible } : {}),
               } as typeof snap
             })
+
+          ;(pluggableElement as ViewType).stateModel = newStateModel
+        }
+        if (pluggableElement.name === 'DotplotView') {
+          const { stateModel } = pluggableElement as ViewType
+          const dotplot = stateModel as DotplotViewStateModel
+          const newStateModel = dotplot
+            .actions(self => ({
+              /**
+               * #action
+               */
+              activateBookmarkWidget() {
+                return activateBookmarkWidget(self)
+              },
+            }))
+            .views(self => {
+              const superMenuItems = self.menuItems
+              return {
+                /**
+                 * #method
+                 */
+                menuItems() {
+                  return [
+                    ...superMenuItems(),
+                    {
+                      label: 'Bookmarks/highlights',
+                      icon: BookmarksIcon,
+                      subMenu: [
+                        {
+                          label: 'Open bookmark widget',
+                          icon: BookmarksIcon,
+                          onClick: () => self.activateBookmarkWidget(),
+                        },
+                        toggleHighlightsMenuItem(self),
+                        toggleHighlightChipsMenuItem(self),
+                      ],
+                    },
+                  ]
+                },
+              }
+            })
+            .actions(self => ({
+              afterAttach() {
+                ensureBookmarkWidget(self)
+              },
+            }))
 
           ;(pluggableElement as ViewType).stateModel = newStateModel
         }

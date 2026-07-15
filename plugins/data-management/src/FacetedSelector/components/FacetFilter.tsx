@@ -14,6 +14,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { facetLabel } from './util.ts'
+
 import type { FacetedModel } from '../facetedModel.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -63,11 +65,13 @@ const FacetFilter = observer(function FacetFilter({
 }) {
   const { classes } = useStyles()
   const [visible, setVisible] = useState(true)
-  const { filters } = faceted
+  const { filters, nonMetadataFieldSet } = faceted
   return (
     <FormControl className={classes.facet} fullWidth>
       <div>
-        <Typography component="span">{field}</Typography>
+        <Typography component="span">
+          {facetLabel(field, nonMetadataFieldSet)}
+        </Typography>
         <ClearButton
           onClick={() => {
             faceted.setFilter(field, [])
@@ -87,7 +91,15 @@ const FacetFilter = observer(function FacetFilter({
           className={classes.select}
           value={filters.get(field) ?? []}
           onChange={event => {
-            faceted.setFilter(field, event.target.value as string[])
+            // native <select multiple>: event.target.value is only the first
+            // selected option, so read the full selection off selectedOptions.
+            // Widen through EventTarget since MUI types target as an input.
+            const target: EventTarget = event.target
+            const select = target as HTMLSelectElement
+            faceted.setFilter(
+              field,
+              Array.from(select.selectedOptions, option => option.value),
+            )
           }}
         >
           {vals

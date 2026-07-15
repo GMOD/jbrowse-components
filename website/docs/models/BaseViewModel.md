@@ -1,74 +1,96 @@
 ---
 id: baseviewmodel
 title: BaseViewModel
+sidebar_label: View -> BaseViewModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseViewModel.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+## Members
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseViewModel.ts)
+| Member                                   | Kind       | Defined by    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---------------------------------------- | ---------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                       | Properties | BaseViewModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [displayName](#property-displayname)     | Properties | BaseViewModel | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                                                                                                                                                                                                                                                                                               |
+| [minimized](#property-minimized)         | Properties | BaseViewModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [width](#volatile-width)                 | Volatiles  | BaseViewModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [menuItems](#method-menuitems)           | Methods    | BaseViewModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setDisplayName](#action-setdisplayname) | Actions    | BaseViewModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [setWidth](#action-setwidth)             | Actions    | BaseViewModel | width is an important attribute of the view model, when it becomes set, it often indicates when the app can start drawing to it. certain views like lgv are strict about this because if it tries to draw before it knows the width it should draw to, it may start fetching data for regions it doesn't need to setWidth is updated by a ResizeObserver generally, the views often need to know how wide they are to properly draw genomic regions |
+| [setMinimized](#action-setminimized)     | Actions    | BaseViewModel |                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseViewModel.md)
-
-## Docs
-
-### BaseViewModel - Properties
-
-#### property: id
-
-```js
-// type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
+<details>
+<summary>BaseViewModel - Properties</summary>
 
 #### property: displayName
 
 displayName is displayed in the header of the view, or assembly names being used
 if none is specified
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type displayName = IMaybe<ISimpleType<string>>
 // code
 displayName: types.maybe(types.string)
 ```
 
+</details>
+
+<details>
+<summary>BaseViewModel - Properties (other undocumented members)</summary>
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
 #### property: minimized
 
-```js
+```ts
 // type signature
-false
+type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-minimized: false
+minimized: types.stripDefault(types.boolean, false)
 ```
 
-### BaseViewModel - Getters
+</details>
 
-#### getter: menuItems
+<details>
+<summary>BaseViewModel - Volatiles</summary>
 
-```js
-// type
-() => MenuItem[]
-```
+#### volatile: width
 
-### BaseViewModel - Actions
-
-#### action: setDisplayName
-
-```js
+```ts
 // type signature
-setDisplayName: (name: string) => void
+type width = number
+// code
+width: 800
 ```
+
+</details>
+
+<details>
+<summary>BaseViewModel - Methods</summary>
+
+#### method: menuItems
+
+```ts
+type menuItems = () => MenuItem[]
+```
+
+</details>
+
+<details>
+<summary>BaseViewModel - Actions</summary>
 
 #### action: setWidth
 
@@ -80,14 +102,25 @@ should draw to, it may start fetching data for regions it doesn't need to
 setWidth is updated by a ResizeObserver generally, the views often need to know
 how wide they are to properly draw genomic regions
 
-```js
-// type signature
-setWidth: (newWidth: number) => void
+```ts
+type setWidth = (newWidth: number) => void
+```
+
+</details>
+
+<details>
+<summary>BaseViewModel - Actions (other undocumented members)</summary>
+
+#### action: setDisplayName
+
+```ts
+type setDisplayName = (name: string) => void
 ```
 
 #### action: setMinimized
 
-```js
-// type signature
-setMinimized: (flag: boolean) => void
+```ts
+type setMinimized = (flag: boolean) => void
 ```
+
+</details>

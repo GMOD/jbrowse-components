@@ -8,49 +8,203 @@ class MockRpcMethodType extends RpcMethodType {
   async execute() {}
 }
 
-test('test serialize arguments with augmentLocationObject', async () => {
-  const mockRpc = new MockRpcMethodType(pluginManager)
-  mockRpc.serializeNewAuthArguments = jest.fn().mockReturnValue({
-    locationType: 'UriLocation',
-    uri: 'test',
-    internetAccountId: 'HTTPBasicInternetAccount-test',
-  })
-  const locationInAdapter = {
-    locationType: 'UriLocation',
-    uri: 'test',
-    internetAccountId: 'HTTPBasicInternetAccount-test',
+// Stub of AppRootModel that satisfies isAppRootModel and exposes a controllable
+// internetAccounts list. The augment walk skips entirely when length === 0.
+function withMockRootModel(internetAccountsCount: number) {
+  const original = pluginManager.rootModel
+  ;(pluginManager as { rootModel: unknown }).rootModel = {
+    findAppropriateInternetAccount: () => undefined,
+    internetAccounts: Array.from({ length: internetAccountsCount }, () => ({
+      internetAccountId: 'mock',
+    })),
   }
-  const deeplyNestedLocation = {
-    locationType: 'UriLocation',
-    uri: 'test2',
-    internetAccountId: 'HTTPBasicInternetAccount-test2',
+  return () => {
+    ;(pluginManager as { rootModel: unknown }).rootModel = original
   }
+}
 
+test('augmentLocationObject walks and serializes URIs when internet accounts exist', async () => {
+  const restore = withMockRootModel(1)
+  try {
+    const mockRpc = new MockRpcMethodType(pluginManager)
+    mockRpc.serializeNewAuthArguments = jest.fn().mockReturnValue({
+      locationType: 'UriLocation',
+      uri: 'test',
+      internetAccountId: 'HTTPBasicInternetAccount-test',
+    })
+    const locationInAdapter = {
+      locationType: 'UriLocation',
+      uri: 'test',
+      internetAccountId: 'HTTPBasicInternetAccount-test',
+    }
+    const deeplyNestedLocation = {
+      locationType: 'UriLocation',
+      uri: 'test2',
+      internetAccountId: 'HTTPBasicInternetAccount-test2',
+    }
+
+    await mockRpc.serializeArguments(
+      {
+        adapter: {
+          testLocation: locationInAdapter,
+        },
+        filters: [],
+        stopToken: 'teststring',
+        randomProperty: 'randomstring',
+        parentObject: {
+          nestedObject: {
+            arrayInNestedObject: [deeplyNestedLocation],
+          },
+        },
+      },
+      '',
+    )
+    expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledTimes(2)
+    expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
+      locationInAdapter,
+      '',
+    )
+    expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
+      deeplyNestedLocation,
+      '',
+    )
+  } finally {
+    restore()
+  }
+})
+
+test('augmentLocationObject skips walk when no internet accounts and no file handles', async () => {
+  // No rootModel set up → no internet accounts; no FileHandles in cache either
+  const mockRpc = new MockRpcMethodType(pluginManager)
+  mockRpc.serializeNewAuthArguments = jest.fn()
   await mockRpc.serializeArguments(
     {
       adapter: {
-        testLocation: locationInAdapter,
-      },
-      filters: [],
-      stopToken: 'teststring',
-      randomProperty: 'randomstring',
-      parentObject: {
-        nestedObject: {
-          arrayInNestedObject: [deeplyNestedLocation],
+        location: {
+          locationType: 'UriLocation',
+          uri: 'test',
         },
       },
     },
     '',
   )
-  expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledTimes(2)
-  expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
-    locationInAdapter,
-    '',
-  )
-  expect(mockRpc.serializeNewAuthArguments).toHaveBeenCalledWith(
-    deeplyNestedLocation,
-    '',
-  )
+  expect(mockRpc.serializeNewAuthArguments).not.toHaveBeenCalled()
+})
+
+test('augmentLocationObject still walks when only file handles are present', async () => {
+  const mockFile = new File(['x'], 'a.bam')
+  setFileInCache('augment-walk-test', mockFile)
+  try {
+    const mockRpc = new MockRpcMethodType(pluginManager)
+    mockRpc.serializeNewAuthArguments = jest.fn()
+    const args: Record<string, unknown> = {
+      adapter: {
+        location: {
+          locationType: 'FileHandleLocation',
+          handleId: 'augment-walk-test',
+          name: 'a.bam',
+        },
+      },
+    }
+    const result = await mockRpc.serializeArguments(args, '')
+    // serialization owns its output (config snapshots that flow in are
+    // read-only) — the conversion lands on the returned args, not the input
+    expect(
+      (
+        (result.adapter as Record<string, unknown>).location as Record<
+          string,
+          unknown
+        >
+      ).locationType,
+    ).toBe('BlobLocation')
+    expect(
+      (
+        (args.adapter as Record<string, unknown>).location as Record<
+          string,
+          unknown
+        >
+      ).locationType,
+    ).toBe('FileHandleLocation')
+    expect(mockRpc.serializeNewAuthArguments).not.toHaveBeenCalled()
+  } finally {
+    clearFileFromCache('augment-walk-test')
+  }
+})
+
+// Owning the arg tree must not throw on a stray non-cloneable (the test env's
+// structuredClone would): it passes through by reference, and a genuine bug is
+// surfaced at the worker postMessage boundary in production instead.
+test('augmentLocationObject tolerates non-cloneable args (functions) while owning the tree', async () => {
+  const mockFile = new File(['x'], 'a.bam')
+  setFileInCache('augment-fn-test', mockFile)
+  try {
+    const mockRpc = new MockRpcMethodType(pluginManager)
+    const themeFn = (key: string) => `@media (min-width:${key})`
+    const args: Record<string, unknown> = {
+      adapter: {
+        location: {
+          locationType: 'FileHandleLocation',
+          handleId: 'augment-fn-test',
+          name: 'a.bam',
+        },
+      },
+      theme: { breakpoints: { up: themeFn } },
+    }
+
+    const result = await mockRpc.serializeArguments(args, '')
+
+    // file handle still converted on the owned output
+    expect(
+      (
+        (result.adapter as Record<string, unknown>).location as Record<
+          string,
+          unknown
+        >
+      ).locationType,
+    ).toBe('BlobLocation')
+    // function passed through by reference (a real bug would surface at the
+    // worker postMessage boundary; here we just verify owning doesn't throw)
+    const theme = result.theme as { breakpoints: { up: unknown } }
+    expect(theme.breakpoints.up).toBe(themeFn)
+    // input args untouched (config snapshots are read-only)
+    expect(
+      (
+        (args.adapter as Record<string, unknown>).location as Record<
+          string,
+          unknown
+        >
+      ).locationType,
+    ).toBe('FileHandleLocation')
+  } finally {
+    clearFileFromCache('augment-fn-test')
+  }
+})
+
+// Structured-clone natives (typed arrays, the stop-token SharedArrayBuffer...)
+// must survive owning by reference, not collapse to {} (Object.entries yields []).
+test('augmentLocationObject passes structured-clone-native values through by reference', async () => {
+  const mockFile = new File(['x'], 'a.bam')
+  setFileInCache('augment-sab-test', mockFile)
+  try {
+    const mockRpc = new MockRpcMethodType(pluginManager)
+    const bytes = new Uint8Array([1, 2, 3])
+    const args: Record<string, unknown> = {
+      adapter: {
+        location: {
+          locationType: 'FileHandleLocation',
+          handleId: 'augment-sab-test',
+          name: 'a.bam',
+        },
+      },
+      bytes,
+    }
+
+    const result = await mockRpc.serializeArguments(args, '')
+
+    expect(result.bytes).toBe(bytes)
+  } finally {
+    clearFileFromCache('augment-sab-test')
+  }
 })
 
 describe('convertFileHandleLocations', () => {

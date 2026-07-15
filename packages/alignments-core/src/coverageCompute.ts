@@ -18,23 +18,23 @@ export interface CoverageGap {
   featureStrand: number
 }
 
-function getFeatureExtent(
-  features: { start: number; end: number }[],
+// Coverage always starts at regionStart: a read starting left of the region
+// still contributes to the first bins via the sweep line, so no leftward
+// extension is needed. We only extend the right edge so reads overhanging
+// regionEnd keep their depth (up to one region-width past the edge).
+function getFeatureEnd(
+  features: { end: number }[],
   regionStart: number,
   regionEnd: number,
 ) {
   const maxExtension = regionEnd - regionStart
-  let actualStart = regionStart
   let actualEnd = regionEnd
   for (const f of features) {
-    if (f.start < actualStart && f.start >= regionStart - maxExtension) {
-      actualStart = f.start
-    }
     if (f.end > actualEnd && f.end <= regionEnd + maxExtension) {
       actualEnd = f.end
     }
   }
-  return { actualStart, actualEnd }
+  return actualEnd
 }
 
 export function computeCoverage(
@@ -55,21 +55,15 @@ export function computeCoverage(
     }
   }
 
-  const extent = getFeatureExtent(features, regionStart, regionEnd)
-  const actualStart = Math.max(extent.actualStart, regionStart)
-  const actualEnd = extent.actualEnd
+  const actualStart = regionStart
+  const actualEnd = getFeatureEnd(features, regionStart, regionEnd)
   const startPos = actualStart
   const numBins = actualEnd - actualStart
   const binSize = 1
 
-  const allEvents: { pos: number; delta: number }[] = []
-  for (const f of features) {
-    allEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
-  }
-  for (const g of gaps) {
-    allEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
-  }
-  const depths = sweepDepths(allEvents, numBins, actualStart, binSize)
+  // strand 0 (undefined) contributes to both fwd and rev; +1 selects fwd, -1
+  // rev, 0 both. `wantStrand` picks which sweep a feature/gap lands in.
+  const depths = sweepDepths(features, gaps, numBins, actualStart, 0)
   let maxDepth = 0
   for (let i = 0; i < numBins; i++) {
     if (depths[i]! > maxDepth) {
@@ -80,31 +74,8 @@ export function computeCoverage(
   let fwdDepths: Float32Array | undefined
   let revDepths: Float32Array | undefined
   if (trackStrands) {
-    const fwdEvents: { pos: number; delta: number }[] = []
-    const revEvents: { pos: number; delta: number }[] = []
-    for (const f of features) {
-      const s = f.strand ?? 0
-      if (s === 1) {
-        fwdEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
-      } else if (s === -1) {
-        revEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
-      } else {
-        fwdEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
-        revEvents.push({ pos: f.start, delta: 1 }, { pos: f.end, delta: -1 })
-      }
-    }
-    for (const g of gaps) {
-      if (g.featureStrand === 1) {
-        fwdEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
-      } else if (g.featureStrand === -1) {
-        revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
-      } else {
-        fwdEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
-        revEvents.push({ pos: g.start, delta: -1 }, { pos: g.end, delta: 1 })
-      }
-    }
-    fwdDepths = sweepDepths(fwdEvents, numBins, actualStart, binSize)
-    revDepths = sweepDepths(revEvents, numBins, actualStart, binSize)
+    fwdDepths = sweepDepths(features, gaps, numBins, actualStart, 1)
+    revDepths = sweepDepths(features, gaps, numBins, actualStart, -1)
   }
 
   return {
@@ -117,24 +88,57 @@ export function computeCoverage(
   }
 }
 
-// Sweep-line depth pass: applies sorted +1/-1 events bin-by-bin.
+// Difference-array + prefix-sum depth pass. binSize is always 1 and positions
+// are integers, so bin index == pos - actualStart: a read is +1 at start / -1
+// at end, a gap (deletion/skip) carves depth with -1 at start / +1 at end.
+// Accumulating into the diff array is O(features + gaps) with no per-event
+// object allocation or sort (the old sweep-line paid both). Positions clamp
+// into [0, numBins] the same way the sweep did — a read overhanging regionStart
+// counts from bin 0, one overhanging the right edge stays counted to the end.
+//
+// wantStrand: 0 = all reads (total depth), 1 = fwd only, -1 = rev only.
+// strand 0 (undefined) is ambiguous so it lands in every sweep.
 function sweepDepths(
-  events: { pos: number; delta: number }[],
+  features: CoverageFeature[],
+  gaps: CoverageGap[],
   numBins: number,
   actualStart: number,
-  binSize: number,
+  wantStrand: number,
 ) {
-  events.sort((a, b) => a.pos - b.pos)
   const depths = new Float32Array(numBins)
-  let depth = 0
-  let eventIdx = 0
-  for (let binIdx = 0; binIdx < numBins; binIdx++) {
-    const binEnd = actualStart + (binIdx + 1) * binSize
-    while (eventIdx < events.length && events[eventIdx]!.pos < binEnd) {
-      depth += events[eventIdx]!.delta
-      eventIdx++
+  for (const f of features) {
+    const strand = f.strand ?? 0
+    if (wantStrand === 0 || strand === 0 || strand === wantStrand) {
+      const s = f.start - actualStart
+      const e = f.end - actualStart
+      if (s < numBins && e > 0) {
+        depths[s > 0 ? s : 0]! += 1
+        if (e < numBins) {
+          depths[e]! -= 1
+        }
+      }
     }
-    depths[binIdx] = Math.max(0, depth)
+  }
+  for (const g of gaps) {
+    const strand = g.featureStrand
+    if (wantStrand === 0 || strand === 0 || strand === wantStrand) {
+      const s = g.start - actualStart
+      const e = g.end - actualStart
+      if (s < numBins && e > 0) {
+        depths[s > 0 ? s : 0]! -= 1
+        if (e < numBins) {
+          depths[e]! += 1
+        }
+      }
+    }
+  }
+  // Prefix-sum in place; the running total stays unclamped (a transient
+  // negative from a left-overhanging gap must still cancel later opens) while
+  // each stored bin clamps to 0, matching the old per-bin Math.max(0, depth).
+  let acc = 0
+  for (let i = 0; i < numBins; i++) {
+    acc += depths[i]!
+    depths[i] = acc > 0 ? acc : 0
   }
   return depths
 }

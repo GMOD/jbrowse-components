@@ -33,97 +33,6 @@ function toLocaleRounded(n: number) {
   return toLocale(Math.round(n))
 }
 
-export function cloneMenuItems(items: MenuItem[]): MenuItem[] {
-  return items.map(item => {
-    const clone = { ...item }
-    if ('subMenu' in clone && Array.isArray(clone.subMenu)) {
-      clone.subMenu = cloneMenuItems(clone.subMenu)
-    }
-    return clone
-  })
-}
-
-/**
- * Modifies view menu action onClick to apply to all tracks of same type
- */
-export function rewriteOnClicks(
-  self: LinearGenomeViewModel,
-  trackType: string,
-  viewMenuActions: MenuItem[],
-) {
-  for (const action of viewMenuActions) {
-    if ('subMenu' in action) {
-      rewriteOnClicks(self, trackType, action.subMenu)
-    }
-    if ('onClick' in action) {
-      const holdOnClick = action.onClick
-      action.onClick = (...args: unknown[]) => {
-        for (const track of self.tracks) {
-          if (track.type === trackType) {
-            holdOnClick.apply(track, [track, ...args])
-          }
-        }
-      }
-    }
-  }
-}
-
-type Compactness = 'normal' | 'compact' | 'super-compact'
-
-// SYNC: plugins/breakpoint-split-view/src/BreakpointSplitView/model.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
-function buildCompactAllTracksMenu(
-  tracks: { displays: unknown[] }[],
-): MenuItem[] {
-  const hasAny = tracks.some(t =>
-    t.displays.some(
-      d => d !== null && typeof d === 'object' && 'setCompactness' in d,
-    ),
-  )
-  if (!hasAny) {
-    return []
-  }
-  function applyCompactness(level: Compactness) {
-    for (const track of tracks) {
-      for (const display of track.displays) {
-        if (
-          display !== null &&
-          typeof display === 'object' &&
-          'setCompactness' in display
-        ) {
-          ;(
-            display as { setCompactness: (v: Compactness) => void }
-          ).setCompactness(level)
-        }
-      }
-    }
-  }
-  return [
-    {
-      label: 'Compact all tracks',
-      subMenu: [
-        {
-          label: 'Normal',
-          onClick: () => {
-            applyCompactness('normal')
-          },
-        },
-        {
-          label: 'Compact',
-          onClick: () => {
-            applyCompactness('compact')
-          },
-        },
-        {
-          label: 'Super-compact',
-          onClick: () => {
-            applyCompactness('super-compact')
-          },
-        },
-      ],
-    },
-  ]
-}
-
 /**
  * Build the main view menu items
  */
@@ -131,7 +40,6 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   if (!self.hasDisplayedRegions) {
     return []
   }
-  const { canShowCytobands, showCytobands } = self
   const session = getSession(self)
   const menuItems: MenuItem[] = [
     {
@@ -186,13 +94,17 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     },
     {
       label: 'Open track selector',
-      onClick: self.activateTrackSelector,
+      onClick: () => {
+        self.activateTrackSelector()
+      },
       icon: TrackSelectorIcon,
     },
     {
       label: 'Horizontally flip',
       icon: SyncAltIcon,
-      onClick: self.horizontallyFlip,
+      onClick: () => {
+        self.horizontallyFlip()
+      },
     },
     {
       label: 'Color by CDS and draw amino acids',
@@ -209,7 +121,9 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       subMenu: [
         {
           label: 'Show all regions in assembly',
-          onClick: self.showAllRegionsInAssembly,
+          onClick: () => {
+            self.showAllRegionsInAssembly()
+          },
         },
         {
           label: 'Show center line',
@@ -271,14 +185,14 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           helpText:
             'When enabled, scrolling on WebGL tracks zooms in and out without needing to hold Ctrl. When disabled, Ctrl+scroll is still available for zooming.',
         },
-        ...(canShowCytobands
+        ...(self.canShowCytobands
           ? [
               {
                 label: 'Show ideogram',
                 type: 'checkbox' as const,
                 checked: self.showCytobands,
                 onClick: () => {
-                  self.setShowCytobands(!showCytobands)
+                  self.setShowCytobands(!self.showCytobands)
                 },
               },
             ]
@@ -293,7 +207,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Overlapping',
           icon: VisibilityIcon,
           type: 'radio',
-          checked: self.trackLabelsSetting === 'overlapping',
+          checked: self.effectiveTrackLabels === 'overlapping',
           onClick: () => {
             self.setTrackLabels('overlapping')
           },
@@ -302,7 +216,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Offset',
           icon: VisibilityIcon,
           type: 'radio',
-          checked: self.trackLabelsSetting === 'offset',
+          checked: self.effectiveTrackLabels === 'offset',
           onClick: () => {
             self.setTrackLabels('offset')
           },
@@ -311,33 +225,14 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
           label: 'Hidden',
           icon: VisibilityIcon,
           type: 'radio',
-          checked: self.trackLabelsSetting === 'hidden',
+          checked: self.effectiveTrackLabels === 'hidden',
           onClick: () => {
             self.setTrackLabels('hidden')
           },
         },
       ],
     },
-    ...buildCompactAllTracksMenu(self.tracks),
   ]
-
-  // add track's view level menu options
-  for (const [key, value] of self.trackTypeActions.entries()) {
-    if (value.length) {
-      menuItems.push(
-        {
-          type: 'divider',
-        },
-        {
-          type: 'subHeader',
-          label: key,
-        },
-      )
-      for (const action of value) {
-        menuItems.push(action)
-      }
-    }
-  }
 
   return menuItems
 }
@@ -383,8 +278,9 @@ export function buildRubberBandMenuItems(
       label: 'Copy range',
       icon: ContentCopyIcon,
       onClick: async () => {
-        const { default: copy } = await import('copy-to-clipboard')
-        await copy(rangeString)
+        const { default: copy } =
+          await import('@jbrowse/core/util/copyToClipboard')
+        copy(rangeString)
       },
     },
   ]
@@ -422,8 +318,9 @@ export function buildRubberbandClickMenuItems(
       label: `Copy coordinate (${locString})`,
       icon: ContentCopyIcon,
       onClick: async () => {
-        const { default: copy } = await import('copy-to-clipboard')
-        await copy(locString)
+        const { default: copy } =
+          await import('@jbrowse/core/util/copyToClipboard')
+        copy(locString)
       },
     },
   ]

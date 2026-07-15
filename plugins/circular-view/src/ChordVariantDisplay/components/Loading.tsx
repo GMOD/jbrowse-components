@@ -1,24 +1,37 @@
 import { useEffect, useState } from 'react'
 
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
-const useStyles = makeStyles()(() => {
-  const duration = 1.4
+import HatchCircle from './HatchCircle.tsx'
 
-  return {
-    path: {
-      strokeDasharray: 187,
-      strokeDashoffset: 50,
-      animation: `$dash ${duration}s ease-in-out infinite, $colors ${
-        duration * 4
-      }s ease-in-out infinite`,
-    },
-  }
+const duration = 1.4
+
+const dash = keyframes({
+  '0%': { strokeDashoffset: 187 },
+  '50%': { strokeDashoffset: 46 },
+  '100%': { strokeDashoffset: 187 },
 })
+
+const colors = keyframes({
+  '0%, 100%': { stroke: '#4285f4' },
+  '25%': { stroke: '#de3e35' },
+  '50%': { stroke: '#f7c223' },
+  '75%': { stroke: '#1b9a59' },
+})
+
+const useStyles = makeStyles()(() => ({
+  path: {
+    strokeDasharray: 187,
+    strokeDashoffset: 50,
+    animation: `${dash} ${duration}s ease-in-out infinite, ${colors} ${duration * 4}s ease-in-out infinite`,
+  },
+}))
 
 const Loading = observer(function Loading({ radius }: { radius: number }) {
   const { classes } = useStyles()
+  const theme = useTheme()
 
   // only show the loading message after 400ms to prevent excessive flickering
   const [shown, setShown] = useState(false)
@@ -32,35 +45,12 @@ const Loading = observer(function Loading({ radius }: { radius: number }) {
   }, [])
 
   return !shown ? null : (
-    <g>
-      <defs>
-        <pattern
-          id="diagonalHatch"
-          width="10"
-          height="10"
-          patternTransform="rotate(45 0 0)"
-          patternUnits="userSpaceOnUse"
-        >
-          <line
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="10"
-            style={{ stroke: 'rgba(255,255,255,0.5)', strokeWidth: 10 }}
-          />
-        </pattern>
-      </defs>
-      <circle cx="0" cy="0" r={radius} fill="#f1f1f1" />
-      <circle cx="0" cy="0" r={radius} fill="url(#diagonalHatch)" />
-      <text
-        x="0"
-        y="0"
-        transform="rotate(90 0 0)"
-        dominantBaseline="middle"
-        textAnchor="middle"
-      >
-        Loading&hellip;
-      </text>
+    <HatchCircle
+      radius={radius}
+      fill={theme.palette.action.hover}
+      hatchColor={theme.palette.action.disabledBackground}
+      text="Loading…"
+    >
       <circle
         className={classes.path}
         fill="none"
@@ -70,7 +60,7 @@ const Loading = observer(function Loading({ radius }: { radius: number }) {
         cy="0"
         r="60"
       />
-    </g>
+    </HatchCircle>
   )
 })
 

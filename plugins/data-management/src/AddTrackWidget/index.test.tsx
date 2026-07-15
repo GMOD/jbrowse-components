@@ -2,11 +2,8 @@ import Plugin from '@jbrowse/core/Plugin'
 import PluginManager from '@jbrowse/core/PluginManager'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import { types } from '@jbrowse/mobx-state-tree'
-// @ts-expect-error
 import Alignments from '@jbrowse/plugin-alignments'
-// @ts-expect-error
 import Hic from '@jbrowse/plugin-hic'
-// @ts-expect-error
 import Variants from '@jbrowse/plugin-variants'
 
 import stateModelFactory from './model.ts'
@@ -101,7 +98,7 @@ test('adds full URL (BAM)', () => {
   const session = standardInitializer()
   const { widget } = session
   widget.setTrackData({
-    uri: 'http://google.com/volvox-sorted.bam',
+    uri: 'https://google.com/volvox-sorted.bam',
     locationType: 'UriLocation',
   })
   expect(widget.trackName).toBe('volvox-sorted.bam')
@@ -113,10 +110,10 @@ xtest('test wrongProtocol returning false', () => {
   const session = standardInitializer()
   const { widget } = session
   widget.setTrackData({
-    uri: 'http://google.com/volvox-sorted.bam',
+    uri: 'https://google.com/volvox-sorted.bam',
     locationType: 'UriLocation',
   })
-  setWindowLoc('http://google.com')
+  setWindowLoc('https://google.com')
 
   expect(widget.wrongProtocol).toBe(false)
   // @ts-expect-error
@@ -128,7 +125,7 @@ xtest('test wrongProtocol returning true', () => {
   const session = standardInitializer()
   const { widget } = session
   widget.setTrackData({
-    uri: 'http://google.com/volvox-sorted.bam',
+    uri: 'https://google.com/volvox-sorted.bam',
     locationType: 'UriLocation',
   })
   setWindowLoc('https://google.com')
@@ -469,6 +466,24 @@ test('BAM file with .out in filename should infer BamAdapter not MashMapAdapter'
   expect(widget.trackType).toBe('AlignmentsTrack')
 })
 
+test('adapterHintNotConfigurable distinguishes resolvable hints from dead ones', () => {
+  const session = standardInitializer()
+  const { widget } = session
+  widget.setTrackData({ uri: 'test.txt', locationType: 'UriLocation' })
+
+  // BamAdapter has a guesser branch keyed to the hint, so it resolves even on a
+  // .txt filename
+  widget.setAdapterHint('BamAdapter')
+  expect(widget.trackAdapterType).toBe('BamAdapter')
+  expect(widget.adapterHintNotConfigurable).toBe(false)
+
+  // an adapter with no guesser branch falls through to UNKNOWN; ConfirmTrack
+  // routes this to UnknownAdapterPrompt so the dropdown stays on screen
+  widget.setAdapterHint('NonexistentAdapter')
+  expect(widget.trackAdapterType).toBe('UNKNOWN')
+  expect(widget.adapterHintNotConfigurable).toBe(true)
+})
+
 function makeHg38Session() {
   // Includes Alignments so BAM is guessable; assembly mocks make getTrackConfig non-undefined
   const pluginManager = new PluginManager([
@@ -499,7 +514,7 @@ function makeHg38Session() {
   )
 }
 
-test('getTrackConfig includes default assembly names when mixinData is empty', () => {
+test('getTrackConfig does not add assembly-pair fields for non-synteny adapters', () => {
   const { widget } = makeHg38Session()
   widget.setTrackData({
     uri: 'https://example.com/test.bam',
@@ -507,13 +522,11 @@ test('getTrackConfig includes default assembly names when mixinData is empty', (
   })
 
   const config = widget.getTrackConfig(Date.now())
-  expect(config?.adapter).toMatchObject({
-    queryAssembly: 'hg38',
-    targetAssembly: 'hg38',
-  })
+  expect(config?.adapter).not.toHaveProperty('queryAssembly')
+  expect(config?.adapter).not.toHaveProperty('targetAssembly')
 })
 
-test('getTrackConfig lets mixinData override default assembly names', () => {
+test('getTrackConfig includes assembly-pair fields supplied via mixinData', () => {
   const { widget } = makeHg38Session()
   widget.setTrackData({
     uri: 'https://example.com/test.bam',

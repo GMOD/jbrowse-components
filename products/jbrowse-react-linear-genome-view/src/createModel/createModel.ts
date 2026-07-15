@@ -1,157 +1,45 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
-import assemblyManagerFactory, {
-  assemblyConfigSchemaFactory,
-} from '@jbrowse/core/assemblyManager'
-import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { cast, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { createEmbeddedRootModel } from '@jbrowse/embedded-core'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins.ts'
-import createConfigModel from './createConfigModel.ts'
 import createSessionModel from './createSessionModel.ts'
 import { version } from '../version.ts'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { UriLocation } from '@jbrowse/core/util'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewRootModel
+ * #category root
+ * Composes the shared {@link EmbeddedRootModel} with a LinearGenomeView session
+ * plus the LGV-only `disableAddTracks`/`drawerViewHeight` props.
  */
 export default function createModel(
   runtimePlugins: PluginConstructor[],
-  makeWorkerInstance: () => Worker = () => {
-    throw new Error('no makeWorkerInstance supplied')
-  },
+  makeWorkerInstance?: () => Worker,
 ) {
   const pluginManager = new PluginManager(
     [...corePlugins, ...runtimePlugins].map(P => new P()),
   ).createPluggableElements()
-  const Session = createSessionModel(pluginManager)
-  const assemblyConfig = assemblyConfigSchemaFactory(pluginManager)
-  const AssemblyManager = assemblyManagerFactory(assemblyConfig, pluginManager)
-  const rootModel = types
-    .model('ReactLinearGenomeView', {
-      /**
-       * #property
-       */
-      config: createConfigModel(pluginManager, assemblyConfig),
-      /**
-       * #property
-       */
-      session: Session,
-      /**
-       * #property
-       */
-      assemblyManager: types.optional(AssemblyManager, {}),
-      /**
-       * #property
-       */
-      disableAddTracks: types.optional(types.boolean, false),
-      /**
-       * #property
-       */
-      drawerViewHeight: types.optional(types.string, '100vh'),
-      /**
-       * #property
-       */
-      internetAccounts: types.array(
-        pluginManager.pluggableMstType('internet account', 'stateModel'),
-      ),
-    })
-    .volatile(self => ({
-      /**
-       * #volatile
-       */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      error: undefined as unknown,
-      /**
-       * #volatile
-       */
-      rpcManager: new RpcManager(pluginManager, self.config.configuration.rpc, {
-        WebWorkerRpcDriver: {
-          makeWorkerInstance,
-        },
-        MainThreadRpcDriver: {},
-      }),
-      /**
-       * #volatile
-       */
-      textSearchManager: new TextSearchManager(pluginManager),
-      /**
-       * #volatile
-       */
-      adminMode: false,
-      /**
-       * #volatile
-       */
-      version,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setSession(sessionSnapshot: SnapshotIn<typeof Session>) {
-        self.session = cast(sessionSnapshot)
-      },
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        this.setSession({ ...getSnapshot(self.session), name: sessionName })
-      },
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        self.error = error
-      },
-      /**
-       * #action
-       */
-      addInternetAccount(acct: SnapshotIn<(typeof self.internetAccounts)[0]>) {
-        self.internetAccounts.push(acct)
-      },
-      /**
-       * #action
-       */
-      findAppropriateInternetAccount(location: UriLocation) {
-        const selectedId = location.internetAccountId
-        if (selectedId) {
-          const selectedAccount = self.internetAccounts.find(
-            a => a.internetAccountId === selectedId,
-          )
-          if (selectedAccount) {
-            return selectedAccount
-          }
-        }
-
-        // if no existing account or not found, try to find working account
-        for (const account of self.internetAccounts) {
-          const handleResult = account.handlesLocation(location)
-          if (handleResult) {
-            return account
-          }
-        }
-
-        // no available internet accounts
-        return null
-      },
-    }))
-
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get jbrowse() {
-        return self.config
-      },
-    }))
-  return {
-    model: rootModel,
+  const model = createEmbeddedRootModel({
+    name: 'ReactLinearGenomeView',
+    version,
     pluginManager,
-  }
+    sessionModelType: createSessionModel(pluginManager),
+    makeWorkerInstance,
+  }).props({
+    /**
+     * #property
+     */
+    disableAddTracks: types.stripDefault(types.boolean, false),
+    /**
+     * #property
+     */
+    drawerViewHeight: types.stripDefault(types.string, '100vh'),
+  })
+  return { model, pluginManager }
 }
 
-export type ViewStateModel = ReturnType<typeof createModel>['model']
+type ViewStateModel = ReturnType<typeof createModel>['model']
 export type ViewModel = Instance<ViewStateModel>

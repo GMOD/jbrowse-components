@@ -4,6 +4,7 @@ exports[`open up a widget 1`] = `
 <div>
   <div
     class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation1 MuiAccordion-root MuiAccordion-rounded Mui-expanded css-9g9pc9-MuiPaper-root-MuiAccordion-root"
+    data-testid="BaseCard-"
     style="--Paper-shadow: 0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 3px 0px rgba(0,0,0,0.12);"
   >
     <h3
@@ -27,7 +28,7 @@ exports[`open up a widget 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -56,11 +57,11 @@ exports[`open up a widget 1`] = `
             <div
               class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
             >
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+              <span
+                class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
               >
                 Core details
-              </p>
+              </span>
               <div
                 class="css-2imjyh"
               >
@@ -94,11 +95,11 @@ exports[`open up a widget 1`] = `
               <hr
                 class="MuiDivider-root MuiDivider-fullWidth css-1jpc804-MuiDivider-root"
               />
-              <p
-                class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+              <span
+                class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
               >
                 Attributes
-              </p>
+              </span>
               <div
                 class="css-2imjyh"
               >
@@ -131,13 +132,13 @@ exports[`open up a widget 1`] = `
                   </button>
                 </div>
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                   tabindex="0"
                   type="button"
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                     data-testid="HelpIcon"
                     focusable="false"
                     viewBox="0 0 24 24"

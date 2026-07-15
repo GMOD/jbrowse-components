@@ -8,8 +8,7 @@ import {
   setup,
 } from './util.tsx'
 
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
+import './svgExportMocks.ts'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
@@ -41,11 +40,7 @@ test('export svg of reversed region with gene labels', async () => {
   fireEvent.click(await findByTestId(hts('gff3tabix_genes'), ...opts))
 
   // Wait for at least one canvas block to finish rendering
-  await screen.findAllByTestId(
-    /prerendered_canvas.*done/,
-    {},
-    { timeout: 30000 },
-  )
+  await screen.findAllByTestId(/^display-.*-done$/, {}, { timeout: 30000 })
 
   await exportAndVerifySvg({
     findByTestId,

@@ -3,8 +3,19 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config ChainAdapter
  * #category adapter
+ * #trackType SyntenyTrack
+ * used to load UCSC chain alignment files (query and target assembly required)
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'ChainAdapter',
+ *   uri: 'https://example.com/aln.chain',
+ *   queryAssembly: 'hg19',
+ *   targetAssembly: 'hg38',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

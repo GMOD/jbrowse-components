@@ -4,7 +4,7 @@
  * Publish script for JBrowse Desktop
  *
  * Uploads packaged artifacts to GitHub releases using the gh CLI.
- * Supports --publish always flag for compatibility with old electron-builder commands.
+ * Pass --publish along with a platform flag (--linux, --mac, --win).
  */
 
 import fs from 'fs'
@@ -18,11 +18,9 @@ function parseArgs() {
   let publish = false
   const platforms: string[] = []
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i]!
-    if (arg === '--publish' && args[i + 1] === 'always') {
+  for (const arg of args) {
+    if (arg === '--publish') {
       publish = true
-      i++
     } else if (arg === '--linux') {
       platforms.push('linux')
     } else if (arg === '--mac') {
@@ -36,45 +34,43 @@ function parseArgs() {
 }
 
 function getArtifacts(platforms: string[]) {
-  const artifacts: string[] = []
-
   if (!fs.existsSync(DIST)) {
-    return artifacts
+    return []
   }
 
-  const files = fs.readdirSync(DIST)
-
-  for (const file of files) {
-    const filePath = path.join(DIST, file)
-    const stat = fs.statSync(filePath)
-
-    if (!stat.isFile()) {
-      continue
-    }
-
-    // Match artifacts by platform
-    if (
-      platforms.includes('win') &&
-      (file.endsWith('.exe') || file.includes('-win'))
-    ) {
-      artifacts.push(filePath)
-    } else if (
-      platforms.includes('linux') &&
-      (file.endsWith('.AppImage') || file.includes('-linux'))
-    ) {
-      artifacts.push(filePath)
-    } else if (
-      platforms.includes('mac') &&
-      (file.endsWith('.dmg') || file.endsWith('.zip') || file.includes('-mac'))
-    ) {
-      artifacts.push(filePath)
-    } else if (file.endsWith('.yml')) {
-      // Always include yml files
-      artifacts.push(filePath)
-    }
-  }
-
-  return artifacts
+  return fs
+    .readdirSync(DIST)
+    .filter(file => {
+      const filePath = path.join(DIST, file)
+      if (!fs.statSync(filePath).isFile()) {
+        return false
+      }
+      if (file.endsWith('.yml')) {
+        return true
+      }
+      if (
+        platforms.includes('win') &&
+        (file.endsWith('.exe') || file.includes('-win'))
+      ) {
+        return true
+      }
+      if (
+        platforms.includes('linux') &&
+        (file.endsWith('.AppImage') || file.includes('-linux'))
+      ) {
+        return true
+      }
+      if (
+        platforms.includes('mac') &&
+        (file.endsWith('.dmg') ||
+          file.endsWith('.zip') ||
+          file.includes('-mac'))
+      ) {
+        return true
+      }
+      return false
+    })
+    .map(file => path.join(DIST, file))
 }
 
 function uploadToGitHub(artifacts: string[]) {
@@ -115,11 +111,18 @@ function main() {
     return
   }
 
-  if (!process.env.GH_TOKEN && !process.env.GITHUB_TOKEN) {
+  if (platforms.length === 0) {
     console.error(
-      'Error: GH_TOKEN or GITHUB_TOKEN environment variable required for publishing',
+      'Error: --publish requires at least one platform flag (--linux, --mac, --win)',
     )
     process.exit(1)
+  }
+
+  if (!process.env.GH_TOKEN && !process.env.GITHUB_TOKEN) {
+    console.warn(
+      'Warning: GH_TOKEN or GITHUB_TOKEN environment variable not set. Skipping publishing.',
+    )
+    return
   }
 
   const artifacts = getArtifacts(platforms)

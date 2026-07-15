@@ -1,23 +1,16 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { normalizeUriSnapshot } from '../normalizeUriSnapshot.ts'
+
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config RefNameAliasAdapter
  * can read "chromAliases" type files from UCSC or any tab separated file of
  * refName aliases
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        location: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
+export const normalizeSnapshot = normalizeUriSnapshot
 
 const RefNameAliasAdapter = ConfigurationSchema(
   'RefNameAliasAdapter',
@@ -40,6 +33,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
     refNameColumn: {
       type: 'number',
       defaultValue: 0,
+      advanced: true,
     },
 
     /**
@@ -51,6 +45,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
       description:
         'alternative to refNameColumn, instead looks at header (starts with # and finds column name)',
       defaultValue: '',
+      advanced: true,
     },
   },
   {
@@ -71,5 +66,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type RefNameAliasAdapterConfig = Instance<typeof RefNameAliasAdapter>
 
 export default RefNameAliasAdapter

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
@@ -11,14 +11,9 @@ import { observer } from 'mobx-react'
 import FileInfoPanel from './FileInfoPanel.tsx'
 import HeaderButtons from './HeaderButtons.tsx'
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
-import { generateDisplayableConfig, readConf } from './util.ts'
+import { getAboutDialogConfig, readConfSlot } from './util.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-type AboutPanelComponent = React.ComponentType<{
-  config: AnyConfigurationModel | Record<string, unknown>
-}>
+import type { AboutPanelProps } from './util.ts'
 
 const useStyles = makeStyles()({
   content: {
@@ -31,31 +26,33 @@ const hideFields = ['displays', 'baseUri', 'refNames', 'formatAbout']
 const AboutDialogContents = observer(function AboutDialogContents({
   config,
   session,
-}: {
-  config: AnyConfigurationModel | Record<string, unknown>
-  session: AbstractSessionModel
-}) {
+}: AboutPanelProps) {
   const conf = isStateTreeNode(config) ? getSnapshot(config) : config
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
   const hideUris =
     getConf(session, ['formatAbout', 'hideUris']) ||
-    readConf(config, ['formatAbout', 'hideUris'])
+    readConfSlot(config, ['formatAbout', 'hideUris'])
 
   const { pluginManager } = getEnv(session)
 
-  const confPostExt = generateDisplayableConfig({
+  const confPostExt = getAboutDialogConfig({
     config,
     session,
     pluginManager,
   })
 
-  const ExtraPanel = pluginManager.evaluateExtensionPoint(
-    'Core-extraAboutPanel',
-    null,
-    { session, config },
-  ) as { name: string; Component: AboutPanelComponent } | null
+  // each registered panel scopes itself (returns null when it doesn't apply)
+  // and owns its own BaseCard chrome
+  const extraPanels = [
+    /** #extensionPoint Core-extraAboutPanel | sync | Add extra panels to a track's About dialog */
+    pluginManager.evaluateExtensionPoint('Core-extraAboutPanel', [], {
+      session,
+      config,
+    }),
+  ].flat()
+
   return (
     <div className={classes.content}>
       <BaseCard title="Configuration">
@@ -77,11 +74,15 @@ const AboutDialogContents = observer(function AboutDialogContents({
           />
         </BaseCard>
       ) : null}
-      {ExtraPanel ? (
-        <BaseCard title={ExtraPanel.name}>
-          <ExtraPanel.Component config={config} />
-        </BaseCard>
-      ) : null}
+      {extraPanels.map((Panel, i) => (
+        <Suspense
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- panels are registration-ordered, stable across renders
+          key={i}
+          fallback={null}
+        >
+          <Panel session={session} config={config} />
+        </Suspense>
+      ))}
       <FileInfoPanel config={config} session={session} />
       {showRefNames ? (
         <RefNameInfoDialog

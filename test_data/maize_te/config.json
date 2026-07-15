@@ -1,0 +1,66 @@
+{
+  "assemblies": [
+    {
+      "name": "Zm-B73-NAM5",
+      "displayName": "Maize B73 (NAM 5.0, chr1 0-122kb slice)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Zm-B73-NAM5-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "Zm-B73-NAM5-chr1-slice.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "maize_b73_edta_te",
+      "name": "EDTA transposable elements (intact + fragmented)",
+      "category": ["Transposable elements"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "Zm-B73-NAM5.TE.slice.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "Zm-B73-NAM5.TE.slice.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["Zm-B73-NAM5"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "maize_b73_edta_te-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'classification') || get(feature,'name')"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "Maize EDTA transposable elements",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "Zm-B73-NAM5",
+          "loc": "chr1:59,500-71,000",
+          "tracks": ["maize_b73_edta_te"]
+        }
+      }
+    ]
+  }
+}

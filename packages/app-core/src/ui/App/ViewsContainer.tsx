@@ -3,6 +3,8 @@ import { Suspense, lazy } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
+
 import type { AppSession } from './types.ts'
 
 const ClassicViewsContainer = lazy(() => import('./ClassicViewsContainer.tsx'))
@@ -28,19 +30,17 @@ const ViewsContainer = observer(function ViewsContainer(props: Props) {
 
   return (
     <div className={classes.viewsContainer}>
-      {views.length > 0 ? (
-        <Suspense fallback={null}>
-          {useWorkspaces ? (
+      <Suspense fallback={null}>
+        {views.length > 0 ? (
+          useWorkspaces && isSessionWithDockviewLayout(session) ? (
             <TiledViewsContainer session={session} />
           ) : (
             <ClassicViewsContainer session={session} />
-          )}
-        </Suspense>
-      ) : (
-        <Suspense fallback={null}>
-          <ViewLauncher {...props} />
-        </Suspense>
-      )}
+          )
+        ) : (
+          <ViewLauncher session={session} />
+        )}
+      </Suspense>
     </div>
   )
 })

@@ -1,20 +1,18 @@
-import type React from 'react'
-
+/* eslint-disable react-refresh/only-export-components */
+import { getContainingView, max } from '@jbrowse/core/util'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  getContainingView,
-  getRpcSessionId,
-  getSession,
-} from '@jbrowse/core/util'
-import {
-  ReactRendering,
-  renderingToSvg,
-} from '@jbrowse/core/util/offscreenCanvasUtils'
-import { SvgClipRect } from '@jbrowse/core/util/svgExport'
+  SvgChrome,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
 
-import { LDSVGColorLegend } from './components/LDColorLegend.tsx'
+import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
+import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
 import Wrapper from './components/Wrapper.tsx'
+import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
 import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 
@@ -26,74 +24,108 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-interface RenderingResult {
-  reactElement?: React.ReactNode
-  html?: string
-  canvasRecordedData?: unknown
-  recombination?: {
-    values: number[]
-    positions: number[]
-  }
-}
-
 export async function renderSvg(
   self: SharedLDModel,
   opts: ExportSvgDisplayOptions,
 ) {
+  // svgReady (GlobalDataDisplayMixin) waits out an in-place refetch — which
+  // holds stale rpcData until the new result commits — so exports never capture
+  // a partial or stale viewport.
+  await awaitSvgReady(self)
   const view = getContainingView(self) as LGV
-  const session = getSession(self)
-  const { rpcManager } = session
   const height = opts.overrideHeight ?? self.height
+  return (
+    <SvgChrome
+      error={self.error}
+      regionTooLarge={self.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
+      <LdSvgBody self={self} view={view} height={height} opts={opts} />
+    </SvgChrome>
+  )
+}
+
+function LdSvgBody({
+  self,
+  view,
+  height,
+  opts,
+}: {
+  self: SharedLDModel
+  view: LGV
+  height: number
+  opts: ExportSvgDisplayOptions
+}) {
+  const { rpcData } = self
 
   const {
     ldMetric,
     showLegend,
-    adapterConfig,
     showRecombination,
     lineZoneHeight,
+    effectiveLineZoneHeight,
     useGenomicPositions,
     signedLD,
+    yScalar,
   } = self
-  const { bpPerPx, dynamicBlocks } = view
-  const regions = dynamicBlocks.contentBlocks
 
-  if (!regions.length) {
+  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
+  // this narrows the single nullable fetch blob for TS only — unreachable at
+  // runtime. An empty (numCells === 0) result still paints an empty triangle.
+  if (!rpcData) {
     return null
   }
 
-  const renderProps = self.renderProps()
+  const { ldValues, boundaries, numCells, uniformW } = rpcData
+  // Match the live canvas: the matrix, recombination plot, connector lines, and
+  // legend all lay out across totalWidthPxWithoutBorders (the rounded,
+  // border-excluded content width), not the raw viewport width — otherwise the
+  // export's index-mode recomb plot and legend drift from the matrix when the
+  // genome doesn't fill the viewport or spans multiple regions.
+  const visibleWidth = view.totalWidthPxWithoutBorders
+  const ramp = generateLDColorRamp(rpcData.metric, rpcData.signedLD)
+  const triangleHeight = height - effectiveLineZoneHeight
+  // svgReady gates on a fresh viewport, so viewScale === 1 and viewOffsetX ===
+  // max(0, -offsetPx) — the left gap when the region doesn't reach the viewport
+  // edge. Paint the triangle with the same transform the connector lines and
+  // VariantLabels use so all three stay aligned when offsetPx < 0 (a no-op
+  // otherwise, since viewOffsetX is then 0).
+  const { scale: exportViewScale, viewOffsetX: exportViewOffsetX } =
+    self.renderTransform
 
-  const rpcSessionId = getRpcSessionId(self)
-  const rendering = (await rpcManager.call(rpcSessionId, 'CoreRender', {
-    sessionId: rpcSessionId,
-    rendererType: 'LDRenderer',
-    regions: [...regions],
-    adapterConfig,
-    bpPerPx,
-    ...renderProps,
-    exportSVG: opts,
-  })) as RenderingResult
-
-  const finalRendering = await renderingToSvg(
-    rendering,
-    view.staticBlocks.totalWidthPx,
-    height,
-  )
-
-  const visibleWidth = view.width
-  const clipId = `clip-${self.id}-svg`
-
-  // Recombination track is overlaid at the bottom half of the line zone
-  const recombTrackHeight = lineZoneHeight / 2
-  const recombTrackYOffset = lineZoneHeight / 2
+  // Match the live overlay's layout: genomic-positions mode places the
+  // recombination plot at the top spanning effectiveLineZoneHeight; index
+  // mode tucks it in the lower half of lineZoneHeight, above the matrix.
+  const recombTrackHeight = useGenomicPositions
+    ? effectiveLineZoneHeight
+    : lineZoneHeight / 2
+  const recombTrackYOffset = useGenomicPositions ? 0 : lineZoneHeight / 2
 
   return (
     <>
-      <SvgClipRect id={clipId} width={visibleWidth} height={height}>
-        <g
-          transform={`translate(${Math.max(0, -view.offsetPx)} ${lineZoneHeight})`}
-        >
-          <ReactRendering rendering={finalRendering} />
+      <SvgClipRect
+        id={`ld-clip-${self.id}`}
+        width={visibleWidth}
+        height={height}
+      >
+        <g transform={`translate(0 ${effectiveLineZoneHeight})`}>
+          <PaintLayer
+            width={visibleWidth}
+            height={triangleHeight}
+            opts={opts}
+            paint={ctx => {
+              drawLDBlocks(ctx, { ldValues, boundaries, numCells }, ramp, {
+                yScalar,
+                canvasWidth: visibleWidth,
+                canvasHeight: triangleHeight,
+                signedLD,
+                viewScale: exportViewScale,
+                viewOffsetX: exportViewOffsetX,
+                uniformW,
+              })
+            }}
+          />
         </g>
         {useGenomicPositions ? (
           <Wrapper model={self} exportSVG>
@@ -102,21 +134,20 @@ export async function renderSvg(
         ) : (
           <LinesConnectingMatrixToGenomicPosition model={self} exportSVG />
         )}
-        {/* Recombination track overlaid at bottom of line zone */}
-        {showRecombination && rendering.recombination ? (
+        {showRecombination && rpcData.recombination ? (
           <g transform={`translate(0 ${recombTrackYOffset})`}>
             <RecombinationTrack
-              recombination={rendering.recombination}
+              recombination={rpcData.recombination}
               width={visibleWidth}
               height={recombTrackHeight}
               exportSVG
               useGenomicPositions={useGenomicPositions}
-              regionStart={regions[0]?.start}
-              bpPerPx={bpPerPx}
+              regionStart={view.dynamicBlocks.contentBlocks[0]?.start}
+              bpPerPx={view.bpPerPx}
             />
             <RecombinationYScaleBar
               height={recombTrackHeight}
-              maxValue={Math.max(...rendering.recombination.values, 0.1)}
+              maxValue={max(rpcData.recombination.values, 0.1)}
               exportSVG
             />
           </g>

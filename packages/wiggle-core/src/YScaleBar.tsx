@@ -23,7 +23,6 @@ const YScaleBar = observer(function YScaleBar({
   return (
     <g
       fontSize={10}
-      fontFamily="sans-serif"
       textAnchor={isLeft ? 'end' : 'start'}
       stroke={fg}
       strokeWidth={1}
@@ -32,8 +31,8 @@ const YScaleBar = observer(function YScaleBar({
         fill="none"
         d={`M${k * tickLength} ${yTop + 0.5}H0.5V${yBottom + 0.5}H${k * tickLength}`}
       />
-      {items.map(({ value, y, label }, i) => (
-        <g key={`${value}-${y}-${i}`} transform={`translate(0,${y})`}>
+      {items.map(({ value, y, label }) => (
+        <g key={`${value}-${y}`} transform={`translate(0,${y})`}>
           <line x2={k * tickLength} y1={0.5} y2={0.5} />
           <text
             stroke={bg}

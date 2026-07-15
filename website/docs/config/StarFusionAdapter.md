@@ -1,42 +1,70 @@
 ---
 id: starfusionadapter
 title: StarFusionAdapter
+sidebar_label: Adapter -> StarFusionAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/StarFusionAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/StarFusionAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/StarFusionAdapter.md)
-
-## Docs
-
-### StarFusionAdapter - Pre-processor / simplified config
-
-Allows minimal config:
-
-```json
-{ "type": "StarFusionAdapter", "uri": "star-fusion.tsv" }
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'StarFusionAdapter',
+    uri: 'https://example.com/star-fusion.fusion_predictions.tsv',
+  },
+}
 ```
 
-### StarFusionAdapter - Slots
+_See the **Config slots** section below for all available configuration fields._
+
+used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
+
+## Related links
+
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                           | Type           | Description                                         |
+| ---------------------------------------------- | -------------- | --------------------------------------------------- |
+| [starFusionLocation](#slot-starfusionlocation) | `fileLocation` | STAR-Fusion TSV output file (plain text or gzipped) |
+
+<details>
+<summary>StarFusionAdapter - Slots</summary>
 
 #### slot: starFusionLocation
 
+STAR-Fusion TSV output file (plain text or gzipped)
+
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation)
+
 ```js
-starFusionLocation: {
-      type: 'fileLocation',
-      description: 'STAR-Fusion TSV output file (plain text or gzipped)',
-      defaultValue: {
-        uri: '/path/to/star-fusion.fusion_predictions.tsv',
-        locationType: 'UriLocation',
-      },
-    }
+{
+  type: 'fileLocation',
+  description: 'STAR-Fusion TSV output file (plain text or gzipped)',
+  defaultValue: {
+    uri: '/path/to/star-fusion.fusion_predictions.tsv',
+    locationType: 'UriLocation',
+  },
+}
 ```
+
+</details>

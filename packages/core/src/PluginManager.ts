@@ -1,3 +1,5 @@
+import type { ComponentType } from 'react'
+
 import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
 import CorePlugin from './CorePlugin.ts'
@@ -24,12 +26,18 @@ import type TrackType from './pluggableElementTypes/TrackType.ts'
 import type ViewType from './pluggableElementTypes/ViewType.ts'
 import type WidgetType from './pluggableElementTypes/WidgetType.ts'
 import type { PluggableElementType } from './pluggableElementTypes/index.ts'
-import type RendererType from './pluggableElementTypes/renderers/RendererType.tsx'
-import type { AbstractRootModel } from './util/index.ts'
-import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
+import type {
+  AbstractRootModel,
+  AbstractSessionModel,
+  SimpleFeatureSerialized,
+} from './util/index.ts'
+import type {
+  IAnyModelType,
+  IAnyStateTreeNode,
+  IAnyType,
+} from '@jbrowse/mobx-state-tree'
 
 type PluggableElementTypeGroup =
-  | 'renderer'
   | 'adapter'
   | 'display'
   | 'track'
@@ -60,12 +68,13 @@ class TypeRecord<ElementClass extends PluggableElementBase> {
   }
 
   get(name: string) {
-    if (!this.has(name)) {
+    const type = this.registeredTypes[name]
+    if (!type) {
       throw new Error(
         `${this.typeName} '${name}' not found, perhaps its plugin is not loaded or its plugin has not added it.`,
       )
     }
-    return this.registeredTypes[name]
+    return type
   }
 
   all() {
@@ -79,14 +88,115 @@ type ExtensionPointCallback = (
   props?: Record<string, unknown>,
 ) => unknown
 
+// Typed registry for extension points, mirroring RpcRegistry. Plugins augment
+// this interface via declaration merging so the addToExtensionPoint /
+// evaluateExtensionPoint / evaluateAsyncExtensionPoint overloads narrow per
+// extension point name.
+//
+// Each entry declares:
+//   args:   the value passed as `extendee` (also the accumulator type)
+//   result: the value each callback must return
+//   props:  (optional) the read-only context object passed unchanged to every
+//           callback. Use for notification-style points where the payload
+//           should not be mutated between callbacks.
+//
+// Extension points are accumulator-style: every callback receives the previous
+// callback's return value as its first arg, so for side-effect points
+// (LaunchView-*, etc.) declare `result` equal to `args` and return the args
+// unchanged so subsequent callbacks see the original payload.
+//
+// Example augmentation in a plugin:
+//
+//   declare module '@jbrowse/core/PluginManager' {
+//     interface ExtensionPointRegistry {
+//       'LaunchView-LinearGenomeView': {
+//         args: LaunchArgs
+//         result: LaunchArgs
+//         props: { session: AbstractSessionModel } // optional
+//       }
+//     }
+//   }
+//
+// Untyped extension points still work — they hit the second overload of each
+// method and fall back to the prior loose typing. Built-in points defined here
+// in PluginManager are declared inline; points owned by other modules augment
+// this interface via `declare module '@jbrowse/core/PluginManager'`.
+// a feature-detail widget carries trackId/trackType (undefined when the
+// producing track was closed), which is what lets a panel scope itself to a
+// track
+type FeatureWidgetModel = IAnyStateTreeNode & {
+  trackId?: string
+  trackType?: string
+}
+
+// any widget additionally exposes its type discriminator, which scopes a
+// replacement to a kind of widget
+type WidgetModel = FeatureWidgetModel & {
+  type: string
+}
+
+// props passed to Core-extraFeaturePanel components (and threaded as the second
+// arg to each accumulating callback)
+export interface FeaturePanelProps {
+  model: FeatureWidgetModel
+  feature: SimpleFeatureSerialized
+}
+
+// props passed to Core-replaceWidget components
+export interface ReplaceWidgetProps {
+  session: AbstractSessionModel
+  model: WidgetModel
+  toolbarHeight?: number
+}
+
+export interface ExtensionPointRegistry {
+  'Core-extendPluggableElement': {
+    args: PluggableElementType
+    result: PluggableElementType
+  }
+  // accumulates an array of panels — every callback appends its own component
+  // (scoping itself via the model) and returns the array, so multiple plugins
+  // compose instead of overwriting one another
+  'Core-extraFeaturePanel': {
+    args: ComponentType<FeaturePanelProps>[]
+    result: ComponentType<FeaturePanelProps>[]
+    props: FeaturePanelProps
+  }
+  // singular: one widget renders, so this stays a single-component fold. A
+  // callback returns its own component to replace/wrap the default, or the
+  // default unchanged to opt out
+  'Core-replaceWidget': {
+    args: ComponentType<ReplaceWidgetProps>
+    result: ComponentType<ReplaceWidgetProps>
+    props: ReplaceWidgetProps
+  }
+}
+
+export type ExtensionPointName = keyof ExtensionPointRegistry
+
+export type ExtensionPointArgs<N extends ExtensionPointName> =
+  ExtensionPointRegistry[N]['args']
+
+export type ExtensionPointResult<N extends ExtensionPointName> =
+  ExtensionPointRegistry[N]['result']
+
+export type ExtensionPointProps<N extends ExtensionPointName> =
+  'props' extends keyof ExtensionPointRegistry[N]
+    ? ExtensionPointRegistry[N]['props']
+    : Record<string, unknown>
+
 /**
- * free-form string-to-unknown mapping of metadata related to the instance of
- * this plugin. `isCore` is typically set to `Boolean(true)` if the plugin was
- * loaded as part of the "core" set of plugins for this application. Can also
- * use this metadata to stash other things about why the plugin is loaded, such
- * as where it came from, what plugin depends on it, etc.
+ * metadata related to the instance of this plugin. `isCore` is set when the
+ * plugin was loaded as part of the "core" set of plugins for this application,
+ * and `url` records the resolved location it was loaded from. The index
+ * signature keeps it free-form so other things about why the plugin is loaded
+ * (where it came from, what depends on it, etc.) can be stashed too.
  */
-export type PluginMetadata = Record<string, unknown>
+export interface PluginMetadata {
+  isCore?: boolean
+  url?: string
+  [key: string]: unknown
+}
 
 export interface PluginLoadRecord {
   metadata?: PluginMetadata
@@ -107,7 +217,6 @@ export default class PluginManager {
 
   elementCreationSchedule = new PhasedScheduler<PluggableElementTypeGroup>(
     'glyph',
-    'renderer',
     'adapter',
     'text search adapter',
     'display',
@@ -123,8 +232,6 @@ export default class PluginManager {
   pluggableElementsCreated = false
 
   glyphTypes = new TypeRecord<GlyphType>('GlyphType')
-
-  rendererTypes = new TypeRecord<RendererType>('RendererType')
 
   adapterTypes = new TypeRecord<AdapterType>('AdapterType')
 
@@ -155,6 +262,27 @@ export default class PluginManager {
   rootModel?: AbstractRootModel
 
   extensionPoints = new Map<string, ExtensionPointCallback[]>()
+
+  /**
+   * Lazy-hydration cache for `TrackConfigurationReference`/
+   * `DisplayConfigurationReference` (configuration/configurationSchema.ts).
+   * `jbrowse.tracks` is `types.frozen` for large-tracklist performance, so a
+   * track config is a plain JS object until first referenced; hydrating it
+   * into an MST node is deferred to that read. MST's custom-reference
+   * `getValue` has no memoization of its own — it reruns on every property
+   * access — so without this cache, every read of `track.configuration` would
+   * fabricate a fresh, non-identical MST node. Keyed by schemaType (each track
+   * type's config schema is rebuilt fresh per PluginManager instance, see
+   * addTrackType) then by the frozen object itself, so a cache hit can only
+   * ever come from this same PluginManager instance and this same track type.
+   * See ADR-031.
+   *
+   * This node is never mutated: admin edits replace the frozen entry (new
+   * identity drops the WeakMap entry), and a non-admin's edits go to a private
+   * session working copy, not here (ADR-032). Both levels are `WeakMap`s so
+   * entries collect normally — no manual invalidation needed.
+   */
+  trackConfigHydrationCache = new WeakMap<object, WeakMap<object, unknown>>()
 
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
@@ -291,8 +419,6 @@ export default class PluginManager {
         return this.connectionTypes
       case 'widget':
         return this.widgetTypes
-      case 'renderer':
-        return this.rendererTypes
       case 'display':
         return this.displayTypes
       case 'track':
@@ -342,9 +468,10 @@ export default class PluginManager {
         typeRecord.add(
           newElement.name,
           this.evaluateExtensionPoint(
+            /** #extensionPoint Core-extendPluggableElement | sync | Mutate any pluggable element after it is created */
             'Core-extendPluggableElement',
             newElement,
-          ) as PluggableElementType,
+          ),
         )
       }
     })
@@ -440,9 +567,7 @@ export default class PluginManager {
    *
    * @returns the library's default export
    */
-  jbrequire = (
-    lib: keyof typeof ReExports | AnyFunction | { default: AnyFunction },
-  ): any => {
+  jbrequire = (lib: string | AnyFunction | { default: AnyFunction }): any => {
     if (typeof lib === 'string') {
       const pack = this.lib[lib]
 
@@ -455,25 +580,15 @@ export default class PluginManager {
     } else if (typeof lib === 'function') {
       return this.load(lib)
     }
-
-    // @ts-expect-error
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     else if (lib.default) {
       console.warn('initiated jbrequire on a {default:Function}')
-      // @ts-expect-error
       return this.jbrequire(lib.default)
     }
 
     throw new TypeError(
       'lib passed to jbrequire must be either a string or a function',
     )
-  }
-
-  getRendererType(typeName: string) {
-    return this.rendererTypes.get(typeName)
-  }
-
-  getRendererTypes(): RendererType[] {
-    return this.rendererTypes.all()
   }
 
   getAdapterType(typeName: string) {
@@ -514,10 +629,6 @@ export default class PluginManager {
 
   getInternetAccountType(name: string) {
     return this.internetAccountTypes.get(name)
-  }
-
-  addRendererType(cb: (pm: PluginManager) => RendererType) {
-    return this.addElementType('renderer', cb)
   }
 
   addAdapterType(cb: (pm: PluginManager) => AdapterType) {
@@ -604,9 +715,20 @@ export default class PluginManager {
     return this.glyphTypes.all()
   }
 
+  addToExtensionPoint<N extends ExtensionPointName>(
+    extensionPointName: N,
+    callback: (
+      extendee: ExtensionPointArgs<N>,
+      props: ExtensionPointProps<N>,
+    ) => ExtensionPointResult<N> | Promise<ExtensionPointResult<N>>,
+  ): void
   addToExtensionPoint<T>(
     extensionPointName: string,
     callback: (extendee: T, props: Record<string, unknown>) => T,
+  ): void
+  addToExtensionPoint(
+    extensionPointName: string,
+    callback: (extendee: unknown, props: Record<string, unknown>) => unknown,
   ) {
     let callbacks = this.extensionPoints.get(extensionPointName)
     if (!callbacks) {
@@ -616,6 +738,16 @@ export default class PluginManager {
     callbacks.push(callback as ExtensionPointCallback)
   }
 
+  evaluateExtensionPoint<N extends ExtensionPointName>(
+    extensionPointName: N,
+    extendee: ExtensionPointArgs<N>,
+    props?: ExtensionPointProps<N>,
+  ): ExtensionPointResult<N>
+  evaluateExtensionPoint(
+    extensionPointName: string,
+    extendee: unknown,
+    props?: Record<string, unknown>,
+  ): unknown
   evaluateExtensionPoint(
     extensionPointName: string,
     extendee: unknown,
@@ -635,6 +767,16 @@ export default class PluginManager {
     return accumulator
   }
 
+  evaluateAsyncExtensionPoint<N extends ExtensionPointName>(
+    extensionPointName: N,
+    extendee: ExtensionPointArgs<N>,
+    props?: ExtensionPointProps<N>,
+  ): Promise<ExtensionPointResult<N>>
+  evaluateAsyncExtensionPoint(
+    extensionPointName: string,
+    extendee: unknown,
+    props?: Record<string, unknown>,
+  ): Promise<unknown>
   async evaluateAsyncExtensionPoint(
     extensionPointName: string,
     extendee: unknown,

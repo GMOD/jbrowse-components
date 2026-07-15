@@ -1,247 +1,240 @@
 ---
 id: base1dview
 title: Base1DView
+sidebar_label: View -> Base1DView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/Base1DViewModel.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Base1DView.md)
-
-## Docs
+## Overview
 
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this
 
-### Base1DView - Properties
+## Members
+
+| Member                                                     | Kind       | Defined by | Description                                                                                                                  |
+| ---------------------------------------------------------- | ---------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                         | Properties | Base1DView |                                                                                                                              |
+| [displayedRegions](#property-displayedregions)             | Properties | Base1DView |                                                                                                                              |
+| [bpPerPx](#property-bpperpx)                               | Properties | Base1DView |                                                                                                                              |
+| [offsetPx](#property-offsetpx)                             | Properties | Base1DView |                                                                                                                              |
+| [minimumBlockWidth](#property-minimumblockwidth)           | Properties | Base1DView |                                                                                                                              |
+| [volatileWidth](#volatile-volatilewidth)                   | Volatiles  | Base1DView |                                                                                                                              |
+| [width](#getter-width)                                     | Getters    | Base1DView |                                                                                                                              |
+| [minBpPerPx](#getter-minbpperpx)                           | Getters    | Base1DView | zoom-in floor; overridden by extensions (e.g. the dotplot axes)                                                              |
+| [maxBpPerPx](#getter-maxbpperpx)                           | Getters    | Base1DView | zoom-out ceiling; overridden by extensions (e.g. the dotplot axes)                                                           |
+| [assemblyNames](#getter-assemblynames)                     | Getters    | Base1DView |                                                                                                                              |
+| [displayedRegionsTotalPx](#getter-displayedregionstotalpx) | Getters    | Base1DView |                                                                                                                              |
+| [maxOffset](#getter-maxoffset)                             | Getters    | Base1DView |                                                                                                                              |
+| [minOffset](#getter-minoffset)                             | Getters    | Base1DView |                                                                                                                              |
+| [totalBp](#getter-totalbp)                                 | Getters    | Base1DView |                                                                                                                              |
+| [dynamicBlocks](#getter-dynamicblocks)                     | Getters    | Base1DView |                                                                                                                              |
+| [staticBlocks](#getter-staticblocks)                       | Getters    | Base1DView |                                                                                                                              |
+| [currBp](#getter-currbp)                                   | Getters    | Base1DView |                                                                                                                              |
+| [pxToBp](#method-pxtobp)                                   | Methods    | Base1DView |                                                                                                                              |
+| [bpToPx](#method-bptopx)                                   | Methods    | Base1DView |                                                                                                                              |
+| [setDisplayedRegions](#action-setdisplayedregions)         | Actions    | Base1DView |                                                                                                                              |
+| [setBpPerPx](#action-setbpperpx)                           | Actions    | Base1DView |                                                                                                                              |
+| [setVolatileWidth](#action-setvolatilewidth)               | Actions    | Base1DView |                                                                                                                              |
+| [showAllRegions](#action-showallregions)                   | Actions    | Base1DView | this makes a zoomed out view that shows all displayedRegions that makes the overview bar square with the scale bar           |
+| [zoomOut](#action-zoomout)                                 | Actions    | Base1DView |                                                                                                                              |
+| [zoomIn](#action-zoomin)                                   | Actions    | Base1DView |                                                                                                                              |
+| [zoomTo](#action-zoomto)                                   | Actions    | Base1DView |                                                                                                                              |
+| [scrollTo](#action-scrollto)                               | Actions    | Base1DView |                                                                                                                              |
+| [centerAt](#action-centerat)                               | Actions    | Base1DView |                                                                                                                              |
+| [scroll](#action-scroll)                                   | Actions    | Base1DView | note: the scroll is clamped to keep the view on the main screen                                                              |
+| [moveTo](#action-moveto)                                   | Actions    | Base1DView | offset is the base-pair-offset in the displayed region, index is the index of the displayed region in the linear genome view |
+
+<details>
+<summary>Base1DView - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: displayedRegions
 
-```js
+```ts
 // type signature
-IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
+type displayedRegions = IOptionalIType<
+  IType<Region[], Region[], Region[]>,
+  [undefined]
+>
 // code
 displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
 ```
 
 #### property: bpPerPx
 
-```js
+```ts
 // type signature
-number
+type bpPerPx = number
 // code
 bpPerPx: 0
 ```
 
 #### property: offsetPx
 
-```js
+```ts
 // type signature
-number
+type offsetPx = number
 // code
 offsetPx: 0
 ```
 
-#### property: interRegionPaddingWidth
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-interRegionPaddingWidth: types.optional(types.number, 0)
-```
-
 #### property: minimumBlockWidth
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type minimumBlockWidth = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minimumBlockWidth: types.optional(types.number, 0)
+minimumBlockWidth: types.stripDefault(types.number, 0)
 ```
 
-### Base1DView - Getters
+</details>
+
+<details>
+<summary>Base1DView - Volatiles</summary>
+
+#### volatile: volatileWidth
+
+```ts
+// type signature
+type volatileWidth = number
+// code
+volatileWidth: 0
+```
+
+</details>
+
+<details>
+<summary>Base1DView - Getters</summary>
+
+#### getter: minBpPerPx
+
+zoom-in floor; overridden by extensions (e.g. the dotplot axes)
+
+```ts
+type minBpPerPx = number
+```
+
+#### getter: maxBpPerPx
+
+zoom-out ceiling; overridden by extensions (e.g. the dotplot axes)
+
+```ts
+type maxBpPerPx = number
+```
+
+</details>
+
+<details>
+<summary>Base1DView - Getters (other undocumented members)</summary>
 
 #### getter: width
 
-```js
-// type
-number
+```ts
+type width = number
 ```
 
 #### getter: assemblyNames
 
-```js
-// type
-string[]
+```ts
+type assemblyNames = string[]
 ```
 
 #### getter: displayedRegionsTotalPx
 
-```js
-// type
-number
+```ts
+type displayedRegionsTotalPx = number
 ```
 
 #### getter: maxOffset
 
-```js
-// type
-number
+```ts
+type maxOffset = number
 ```
 
 #### getter: minOffset
 
-```js
-// type
-number
+```ts
+type minOffset = number
 ```
 
 #### getter: totalBp
 
-```js
-// type
-number
+```ts
+type totalBp = number
 ```
 
 #### getter: dynamicBlocks
 
-```js
-// type
-BlockSet
+```ts
+type dynamicBlocks = BlockSet
 ```
 
 #### getter: staticBlocks
 
-```js
-// type
-BlockSet
+```ts
+type staticBlocks = BlockSet
 ```
 
 #### getter: currBp
 
-```js
-// type
-number
+```ts
+type currBp = number
 ```
 
-### Base1DView - Methods
+</details>
+
+<details>
+<summary>Base1DView - Methods</summary>
 
 #### method: pxToBp
 
-```js
-// type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; }
+```ts
+type pxToBp = (px: number) => PxToBpResult
 ```
 
 #### method: bpToPx
 
-```js
-// type signature
-bpToPx: ({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number | undefined; }) => number | undefined
+```ts
+type bpToPx = (args: {
+  refName: string
+  coord: number
+  displayedRegionIndex?: number | undefined
+}) => number | undefined
 ```
 
-### Base1DView - Actions
+</details>
 
-#### action: setDisplayedRegions
-
-```js
-// type signature
-setDisplayedRegions: (regions: Region[]) => void
-```
-
-#### action: setBpPerPx
-
-```js
-// type signature
-setBpPerPx: (val: number) => void
-```
-
-#### action: setVolatileWidth
-
-```js
-// type signature
-setVolatileWidth: (width: number) => void
-```
-
-#### action: setFeatures
-
-```js
-// type signature
-setFeatures: (features: Feature[]) => void
-```
+<details>
+<summary>Base1DView - Actions</summary>
 
 #### action: showAllRegions
 
 this makes a zoomed out view that shows all displayedRegions that makes the
 overview bar square with the scale bar
 
-```js
-// type signature
-showAllRegions: () => void
-```
-
-#### action: zoomOut
-
-```js
-// type signature
-zoomOut: () => void
-```
-
-#### action: zoomIn
-
-```js
-// type signature
-zoomIn: () => void
-```
-
-#### action: zoomTo
-
-```js
-// type signature
-zoomTo: (bpPerPx: number, offset?: number) => number
-```
-
-#### action: scrollTo
-
-```js
-// type signature
-scrollTo: (offsetPx: number) => number
-```
-
-#### action: centerAt
-
-```js
-// type signature
-centerAt: (coord: number, refName: string | undefined, displayedRegionIndex: number) => void
+```ts
+type showAllRegions = () => void
 ```
 
 #### action: scroll
 
 note: the scroll is clamped to keep the view on the main screen
 
-```js
-// type signature
-scroll: (distance: number) => number
+```ts
+type scroll = (distance: number) => number
 ```
 
 #### action: moveTo
@@ -249,7 +242,65 @@ scroll: (distance: number) => number
 offset is the base-pair-offset in the displayed region, index is the index of
 the displayed region in the linear genome view
 
-```js
-// type signature
-moveTo: (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
+```ts
+type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 ```
+
+</details>
+
+<details>
+<summary>Base1DView - Actions (other undocumented members)</summary>
+
+#### action: setDisplayedRegions
+
+```ts
+type setDisplayedRegions = (regions: Region[]) => void
+```
+
+#### action: setBpPerPx
+
+```ts
+type setBpPerPx = (val: number) => void
+```
+
+#### action: setVolatileWidth
+
+```ts
+type setVolatileWidth = (width: number) => void
+```
+
+#### action: zoomOut
+
+```ts
+type zoomOut = () => void
+```
+
+#### action: zoomIn
+
+```ts
+type zoomIn = () => void
+```
+
+#### action: zoomTo
+
+```ts
+type zoomTo = (bpPerPx: number, offset?: any) => number
+```
+
+#### action: scrollTo
+
+```ts
+type scrollTo = (offsetPx: number) => number
+```
+
+#### action: centerAt
+
+```ts
+type centerAt = (
+  coord: number,
+  refName: string | undefined,
+  displayedRegionIndex: number,
+) => void
+```
+
+</details>

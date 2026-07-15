@@ -1,6 +1,5 @@
 ---
 title: Default session
-id: default_session
 description: Setting an initial session state loaded for all users
 guide_category: Other features
 ---
@@ -60,48 +59,24 @@ In `config.json`:
   "defaultSession": {
     "id": "eXr4hv4VX",
     "name": "Session",
-    "views": [
-      {
-        "id": "eXr4hv4VX-view",
-        "type": "LinearGenomeView",
-        "offsetPx": 14500,
-        "bpPerPx": 1.7,
-        "displayedRegions": [
-          {
-            "refName": "ctgA",
-            "start": 0,
-            "end": 50001,
-            "reversed": false,
-            "assemblyName": "volvox"
-          }
-        ]
-      }
-    ]
+    "views": [ ... same as the exported session above ... ]
   },
-  "tracks": [
-    {
-      "type": "VariantTrack",
-      "trackId": "variants",
-      "name": "variants",
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "volvox.dup.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox.dup.vcf.gz.tbi"
-          }
-        }
-      }
-    }
-  ]
+  "tracks": [ ... ]
 }
 ```
 
-:::info
+Any track opened in the default session must also be defined in the top-level
+`tracks` array (or by the assembly), so the session can resolve it by `trackId`.
+A session that references a track missing from the config will fail to open that
+track.
 
 To configure sessions via URL, see [URL parameters](/docs/urlparams).
 
-:::
+## See also
+
+- [Intro to the config.json format](/docs/config_guides/intro), where
+  `defaultSession` sits alongside `assemblies` and `tracks`
+- [URL parameters](/docs/urlparams), passing a session via the URL instead of
+  baking one into `config.json`
+- [Deploying JBrowse Web](/docs/config_guides/deploying), scripting the config
+  (and its default session) in a pipeline

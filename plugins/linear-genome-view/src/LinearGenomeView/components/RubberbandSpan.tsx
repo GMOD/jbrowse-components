@@ -1,10 +1,9 @@
 import { useState } from 'react'
 
+import RubberbandTooltip from '@jbrowse/core/ui/RubberbandTooltip'
 import { getBpDisplayStr, stringify } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha } from '@mui/material'
-
-import RubberbandTooltip from './RubberbandTooltip.tsx'
 
 const useStyles = makeStyles()(theme => {
   const { tertiary } = theme.palette
@@ -50,7 +49,10 @@ export default function RubberbandSpan({
   sticky?: boolean
 }) {
   const { classes } = useStyles()
-  const [anchorEl, setAnchorEl] = useState<HTMLSpanElement | null>(null)
+  // anchor the left/right bp tooltips to the full-width span itself so they
+  // align to its edges and show even when there's no bp-count label inside
+  // (e.g. the overview rubberband passes no numOfBpSelected)
+  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null)
 
   return (
     <>
@@ -70,11 +72,11 @@ export default function RubberbandSpan({
       ) : null}
       <div
         className={classes.rubberband}
+        ref={setAnchorEl}
         style={{ transform: `translateX(${left}px)`, width }}
       >
         {numOfBpSelected ? (
           <Typography
-            ref={setAnchorEl}
             variant="h6"
             className={classes.rubberbandText}
             style={{

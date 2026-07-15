@@ -1,112 +1,96 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
+import type React from 'react'
 
-import { useEvent } from './useEvent.ts'
 import { cx, makeStyles } from '../util/tss-react/index.ts'
+import { usePointerDrag } from '../util/usePointerDrag.ts'
 
 const useStyles = makeStyles()(theme => ({
   horizontalHandle: {
     cursor: 'row-resize',
     width: '100%',
-    '&:hover': { background: theme.palette.divider },
+    // stop the browser turning a touch-drag into a scroll/pan gesture so the
+    // pointer stream reaches us
+    touchAction: 'none',
+    '&:hover': { background: theme.palette.action.selected },
   },
   verticalHandle: {
     cursor: 'col-resize',
     height: '100%',
-    '&:hover': { background: theme.palette.divider },
+    touchAction: 'none',
+    '&:hover': { background: theme.palette.action.selected },
   },
-  flexbox_verticalHandle: {
-    cursor: 'col-resize',
-    alignSelf: 'stretch', // the height: 100% is actually unable to function inside flexbox
-    '&:hover': { background: theme.palette.divider },
-  },
-  flexbox_horizontalHandle: {
-    cursor: 'row-resize',
-    alignSelf: 'stretch', // similar to above
-    '&:hover': { background: theme.palette.divider },
-  },
+  // `bar` opt-in: the standard always-visible resize divider used at the bottom
+  // (or side) of views and tracks. Other call sites stay invisible until hover.
+  horizontalBar: { height: 4, background: theme.palette.action.disabled },
+  verticalBar: { width: 4, background: theme.palette.action.disabled },
 }))
 
 function ResizeHandle({
   onDrag,
+  onDragStart,
+  onDragEnd,
   vertical = false,
-  flexbox = false,
+  bar = false,
   className: originalClassName,
-  onMouseDown,
+  onPointerDown,
   ...props
 }: {
-  onDrag: (
-    lastFrameDistance: number,
-    totalDistance: number,
-  ) => number | undefined
-  onMouseDown?: (event: React.MouseEvent) => void
+  onDrag: (distance: number) => void
+  onDragStart?: () => void
+  onDragEnd?: () => void
   vertical?: boolean
-  flexbox?: boolean
-  className?: string
-  [props: string]: unknown
-}) {
-  const [mouseDragging, setMouseDragging] = useState(false)
-  const initialPosition = useRef(0)
-  const prevPos = useRef(0)
+  bar?: boolean
+} & Omit<
+  React.ComponentPropsWithoutRef<'div'>,
+  'onDrag' | 'onDragStart' | 'onDragEnd'
+>) {
   const { classes } = useStyles()
-  const onDragStable = useEvent(onDrag)
+  const prevPosRef = useRef(0)
+  const latestPosRef = useRef(0)
+  const scheduledRef = useRef(false)
 
-  const getPos = useCallback(
-    (event: MouseEvent | React.MouseEvent) =>
-      vertical ? event.clientX : event.clientY,
-    [vertical],
-  )
+  const getPos = (event: React.PointerEvent) =>
+    vertical ? event.clientX : event.clientY
 
-  useEffect(() => {
-    if (!mouseDragging) {
-      return
-    }
-
-    function mouseMove(event: MouseEvent) {
-      event.preventDefault()
+  const handlers = usePointerDrag({
+    onDragStart: event => {
       const pos = getPos(event)
-      const totalDistance = initialPosition.current - pos
-      const lastFrameDistance = pos - prevPos.current
-      prevPos.current = pos
-      onDragStable(lastFrameDistance, totalDistance)
-    }
-
-    function mouseUp() {
-      setMouseDragging(false)
-    }
-
-    window.addEventListener('mousemove', mouseMove, true)
-    window.addEventListener('mouseup', mouseUp, true)
-    return () => {
-      window.removeEventListener('mousemove', mouseMove, true)
-      window.removeEventListener('mouseup', mouseUp, true)
-    }
-  }, [mouseDragging, onDragStable, getPos])
-
-  const handleMouseDown = useCallback(
-    (event: React.MouseEvent) => {
-      event.preventDefault()
-      const pos = getPos(event)
-      initialPosition.current = pos
-      prevPos.current = pos
-      setMouseDragging(true)
-      onMouseDown?.(event)
+      prevPosRef.current = pos
+      latestPosRef.current = pos
+      onDragStart?.()
     },
-    [getPos, onMouseDown],
-  )
-
-  const className = flexbox
-    ? vertical
-      ? classes.flexbox_verticalHandle
-      : classes.flexbox_horizontalHandle
-    : vertical
-      ? classes.verticalHandle
-      : classes.horizontalHandle
+    onDrag: event => {
+      event.preventDefault()
+      // snapshot the position synchronously — the deferred rAF callback runs
+      // after React has nulled the event, so read it now
+      latestPosRef.current = getPos(event)
+      if (!scheduledRef.current) {
+        scheduledRef.current = true
+        requestAnimationFrame(() => {
+          const distance = latestPosRef.current - prevPosRef.current
+          prevPosRef.current = latestPosRef.current
+          onDrag(distance)
+          scheduledRef.current = false
+        })
+      }
+    },
+    onDragEnd: () => onDragEnd?.(),
+  })
 
   return (
     <div
       data-resizer="true"
-      onMouseDown={handleMouseDown}
-      className={cx(originalClassName, className)}
+      className={cx(
+        originalClassName,
+        vertical ? classes.verticalHandle : classes.horizontalHandle,
+        bar && (vertical ? classes.verticalBar : classes.horizontalBar),
+      )}
+      {...handlers}
+      onPointerDown={event => {
+        event.preventDefault()
+        handlers.onPointerDown(event)
+        onPointerDown?.(event)
+      }}
       {...props}
     />
   )

@@ -1,19 +1,18 @@
-import { useEffect, useState } from 'react'
+import { Suspense } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import {
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Radio,
-  RadioGroup,
-} from '@mui/material'
+  ImportFormOpenCustomTrack,
+  ImportFormSyntenyChoiceRadioGroup,
+  useImportFormSyntenyChoice,
+} from '@jbrowse/synteny-core'
+import { CircularProgress } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack.tsx'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector.tsx'
 
 import type { DotplotViewModel } from '../../model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export interface DotplotImportFormSyntenyOption {
   value: string
@@ -25,86 +24,79 @@ export interface DotplotImportFormSyntenyOption {
   }>
 }
 
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'DotplotView-ImportFormSyntenyOptions': {
+      args: DotplotImportFormSyntenyOption[]
+      result: DotplotImportFormSyntenyOption[]
+      props: { model: DotplotViewModel; assembly1: string; assembly2: string }
+    }
+  }
+}
+
 const TrackSelector = observer(function TrackSelector({
-  assembly1,
-  assembly2,
   model,
+  assemblyX,
+  assemblyY,
+  syntenyTracks,
 }: {
   model: DotplotViewModel
-  assembly1: string
-  assembly2: string
+  assemblyX: string
+  assemblyY: string
+  syntenyTracks: AnyConfigurationModel[]
 }) {
   const { pluginManager } = getEnv(model)
-  const [choice, setChoice] = useState('tracklist')
+
+  // extension-point and core components use the public assembly1/assembly2
+  // (y-axis/x-axis) prop names
+  const assembly1 = assemblyY
+  const assembly2 = assemblyX
+
+  const { choice, setChoice } = useImportFormSyntenyChoice(model, 0)
 
   const customOptions = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint DotplotView-ImportFormSyntenyOptions | sync | Add options to the dotplot view import form */
     'DotplotView-ImportFormSyntenyOptions',
-    [] as DotplotImportFormSyntenyOption[],
+    [],
     { model, assembly1, assembly2 },
-  ) as DotplotImportFormSyntenyOption[]
+  )
 
   const selectedCustomOption = customOptions.find(opt => opt.value === choice)
 
-  useEffect(() => {
-    if (choice === 'none') {
-      model.setImportFormSyntenyTrack(0, { type: 'none' })
-    }
-  }, [model, choice])
   return (
     <>
-      <FormControl>
-        <FormLabel id="group-label">
-          (Optional) Select or add a synteny track
-        </FormLabel>
-        <RadioGroup
-          row
-          value={choice}
-          onChange={event => {
-            setChoice(event.target.value)
-          }}
-          aria-labelledby="group-label"
-        >
-          <FormControlLabel value="none" control={<Radio />} label="None" />
-          <FormControlLabel
-            value="tracklist"
-            control={<Radio />}
-            label="Existing track"
-          />
-          <FormControlLabel
-            value="custom"
-            control={<Radio />}
-            label="New track"
-          />
-          {customOptions.map(opt => (
-            <FormControlLabel
-              key={opt.value}
-              value={opt.value}
-              control={<Radio />}
-              label={opt.label}
-            />
-          ))}
-        </RadioGroup>
-      </FormControl>
+      <ImportFormSyntenyChoiceRadioGroup
+        choice={choice}
+        onChange={setChoice}
+        customOptions={customOptions}
+        label="(Optional) Select or add a synteny track"
+      />
       {choice === 'custom' ? (
-        <ImportSyntenyOpenCustomTrack
+        <ImportFormOpenCustomTrack
+          key={`${assembly1}-${assembly2}`}
           model={model}
-          assembly2={assembly2}
+          rowIndex={0}
+          extensionPoint="DotplotView-SyntenyFileFormats"
           assembly1={assembly1}
+          assembly2={assembly2}
         />
       ) : null}
       {choice === 'tracklist' ? (
         <ImportSyntenyTrackSelector
           model={model}
-          assembly1={assembly1}
-          assembly2={assembly2}
+          assemblyX={assemblyX}
+          assemblyY={assemblyY}
+          syntenyTracks={syntenyTracks}
         />
       ) : null}
       {selectedCustomOption ? (
-        <selectedCustomOption.ReactComponent
-          model={model}
-          assembly1={assembly1}
-          assembly2={assembly2}
-        />
+        <Suspense fallback={<CircularProgress size={20} />}>
+          <selectedCustomOption.ReactComponent
+            model={model}
+            assembly1={assembly1}
+            assembly2={assembly2}
+          />
+        </Suspense>
       ) : null}
     </>
   )

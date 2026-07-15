@@ -1,26 +1,55 @@
 import { useState } from 'react'
+import type { ComponentType } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { Dialog, PluggableComponent } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import {
-  Button,
-  Checkbox,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-  FormGroup,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import CrisprGuidePanel from './CrisprGuidePanel.tsx'
+import MotifListPanel from './MotifListPanel.tsx'
+import SequencePatternPanel from './SequencePatternPanel.tsx'
+
+import type { SequenceSearchModeProps } from './searchModes.ts'
+
 const useStyles = makeStyles()({
-  dialogContent: {
-    width: '40em',
+  modeBar: {
+    padding: '12px 24px 0',
   },
 })
+
+// Each mode's panel is rendered through PluggableComponent under its own
+// extension-point name, so a plugin can fully replace a built-in panel (e.g.
+// swap in its own CRISPR guide designer) by registering on that name — the same
+// single-component replacement pattern as Core-replaceWidget.
+interface SearchMode {
+  id: string
+  label: string
+  extensionPoint: string
+  ReactComponent: ComponentType<SequenceSearchModeProps>
+}
+
+const MODES: SearchMode[] = [
+  {
+    id: 'pattern',
+    label: 'Sequence pattern',
+    extensionPoint: 'LinearGenomeView-sequenceSearchPanel',
+    ReactComponent: SequencePatternPanel,
+  },
+  {
+    id: 'crispr',
+    label: 'CRISPR guide RNAs',
+    extensionPoint: 'LinearGenomeView-crisprGuidePanel',
+    ReactComponent: CrisprGuidePanel,
+  },
+  {
+    id: 'motifs',
+    label: 'Motif list',
+    extensionPoint: 'LinearGenomeView-motifListPanel',
+    ReactComponent: MotifListPanel,
+  },
+]
 
 const SequenceSearchDialog = observer(function SequenceSearchDialog({
   model,
@@ -33,118 +62,37 @@ const SequenceSearchDialog = observer(function SequenceSearchDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const [value, setValue] = useState('')
-  const [searchForward, setSearchForward] = useState(true)
-  const [searchReverse, setSearchReverse] = useState(true)
-  const [caseInsensitive, setCaseInsensitive] = useState(true)
-
-  let error: unknown
-
-  try {
-    new RegExp(value)
-  } catch (e) {
-    error = e
-  }
+  const { pluginManager } = getEnv(model)
+  const [modeId, setModeId] = useState(MODES[0]!.id)
+  const active = MODES.find(m => m.id === modeId) ?? MODES[0]!
 
   return (
     <Dialog maxWidth="xl" open onClose={handleClose} title="Sequence search">
-      <DialogContent className={classes.dialogContent}>
-        <Typography>
-          Supply a sequence to search for. A track will be created with the
-          resulting matches once submitted. You can also supply regex style
-          expressions e.g. AACT(C|T).
-        </Typography>
-        <TextField
-          value={value}
-          onChange={e => {
-            setValue(e.target.value)
-          }}
-          label="Sequence search pattern"
-        />
-        <FormGroup>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={searchForward}
-                onChange={event => {
-                  setSearchForward(event.target.checked)
-                }}
-              />
-            }
-            label="Search forward strand"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={searchReverse}
-                onChange={event => {
-                  setSearchReverse(event.target.checked)
-                }}
-              />
-            }
-            label="Search reverse strand"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={caseInsensitive}
-                onChange={event => {
-                  setCaseInsensitive(event.target.checked)
-                }}
-              />
-            }
-            label="Case insensitive"
-          />
-        </FormGroup>
-        {error ? <Typography color="error">{`${error}`}</Typography> : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
+      <div className={classes.modeBar}>
+        <ToggleButtonGroup
+          exclusive
+          fullWidth
+          size="small"
+          value={active.id}
+          onChange={(_event, value) => {
             if (value) {
-              const trackId = `sequence_search_${Date.now()}`
-              const session = getSession(model)
-              const { assemblyManager } = session
-              const assemblyName = model.assemblyNames[0]!
-              if (isSessionWithAddTracks(session)) {
-                session.addTrackConf({
-                  trackId,
-                  name: `Sequence search ${value}`,
-                  assemblyNames: [assemblyName],
-                  type: 'FeatureTrack',
-                  adapter: {
-                    type: 'SequenceSearchAdapter',
-                    search: value,
-                    searchForward,
-                    searchReverse,
-                    caseInsensitive,
-                    sequenceAdapter: getSnapshot(
-                      assemblyManager.get(assemblyName)?.configuration.sequence
-                        .adapter,
-                    ),
-                  },
-                })
-                model.showTrack(trackId)
-              }
+              setModeId(value)
             }
-            handleClose()
           }}
-          variant="contained"
-          color="primary"
         >
-          Submit
-        </Button>
-
-        <Button
-          onClick={() => {
-            handleClose()
-          }}
-          variant="contained"
-          color="secondary"
-        >
-          Cancel
-        </Button>
-      </DialogActions>
+          {MODES.map(m => (
+            <ToggleButton key={m.id} value={m.id}>
+              {m.label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+      </div>
+      <PluggableComponent
+        pluginManager={pluginManager}
+        name={active.extensionPoint}
+        component={active.ReactComponent}
+        props={{ model, handleClose }}
+      />
     </Dialog>
   )
 })

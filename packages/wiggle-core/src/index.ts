@@ -1,5 +1,6 @@
-export { getNiceDomain, getOrigin, getScale } from './scale.ts'
+export { getNiceDomain, getNiceScale, getOrigin, getScale } from './scale.ts'
 export type { ScaleOpts } from './scale.ts'
+export { toP } from './formatNumber.ts'
 
 export {
   SCALE_TYPE_LINEAR,
@@ -9,12 +10,18 @@ export {
 } from './normalize.ts'
 export type { WiggleScaleType } from './normalize.ts'
 
-export { computeAutoscaleDomain, domainFromStats } from './autoscale.ts'
+export {
+  computeAutoscaleDomain,
+  domainFromStats,
+  getEffectiveScores,
+} from './autoscale.ts'
 export type { Dataset, FeatureArrays, ScoreStats } from './autoscale.ts'
 
 export const YSCALEBAR_LABEL_OFFSET = 5
 
 export { computeYTicks } from './computeYTicks.ts'
+
+export { resolveRenderState } from './resolveRenderState.ts'
 
 export interface YScaleTicks {
   items: { value: number; y: number; label?: string }[]
@@ -22,16 +29,34 @@ export interface YScaleTicks {
   yBottom: number
 }
 
-export { default as CrossHatches } from './CrossHatches.tsx'
+export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
+export { makeRadioSubMenu } from './radioSubMenu.ts'
+export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
+export { makeScatterPointSizeMenuItem, makeSizeMenu } from './pointSizeMenu.tsx'
+export {
+  SMALL_POINT_MAX_DIAMETER_PX,
+  appendPointMarker,
+} from './pointMarker.ts'
 export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'
+
+export {
+  DEFAULT_AUTOSCALE_OPTIONS,
+  makeAutoscaleTypeSubMenu,
+  makeCrossHatchItem,
+  makeScaleTypeSubMenu,
+  makeScoreSubMenu,
+  makeSetMinMaxScoreItem,
+} from './scoreMenuItems.ts'
+export type { ScoreScaleModel } from './scoreMenuItems.ts'
 export { default as YScaleBar } from './YScaleBar.tsx'
+export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
 
 export type {
   SourceRenderData,
-  WiggleBackend,
   WiggleGPURenderState,
+  WiggleRenderingBackend,
   WiggleRenderingType,
-} from './backendTypes.ts'
+} from './renderingBackendTypes.ts'
 
 export type {
   SourceInfo,
@@ -40,4 +65,6 @@ export type {
   WiggleSourceData,
 } from './dataTypes.ts'
 
-export type { WiggleGpuDisplayModel } from './displayModel.ts'
+export { type WiggleGpuDisplayModel } from './displayModel.ts'
+
+export { collectWiggleTransferables } from './transferables.ts'

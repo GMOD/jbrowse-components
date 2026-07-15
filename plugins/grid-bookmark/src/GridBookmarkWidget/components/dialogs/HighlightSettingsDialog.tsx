@@ -1,4 +1,5 @@
 import { Dialog } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import {
   Button,
   DialogActions,
@@ -18,33 +19,26 @@ const HighlightSettingsDialog = observer(function HighlightSettingsDialog({
   onClose: () => void
   model: GridBookmarkModel
 }) {
+  const session = getSession(model)
   return (
-    <Dialog open onClose={onClose} title="Highlight bookmarks">
+    <Dialog open onClose={onClose} title="Settings">
       <DialogContent>
-        <Typography variant="h6">Highlight toggles</Typography>
+        <Typography sx={{ mb: 2 }}>
+          <b>Bookmarks</b> are saved regions stored in your browser (via
+          localStorage), listed in this widget, and can be exported and
+          imported. <b>Highlights</b> are temporary colored regions that live in
+          the current session only; they are not persisted and disappear when
+          the session is closed unless converted to a bookmark.
+        </Typography>
         <Stack direction="row" sx={{ alignItems: 'center' }}>
           <Switch
             data-testid="toggle_highlight_all_switch"
-            checked={model.areBookmarksHighlightedOnAllOpenViews}
+            checked={session.highlightsVisible}
             onChange={() => {
-              model.setBookmarkHighlightsVisible(
-                !model.areBookmarksHighlightedOnAllOpenViews,
-              )
+              session.setHighlightsVisible(!session.highlightsVisible)
             }}
           />
-          <Typography>Toggle bookmark highlights on all open views</Typography>
-        </Stack>
-        <Stack direction="row" sx={{ alignItems: 'center' }}>
-          <Switch
-            data-testid="toggle_highlight_label_all_switch"
-            checked={model.areBookmarksHighlightLabelsOnAllOpenViews}
-            onChange={() => {
-              model.setBookmarkLabelsVisible(
-                !model.areBookmarksHighlightLabelsOnAllOpenViews,
-              )
-            }}
-          />
-          <Typography>Toggle 'bookmark' icon on LGV tracks</Typography>
+          <Typography>Show highlights on views</Typography>
         </Stack>
       </DialogContent>
       <DialogActions>

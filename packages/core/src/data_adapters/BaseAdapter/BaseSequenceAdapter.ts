@@ -1,18 +1,19 @@
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
-
 import { BaseFeatureDataAdapter } from './BaseFeatureDataAdapter.ts'
 
 import type { BaseOptions } from './types.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { NoAssemblyRegion } from '../../util/index.ts'
 import type { RegionsAdapter } from '../BaseAdapter/index.ts'
 
-export abstract class BaseSequenceAdapter
-  extends BaseFeatureDataAdapter
+export abstract class BaseSequenceAdapter<
+  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+>
+  extends BaseFeatureDataAdapter<CONF>
   implements RegionsAdapter
 {
+  // a sequence track renders the reference at any zoom and is never too large
   async getMultiRegionFeatureDensityStats() {
-    return { featureDensity: 0 }
+    return { alwaysRender: true }
   }
 
   /**
@@ -27,8 +28,9 @@ export abstract class BaseSequenceAdapter
    * @returns The sequence string for the region
    */
   async getSequence(region: NoAssemblyRegion, opts?: BaseOptions) {
-    const features = await firstValueFrom(
-      this.getFeatures({ ...region, assemblyName: '' }, opts).pipe(toArray()),
+    const features = await this.getFeaturesArray(
+      { ...region, assemblyName: '' },
+      opts,
     )
     return features[0]?.get('seq') as string | undefined
   }

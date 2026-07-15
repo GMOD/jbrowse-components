@@ -1,19 +1,58 @@
 ---
-import BaseLayout from './BaseLayout.astro'
+import SidebarLayout from './SidebarLayout.astro'
+import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import page from '../styles/page.module.css'
+
 import type { MarkdownLayoutProps } from 'astro'
 
-type Props = MarkdownLayoutProps<{ title?: string }>
+type Props = MarkdownLayoutProps<{ title?: string; description?: string }>
 const { frontmatter } = Astro.props
+
+// Highlight the sidebar entry for this page (e.g. /jb2/features/ -> "features").
+const segments = Astro.url.pathname.split('/').filter(Boolean)
+const currentSlug = segments.at(-1) ?? ''
 ---
 
-<BaseLayout title={frontmatter.title}>
-  <div class:list={[page.content, 'md']}>
-    <slot />
+<SidebarLayout
+  title={frontmatter.title ?? 'JBrowse'}
+  description={frontmatter.description}
+  toggleLabel="Explore"
+  navLabel="Site navigation"
+>
+  <DocsSidebarNav slot="nav" currentSlug={currentSlug} />
+  <div class="showcase-main">
+    <div class:list={[page.content, 'md']}>
+      <slot />
+    </div>
   </div>
-</BaseLayout>
+</SidebarLayout>
 
 <style>
+  .showcase-main {
+    flex: 1;
+    min-width: 0;
+  }
+  /* Match the heading treatment the other content pages (plugin_store, gallery,
+     demos) style by hand, so markdown headings don't render as UA-default bold
+     and read as a different font. */
+  .md :global(h1) {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+  }
+  .md :global(h2) {
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin: 2.5rem 0 1rem;
+    scroll-margin-top: 5rem;
+  }
+  .md :global(h3) {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 1.75rem 0 0.5rem;
+  }
   .md :global(img) {
     max-width: 100%;
     height: auto;
@@ -28,12 +67,16 @@ const { frontmatter } = Astro.props
   }
   .md :global(th),
   .md :global(td) {
-    border: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
     padding: 0.5rem 0.75rem;
     text-align: left;
   }
   .md :global(th) {
-    background: var(--color-surface);
+    border-bottom: 2px solid var(--color-border);
+    font-weight: 600;
+  }
+  .md :global(tr:nth-child(even)) {
+    background: var(--color-table-stripe);
   }
   .md :global(hr) {
     margin: 2rem 0;

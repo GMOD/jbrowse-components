@@ -1,37 +1,41 @@
 export type Entry = [string, string[]]
 
+// A `-`-prefixed token opens a new entry; the values that follow accumulate
+// onto it until the next flag. `--key=value` is equivalent to `--key value`: the
+// inline value seeds the entry, so `--width=1000` no longer silently becomes an
+// unknown `width=1000` option.
 export function parseArgv(rawArgv: string[]) {
-  const map: Entry[] = []
-  let argv = rawArgv
-  while (argv.length) {
-    const val = argv[0]!.slice(2)
-    argv = argv.slice(1)
-    const next = argv.findIndex(arg => arg.startsWith('-'))
-
-    if (next !== -1) {
-      map.push([val, argv.slice(0, next)])
-      argv = argv.slice(next)
+  const entries: Entry[] = []
+  let current: string[] | undefined
+  for (const arg of rawArgv) {
+    if (arg.startsWith('-')) {
+      const eq = arg.indexOf('=')
+      current = []
+      if (eq === -1) {
+        entries.push([arg.slice(2), current])
+      } else {
+        entries.push([arg.slice(2, eq), current])
+        current.push(arg.slice(eq + 1))
+      }
     } else {
-      map.push([val, argv])
-      break
+      current?.push(arg)
     }
   }
-  return map
+  return entries
 }
 
-export function standardizeArgv(args: Entry[], trackTypes: string[]) {
-  const result = { trackList: [] } as {
-    trackList: Entry[]
-    out?: string
-    pngwidth?: string
-    [key: string]: unknown
-  }
-  for (const arg of args) {
-    if (trackTypes.includes(arg[0])) {
-      result.trackList.push(arg)
+export function standardizeArgv(
+  args: Entry[],
+  trackTypes: string[],
+): { trackList: Entry[]; [key: string]: unknown } {
+  const trackList: Entry[] = []
+  const rest: Record<string, unknown> = {}
+  for (const [key, vals] of args) {
+    if (trackTypes.includes(key)) {
+      trackList.push([key, vals])
     } else {
-      result[arg[0]] = arg[1][0] || true
+      rest[key] = vals[0] ?? true
     }
   }
-  return result
+  return { trackList, ...rest }
 }

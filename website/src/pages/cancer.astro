@@ -1,32 +1,36 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import page from '../styles/page.module.css'
+import { baseUrl } from '../lib/base-url.ts'
 import btn from '../styles/button.module.css'
+import page from '../styles/page.module.css'
 ---
 
-<BaseLayout title="JBrowse 2 Cancer Resources">
-  <div class={page.content}>
-    <div class="hero">
-      <h1>JBrowse 2 Cancer Resources</h1>
-      <p class="subtitle">
-        A hub of tutorials, plugins, and information regarding cancer data and
-        JBrowse 2
-      </p>
-      <a
-        class:list={[btn.btn, btn.btnPrimary]}
-        href="https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Browse a cancer annotations demo
-      </a>
-    </div>
+<BaseLayout
+  title="JBrowse 2 Cancer Resources"
+  description="A hub of tutorials, plugins, and information for visualizing cancer genomics data — somatic structural variants, cancer cell line demos, and more — in JBrowse 2."
+>
+  <div class="hero">
+    <h1>JBrowse 2 Cancer Resources</h1>
+    <p class="subtitle">
+      A hub of tutorials, plugins, and information regarding cancer data and
+      JBrowse 2
+    </p>
+    <a
+      class:list={[btn.btn, btn.btnPrimary]}
+      href="https://jbrowse.org/code/jb2/main/?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Browse a cancer annotations demo
+    </a>
+  </div>
 
+  <div class={page.content}>
     <h2>JBrowse 2 plugins for cancer annotation datasets</h2>
     <p>
       This is a hub of plugins that provide JBrowse 2 access to
-      cancer-associated annotation datasets. Visit the <a href="/plugin_store"
-        >Plugin Store</a
+      cancer-associated annotation datasets. Visit the <a
+        href={`${baseUrl}/plugin_store/`}>Plugin Store</a
       > for the full list of available plugins.
     </p>
 
@@ -37,7 +41,7 @@ import btn from '../styles/button.module.css'
         target="_blank"
         rel="noopener noreferrer">Make a request</a
       >
-      for a new plugin, or <a href="/docs/developer_guide"
+      for a new plugin, or <a href={`${baseUrl}/docs/developer_guide/`}
         >design your own plugin</a
       >.
     </p>
@@ -49,7 +53,6 @@ import btn from '../styles/button.module.css'
     background: #135560;
     color: #fff;
     padding: 3rem 2rem;
-    margin: -2rem -2rem 2rem;
     text-align: center;
   }
   h1 {

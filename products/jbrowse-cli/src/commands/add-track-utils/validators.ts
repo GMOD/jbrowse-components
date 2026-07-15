@@ -1,9 +1,22 @@
-import fs from 'fs'
-import path from 'path'
-
 import { isURL } from '../../types/common.ts'
+import { parseCommaSeparatedString } from '../../utils.ts'
 
 import type { Config } from '../../base.ts'
+
+export function parseJsonFlag(
+  value: string,
+  flagName: string,
+): Record<string, unknown> {
+  try {
+    return JSON.parse(value) as Record<string, unknown>
+  } catch {
+    throw new Error(`${flagName} is not valid JSON: ${value}`)
+  }
+}
+
+export function parseConfigFlag(config: string): Record<string, unknown> {
+  return parseJsonFlag(config, '--config')
+}
 
 export function validateLoadOption(load?: string): void {
   if (load && !['copy', 'symlink', 'move', 'inPlace'].includes(load)) {
@@ -11,7 +24,7 @@ export function validateLoadOption(load?: string): void {
   }
 }
 
-export function validateTrackArg(track?: string): void {
+export function validateTrackArg(track?: string): asserts track is string {
   if (!track) {
     throw new Error(
       'Missing 1 required arg:\ntrack  Track file or URL\nSee more help with --help',
@@ -56,11 +69,25 @@ export function validateAssemblies(
   }
 }
 
-export function createTargetDirectory(
-  configDir: string,
-  subDir?: string,
+// warn (don't throw) when a --assemblyNames entry matches no assembly in the
+// config: a typo or reversed query,target usually means this, but referencing an
+// assembly to be added later is legitimate, so it stays a soft warning
+export function warnUnknownAssemblyNames(
+  configContents: Config,
+  assemblyNames: string,
 ): void {
-  if (subDir) {
-    fs.mkdirSync(path.join(configDir, subDir), { recursive: true })
+  const known = new Set(
+    configContents.assemblies?.flatMap(a => [a.name, ...(a.aliases ?? [])]) ??
+      [],
+  )
+  const missing = parseCommaSeparatedString(assemblyNames).filter(
+    name => !known.has(name),
+  )
+  if (missing.length) {
+    console.warn(
+      `Warning: assembly name(s) not found in config: ${missing.join(', ')}. ` +
+        `Available: ${[...known].join(', ')}. ` +
+        'Check for a typo or reversed query,target order; the track will not display until a matching assembly exists.',
+    )
   }
 }

@@ -4,6 +4,10 @@ import {
   generateBedMethylFeature,
   isBedMethylFeature,
 } from './generateBedMethylFeature.ts'
+import {
+  generateRastairMethylFeature,
+  isRastairMethylFeature,
+} from './generateRastairMethylFeature.ts'
 import { parseRepeatMaskerDescription } from './generateRepeatMaskerFeature.ts'
 import {
   generateUcscTranscript,
@@ -12,6 +16,7 @@ import {
 
 import type { MinimalFeature } from './types.ts'
 import type BED from '@gmod/bed'
+import type { StatusCallback } from '@jbrowse/core/util'
 
 interface BedData {
   strand?: string | number
@@ -45,7 +50,7 @@ export interface FeatureData {
 // data lines by the first tab-separated column (refName).
 export function bucketBedLines(
   buffer: Uint8Array,
-  statusCallback?: (s: string) => void,
+  statusCallback?: StatusCallback,
 ) {
   const features: Record<string, string[]> = {}
   const headerLines: string[] = []
@@ -54,11 +59,12 @@ export function bucketBedLines(
     line => {
       if (line.startsWith('#')) {
         headerLines.push(line)
-      } else {
+      } else if (!line.startsWith('track') && !line.startsWith('browser')) {
+        // 'track'/'browser' are UCSC directive lines, not data (matches
+        // filterBedHeaderLines in spreadsheet-view)
         const tab = line.indexOf('\t')
-        const refName = line.slice(0, tab)
-        features[refName] ??= []
-        features[refName].push(line)
+        const refName = tab === -1 ? line : line.slice(0, tab)
+        ;(features[refName] ??= []).push(line)
       }
       return true
     },
@@ -71,7 +77,10 @@ function defaultParser(fields: string[], splitLine: string[]): BedData {
   const obj: Record<string, string> = {}
   for (const [i, element] of splitLine.entries()) {
     const field = fields[i]
-    if (field) {
+    // '.' is BED's "missing" marker; skip it so this path matches @gmod/bed's
+    // parseLine (which leaves such columns unset) instead of storing a literal
+    // '.' that later coerces to NaN
+    if (field && element !== '.') {
       obj[field] = element
     }
   }
@@ -86,6 +95,8 @@ function defaultParser(fields: string[], splitLine: string[]): BedData {
       thickEnd,
       thickStart,
       blockSizes,
+      exonFrames,
+      _exonFrames,
       ...rest
     } = obj
     return {
@@ -93,6 +104,10 @@ function defaultParser(fields: string[], splitLine: string[]): BedData {
       blockStarts: arrayify(blockStarts),
       chromStarts: arrayify(chromStarts),
       blockSizes: arrayify(blockSizes),
+      // exonFrames is int[blockCount] like the block lists; generateUcscTranscript
+      // reads it (or its _exonFrames alias) as number[] to derive CDS phases
+      exonFrames: arrayify(exonFrames),
+      _exonFrames: arrayify(_exonFrames),
       thickStart: thickStart ? +thickStart : undefined,
       thickEnd: thickEnd ? +thickEnd : undefined,
       blockCount: blockCount ? +blockCount : undefined,
@@ -147,6 +162,48 @@ export function parseNamesFromHeader(header: string) {
     : undefined
 }
 
+// shared by BedAdapter/BedpeAdapter's getNames(): explicit columnNames config
+// wins, else fall back to parsing the file's own header line
+export async function resolveColumnNames(
+  columnNames: string[],
+  getHeader: () => Promise<string>,
+) {
+  if (columnNames.length) {
+    return columnNames
+  }
+  return parseNamesFromHeader(await getHeader())
+}
+
+// Decode a BED line's locus (0-based half-open) from its column layout, so the
+// off-by-one rules live in one place instead of being re-derived at each call
+// site. `oneBased` shifts a 1-based-closed start back a base. `hasEndColumn`
+// false (tabix `-b` with no `-e`, e.g. point/GWAS data) means width-1 features.
+// A start/end column collision in a 0-based file is also a point feature (+1).
+export function bedFeatureLocus({
+  splitLine,
+  colRef,
+  colStart,
+  colEnd,
+  oneBased = false,
+  hasEndColumn = true,
+}: {
+  splitLine: string[]
+  colRef: number
+  colStart: number
+  colEnd: number
+  oneBased?: boolean
+  hasEndColumn?: boolean
+}) {
+  const start = +splitLine[colStart]! - (oneBased ? 1 : 0)
+  return {
+    refName: splitLine[colRef]!,
+    start,
+    end: hasEndColumn
+      ? +splitLine[colEnd]! + (colStart === colEnd && !oneBased ? 1 : 0)
+      : start + 1,
+  }
+}
+
 export function parseStrand(strand: string | number | undefined): number {
   if (strand === '-' || strand === -1) {
     return -1
@@ -158,7 +215,11 @@ export function parseStrand(strand: string | number | undefined): number {
 }
 
 export function arrayify(f: string | undefined): number[] | undefined {
-  return f === undefined ? undefined : f.split(',').map(Number)
+  // BED block columns are conventionally comma-terminated ("200,300,200,");
+  // drop the trailing empty so we don't emit a trailing NaN
+  return f === undefined
+    ? undefined
+    : f.replace(/,$/, '').split(',').map(Number)
 }
 
 export function featureData({
@@ -193,6 +254,18 @@ export function featureData({
     })
   }
 
+  // rastair methylation is identified by its header column names
+  if (names !== undefined && isRastairMethylFeature(names)) {
+    return generateRastairMethylFeature({
+      splitLine,
+      names,
+      uniqueId,
+      refName,
+      start,
+      end,
+    })
+  }
+
   const data: BedData = names
     ? defaultParser(names, splitLine)
     : parser.parseLine(splitLine, { uniqueId })
@@ -205,11 +278,8 @@ export function featureData({
     ...rest
   } = data
   const strand = parseStrand(strandRaw)
-  const score = scoreColumn
-    ? Number(data[scoreColumn])
-    : scoreRaw !== undefined
-      ? Number(scoreRaw)
-      : undefined
+  const rawScore = scoreColumn ? data[scoreColumn] : scoreRaw
+  const score = rawScore === undefined ? undefined : Number(rawScore)
 
   const repeat = parseRepeatMaskerDescription(rest.description)
   if (repeat) {
@@ -221,7 +291,6 @@ export function featureData({
       blockCount,
       thickStart,
       thickEnd,
-      subfeatures,
       ...rest2
     } = rest
     return {

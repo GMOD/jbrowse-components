@@ -1,71 +1,37 @@
-import { useMemo } from 'react'
-import type { MouseEvent } from 'react'
-
 import { observer } from 'mobx-react'
 
 import Chord from './Chord.tsx'
 
-import type { AnyRegion, Block } from './types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
+import type { ChordDisplayModel } from './types.ts'
 
 const SVChordsReactComponent = observer(function SVChordsReactComponent({
-  features,
-  config,
-  blockDefinitions,
-  radius,
-  bezierRadius,
-  displayModel,
-  onChordClick,
+  display,
 }: {
-  features: Map<string, Feature>
-  radius: number
-  config: AnyConfigurationModel
-  displayModel: {
-    id: string
-    selectedFeatureId: string | undefined
-  }
-  blockDefinitions: Block[]
-  bezierRadius: number
-  onChordClick: (
-    feature: Feature,
-    reg: AnyRegion,
-    endBlock: AnyRegion,
-    evt: MouseEvent<SVGPathElement>,
-  ) => void
+  display: ChordDisplayModel
 }) {
-  const { selectedFeatureId } = displayModel
-  const blocksForRefsMemo = useMemo(() => {
-    const blocksForRefs: Record<string, Block> = {}
-    for (const block of blockDefinitions) {
-      const regions = block.region.elided
-        ? block.region.regions
-        : [block.region]
-      for (const region of regions) {
-        blocksForRefs[region.refName] = block
-      }
-    }
-    return blocksForRefs
-  }, [blockDefinitions])
-
+  const {
+    features,
+    configuration,
+    blocksForRefs,
+    radiusPx,
+    bezierRadius,
+    selectedFeatureId,
+    onChordClick,
+  } = display
   return (
     <g data-testid="structuralVariantChordRenderer">
-      {[...features.values()].map(feature => {
-        const id = feature.id()
-        const selected = selectedFeatureId === id
-        return (
-          <Chord
-            key={id}
-            feature={feature}
-            config={config}
-            radius={radius}
-            bezierRadius={bezierRadius}
-            blocksForRefs={blocksForRefsMemo}
-            selected={selected}
-            onClick={onChordClick}
-          />
-        )
-      })}
+      {features?.map(feature => (
+        <Chord
+          key={feature.id()}
+          feature={feature}
+          config={configuration}
+          radius={radiusPx}
+          bezierRadius={bezierRadius}
+          blocksForRefs={blocksForRefs}
+          selected={selectedFeatureId === feature.id()}
+          onClick={onChordClick}
+        />
+      ))}
     </g>
   )
 })

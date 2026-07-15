@@ -1,14 +1,14 @@
 ---
-id: theme
 title: Coloring/theming
 description: Customizing the application color theme
 guide_category: Other features
 ---
 
-### Color
+## Color
 
-The color scheme as well as some sizing options can be configured via the theme.
-This is done via a top-level configuration in the config file. For example:
+The color scheme and some sizing options are configured via a top-level `theme`
+in the [`configuration`](/docs/config/jbrowseconfiguration) section of the
+config file. For example:
 
 ```json
 {
@@ -24,14 +24,14 @@ This is done via a top-level configuration in the config file. For example:
 }
 ```
 
-JBrowse uses 4 colors that can be changed. For example, this is the default
-theme:
+JBrowse's palette has 4 customizable colors. Here's the default theme next to a
+theme customized with the palette below:
 
 <Figure src="/img/default_theme.png" caption="Example screenshot showing the default theme"/>
 
 <Figure src="/img/customized_theme.png" caption="Example screenshot showing the customized theme"/>
 
-The customized theme screenshot uses the below configuration:
+The customized theme uses this configuration:
 
 |            | Color code | Color       |
 | ---------- | ---------- | ----------- |
@@ -39,6 +39,10 @@ The customized theme screenshot uses the below configuration:
 | Secondary  | #0097a7    | Cyan        |
 | Tertiary   | #f57c00    | Orange      |
 | Quaternary | #d50000    | Red         |
+
+`tertiary` and `quaternary` are JBrowse extensions to the standard MUI palette
+(which has only `primary`/`secondary`). The rest of the palette behaves as MUI
+documents.
 
 ```json
 {
@@ -63,15 +67,18 @@ The customized theme screenshot uses the below configuration:
 }
 ```
 
-### Extra themes and dark mode
+## Extra themes and dark mode
 
-In v2.4.0 we introduced the ability to add extra themes via the config. In
-jbrowse-web and jbrowse-desktop, these show up in a "Preferences" dialog that
-the user can select from. We also added better support for dark mode themes.
-Adding "mode": "dark" to your theme will use MUI's dark mode
-https://mui.com/material-ui/customization/dark-mode/
+You can add extra themes via the config. In jbrowse-web and jbrowse-desktop,
+these show up in a "Preferences" dialog that the user can select from.
 
-Example
+Dark mode is enabled by adding `"mode": "dark"` inside a theme's `palette`,
+which switches it to
+[MUI's dark mode](https://mui.com/material-ui/customization/dark-mode/). This
+works both on an `extraThemes` entry and on the top-level `theme`, where it
+makes the default theme dark.
+
+Example:
 
 ```json
 {
@@ -79,8 +86,8 @@ Example
     "extraThemes": {
       "myTheme": {
         "name": "My theme",
-        "mode": "dark",
         "palette": {
+          "mode": "dark",
           "primary": {
             "main": "#311b92"
           },
@@ -100,10 +107,10 @@ Example
 }
 ```
 
-### Logo
+## Logo
 
 It is also possible to supply a custom logo to be displayed in the top right
-corner of the app instead of the JBrowse 2 logo. To do this, store a SVG file
+corner of the app instead of the JBrowse 2 logo. To do this, store an SVG file
 containing your logo on your server, and specify the path in your configuration:
 
 ```json
@@ -116,13 +123,12 @@ containing your logo on your server, and specify the path in your configuration:
 }
 ```
 
-The dimensions of the logo should be `150x48px`.
+The built-in logo is 150×48px. A custom logo is shown at its natural size, so
+size your SVG similarly to fit the header.
 
-### Sizing
+## Sizing
 
-You can also change some sizing options by specifying the "typography" (to
-change font size) and "spacing" (to change the amount of space between elements)
-options:
+`typography` and `spacing` adjust font size and the space between elements:
 
 ```json
 {
@@ -135,16 +141,28 @@ options:
 }
 ```
 
-### Advanced
+## Advanced
 
-JBrowse uses Material-UI for its theming. You can read more about Material-UI
-themes [here](https://mui.com/material-ui/customization/theming/). Generally,
-most options that you can pass to Material-UI's
+JBrowse uses Material-UI for its theming (see the
+[developer theming guide](/docs/developer_guides/theming) for the full palette
+and exported color constants). You can read more about Material-UI themes
+[here](https://mui.com/material-ui/customization/theming/). Generally, most
+options that you can pass to Material-UI's
 [`createTheme`](https://mui.com/material-ui/customization/theming/#createtheme-options-args-theme)
 should work in the theme configuration.
 
-Some aspects of the theme, like style override, can accept callback functions
-which is not available via the config, but could be added via a plugin. See
-https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js
-for an example of adding a theme via a plugin. This example also contains
-examples of overriding the 'default' theme from a plugin
+Some aspects of the theme, like style overrides, accept callback functions that
+can't be expressed in the config but can be added via a plugin. See
+[this example plugin](https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js),
+which adds a theme and overrides the 'default' theme from a plugin. See
+[no-build plugin tutorial](/docs/developer_guides/no_build_plugin) for how to
+load a small plugin like this from config.
+
+## See also
+
+- [Theming (developer guide)](/docs/developer_guides/theming), the full palette
+  and the exported color constants for use in plugin code
+- [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration), the
+  `theme`, `extraThemes`, and `logoPath` global slots in the schema reference
+- [Configuring plugins](/docs/config_guides/plugins), loading the small plugin
+  needed for callback-based style overrides

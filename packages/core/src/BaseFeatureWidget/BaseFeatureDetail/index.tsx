@@ -3,7 +3,6 @@ import { observer } from 'mobx-react'
 import FeatureDetails from './FeatureDetails.tsx'
 import { isEmpty } from './util.ts'
 import { ErrorBanner } from '../../ui/index.ts'
-import { replaceUndefinedWithNull } from '../util.tsx'
 
 import type { BaseInputProps } from './types.ts'
 
@@ -12,20 +11,19 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
 }: BaseInputProps) {
   const { error, descriptions, featureData } = model
 
+  // A field is hidden by a formatDetails callback returning undefined (jexl
+  // can't produce null); every detail component filters with `!= null`, so a
+  // field set to undefined (live) or null (round-tripped through a snapshot) is
+  // dropped identically.
   if (error) {
     return <ErrorBanner error={error} />
-  } else if (!featureData) {
+  } else if (!featureData || isEmpty(featureData)) {
     return null
   } else {
-    // replacing undefined with null helps with allowing fields to be hidden,
-    // setting null is not allowed by jexl so we set it to undefined to hide.
-    // see config guide. this replacement happens both here and when
-    // snapshotting the featureData
-    const featureData2 = replaceUndefinedWithNull(featureData)
-    return isEmpty(featureData2) ? null : (
+    return (
       <FeatureDetails
         model={model}
-        feature={featureData2}
+        feature={featureData}
         descriptions={descriptions}
       />
     )

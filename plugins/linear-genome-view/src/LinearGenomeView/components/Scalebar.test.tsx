@@ -1,10 +1,40 @@
-// @ts-expect-error
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { render, waitFor } from '@testing-library/react'
 
 import Scalebar from './Scalebar.tsx'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+// a LinearGenomeView nested in a LinearSyntenyView, which opts its sub-views
+// into the assembly-name scalebar prefix via showAssemblyNameInSubviewScalebar
+function syntenySubView(offsetPx: number) {
+  const session = createTestSession({
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'LinearSyntenyView',
+          views: [
+            {
+              type: 'LinearGenomeView',
+              offsetPx,
+              bpPerPx: 1,
+              displayedRegions: [
+                { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
+                { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
+              ],
+              tracks: [],
+              configuration: {},
+            },
+          ],
+          tracks: [],
+        },
+      ],
+    },
+  }) as any
+  const model = session.views[0].views[0]
+  model.setWidth(800)
+  return model
+}
 
 describe('Scalebar genome view component', () => {
   it('renders two regions', async () => {
@@ -107,30 +137,11 @@ describe('Scalebar genome view component', () => {
   })
 
   it('displays assembly name prefix only on the leftmost label when no pinned block', async () => {
-    const session = createTestSession({
-      sessionSnapshot: {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            offsetPx: 0,
-            bpPerPx: 1,
-            displayedRegions: [
-              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
-            ],
-            tracks: [],
-            configuration: {},
-          },
-        ],
-      },
-    }) as any
-    const model = session.views[0]
+    const model = syntenySubView(0)
 
-    // Mock scalebarDisplayPrefix to simulate being in a synteny view
-    const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
-    model.scalebarDisplayPrefix = () => 'volvox'
-
-    const { getByTestId, container } = render(<Scalebar model={model} />)
+    const { getByTestId, queryByTestId, container } = render(
+      <Scalebar model={model} />,
+    )
     await waitFor(() => {
       const labelA = getByTestId('refLabel-ctgA')
       const labelB = getByTestId('refLabel-ctgB')
@@ -139,38 +150,17 @@ describe('Scalebar genome view component', () => {
       expect(labelB.textContent).toBe('ctgB')
       // Verify only one instance of the prefix exists
       expect(container.textContent.match(/volvox:/g)?.length).toBe(1)
+      // The sticky label carries the prefix, so the standalone bare-assembly
+      // prefix must not also render (would show "volvox" twice)
+      expect(queryByTestId('refLabel-prefix')).toBeNull()
     })
-
-    // Restore original function
-    model.scalebarDisplayPrefix = originalScaleBarDisplayPrefix
   })
 
   it('displays assembly name prefix only on pinned label when scrolled', async () => {
-    const session = createTestSession({
-      sessionSnapshot: {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            // Scrolled so ctgA is off-screen left (pinned)
-            offsetPx: 50,
-            bpPerPx: 1,
-            displayedRegions: [
-              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 100 },
-              { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 100 },
-            ],
-            tracks: [],
-            configuration: {},
-          },
-        ],
-      },
-    }) as any
-    const model = session.views[0]
+    // scrolled so ctgA is off-screen left (pinned)
+    const model = syntenySubView(50)
 
-    // Mock scalebarDisplayPrefix to simulate being in a synteny view
-    const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
-    model.scalebarDisplayPrefix = () => 'volvox'
-
-    const { container } = render(<Scalebar model={model} />)
+    const { queryByTestId, container } = render(<Scalebar model={model} />)
     await waitFor(() => {
       // The pinned label should have the prefix, non-pinned labels should not
       // Verify only one instance of the prefix exists (on the pinned label)
@@ -180,13 +170,13 @@ describe('Scalebar genome view component', () => {
       // ctgB should appear without prefix
       expect(container.textContent).toContain('ctgB')
       expect(container.textContent).not.toContain('volvox:ctgB')
+      // The sticky label carries the prefix, so the standalone bare-assembly
+      // prefix must not also render
+      expect(queryByTestId('refLabel-prefix')).toBeNull()
     })
-
-    // Restore original function
-    model.scalebarDisplayPrefix = originalScaleBarDisplayPrefix
   })
 
-  it('does not display assembly name prefix when scalebarDisplayPrefix returns empty string', async () => {
+  it('does not display assembly name prefix for a top-level view', async () => {
     const session = createTestSession({
       sessionSnapshot: {
         views: [

@@ -1,13 +1,19 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
         ...snap,
         bedGzLocation: { uri: snap.uri, baseUri: snap.baseUri },
         index: {
-          location: { uri: `${snap.uri}.tbi`, baseUri: snap.baseUri },
+          indexType: snap.csi ? 'CSI' : 'TBI',
+          location: {
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
+            baseUri: snap.baseUri,
+          },
         },
       }
     : snap
@@ -15,8 +21,18 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config BedTabixAdapter
+ * #trackType FeatureTrack
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
+ * `.csi` index instead:
+ * ```js
+ * {
+ *   type: 'BedTabixAdapter',
+ *   uri: 'https://example.com/features.bed.gz',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const BedTabixAdapter = ConfigurationSchema(
   'BedTabixAdapter',
@@ -108,5 +124,7 @@ const BedTabixAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type BedTabixAdapterConfig = Instance<typeof BedTabixAdapter>
 
 export default BedTabixAdapter

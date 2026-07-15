@@ -1,106 +1,58 @@
-import { alpha } from '@mui/material'
+import {
+  isAbnormalPairDirection,
+  pairDirection,
+  splitInversion,
+} from '@jbrowse/alignments-core'
+import { alpha, useTheme } from '@mui/material'
 
-// orientation definitions from igv.js, see also
-// https://software.broadinstitute.org/software/igv/interpreting_pair_orientations
-type PairDirection = 'LR' | 'LL' | 'RR' | 'RL'
-type OrientationMap = Partial<Record<string, PairDirection>>
+import type { PairDirection } from '@jbrowse/alignments-core'
 
-export const orientationTypes: {
-  fr: OrientationMap
-  rf: OrientationMap
-  ff: OrientationMap
-} = {
-  fr: {
-    F1R2: 'LR',
-    F2R1: 'LR',
-
-    F1F2: 'LL',
-    F2F1: 'LL',
-
-    R1R2: 'RR',
-    R2R1: 'RR',
-
-    R1F2: 'RL',
-    R2F1: 'RL',
-  },
-
-  rf: {
-    R1F2: 'LR',
-    R2F1: 'LR',
-
-    R1R2: 'LL',
-    R2R1: 'LL',
-
-    F1F2: 'RR',
-    F2F1: 'RR',
-
-    F1R2: 'RL',
-    F2R1: 'RL',
-  },
-
-  ff: {
-    F2F1: 'LR',
-    R1R2: 'LR',
-
-    F2R1: 'LL',
-    R1F2: 'LL',
-
-    R2F1: 'RR',
-    F1R2: 'RR',
-
-    R2R1: 'RL',
-    F1F2: 'RL',
-  },
+const pairOrientationLabels: Record<PairDirection, string> = {
+  LR: 'normal (concordant) pair orientation',
+  LL: 'same-strand pair orientation (LL) — possible inversion',
+  RR: 'same-strand pair orientation (RR) — possible inversion',
+  RL: 'outward-facing pair orientation (RL) — possible duplication/insertion',
 }
 
-export const pairMap = {
-  LR: 'color_pair_lr',
-  LL: 'color_pair_ll',
-  RR: 'color_pair_rr',
-  RL: 'color_pair_rl',
-} as const satisfies Record<PairDirection, string>
-
-// manually calculated by running
-// const color = require('color')
-// Object.fromEntries(Object.entries(fillColor).map(([key,val])=>{
-//   return [key, color(val).darken('0.3').hex()]
-// }))
-// this avoids (expensive) use of Color module at runtime
-export const strokeColor = {
-  color_fwd_strand_not_proper: alpha('#CA6767', 0.8),
-  color_rev_strand_not_proper: alpha('#7272AA', 0.8),
-  color_fwd_strand: alpha('#DC2A2A', 0.8),
-  color_rev_strand: alpha('#4141BA', 0.8),
-  color_fwd_missing_mate: alpha('#921111', 0.8),
-  color_rev_missing_mate: alpha('#111192', 0.8),
-  color_fwd_diff_chr: alpha('#000000', 0.8),
-  color_rev_diff_chr: alpha('#696969', 0.8),
-  color_pair_lr: alpha('#8C8C8C', 0.8),
-  color_pair_rr: alpha('#00005A', 0.8),
-  color_pair_rl: alpha('#005A5A', 0.8),
-  color_pair_ll: alpha('#005A00', 0.8),
-  color_nostrand: alpha('#8C8C8C', 0.8),
-  color_interchrom: alpha('#5A005A', 0.8),
-  color_longinsert: alpha('#B30000', 0.8),
-  color_shortinsert: alpha('#FF3A5C', 0.8),
-  color_unknown: alpha('#555', 0.8),
-}
-
-export function getPairedOrientation(f: { pair_orientation?: string }) {
-  const r = orientationTypes.fr[f.pair_orientation ?? '']
-  const abnormal = r !== undefined && r !== 'LR'
-  return {
-    abnormal,
-    color: abnormal ? strokeColor[pairMap[r]] : strokeColor.color_unknown,
+// Maps the shared orientation categories (@jbrowse/alignments-core) to MUI theme
+// colors + labels for the SVG overlay; the alignments GPU/arc/linked-read paths
+// map the same categories to palette indices instead.
+export function useOrientationColor() {
+  const { palette } = useTheme()
+  const { pairLR, pairRL, pairLL, pairRR } = palette.alignmentFill
+  const colors: Record<PairDirection, string> = {
+    LR: alpha(pairLR, 0.8),
+    RL: alpha(pairRL, 0.8),
+    LL: alpha(pairLL, 0.8),
+    RR: alpha(pairRR, 0.8),
   }
-}
+  const unknown = alpha(palette.text.secondary, 0.8)
 
-export function getLongReadOrientation(s1: number, s2: number) {
-  if (s1 === -1 && s2 === 1) {
-    return { abnormal: true, color: strokeColor.color_pair_rr }
-  } else if (s1 === 1 && s2 === -1) {
-    return { abnormal: true, color: strokeColor.color_pair_ll }
-  } else {
-    return { abnormal: false, color: strokeColor.color_unknown }
+  return {
+    getPairedOrientation(f: { pair_orientation?: string }) {
+      const r = pairDirection(f.pair_orientation)
+      const abnormal = isAbnormalPairDirection(r)
+      return {
+        abnormal,
+        color: r && abnormal ? colors[r] : unknown,
+        label: r ? pairOrientationLabels[r] : 'unknown pair orientation',
+      }
+    },
+    getLongReadOrientation(s1: number, s2: number) {
+      // 'rf' (rev→fwd) and 'fr' (fwd→rev) are both inversions; they take
+      // distinct hues (RR/LL) so the two flip directions read differently.
+      const inv = splitInversion(s1, s2)
+      return inv
+        ? {
+            abnormal: true,
+            color: inv === 'rf' ? colors.RR : colors.LL,
+            label: 'strand-flip split read — possible inversion',
+          }
+        : {
+            abnormal: false,
+            color: unknown,
+            label: 'co-linear split read (same strand)',
+          }
+    },
   }
 }

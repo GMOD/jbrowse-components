@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { destroy } from '@jbrowse/mobx-state-tree'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -16,6 +17,7 @@ function createFacetedModel(model: HierarchicalTrackSelectorModel) {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
   return faceted
 }
@@ -27,6 +29,12 @@ const FacetedTrackSelectorDialog = observer(
   }) {
     const { handleClose, model } = props
     const [faceted] = useState<FacetedModel>(() => createFacetedModel(model))
+    useEffect(
+      () => () => {
+        destroy(faceted)
+      },
+      [faceted],
+    )
     return (
       <Dialog
         open

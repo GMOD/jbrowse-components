@@ -3,7 +3,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config NCListAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const NCListAdapter = ConfigurationSchema(
   'NCListAdapter',

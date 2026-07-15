@@ -53,7 +53,6 @@ describe('RpcServer.handler()', () => {
     await flushPromises()
     expect(sent[0]?.data).toMatchObject({
       uid: '1',
-      method: 'greet',
       data: 'hello',
       libRpc: true,
     })
@@ -88,6 +87,24 @@ describe('RpcServer.handler()', () => {
     sendMessage(server, { method: 'boom', uid: '3', data: null, libRpc: true })
     await flushPromises()
     expect((sent[0]?.data as any)?.error?.message).toBe('method failed')
+    restore()
+  })
+
+  test('synchronous throw inside method is captured and serialized', async () => {
+    const { sent, restore } = mockPostMessage()
+    const server = makeServer({
+      syncBoom: (() => {
+        throw new Error('sync failure')
+      }) as unknown as (data: unknown) => Promise<unknown>,
+    })
+    sendMessage(server, {
+      method: 'syncBoom',
+      uid: 'sync',
+      data: null,
+      libRpc: true,
+    })
+    await flushPromises()
+    expect((sent[0]?.data as any)?.error?.message).toBe('sync failure')
     restore()
   })
 

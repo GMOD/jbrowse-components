@@ -1,13 +1,21 @@
+import { CIGAR_H, CIGAR_M, CIGAR_S } from './cigarConstants.ts'
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
-import { getMismatches, parseCigar2 } from './mismatchParser.ts'
+import {
+  clipLengthAtStartOfReadNumeric,
+  getClip,
+  getMismatches,
+  parseCigar2,
+} from './mismatchParser.ts'
+
+const ml = (len: number, op: number) => (len << 4) | op
 
 const seq =
   'AAAAAAAAAACAAAAAAAAAAAAAACCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGGGGGGGGGGGTTTTTTTTTTTTTTTTTTTTTTTTT'
 
 // examples come from
 // https://github.com/vsbuffalo/devnotes/wiki/The-MD-Tag-in-BAM-Files and
-// http://seqanswers.com/forums/showthread.php?t=8978
+// https://seqanswers.com/forums/showthread.php?t=8978
 
 test('cigar to mismatches', () => {
   expect(cigarToMismatches2(parseCigar2('56M1D45M'), seq)).toEqual([
@@ -75,7 +83,7 @@ test('deletion and a SNP', () => {
 test('0-length MD entries', () => {
   // 0-length MD entries, which indicates two SNPs right next to each other
   // "They generally occur between SNPs, or between a deletion then a SNP."
-  // http://seqanswers.com/forums/showthread.php?t=8978
+  // https://seqanswers.com/forums/showthread.php?t=8978
   //
   // read GGGGGCATTTTT
   //      |||||  |||||
@@ -527,4 +535,62 @@ test('quality scores are passed through to mismatch entries', () => {
       qual: 25,
     },
   ])
+})
+
+describe('getClip', () => {
+  test('soft clip at CIGAR start, forward strand', () => {
+    expect(getClip('5S5M', 1)).toBe(5)
+  })
+  test('soft clip at CIGAR end is not the start of a forward-strand read', () => {
+    expect(getClip('5M5S', 1)).toBe(0)
+  })
+  test('soft clip at CIGAR end, reverse strand', () => {
+    expect(getClip('5M5S', -1)).toBe(5)
+  })
+  test('soft clip at CIGAR start is not the start of a reverse-strand read', () => {
+    expect(getClip('5S5M', -1)).toBe(0)
+  })
+  test('hard clip at CIGAR start, forward strand', () => {
+    expect(getClip('3H5M', 1)).toBe(3)
+  })
+  test('hard clip at CIGAR end, reverse strand', () => {
+    expect(getClip('5M3H', -1)).toBe(3)
+  })
+  test('no clip returns 0', () => {
+    expect(getClip('10M', 1)).toBe(0)
+    expect(getClip('10M', -1)).toBe(0)
+  })
+})
+
+// numeric counterpart of getClip; must agree with getClip on the equivalent
+// serialized CIGAR since it's what the render path actually reads
+describe('clipLengthAtStartOfReadNumeric', () => {
+  test('soft clip at CIGAR start, forward strand', () => {
+    expect(
+      clipLengthAtStartOfReadNumeric([ml(5, CIGAR_S), ml(5, CIGAR_M)], 1),
+    ).toBe(5)
+  })
+  test('soft clip at CIGAR end is not the start of a forward-strand read', () => {
+    expect(
+      clipLengthAtStartOfReadNumeric([ml(5, CIGAR_M), ml(5, CIGAR_S)], 1),
+    ).toBe(0)
+  })
+  test('soft clip at CIGAR end, reverse strand', () => {
+    expect(
+      clipLengthAtStartOfReadNumeric([ml(5, CIGAR_M), ml(5, CIGAR_S)], -1),
+    ).toBe(5)
+  })
+  test('hard clip at CIGAR start, forward strand', () => {
+    expect(
+      clipLengthAtStartOfReadNumeric([ml(3, CIGAR_H), ml(5, CIGAR_M)], 1),
+    ).toBe(3)
+  })
+  test('empty cigar returns 0', () => {
+    expect(clipLengthAtStartOfReadNumeric([], 1)).toBe(0)
+    expect(clipLengthAtStartOfReadNumeric([], -1)).toBe(0)
+  })
+  test('no clip returns 0', () => {
+    expect(clipLengthAtStartOfReadNumeric([ml(10, CIGAR_M)], 1)).toBe(0)
+    expect(clipLengthAtStartOfReadNumeric([ml(10, CIGAR_M)], -1)).toBe(0)
+  })
 })

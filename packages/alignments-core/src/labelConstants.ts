@@ -1,6 +1,10 @@
 export const LONG_INSERTION_MIN_LENGTH = 10
 export const LONG_INSERTION_TEXT_THRESHOLD_PX = 15
 export const MIN_HEIGHT_FOR_TEXT = 5
+// Min px-per-bp before per-base text (mismatch letters, small-insertion `(N)`
+// labels, clip summaries) is drawn. Shared by plugin-alignments and plugin-maf
+// so the two displays reveal these labels at the same zoom.
+export const MIN_PX_PER_BP_FOR_TEXT = 6.5
 
 export const MISMATCH_COLOR = '#f00'
 const DELETION_COLOR = '#888'
@@ -9,6 +13,10 @@ const BASE_A_COLOR = '#00bf00'
 const BASE_C_COLOR = '#4747ff'
 const BASE_G_COLOR = '#d5bb04'
 const BASE_T_COLOR = '#f00'
+// N and other non-A/C/G/T bases: muted brown, matching the theme's
+// `bases.N` (MUI brown). Distinct from the grey coverage histogram so N
+// segments stay visible. This is the theme-agnostic fallback for worker code.
+const BASE_N_COLOR = '#795548'
 
 export interface CigarOpDrawColors {
   mismatch: string
@@ -18,6 +26,7 @@ export interface CigarOpDrawColors {
   baseC: string
   baseG: string
   baseT: string
+  baseN: string
 }
 
 export const DEFAULT_CIGAR_OP_DRAW_COLORS: CigarOpDrawColors = {
@@ -28,10 +37,38 @@ export const DEFAULT_CIGAR_OP_DRAW_COLORS: CigarOpDrawColors = {
   baseC: BASE_C_COLOR,
   baseG: BASE_G_COLOR,
   baseT: BASE_T_COLOR,
+  baseN: BASE_N_COLOR,
 }
 
 export function computeLabelFontSize(h: number) {
   return Math.max(8, Math.min(h, 10))
+}
+
+// A size label (deletion length / large-insertion count) reaches full opacity
+// once its feature is LABEL_FADE_HI_RATIO times as wide as the space the label
+// needs, and fades linearly to nothing as the feature narrows to exactly that
+// space. This replaces the old hard appear/disappear cutoff with a smooth fade
+// as you zoom out — important when many large indels sit back-to-back (e.g.
+// inter-species comparisons), where a hard cutoff makes every label flicker
+// on/off at once.
+export const LABEL_FADE_HI_RATIO = 2
+
+// Below this opacity a label isn't worth drawing (invisible and sub-pixel), so
+// callers drop it entirely.
+export const MIN_LABEL_OPACITY = 0.05
+
+// GLSL/WGSL smoothstep, matching the Canvas2D fades elsewhere in the plugin.
+function smoothstep(edge0: number, edge1: number, x: number) {
+  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)))
+  return t * t * (3 - 2 * t)
+}
+
+// Opacity in [0,1] for a size label given how many pixels its feature spans on
+// screen (`availPx`) and the pixel width it needs to be legible (`neededPx`). 0
+// at/below `neededPx` (drop the label), ramping to 1 at LABEL_FADE_HI_RATIO ×
+// `neededPx`.
+export function labelFadeOpacity(availPx: number, neededPx: number) {
+  return smoothstep(neededPx, neededPx * LABEL_FADE_HI_RATIO, availPx)
 }
 
 // SYNC: mirrors textWidthForNumber() in GLSL/WGSL cigarShaders.ts
@@ -52,6 +89,105 @@ export function textWidthForNumber(num: number) {
     return charWidth * 4 + padding
   }
   return charWidth * 5 + padding
+}
+
+export type InsertionType = 'large' | 'long' | 'small'
+
+export function getInsertionType(
+  length: number,
+  pxPerBp: number,
+): InsertionType {
+  if (length >= LONG_INSERTION_MIN_LENGTH) {
+    return length * pxPerBp >= LONG_INSERTION_TEXT_THRESHOLD_PX
+      ? 'large'
+      : 'long'
+  }
+  return 'small'
+}
+
+// The short bar a 'long' insertion draws. Also the fallback width for a 'large'
+// insertion whose count label can't be drawn (row too short, see
+// insertionBarWidth), so it shrinks to this instead of an empty wide box.
+function longInsertionBarWidth(len: number, pxPerBp: number) {
+  return Math.min(5, (len * pxPerBp) / 3)
+}
+
+// SYNC: mirrors the rectW logic in
+// plugins/alignments LinearAlignmentsDisplay/shaders/slang/insertion.slang
+// (vs_main). Single source of truth for an insertion's box width, shared by the
+// GPU shader (via that mirror), the Canvas2D/SVG renderer, hit-testing (both
+// alignments and MAF), and SNP-letter shadowing. insertionWidth.test.ts pins
+// this against the shader.
+//
+// `featureHeight` is the marker's drawn pixel height. A 'large' insertion only
+// earns the wide count-label box when the row is tall enough to actually draw
+// the count (>= MIN_HEIGHT_FOR_TEXT); in compact/super-compact pileups it shrinks
+// to the same noticeable bar a 'long' insertion uses, instead of a wide empty
+// box. Defaults to MIN_HEIGHT_FOR_TEXT so width-only callers (hit-testing) that
+// don't track row height get the labelled width.
+export function insertionBarWidth(
+  len: number,
+  pxPerBp: number,
+  featureHeight = MIN_HEIGHT_FOR_TEXT,
+) {
+  const type = getInsertionType(len, pxPerBp)
+  if (type === 'large') {
+    return featureHeight >= MIN_HEIGHT_FOR_TEXT
+      ? textWidthForNumber(len)
+      : longInsertionBarWidth(len, pxPerBp)
+  }
+  if (type === 'long') {
+    return longInsertionBarWidth(len, pxPerBp)
+  }
+  return 1
+}
+
+// Shared tooltip body for an insertion, used by both plugin-alignments and
+// plugin-maf so the phrasing stays identical. Callers append their own location
+// suffix ("at <pos>" / a Location line).
+export function formatInsertionLabel(length: number, sequence?: string) {
+  return sequence && sequence.length <= 20
+    ? `Insertion (${length}bp): ${sequence}`
+    : `Insertion (${length}bp)`
+}
+
+// Below this zoom (px per bp), small-insertion serif caps are not drawn.
+export const INSERTION_SERIF_MIN_PX_PER_BP = 3
+
+// Draw one insertion marker centered on `xCenter`: a box whose width follows
+// insertionBarWidth (1px small / short bar long / number-label-width large) plus
+// serif caps on small insertions when zoomed in. The box width is gated on
+// `height` (the marker's pixel height) so a 'large' insertion in a row too short
+// to fit its count label shrinks to the narrow bar instead of an empty wide box.
+// The caller sets `ctx.fillStyle` (including any frequency alpha) and draws the
+// count text. Shared by plugin-alignments (Canvas2D/SVG export) and plugin-maf
+// (insertion overlay + export) so the marker geometry can't drift between the
+// two displays.
+export function drawInsertionMarker(
+  ctx: DrawCtx,
+  xCenter: number,
+  y: number,
+  height: number,
+  length: number,
+  pxPerBp: number,
+) {
+  const w = insertionBarWidth(length, pxPerBp, height)
+  ctx.fillRect(xCenter - w / 2, y, w, height)
+  const isLong = length >= LONG_INSERTION_MIN_LENGTH
+  if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
+    ctx.beginPath()
+    ctx.moveTo(xCenter - 2, y)
+    ctx.lineTo(xCenter + 2, y)
+    ctx.lineTo(xCenter, y + 2)
+    ctx.closePath()
+    ctx.fill()
+    ctx.beginPath()
+    ctx.moveTo(xCenter - 2, y + height - 1)
+    ctx.lineTo(xCenter + 2, y + height - 1)
+    ctx.lineTo(xCenter, y + height - 3)
+    ctx.closePath()
+    ctx.fill()
+  }
 }
 
 interface DrawCtx {
@@ -75,7 +211,7 @@ export function isDigit(ch: string) {
 }
 
 export function isCsOpChar(ch: string | undefined) {
-  return ch === ':' || ch === '*' || ch === '+' || ch === '-'
+  return ch !== undefined && ':*+-'.includes(ch)
 }
 
 function parseCsSeqLen(cs: string, start: number) {

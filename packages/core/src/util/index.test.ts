@@ -1,8 +1,11 @@
 import {
   assembleLocString,
   compareLocStrings,
+  mergeIntervals,
   parseLocString,
+  resolveSelectedIds,
   stringify,
+  toLocale,
 } from './index.ts'
 
 import type { ParsedLocString } from './index.ts'
@@ -179,5 +182,78 @@ describe('test stringify', () => {
         refName: testStringify.refName,
       }),
     ).toBe('ctgA:0')
+  })
+})
+
+describe('mergeIntervals', () => {
+  test('merges overlapping intervals within the window', () => {
+    expect(
+      mergeIntervals(
+        [
+          { start: 0, end: 10 },
+          { start: 5, end: 20 },
+        ],
+        0,
+      ),
+    ).toEqual([{ start: 0, end: 20 }])
+  })
+
+  test('keeps the wider end when a later interval is contained', () => {
+    expect(
+      mergeIntervals(
+        [
+          { start: 0, end: 100 },
+          { start: 10, end: 20 },
+        ],
+        0,
+      ),
+    ).toEqual([{ start: 0, end: 100 }])
+  })
+
+  test('keeps non-overlapping intervals separate', () => {
+    expect(
+      mergeIntervals(
+        [
+          { start: 0, end: 10 },
+          { start: 100, end: 110 },
+        ],
+        0,
+      ),
+    ).toEqual([
+      { start: 0, end: 10 },
+      { start: 100, end: 110 },
+    ])
+  })
+})
+
+describe('toLocale', () => {
+  test('small numbers pass through', () => {
+    expect(toLocale(0)).toBe('0')
+    expect(toLocale(999)).toBe('999')
+  })
+  test('inserts thousands separators', () => {
+    expect(toLocale(1000)).toBe('1,000')
+    expect(toLocale(1234567)).toBe('1,234,567')
+  })
+  test('handles negatives (regression: was skipping separators)', () => {
+    expect(toLocale(-500)).toBe('-500')
+    expect(toLocale(-1000)).toBe('-1,000')
+    expect(toLocale(-1234567)).toBe('-1,234,567')
+  })
+})
+
+describe('resolveSelectedIds', () => {
+  const allIds = ['a', 'b', 'c']
+  test('include model returns the listed ids', () => {
+    const model = { type: 'include' as const, ids: new Set(['a', 'c']) }
+    expect([...resolveSelectedIds(model, allIds)]).toEqual(['a', 'c'])
+  })
+  test('empty exclude model (header select-all) returns everything', () => {
+    const model = { type: 'exclude' as const, ids: new Set<string>() }
+    expect([...resolveSelectedIds(model, allIds)]).toEqual(['a', 'b', 'c'])
+  })
+  test('exclude model returns everything except the excluded ids', () => {
+    const model = { type: 'exclude' as const, ids: new Set(['b']) }
+    expect([...resolveSelectedIds(model, allIds)]).toEqual(['a', 'c'])
   })
 })

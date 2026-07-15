@@ -41,16 +41,16 @@ exports[`parses standard 6-column BED file 1`] = `
     "rows": [
       {
         "cellData": {
-          "end": "564465",
+          "end": 564465,
           "field_0": "TRA",
-          "mateEnd": "3917",
+          "mateEnd": 3917,
           "mateRefName": "MT",
-          "mateStart": "3917",
+          "mateStart": 3917,
           "mateStrand": "+",
           "name": "122419_0",
           "refName": "1",
           "score": ",",
-          "start": "564465",
+          "start": 564465,
           "strand": "-",
         },
         "feature": {
@@ -72,16 +72,16 @@ exports[`parses standard 6-column BED file 1`] = `
       },
       {
         "cellData": {
-          "end": "565470",
+          "end": 565470,
           "field_0": "TRA",
-          "mateEnd": "4920",
+          "mateEnd": 4920,
           "mateRefName": "MT",
-          "mateStart": "4920",
+          "mateStart": 4920,
           "mateStrand": "+",
           "name": "116060_1",
           "refName": "1",
           "score": ",",
-          "start": "565470",
+          "start": 565470,
           "strand": "-",
         },
         "feature": {
@@ -103,16 +103,16 @@ exports[`parses standard 6-column BED file 1`] = `
       },
       {
         "cellData": {
-          "end": "567235",
+          "end": 567235,
           "field_0": "TRA",
-          "mateEnd": "6707",
+          "mateEnd": 6707,
           "mateRefName": "MT",
-          "mateStart": "6707",
+          "mateStart": 6707,
           "mateStrand": "-",
           "name": "116060_1",
           "refName": "1",
           "score": ",",
-          "start": "567235",
+          "start": 567235,
           "strand": "+",
         },
         "feature": {

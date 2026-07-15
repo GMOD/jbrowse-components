@@ -1,8 +1,18 @@
-import { readFileSync, readdirSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
+
+import { checkOrWrite } from './check-utils.ts'
+// The category order (and thus the allowed `guide_category` values) for each
+// guide index, shared with the sidebar builder so the two groupings can't
+// drift. A page tagged with a category not in its guide's list is silently
+// dropped from every index, so these double as the validation allow-lists below.
+import {
+  CONFIG_CATEGORIES,
+  DEVELOPER_CATEGORIES,
+  USER_CATEGORIES,
+} from '../src/lib/guide-categories.ts'
 
 const docsDir = join(import.meta.dirname, '..', 'docs')
-const check = process.argv.includes('--check')
 
 interface Entry {
   title: string
@@ -18,7 +28,8 @@ function parseFrontmatter(content: string) {
   }
   const result: Record<string, string> = {}
   let currentKey: string | null = null
-  for (const line of match[1].split('\n')) {
+  const [, body = ''] = match
+  for (const line of body.split('\n')) {
     if (currentKey !== null && /^\s+\S/.test(line)) {
       // continuation of a multi-line block scalar value
       const prev = result[currentKey]
@@ -36,16 +47,17 @@ function parseFrontmatter(content: string) {
 
 function collectEntries(dir: string, urlDir: string): Map<string, Entry[]> {
   const map = new Map<string, Entry[]>()
-  for (const file of readdirSync(dir).filter(f => f.endsWith('.md'))) {
+  const mdFiles = readdirSync(dir).filter(f => f.endsWith('.md'))
+  for (const file of mdFiles) {
     const content = readFileSync(join(dir, file), 'utf8')
     const fm = parseFrontmatter(content)
-    if (!fm['guide_category'] || !fm['description']) {
+    if (!fm.guide_category || !fm.description) {
       continue
     }
-    const cat = fm['guide_category']
+    const cat = fm.guide_category
     const entry: Entry = {
-      title: fm['title'] ?? file.replace(/\.md$/, ''),
-      description: fm['description'],
+      title: fm.title ?? file.replace(/\.md$/, ''),
+      description: fm.description,
       slug: file.replace(/\.md$/, ''),
       dir: urlDir,
     }
@@ -62,17 +74,15 @@ function checkMissingFrontmatter(
   label: string,
 ): { file: string; missing: string[] }[] {
   const problems: { file: string; missing: string[] }[] = []
-  for (const file of readdirSync(dir).filter(f => f.endsWith('.md'))) {
+  const mdFiles = readdirSync(dir).filter(f => f.endsWith('.md'))
+  for (const file of mdFiles) {
     const content = readFileSync(join(dir, file), 'utf8')
     const fm = parseFrontmatter(content)
-    if (fm['redirect']) {
-      continue
-    }
     const missing = []
-    if (!fm['description']) {
+    if (!fm.description) {
       missing.push('description')
     }
-    if (!fm['guide_category']) {
+    if (!fm.guide_category) {
       missing.push('guide_category')
     }
     if (missing.length) {
@@ -111,18 +121,14 @@ function buildTocSection(
 function buildUserGuide(): string {
   const lines: string[] = [
     '---',
-    'id: user_guide',
-    'toplevel: true',
     'title: User guide',
+    'sidebar_label: Overview',
     '---',
     '',
-    ...buildTocSection(
-      ['General usage', 'Track types', 'Views', 'Other features', 'Tutorials'],
-      [
-        { dir: join(docsDir, 'user_guides'), urlDir: 'user_guides' },
-        { dir: join(docsDir, 'tutorials'), urlDir: 'tutorials' },
-      ],
-    ),
+    ...buildTocSection(USER_CATEGORIES, [
+      { dir: join(docsDir, 'user_guides'), urlDir: 'user_guides' },
+      { dir: join(docsDir, 'tutorials'), urlDir: 'tutorials' },
+    ]),
   ]
   return lines.join('\n')
 }
@@ -130,34 +136,25 @@ function buildUserGuide(): string {
 function buildConfigGuide(): string {
   const lines: string[] = [
     '---',
-    'id: config_guide',
-    'title: Introduction - Config guide',
-    'toplevel: true',
+    'title: Config guide',
+    'sidebar_label: Overview',
     '---',
     '',
-    'The following guide provides comprehensive information regarding the anatomy and',
-    'usage of the `config.json` file that is critical for running a JBrowse 2',
-    'session.',
+    'This guide covers the structure and usage of the `config.json` file that drives',
+    'a JBrowse 2 session. Prefer copy-paste snippets? See the',
+    '[Cookbook](/docs/cookbook) for short recipes covering the most common tasks.',
     '',
-    ...buildTocSection(
-      [
-        'Getting started',
-        'Core configuration',
-        'Track types',
-        'Callbacks and customization',
-        'Other features',
-      ],
-      [{ dir: join(docsDir, 'config_guides'), urlDir: 'config_guides' }],
-    ),
+    ...buildTocSection(CONFIG_CATEGORIES, [
+      { dir: join(docsDir, 'config_guides'), urlDir: 'config_guides' },
+    ]),
   ]
   return lines.join('\n')
 }
 
 function buildDeveloperGuide(): string {
   const preamble = `---
-id: developer_guide
 title: Developer guide
-toplevel: true
+sidebar_label: Overview
 ---
 
 This guide covers how JBrowse 2 code is packaged and structured, and how to
@@ -176,8 +173,8 @@ app, an electron app, a CLI app, etc). \`jbrowse-web\`, \`jbrowse-desktop\`, and
 
 A "plugin" is a package of functionality that is designed to "plug in" to a
 product **at runtime** to add functionality. These can be written and published
-by anyone, not just the JBrowse core team. Not all of the products use plugins,
-but most of them do.
+by anyone, not just the JBrowse core team. Most products load plugins at runtime, though it
+isn't required.
 
 <Figure src="/img/product_architecture.png" caption="This figure summarizes the general architecture of our state model and React component tree"/>
 
@@ -210,8 +207,7 @@ Working plugin examples:
   libraries. This desktop specific functionality should use the CJS bundle type
   (electron doesn't support ESM yet)
 
-These show how plugins are structured and can serve as templates for your own
-pluggable elements.
+Use these as references when building your own.
 
 The [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) is the
 community plugin registry — browse it to find published plugins or submit your
@@ -220,12 +216,7 @@ own via pull request.
 `
 
   const toc = buildTocSection(
-    [
-      'Getting started',
-      'Core concepts',
-      'Creating pluggable elements',
-      'Advanced topics',
-    ],
+    DEVELOPER_CATEGORIES,
     [{ dir: join(docsDir, 'developer_guides'), urlDir: 'developer_guides' }],
     '###',
   )
@@ -233,27 +224,25 @@ own via pull request.
   return preamble + ['## Developer guides', '', ...toc].join('\n')
 }
 
-function checkOrWrite(path: string, generated: string, label: string) {
-  if (check) {
-    const current = readFileSync(path, 'utf8')
-    if (current !== generated) {
-      console.error(`${label} is out of date — run: pnpm lint-docs`)
-      process.exit(1)
-    }
-    console.log(`${label} is up to date`)
-  } else {
-    writeFileSync(path, generated)
-    console.log(`${label} regenerated`)
-  }
-}
-
 // Check for guide files missing required frontmatter fields.
 // tutorials/ is excluded: it's a mixed-use directory (user + developer tutorials)
 // managed explicitly in sidebars.json rather than auto-indexed.
 const guideDirs = [
-  { dir: join(docsDir, 'user_guides'), label: 'user_guides' },
-  { dir: join(docsDir, 'config_guides'), label: 'config_guides' },
-  { dir: join(docsDir, 'developer_guides'), label: 'developer_guides' },
+  {
+    dir: join(docsDir, 'user_guides'),
+    label: 'user_guides',
+    categories: USER_CATEGORIES,
+  },
+  {
+    dir: join(docsDir, 'config_guides'),
+    label: 'config_guides',
+    categories: CONFIG_CATEGORIES,
+  },
+  {
+    dir: join(docsDir, 'developer_guides'),
+    label: 'developer_guides',
+    categories: DEVELOPER_CATEGORIES,
+  },
 ]
 const problems = guideDirs.flatMap(({ dir, label }) =>
   checkMissingFrontmatter(dir, label),
@@ -268,14 +257,46 @@ if (problems.length) {
   process.exit(1)
 }
 
-checkOrWrite(join(docsDir, 'user_guide.md'), buildUserGuide(), 'user_guide.md')
-checkOrWrite(
-  join(docsDir, 'config_guide.md'),
-  buildConfigGuide(),
-  'config_guide.md',
+// A guide_category not in its guide's category list buckets nowhere and the page
+// vanishes from the index with no other signal — catch the typo here.
+const badCategories = guideDirs.flatMap(({ dir, label, categories }) =>
+  readdirSync(dir)
+    .filter(f => f.endsWith('.md'))
+    .flatMap(file => {
+      const fm = parseFrontmatter(readFileSync(join(dir, file), 'utf8'))
+      return fm.guide_category && !categories.includes(fm.guide_category)
+        ? [{ file: `${label}/${file}`, cat: fm.guide_category, categories }]
+        : []
+    }),
 )
-checkOrWrite(
-  join(docsDir, 'developer_guide.md'),
-  buildDeveloperGuide(),
-  'developer_guide.md',
-)
+if (badCategories.length) {
+  for (const { file, cat, categories } of badCategories) {
+    console.error(
+      `${file}: unknown guide_category "${cat}" — expected one of: ${categories.join(', ')}`,
+    )
+  }
+  console.error(
+    `\nFix the guide_category so these pages appear in the guide indexes.`,
+  )
+  process.exit(1)
+}
+
+const staleHint = 'run: pnpm lint-docs'
+checkOrWrite({
+  path: join(docsDir, 'user_guide.md'),
+  content: buildUserGuide(),
+  label: 'user_guide.md',
+  staleHint,
+})
+checkOrWrite({
+  path: join(docsDir, 'config_guide.md'),
+  content: buildConfigGuide(),
+  label: 'config_guide.md',
+  staleHint,
+})
+checkOrWrite({
+  path: join(docsDir, 'developer_guide.md'),
+  content: buildDeveloperGuide(),
+  label: 'developer_guide.md',
+  staleHint,
+})

@@ -34,7 +34,7 @@
   color: white;
   text-decoration: none;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 400;
   padding: 4px 12px;
   white-space: nowrap;
   transition: color 0.2s;
@@ -67,6 +67,44 @@
 .navRight a:hover {
   color: var(--color-teal-bright);
 }
+.navExternal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff !important;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 40%, transparent);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.navExternal:hover {
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -2px
+    color-mix(in srgb, var(--color-accent) 55%, transparent);
+}
+.navExternal:active {
+  transform: translateY(0);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 40%, transparent);
+}
+.navExternal svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.navExternal:hover svg {
+  transform: translate(1px, -1px);
+}
 .socialIcon {
   width: 24px;
   height: 24px;
@@ -90,6 +128,9 @@
 }
 .blueskyIcon {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg version='1.1' viewBox='0 0 600 530' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-0.0174-2.9357-1.1937 0.51669-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z'/%3E%3C/svg%3E");
+}
+.youtubeIcon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10,15L15.19,12L10,9V15M21.56,7.17C21.69,7.64 21.78,8.27 21.84,9.07C21.91,9.87 21.94,10.56 21.94,11.16L22,12C22,14.19 21.84,15.8 21.56,16.83C21.31,17.73 20.73,18.31 19.83,18.56C19.36,18.69 18.5,18.78 17.18,18.84C15.88,18.91 14.69,18.94 13.59,18.94L12,19C7.81,19 5.2,18.84 4.17,18.56C3.27,18.31 2.69,17.73 2.44,16.83C2.31,16.36 2.22,15.73 2.16,14.93C2.09,14.13 2.06,13.44 2.06,12.84L2,12C2,9.81 2.16,8.2 2.44,7.17C2.69,6.27 3.27,5.69 4.17,5.44C4.64,5.31 5.5,5.22 6.82,5.16C8.12,5.09 9.31,5.06 10.41,5.06L12,5C16.19,5 18.8,5.16 19.83,5.44C20.73,5.69 21.31,6.27 21.56,7.17Z'/%3E%3C/svg%3E");
 }
 .navToggle {
   display: none;
@@ -177,11 +218,12 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     font-size: 1rem;
   }
-  .navRight {
+  /* Keep search reachable on mobile; the social icons stay in the footer. */
+  .socialIcon {
     display: none;
   }
   .navToggle {
     display: block;
-    margin-left: auto;
+    margin-left: 0.5rem;
   }
 }

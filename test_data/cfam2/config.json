@@ -2,7 +2,8 @@
   "configuration": {
     "rpc": {
       "defaultDriver": "MainThreadRpcDriver"
-    }
+    },
+    "disableAnalytics": true
   },
   "assemblies": [
     {
@@ -32,6 +33,7 @@
       "type": "FeatureTrack",
       "trackId": "genes.gff",
       "name": "genes.gff",
+      "assemblyNames": ["UU_Cfam_GSD_1.0"],
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -43,8 +45,7 @@
           },
           "indexType": "TBI"
         }
-      },
-      "assemblyNames": ["UU_Cfam_GSD_1.0"]
+      }
     }
   ],
   "defaultSession": {
@@ -83,7 +84,7 @@
                 "heightPreConfig": 190,
                 "configuration": "genes.gff-LinearBasicDisplay",
                 "trackDisplayMode": "compact",
-                "jexlFiltersSetting": ["jexl:get(feature,'type')=='gene'"]
+                "jexlFiltersSetting": ["jexl:feature.type=='gene'"]
               }
             ]
           }

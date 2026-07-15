@@ -7,7 +7,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
     "end": 8344167,
     "faldo_type": "http://biohackathon.org/resource/faldo#ForwardStrandPosition",
     "name": "SLC45A1",
-    "parentUniqueId": undefined,
     "refName": "chr1",
     "start": 8318085,
     "strand": 1,
@@ -18,7 +17,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
         "end": 8344013,
         "name": "SLC45A1",
         "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266",
-        "parentUniqueId": undefined,
         "refName": "chr1",
         "start": 8318109,
         "strand": 1,
@@ -26,7 +24,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8318186,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8318109,
             "strand": 1,
@@ -36,7 +33,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8324726,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8324306,
             "strand": 1,
@@ -46,7 +42,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8325390,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8325298,
             "strand": 1,
@@ -56,7 +51,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8326042,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8325818,
             "strand": 1,
@@ -66,7 +60,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8330936,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8330209,
             "strand": 1,
@@ -76,7 +69,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8335614,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8335437,
             "strand": 1,
@@ -86,7 +78,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8337992,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8337816,
             "strand": 1,
@@ -96,7 +87,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8339698,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8339493,
             "strand": 1,
@@ -106,7 +96,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8344013,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.703",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8343747,
             "strand": 1,
@@ -123,7 +112,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
         "end": 8344013,
         "name": "SLC45A1",
         "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266",
-        "parentUniqueId": undefined,
         "refName": "chr1",
         "start": 8318109,
         "strand": 1,
@@ -131,7 +119,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8318186,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8318109,
             "strand": 1,
@@ -141,7 +128,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8324726,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8324306,
             "strand": 1,
@@ -151,7 +137,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8325390,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8325298,
             "strand": 1,
@@ -161,7 +146,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8326042,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8325818,
             "strand": 1,
@@ -171,7 +155,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8330936,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8330209,
             "strand": 1,
@@ -181,7 +164,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8335590,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8335437,
             "strand": 1,
@@ -191,7 +173,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8337992,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8337816,
             "strand": 1,
@@ -201,7 +182,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8339698,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8339493,
             "strand": 1,
@@ -211,7 +191,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8344013,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.704",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8343747,
             "strand": 1,
@@ -228,7 +207,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
         "end": 8344013,
         "name": "SLC45A1",
         "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266",
-        "parentUniqueId": undefined,
         "refName": "chr1",
         "start": 8318109,
         "strand": 1,
@@ -236,7 +214,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8318186,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8318109,
             "strand": 1,
@@ -246,7 +223,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8324726,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8324306,
             "strand": 1,
@@ -256,7 +232,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8326042,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8325818,
             "strand": 1,
@@ -266,7 +241,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8330936,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8330209,
             "strand": 1,
@@ -276,7 +250,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8335614,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8335437,
             "strand": 1,
@@ -286,7 +259,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8337992,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8337816,
             "strand": 1,
@@ -296,7 +268,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8339698,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8339493,
             "strand": 1,
@@ -306,7 +277,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8344013,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.705",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8343747,
             "strand": 1,
@@ -323,7 +293,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
         "end": 8344013,
         "name": "SLC45A1",
         "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266",
-        "parentUniqueId": undefined,
         "refName": "chr1",
         "start": 8318109,
         "strand": 1,
@@ -331,7 +300,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8318186,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8318109,
             "strand": 1,
@@ -341,7 +309,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8324726,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8324306,
             "strand": 1,
@@ -351,7 +318,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8326042,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8325818,
             "strand": 1,
@@ -361,7 +327,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8330936,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8330209,
             "strand": 1,
@@ -371,7 +336,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8335590,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8335437,
             "strand": 1,
@@ -381,7 +345,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8337992,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8337816,
             "strand": 1,
@@ -391,7 +354,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8339698,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8339493,
             "strand": 1,
@@ -401,7 +363,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8344013,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318109-8344013:1:CDS.706",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8343747,
             "strand": 1,
@@ -418,7 +379,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
         "end": 8344013,
         "name": "SLC45A1",
         "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8318085-8344167:1:gene.266",
-        "parentUniqueId": undefined,
         "refName": "chr1",
         "start": 8325934,
         "strand": 1,
@@ -426,7 +386,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8326042,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8325934,
             "strand": 1,
@@ -436,7 +395,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8330936,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8330209,
             "strand": 1,
@@ -446,7 +404,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8335614,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8335437,
             "strand": 1,
@@ -456,7 +413,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8337992,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8337816,
             "strand": 1,
@@ -466,7 +422,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8339698,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8339493,
             "strand": 1,
@@ -476,7 +431,6 @@ exports[`adapter can fetch variants from volvox.vcf.gz 1`] = `
           {
             "end": 8344013,
             "parentId": "http://identifiers.org/refseq/NC_000001.11#feature:8325934-8344013:1:CDS.707",
-            "parentUniqueId": undefined,
             "refName": "chr1",
             "start": 8343747,
             "strand": 1,

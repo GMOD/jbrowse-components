@@ -1,4 +1,4 @@
-import { intersection2 } from './range.ts'
+import { calculateRedispatchRange, intersection2 } from './range.ts'
 
 describe('insersection2', () => {
   const testCases = [
@@ -25,4 +25,40 @@ describe('insersection2', () => {
       expect(intersection2(...testcase.in)).toEqual(testcase.out)
     })
   }
+})
+
+describe('calculateRedispatchRange', () => {
+  const noSkip = new Set<string>()
+
+  it('returns undefined when all features fit inside the query', () => {
+    const features = [{ start: 11, end: 50, type: 'gene' }] // 1-based start -> 10
+    expect(calculateRedispatchRange(features, noSkip, 0, 100)).toBeUndefined()
+  })
+
+  it('expands to feature bounds when a feature extends past the query', () => {
+    const features = [
+      { start: 11, end: 50, type: 'gene' }, // -> [10, 50]
+      { start: 41, end: 200, type: 'mRNA' }, // -> [40, 200]
+    ]
+    expect(calculateRedispatchRange(features, noSkip, 60, 100)).toEqual({
+      start: 10,
+      end: 200,
+    })
+  })
+
+  it('ignores dontRedispatch types when computing the range', () => {
+    const features = [
+      { start: 1, end: 100000, type: 'chromosome' },
+      { start: 71, end: 90, type: 'gene' }, // -> [70, 90]
+    ]
+    const skip = new Set(['chromosome'])
+    // only the gene contributes; it fits, so no redispatch
+    expect(calculateRedispatchRange(features, skip, 0, 100)).toBeUndefined()
+  })
+
+  it('returns undefined when every feature is a dontRedispatch type', () => {
+    const features = [{ start: 1, end: 100000, type: 'chromosome' }]
+    const skip = new Set(['chromosome'])
+    expect(calculateRedispatchRange(features, skip, 0, 100)).toBeUndefined()
+  })
 })

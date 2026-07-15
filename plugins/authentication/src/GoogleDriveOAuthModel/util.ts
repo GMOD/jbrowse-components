@@ -18,12 +18,13 @@ export async function getDescriptiveErrorMessage(
   response: Response,
   reason?: string,
 ) {
-  let errorMessage = ''
+  const text = await response.text()
+  let statusText = text
   try {
-    const err = JSON.parse(await response.text()) as GoogleDriveError
-    errorMessage = err.error.message
-  } catch (error) {
-    /* do nothing */
+    const err = JSON.parse(text) as GoogleDriveError
+    statusText = err.error.message
+  } catch {
+    // statusText stays as raw response text
   }
-  return getResponseError({ response, reason, statusText: errorMessage })
+  return getResponseError({ response, reason, statusText })
 }

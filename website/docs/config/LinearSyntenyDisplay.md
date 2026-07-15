@@ -1,51 +1,46 @@
 ---
 id: linearsyntenydisplay
 title: LinearSyntenyDisplay
+sidebar_label: Display -> LinearSyntenyDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`linear-comparative-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/configSchemaF.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyDisplay/configSchemaF.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearSyntenyDisplay.md)
-
-## Docs
-
-### LinearSyntenyDisplay - Slots
-
-#### slot: trackIds
-
-currently unused
+A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
+(first) and target (second) assembly names, matched by the track's
+`assemblyNames`. See the
+[synteny track guide](/docs/config_guides/synteny_track) for all options:
 
 ```js
-trackIds: {
-        type: 'stringArray',
-        defaultValue: [],
-      }
+{
+  type: 'SyntenyTrack',
+  trackId: 'hg38_vs_mm10',
+  name: 'hg38 vs mm10',
+  assemblyNames: ['hg38', 'mm10'],
+  adapter: {
+    type: 'PAFAdapter',
+    uri: 'https://example.com/hg38_vs_mm10.paf',
+    queryAssembly: 'hg38',
+    targetAssembly: 'mm10',
+  },
+}
 ```
 
-#### slot: middle
+## Related links
 
-currently unused
-
-```js
-middle: {
-        type: 'boolean',
-        defaultValue: true,
-      }
-```
-
-### LinearSyntenyDisplay - Derives from
-
-this refers to the LinearComparativeDisplay
-
-```js
-baseConfiguration: baseConfigFactory(pluginManager)
-```
+- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
+- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [ChainAdapter](../chainadapter)
+- **Adapter:** [DeltaAdapter](../deltaadapter)
+- **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
+- **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MashMapAdapter](../mashmapadapter)
+- **Adapter:** [PAFAdapter](../pafadapter)
+- **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
+- **State model:** [runtime API](../../models/linearsyntenydisplay)

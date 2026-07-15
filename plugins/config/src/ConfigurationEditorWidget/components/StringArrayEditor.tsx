@@ -1,8 +1,5 @@
-import { useState } from 'react'
-
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
-  Button,
   FormHelperText,
   IconButton,
   InputAdornment,
@@ -13,30 +10,36 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import AddNewField from './AddNewField.tsx'
+
 const StringArrayEditor = observer(function StringArrayEditor({
   slot,
 }: {
   slot: {
     name: string
     value: string[]
-    setAtIndex: (arg: number, arg2: string) => void
-    removeAtIndex: (arg: number) => void
-    add: (arg: string) => void
+    set: (arg: string[]) => void
     description: string
   }
 }) {
-  const [value, setValue] = useState('')
-  const [addNew, setAddNew] = useState(false)
+  const value = [...slot.value]
   return (
     <>
       {slot.name ? <InputLabel>{slot.name}</InputLabel> : null}
       <List disablePadding>
-        {slot.value.map((val, idx) => (
-          <ListItem key={`${JSON.stringify(val)}-${idx}`} disableGutters>
+        {/* index keys are safe here: inputs are fully controlled from
+            slot.value with no per-row state, and the list is never reordered.
+            keying by content would remount on every keystroke and drop focus */}
+        {value.map((val, idx) => (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- controlled inputs, list never reordered (see comment above)
+          <ListItem key={idx} disableGutters>
             <TextField
+              fullWidth
               value={val}
               onChange={evt => {
-                slot.setAtIndex(idx, evt.target.value)
+                slot.set(
+                  value.map((v, i) => (i === idx ? evt.target.value : v)),
+                )
               }}
               slotProps={{
                 input: {
@@ -44,7 +47,7 @@ const StringArrayEditor = observer(function StringArrayEditor({
                     <InputAdornment position="end">
                       <IconButton
                         onClick={() => {
-                          slot.removeAtIndex(idx)
+                          slot.set(value.filter((_, i) => i !== idx))
                         }}
                       >
                         <DeleteIcon />
@@ -56,63 +59,14 @@ const StringArrayEditor = observer(function StringArrayEditor({
             />
           </ListItem>
         ))}
-
-        {addNew ? (
-          <ListItem disableGutters>
-            <TextField
-              value={value}
-              placeholder="add new"
-              onChange={event => {
-                setValue(event.target.value)
-              }}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <>
-                        <Button
-                          color="primary"
-                          variant="contained"
-                          style={{ margin: 2 }}
-                          data-testid={`stringArrayAdd-${slot.name}`}
-                          onClick={() => {
-                            setAddNew(false)
-                            slot.add(value)
-                            setValue('')
-                          }}
-                        >
-                          OK
-                        </Button>
-                        <Button
-                          color="primary"
-                          variant="contained"
-                          style={{ margin: 2 }}
-                          onClick={() => {
-                            setAddNew(false)
-                            setValue('')
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                      </>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-          </ListItem>
-        ) : null}
-        <Button
-          color="primary"
-          variant="contained"
-          style={{ margin: 4 }}
-          disabled={addNew}
-          onClick={() => {
-            setAddNew(true)
-          }}
-        >
-          Add item
-        </Button>
+        <ListItem disableGutters>
+          <AddNewField
+            testid={`stringArrayAdd-${slot.name}`}
+            onAdd={val => {
+              slot.set([...value, val])
+            }}
+          />
+        </ListItem>
       </List>
       <FormHelperText>{slot.description}</FormHelperText>
     </>

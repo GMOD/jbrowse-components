@@ -1,4 +1,6 @@
+import { getClip } from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { statusMessageText } from '@jbrowse/core/util'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -65,6 +67,40 @@ test('adapter can fetch features from volvox-sorted.cram', async () => {
   expect(await adapter.hasDataForRefName('ctgA')).toBe(true)
 })
 
+// Regression: the .crai index downloads once (in setup, during the first
+// fetch). A second fetch after a small pan/zoom reuses it and must not re-flash
+// "Downloading index" — it only downloads alignments.
+test('emits "Downloading index" on first fetch only, not once cached', async () => {
+  const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+  const query = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  }
+  const collect = async () => {
+    const seen: string[] = []
+    await firstValueFrom(
+      adapter
+        .getFeatures(query, {
+          statusCallback: s => {
+            seen.push(statusMessageText(s) ?? '')
+          },
+        })
+        .pipe(toArray()),
+    )
+    return seen
+  }
+
+  const first = await collect()
+  const second = await collect()
+
+  expect(first).toContain('Downloading index')
+  expect(second).not.toContain('Downloading index')
+  expect(second).toContain('Downloading alignments')
+})
+
 test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
   // Set sequenceAdapterConfig on adapter (normally done by CoreGetRefNames)
@@ -83,4 +119,23 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
   expect(f.end).toBe(102)
   // don't pass the mismatches to the frontend
   expect(f.mismatches).toEqual(undefined)
+})
+
+test('clipLengthAtStartOfRead matches getClip(CIGAR) for every record', async () => {
+  const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+
+  const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  })
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  expect(featuresArray.length).toBeGreaterThan(0)
+  for (const feature of featuresArray) {
+    const cigar = feature.get('CIGAR') as string
+    const strand = feature.get('strand')!
+    expect(feature.get('clipLengthAtStartOfRead')).toBe(getClip(cigar, strand))
+  }
 })

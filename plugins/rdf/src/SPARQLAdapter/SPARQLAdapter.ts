@@ -2,15 +2,14 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import format from 'string-template'
+import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import type MyConfigSchema from './configSchema.ts'
+import type { SPARQLAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface SPARQLEntry {
   type: string
@@ -19,6 +18,19 @@ interface SPARQLEntry {
 }
 
 type SPARQLBinding = Record<string, SPARQLEntry>
+
+// fill `{name}` placeholders from data; `{{name}}` is an escaped literal.
+// replaces the `string-template` dependency
+const templateRegex = /\{([0-9a-zA-Z_]+)\}/g
+function fillTemplate(template: string, data: Record<string, string | number>) {
+  return template.replaceAll(
+    templateRegex,
+    (match, key: string, index: number) =>
+      template[index - 1] === '{' && template[index + match.length] === '}'
+        ? key
+        : `${data[key] ?? ''}`,
+  )
+}
 
 interface SPARQLResponseHead {
   vars: string[]
@@ -41,11 +53,9 @@ interface SPARQLFeatureData {
   subfeatures?: SPARQLFeatureData[]
   uniqueId: string
 
-  [propName: string]: any
-}
-
-interface SPARQLFeature {
-  data: SPARQLFeatureData
+  // SPARQL queries can return arbitrary extra columns, which are copied onto
+  // the feature and surfaced in feature details
+  [propName: string]: unknown
 }
 
 export default class SPARQLAdapter extends BaseFeatureDataAdapter {
@@ -62,7 +72,7 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
   private refNames: string[] | undefined
 
   public constructor(
-    config: Instance<typeof MyConfigSchema>,
+    config: SPARQLAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
@@ -90,10 +100,10 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
+      const { refName, start, end } = query
       const filledTemplate = encodeURIComponent(
-        format(this.queryTemplate, query),
+        fillTemplate(this.queryTemplate, { refName, start, end }),
       )
-      const { refName } = query
       const results = await this.querySparql(filledTemplate, opts)
       const features = this.resultsToFeatures(results, refName)
       for (const feature of features) {
@@ -103,19 +113,28 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken)
   }
 
-  private async querySparql(query: string, _opts?: BaseOptions): Promise<any> {
+  private async querySparql(
+    query: string,
+    opts?: BaseOptions,
+  ): Promise<SPARQLResponse> {
     let additionalQueryParams = ''
     if (this.additionalQueryParams.length) {
       additionalQueryParams = `&${this.additionalQueryParams.join('&')}`
     }
-    // TODO:ABORT
+    checkStopToken(opts?.stopToken)
     const url = `${this.endpoint}?query=${query}${additionalQueryParams}`
     const response = await fetch(url, {
       headers: {
         accept: 'application/json,application/sparql-results+json',
       },
     })
-    return response.json()
+    if (!response.ok) {
+      throw new Error(
+        `SPARQL query failed: ${response.status} ${response.statusText}`,
+      )
+    }
+    checkStopToken(opts?.stopToken)
+    return response.json() as Promise<SPARQLResponse>
   }
 
   private resultsToRefNames(response: SPARQLResponse): string[] {
@@ -141,93 +160,62 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
         )
       }
     }
-    const seenFeatures: Record<string, SPARQLFeature> = {}
+
+    // Each row encodes a feature plus its sub_/sub_sub_ ancestors. Flatten
+    // every level into a single uniqueId->feature map and record each level's
+    // parent, then attach children to parents in a second pass. Building the
+    // full map first makes attachment independent of row/level ordering.
+    const featuresById = new Map<string, SPARQLFeatureData>()
+    const parentById = new Map<string, string>()
     for (const row of rows) {
-      const rawData: Record<string, string>[] = [{}]
-      for (let field of fields) {
+      const levels: Record<string, string>[] = [{}]
+      for (const field of fields) {
         if (field in row) {
-          const { value } = row[field]!
-          let idx = 0
-          while (field.startsWith('sub_')) {
-            field = field.slice(4)
-            idx += 1
+          let name = field
+          let depth = 0
+          while (name.startsWith('sub_')) {
+            name = name.slice(4)
+            depth += 1
           }
-          while (idx > rawData.length - 1) {
-            rawData.push({})
+          while (depth > levels.length - 1) {
+            levels.push({})
           }
-          rawData[idx]![field] = value
+          levels[depth]![name] = row[field]!.value
         }
       }
 
-      for (const [idx, rd] of rawData.entries()) {
-        const { uniqueId, start, end, strand } = rd
-        if (idx < rawData.length - 1) {
-          rawData[idx + 1]!.parentUniqueId = uniqueId!
-        }
-        seenFeatures[uniqueId!] = {
-          data: {
-            ...rd,
-            uniqueId: uniqueId!,
-            refName,
-            start: Number.parseInt(start!, 10),
-            end: Number.parseInt(end!, 10),
-            strand: Number.parseInt(strand!, 10) || 0,
-          },
+      for (const [depth, level] of levels.entries()) {
+        const { uniqueId, start, end, strand } = level
+        featuresById.set(uniqueId!, {
+          ...level,
+          uniqueId: uniqueId!,
+          refName,
+          start: Number.parseInt(start!, 10),
+          end: Number.parseInt(end!, 10),
+          strand: Number.parseInt(strand!, 10) || 0,
+        })
+        if (depth > 0) {
+          parentById.set(uniqueId!, levels[depth - 1]!.uniqueId!)
         }
       }
     }
 
-    // resolve subfeatures, keeping only top-level features in seenFeatures
-    for (const [uniqueId, f] of Object.entries(seenFeatures)) {
-      const pid = f.data.parentUniqueId
-      f.data.parentUniqueId = undefined
-      if (pid) {
-        const p = seenFeatures[pid]
-        if (p) {
-          p.data.subfeatures ??= []
-          p.data.subfeatures.push({
-            ...f.data,
-            uniqueId,
-          })
-          delete seenFeatures[uniqueId]
-        } else {
-          const subfeatures = Object.values(seenFeatures)
-            .map(sf => sf.data.subfeatures)
-            .filter(sf => !!sf)
-            .flat()
-          let found = false
-          for (const subfeature of subfeatures) {
-            if (subfeature.uniqueId === pid) {
-              subfeature.subfeatures ??= []
-              subfeature.subfeatures.push({
-                ...f.data,
-                uniqueId,
-              })
-              delete seenFeatures[uniqueId]
-              found = true
-              break
-            }
-            if (subfeature.subfeatures) {
-              for (const sf of subfeature.subfeatures) {
-                subfeatures.push(sf)
-              }
-            }
-          }
-          if (!found) {
-            console.error(`Could not find parentID ${pid}`)
-          }
+    const roots: SPARQLFeatureData[] = []
+    for (const [uniqueId, feature] of featuresById) {
+      const pid = parentById.get(uniqueId)
+      const parent = pid ? featuresById.get(pid) : undefined
+      if (parent) {
+        parent.subfeatures ??= []
+        parent.subfeatures.push(feature)
+      } else {
+        if (pid) {
+          console.error(`Could not find parentID ${pid}`)
         }
+        roots.push(feature)
       }
     }
 
-    return Object.keys(seenFeatures).map(
-      seenFeature =>
-        new SimpleFeature({
-          ...seenFeatures[seenFeature]!.data,
-          uniqueId: seenFeature,
-          subfeatures: seenFeatures[seenFeature]!.data.subfeatures,
-        }),
-    )
+    return roots.map(data => new SimpleFeature(data))
   }
 
   public async hasDataForRefName(

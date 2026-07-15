@@ -1,58 +1,67 @@
 ---
 id: bedpeadapter
 title: BedpeAdapter
+sidebar_label: Adapter -> BedpeAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedpeAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedpeAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedpeAdapter.md)
-
-## Docs
-
-intended for SVs in a single assembly
-
-### BedpeAdapter - Pre-processor / simplified config
-
-preprocessor to allow minimal config:
-
-```json
+```js
 {
-  "type": "BedpeAdapter",
-  "uri": "yourfile.bedpe.gz"
+  type: 'VariantTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedpeAdapter',
+    uri: 'https://example.com/sv.bedpe',
+  },
 }
 ```
 
-### BedpeAdapter - Slots
+_See the **Config slots** section below for all available configuration fields._
+
+intended for SVs in a single assembly
+
+## Related links
+
+- **Track:** [VariantTrack](../varianttrack)
+- **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)
+- **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+- **Display:**
+  [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+- **Display:** [LinearVariantDisplay](../linearvariantdisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                 | Type           | Description                                                               |
+| ------------------------------------ | -------------- | ------------------------------------------------------------------------- |
+| [bedpeLocation](#slot-bedpelocation) | `fileLocation` | can be plaintext or gzipped, not indexed so loaded into memory on startup |
+| [columnNames](#slot-columnnames)     | `stringArray`  | List of column names                                                      |
+
+<details>
+<summary>BedpeAdapter - Slots</summary>
 
 #### slot: bedpeLocation
 
-```js
-bedpeLocation: {
-      type: 'fileLocation',
-      description:
-        'can be plaintext or gzipped, not indexed so loaded into memory on startup',
-      defaultValue: {
-        uri: '/path/to/my.bedpe.gz',
-        locationType: 'UriLocation',
-      },
-    }
-```
+can be plaintext or gzipped, not indexed so loaded into memory on startup
+
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bedpe.gz', locationType: 'UriLocation' }`
 
 #### slot: columnNames
 
-```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
-```
+List of column names
+
+**Type:** `stringArray` · **Default:** `[]`
+
+</details>

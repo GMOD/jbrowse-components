@@ -1,327 +1,213 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { getEnv } from '../util/index.ts'
-import { stringToJexlExpression } from '../util/jexlStrings.ts'
+import { isCallbackValue } from './slotValueUtils.ts'
+import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 
-import type {
-  IAnyComplexType,
-  IAnyModelType,
-  IAnyType,
-} from '@jbrowse/mobx-state-tree'
+import type { JexlInstance } from '../util/jexlStrings.ts'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
-function isValidColorString(_str: string) {
-  // placeholder — all strings accepted; real CSS validation can be added later
-  return true
-}
-const typeModels: Record<string, IAnyType> = {
-  stringArray: types.array(types.string),
-  stringArrayMap: types.map(types.array(types.string)),
-  numberMap: types.map(types.number),
-  boolean: types.boolean,
-  color: types.refinement('Color', types.string, isValidColorString),
-  integer: types.integer,
-  number: types.number,
-  string: types.string,
-  text: types.string,
-  fileLocation: FileLocation,
-  frozen: types.frozen(),
+interface SlotTypeSpec {
+  /** MST type of the slot's value */
+  model: IAnyType
+  /**
+   * value substituted when the config editor converts a callback back to a
+   * fixed value but the slot's own default is itself a callback (see
+   * `toFixedValue`). Omitted for `maybeNumber`/`maybeBoolean`, whose fixed form
+   * is genuinely "unset" — that conversion path throws instead.
+   */
+  fallbackDefault?: unknown
 }
 
-// default values we use if the defaultValue is malformed or does not work
-const fallbackDefaults: Record<string, unknown> = {
-  stringArray: [],
-  stringArrayMap: {},
-  numberMap: {},
-  boolean: true,
-  color: 'black',
-  integer: 1,
-  number: 1,
-  string: '',
-  text: '',
-  fileLocation: { uri: '/path/to/resource.txt', locationType: 'UriLocation' },
-  frozen: {},
-}
-
-const literalJSON = (self: { value: unknown }) => ({
-  views: {
-    get valueJSON() {
-      return self.value
+// Single source of truth for the builtin slot type names, pairing each with its
+// MST value type and its editor fallback default. Keeping model + fallback in
+// one table means adding a slot type is one edit and can't half-register.
+const slotTypes: Record<string, SlotTypeSpec> = {
+  stringArray: { model: types.array(types.string), fallbackDefault: [] },
+  stringArrayMap: {
+    model: types.map(types.array(types.string)),
+    fallbackDefault: {},
+  },
+  numberMap: { model: types.map(types.number), fallbackDefault: {} },
+  boolean: { model: types.boolean, fallbackDefault: true },
+  // a color is just a string; the editor picks a color widget off the slot's
+  // `type` metadata, and values are accepted unvalidated (CSS names, hex, jexl)
+  color: { model: types.string, fallbackDefault: 'black' },
+  integer: { model: types.integer, fallbackDefault: 1 },
+  number: { model: types.number, fallbackDefault: 1 },
+  // a number that may be unset (`undefined`), so a display can distinguish "not
+  // explicitly set" (fall back to a computed/auto value) from an explicit
+  // number — e.g. a drag-resized track height. Defaults to `undefined`.
+  //
+  // There is deliberately no `maybeColor`/`maybeString`/etc.: nullability is
+  // only warranted when the value space has no natural in-band sentinel (every
+  // number is a legitimate height, so no magic number can mean "unset"). Types
+  // that already carry meaningful specials should use one — a `color` slot uses
+  // `''` for "no color" and a named theme-derived constant for "follow the
+  // theme" (see THEME_DERIVED_COLOR), keeping a concrete string flowing to every
+  // consumer (GPU packing, jexl, the editor) instead of forcing each to defend
+  // against `undefined`.
+  maybeNumber: { model: types.maybe(types.number) },
+  // a boolean that may be unset (`undefined`). Its reason to exist is
+  // `promotable` slots (see promotableDefaults.ts): a plain boolean spends its
+  // `false`-or-`true` default as the "inherit" signal, so a track can't pin that
+  // value back over an opposite session default. A boolean has no spare in-band
+  // value for "unset" — exactly the `maybeNumber` justification above — so an
+  // undefined-defaulted boolean lets `undefined` mean "inherit" while both `true`
+  // and `false` stay customizable. Pair with `promotedBase` for the value `undefined`
+  // resolves to. Read promotable slots with `getConfResolved` (never raw), which
+  // always yields a concrete boolean.
+  maybeBoolean: { model: types.maybe(types.boolean) },
+  string: { model: types.string, fallbackDefault: '' },
+  text: { model: types.string, fallbackDefault: '' },
+  fileLocation: {
+    model: FileLocation,
+    fallbackDefault: {
+      uri: '/path/to/resource.txt',
+      locationType: 'UriLocation',
     },
   },
-})
-
-const objectJSON = (self: { value: unknown }) => ({
-  views: {
-    get valueJSON() {
-      return JSON.stringify(self.value)
-    },
-  },
-})
-
-// custom actions for modifying the value models
-const typeModelExtensions: Record<string, (self: any) => any> = {
-  fileLocation: objectJSON,
-  number: literalJSON,
-  integer: literalJSON,
-  boolean: literalJSON,
-  frozen: objectJSON,
-  // special actions for working with stringArray slots
-  stringArray: (self: { value: string[] }) => ({
-    views: {
-      get valueJSON() {
-        return JSON.stringify(self.value)
-      },
-    },
-    actions: {
-      add(val: string) {
-        self.value.push(val)
-      },
-      removeAtIndex(idx: number) {
-        self.value.splice(idx, 1)
-      },
-      setAtIndex(idx: number, val: string) {
-        self.value[idx] = val
-      },
-    },
-  }),
-  stringArrayMap: (self: { value: Map<string, string[]> }) => ({
-    views: {
-      get valueJSON() {
-        return JSON.stringify(self.value)
-      },
-    },
-    actions: {
-      add(key: string, val: string[]) {
-        self.value.set(key, val)
-      },
-      remove(key: string) {
-        self.value.delete(key)
-      },
-      addToKey(key: string, val: string) {
-        const ar = self.value.get(key)
-        if (!ar) {
-          throw new Error(`${key} not found`)
-        }
-        ar.push(val)
-      },
-      removeAtKeyIndex(key: string, idx: number) {
-        const ar = self.value.get(key)
-        if (!ar) {
-          throw new Error(`${key} not found`)
-        }
-        ar.splice(idx, 1)
-      },
-      setAtKeyIndex(key: string, idx: number, val: string) {
-        const ar = self.value.get(key)
-        if (!ar) {
-          throw new Error(`${key} not found`)
-        }
-        ar[idx] = val
-      },
-    },
-  }),
-  numberMap: (self: { value: Map<string, number> }) => ({
-    views: {
-      get valueJSON() {
-        return JSON.stringify(self.value)
-      },
-    },
-    actions: {
-      add(key: string, val: number) {
-        self.value.set(key, val)
-      },
-      remove(key: string) {
-        self.value.delete(key)
-      },
-    },
-  }),
+  frozen: { model: types.frozen(), fallbackDefault: {} },
 }
 
-const JexlStringType = types.refinement('JexlString', types.string, str =>
-  str.startsWith('jexl:'),
-)
-function json(value: any) {
-  return value?.toJSON ? value.toJSON() : `"${value}"`
-}
+const JexlStringType = types.refinement('JexlString', types.string, isJexl)
+
 export interface ConfigSlotDefinition {
   /** human-readable description of the slot's meaning */
   description?: string
   /** custom base MST model for the slot's value */
-  model?: IAnyModelType | IAnyComplexType
+  model?: IAnyType
   /** name of the type of slot, e.g. "string", "number", "stringArray" */
   type: string
   /** default value of the slot */
   defaultValue: unknown
   /** parameter names of the function callback */
   contextVariable?: string[]
+  /**
+   * hide this slot behind a "Show advanced settings" toggle in the config
+   * editor, so common slots aren't crowded out by rarely-changed ones
+   */
+  advanced?: boolean
+  /**
+   * a user can promote this slot's current value to a session-wide default for
+   * all tracks of the same display type (track menu "make default"). A slot left
+   * at its `defaultValue` follows (inherits) that promoted default; any other
+   * value customizes the track. See `getConfResolved` / `promotableDefaults.ts`.
+   *
+   * By default the `defaultValue` doubles as the "inherit" signal, so a track
+   * can't customize that one value back over an opposite session default. A slot whose
+   * value space has no spare value to spend on that role sidesteps it with an
+   * explicit inherit sentinel + `promotedBase` (see below).
+   */
+  promotable?: boolean
+  /**
+   * For a `promotable` slot whose `defaultValue` is a dedicated **inherit
+   * sentinel** — either a spare enum member (displayMode's `'inherit'`) or the
+   * `undefined` of a `maybeBoolean`/`maybeNumber` — rather than a real value: the
+   * concrete value that sentinel resolves to when a track inherits and nothing
+   * is promoted. This is the CSS model — `defaultValue` is the `inherit` keyword
+   * (the inherit/stripped state), `promotedBase` is `initial` (the value at
+   * the bottom of the cascade). Its point is that every *real* value, including
+   * `promotedBase`, then becomes customizable over a session default. Omit for an
+   * ordinary promotable slot whose `defaultValue` is itself a usable value.
+   */
+  promotedBase?: unknown
+  /**
+   * For a `promotable` slot: an extra semantic check a stored value must pass,
+   * on top of the built-in type-shape check, before the cascade
+   * (`promotableDefaults.ts`'s `isUsableValue`) treats it as usable. Applies to
+   * both cascade tiers — a session-wide promoted default and a track's own saved
+   * value. Needed when a slot's shape alone can't catch a semantically-invalid
+   * value — e.g. alignments `colorBy`'s `.type` must name a currently-registered
+   * color scheme, not just be *some* string — so a stale scheme name (renamed or
+   * removed since the value was saved) degrades to "not usable" (falls back to
+   * the base) instead of reaching a lookup that assumes every `.type` is
+   * registered. Omit when the type-shape check alone is enough to trust the value.
+   */
+  validate?: (value: unknown) => boolean
 }
 
 /**
- * builds a MST model for a configuration slot
- *
- * @param slotName -
- * @param  definition -
+ * A configuration slot is a plain value-union MST property: the slot's value
+ * type, OR a `jexl:...` callback string. The value lives directly on the parent
+ * configuration model — there is no per-slot sub-model. `types.stripDefault`
+ * omits the property from the parent snapshot when it equals the default, so
+ * saved sessions stay minimal. Per-slot metadata
+ * (type/description/defaultValue/contextVariable) lives in the schema registry
+ * (a WeakMap keyed by the MST type, see schemaRegistry.ts); jexl callbacks are
+ * evaluated on read by `readConfObject`.
  */
-export default function ConfigSlot(
-  slotName: string,
-  {
-    description = '',
-    model,
-    type,
-    defaultValue,
-    contextVariable = [],
-  }: ConfigSlotDefinition,
-) {
+export default function ConfigSlot({
+  model,
+  type,
+  defaultValue,
+}: ConfigSlotDefinition) {
   if (!type) {
     throw new Error('type name required')
   }
-  model ??= typeModels[type]
-  if (!model) {
+  const valueModel = model ?? slotTypes[type]?.model
+  if (!valueModel) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
   }
-
-  if (defaultValue === undefined) {
+  // `maybeNumber`/`maybeBoolean` intentionally default to `undefined` (the
+  // "unset" state); every other slot type must declare a concrete default so a
+  // missing one is caught as an authoring mistake.
+  if (
+    defaultValue === undefined &&
+    type !== 'maybeNumber' &&
+    type !== 'maybeBoolean'
+  ) {
     throw new Error("no 'defaultValue' provided")
   }
 
-  const configSlotModelName = `${slotName.charAt(0).toUpperCase()}${slotName.slice(1)}ConfigSlot`
-  let slot = types
-    .model(configSlotModelName, {
-      name: types.literal(slotName),
-      description: types.literal(description),
-      type: types.literal(type),
-      value: types.optional(types.union(JexlStringType, model), defaultValue),
-    })
-    .volatile(() => ({
-      contextVariable,
-      // editor-mode override: 'callback' or 'value' once the user has
-      // explicitly toggled or started typing. undefined means "follow
-      // isCallback" (i.e. derive from the value's prefix on first read).
-      editorModeOverride: undefined as 'callback' | 'value' | undefined,
-    }))
-    .views(self => ({
-      get isCallback() {
-        return String(self.value).startsWith('jexl:')
-      },
-    }))
-    .views(self => ({
-      get editorIsCallback() {
-        return self.editorModeOverride === undefined
-          ? self.isCallback
-          : self.editorModeOverride === 'callback'
-      },
-      get expr() {
-        const code = String(self.value)
-        return self.isCallback && code.length > 'jexl:'.length
-          ? stringToJexlExpression(code, getEnv(self).pluginManager.jexl)
-          : {
-              eval: (_arg?: unknown) => self.value,
-            }
-      },
+  return types.stripDefault(
+    types.union(JexlStringType, valueModel),
+    defaultValue,
+  )
+}
 
-      // JS representation of the value of this slot, suitable
-      // for embedding in either JSON or a JS function string.
-      // many of the data types override this in typeModelExtensions
-      get valueJSON():
-        | unknown[]
-        | Record<string, unknown>
-        | string
-        | undefined {
-        return self.isCallback ? undefined : json(self.value)
-      },
-    }))
-    .views(self => ({
-      getValue(args: Record<string, unknown> = {}) {
-        return self.isCallback ? self.expr.eval(args) : self.value
-      },
-    }))
-    .preProcessSnapshot(val =>
-      // already the full slot shape (e.g. loaded from saved session)
-      typeof val === 'object' && val.name === slotName
-        ? val
-        : {
-            name: slotName,
-            description,
-            type,
-            value: val,
-          },
-    )
-    .postProcessSnapshot(snap => {
-      // omit the value when it equals the default so snapshots stay minimal;
-      // JSON.stringify comparison handles object/array defaults
-      if (typeof snap.value === 'object') {
-        return JSON.stringify(snap.value) !== JSON.stringify(defaultValue)
-          ? snap.value
-          : undefined
-      }
-      return snap.value !== defaultValue ? snap.value : undefined
-    })
-    .actions(self => ({
-      set(newVal: unknown) {
-        // pin the editor mode on first user input so that typing a "jexl:"
-        // prefix into a value field doesn't auto-swap to the callback editor
-        self.editorModeOverride ??= self.isCallback ? 'callback' : 'value'
-        self.value = newVal
-      },
-      reset() {
-        self.value = defaultValue
-        self.editorModeOverride = undefined
-      },
-      convertToCallback() {
-        self.editorModeOverride = 'callback'
-        if (self.isCallback) {
-          return
-        }
-        // ?? not || so that falsy values like false/0 are preserved
-        self.value = `jexl:${self.valueJSON ?? "''"}`
-      },
-      convertToValue() {
-        self.editorModeOverride = 'value'
-        if (!self.isCallback) {
-          return
-        }
-        // try calling it with no arguments
-        try {
-          const funcResult = self.expr.eval()
-          if (funcResult !== undefined) {
-            self.value = funcResult
-            return
-          }
-        } catch (e) {
-          /* ignore */
-        }
-        self.value = defaultValue
-        // if defaultValue is also a jexl callback, fall back to the
-        // hardcoded type default
-        if (
-          typeof defaultValue === 'string' &&
-          defaultValue.startsWith('jexl:')
-        ) {
-          if (!(type in fallbackDefaults)) {
-            throw new Error(`no fallbackDefault defined for type ${type}`)
-          }
-          self.value = fallbackDefaults[type]
-        }
-      },
-    }))
+/**
+ * New value when converting a fixed-value slot to a jexl callback. Already-
+ * callback values are returned unchanged.
+ *
+ * A single JSON.stringify covers every type: `jexl:${42}` and
+ * `jexl:${JSON.stringify(42)}` are identical for numbers/booleans, and the rest
+ * need the quoting/serialization anyway.
+ */
+export function toCallbackValue(value: unknown) {
+  return isCallbackValue(value) ? value : `jexl:${JSON.stringify(value)}`
+}
 
-  // if there are any type-specific extensions (views or actions)
-  //  to the slot, add those in
-  if (typeModelExtensions[type]) {
-    slot = slot.extend(typeModelExtensions[type])
+/**
+ * New value when converting a jexl callback back to a fixed value: try
+ * evaluating with no args, else fall back to the slot default (and to the slot
+ * type's `fallbackDefault` if the default is itself a callback).
+ */
+export function toFixedValue(
+  value: unknown,
+  type: string,
+  defaultValue: unknown,
+  jexl: JexlInstance,
+) {
+  if (!isCallbackValue(value)) {
+    return value
   }
-
-  const completeModel = types.optional(slot, {
-    name: slotName,
-    type,
-    description,
-    value: defaultValue,
-  })
-  Object.defineProperty(completeModel, 'isJBrowseConfigurationSlot', {
-    value: true,
-  })
-  return completeModel
+  try {
+    const result = stringToJexlExpression(value, jexl).eval()
+    if (result !== undefined) {
+      return result
+    }
+  } catch {
+    /* fall through to default */
+  }
+  if (isCallbackValue(defaultValue)) {
+    const spec = slotTypes[type]
+    if (spec?.fallbackDefault === undefined) {
+      throw new Error(`no fallbackDefault defined for type ${type}`)
+    }
+    return spec.fallbackDefault
+  }
+  return defaultValue
 }

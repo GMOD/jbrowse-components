@@ -1,0 +1,35 @@
+import type { ManhattanRpcResult } from '../../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanHit } from '../findManhattanHit.ts'
+import type {
+  ManhattanRenderState,
+  ManhattanRenderingBackend,
+} from '../manhattanRenderingBackendTypes.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
+import type Flatbush from '@jbrowse/core/util/flatbush'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
+
+// Component-facing slice of LinearManhattanDisplayModel. Hand-rolled to avoid
+// a circular type between stateModelFactory.ts (lazy-imports the component)
+// and the component (which would otherwise import the inferred model type).
+export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
+  ManhattanRenderingBackend,
+  ManhattanRpcResult
+> {
+  view: LinearGenomeViewModel
+  renderBlocks: RenderBlock[]
+  regionRefNames: ReadonlyMap<number, string>
+  flatbushes: ReadonlyMap<number, Flatbush>
+  renderState: ManhattanRenderState
+  scatterPointSize: number
+  featureUnderMouse: ManhattanHit | undefined
+  ldColoringActive: boolean
+  indexSnpMissing: boolean
+  indexSnpOffscreen: boolean
+  showLdLegend: boolean
+  setFeatureUnderMouse: (hit: ManhattanHit | undefined) => void
+  selectFeature: (hit: ManhattanHit) => void
+  contextMenuItems: (hit: ManhattanHit) => MenuItem[]
+  setShowLdLegend: (val: boolean) => void
+}

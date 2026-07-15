@@ -1,9 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config SequenceSearchAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const configSchema = ConfigurationSchema(
   'SequenceSearchAdapter',
@@ -47,5 +48,7 @@ const configSchema = ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export type SequenceSearchAdapterConfig = Instance<typeof configSchema>
 
 export default configSchema

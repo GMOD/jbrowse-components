@@ -89,7 +89,7 @@
       },
       "displays": [
         {
-          "type": "LinearVariantMatrixDisplay"
+          "type": "LinearMultiSampleVariantMatrixDisplay"
         }
       ]
     },

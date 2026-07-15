@@ -1,669 +1,1484 @@
 ---
 id: sharedldmodel
 title: SharedLDModel
+sidebar_label: Display -> SharedLDModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`variants` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/shared.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+Shared state model for LD displays
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/variants/src/LDDisplay/shared.ts)
+## Members
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SharedLDModel.md)
+| Member                                                                 | Kind       | Defined by                                                | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------- | ---------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [configuration](#property-configuration)                               | Properties | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [rpcData](#volatile-rpcdata)                                           | Volatiles  | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [focalSnpLocus](#volatile-focalsnplocus)                               | Volatiles  | SharedLDModel                                             | Locus (`refName:start`) of the focal SNP whose LD row+column is emphasized, or undefined. Keyed by locus rather than array index so the selection survives a re-fetch that reorders SNPs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [prefersOffset](#getter-prefersoffset)                                 | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [minorAlleleFrequencyFilter](#getter-minorallelefrequencyfilter)       | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [lengthCutoffFilter](#getter-lengthcutofffilter)                       | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [lineZoneHeight](#getter-linezoneheight)                               | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [ldMetric](#getter-ldmetric)                                           | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [showLegend](#getter-showlegend)                                       | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [showLDTriangle](#getter-showldtriangle)                               | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [showRecombination](#getter-showrecombination)                         | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [recombinationZoneHeight](#getter-recombinationzoneheight)             | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [fitToHeight](#getter-fittoheight)                                     | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [hweFilterThreshold](#getter-hwefilterthreshold)                       | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [callRateFilter](#getter-callratefilter)                               | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [showVerticalGuides](#getter-showverticalguides)                       | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [showLabels](#getter-showlabels)                                       | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [tickHeight](#getter-tickheight)                                       | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [useGenomicPositions](#getter-usegenomicpositions)                     | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [signedLD](#getter-signedld)                                           | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [jexlFilters](#getter-jexlfilters)                                     | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [snps](#getter-snps)                                                   | Getters    | SharedLDModel                                             | Returns true if this display uses pre-computed LD data (PLINK, ldmat) rather than computing LD from VCF genotypes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [cellWidth](#getter-cellwidth)                                         | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [filterStats](#getter-filterstats)                                     | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [recombination](#getter-recombination)                                 | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [dataLoaded](#getter-dataloaded)                                       | Getters    | SharedLDModel                                             | Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady` (analog of `viewportWithinLoadedData`). The fetch commits `rpcData` even for an empty viewport, so this flips true once data has loaded AND that data was fetched for the current viewport. Gating on freshness — not merely `rpcData !== null` — keeps off-screen `svgReady` from resolving on data left over from the pre-pan/zoom viewport during the debounced-refetch window (`setLastDrawnViewport` runs right after `setRpcData`). Without the override the mixin default (`false`) leaves `svgReady` unable to resolve on a successful load, hanging SVG export.                                                     |
+| [isPrecomputedLD](#getter-isprecomputedld)                             | Getters    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [effectiveLdMetric](#getter-effectiveldmetric)                         | Getters    | SharedLDModel                                             | Metric the loaded data actually represents. A pre-computed file with no D' column downgrades a 'dprime' request to 'r2', so the legend and the metric radios read this rather than the raw requested `ldMetric`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [dprimeAvailable](#getter-dprimeavailable)                             | Getters    | SharedLDModel                                             | Whether the D' metric can be shown — false only for a pre-computed file lacking a DP column, which disables the D' option.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [ldMethod](#getter-ldmethod)                                           | Getters    | SharedLDModel                                             | How the loaded LD values were derived: 'phased' (exact haplotypic), 'composite' (Weir estimate from unphased genotypes), or 'precomputed' (read from a PLINK/ldmat file). Undefined until data loads.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [focalSnpIndex](#getter-focalsnpindex)                                 | Getters    | SharedLDModel                                             | Array index of the focal SNP in the current `snps`, or -1 if none is selected or the locus is no longer present after a re-fetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [effectiveLineZoneHeight](#getter-effectivelinezoneheight)             | Getters    | SharedLDModel                                             | Pixel height of the SVG zone above the canvas (variant labels + lines, or recombination scale). The hit-test subtracts this from mouseY before reversing the render transform.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [ldCanvasHeight](#getter-ldcanvasheight)                               | Getters    | SharedLDModel                                             | Effective height for the LD canvas (total height minus the zone the recombination overlay / variant lines occupy above the matrix).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [yScalar](#getter-yscalar)                                             | Getters    | SharedLDModel                                             | Per-frame yScalar squash factor. When fitToHeight is on, squashes the natural (canvasWidth/2) triangle into ldCanvasHeight. Lives on the main thread so resize doesn't trigger a worker re-fetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [renderTransform](#getter-rendertransform)                             | Getters    | SharedLDModel                                             | Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test, and the matrix→genomic-position SVG lines. See `computeRenderTransform` for the math.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [renderState](#getter-renderstate)                                     | Getters    | SharedLDModel                                             | Per-frame render state for the GPU backend. Read by the upload/render autorun — every change to any tracked observable (view.bpPerPx, view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [rpcProps](#method-rpcprops)                                           | Methods    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [hitTest](#method-hittest)                                             | Methods    | SharedLDModel                                             | Inverse of `renderTransform` for the LD matrix: takes mouse coords (canvas-relative) and returns the LD cell under the cursor, or undefined. Mirrors plugins/hic's `hitTest` so both contact maps keep the forward and inverse transforms paired on the model.                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [filterMenuItems](#method-filtermenuitems)                             | Methods    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [legendItems](#method-legenditems)                                     | Methods    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [svgLegendWidth](#method-svglegendwidth)                               | Methods    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [trackMenuItems](#method-trackmenuitems)                               | Methods    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [renderSvg](#method-rendersvg)                                         | Methods    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setRpcData](#action-setrpcdata)                                       | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setFocalSnp](#action-setfocalsnp)                                     | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setLineZoneHeight](#action-setlinezoneheight)                         | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setMafFilter](#action-setmaffilter)                                   | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setLDMetric](#action-setldmetric)                                     | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setShowLegend](#action-setshowlegend)                                 | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setShowLDTriangle](#action-setshowldtriangle)                         | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setShowRecombination](#action-setshowrecombination)                   | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setFitToHeight](#action-setfittoheight)                               | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setHweFilter](#action-sethwefilter)                                   | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setCallRateFilter](#action-setcallratefilter)                         | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setShowVerticalGuides](#action-setshowverticalguides)                 | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setShowLabels](#action-setshowlabels)                                 | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setUseGenomicPositions](#action-setusegenomicpositions)               | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setSignedLD](#action-setsignedld)                                     | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setJexlFilters](#action-setjexlfilters)                               | Actions    | SharedLDModel                                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [startRenderingBackend](#action-startrenderingbackend)                 | Actions    | SharedLDModel                                             | Starts the upload/render autorun. Data + color ramp both derive from the same rpcData object, so a single identity-diffed slot handles both uploads.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [performLDFetch](#action-performldfetch)                               | Actions    | SharedLDModel                                             | Re-fetches LD matrix for the current viewport. Both the autorun (in `afterAttach`) and `reload()` invoke this directly.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [id](#property-id)                                                     | Properties | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [type](#property-type)                                                 | Properties | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [rpcDriverName](#property-rpcdrivername)                               | Properties | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [ignorePromotedDefaults](#property-ignorepromoteddefaults)             | Properties | [BaseDisplay](../basedisplay)                             | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL). Such a display resolves its `promotable` config slots from its own config only, never from this browser's promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the received session is a record of what the sender saw, and a local preference silently repainting it would make it a lie. A track opened _afterwards_ in that same session is a fresh track of this user's, so it never gets the flag and picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user deliberately makes the display follow a default. |
+| [error](#volatile-error)                                               | Volatiles  | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [statusMessage](#volatile-statusmessage)                               | Volatiles  | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [statusProgress](#volatile-statusprogress)                             | Volatiles  | [BaseDisplay](../basedisplay)                             | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [parentTrack](#getter-parenttrack)                                     | Getters    | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [parentDisplay](#getter-parentdisplay)                                 | Getters    | [BaseDisplay](../basedisplay)                             | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [RenderingComponent](#getter-renderingcomponent)                       | Getters    | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [DisplayBlurb](#getter-displayblurb)                                   | Getters    | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [adapterConfig](#getter-adapterconfig)                                 | Getters    | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [isMinimized](#getter-isminimized)                                     | Getters    | [BaseDisplay](../basedisplay)                             | Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [effectiveRpcDriverName](#getter-effectiverpcdrivername)               | Getters    | [BaseDisplay](../basedisplay)                             | Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [DisplayMessageComponent](#getter-displaymessagecomponent)             | Getters    | [BaseDisplay](../basedisplay)                             | if a display-level message should be displayed instead, make this return a react component                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [renderingProps](#method-renderingprops)                               | Methods    | [BaseDisplay](../basedisplay)                             | props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [regionCannotBeRendered](#method-regioncannotberendered)               | Methods    | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults)         | Actions    | [BaseDisplay](../basedisplay)                             | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setStatusMessage](#action-setstatusmessage)                           | Actions    | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setError](#action-seterror)                                           | Actions    | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setRpcDriverName](#action-setrpcdrivername)                           | Actions    | [BaseDisplay](../basedisplay)                             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [reload](#action-reload)                                               | Actions    | [BaseDisplay](../basedisplay)                             | base display reload does nothing, see specialized displays for details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [scrollTop](#volatile-scrolltop)                                       | Volatiles  | [TrackHeightMixin](../trackheightmixin)                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [height](#getter-height)                                               | Getters    | [TrackHeightMixin](../trackheightmixin)                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setScrollTop](#action-setscrolltop)                                   | Actions    | [TrackHeightMixin](../trackheightmixin)                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setHeight](#action-setheight)                                         | Actions    | [TrackHeightMixin](../trackheightmixin)                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [resizeHeight](#action-resizeheight)                                   | Actions    | [TrackHeightMixin](../trackheightmixin)                   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [displayPhase](#getter-displayphase)                                   | Getters    | [GlobalDataDisplayMixin](../globaldatadisplaymixin)       | Same precedence as MultiRegionDisplayMixin (single-sourced in `computeDisplayPhase`). A global display has no per-region staleness axis — it either has its one dataset or is fetching it — so its `loading` axis is simply "fetch in flight". Reads `renderError` (RenderLifecycleMixin), which is why it lives here, not in GlobalFetchMixin.                                                                                                                                                                                                                                                                                                                                                          |
+| [reloadCounter](#volatile-reloadcounter)                               | Volatiles  | [GlobalFetchMixin](../globalfetchmixin)                   | Bumped by `reload()` to retrigger a global display's fetch autorun. Each display reads `void self.reloadCounter` in its `afterAttach` fetch autorun so a user-initiated reload re-runs the fetch even when no viewport/setting changed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                 | Getters    | [GlobalFetchMixin](../globalfetchmixin)                   | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [svgReady](#getter-svgready)                                           | Getters    | [GlobalFetchMixin](../globalfetchmixin)                   | Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an off-screen (SVG) export can read final data. Like that mixin it requires the dataset to actually be loaded (or a terminal error / too-large / extra state), NOT merely "not currently fetching": the fetch trigger is a debounced `afterAttach` autorun, so at export time `isLoading` can still be false with no data yet — a `displayPhase !== 'loading'` test would then capture an empty render. Never gates on `canvasDrawn`, which an off-screen export never sets. Off-screen renderers gate on it via `awaitSvgReady(model)`.                                                                                          |
+| [userByteSizeLimit](#property-userbytesizelimit)                       | Properties | [RegionTooLargeMixin](../regiontoolargemixin)             | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [featureDensityStats](#volatile-featuredensitystats)                   | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [byteEstimateVisibleBp](#volatile-byteestimatevisiblebp)               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)             | visibleBp at which the current `featureDensityStats` byte estimate was captured, so the derived gate (`estimatedVisibleBytes`) can scale it to the current view. Written by `setFeatureDensityStats`; ignored unless `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)             | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [estimatedVisibleBytes](#getter-estimatedvisiblebytes)                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)             | The cached byte estimate scaled from the span it was measured over (`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to span, so scaling makes the derived verdict a pure function of the current view and self-releases on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                           |
+| [tooLargeStatus](#getter-toolargestatus)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)             | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in. Same helper as every other gating path so the banner text can't drift.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [regionTooLarge](#getter-regiontoolarge)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [regionTooLargeReason](#getter-regiontoolargereason)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [regionCannotBeRenderedText](#method-regioncannotberenderedtext)       | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)             | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [setFeatureDensityStats](#action-setfeaturedensitystats)               | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)             | Commits the byte estimate and records the span it was measured at (`byteEstimateVisibleBp`) so the derived gate can scale it to the current view. The capture is harmless for non-gated displays (they ignore it).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)     | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)             | force-load: raise the byte limit past the current request so the gate releases. Raises past the estimate scaled to the _current_ view (not the raw captured bytes), so it clears even if the view zoomed out after the estimate was captured; `raiseLimitPast` is the raw fallback for a display with no scaled estimate. Canvas (which also has a density force-load) overrides this entirely.                                                                                                                                                                                                                                                                                                          |
+| [forceLoad](#action-forceload)                                         | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)             | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [activeStopToken](#volatile-activestoptoken)                           | Volatiles  | [FetchMixin](../fetchmixin)                               | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [fetchGeneration](#volatile-fetchgeneration)                           | Volatiles  | [FetchMixin](../fetchmixin)                               | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [fetchCanceled](#volatile-fetchcanceled)                               | Volatiles  | [FetchMixin](../fetchmixin)                               | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`, it does not retrigger the fetch autoruns — so the load stays stopped until the user retries (`reload`) or the viewport changes. Any new fetch clears it (`runFetch` resets it at the start).                                                                                                                                                                                                                                                                                                                                                |
+| [regionStatuses](#volatile-regionstatuses)                             | Volatiles  | [FetchMixin](../fetchmixin)                               | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex). Plain bookkeeping — not read reactively; setRegionStatus derives the observable statusMessage/statusProgress from it on every update so N parallel region fetches aggregate into one bar instead of clobbering.                                                                                                                                                                                                                                                                                                                                                           |
+| [lastStatusMs](#volatile-laststatusms)                                 | Volatiles  | [FetchMixin](../fetchmixin)                               | Date.now() of the last applied status write; the status callbacks gate on it to throttle a high-frequency progress stream.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [isLoading](#getter-isloading)                                         | Getters    | [FetchMixin](../fetchmixin)                               | true while a fetch is active                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [makeStatusCallback](#method-makestatuscallback)                       | Methods    | [FetchMixin](../fetchmixin)                               | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard at every call site.                                                                                                                                                                                                                                                                                                                                                          |
+| [makeRegionStatusCallback](#method-makeregionstatuscallback)           | Methods    | [FetchMixin](../fetchmixin)                               | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other. Same `isAlive` guard.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [throttleStatus](#action-throttlestatus)                               | Actions    | [FetchMixin](../fetchmixin)                               | Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last status write. A leading-edge throttle: sparse updates pass straight through, dense progress bursts are thinned so the loading overlay stops re-rendering faster than the view animates. The final status doesn't need a trailing flush — fetch completion clears it via `resetStatus`.                                                                                                                                                                                                                                                                                                                                       |
+| [resetStatus](#action-resetstatus)                                     | Actions    | [FetchMixin](../fetchmixin)                               | Drop the active stop token and clear all status bookkeeping. Shared by both cancel paths and runFetch's cleanup.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [stopActiveFetch](#action-stopactivefetch)                             | Actions    | [FetchMixin](../fetchmixin)                               | Abort the in-flight fetch (if any) and clear its status. The shared preamble of both cancel paths; the difference between them is only what they do to `fetchCanceled` / `fetchGeneration` afterward.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [setRegionStatus](#action-setregionstatus)                             | Actions    | [FetchMixin](../fetchmixin)                               | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys. Pass undefined to drop a key. Used by displays that fan a single fetch out into parallel per-region RPCs.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [cancelFetch](#action-cancelfetch)                                     | Actions    | [FetchMixin](../fetchmixin)                               | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight). This is the _internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any user-cancel flag so the retrigger actually re-fetches.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [cancelFetchByUser](#action-cancelfetchbyuser)                         | Actions    | [FetchMixin](../fetchmixin)                               | User-initiated cancel from the loading overlay. Stops the in-flight fetch and lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns don't immediately restart the load. The user retries via `reload` (the overlay's retry button), or it clears on the next viewport change.                                                                                                                                                                                                                                                                                                                                                         |
+| [runFetch](#action-runfetch)                                           | Actions    | [FetchMixin](../fetchmixin)                               | Run a cancel-safe fetch (cancels any prior). The work callback gets a FetchContext with a stopToken to forward to the RPC and an isStale() check to short-circuit commits once the user has moved on. Abort errors are swallowed; others are stored in `error` if not stale.                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [canvasDrawn](#volatile-canvasdrawn)                                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)           | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [currentRenderingBackend](#volatile-currentrenderingbackend)           | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)           | current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.                                                                                                                                                                                                                                                                                                                                                    |
+| [renderTick](#volatile-rendertick)                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)           | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [autorunsInstalled](#volatile-autorunsinstalled)                       | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)           | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [renderError](#volatile-rendererror)                                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)           | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay).                                                                                                                                                                                                                                                                              |
+| [markCanvasDrawn](#action-markcanvasdrawn)                             | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [resetCanvasDrawn](#action-resetcanvasdrawn)                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [stopRenderingBackend](#action-stoprenderingbackend)                   | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [renderNow](#action-rendernow)                                         | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setRenderError](#action-setrendererror)                               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)           | set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [attachRenderingBackend](#action-attachrenderingbackend)               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)           | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [lastDrawnOffsetPx](#volatile-lastdrawnoffsetpx)                       | Volatiles  | [StaleViewportRescaleMixin](../staleviewportrescalemixin) | offsetPx of the viewport when the canvas was last fully drawn                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [lastDrawnBpPerPx](#volatile-lastdrawnbpperpx)                         | Volatiles  | [StaleViewportRescaleMixin](../staleviewportrescalemixin) | bpPerPx of the viewport when the canvas was last fully drawn                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [setLastDrawnViewport](#action-setlastdrawnviewport)                   | Actions    | [StaleViewportRescaleMixin](../staleviewportrescalemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
-## Docs
-
-Shared state model for LD displays extends
-
-- [BaseDisplay](../basedisplay)
-- [TrackHeightMixin](../trackheightmixin)
-- [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
-
-### SharedLDModel - Properties
+<details>
+<summary>SharedLDModel - Properties</summary>
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: minorAlleleFrequencyFilterSetting
+</details>
 
-When undefined, falls back to config value
+<details>
+<summary>SharedLDModel - Volatiles</summary>
 
-```js
+#### volatile: focalSnpLocus
+
+Locus (`refName:start`) of the focal SNP whose LD row+column is emphasized, or
+undefined. Keyed by locus rather than array index so the selection survives a
+re-fetch that reorders SNPs.
+
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type focalSnpLocus = string | undefined
 // code
-minorAlleleFrequencyFilterSetting: types.maybe(types.number)
+focalSnpLocus: undefined as string | undefined
 ```
 
-#### property: lengthCutoffFilterSetting
+</details>
 
-When undefined, falls back to config value
+<details>
+<summary>SharedLDModel - Volatiles (other undocumented members)</summary>
 
-```js
+#### volatile: rpcData
+
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type rpcData = LDDataResult | null
 // code
-lengthCutoffFilterSetting: types.maybe(types.number)
+rpcData: null as LDDataResult | null
 ```
 
-#### property: lineZoneHeightSetting
+</details>
 
-When undefined, falls back to config value Height of the zone for connecting
-lines at the top
+<details>
+<summary>SharedLDModel - Getters</summary>
 
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-lineZoneHeightSetting: types.maybe(types.number)
-```
-
-#### property: ldMetricSetting
-
-When undefined, falls back to config value LD metric to compute: 'r2' (squared
-correlation) or 'dprime' (normalized D)
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-ldMetricSetting: types.maybe(types.string)
-```
-
-#### property: colorSchemeSetting
-
-When undefined, falls back to config value
-
-```js
-// type signature
-IMaybe<ISimpleType<string>>
-// code
-colorSchemeSetting: types.maybe(types.string)
-```
-
-#### property: showLegendSetting
-
-When undefined, falls back to config value
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showLegendSetting: types.maybe(types.boolean)
-```
-
-#### property: showLDTriangleSetting
-
-When undefined, falls back to config value Whether to show the LD triangle
-heatmap
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showLDTriangleSetting: types.maybe(types.boolean)
-```
-
-#### property: showRecombinationSetting
-
-When undefined, falls back to config value Whether to show the recombination
-rate track
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showRecombinationSetting: types.maybe(types.boolean)
-```
-
-#### property: recombinationZoneHeightSetting
-
-When undefined, falls back to config value Height of the recombination track
-zone at the top
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-recombinationZoneHeightSetting: types.maybe(types.number)
-```
-
-#### property: fitToHeightSetting
-
-When undefined, falls back to config value When true, squash the LD triangle to
-fit the display height
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-fitToHeightSetting: types.maybe(types.boolean)
-```
-
-#### property: hweFilterThresholdSetting
-
-When undefined, falls back to config value HWE filter p-value threshold
-(variants with HWE p < this are excluded) Set to 0 to disable HWE filtering
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-hweFilterThresholdSetting: types.maybe(types.number)
-```
-
-#### property: callRateFilterSetting
-
-When undefined, falls back to config value Call rate filter threshold (0-1).
-Variants with fewer than this proportion of non-missing genotypes are excluded.
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-callRateFilterSetting: types.maybe(types.number)
-```
-
-#### property: showVerticalGuidesSetting
-
-When undefined, falls back to config value Whether to show vertical guides at
-the connected genome positions on hover
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showVerticalGuidesSetting: types.maybe(types.boolean)
-```
-
-#### property: showLabelsSetting
-
-When undefined, falls back to config value Whether to show variant labels above
-the tick marks
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-showLabelsSetting: types.maybe(types.boolean)
-```
-
-#### property: tickHeightSetting
-
-When undefined, falls back to config value Height of the vertical tick marks at
-the genomic position
-
-```js
-// type signature
-IMaybe<ISimpleType<number>>
-// code
-tickHeightSetting: types.maybe(types.number)
-```
-
-#### property: useGenomicPositionsSetting
-
-When undefined, falls back to config value When true, draw cells sized according
-to genomic distance between SNPs rather than uniform squares
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-useGenomicPositionsSetting: types.maybe(types.boolean)
-```
-
-#### property: signedLDSetting
-
-When undefined, falls back to config value When true, show signed LD values (-1
-to 1) instead of absolute values
-
-```js
-// type signature
-IMaybe<ISimpleType<boolean>>
-// code
-signedLDSetting: types.maybe(types.boolean)
-```
-
-#### property: jexlFiltersSetting
-
-When undefined, falls back to config value JEXL filter expressions to apply to
-variants
-
-```js
-// type signature
-IMaybe<IArrayType<ISimpleType<string>>>
-// code
-jexlFiltersSetting: types.maybe(types.array(types.string))
-```
-
-### SharedLDModel - Getters
-
-#### getter: blockType
-
-```js
-// type
-string
-```
-
-#### getter: prefersOffset
-
-```js
-// type
-boolean
-```
-
-#### getter: rendererTypeName
-
-```js
-// type
-string
-```
-
-#### getter: rendererConfig
-
-```js
-// type
-any
-```
-
-#### getter: regionTooLarge
-
-```js
-// type
-boolean
-```
-
-#### getter: minorAlleleFrequencyFilter
-
-Returns the effective minor allele frequency filter, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: lengthCutoffFilter
-
-Returns the effective length cutoff filter, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: lineZoneHeight
-
-Returns the effective line zone height, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: ldMetric
-
-Returns the effective LD metric, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: colorScheme
-
-Returns the effective color scheme, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showLegend
-
-Returns the effective show legend setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showLDTriangle
-
-Returns the effective show LD triangle setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showRecombination
-
-Returns the effective show recombination setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: recombinationZoneHeight
-
-Returns the effective recombination zone height, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: fitToHeight
-
-Returns the effective fit to height setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: hweFilterThreshold
-
-Returns the effective HWE filter threshold, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: callRateFilter
-
-Returns the effective call rate filter threshold, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showVerticalGuides
-
-Returns the effective show vertical guides setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: showLabels
-
-Returns the effective show labels setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: tickHeight
-
-Returns the effective tick height, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: useGenomicPositions
-
-Returns the effective use genomic positions setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: signedLD
-
-Returns the effective signed LD setting, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: jexlFilters
-
-Returns the effective jexl filters, falling back to config
-
-```js
-// type
-any
-```
-
-#### getter: isPrecomputedLD
+#### getter: snps
 
 Returns true if this display uses pre-computed LD data (PLINK, ldmat) rather
 than computing LD from VCF genotypes
 
-```js
-// type
-boolean
+```ts
+type snps = LDSnp[]
+```
+
+#### getter: dataLoaded
+
+Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady`
+(analog of `viewportWithinLoadedData`). The fetch commits `rpcData` even for an
+empty viewport, so this flips true once data has loaded AND that data was
+fetched for the current viewport. Gating on freshness — not merely
+`rpcData !== null` — keeps off-screen `svgReady` from resolving on data left
+over from the pre-pan/zoom viewport during the debounced-refetch window
+(`setLastDrawnViewport` runs right after `setRpcData`). Without the override the
+mixin default (`false`) leaves `svgReady` unable to resolve on a successful
+load, hanging SVG export.
+
+```ts
+type dataLoaded = boolean
+```
+
+#### getter: effectiveLdMetric
+
+Metric the loaded data actually represents. A pre-computed file with no D'
+column downgrades a 'dprime' request to 'r2', so the legend and the metric
+radios read this rather than the raw requested `ldMetric`.
+
+```ts
+type effectiveLdMetric = LDMetric
+```
+
+#### getter: dprimeAvailable
+
+Whether the D' metric can be shown — false only for a pre-computed file lacking
+a DP column, which disables the D' option.
+
+```ts
+type dprimeAvailable = boolean
+```
+
+#### getter: ldMethod
+
+How the loaded LD values were derived: 'phased' (exact haplotypic), 'composite'
+(Weir estimate from unphased genotypes), or 'precomputed' (read from a
+PLINK/ldmat file). Undefined until data loads.
+
+```ts
+type ldMethod = LDMethod | undefined
+```
+
+#### getter: focalSnpIndex
+
+Array index of the focal SNP in the current `snps`, or -1 if none is selected or
+the locus is no longer present after a re-fetch.
+
+```ts
+type focalSnpIndex = number
+```
+
+#### getter: effectiveLineZoneHeight
+
+Pixel height of the SVG zone above the canvas (variant labels + lines, or
+recombination scale). The hit-test subtracts this from mouseY before reversing
+the render transform.
+
+```ts
+type effectiveLineZoneHeight = any
 ```
 
 #### getter: ldCanvasHeight
 
-Effective height for the LD canvas (total height minus line zone) Note:
-Recombination track is overlaid on the line zone, not in a separate zone
+Effective height for the LD canvas (total height minus the zone the
+recombination overlay / variant lines occupy above the matrix).
 
-```js
-// type
-number
+```ts
+type ldCanvasHeight = number
 ```
 
-### SharedLDModel - Methods
+#### getter: yScalar
 
-#### method: regionCannotBeRendered
+Per-frame yScalar squash factor. When fitToHeight is on, squashes the natural
+(canvasWidth/2) triangle into ldCanvasHeight. Lives on the main thread so resize
+doesn't trigger a worker re-fetch.
 
-```js
-// type signature
-regionCannotBeRendered: () => null
+```ts
+type yScalar = number
+```
+
+#### getter: renderTransform
+
+Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test,
+and the matrix→genomic-position SVG lines. See `computeRenderTransform` for the
+math.
+
+```ts
+type renderTransform = RenderTransform
+```
+
+#### getter: renderState
+
+Per-frame render state for the GPU backend. Read by the upload/render autorun —
+every change to any tracked observable (view.bpPerPx, view.offsetPx,
+model.fitToHeight, rpcData contents, …) re-fires it.
+
+```ts
+type renderState =
+  | {
+      yScalar: number
+      canvasWidth: number
+      canvasHeight: number
+      signedLD: boolean
+      viewScale: number
+      viewOffsetX: number
+      uniformW: number
+    }
+  | undefined
+```
+
+</details>
+
+<details>
+<summary>SharedLDModel - Getters (other undocumented members)</summary>
+
+#### getter: derivedRegionTooLargeEnabled
+
+```ts
+type derivedRegionTooLargeEnabled = boolean
+```
+
+#### getter: configuredFetchSizeLimit
+
+```ts
+type configuredFetchSizeLimit = number
+```
+
+#### getter: prefersOffset
+
+```ts
+type prefersOffset = boolean
+```
+
+#### getter: minorAlleleFrequencyFilter
+
+```ts
+type minorAlleleFrequencyFilter = any
+```
+
+#### getter: lengthCutoffFilter
+
+```ts
+type lengthCutoffFilter = any
+```
+
+#### getter: lineZoneHeight
+
+```ts
+type lineZoneHeight = any
+```
+
+#### getter: ldMetric
+
+```ts
+type ldMetric = any
+```
+
+#### getter: showLegend
+
+```ts
+type showLegend = any
+```
+
+#### getter: showLDTriangle
+
+```ts
+type showLDTriangle = any
+```
+
+#### getter: showRecombination
+
+```ts
+type showRecombination = any
+```
+
+#### getter: recombinationZoneHeight
+
+```ts
+type recombinationZoneHeight = any
+```
+
+#### getter: fitToHeight
+
+```ts
+type fitToHeight = any
+```
+
+#### getter: hweFilterThreshold
+
+```ts
+type hweFilterThreshold = any
+```
+
+#### getter: callRateFilter
+
+```ts
+type callRateFilter = any
+```
+
+#### getter: showVerticalGuides
+
+```ts
+type showVerticalGuides = any
+```
+
+#### getter: showLabels
+
+```ts
+type showLabels = any
+```
+
+#### getter: tickHeight
+
+```ts
+type tickHeight = any
+```
+
+#### getter: useGenomicPositions
+
+```ts
+type useGenomicPositions = any
+```
+
+#### getter: signedLD
+
+```ts
+type signedLD = any
+```
+
+#### getter: jexlFilters
+
+```ts
+type jexlFilters = string[]
+```
+
+#### getter: cellWidth
+
+```ts
+type cellWidth = number
+```
+
+#### getter: filterStats
+
+```ts
+type filterStats = FilterStats | undefined
+```
+
+#### getter: recombination
+
+```ts
+type recombination =
+  { values: Float32Array<ArrayBufferLike>; positions: number[] } | undefined
+```
+
+#### getter: isPrecomputedLD
+
+```ts
+type isPrecomputedLD = boolean
+```
+
+</details>
+
+<details>
+<summary>SharedLDModel - Methods</summary>
+
+#### method: hitTest
+
+Inverse of `renderTransform` for the LD matrix: takes mouse coords
+(canvas-relative) and returns the LD cell under the cursor, or undefined.
+Mirrors plugins/hic's `hitTest` so both contact maps keep the forward and
+inverse transforms paired on the model.
+
+```ts
+type hitTest = (mouseX: number, mouseY: number) => LDFlatbushItem | undefined
+```
+
+</details>
+
+<details>
+<summary>SharedLDModel - Methods (other undocumented members)</summary>
+
+#### method: rpcProps
+
+```ts
+type rpcProps = () => {
+  ldMetric: any
+  minorAlleleFrequencyFilter: any
+  lengthCutoffFilter: any
+  hweFilterThreshold: any
+  callRateFilter: any
+  jexlFilters: string[]
+  signedLD: any
+  useGenomicPositions: any
+}
 ```
 
 #### method: filterMenuItems
 
-```js
-// type signature
-filterMenuItems: () => { label: string; onClick: () => void; }[]
+```ts
+type filterMenuItems = () => { label: string; onClick: () => void }[]
 ```
 
-#### method: renderProps
+#### method: legendItems
 
-```js
-// type signature
-renderProps: () => any
+```ts
+type legendItems = () => LegendItem[]
+```
+
+#### method: svgLegendWidth
+
+```ts
+type svgLegendWidth = () => number
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+```ts
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
 
-```js
-// type signature
-renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
+```ts
+type renderSvg = (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 ```
 
-### SharedLDModel - Actions
+</details>
 
-#### action: setFlatbushData
+<details>
+<summary>SharedLDModel - Actions</summary>
 
-```js
-// type signature
-setFlatbushData: (flatbush: ArrayBufferLike | undefined, items: LDFlatbushItem[], snps: { id: string; refName: string; start: number; end: number; }[], maxScore: number, yScalar: number, cellWidth: number) => void
+#### action: startRenderingBackend
+
+Starts the upload/render autorun. Data + color ramp both derive from the same
+rpcData object, so a single identity-diffed slot handles both uploads.
+
+```ts
+type startRenderingBackend = (backend: LDRenderingBackend) => void
+```
+
+#### action: performLDFetch
+
+Re-fetches LD matrix for the current viewport. Both the autorun (in
+`afterAttach`) and `reload()` invoke this directly.
+
+```ts
+type performLDFetch = () => Promise<void>
+```
+
+</details>
+
+<details>
+<summary>SharedLDModel - Actions (other undocumented members)</summary>
+
+#### action: setRpcData
+
+```ts
+type setRpcData = (data: LDDataResult | null) => void
+```
+
+#### action: setFocalSnp
+
+```ts
+type setFocalSnp = (snp: LDSnp | undefined) => void
 ```
 
 #### action: setLineZoneHeight
 
-```js
-// type signature
-setLineZoneHeight: (n: number) => void
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (error: unknown) => void
-```
-
-#### action: reload
-
-```js
-// type signature
-reload: () => void
+```ts
+type setLineZoneHeight = (n: number) => void
 ```
 
 #### action: setMafFilter
 
-```js
-// type signature
-setMafFilter: (arg: number) => void
-```
-
-#### action: setLengthCutoffFilter
-
-```js
-// type signature
-setLengthCutoffFilter: (arg: number) => void
+```ts
+type setMafFilter = (arg: number) => void
 ```
 
 #### action: setLDMetric
 
-```js
-// type signature
-setLDMetric: (metric: string) => void
-```
-
-#### action: setColorScheme
-
-```js
-// type signature
-setColorScheme: (scheme: string | undefined) => void
+```ts
+type setLDMetric = (metric: LDMetric) => void
 ```
 
 #### action: setShowLegend
 
-```js
-// type signature
-setShowLegend: (show: boolean) => void
+```ts
+type setShowLegend = (show: boolean) => void
 ```
 
 #### action: setShowLDTriangle
 
-```js
-// type signature
-setShowLDTriangle: (show: boolean) => void
+```ts
+type setShowLDTriangle = (show: boolean) => void
 ```
 
 #### action: setShowRecombination
 
-```js
-// type signature
-setShowRecombination: (show: boolean) => void
-```
-
-#### action: setRecombinationZoneHeight
-
-```js
-// type signature
-setRecombinationZoneHeight: (n: number) => void
+```ts
+type setShowRecombination = (show: boolean) => void
 ```
 
 #### action: setFitToHeight
 
-```js
-// type signature
-setFitToHeight: (value: boolean) => void
+```ts
+type setFitToHeight = (value: boolean) => void
 ```
 
 #### action: setHweFilter
 
-```js
-// type signature
-setHweFilter: (threshold: number) => void
+```ts
+type setHweFilter = (threshold: number) => void
 ```
 
 #### action: setCallRateFilter
 
-```js
-// type signature
-setCallRateFilter: (threshold: number) => void
-```
-
-#### action: setFilterStats
-
-```js
-// type signature
-setFilterStats: (stats: FilterStats | undefined) => void
-```
-
-#### action: setRecombination
-
-```js
-// type signature
-setRecombination: (data: { values: number[]; positions: number[]; } | undefined) => void
+```ts
+type setCallRateFilter = (threshold: number) => void
 ```
 
 #### action: setShowVerticalGuides
 
-```js
-// type signature
-setShowVerticalGuides: (show: boolean) => void
+```ts
+type setShowVerticalGuides = (show: boolean) => void
 ```
 
 #### action: setShowLabels
 
-```js
-// type signature
-setShowLabels: (show: boolean) => void
-```
-
-#### action: setTickHeight
-
-```js
-// type signature
-setTickHeight: (height: number) => void
+```ts
+type setShowLabels = (show: boolean) => void
 ```
 
 #### action: setUseGenomicPositions
 
-```js
-// type signature
-setUseGenomicPositions: (value: boolean) => void
+```ts
+type setUseGenomicPositions = (value: boolean) => void
 ```
 
 #### action: setSignedLD
 
-```js
-// type signature
-setSignedLD: (value: boolean) => void
+```ts
+type setSignedLD = (value: boolean) => void
 ```
 
 #### action: setJexlFilters
 
-```js
-// type signature
-setJexlFilters: (filters: string[] | undefined) => void
+```ts
+type setJexlFilters = (filters: string[] | undefined) => void
 ```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from BaseDisplay</summary>
+
+[BaseDisplay →](../basedisplay)
+
+**Properties**
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<string>
+// code
+type: types.string
+```
+
+#### property: rpcDriverName
+
+```ts
+// type signature
+type rpcDriverName = IMaybe<ISimpleType<string>>
+// code
+rpcDriverName: types.maybe(types.string)
+```
+
+#### property: ignorePromotedDefaults
+
+true for a display that arrived inside a session received from someone else (a
+share link, an encoded/json session, a `spec-` URL). Such a display resolves its
+`promotable` config slots from its own config only, never from this browser's
+promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the
+received session is a record of what the sender saw, and a local preference
+silently repainting it would make it a lie. A track opened _afterwards_ in that
+same session is a fresh track of this user's, so it never gets the flag and
+picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user
+deliberately makes the display follow a default.
+
+```ts
+// type signature
+type ignorePromotedDefaults = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+ignorePromotedDefaults: types.stripDefault(types.boolean, false)
+```
+
+**Volatiles**
+
+#### volatile: error
+
+```ts
+// type signature
+type error = unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: statusMessage
+
+```ts
+// type signature
+type statusMessage = string | undefined
+// code
+statusMessage: undefined as string | undefined
+```
+
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate. Set alongside `statusMessage` by
+`setStatusMessage`; a display that never shows a bar simply leaves it undefined.
+
+```ts
+// type signature
+type statusProgress = number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
+**Getters**
+
+#### getter: parentTrack
+
+```ts
+type parentTrack = AbstractTrackModel
+```
+
+#### getter: parentDisplay
+
+Returns the parent display if this display is nested within another display
+(e.g., PileupDisplay inside LinearAlignmentsDisplay)
+
+```ts
+type parentDisplay =
+  | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
+  | undefined
+```
+
+#### getter: RenderingComponent
+
+```ts
+type RenderingComponent = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: ((distance: number) => void) | undefined;...
+```
+
+#### getter: DisplayBlurb
+
+```ts
+type DisplayBlurb = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
+```
+
+#### getter: adapterConfig
+
+```ts
+type adapterConfig = any
+```
+
+#### getter: isMinimized
+
+Returns true if the parent track is minimized. Used to skip expensive operations
+like autoruns when track is not visible.
+
+```ts
+type isMinimized = boolean
+```
+
+#### getter: effectiveRpcDriverName
+
+Returns the effective RPC driver name with hierarchical fallback:
+
+1. This display's explicit rpcDriverName
+2. Parent display's effectiveRpcDriverName (for nested displays)
+3. Track config's rpcDriverName
+
+```ts
+type effectiveRpcDriverName = any
+```
+
+#### getter: DisplayMessageComponent
+
+if a display-level message should be displayed instead, make this return a react
+component
+
+```ts
+type DisplayMessageComponent = FC<any> | undefined
+```
+
+**Methods**
+
+#### method: renderingProps
+
+props passed to the renderer's React "Rendering" component. these are
+client-side only and never sent to the worker. includes displayModel and
+callbacks
+
+```ts
+type renderingProps = () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
+```
+
+#### method: regionCannotBeRendered
+
+```ts
+type regionCannotBeRendered = () => null
+```
+
+**Actions**
+
+#### action: setIgnorePromotedDefaults
+
+see the `ignorePromotedDefaults` property
+
+```ts
+type setIgnorePromotedDefaults = (flag: boolean) => void
+```
+
+#### action: setStatusMessage
+
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
+```
+
+#### action: setError
+
+```ts
+type setError = (error?: unknown) => void
+```
+
+#### action: setRpcDriverName
+
+```ts
+type setRpcDriverName = (rpcDriverName: string) => void
+```
+
+#### action: reload
+
+base display reload does nothing, see specialized displays for details
+
+```ts
+type reload = () => void
+```
+
+</details>
+
+<details>
+<summary>Derived from TrackHeightMixin</summary>
+
+[TrackHeightMixin →](../trackheightmixin)
+
+**Volatiles**
+
+#### volatile: scrollTop
+
+```ts
+// type signature
+type scrollTop = number
+// code
+scrollTop: 0
+```
+
+**Getters**
+
+#### getter: height
+
+```ts
+type height = number
+```
+
+**Actions**
+
+#### action: setScrollTop
+
+```ts
+type setScrollTop = (scrollTop: number) => void
+```
+
+#### action: setHeight
+
+```ts
+type setHeight = (displayHeight: number) => number
+```
+
+#### action: resizeHeight
+
+```ts
+type resizeHeight = (distance: number) => number
+```
+
+</details>
+
+<details>
+<summary>Derived from GlobalDataDisplayMixin</summary>
+
+[GlobalDataDisplayMixin →](../globaldatadisplaymixin)
+
+**Getters**
+
+#### getter: displayPhase
+
+Same precedence as MultiRegionDisplayMixin (single-sourced in
+`computeDisplayPhase`). A global display has no per-region staleness axis — it
+either has its one dataset or is fetching it — so its `loading` axis is simply
+"fetch in flight". Reads `renderError` (RenderLifecycleMixin), which is why it
+lives here, not in GlobalFetchMixin.
+
+```ts
+type displayPhase = DisplayPhase
+```
+
+</details>
+
+<details>
+<summary>Derived from GlobalFetchMixin</summary>
+
+[GlobalFetchMixin →](../globalfetchmixin)
+
+**Volatiles**
+
+#### volatile: reloadCounter
+
+Bumped by `reload()` to retrigger a global display's fetch autorun. Each display
+reads `void self.reloadCounter` in its `afterAttach` fetch autorun so a
+user-initiated reload re-runs the fetch even when no viewport/setting changed.
+
+```ts
+// type signature
+type reloadCounter = number
+// code
+reloadCounter: 0
+```
+
+**Getters**
+
+#### getter: svgReadyExtraTerminal
+
+Overridable hook (default false): a subclass returns true to mark an extra
+terminal state where off-screen export can proceed with no loaded data (mirrors
+`MultiRegionDisplayMixin.svgReadyExtraTerminal`).
+
+```ts
+type svgReadyExtraTerminal = boolean
+```
+
+#### getter: svgReady
+
+Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an
+off-screen (SVG) export can read final data. Like that mixin it requires the
+dataset to actually be loaded (or a terminal error / too-large / extra state),
+NOT merely "not currently fetching": the fetch trigger is a debounced
+`afterAttach` autorun, so at export time `isLoading` can still be false with no
+data yet — a `displayPhase !== 'loading'` test would then capture an empty
+render. Never gates on `canvasDrawn`, which an off-screen export never sets.
+Off-screen renderers gate on it via `awaitSvgReady(model)`.
+
+```ts
+type svgReady = boolean
+```
+
+</details>
+
+<details>
+<summary>Derived from RegionTooLargeMixin</summary>
+
+[RegionTooLargeMixin →](../regiontoolargemixin)
+
+**Properties**
+
+#### property: userByteSizeLimit
+
+user-confirmed byte limit after a force-load, disabling the gate
+
+```ts
+// type signature
+type userByteSizeLimit = IMaybe<ISimpleType<number>>
+// code
+userByteSizeLimit: types.maybe(types.number)
+```
+
+**Volatiles**
+
+#### volatile: featureDensityStats
+
+```ts
+// type signature
+type featureDensityStats = FeatureDensityStats | undefined
+// code
+featureDensityStats: undefined as FeatureDensityStats | undefined
+```
+
+#### volatile: byteEstimateVisibleBp
+
+visibleBp at which the current `featureDensityStats` byte estimate was captured,
+so the derived gate (`estimatedVisibleBytes`) can scale it to the current view.
+Written by `setFeatureDensityStats`; ignored unless
+`derivedRegionTooLargeEnabled`.
+
+```ts
+// type signature
+type byteEstimateVisibleBp = number | undefined
+// code
+byteEstimateVisibleBp: undefined as number | undefined
+```
+
+**Getters**
+
+#### getter: densityTooLargeForDerivedGate
+
+Extra (non-byte) too-large axis folded into the derived verdict — canvas
+overrides it with its feature-density gate. Byte-only derived displays leave it
+false.
+
+```ts
+type densityTooLargeForDerivedGate = boolean
+```
+
+#### getter: estimatedVisibleBytes
+
+The cached byte estimate scaled from the span it was measured over
+(`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to
+span, so scaling makes the derived verdict a pure function of the current view
+and self-releases on zoom-in — without it a large zoomed-out estimate stays
+above the limit forever and gates refetch. Only meaningful when
+`derivedRegionTooLargeEnabled`.
+
+```ts
+type estimatedVisibleBytes = number | undefined
+```
+
+#### getter: tooLargeStatus
+
+Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then
+bytes-over-limit, then the density axis), fed the scaled estimate so the byte
+gate self-releases on zoom-in. Same helper as every other gating path so the
+banner text can't drift.
+
+```ts
+type tooLargeStatus = RegionTooLargeStatus
+```
+
+#### getter: regionTooLarge
+
+```ts
+type regionTooLarge = boolean
+```
+
+#### getter: regionTooLargeReason
+
+```ts
+type regionTooLargeReason = string
+```
+
+**Methods**
+
+#### method: regionCannotBeRenderedText
+
+Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the
+display chrome via `TooLargeMessage`, not the model.
+
+```ts
+type regionCannotBeRenderedText = () => '' | 'Force load to see features'
+```
+
+**Actions**
+
+#### action: setFeatureDensityStats
+
+Commits the byte estimate and records the span it was measured at
+(`byteEstimateVisibleBp`) so the derived gate can scale it to the current view.
+The capture is harmless for non-gated displays (they ignore it).
+
+```ts
+type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
+```
+
+#### action: setFeatureDensityStatsLimit
+
+force-load: raise the byte limit past the current request so the gate releases.
+Raises past the estimate scaled to the _current_ view (not the raw captured
+bytes), so it clears even if the view zoomed out after the estimate was
+captured; `raiseLimitPast` is the raw fallback for a display with no scaled
+estimate. Canvas (which also has a density force-load) overrides this entirely.
+
+```ts
+type setFeatureDensityStatsLimit = (
+  stats?: FeatureDensityStats | undefined,
+) => void
+```
+
+#### action: forceLoad
+
+Raises the byte limit past the current density stats and triggers a reload. The
+display chrome calls this via TooLargeMessage's force-load button; concrete
+display models override reload() to do the actual refetch.
+
+```ts
+type forceLoad = () => void
+```
+
+</details>
+
+<details>
+<summary>Derived from FetchMixin</summary>
+
+[FetchMixin →](../fetchmixin)
+
+**Volatiles**
+
+#### volatile: activeStopToken
+
+stop token of the in-flight fetch, or undefined when idle
+
+```ts
+// type signature
+type activeStopToken = StopToken | undefined
+// code
+activeStopToken: undefined as StopToken | undefined
+```
+
+#### volatile: fetchGeneration
+
+bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the
+staleness epoch inside runFetch
+
+```ts
+// type signature
+type fetchGeneration = number
+// code
+fetchGeneration: 0
+```
+
+#### volatile: fetchCanceled
+
+true after the user explicitly cancels a load (the loading overlay's cancel
+button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`,
+it does not retrigger the fetch autoruns — so the load stays stopped until the
+user retries (`reload`) or the viewport changes. Any new fetch clears it
+(`runFetch` resets it at the start).
+
+```ts
+// type signature
+type fetchCanceled = false
+// code
+fetchCanceled: false
+```
+
+#### volatile: regionStatuses
+
+latest status of each concurrent in-flight operation, keyed by an arbitrary id
+(the canvas display uses displayedRegionIndex). Plain bookkeeping — not read
+reactively; setRegionStatus derives the observable statusMessage/statusProgress
+from it on every update so N parallel region fetches aggregate into one bar
+instead of clobbering.
+
+```ts
+// type signature
+type regionStatuses = Map<number, RpcStatus>
+// code
+regionStatuses: new Map<number, RpcStatus>()
+```
+
+#### volatile: lastStatusMs
+
+Date.now() of the last applied status write; the status callbacks gate on it to
+throttle a high-frequency progress stream.
+
+```ts
+// type signature
+type lastStatusMs = number
+// code
+lastStatusMs: 0
+```
+
+**Getters**
+
+#### getter: isLoading
+
+true while a fetch is active
+
+```ts
+type isLoading = boolean
+```
+
+**Methods**
+
+#### method: makeStatusCallback
+
+An RPC `statusCallback` bound to this display: forwards progress to the shared
+`statusMessage`, guarded by `isAlive` so a callback that fires after the node is
+torn down (RPCs resolve their status stream asynchronously) is a safe no-op.
+Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard
+at every call site.
+
+```ts
+type makeStatusCallback = () => (status: RpcStatus) => void
+```
+
+#### method: makeRegionStatusCallback
+
+Per-region variant of `makeStatusCallback`: routes progress through
+`setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
+status bar instead of clobbering each other. Same `isAlive` guard.
+
+```ts
+type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
+```
+
+**Actions**
+
+#### action: throttleStatus
+
+Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last
+status write. A leading-edge throttle: sparse updates pass straight through,
+dense progress bursts are thinned so the loading overlay stops re-rendering
+faster than the view animates. The final status doesn't need a trailing flush —
+fetch completion clears it via `resetStatus`.
+
+```ts
+type throttleStatus = (apply: () => void) => void
+```
+
+#### action: resetStatus
+
+Drop the active stop token and clear all status bookkeeping. Shared by both
+cancel paths and runFetch's cleanup.
+
+```ts
+type resetStatus = () => void
+```
+
+#### action: stopActiveFetch
+
+Abort the in-flight fetch (if any) and clear its status. The shared preamble of
+both cancel paths; the difference between them is only what they do to
+`fetchCanceled` / `fetchGeneration` afterward.
+
+```ts
+type stopActiveFetch = () => void
+```
+
+#### action: setRegionStatus
+
+Record one concurrent operation's latest status (keyed) and recompute the shared
+statusMessage/statusProgress as the aggregate across all in-flight keys. Pass
+undefined to drop a key. Used by displays that fan a single fetch out into
+parallel per-region RPCs.
+
+```ts
+type setRegionStatus = (key: number, status?: RpcStatus | undefined) => void
+```
+
+#### action: cancelFetch
+
+cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers
+can retrigger fetch autoruns even when nothing was in flight). This is the
+_internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any
+user-cancel flag so the retrigger actually re-fetches.
+
+```ts
+type cancelFetch = () => void
+```
+
+#### action: cancelFetchByUser
+
+User-initiated cancel from the loading overlay. Stops the in-flight fetch and
+lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump
+fetchGeneration — so the fetch autoruns don't immediately restart the load. The
+user retries via `reload` (the overlay's retry button), or it clears on the next
+viewport change.
+
+```ts
+type cancelFetchByUser = () => void
+```
+
+#### action: runFetch
+
+Run a cancel-safe fetch (cancels any prior). The work callback gets a
+FetchContext with a stopToken to forward to the RPC and an isStale() check to
+short-circuit commits once the user has moved on. Abort errors are swallowed;
+others are stored in `error` if not stale.
+
+```ts
+type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+```
+
+</details>
+
+<details>
+<summary>Derived from RenderLifecycleMixin</summary>
+
+[RenderLifecycleMixin →](../renderlifecyclemixin)
+
+**Volatiles**
+
+#### volatile: canvasDrawn
+
+flips true on first paint; read by test selectors to detect render
+
+```ts
+// type signature
+type canvasDrawn = false
+// code
+canvasDrawn: false
+```
+
+#### volatile: currentRenderingBackend
+
+current backend reference, updated on context-loss recovery. Typed `unknown`
+(not generic `B`) on purpose: this mixin is composed by every display via a
+non-generic factory, so the per-display backend type `B` isn't known here — it's
+supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
+autoruns. Don't "fix" the cast.
+
+```ts
+// type signature
+type currentRenderingBackend = undefined
+// code
+currentRenderingBackend: undefined
+```
+
+#### volatile: renderTick
+
+counter the render autorun observes; bumped to force a re-render
+
+```ts
+// type signature
+type renderTick = number
+// code
+renderTick: 0
+```
+
+#### volatile: autorunsInstalled
+
+guards attachRenderingBackend so the autorun pair spawns once per instance
+
+```ts
+// type signature
+type autorunsInstalled = false
+// code
+autorunsInstalled: false
+```
+
+#### volatile: renderError
+
+the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
+Single source of truth for the render-error terminal state:
+`useRenderingBackend` writes it from the canvas-init mechanism so the model —
+not React-local hook state — owns every terminal state. Read by `displayPhase`
+(whose `renderError` term outranks `loading`, suppressing the scrim) and by
+`DisplayChrome` (shows the retry overlay).
+
+```ts
+// type signature
+type renderError = undefined
+// code
+renderError: undefined
+```
+
+**Actions**
+
+#### action: markCanvasDrawn
+
+```ts
+type markCanvasDrawn = () => void
+```
+
+#### action: resetCanvasDrawn
+
+```ts
+type resetCanvasDrawn = () => void
+```
+
+#### action: stopRenderingBackend
+
+```ts
+type stopRenderingBackend = () => void
+```
+
+#### action: renderNow
+
+```ts
+type renderNow = () => void
+```
+
+#### action: setRenderError
+
+set/clear the render-backend error. Called by `useRenderingBackend`: with the
+error when the canvas factory rejects (or context-loss re-init fails), and with
+`undefined` on successful (re)init and on retry.
+
+```ts
+type setRenderError = (error: unknown) => void
+```
+
+#### action: attachRenderingBackend
+
+attach a GPU/Canvas2D backend and install the upload + render autorun pair
+(idempotent — re-calling only swaps the backend)
+
+```ts
+type attachRenderingBackend = <B>(
+  backend: B,
+  cbs: RenderingBackendCallbacks<B>,
+) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from StaleViewportRescaleMixin</summary>
+
+[StaleViewportRescaleMixin →](../staleviewportrescalemixin)
+
+**Volatiles**
+
+#### volatile: lastDrawnOffsetPx
+
+offsetPx of the viewport when the canvas was last fully drawn
+
+```ts
+// type signature
+type lastDrawnOffsetPx = number | undefined
+// code
+lastDrawnOffsetPx: undefined as number | undefined
+```
+
+#### volatile: lastDrawnBpPerPx
+
+bpPerPx of the viewport when the canvas was last fully drawn
+
+```ts
+// type signature
+type lastDrawnBpPerPx = number | undefined
+// code
+lastDrawnBpPerPx: undefined as number | undefined
+```
+
+**Actions**
+
+#### action: setLastDrawnViewport
+
+```ts
+type setLastDrawnViewport = (offsetPx: number, bpPerPx: number) => void
+```
+
+</details>

@@ -1,7 +1,7 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-// @ts-expect-error
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
@@ -9,6 +9,7 @@ import HierarchicalTrackSelector from './HierarchicalTrackSelector.tsx'
 import conf from '../../../../../test_data/test_order/config.json' with { type: 'json' }
 import { getRowStr } from '../../FacetedSelector/components/util.ts'
 import { facetedStateTreeF } from '../../FacetedSelector/facetedModel.ts'
+import { setTracksSelected } from '../../FacetedSelector/facetedSelection.ts'
 import {
   findNonSparseKeys,
   getRootKeys,
@@ -19,7 +20,7 @@ import type { HierarchicalTrackSelectorModel } from '../model.ts'
 // test data
 
 // mock
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function timeout(ms: number) {
   return new Promise(res => setTimeout(res, ms))
@@ -82,8 +83,8 @@ test('sm categorized tracks', async () => {
   })
   firstView.showTrack(session.sessionTracks[0].trackId)
   firstView.showTrack(session.sessionTracks[1].trackId)
-  firstView.tracks[0].configuration.category.set(['Foo Category'])
-  firstView.tracks[1].configuration.category.set([
+  firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
+  firstView.tracks[1].configuration.setSlot('category', [
     'Foo Category',
     'Bar Category',
   ])
@@ -103,7 +104,7 @@ test('localstorage preference - collapse categorized tracks', async () => {
     'collapsedCategories-/-volMyt1-LinearGenomeView',
     '[["Tracks-Foo Category",true]]',
   )
-  const session = addTestData(createTestSession())
+  const session = addCategorizedTestData(createTestSession({ adminMode: true }))
 
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -115,13 +116,8 @@ test('localstorage preference - collapse categorized tracks', async () => {
       },
     ],
   })
-  firstView.showTrack(session.sessionTracks[0].trackId)
-  firstView.showTrack(session.sessionTracks[1].trackId)
-  firstView.tracks[0].configuration.category.set(['Foo Category'])
-  firstView.tracks[1].configuration.category.set([
-    'Foo Category',
-    'Bar Category',
-  ])
+  firstView.showTrack('fooC')
+  firstView.showTrack('barC')
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId: f } = render(
@@ -134,8 +130,9 @@ test('localstorage preference - collapse categorized tracks', async () => {
 })
 
 test('configuration preference - collapse categorized tracks', async () => {
-  const session = addTestData(
+  const session = addCategorizedTestData(
     createTestSession({
+      adminMode: true,
       jbrowseConfig: {
         configuration: {
           hierarchical: {
@@ -158,13 +155,8 @@ test('configuration preference - collapse categorized tracks', async () => {
       },
     ],
   })
-  firstView.showTrack(session.sessionTracks[0].trackId)
-  firstView.showTrack(session.sessionTracks[1].trackId)
-  firstView.tracks[0].configuration.category.set(['Foo Category'])
-  firstView.tracks[1].configuration.category.set([
-    'Foo Category',
-    'Bar Category',
-  ])
+  firstView.showTrack('fooC')
+  firstView.showTrack('barC')
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId: f } = render(
@@ -174,6 +166,31 @@ test('configuration preference - collapse categorized tracks', async () => {
   )
 
   expect((await f(/htsTrackLabel/)).map(e => e.textContent)).toMatchSnapshot()
+})
+
+// a non-admin's added tracks land in session.sessionTracks and the selector
+// groups them under "Session tracks" from that membership (not a trackId
+// suffix), so a track's own category nests beneath it.
+test('session tracks are grouped under the Session tracks category', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  const tracksGroup = model.hierarchy.children[0]!
+  const sessionCategory = tracksGroup.children.find(
+    c => c.name === ' Session tracks',
+  )!
+  expect(sessionCategory).toBeDefined()
+  expect(
+    sessionCategory.children
+      .map(c => c.name)
+      .sort((a, b) => a.localeCompare(b)),
+  ).toEqual(['barC', 'fooC'])
 })
 
 test('unsorted categories', async () => {
@@ -515,13 +532,13 @@ test('checkbox click toggles track visibility', async () => {
   const model =
     firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
 
-  const { findAllByTestId } = render(
+  const { findAllByRole } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <HierarchicalTrackSelector model={model} toolbarHeight={20} />
     </ThemeProvider>,
   )
 
-  const checkboxes = await findAllByTestId(/htsTrackEntry/)
+  const checkboxes = await findAllByRole('checkbox')
   const checkbox = checkboxes[0]! as HTMLInputElement
 
   // initially track is not shown
@@ -751,6 +768,7 @@ test('faceted model filter text', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // initially empty filter
@@ -783,6 +801,7 @@ test('faceted model column filters', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // initially no filters
@@ -823,6 +842,7 @@ test('faceted model toggle options', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // test showSparse toggle
@@ -835,15 +855,85 @@ test('faceted model toggle options', () => {
   faceted.setShowFilters(!initialShowFilters)
   expect(faceted.showFilters).toBe(!initialShowFilters)
 
-  // test showOptions toggle
-  const initialShowOptions = faceted.showOptions
-  faceted.setShowOptions(!initialShowOptions)
-  expect(faceted.showOptions).toBe(!initialShowOptions)
-
   // test useShoppingCart toggle
   expect(faceted.useShoppingCart).toBe(false)
   faceted.setUseShoppingCart(true)
   expect(faceted.useShoppingCart).toBe(true)
+})
+
+// the faceted model is created per-dialog and destroyed on close; verify
+// destroy tears it down without cascading into the shared session track configs
+test('faceted model destroy is safe', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+  const faceted = facetedStateTreeF().create({})
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+    model.assemblyNames,
+  )
+
+  // exercise the afterAttach autorun so there's a disposer to clean up
+  expect(faceted.fields.length).toBeGreaterThan(0)
+  const sharedConf = model.allTrackConfigurations[0]!
+  expect(isAlive(sharedConf)).toBe(true)
+
+  destroy(faceted)
+
+  expect(isAlive(faceted)).toBe(false)
+  // destroying the faceted model must not destroy the session-owned configs it
+  // merely referenced
+  expect(isAlive(sharedConf)).toBe(true)
+  expect(model.allTrackConfigurations.length).toBeGreaterThan(0)
+})
+
+test('setTracksSelected toggles tracks on the view', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  setTracksSelected(model, ['fooC', 'barC'], true, false)
+  expect([...model.shownTrackIds].toSorted()).toEqual(['barC', 'fooC'])
+
+  setTracksSelected(model, ['fooC'], false, false)
+  expect([...model.shownTrackIds]).toEqual(['barC'])
+})
+
+test('setTracksSelected updates the selection in shopping-cart mode', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  setTracksSelected(model, ['fooC', 'barC'], true, true)
+  expect(model.selection.map(s => `${s.trackId}`).toSorted()).toEqual([
+    'barC',
+    'fooC',
+  ])
+  // re-adding already-selected ids doesn't duplicate
+  setTracksSelected(model, ['fooC'], true, true)
+  expect(model.selection.length).toBe(2)
+
+  setTracksSelected(model, ['fooC'], false, true)
+  expect(model.selection.map(s => `${s.trackId}`)).toEqual(['barC'])
+
+  // view is untouched in shopping-cart mode
+  expect(model.shownTrackIds.size).toBe(0)
 })
 
 test('faceted model panel width', () => {
@@ -864,6 +954,7 @@ test('faceted model panel width', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // set panel width
@@ -892,6 +983,7 @@ test('faceted model rows contain expected data', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // rows should have expected structure
@@ -922,6 +1014,7 @@ test('faceted model fields includes expected columns', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // fields should always include 'name'
@@ -951,6 +1044,7 @@ test('faceted model multiple column filters', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   const initialCount = faceted.filteredRows.length
@@ -991,6 +1085,7 @@ test('faceted model filter with multiple values', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // filter with multiple allowed values (OR logic within column)
@@ -1020,17 +1115,21 @@ test('faceted model column visibility', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
-  // setVisible sets column visibility
-  faceted.setVisible({ name: true, adapter: false })
-  expect(faceted.visible.name).toBe(true)
-  expect(faceted.visible.adapter).toBe(false)
+  // surface the sparse non-metadata columns so they appear as fields
+  faceted.setShowSparse(true)
 
-  // update visibility
-  faceted.setVisible({ name: true, adapter: true, category: true })
+  // columns default to visible
+  expect(faceted.visible.name).toBe(true)
   expect(faceted.visible.adapter).toBe(true)
-  expect(faceted.visible.category).toBe(true)
+
+  // setColumnVisible hides/shows a single column
+  faceted.setColumnVisible('adapter', false)
+  expect(faceted.visible.adapter).toBe(false)
+  faceted.setColumnVisible('adapter', true)
+  expect(faceted.visible.adapter).toBe(true)
 })
 
 test('faceted and hierarchical filter text are independent', () => {
@@ -1051,6 +1150,7 @@ test('faceted and hierarchical filter text are independent', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // set hierarchical filter
@@ -1087,6 +1187,7 @@ test('faceted filter drilling down behavior', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // get initial state
@@ -1142,6 +1243,7 @@ test('faceted filter tracks unique values per column', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // get unique categories from rows
@@ -1244,6 +1346,7 @@ test('faceted model exposes metadata keys from tracks', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   expect(faceted.metadataKeys).toContain('tissue')
@@ -1268,6 +1371,7 @@ test('faceted model search matches non-string metadata', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // search for numeric metadata value
@@ -1298,6 +1402,7 @@ test('faceted model filters on metadata columns', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   const initialCount = faceted.filteredRows.length
@@ -1328,6 +1433,7 @@ test('faceted model fields include metadata columns with prefix', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   faceted.setShowSparse(true)
@@ -1339,7 +1445,9 @@ test('faceted model fields include metadata columns with prefix', () => {
 // -------------------------- category-based folder tests -
 
 test('category-based folder hides children when toggled', async () => {
-  const session = addTestDataWithDeepCategories(createTestSession())
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
@@ -1368,7 +1476,9 @@ test('category-based folder hides children when toggled', async () => {
 })
 
 test('category-based folder hierarchy model groups correctly', () => {
-  const session = addTestDataWithDeepCategories(createTestSession())
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
@@ -1397,7 +1507,9 @@ test('category-based folder hierarchy model groups correctly', () => {
 })
 
 test('toggleFolderCategory collapses children in flattenedItems', () => {
-  const session = addTestDataWithDeepCategories(createTestSession())
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
@@ -1436,6 +1548,36 @@ test('toggleFolderCategory collapses children in flattenedItems', () => {
   expect(afterNames).not.toContain('H3K4me3')
   expect(afterNames).not.toContain('H3K27ac')
   expect(afterNames).toContain('Regular Track')
+})
+
+// Epigenomics is a top-level category that also holds a direct track (Regular
+// Track). collapseSubCategories must collapse only the nested Histone Marks
+// subcategory, not the top-level Epigenomics; collapseTopLevelCategories does
+// the reverse. Regression for findSubCategories sweeping in top-level
+// categories that happen to contain tracks.
+test('collapseSubCategories vs collapseTopLevelCategories scope', () => {
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  model.expandAllCategories()
+  model.collapseSubCategories()
+  expect(model.collapsed.get('Tracks-Epigenomics,Histone Marks')).toBe(true)
+  expect(model.collapsed.get('Tracks-Epigenomics')).toBeUndefined()
+
+  model.expandAllCategories()
+  model.collapseTopLevelCategories()
+  expect(model.collapsed.get('Tracks-Epigenomics')).toBe(true)
+  expect(
+    model.collapsed.get('Tracks-Epigenomics,Histone Marks'),
+  ).toBeUndefined()
 })
 
 // -------------------------- test utils -
@@ -1514,6 +1656,42 @@ function addTestData(session: ReturnType<typeof createTestSession>) {
     name: 'barC',
     assemblyNames: ['volMyt1'],
     type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  return session
+}
+
+// fooC/barC as admin config tracks with categories set in-config, for the
+// category-collapse tests: admin tracks group by their own category, not under
+// the non-admin "Session tracks" bucket.
+function addCategorizedTestData(session: ReturnType<typeof createTestSession>) {
+  session.addAssemblyConf({
+    name: 'volMyt1',
+    sequence: {
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          { refName: 'ctgA', uniqueId: 'firstId', start: 0, end: 10, seq: 'c' },
+        ],
+      },
+    },
+  })
+  session.addTrackConf({
+    trackId: 'fooC',
+    name: 'fooC',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Foo Category'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  session.addTrackConf({
+    trackId: 'barC',
+    name: 'barC',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Foo Category', 'Bar Category'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
   return session

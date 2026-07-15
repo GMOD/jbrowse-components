@@ -24,13 +24,14 @@ export async function getDescriptiveErrorMessage(
   response: Response,
   reason?: string,
 ) {
-  let errorMessage = ''
+  const text = await response.text()
+  let statusText = text
   try {
-    const err = JSON.parse(await response.text()) as DropboxError
+    const err = JSON.parse(text) as DropboxError
     const tag = err.error['.tag']
-    errorMessage = dropboxErrorMessages[tag] || tag
-  } catch (error) {
-    /* do nothing */
+    statusText = dropboxErrorMessages[tag] ?? tag
+  } catch {
+    // statusText stays as raw response text
   }
-  return getResponseError({ response, reason, statusText: errorMessage })
+  return getResponseError({ response, reason, statusText })
 }

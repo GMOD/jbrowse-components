@@ -1,9 +1,15 @@
-import { createView, doBeforeEach, exportAndVerifySvg, setup } from './util.tsx'
+import { waitFor } from '@testing-library/react'
+
+import {
+  createView,
+  doBeforeEach,
+  exportAndVerifySvg,
+  mockConsoleWarn,
+  setup,
+} from './util.tsx'
 import breakpointConfig from '../../test_data/breakpoint/config.json' with { type: 'json' }
 
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
-
+import './svgExportMocks.ts'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
@@ -11,18 +17,27 @@ setup()
 const delay = { timeout: 50000 }
 
 test('export svg of breakpoint split view', async () => {
-  doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
-  console.warn = jest.fn()
-  const { findByTestId, findAllByText, findByText } =
-    await createView(breakpointConfig)
+  await mockConsoleWarn(async () => {
+    doBeforeEach(url => require.resolve(`../../test_data/breakpoint/${url}`))
+    const { findByTestId, findAllByText, findByText, findAllByTestId } =
+      await createView(breakpointConfig)
 
-  await new Promise(resolve => setTimeout(resolve, 10000))
+    // Wait for both alignment displays (one per view) to finish rendering
+    await waitFor(async () => {
+      const done = await findAllByTestId(
+        'display-pacbio_hg002_breakpoints-LinearAlignmentsDisplay-done',
+        {},
+        delay,
+      )
+      expect(done.length).toBe(2)
+    }, delay)
 
-  await exportAndVerifySvg({
-    findByTestId,
-    findByText,
-    filename: 'breakpoint_split_view',
-    delay,
-    findAllByText,
+    await exportAndVerifySvg({
+      findByTestId,
+      findByText,
+      filename: 'breakpoint_split_view',
+      delay,
+      findAllByText,
+    })
   })
 }, 60000)

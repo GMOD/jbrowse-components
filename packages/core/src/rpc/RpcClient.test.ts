@@ -16,15 +16,10 @@ function makeClient() {
   return { worker, client }
 }
 
-function reply(
-  worker: FakeWorker,
-  uid: string,
-  data: unknown,
-  method = 'testMethod',
-) {
+function reply(worker: FakeWorker, uid: string, data: unknown) {
   worker.dispatchEvent(
     new MessageEvent('message', {
-      data: { uid, method, data, libRpc: true },
+      data: { uid, data, libRpc: true },
     }),
   )
 }

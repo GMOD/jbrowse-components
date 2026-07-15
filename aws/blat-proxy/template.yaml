@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description:
+  JBrowse BLAT proxy — injects a UCSC apiKey + CORS in front of hgBlat
+
+Parameters:
+  Stage:
+    Type: String
+    Default: prod
+    Description: API Gateway stage name
+  UcscApiKey:
+    Type: String
+    NoEcho: true
+    Description: >-
+      UCSC apiKey (Genome Browser account -> Hub Development -> generate).
+      Passed at deploy time and stored as the function's UCSC_API_KEY env var;
+      bypasses the Cloudflare Turnstile that fronts hgBlat.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+
+Resources:
+  BlatProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jbrowse-blat-proxy
+      CodeUri: dist/
+      Handler: index.handler
+      Description: Proxies BLAT queries to UCSC hgBlat with a server-side apiKey
+      Environment:
+        Variables:
+          NODE_ENV: production
+          UCSC_API_KEY: !Ref UcscApiKey
+      Events:
+        BlatQuery:
+          Type: Api
+          Properties:
+            Path: /blat
+            Method: POST
+            RestApiId: !Ref BlatProxyApi
+        OptionsRequest:
+          Type: Api
+          Properties:
+            Path: /blat
+            Method: OPTIONS
+            RestApiId: !Ref BlatProxyApi
+
+  BlatProxyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: jbrowse-blat-proxy-api
+      StageName: !Ref Stage
+      Cors:
+        AllowMethods: "'POST, OPTIONS'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: "'*'"
+
+  BlatProxyFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/jbrowse-blat-proxy
+      RetentionInDays: 7
+
+Outputs:
+  BlatProxyApiUrl:
+    Description: API Gateway endpoint to point the plugin's BLAT server URL at
+    Value: !Sub https://${BlatProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/blat
+    Export:
+      Name: JBrowseBlatProxyApiUrl
+  BlatProxyFunctionArn:
+    Description: BLAT proxy Lambda Function ARN
+    Value: !GetAtt BlatProxyFunction.Arn
+    Export:
+      Name: JBrowseBlatProxyFunctionArn

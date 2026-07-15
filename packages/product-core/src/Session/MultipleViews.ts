@@ -1,6 +1,7 @@
 import {
   localStorageGetBoolean,
   localStorageSetBoolean,
+  reorder,
 } from '@jbrowse/core/util'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -10,13 +11,11 @@ import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import type { ReorderDirection } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel MultipleViewsSessionMixin
- * composed of
- * - [BaseSessionModel](../basesessionmodel)
- * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
  */
 export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
   return types
@@ -45,123 +44,113 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         ),
       }),
     )
-    .actions(self => ({
-      /**
-       * #action
-       */
-      moveViewDown(id: string) {
+    .actions(self => {
+      const move = (id: string, direction: ReorderDirection) => {
         const idx = self.views.findIndex(v => v.id === id)
-        if (idx !== -1 && idx < self.views.length - 1) {
-          self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
-        }
-      },
-      /**
-       * #action
-       */
-      moveViewUp(id: string) {
-        const idx = self.views.findIndex(view => view.id === id)
-        if (idx > 0) {
-          self.views.splice(idx - 1, 2, self.views[idx], self.views[idx - 1])
-        }
-      },
-      /**
-       * #action
-       */
-      moveViewToTop(id: string) {
-        const view = self.views.find(v => v.id === id)
-        if (view) {
-          self.views = cast([view, ...self.views.filter(v => v.id !== id)])
-        }
-      },
+        self.views = cast(reorder(self.views, idx, direction))
+      }
+      return {
+        /**
+         * #action
+         */
+        moveViewDown(id: string) {
+          move(id, 'down')
+        },
+        /**
+         * #action
+         */
+        moveViewUp(id: string) {
+          move(id, 'up')
+        },
+        /**
+         * #action
+         */
+        moveViewToTop(id: string) {
+          move(id, 'top')
+        },
 
-      /**
-       * #action
-       */
-      moveViewToBottom(id: string) {
-        const view = self.views.find(v => v.id === id)
-        if (view) {
-          self.views = cast([...self.views.filter(v => v.id !== id), view])
-        }
-      },
+        /**
+         * #action
+         */
+        moveViewToBottom(id: string) {
+          move(id, 'bottom')
+        },
 
-      /**
-       * #action
-       */
-      addView(typeName: string, initialState = {}) {
-        const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown view type ${typeName}`)
-        }
+        /**
+         * #action
+         */
+        addView(typeName: string, initialState = {}) {
+          const length = self.views.push({
+            ...initialState,
+            type: typeName,
+          })
+          return self.views[length - 1]
+        },
 
-        const length = self.views.push({
-          ...initialState,
-          type: typeName,
-        })
-        return self.views[length - 1]
-      },
-
-      /**
-       * #action
-       */
-      removeView(view: IBaseViewModel) {
-        for (const [, widget] of self.activeWidgets) {
-          if (widget.view?.id === view.id) {
-            self.hideWidget(widget)
+        /**
+         * #action
+         */
+        removeView(view: IBaseViewModel) {
+          for (const [, widget] of self.activeWidgets) {
+            if (widget.view?.id === view.id) {
+              self.hideWidget(widget)
+            }
           }
-        }
-        self.views.remove(view)
-      },
+          self.views.remove(view)
+        },
 
-      /**
-       * #action
-       */
-      setStickyViewHeaders(sticky: boolean) {
-        self.stickyViewHeaders = sticky
-      },
+        /**
+         * #action
+         */
+        setStickyViewHeaders(sticky: boolean) {
+          self.stickyViewHeaders = sticky
+        },
 
-      /**
-       * #action
-       */
-      setUseWorkspaces(useWorkspaces: boolean) {
-        self.useWorkspaces = useWorkspaces
-      },
+        /**
+         * #action
+         */
+        setUseWorkspaces(useWorkspaces: boolean) {
+          self.useWorkspaces = useWorkspaces
+        },
 
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function stickyViewHeadersAutorun() {
-              localStorageSetBoolean(
-                'stickyViewHeaders',
-                self.stickyViewHeaders,
-              )
-            },
-            { name: 'StickyViewHeaders' },
-          ),
-        )
-        addDisposer(
-          self,
-          autorun(
-            function useWorkspacesAutorun() {
-              localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
-            },
-            { name: 'UseWorkspaces' },
-          ),
-        )
-      },
-    }))
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(
+              function stickyViewHeadersAutorun() {
+                localStorageSetBoolean(
+                  'stickyViewHeaders',
+                  self.stickyViewHeaders,
+                )
+              },
+              { name: 'StickyViewHeaders' },
+            ),
+          )
+          addDisposer(
+            self,
+            autorun(
+              function workspacesAutorun() {
+                localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
+              },
+              { name: 'UseWorkspaces' },
+            ),
+          )
+        },
+      }
+    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const { stickyViewHeaders, useWorkspaces, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      // stickyViewHeaders is a personal per-browser UI preference, not shared
+      // view state: destructure it out so it never lands in the snapshot. It
+      // stays localStorage-backed, so each browser keeps its own value.
+      // useWorkspaces is kept in the snapshot because it changes layout intent,
+      // which is meaningful to carry across a shared session.
+      const { stickyViewHeaders, useWorkspaces, ...rest } = snap
       return {
         ...rest,
-        ...(!stickyViewHeaders ? { stickyViewHeaders } : {}),
         ...(useWorkspaces ? { useWorkspaces } : {}),
       } as typeof snap
     })

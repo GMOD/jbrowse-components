@@ -1,45 +1,46 @@
+import { getTagAlt } from './getTagAlt.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 
-function getTagAlt(feature: Feature, tag: string, alt: string) {
-  const tags = feature.get('tags') as Record<string, unknown> | undefined
-  return tags?.[tag] ?? tags?.[alt]
-}
-
 /**
- * Returns the probability value from the flat probabilities array at the
- * correct offset for a given modification position, handling the reverse-strand
- * index reversal that getModPositions applies (positions stored in descending
- * order for reverse-strand reads).
+ * #api
+ * Returns the probability value from the flat ML array for a modification's
+ * position. `idx` is the position's index within the mod's stored `positions`
+ * array; we recover its MM-tag order (reverse-strand reads store positions in
+ * descending order) and step into ML by `probStart + mmOrder * probStride`.
+ * `probStride` is >1 for combined codes (e.g. 'C+mh'), where ML values are
+ * interleaved per position.
  */
 export function modProbAt(
   probabilities: number[] | undefined,
-  probIndex: number,
+  probStart: number,
+  probStride: number,
   isReverse: boolean,
   idx: number,
   posLen: number,
 ) {
-  return probabilities?.[probIndex + (isReverse ? posLen - 1 - idx : idx)] ?? 0
+  const mmOrder = isReverse ? posLen - 1 - idx : idx
+  return probabilities?.[probStart + mmOrder * probStride] ?? 0
 }
 
+/**
+ * #api
+ * Reads the ML tag from a feature and returns per-call modification
+ * probabilities scaled to 0..1.
+ */
 export function getModProbabilities(feature: Feature) {
-  // ML stores probabilities as array of numerics and MP is scaled phred scores
-  // https://github.com/samtools/hts-specs/pull/418/files#diff-e765c6479316309f56b636f88189cdde8c40b854c7bdcce9ee7fe87a4e76febcR596
-  //
-  // - if we have ML or Ml, it is an 8bit probability, divide by 255
-  //
-  // - if we have MP or Mp it is phred scaled ASCII, which can go up to 90 but
-  // has very high likelihood basecalls at that point, we really only care about
-  // low qual calls <20 approx
-  const ml = getTagAlt(feature, 'ML', 'Ml') as number[] | string | undefined
-  if (ml !== undefined) {
-    if (typeof ml === 'string') {
-      return ml.split(',').map(v => +v / 255)
-    }
-    return ml.map(v => v / 255)
+  // ML is an 8-bit scaled probability. Per SAMtags, integer N covers the
+  // continuous range N/256..(N+1)/256, so the representative value is the
+  // midpoint (N + 0.5) / 256.
+  const ml = getTagAlt(feature, 'ML', 'Ml')
+  if (ml === undefined) {
+    return undefined
   }
-  const mp = getTagAlt(feature, 'MP', 'Mp') as string | undefined
-  if (mp) {
-    return Array.from(mp, c => Math.min(1, (c.charCodeAt(0) - 33) / 50))
-  }
-  return undefined
+  // BAM returns ML:B:C as a Uint8Array; mapping with TypedArray.prototype.map
+  // would coerce each float result back to a uint8 (truncating every value to
+  // 0). Array.from(values, fn) always produces a plain number[]. A string ML
+  // (htsget/SAM text) is split on commas first.
+  const values =
+    typeof ml === 'string' ? ml.split(',') : (ml as ArrayLike<number | string>)
+  return Array.from(values, v => (+v + 0.5) / 256)
 }

@@ -1,10 +1,10 @@
-import { within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
   setup,
 } from './util.tsx'
@@ -29,8 +29,8 @@ test(
       await findByTestId(hts('volvox_alignments_pileup_coverage'), ...opts),
     )
 
-    const f = within(await findByTestId('Blockset-snpcoverage', ...opts))
-    expectCanvasMatch(await f.findByTestId(/prerendered_canvas/, ...opts))
+    const display = await findByTestId('pileup-display-done', ...opts)
+    expectCanvasMatch(findCanvasIn(display))
   },
   timeout + 10_000,
 )

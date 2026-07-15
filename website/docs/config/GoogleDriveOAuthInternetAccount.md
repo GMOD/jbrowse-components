@@ -1,68 +1,130 @@
 ---
 id: googledriveoauthinternetaccount
 title: GoogleDriveOAuthInternetAccount
+sidebar_label: Internet Account -> GoogleDriveOAuthInternetAccount
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`authentication` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Related links
 
-## Links
+- **State model:** [runtime API](../../models/googledriveoauthinternetaccount)
+- **Base config:** [OAuthInternetAccount](../oauthinternetaccount)
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/authentication/src/GoogleDriveOAuthModel/configSchema.ts)
+## Config slots
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GoogleDriveOAuthInternetAccount.md)
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
-## Docs
+| Slot                               | Type          | Description                                                    |
+| ---------------------------------- | ------------- | -------------------------------------------------------------- |
+| [authEndpoint](#slot-authendpoint) | `string`      | the authorization code endpoint of the internet account        |
+| [scopes](#slot-scopes)             | `string`      | optional scopes for the authorization call                     |
+| [domains](#slot-domains)           | `stringArray` | array of valid domains the url can contain to use this account |
+| [responseType](#slot-responsetype) | `string`      | the type of response from the authorization endpoint           |
 
-### GoogleDriveOAuthInternetAccount - Slots
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Slots</summary>
 
 #### slot: authEndpoint
 
-```js
-authEndpoint: {
-      description: 'the authorization code endpoint of the internet account',
-      type: 'string',
-      defaultValue: 'https:
-    }
-```
+the authorization code endpoint of the internet account
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'https://accounts.google.com/o/oauth2/v2/auth'`
 
 #### slot: scopes
 
-```js
-scopes: {
-      description: 'optional scopes for the authorization call',
-      type: 'string',
-      defaultValue: 'https:
-    }
-```
+optional scopes for the authorization call
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'https://www.googleapis.com/auth/drive.readonly'`
 
 #### slot: domains
 
-```js
-domains: {
-      description:
-        'array of valid domains the url can contain to use this account',
-      type: 'stringArray',
-      defaultValue: ['drive.google.com'],
-    }
-```
+array of valid domains the url can contain to use this account
+
+**Type:** `stringArray` · **Default:** `['drive.google.com']`
 
 #### slot: responseType
 
-```js
-responseType: {
-      description: 'the type of response from the authorization endpoint',
-      type: 'string',
-      defaultValue: 'token',
-    }
-```
+the type of response from the authorization endpoint
 
-### GoogleDriveOAuthInternetAccount - Derives from
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'token'`
 
-```js
-baseConfiguration: OAuthConfigSchema
-```
+</details>
+
+## Inherited config slots
+
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
+
+<details>
+<summary>Inherited from OAuthInternetAccount</summary>
+
+[OAuthInternetAccount config →](../oauthinternetaccount)
+
+#### slot: tokenType
+
+a custom name for a token to include in the header
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'Bearer'`
+
+#### slot: tokenEndpoint
+
+the token endpoint of the internet account
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
+#### slot: needsPKCE
+
+boolean to indicate if the endpoint needs a PKCE code
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
+
+#### slot: clientId
+
+id for the OAuth application
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
+#### slot: state
+
+optional state for the authorization call
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
+</details>
+
+<details>
+<summary>Inherited from BaseInternetAccount</summary>
+
+[BaseInternetAccount config →](../baseinternetaccount)
+
+#### slot: name
+
+descriptive name of the internet account
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
+#### slot: description
+
+a description of the internet account
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
+#### slot: authHeader
+
+request header for credentials
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'Authorization'`
+
+</details>

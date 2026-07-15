@@ -1,4 +1,4 @@
-import { parseArgs } from 'util'
+import { parseArgs } from 'node:util'
 
 import {
   printHelp,
@@ -18,8 +18,14 @@ const examples = [
   '# make session.json the defaultSession on the specified target config.json file',
   '$ jbrowse set-default-session --target /path/to/jb2/installation/config.json --session session.json',
   '',
-  '# print current default session',
-  '$ jbrowse set-default-session --currentSession # Prints out current default session',
+  '# override the name stored in the session file',
+  '$ jbrowse set-default-session --session session.json --name "My default view"',
+  '',
+  '# print the current default session',
+  '$ jbrowse set-default-session --currentSession',
+  '',
+  '# remove the existing default session',
+  '$ jbrowse set-default-session --delete',
 ]
 const options = {
   session: {
@@ -31,8 +37,8 @@ const options = {
   name: {
     type: 'string',
     short: 'n',
-    description: 'Give a name for the default session',
-    default: 'New Default Session',
+    description:
+      'Give a name for the default session (overrides any name in the session file; defaults to "New Default Session")',
   },
   currentSession: {
     type: 'boolean',
@@ -63,7 +69,12 @@ export async function run(args: string[]) {
     })
     return
   }
-  const { session, currentSession, delete: deleteDefaultSession } = runFlags
+  const {
+    session,
+    name,
+    currentSession,
+    delete: deleteDefaultSession,
+  } = runFlags
   const target = await resolveConfigPath(runFlags.target, runFlags.out)
   const configContents: Config = await readJsonFile(target)
 
@@ -79,9 +90,15 @@ export async function run(args: string[]) {
   } else if (!session) {
     throw new Error('Please provide a --session file')
   } else {
+    const fileSession = await readDefaultSessionFile(session)
     await writeJsonFile(target, {
       ...configContents,
-      defaultSession: await readDefaultSessionFile(session),
+      // precedence: explicit --name > the session file's own name > fallback
+      defaultSession: {
+        name: 'New Default Session',
+        ...fileSession,
+        ...(name !== undefined ? { name } : {}),
+      },
     })
   }
 }

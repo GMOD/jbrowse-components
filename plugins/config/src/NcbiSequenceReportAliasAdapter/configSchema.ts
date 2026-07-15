@@ -1,22 +1,15 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { normalizeUriSnapshot } from '../normalizeUriSnapshot.ts'
+
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config NcbiSequenceReportAliasAdapter
  * can read "sequence_report.tsv" type files from NCBI
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        location: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
-}
+export const normalizeSnapshot = normalizeUriSnapshot
 
 const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
   'NcbiSequenceReportAliasAdapter',
@@ -60,5 +53,9 @@ const NcbiSequenceReportAliasAdapterConfigSchema = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type NcbiSequenceReportAliasAdapterConfig = Instance<
+  typeof NcbiSequenceReportAliasAdapterConfigSchema
+>
 
 export default NcbiSequenceReportAliasAdapterConfigSchema

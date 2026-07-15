@@ -1,22 +1,14 @@
 ---
 id: trixtextsearchadapter
 title: TrixTextSearchAdapter
+sidebar_label: Adapter -> TrixTextSearchAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `trix` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/trix/src/TrixTextSearchAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/TrixTextSearchAdapter.md)
-
-## Docs
+## Overview
 
 ### TrixTextSearchAdapter - Pre-processor / simplified config
 
@@ -33,62 +25,50 @@ preprocessor to allow minimal config, assumes file.ixx also exists:
 
 ### TrixTextSearchAdapter - Identifier
 
-#### slot: explicitIdentifier
+Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a required
+top-level field that identifies it (not one of the config slots below).
 
-### TrixTextSearchAdapter - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                 | Type           | Description                                       |
+| ------------------------------------ | -------------- | ------------------------------------------------- |
+| [ixFilePath](#slot-ixfilepath)       | `fileLocation` |                                                   |
+| [ixxFilePath](#slot-ixxfilepath)     | `fileLocation` |                                                   |
+| [metaFilePath](#slot-metafilepath)   | `fileLocation` |                                                   |
+| [tracks](#slot-tracks)               | `stringArray`  | List of tracks covered by text search adapter     |
+| [assemblyNames](#slot-assemblynames) | `stringArray`  | List of assemblies covered by text search adapter |
+
+<details>
+<summary>TrixTextSearchAdapter - Slots</summary>
 
 #### slot: ixFilePath
 
-```js
-ixFilePath: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'out.ix',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: 'out.ix', locationType: 'UriLocation' }`
 
 #### slot: ixxFilePath
 
-```js
-ixxFilePath: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'out.ixx',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: 'out.ixx', locationType: 'UriLocation' }`
 
 #### slot: metaFilePath
 
-```js
-metaFilePath: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'meta.json',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: 'meta.json', locationType: 'UriLocation' }`
 
 #### slot: tracks
 
-```js
-tracks: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of tracks covered by text search adapter',
-    }
-```
+List of tracks covered by text search adapter
+
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: assemblyNames
 
-```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of assemblies covered by text search adapter',
-    }
-```
+List of assemblies covered by text search adapter
+
+**Type:** `stringArray` · **Default:** `[]`
+
+</details>

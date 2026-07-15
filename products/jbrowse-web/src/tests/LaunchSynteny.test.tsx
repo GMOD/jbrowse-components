@@ -1,32 +1,19 @@
 import { render } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 import { expectCanvasMatch, setup } from './util.tsx'
 setup()
-
-const getFile = (url: string) =>
-  new LocalFile(
-    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
-  )
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
 const delay = { timeout: 20000 }
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
+utilizeFetchMockForTest()
 
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
 })
-
-console.warn = jest.fn()
 
 async function testSyntenyView(
   peachLoc: string,
@@ -55,7 +42,7 @@ async function testSyntenyView(
     },
   )}`
   const { findByTestId } = render(<App search={str} />)
-  expectCanvasMatch(await findByTestId('synteny_canvas', {}, delay))
+  expectCanvasMatch(await findByTestId('synteny_canvas_done', {}, delay))
 }
 
 test('horizontally flipped inverted alignment', async () => {

@@ -1,51 +1,41 @@
-import { useEffect } from 'react'
-
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { HighlightBand } from '@jbrowse/plugin-linear-genome-view'
-import BookmarkIcon from '@mui/icons-material/Bookmark'
-import { Box, Tooltip, Typography } from '@mui/material'
+import { highlightKey } from '@jbrowse/core/util/highlights'
+import {
+  HighlightBand,
+  HighlightChip,
+} from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
+import { getBookmarkHighlights } from './getBookmarkHighlights.ts'
 
-type LGV = IExtendedLGV
+import type { IExtendedLGV } from '../../model.ts'
 
-const Highlight = observer(function Highlight({ model }: { model: LGV }) {
-  const session = getSession(model) as SessionWithWidgets
-  const { bookmarkHighlightsVisible, labelsVisible } = model
+const Highlight = observer(function Highlight({
+  model,
+}: {
+  model: IExtendedLGV
+}) {
+  const { labelsVisible, showHighlightChips } = model
+  const { session, bookmarkWidget, bookmarks } = getBookmarkHighlights(model)
 
-  const bookmarkWidget = session.widgets.get('GridBookmark') as
-    | GridBookmarkModel
-    | undefined
-
-  useEffect(() => {
-    if (!bookmarkWidget) {
-      session.addWidget('GridBookmarkWidget', 'GridBookmark')
-    }
-  }, [session, bookmarkWidget])
-
-  const viewAssemblies = new Set(model.assemblyNames)
-
-  return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
-    ? bookmarkWidget.bookmarks
-        .filter(r => viewAssemblies.has(r.assemblyName))
-        .map((r, idx) => {
-          const coords = model.getHighlightCoords(r)
-          const bandColor = colord(r.highlight)
-          // match band color but bump alpha to 0.8 so the chip is legible;
-          // if the band is fully transparent, hide the chip color too
-          const chipAlpha = bandColor.alpha() === 0 ? 0 : 0.8
-          return coords ? (
-            <HighlightBand
-              /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              key={`${coords.left}_${coords.width}_${idx}`}
-              coords={coords}
-              background={r.highlight}
-            >
-              <CascadingMenuButton
+  return bookmarkWidget
+    ? bookmarks.map((r, idx) => {
+        const coords = model.getHighlightCoords(r)
+        const label = labelsVisible ? r.label : undefined
+        return coords ? (
+          <HighlightBand
+            // region fields keep the key stable across pan/zoom (unlike pixel
+            // coords); idx disambiguates duplicate bookmarks on the same region
+            key={highlightKey(r, idx)}
+            coords={coords}
+            background={r.highlight}
+            label={label}
+          >
+            {showHighlightChips ? (
+              <HighlightChip
+                color={colord(r.highlight)}
+                label={label}
+                tooltip={r.label}
                 menuItems={[
                   {
                     label: 'Open bookmark widget',
@@ -54,9 +44,9 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                     },
                   },
                   {
-                    label: 'Turn off bookmark highlights',
+                    label: 'Turn off highlights',
                     onClick: () => {
-                      bookmarkWidget.setBookmarkHighlightsVisible(false)
+                      session.setHighlightsVisible(false)
                     },
                   },
                   {
@@ -66,24 +56,11 @@ const Highlight = observer(function Highlight({ model }: { model: LGV }) {
                     },
                   },
                 ]}
-              >
-                <Tooltip title={r.label} arrow>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <BookmarkIcon
-                      fontSize="small"
-                      sx={{ color: bandColor.alpha(chipAlpha).toRgbString() }}
-                    />
-                    {r.label && labelsVisible ? (
-                      <Typography variant="caption" noWrap>
-                        {r.label}
-                      </Typography>
-                    ) : null}
-                  </Box>
-                </Tooltip>
-              </CascadingMenuButton>
-            </HighlightBand>
-          ) : null
-        })
+              />
+            ) : null}
+          </HighlightBand>
+        ) : null
+      })
     : null
 })
 

@@ -43,7 +43,9 @@ const FileHandleRestoreBanner = observer(function FileHandleRestoreBanner({
         <Button
           color="inherit"
           size="small"
-          onClick={handleRestore}
+          onClick={() => {
+            void handleRestore()
+          }}
           disabled={restoring}
         >
           {restoring ? 'Restoring...' : 'Restore access'}

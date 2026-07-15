@@ -55,15 +55,16 @@ describe('LinearSyntenyViewInit type', () => {
     expect(init.tracks?.[1]).toEqual(['mm39_vs_rn7'])
   })
 
-  test('init type accepts full configuration', () => {
+  test('init type accepts per-level synteny tracks (2D array)', () => {
     const init: LinearSyntenyViewInit = {
       views: [
-        { loc: 'chr1:1-10000000', assembly: 'hg38', tracks: ['genes'] },
-        { loc: 'chr1:1-10000000', assembly: 'mm39', tracks: ['genes'] },
+        { assembly: 'grape' },
+        { assembly: 'peach' },
+        { assembly: 'cacao' },
       ],
       tracks: [['synteny_track_1', 'synteny_track_2']],
     }
-    expect(init.views.length).toBe(2)
+    expect(init.views.length).toBe(3)
     expect(init.tracks?.[0]?.length).toBe(2)
   })
 })

@@ -5,14 +5,19 @@ import { ErrorBanner } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { measureGridWidth } from '@jbrowse/core/util'
+import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
+import VariantAlleleFrequencyTable from './VariantAlleleFrequencyTable.tsx'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable.tsx'
 import SampleFilters from './VariantSampleFilters.tsx'
-import { getSampleGridRows } from './getSampleGridRows.ts'
+import {
+  filterSampleRows,
+  getAlleleFrequencies,
+  getSampleGridRows,
+} from './getSampleGridRows.ts'
 
 import type { Filters, VariantFieldDescriptions } from './types.ts'
 import type { VCFFeatureSerialized } from '../types.ts'
@@ -20,60 +25,117 @@ import type { GridColDef } from '@mui/x-data-grid'
 
 type ColumnDisplayMode = 'all' | 'gtOnly' | 'gtAndGenotype'
 
+const columnDisplayModes: ReadonlySet<ColumnDisplayMode> = new Set([
+  'all',
+  'gtOnly',
+  'gtAndGenotype',
+])
+
 const gtOnlyFields = new Set(['sample', 'GT'])
 const gtAndGenotypeFields = new Set(['sample', 'GT', 'genotype'])
 
+// Stable empty defaults so the row/frequency/column memos below don't churn on
+// every render when a field is absent.
+const EMPTY_SAMPLES = {}
+const EMPTY_ALT: string[] = []
+const EMPTY_DESCRIPTIONS: VariantFieldDescriptions = {}
+
 export default function VariantSampleGrid({
   feature,
-  descriptions = {},
+  descriptions = EMPTY_DESCRIPTIONS,
 }: {
   feature: VCFFeatureSerialized
   descriptions?: VariantFieldDescriptions | null
 }) {
   const [filter, setFilter] = useState<Filters>({})
-  const [columnDisplayMode, setColumnDisplayMode] =
-    useState<ColumnDisplayMode>('all')
-  const [showFilters, setShowFilters] = useState(false)
-  const [showFrequencyTable, setShowFrequencyTable] = useState(true)
-  const [showToolbar, setShowToolbar] = useState(false)
-  const [useCounts, setUseCounts] = useState(false)
+  const [storedColumnDisplayMode, setColumnDisplayMode] =
+    useLocalStorage<ColumnDisplayMode>(
+      'variantSampleGrid-columnDisplayMode',
+      'all',
+    )
+  // guard against a stale/corrupt stored value
+  const columnDisplayMode = columnDisplayModes.has(storedColumnDisplayMode)
+    ? storedColumnDisplayMode
+    : 'all'
+  const [showFilters, setShowFilters] = useLocalStorage(
+    'variantSampleGrid-showFilters',
+    false,
+  )
+  const [showFrequencyTable, setShowFrequencyTable] = useLocalStorage(
+    'variantSampleGrid-showFrequencyTable',
+    true,
+  )
+  const [showAlleleFrequencies, setShowAlleleFrequencies] = useLocalStorage(
+    'variantSampleGrid-showAlleleFrequencies',
+    true,
+  )
+  const [showToolbar, setShowToolbar] = useLocalStorage(
+    'variantSampleGrid-showToolbar',
+    false,
+  )
+  const [useCounts, setUseCounts] = useLocalStorage(
+    'variantSampleGrid-useCounts',
+    false,
+  )
   const [selectedGenotypes, setSelectedGenotypes] =
     useState<Set<string> | null>(null)
 
-  const { rows, error } = getSampleGridRows(
-    feature.samples ?? {},
-    feature.REF ?? '',
-    feature.ALT ?? [],
-    filter,
-    useCounts,
+  // These tally over every sample, so memoize — the grid re-renders on each
+  // filter keystroke / toggle, and a big VCF can carry thousands of samples.
+  const samples = feature.samples ?? EMPTY_SAMPLES
+  const REF = feature.REF ?? ''
+  const ALT = feature.ALT ?? EMPTY_ALT
+  const rows = useMemo(
+    () => getSampleGridRows(samples, REF, ALT, useCounts),
+    [samples, REF, ALT, useCounts],
+  )
+  const alleleFrequencies = useMemo(
+    () => getAlleleFrequencies(samples, REF, ALT),
+    [samples, REF, ALT],
+  )
+
+  // Recompiles regexes and rescans every row, so memoize on the same footing as
+  // the row build above.
+  const { rows: textFilteredRows, error } = useMemo(
+    () => filterSampleRows(rows, filter),
+    [rows, filter],
   )
 
   const filteredRows = useMemo(
     () =>
       selectedGenotypes === null
-        ? rows
-        : rows.filter(row => selectedGenotypes.has(row.GT)),
-    [rows, selectedGenotypes],
+        ? textFilteredRows
+        : textFilteredRows.filter(row => selectedGenotypes.has(row.GT)),
+    [textFilteredRows, selectedGenotypes],
   )
 
+  // Columns are the union of FORMAT fields across every sample, not just
+  // rows[0]: VCF lets a sample drop trailing fields (a bare "0/1" call yields
+  // only GT), so keying off the first row alone would hide columns other
+  // samples populate. measureGridWidth also scans every row per column, so
+  // memoize alongside the row build rather than re-measuring on each keystroke.
   const columns = useMemo(() => {
-    const keys = [
-      'sample',
-      ...Object.keys(rows[0] ?? {}).filter(k => k !== 'id' && k !== 'sample'),
-    ]
-    return keys.map(
+    const fields = new Set<string>()
+    for (const row of rows) {
+      for (const key in row) {
+        if (key !== 'id' && key !== 'sample') {
+          fields.add(key)
+        }
+      }
+    }
+    return ['sample', ...fields].map(
       field =>
         ({
           field,
           description: descriptions?.FORMAT?.[field]?.Description,
-          width: measureGridWidth(filteredRows.map(r => r[field])),
+          width: measureGridWidth(rows.map(r => r[field])),
         }) satisfies GridColDef<(typeof rows)[0]>,
     )
-  }, [rows, filteredRows, descriptions])
+  }, [rows, descriptions])
 
   return !rows.length ? null : (
     <BaseCard title="Samples">
-      {error ? <Typography color="error">{`${error}`}</Typography> : null}
+      {error ? <ErrorBanner error={error} /> : null}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <CascadingMenuButton
           menuItems={[
@@ -89,11 +151,19 @@ export default function VariantSampleGrid({
               },
             },
             {
-              label: 'Show frequency table',
+              label: 'Show genotype frequency table',
               type: 'checkbox',
               checked: showFrequencyTable,
               onClick: () => {
                 setShowFrequencyTable(!showFrequencyTable)
+              },
+            },
+            {
+              label: 'Show allele frequency table',
+              type: 'checkbox',
+              checked: showAlleleFrequencies,
+              onClick: () => {
+                setShowAlleleFrequencies(!showAlleleFrequencies)
               },
             },
             {
@@ -149,7 +219,7 @@ export default function VariantSampleGrid({
           </Typography>
           <ErrorBoundary FallbackComponent={ErrorBanner}>
             <VariantGenotypeFrequencyTable
-              rows={rows}
+              rows={textFilteredRows}
               selectedGenotypes={selectedGenotypes}
               setSelectedGenotypes={setSelectedGenotypes}
               showToolbar={showToolbar}
@@ -158,11 +228,22 @@ export default function VariantSampleGrid({
         </>
       ) : null}
 
+      {showAlleleFrequencies && alleleFrequencies.length ? (
+        <>
+          <Typography variant="subtitle2" style={{ marginTop: 8 }}>
+            Allele frequencies
+          </Typography>
+          <ErrorBoundary FallbackComponent={ErrorBanner}>
+            <VariantAlleleFrequencyTable frequencies={alleleFrequencies} />
+          </ErrorBoundary>
+        </>
+      ) : null}
+
       <Typography variant="subtitle2" style={{ marginTop: 16 }}>
         Samples{' '}
         {selectedGenotypes !== null
-          ? `(${filteredRows.length} of ${rows.length})`
-          : `(${rows.length})`}
+          ? `(${filteredRows.length} of ${textFilteredRows.length})`
+          : `(${textFilteredRows.length})`}
       </Typography>
       <DataGridFlexContainer>
         <DataGrid

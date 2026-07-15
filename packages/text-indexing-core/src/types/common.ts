@@ -1,11 +1,10 @@
-import fs from 'fs'
-import path from 'path'
-import readline from 'readline'
-import { Readable } from 'stream'
-import { fileURLToPath } from 'url'
-import { createGunzip } from 'zlib'
-
-import type { ReadableStream } from 'node:stream/web'
+import { Buffer } from 'node:buffer'
+import fs from 'node:fs'
+import path from 'node:path'
+import readline from 'node:readline'
+import { Readable } from 'node:stream'
+import { fileURLToPath } from 'node:url'
+import { createGunzip } from 'node:zlib'
 
 import type { LocalPathLocation, Track, UriLocation } from '../util.ts'
 
@@ -28,6 +27,48 @@ function convertFileUrlToPath(fileUrl: string): string | undefined {
     // not a valid URL
   }
   return undefined
+}
+
+// Turn a WHATWG ReadableStream into a node Readable by driving its reader.
+//
+// DO NOT replace this with `Readable.fromWeb(body)`. It looks equivalent and
+// passes tests (undici's fetch body IS a node:stream/web stream), but the
+// desktop indexing worker runs on Chromium's global fetch, whose body is a DOM
+// ReadableStream from a different realm. `Readable.fromWeb`'s internal
+// `instanceof` check rejects it with the baffling "must be an instance of
+// ReadableStream. Received an instance of ReadableStream", and remote (URL)
+// track indexing breaks. `getReader()` is standard on every WHATWG stream
+// regardless of realm, so this works everywhere. See common.test.ts
+// "foreign realm" regression test.
+function webStreamToNodeReadable(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+): Readable {
+  return new Readable({
+    read() {
+      reader
+        .read()
+        .then(({ done, value }) => {
+          this.push(done ? null : Buffer.from(value))
+        })
+        .catch((e: unknown) => {
+          this.destroy(e as Error)
+        })
+    },
+    // Cancel the source when the Readable is destroyed early (e.g. an aborted
+    // index) so the underlying fetch connection is released rather than left
+    // hanging — the cleanup Readable.fromWeb would do for us if it accepted
+    // this stream.
+    destroy(error: Error | null, callback: (error?: Error | null) => void) {
+      reader
+        .cancel(error ?? undefined)
+        .then(() => {
+          callback(error)
+        })
+        .catch(() => {
+          callback(error)
+        })
+    },
+  })
 }
 
 export async function getLocalOrRemoteStream({
@@ -58,8 +99,13 @@ export async function getLocalOrRemoteStream({
       throw new Error(`Failed to fetch ${file}: no response body`)
     }
 
+    // node-fetch gives a node Readable directly; global fetch gives a web
+    // ReadableStream we adapt (see webStreamToNodeReadable — do not swap in
+    // Readable.fromWeb here).
     const nodeStream =
-      body instanceof Readable ? body : Readable.fromWeb(body as ReadableStream)
+      body instanceof Readable
+        ? body
+        : webStreamToNodeReadable(body.getReader())
     nodeStream.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)
@@ -86,7 +132,7 @@ export async function getLocalOrRemoteStream({
 }
 
 export function createReadlineInterface(stream: Readable, inLocation: string) {
-  const inputStream = /.b?gz$/.exec(inLocation)
+  const inputStream = /\.b?gz$/i.test(inLocation)
     ? stream.pipe(createGunzip())
     : stream
   return readline.createInterface({ input: inputStream })
@@ -111,70 +157,51 @@ export function parseAttributes(
   return result
 }
 
-export function makeLocation(location: string, protocol: string) {
+export function makeLocation(
+  location: string,
+  protocol: string,
+): UriLocation | LocalPathLocation {
   if (protocol === 'uri') {
-    return { uri: location, locationType: 'UriLocation' } as UriLocation
+    return { uri: location, locationType: 'UriLocation' }
   }
   if (protocol === 'localPath') {
     return {
       localPath: path.resolve(location),
       locationType: 'LocalPathLocation',
-    } as LocalPathLocation
+    }
   }
   throw new Error(`invalid protocol ${protocol}`)
 }
 
+// ordered most-specific-first so e.g. `.vcf.gz` matches before `.vcf`
+const adapterGuesses = [
+  {
+    regex: /\.vcf\.b?gz$/i,
+    type: 'VcfTabixAdapter',
+    locationKey: 'vcfGzLocation',
+  },
+  {
+    regex: /\.gff3?\.b?gz$/i,
+    type: 'Gff3TabixAdapter',
+    locationKey: 'gffGzLocation',
+  },
+  { regex: /\.gtf?$/i, type: 'GtfAdapter', locationKey: 'gtfLocation' },
+  { regex: /\.vcf$/i, type: 'VcfAdapter', locationKey: 'vcfLocation' },
+  { regex: /\.gff3?$/i, type: 'Gff3Adapter', locationKey: 'gffLocation' },
+]
+
 export function guessAdapterFromFileName(filePath: string): Track {
-  const protocol = isURL(filePath) ? 'uri' : 'localPath'
-  const name = path.basename(filePath)
-  if (/\.vcf\.b?gz$/i.test(filePath)) {
+  const guess = adapterGuesses.find(g => g.regex.test(filePath))
+  if (guess) {
+    const name = path.basename(filePath)
+    const protocol = isURL(filePath) ? 'uri' : 'localPath'
     return {
       trackId: name,
       name,
       assemblyNames: [],
       adapter: {
-        type: 'VcfTabixAdapter',
-        vcfGzLocation: makeLocation(filePath, protocol),
-      },
-    }
-  } else if (/\.gff3?\.b?gz$/i.test(filePath)) {
-    return {
-      trackId: name,
-      name,
-      assemblyNames: [],
-      adapter: {
-        type: 'Gff3TabixAdapter',
-        gffGzLocation: makeLocation(filePath, protocol),
-      },
-    }
-  } else if (/\.gtf?$/i.test(filePath)) {
-    return {
-      trackId: name,
-      name,
-      assemblyNames: [],
-      adapter: {
-        type: 'GtfAdapter',
-        gtfLocation: makeLocation(filePath, protocol),
-      },
-    }
-  } else if (/\.vcf$/i.test(filePath)) {
-    return {
-      trackId: name,
-      name,
-      assemblyNames: [],
-      adapter: {
-        type: 'VcfAdapter',
-        vcfLocation: makeLocation(filePath, protocol),
-      },
-    }
-  } else if (/\.gff3?$/i.test(filePath)) {
-    return {
-      trackId: name,
-      name,
-      assemblyNames: [],
-      adapter: {
-        type: 'Gff3Adapter',
-        gffLocation: makeLocation(filePath, protocol),
+        type: guess.type,
+        [guess.locationKey]: makeLocation(filePath, protocol),
       },
     }
   } else {
@@ -182,9 +209,18 @@ export function guessAdapterFromFileName(filePath: string): Track {
   }
 }
 
-// replaces characters invalid in Windows filenames: \ / : * ? " < > |
+// Windows reserves these device names even with an extension, so a track or
+// assembly literally named e.g. NUL would otherwise yield an unusable NUL.ix
+const windowsReservedName = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i
+
+// makes `name` safe as a filename on Windows: replaces the invalid characters
+// \ / : * ? " < > |, drops trailing dots/spaces (Windows silently strips them),
+// and escapes reserved device names
 export function sanitizeForFilename(name: string) {
-  return name.replace(/[\\/:*?"<>|]/g, '_')
+  const cleaned = name
+    .replaceAll(/[\\/:*?"<>|]/g, '_')
+    .replace(/(?<![. ])[. ]+$/, '')
+  return windowsReservedName.test(cleaned) ? `_${cleaned}` : cleaned
 }
 
 export function generateMeta({

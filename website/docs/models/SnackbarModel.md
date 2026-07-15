@@ -1,67 +1,123 @@
 ---
 id: snackbarmodel
 title: SnackbarModel
+sidebar_label: Session -> SnackbarModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/SnackbarModel.tsx).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+## Members
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ui/SnackbarModel.tsx)
+| Member                                                 | Kind      | Defined by    | Description                                                                                                                                                                                               |
+| ------------------------------------------------------ | --------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [snackbarMessages](#volatile-snackbarmessages)         | Volatiles | SnackbarModel |                                                                                                                                                                                                           |
+| [errorDialog](#volatile-errordialog)                   | Volatiles | SnackbarModel | the error currently shown in the stack-trace dialog. Kept off the dialog queue so it can stack on top of an already-open dialog (e.g. the one whose action raised the error) instead of waiting behind it |
+| [snackbarMessageSet](#getter-snackbarmessageset)       | Getters   | SnackbarModel |                                                                                                                                                                                                           |
+| [notify](#action-notify)                               | Actions   | SnackbarModel |                                                                                                                                                                                                           |
+| [notifyError](#action-notifyerror)                     | Actions   | SnackbarModel |                                                                                                                                                                                                           |
+| [setErrorDialog](#action-seterrordialog)               | Actions   | SnackbarModel |                                                                                                                                                                                                           |
+| [pushSnackbarMessage](#action-pushsnackbarmessage)     | Actions   | SnackbarModel |                                                                                                                                                                                                           |
+| [popSnackbarMessage](#action-popsnackbarmessage)       | Actions   | SnackbarModel |                                                                                                                                                                                                           |
+| [removeSnackbarMessage](#action-removesnackbarmessage) | Actions   | SnackbarModel |                                                                                                                                                                                                           |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SnackbarModel.md)
+<details>
+<summary>SnackbarModel - Volatiles</summary>
 
-## Docs
+#### volatile: errorDialog
 
-### SnackbarModel - Getters
+the error currently shown in the stack-trace dialog. Kept off the dialog queue
+so it can stack on top of an already-open dialog (e.g. the one whose action
+raised the error) instead of waiting behind it
+
+```ts
+// type signature
+type errorDialog = ErrorDialogState | undefined
+// code
+errorDialog: undefined as ErrorDialogState | undefined
+```
+
+</details>
+
+<details>
+<summary>SnackbarModel - Volatiles (other undocumented members)</summary>
+
+#### volatile: snackbarMessages
+
+```ts
+// type signature
+type snackbarMessages = IObservableArray<SnackbarMessage>
+// code
+snackbarMessages: observable.array<SnackbarMessage>()
+```
+
+</details>
+
+<details>
+<summary>SnackbarModel - Getters</summary>
 
 #### getter: snackbarMessageSet
 
-```js
-// type
-Map<string, SnackbarMessage>
+```ts
+type snackbarMessageSet = Map<string, SnackbarMessage>
 ```
 
-### SnackbarModel - Actions
+</details>
+
+<details>
+<summary>SnackbarModel - Actions</summary>
 
 #### action: notify
 
-```js
-// type signature
-notify: (message: string, level?: NotificationLevel | undefined, action?: SnackAction | SnackAction[] | undefined) => void
+```ts
+type notify = (
+  message: string,
+  level?: NotificationLevel | undefined,
+  action?: SnackAction | SnackAction[] | undefined,
+) => void
 ```
 
 #### action: notifyError
 
-```js
-// type signature
-notifyError: (errorMessage: string, error?: unknown, extra?: unknown, action?: SnackAction | undefined) => void
+```ts
+type notifyError = (
+  errorMessage: string,
+  error?: unknown,
+  extra?: unknown,
+  action?: SnackAction | undefined,
+) => void
+```
+
+#### action: setErrorDialog
+
+```ts
+type setErrorDialog = (state: ErrorDialogState | undefined) => void
 ```
 
 #### action: pushSnackbarMessage
 
-```js
-// type signature
-pushSnackbarMessage: (message: string, level?: NotificationLevel | undefined, actions?: SnackAction[] | undefined) => void
+```ts
+type pushSnackbarMessage = (
+  message: string,
+  level?: NotificationLevel | undefined,
+  actions?: SnackAction[] | undefined,
+) => void
 ```
 
 #### action: popSnackbarMessage
 
-```js
-// type signature
-popSnackbarMessage: () => SnackbarMessage | undefined
+```ts
+type popSnackbarMessage = () => SnackbarMessage | undefined
 ```
 
 #### action: removeSnackbarMessage
 
-```js
-// type signature
-removeSnackbarMessage: (message: string) => void
+```ts
+type removeSnackbarMessage = (message: string) => void
 ```
+
+</details>

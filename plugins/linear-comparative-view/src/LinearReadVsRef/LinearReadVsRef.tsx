@@ -1,20 +1,14 @@
 import { useState } from 'react'
 
-import { getTag } from '@jbrowse/alignments-core'
 import {
-  featurizeSA,
-  getClip,
-  getLength,
-  getLengthSansClipping,
-} from '@jbrowse/cigar-utils'
+  SAM_FLAG_SECONDARY,
+  SAM_FLAG_SUPPLEMENTARY,
+  getTag,
+} from '@jbrowse/alignments-core'
+import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly'
 import { getConf } from '@jbrowse/core/configuration'
-import { Dialog } from '@jbrowse/core/ui'
-import {
-  gatherOverlaps,
-  getContainingView,
-  getSession,
-  useFetch,
-} from '@jbrowse/core/util'
+import { Dialog, ErrorMessage, NumberTextField } from '@jbrowse/core/ui'
+import { getContainingView, getSession, useFetch } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -22,35 +16,62 @@ import {
   CircularProgress,
   DialogActions,
   DialogContent,
-  TextField,
   Typography,
 } from '@mui/material'
 
-import type { Feature } from '@jbrowse/core/util'
+import { buildReadVsRefSpec } from './buildReadVsRefSpec.ts'
 
-interface ReducedFeature {
-  refName: string
-  start: number
-  clipLengthAtStartOfRead: number
-  end: number
-  strand: number
-  seqLength: number
-  syntenyId?: number
-  uniqueId: string
-  mate: {
-    refName: string
-    start: number
-    end: number
-    syntenyId?: number
-    uniqueId?: string
-  }
-}
+import type { AbstractTrackModel, Feature } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   root: {
     width: 300,
   },
 })
+
+async function fetchPrimaryAlignment(
+  track: AbstractTrackModel,
+  preFeature: Feature,
+) {
+  if (!((preFeature.get('flags') as number) & SAM_FLAG_SUPPLEMENTARY)) {
+    return preFeature
+  }
+  const SA = (getTag(preFeature, 'SA') as string | undefined) ?? ''
+  const primaryAln = SA.split(';', 1)[0]!
+  const [saRef, saStart] = primaryAln.split(',')
+  const session = getSession(track)
+  const { rpcManager } = session
+  const adapterConfig = getConf(track, 'adapter')
+  const sessionId = getRpcSessionId(track)
+  const [asm] = getConf(track, 'assemblyNames') as string[]
+  // CRAM/BAM must decode the primary read's SEQ against the reference; the
+  // adapter config doesn't carry it, so pass the assembly's sequence adapter.
+  const sequenceAdapter = getSequenceAdapterConfig(
+    asm ? session.assemblyManager.get(asm) : undefined,
+  )
+  const feats: Feature[] = await rpcManager.call(sessionId, 'CoreGetFeatures', {
+    adapterConfig,
+    sequenceAdapter,
+    regions: [
+      {
+        refName: saRef!,
+        start: +saStart! - 1,
+        end: +saStart!,
+        assemblyName: asm ?? '',
+      },
+    ],
+  })
+  const result = feats.find(
+    f =>
+      f.get('name') === preFeature.get('name') &&
+      !((f.get('flags') as number) & SAM_FLAG_SUPPLEMENTARY) &&
+      !((f.get('flags') as number) & SAM_FLAG_SECONDARY),
+  )
+  if (!result) {
+    throw new Error('primary feature not found')
+  }
+  return result
+}
 
 export default function ReadVsRefDialog({
   track,
@@ -59,245 +80,50 @@ export default function ReadVsRefDialog({
 }: {
   feature: Feature
   handleClose: () => void
-
-  track: any
+  track: AbstractTrackModel
 }) {
   const { classes } = useStyles()
 
-  // window size stored as string, because it corresponds to a textfield which
-  // is parsed as number on submit
-  const [windowSizeText, setWindowSize] = useState('0')
+  const [windowSize, setWindowSize] = useState<number | undefined>(0)
   const [submitError, setSubmitError] = useState<unknown>()
-  const windowSize = +windowSizeText
 
-  // we need to fetch the primary alignment if the selected feature is 2048.
-  // this should be the first in the list of the SA tag
   const { data: primaryFeature, error: fetchError } = useFetch(
     ['primaryAlignment', preFeature.id()],
-    async () => {
-      if (preFeature.get('flags') & 2048) {
-        const SA: string = getTag(preFeature, 'SA') || ''
-        const primaryAln = SA.split(';')[0]!
-        const [saRef, saStart] = primaryAln.split(',')
-        const { rpcManager } = getSession(track)
-        const adapterConfig = getConf(track, 'adapter')
-        const sessionId = getRpcSessionId(track)
-        const [asm] = getConf(track, 'assemblyNames') as string[]
-        const feats = await rpcManager.call(sessionId, 'CoreGetFeatures', {
-          adapterConfig,
-          regions: [
-            {
-              refName: saRef!,
-              start: +saStart! - 1,
-              end: +saStart!,
-              assemblyName: asm ?? '',
-            },
-          ],
-        })
-        const result = feats.find(
-          f =>
-            f.get('name') === preFeature.get('name') &&
-            !(f.get('flags') & 2048) &&
-            !(f.get('flags') & 256),
-        )
-        if (!result) {
-          throw new Error('primary feature not found')
-        }
-        return result
-      }
-      return preFeature
-    },
+    () => fetchPrimaryAlignment(track, preFeature),
   )
   const error = submitError ?? fetchError
 
-  function onSubmit() {
+  async function onSubmit() {
     try {
-      if (!primaryFeature) {
+      if (!primaryFeature || windowSize === undefined) {
         return
       }
-      const feature = primaryFeature
       const session = getSession(track)
-      const view = getContainingView(track)
-      const cigar = feature.get('CIGAR') as string
-      const flags = feature.get('flags') as number
-      const origStrand = feature.get('strand')!
-      const SA = (getTag(feature, 'SA') as string) || ''
-      const readName = feature.get('name')!
-      const clipLengthAtStartOfRead = getClip(cigar, 1)
-
-      const readAssembly = `${readName}_assembly_${Date.now()}`
-      const [trackAssembly] = getConf(track, 'assemblyNames')
-      const assemblyNames = [trackAssembly, readAssembly]
-      const trackId = `track-${Date.now()}`
-      const trackName = `${readName}_vs_${trackAssembly}`
-
-      // get the canonical refname for the read because if the
-      // read.get('refName') is chr1 and the actual fasta refName is 1 then no
-      // tracks can be opened on the top panel of the linear read vs ref
-      const { assemblyManager } = session
-      const assembly = assemblyManager.get(trackAssembly)
+      const view = getContainingView(track) as { width: number }
+      const [trackAssembly] = getConf(track, 'assemblyNames') as string[]
+      const assembly = await session.assemblyManager.waitForAssembly(
+        trackAssembly!,
+      )
       if (!assembly) {
         throw new Error('assembly not found')
       }
-
-      const suppAlns = featurizeSA(SA, feature.id(), origStrand, readName, true)
-
-      const feat = feature.toJSON()
-      feat.clipLengthAtStartOfRead = clipLengthAtStartOfRead
-      feat.strand = 1
-
-      feat.mate = {
-        refName: readName,
-        start: clipLengthAtStartOfRead,
-        end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
+      const sequenceTrackConf = getConf(assembly, 'sequence') as {
+        trackId: string
       }
 
-      // if secondary alignment or supplementary, calculate length from SA[0]'s
-      // CIGAR which is the primary alignments. otherwise it is the primary
-      // alignment just use seq.length if primary alignment
-      const totalLength =
-        flags & 2048 ? getLength(suppAlns[0]!.CIGAR) : getLength(cigar)
-
-      const features = [feat, ...suppAlns] as ReducedFeature[]
-
-      for (const [idx, f] of features.entries()) {
-        f.refName = assembly.getCanonicalRefName(f.refName) || f.refName
-        f.syntenyId = idx
-        f.mate.syntenyId = idx
-        f.mate.uniqueId = `${f.uniqueId}_mate`
-      }
-      features.sort(
-        (a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
-      )
-
-      const featSeq = feature.get('seq') as string | undefined
-
-      // the config feature store includes synthetic mate features
-      // mapped to the read assembly
-      const configFeatureStore = [...features, ...features.map(f => f.mate)]
-      const expand = 2 * windowSize
-      const refLen = features.reduce((a, f) => a + f.end - f.start + expand, 0)
-
-      const seqTrackId = `${readName}_${Date.now()}`
-      const sequenceTrackConf = getConf(assembly, 'sequence')
-      const lgvRegions = gatherOverlaps(
-        features.map(f => ({
-          ...f,
-          start: Math.max(0, f.start - windowSize),
-          end: f.end + windowSize,
-          assemblyName: trackAssembly,
-        })),
-      )
-
-      session.addTemporaryAssembly?.({
-        name: readAssembly,
-        sequence: {
-          type: 'ReferenceSequenceTrack',
-          name: 'Read sequence',
-          trackId: seqTrackId,
-          assemblyNames: [readAssembly],
-          adapter: {
-            type: 'FromConfigSequenceAdapter',
-            noAssemblyManager: true,
-            features: [
-              {
-                start: 0,
-                end: totalLength,
-                seq: featSeq || '', // can be empty if user clicks secondary read
-                refName: readName,
-                uniqueId: `${Math.random()}`,
-              },
-            ],
-          },
-        },
+      const { temporaryAssembly, viewSpec } = buildReadVsRefSpec({
+        primaryFeature,
+        windowSize,
+        viewWidth: view.width,
+        trackAssembly: trackAssembly!,
+        getCanonicalRefName: refName => assembly.getCanonicalRefName(refName),
+        sequenceTrackConf,
+        now: () => Date.now(),
+        rand: () => Math.random(),
       })
 
-      session.addView('LinearSyntenyView', {
-        type: 'LinearSyntenyView',
-        views: [
-          {
-            type: 'LinearGenomeView',
-            hideHeader: true,
-            offsetPx: 0,
-            bpPerPx: refLen / view.width,
-            displayedRegions: lgvRegions,
-            tracks: [
-              {
-                id: `${Math.random()}`,
-                type: 'ReferenceSequenceTrack',
-                assemblyNames: [trackAssembly],
-                configuration: sequenceTrackConf.trackId,
-                displays: [
-                  {
-                    id: `${Math.random()}`,
-                    type: 'LinearReferenceSequenceDisplay',
-                    showReverse: true,
-                    showTranslation: false,
-                    height: 35,
-                    configuration: `${sequenceTrackConf.trackId}-LinearReferenceSequenceDisplay`,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'LinearGenomeView',
-            hideHeader: true,
-            offsetPx: 0,
-            bpPerPx: totalLength / view.width,
-            displayedRegions: [
-              {
-                assemblyName: readAssembly,
-                start: 0,
-                end: totalLength,
-                refName: readName,
-              },
-            ],
-            tracks: [
-              {
-                id: `${Math.random()}`,
-                type: 'ReferenceSequenceTrack',
-                configuration: seqTrackId,
-                displays: [
-                  {
-                    id: `${Math.random()}`,
-                    type: 'LinearReferenceSequenceDisplay',
-                    showReverse: true,
-                    showTranslation: false,
-                    height: 35,
-                    configuration: `${seqTrackId}-LinearReferenceSequenceDisplay`,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-        viewTrackConfigs: [
-          {
-            type: 'SyntenyTrack',
-            assemblyNames,
-            adapter: {
-              type: 'FromConfigAdapter',
-              features: configFeatureStore,
-            },
-            trackId,
-            name: trackName,
-          },
-        ],
-        tracks: [
-          {
-            configuration: trackId,
-            type: 'SyntenyTrack',
-            displays: [
-              {
-                type: 'LinearSyntenyDisplay',
-                configuration: `${trackId}-LinearSyntenyDisplay`,
-              },
-            ],
-          },
-        ],
-        displayName: `${readName} vs ${trackAssembly}`,
-      })
+      session.addTemporaryAssembly?.(temporaryAssembly)
+      session.addView('LinearSyntenyView', viewSpec)
       handleClose()
     } catch (e) {
       console.error(e)
@@ -309,7 +135,7 @@ export default function ReadVsRefDialog({
     <Dialog open onClose={handleClose} title="Set window size">
       <DialogContent>
         {error ? (
-          <Typography color="error">{`${error}`}</Typography>
+          <ErrorMessage error={error} />
         ) : !primaryFeature ? (
           <div>
             <Typography>
@@ -320,7 +146,7 @@ export default function ReadVsRefDialog({
           </div>
         ) : (
           <div className={classes.root}>
-            {primaryFeature.get('flags') & 256 ? (
+            {(primaryFeature.get('flags') as number) & SAM_FLAG_SECONDARY ? (
               <Typography style={{ color: 'orange' }}>
                 Note: You selected a secondary alignment (which generally does
                 not have SA tags or SEQ fields) so do a full reconstruction of
@@ -332,12 +158,12 @@ export default function ReadVsRefDialog({
               Using a larger value can allow you to see more genomic context.
             </Typography>
 
-            <TextField
-              value={windowSize}
-              onChange={event => {
-                setWindowSize(event.target.value)
-              }}
+            <NumberTextField
+              defaultValue={0}
+              min={0}
+              onValueChange={setWindowSize}
               label="Set window size"
+              errorText="Must be a non-negative number"
             />
           </div>
         )}
@@ -347,10 +173,12 @@ export default function ReadVsRefDialog({
           Cancel
         </Button>
         <Button
-          disabled={!primaryFeature}
+          disabled={!primaryFeature || windowSize === undefined}
           variant="contained"
           color="primary"
-          onClick={onSubmit}
+          onClick={() => {
+            void onSubmit()
+          }}
         >
           Submit
         </Button>

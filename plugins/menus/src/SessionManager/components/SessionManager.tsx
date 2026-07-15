@@ -1,5 +1,10 @@
+import { ActionLink } from '@jbrowse/core/ui'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
+import {
+  formatRelativeTime,
+  measureGridWidth,
+  useLocalStorage,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import StarIcon from '@mui/icons-material/Star'
@@ -9,14 +14,19 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
-  Link,
   Tooltip,
 } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { differenceInDays, formatDistanceToNow } from 'date-fns'
 import { observer } from 'mobx-react'
 
 import type { SessionModel } from './util.ts'
+
+interface Row {
+  id: string
+  name: string
+  createdAt: Date
+  fav: boolean
+}
 
 const useStyles = makeStyles()(theme => ({
   mb: {
@@ -35,7 +45,7 @@ const SessionManager = observer(function SessionManager({
     'sessionManager-showOnlyFavs',
     false,
   )
-  const rows = session.savedSessionMetadata
+  const rows: Row[] | undefined = session.savedSessionMetadata
     ?.map(r => ({
       id: r.id,
       name: r.name,
@@ -44,13 +54,13 @@ const SessionManager = observer(function SessionManager({
     }))
     .filter(f => !showOnlyFavs || f.fav)
 
-  function handleDeleteOld() {
+  async function handleDeleteOld() {
     const toDelete = (session.savedSessionMetadata ?? []).filter(
-      elt => differenceInDays(Date.now(), elt.createdAt) > 1 && !elt.favorite,
+      elt =>
+        (Date.now() - elt.createdAt.getTime()) / (1000 * 60 * 60 * 24) > 1 &&
+        !elt.favorite,
     )
-    for (const elt of toDelete) {
-      session.deleteSavedSession(elt.id)
-    }
+    await Promise.all(toDelete.map(elt => session.deleteSavedSession(elt.id)))
     session.notify(`${toDelete.length} sessions deleted`, 'info')
   }
 
@@ -59,10 +69,10 @@ const SessionManager = observer(function SessionManager({
       field: 'fav',
       headerName: 'Fav',
       width: 20,
-      renderCell: ({ row }: { row: { id: string; fav: boolean } }) => (
+      renderCell: ({ row }: { row: Row }) => (
         <IconButton
           onClick={() => {
-            session.setSavedSessionFavorite(row.id, !row.fav)
+            void session.setSavedSessionFavorite(row.id, !row.fav)
           }}
         >
           {row.fav ? <StarIcon /> : <StarBorderIcon />}
@@ -74,17 +84,15 @@ const SessionManager = observer(function SessionManager({
       headerName: 'Name',
       editable: true,
       width: measureGridWidth((rows ?? []).map(r => r.name)),
-      renderCell: ({ row }: { row: { id: string; name: string } }) => (
+      renderCell: ({ row }: { row: Row }) => (
         <>
-          <Link
-            href="#"
-            onClick={event => {
-              event.preventDefault()
-              session.activateSession(row.id)
+          <ActionLink
+            onClick={() => {
+              void session.activateSession(row.id)
             }}
           >
             {row.name}
-          </Link>
+          </ActionLink>
           {session.id === row.id ? ' (current)' : ''}
         </>
       ),
@@ -92,13 +100,13 @@ const SessionManager = observer(function SessionManager({
     {
       headerName: 'Created at',
       field: 'createdAt',
-      renderCell: ({ row }: { row: { createdAt: Date } }) => (
+      renderCell: ({ row }: { row: Row }) => (
         <Tooltip
           disableInteractive
           slotProps={{ transition: { timeout: 0 } }}
           title={row.createdAt.toLocaleString()}
         >
-          <div>{formatDistanceToNow(row.createdAt, { addSuffix: true })}</div>
+          <div>{formatRelativeTime(row.createdAt)}</div>
         </Tooltip>
       ),
     },
@@ -106,10 +114,10 @@ const SessionManager = observer(function SessionManager({
       field: 'delete',
       width: 10,
       headerName: 'Delete',
-      renderCell: ({ row }: { row: { id: string } }) => (
+      renderCell: ({ row }: { row: Row }) => (
         <IconButton
           onClick={() => {
-            session.deleteSavedSession(row.id)
+            void session.deleteSavedSession(row.id)
           }}
         >
           <DeleteIcon />
@@ -135,7 +143,10 @@ const SessionManager = observer(function SessionManager({
         <Button
           variant="contained"
           onClick={() => {
-            handleDeleteOld()
+            handleDeleteOld().catch((e: unknown) => {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            })
           }}
         >
           Delete non-fav sessions older than 1 day?
@@ -148,9 +159,20 @@ const SessionManager = observer(function SessionManager({
             columnHeaderHeight={35}
             rowHeight={25}
             hideFooter={rows.length < 100}
+            showToolbar
             slotProps={{ toolbar: { showQuickFilter: true } }}
             rows={rows}
             columns={columns}
+            processRowUpdate={(newRow: Row, oldRow: Row) => {
+              if (newRow.name !== oldRow.name) {
+                void session.renameSavedSession(newRow.id, newRow.name)
+              }
+              return newRow
+            }}
+            onProcessRowUpdateError={e => {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            }}
           />
         </DataGridFlexContainer>
       ) : (

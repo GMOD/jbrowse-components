@@ -1,94 +1,122 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useRef, useState } from 'react'
 
-import { prepareCanvas } from '@jbrowse/core/gpu/canvas2dUtils'
-import { ErrorBar } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
-import { Alert, useTheme } from '@mui/material'
-import { autorun } from 'mobx'
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { toLocale } from '@jbrowse/core/util'
+import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import LoadingOverlay from './LoadingOverlay.tsx'
-import { buildTextColors, drawSequenceBlocks } from './drawSequence.ts'
-import { buildColorPalette } from './sequenceGeometry.ts'
+import { SequenceRenderer } from './Canvas2DSequenceRenderer.ts'
 
+import type { SequenceHover } from './sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const SequenceBody = observer(function SequenceBody({
+  model,
+  canvasRef,
+}: {
+  model: LinearReferenceSequenceDisplayModel
+  canvasRef: (node: HTMLCanvasElement | null) => void
+}) {
+  return model.zoomedOut ? (
+    <Alert severity="info">Zoom in to see sequence</Alert>
+  ) : (
+    <canvas
+      ref={canvasRef}
+      style={{ width: '100%', height: '100%', display: 'block' }}
+    />
+  )
+})
+
+function frameLabel(frame: number) {
+  return frame > 0 ? `+${frame}` : `${frame}`
+}
+
+const HoverContents = observer(function HoverContents({
+  hover,
+}: {
+  hover: SequenceHover
+}) {
+  const { refName, coord, detail } = hover
+  return (
+    <>
+      <div>
+        {refName}:{toLocale(coord)}
+      </div>
+      {detail?.type === 'base' ? (
+        <div>
+          {detail.strand === 1 ? '+' : '−'} strand: {detail.base}
+        </div>
+      ) : null}
+      {detail?.type === 'codon' ? (
+        <div>
+          Frame {frameLabel(detail.frame)}: {detail.codon} → {detail.aminoAcid}
+          {detail.kind === 'start'
+            ? ' (start)'
+            : detail.kind === 'stop'
+              ? ' (stop)'
+              : ''}
+        </div>
+      ) : null}
+    </>
+  )
+})
 
 const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
   model,
 }: {
   model: LinearReferenceSequenceDisplayModel
 }) {
-  const { height, error, showLoading, zoomedOut } = model
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const theme = useTheme()
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { height } = model
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [clientCoord, setClientCoord] = useState<[number, number]>()
+  const [hover, setHover] = useState<SequenceHover>()
 
-  const palette = useMemo(() => buildColorPalette(theme), [theme])
-  const textColors = useMemo(
-    () => buildTextColors(palette, theme),
-    [palette, theme],
-  )
+  function handleMouseMove(event: React.MouseEvent) {
+    const container = containerRef.current
+    if (container) {
+      const rect = container.getBoundingClientRect()
+      const info = model.hoverAt(
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+      )
+      setHover(info)
+      setClientCoord(info ? [event.clientX, event.clientY] : undefined)
+    }
+  }
 
-  useEffect(() => {
-    return autorun(function sequenceDrawAutorun() {
-      const canvas = canvasRef.current
-      if (!canvas || model.sequenceData.size === 0) {
-        return
-      }
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        return
-      }
-
-      const cssWidth = view.trackWidthPx
-      const cssHeight = model.height
-      prepareCanvas(canvas, ctx, cssWidth, cssHeight)
-      ctx.fillStyle = '#fff'
-      ctx.fillRect(0, 0, cssWidth, cssHeight)
-
-      drawSequenceBlocks(ctx, model.sequenceData, model.renderBlocks, {
-        bpPerPx: view.bpPerPx,
-        showForward: model.showForward,
-        showReverse: model.isDna && model.showReverse,
-        showTranslation: model.isDna && model.showTranslation,
-        sequenceType: model.sequenceType,
-        rowHeight: model.rowHeight,
-        palette,
-        textColors,
-        canvasWidth: cssWidth,
-        canvasHeight: cssHeight,
-      })
-    })
-  }, [model, view, palette, textColors])
+  function handleMouseLeave() {
+    setHover(undefined)
+    setClientCoord(undefined)
+  }
 
   return (
-    <div
-      data-testid="sequence-display"
-      style={{ position: 'relative', width: '100%', height }}
-    >
-      <canvas
-        ref={canvasRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: zoomedOut || showLoading ? 'none' : 'block',
+    <>
+      <DisplayChrome
+        ref={containerRef}
+        model={model}
+        factory={SequenceRenderer}
+        testid="sequence-display"
+        style={{ width: '100%', height }}
+        onMouseMove={event => {
+          handleMouseMove(event)
         }}
-      />
-      {zoomedOut ? (
-        <Alert severity="info">Zoom in to see sequence</Alert>
-      ) : (
-        <LoadingOverlay isVisible={showLoading} />
-      )}
-      {error ? (
-        <ErrorBar
-          error={error}
-          onRetry={() => {
-            model.clearAllRpcData()
-          }}
-        />
+        onMouseLeave={() => {
+          handleMouseLeave()
+        }}
+      >
+        {({ canvasRef }) => (
+          <SequenceBody model={model} canvasRef={canvasRef} />
+        )}
+      </DisplayChrome>
+      {hover && clientCoord ? (
+        <BaseTooltip
+          clientPoint={{ x: clientCoord[0] + 15, y: clientCoord[1] }}
+        >
+          <HoverContents hover={hover} />
+        </BaseTooltip>
       ) : null}
-    </div>
+    </>
   )
 })
 

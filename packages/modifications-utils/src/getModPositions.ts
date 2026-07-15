@@ -1,5 +1,22 @@
 import { parseModHeader } from './consts.ts'
 
+export interface ModWithPositions {
+  type: string
+  base: string
+  strand: string
+  // true when the MM tag used the '?' flag: the modification status of bases
+  // not listed in the tag is unknown (vs '.'/absent = assumed unmodified).
+  unknownSkip: boolean
+  positions: number[]
+  // Index into the flat ML probabilities array for this type's first
+  // MM-order position, and the stride to the next one. For a combined code
+  // like 'C+mh' the ML values are interleaved per position (m,h,m,h,...), so
+  // 'm' has probStart 0 / probStride 2 and 'h' has probStart 1 / probStride 2.
+  // Single-type codes are contiguous: probStride 1.
+  probStart: number
+  probStride: number
+}
+
 const COMPLEMENT_CODE: Record<number, number> = {
   65: 84, // A->T
   84: 65, // T->A
@@ -9,8 +26,8 @@ const COMPLEMENT_CODE: Record<number, number> = {
 }
 
 /**
+ * #api
  * Parse MM tag to extract modification positions on the read sequence.
- *
  *
  * @param mm - MM tag string (e.g., "C+m,2,2,1;A+a,0,3")
  * @param fseq - Read sequence
@@ -21,36 +38,32 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
   const seqLength = fseq.length
   const isRev = fstrand === -1
   const mods = mm.split(';')
-  const result: {
-    type: string
-    base: string
-    strand: string
-    positions: number[]
-  }[] = []
+  const result: ModWithPositions[] = []
+  // Running offset into the flat ML probabilities array. Each group consumes
+  // (numPositions * numTypes) values, interleaved per position.
+  let mlBase = 0
 
   for (const mod of mods) {
-    // Empty string
     if (mod === '') {
       continue
     }
-
     const split = mod.split(',')
     const basemod = split[0]!
-    const { base, strand, typestr } = parseModHeader(basemod, mod)
-    // Note: mod field ('.' or '?') indicates how skipped bases are interpreted
-    // but for getModPositions we only need base, strand, and typestr
+    const {
+      base,
+      strand,
+      typestr,
+      mod: skipFlag,
+    } = parseModHeader(basemod, mod)
+    const unknownSkip = skipFlag === '?'
 
-    // Note: Negative strand modifications (e.g., T-a) are now supported
-    // They are processed the same way as positive strand modifications
-    // The strand information is preserved for simplex/duplex detection
-
-    // can be a multi e.g. C+mh for both meth (m) and hydroxymeth (h) so split,
-    // and they can also be chemical codes (ChEBI) e.g. C+16061
-    // Iterate directly over characters to avoid array creation for multi-type
+    // typestr can be multi-char lowercase e.g. 'mh' (5mC + 5hmC at same positions)
+    // or a ChEBI code e.g. '16061'. Non-lowercase or single-char = one type.
     const isSingleType = typestr.charCodeAt(0) < 97 || typestr.length === 1
+    const nTypes = isSingleType ? 1 : typestr.length
 
     // this logic based on parse_mm.pl from hts-specs
-    const processType = (type: string) => {
+    const processType = (type: string, groupIndex: number) => {
       const splitLength = split.length
       let currPos = 0
 
@@ -62,8 +75,7 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
         : baseCode
       const isN = base === 'N'
 
-      // For reverse strand, pre-allocate array and fill backwards to avoid reverse()
-      // This is worthwhile because we avoid an O(n) reverse() operation
+      // Pre-allocate and fill backwards on reverse strand to avoid a final reverse()
       const positions = isRev ? new Array(splitLength - 1) : []
       let writeIndex = isRev ? splitLength - 2 : 0
 
@@ -79,43 +91,34 @@ export function getModPositions(mm: string, fseq: string, fstrand: number) {
           currPos++
         } while (delta >= 0 && currPos < seqLength)
 
-        // Calculate and store position
+        // currPos <= seqLength by loop invariant, so seqLength - currPos >= 0
         if (isRev) {
-          const pos = seqLength - currPos
-          if (pos >= 0) {
-            // avoid negative-number-positions in array, seen in #4629 cause
-            // unknown, could warrant some further investigation
-            positions[writeIndex--] = pos
-          } else {
-            // Position is negative (edge case from #4629)
-            // Don't write anything, don't decrement writeIndex
-            // This leaves a gap at the beginning of the array that we'll slice off
-          }
+          positions[writeIndex--] = seqLength - currPos
         } else {
           positions[writeIndex++] = currPos - 1
         }
       }
 
-      // For reverse strand, slice off any unfilled slots at the beginning
-      // (happens when some positions were negative and skipped)
-      const validPositions = isRev ? positions.slice(writeIndex + 1) : positions
-
       result.push({
         type,
         base,
         strand,
-        positions: validPositions,
+        unknownSkip,
+        positions,
+        probStart: mlBase + groupIndex,
+        probStride: nTypes,
       })
     }
 
     if (isSingleType) {
-      processType(typestr)
+      processType(typestr, 0)
     } else {
       // Multi-char lowercase: each character is a separate type
       for (let j = 0, len = typestr.length; j < len; j++) {
-        processType(typestr[j]!)
+        processType(typestr[j]!, j)
       }
     }
+    mlBase += (split.length - 1) * nTypes
   }
 
   return result

@@ -3,8 +3,17 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config HicAdapter
  * #category adapter
+ * #trackType HicTrack
+ * used to load Hi-C contact matrix data from a `.hic` file
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'HicAdapter',
+ *   uri: 'https://example.com/map.hic',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -30,14 +39,6 @@ const HicAdapter = ConfigurationSchema(
         uri: '/path/to/my.hic',
         locationType: 'UriLocation',
       },
-    },
-    /**
-     * #slot
-     */
-    resolutionMultiplier: {
-      type: 'number',
-      defaultValue: 1,
-      description: 'Initial resolution multiplier',
     },
   },
   {

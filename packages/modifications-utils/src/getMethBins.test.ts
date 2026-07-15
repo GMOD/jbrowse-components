@@ -3,6 +3,7 @@ import { parseCigar2 } from '@jbrowse/cigar-utils'
 import { getMethBins } from './getMethBins.ts'
 import { getModPositions } from './getModPositions.ts'
 
+import type { CytosineContext } from './cytosineContext.ts'
 import type { ParsedModData } from './getMethBins.ts'
 
 function makeModData(
@@ -32,8 +33,9 @@ function bins(
   ml: number[],
   strand: 1 | -1 = 1,
   cigar = `${seq.length}M`,
+  context: CytosineContext = 'CG',
 ) {
-  return getMethBins(makeModData(seq, mm, ml, strand, cigar))
+  return getMethBins(makeModData(seq, mm, ml, strand, cigar), context)
 }
 
 describe('getMethBins CpG filtering', () => {
@@ -86,6 +88,20 @@ describe('getMethBins CpG filtering', () => {
     expect(hydroxyMethBins[2]).toBe(1)
   })
 
+  test('combined code C+mh keeps m and h probabilities un-scrambled', () => {
+    // CpGs at read index 2 and 6. For a combined 'C+mh' code the ML array is
+    // interleaved per position: [m@2, h@2, m@6, h@6].
+    const { methProbs, hydroxyMethProbs } = bins(
+      'AACGATCGAA',
+      'C+mh,0,0;',
+      [250, 10, 20, 240],
+    )
+    expect(methProbs[2]).toBeCloseTo(250 / 255, 5)
+    expect(methProbs[6]).toBeCloseTo(20 / 255, 5)
+    expect(hydroxyMethProbs[2]).toBeCloseTo(10 / 255, 5)
+    expect(hydroxyMethProbs[6]).toBeCloseTo(240 / 255, 5)
+  })
+
   test('non-CpG modification types are ignored', () => {
     // 6mA modification (type 'a') should not populate methBins
     const { methBins, hydroxyMethBins } = bins('AAAGAA', 'A+a,0;', [200])
@@ -93,11 +109,56 @@ describe('getMethBins CpG filtering', () => {
     expect(Object.keys(hydroxyMethBins).length).toBe(0)
   })
 
+  test('read with CpGs but no 5mC call does not invent unmethylated CpGs', () => {
+    // 6mA-only read that happens to contain a CpG at index 2 must not be
+    // painted as having an unmethylated cytosine — methylation was never called.
+    const { methBins } = bins('AACGAA', 'A+a,0;', [200])
+    expect(Object.keys(methBins).length).toBe(0)
+  })
+
   test('two CpGs on same forward strand read both stored', () => {
     // seq AACGATCGAA: CpG at index 2 and 6
     const { methBins } = bins('AACGATCGAA', 'C+m,0,0;', [230, 50])
     expect(methBins[2]).toBe(1)
     expect(methBins[6]).toBe(1)
+  })
+
+  test("'.' skip flag fills uncalled CpGs as unmethylated (prob 0)", () => {
+    // CpGs at index 2 and 6; only index 2 is listed in the MM tag. With the
+    // default '.'/absent flag, the skipped CpG is assumed unmodified.
+    const { methBins, methProbs } = bins('AACGATCGAA', 'C+m,0;', [230])
+    expect(methBins[2]).toBe(1)
+    expect(methBins[6]).toBe(1)
+    expect(methProbs[6]).toBe(0)
+  })
+
+  test("'?' skip flag leaves uncalled CpGs unknown (not filled)", () => {
+    // Same read, but '?' means the status of skipped bases is unknown, so the
+    // uncalled CpG at index 6 must NOT be painted unmethylated.
+    const { methBins } = bins('AACGATCGAA', 'C+m?,0;', [230])
+    expect(methBins[2]).toBe(1)
+    expect(methBins[6]).toBeUndefined()
+  })
+
+  test('CHG context: forward CHG site stored, dropped under default CpG', () => {
+    // seq CAGAA: C@0 in CHG context (C,A,G). Methylation call at C@0.
+    expect(bins('CAGAA', 'C+m,0;', [200], 1, '5M', 'CHG').methBins[0]).toBe(1)
+    // same call under the default CpG context is not a CpG, so it is dropped
+    expect(bins('CAGAA', 'C+m,0;', [200]).methBins[0]).toBeUndefined()
+  })
+
+  test('CHH context: forward CHH site stored', () => {
+    // seq CATAA: C@0 in CHH context (C,A,T)
+    expect(bins('CATAA', 'C+m,0;', [200], 1, '5M', 'CHH').methBins[0]).toBe(1)
+    expect(bins('CATAA', 'C+m,0;', [200]).methBins[0]).toBeUndefined()
+  })
+
+  test('CHG context on reverse strand', () => {
+    // stored CAGT, reverse: getModPositions places the modified C at stored
+    // index 2 (the G). Reading backwards+complement gives C,H,G → CHG match.
+    expect(bins('CAGT', 'C+m,0;', [200], -1, '4M', 'CHG').methBins[2]).toBe(1)
+    // under default CpG the backward neighbour is H (T after complement), not G
+    expect(bins('CAGT', 'C+m,0;', [200], -1).methBins[2]).toBeUndefined()
   })
 
   test('two CpGs on reverse strand read both stored', () => {

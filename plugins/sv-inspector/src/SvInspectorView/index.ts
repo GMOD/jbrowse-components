@@ -7,7 +7,6 @@ import { launchBreakpointSplitView } from '@jbrowse/sv-core'
 
 import stateModelFactory from './model.ts'
 
-import type { SvInspectorViewModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
@@ -17,12 +16,17 @@ function defaultOnChordClick(feature: Feature, chordTrack: object) {
   try {
     session.setSelection(feature)
     const view = getContainingView(chordTrack) as CircularViewModel
-    const parentView = getParent<SvInspectorViewModel>(view)
+    const parentView = getParent<{ id: string; type: string }>(view)
     launchBreakpointSplitView({
       session,
       feature,
       assemblyName: view.assemblyNames[0]!,
-      stableViewId: `${parentView.id}_spawned`,
+      // only SvInspector reuses a stable spawned-view id; other circular views
+      // get a fresh view per click
+      stableViewId:
+        parentView.type === 'SvInspectorView'
+          ? `${parentView.id}_spawned`
+          : undefined,
     })
   } catch (e) {
     console.error(e)

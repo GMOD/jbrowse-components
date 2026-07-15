@@ -1,16 +1,12 @@
-import fs from 'fs'
-import path from 'path'
-import { parseArgs } from 'util'
+import fs from 'node:fs'
+import path from 'node:path'
+import { parseArgs } from 'node:util'
 
-import decompress from 'decompress'
-
-import fetch from '../cliFetch.ts'
 import {
-  fetchGithubVersions,
-  getBranch,
-  getLatest,
-  getTag,
+  downloadRelease,
+  extractZip,
   printHelp,
+  printVersions,
 } from '../utils.ts'
 
 const description = 'Upgrades JBrowse 2 to latest version'
@@ -78,8 +74,6 @@ export async function run(args: string[]) {
     args,
     allowPositionals: true,
   })
-  const argsPath = positionals[0]
-  const { clean, listVersions, tag, url, branch, nightly } = runFlags
   if (runFlags.help) {
     printHelp({
       options,
@@ -90,12 +84,13 @@ export async function run(args: string[]) {
     return
   }
 
+  const { clean, listVersions, tag, url, branch, nightly } = runFlags
   if (listVersions) {
-    const versions = (await fetchGithubVersions()).map(v => v.tag_name)
-    console.log(`All JBrowse versions:\n${versions.join('\n')}`)
-    process.exit(0)
+    await printVersions()
+    return
   }
 
+  const argsPath = positionals[0]
   if (!argsPath) {
     throw new Error('No directory supplied')
   }
@@ -107,40 +102,23 @@ export async function run(args: string[]) {
     )
   }
 
-  const locationUrl =
-    url ||
-    (nightly ? await getBranch('main') : '') ||
-    (branch ? await getBranch(branch) : '') ||
-    (tag ? await getTag(tag) : await getLatest())
-
-  console.log(`Fetching ${locationUrl}...`)
-  const response = await fetch(locationUrl)
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} fetching ${locationUrl}: ${response.statusText}`,
-    )
-  }
-
-  const type = response.headers.get('content-type')
-  if (
-    url &&
-    type !== 'application/zip' &&
-    type !== 'application/octet-stream'
-  ) {
-    throw new Error(
-      'The URL provided does not seem to be a JBrowse installation URL',
-    )
-  }
+  const { locationUrl, archive } = await downloadRelease({
+    url,
+    nightly,
+    branch,
+    tag,
+  })
 
   if (clean) {
     fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
-    for (const f of fs
+    const workerFiles = fs
       .readdirSync(argsPath)
-      .filter(f => f.includes('worker.js'))) {
+      .filter(f => f.includes('worker.js'))
+    for (const f of workerFiles) {
       fs.unlinkSync(path.join(argsPath, f))
     }
   }
 
-  await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
+  await extractZip(archive, argsPath)
   console.log(`Unpacked ${locationUrl} at ${argsPath}`)
 }

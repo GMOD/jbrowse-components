@@ -1,0 +1,273 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+import { applyColorPalette } from '@jbrowse/tree-sidebar'
+
+import { maybeApplyColorByPalette } from './MultiSampleVariantBaseModel.ts'
+import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
+
+describe('SharedVariantConfigSchema', () => {
+  const configSchema = sharedVariantConfigFactory()
+
+  describe('showReferenceAlleles config slot', () => {
+    it('has default value of false', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-1',
+      })
+      expect(readConfObject(config, 'showReferenceAlleles')).toBe(false)
+    })
+
+    it('can be set to true', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-2',
+        showReferenceAlleles: true,
+      })
+      expect(readConfObject(config, 'showReferenceAlleles')).toBe(true)
+    })
+  })
+
+  describe('showSidebarLabels config slot', () => {
+    it('has default value of true', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-3',
+      })
+      expect(readConfObject(config, 'showSidebarLabels')).toBe(true)
+    })
+
+    it('can be set to false', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-4',
+        showSidebarLabels: false,
+      })
+      expect(readConfObject(config, 'showSidebarLabels')).toBe(false)
+    })
+  })
+
+  describe('showTree config slot', () => {
+    it('has default value of true', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-5',
+      })
+      expect(readConfObject(config, 'showTree')).toBe(true)
+    })
+
+    it('can be set to false', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-6',
+        showTree: false,
+      })
+      expect(readConfObject(config, 'showTree')).toBe(false)
+    })
+  })
+
+  describe('renderingMode config slot', () => {
+    it('has default value of alleleCount', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-7',
+      })
+      expect(readConfObject(config, 'renderingMode')).toBe('alleleCount')
+    })
+
+    it('can be set to phased', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-8',
+        renderingMode: 'phased',
+      })
+      expect(readConfObject(config, 'renderingMode')).toBe('phased')
+    })
+  })
+
+  describe('minorAlleleFrequencyFilter config slot', () => {
+    it('has default value of 0', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-9',
+      })
+      expect(readConfObject(config, 'minorAlleleFrequencyFilter')).toBe(0)
+    })
+
+    it('can be set to a custom value', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-10',
+        minorAlleleFrequencyFilter: 0.05,
+      })
+      expect(readConfObject(config, 'minorAlleleFrequencyFilter')).toBe(0.05)
+    })
+  })
+
+  describe('maxMissingnessFilter config slot', () => {
+    it('defaults to 1 (keep every variant)', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-missingness-default',
+      })
+      expect(readConfObject(config, 'maxMissingnessFilter')).toBe(1)
+    })
+
+    it('can be set to a custom value', () => {
+      const config = configSchema.create({
+        type: 'SharedVariantDisplay',
+        displayId: 'test-missingness-custom',
+        maxMissingnessFilter: 0.2,
+      })
+      expect(readConfObject(config, 'maxMissingnessFilter')).toBe(0.2)
+    })
+  })
+})
+
+describe('colorBy config slot', () => {
+  const configSchema = sharedVariantConfigFactory()
+
+  it('has default value of empty string', () => {
+    const config = configSchema.create({
+      type: 'SharedVariantDisplay',
+      displayId: 'test-colorby-1',
+    })
+    expect(readConfObject(config, 'colorBy')).toBe('')
+  })
+
+  it('can be set to a metadata attribute name', () => {
+    const config = configSchema.create({
+      type: 'SharedVariantDisplay',
+      displayId: 'test-colorby-2',
+      colorBy: 'population',
+    })
+    expect(readConfObject(config, 'colorBy')).toBe('population')
+  })
+})
+
+// Guards the colorBy wiring (setSources / setColorBy -> maybeApplyColorByPalette):
+// the display colors sample rows by the resolved `colorBy` value, or no-ops when
+// colorBy is unset / the attribute is missing.
+describe('maybeApplyColorByPalette', () => {
+  const sources = [
+    { name: 'sample1', population: 'EUR' },
+    { name: 'sample2', population: 'AFR' },
+    { name: 'sample3', population: 'EUR' },
+  ]
+
+  it('returns undefined when colorBy is unset (no palette applied)', () => {
+    expect(maybeApplyColorByPalette('', sources)).toBeUndefined()
+  })
+
+  it('colors sources by the requested attribute', () => {
+    const result = maybeApplyColorByPalette('population', sources)
+    expect(result).toBeDefined()
+    // same population => same color, different population => different color
+    expect(result![0]!.color).toBe(result![2]!.color)
+    expect(result![0]!.color).not.toBe(result![1]!.color)
+  })
+
+  it('returns undefined when the requested attribute is absent from sources', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(maybeApplyColorByPalette('nonexistent', sources)).toBe(undefined)
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
+})
+
+describe('applyColorPalette', () => {
+  it('adds colors even when attribute is empty (falls back to name)', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2', population: 'AFR' },
+    ]
+    const result = applyColorPalette(sources, '')
+    expect(result).toHaveLength(2)
+    expect(result[0]).toHaveProperty('color')
+    expect(result[1]).toHaveProperty('color')
+    expect(result[0]!.color).not.toBe(result[1]!.color)
+  })
+
+  it('returns empty array when sources array is empty', () => {
+    const sources: { name: string }[] = []
+    const result = applyColorPalette(sources, 'population')
+    expect(result).toEqual([])
+  })
+
+  it('adds colors even when attribute does not exist (falls back to name)', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2', population: 'AFR' },
+    ]
+    const result = applyColorPalette(sources, 'nonexistent')
+    expect(result).toHaveLength(2)
+    expect(result[0]).toHaveProperty('color')
+    expect(result[1]).toHaveProperty('color')
+    expect(result[0]!.color).not.toBe(result[1]!.color)
+  })
+
+  it('applies colors based on attribute values', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2', population: 'AFR' },
+      { name: 'sample3', population: 'EUR' },
+    ]
+    const result = applyColorPalette(sources, 'population')
+
+    expect(result).toHaveLength(3)
+    expect(result[0]).toHaveProperty('color')
+    expect(result[1]).toHaveProperty('color')
+    expect(result[2]).toHaveProperty('color')
+
+    // Samples with same population value should have same color
+    expect(result[0]!.color).toBe(result[2]!.color)
+    // Samples with different population values should have different colors
+    expect(result[0]!.color).not.toBe(result[1]!.color)
+  })
+
+  it('assigns colors by frequency (less common values get colors first)', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2', population: 'EUR' },
+      { name: 'sample3', population: 'EUR' },
+      { name: 'sample4', population: 'AFR' },
+    ]
+    const result = applyColorPalette(sources, 'population')
+
+    // AFR (1 occurrence) should get the first color from palette
+    // EUR (3 occurrences) should get the second color
+    const afrSample = result.find(s => s.population === 'AFR')
+    const eurSample = result.find(s => s.population === 'EUR')
+
+    expect(afrSample).toHaveProperty('color')
+    expect(eurSample).toHaveProperty('color')
+    expect(afrSample!.color).not.toBe(eurSample!.color)
+  })
+
+  it('preserves other properties on sources', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR', region: 'Western', custom: 123 },
+      { name: 'sample2', population: 'AFR', region: 'Eastern', custom: 456 },
+    ]
+    const result = applyColorPalette(sources, 'population')
+
+    expect(result[0]!.name).toBe('sample1')
+    expect(result[0]!.region).toBe('Western')
+    expect(result[0]!.custom).toBe(123)
+    expect(result[1]!.name).toBe('sample2')
+    expect(result[1]!.region).toBe('Eastern')
+    expect(result[1]!.custom).toBe(456)
+  })
+
+  it('handles undefined attribute values by converting to string', () => {
+    const sources = [
+      { name: 'sample1', population: 'EUR' },
+      { name: 'sample2' }, // no population attribute
+    ]
+    const result = applyColorPalette(sources, 'population')
+
+    expect(result).toHaveLength(2)
+    expect(result[0]).toHaveProperty('color')
+    expect(result[1]).toHaveProperty('color')
+    // They should have different colors (EUR vs undefined)
+    expect(result[0]!.color).not.toBe(result[1]!.color)
+  })
+})

@@ -1,0 +1,76 @@
+import { getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import {
+  getAdapterToCanonicalRefNameMap,
+  renameRegionsForAdapter,
+} from '@jbrowse/synteny-core'
+
+import type { DotplotViewModel } from '../model.ts'
+import type { StatusCallback } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+
+export interface RunDotplotDiagonalizeResult {
+  totalReordered: number
+  totalReversed: number
+}
+
+export interface RunDotplotDiagonalizeOpts {
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
+}
+
+// Wraps the DiagonalizeDotplot RPC + region apply step in a shape both the
+// menu dialog and the init autorun can call. Caller is responsible for
+// gating the canvas / loading UI; this just runs.
+export async function runDotplotDiagonalize(
+  model: DotplotViewModel,
+  opts: RunDotplotDiagonalizeOpts = {},
+): Promise<RunDotplotDiagonalizeResult | undefined> {
+  const display = model.tracks[0]?.displays[0]
+  if (display) {
+    // Reuse the same rpcSessionId the display renders with (it lives on the
+    // track), so this lands on the same sticky worker and hits its
+    // already-parsed adapter instead of re-parsing the file into a fresh cache.
+    const sessionId = getRpcSessionId(display)
+    const { adapterConfig } = display
+    const { assemblyManager, rpcManager } = getSession(model)
+
+    // The worker has no assemblyManager, so refName aliases are reconciled here:
+    // the horizontal (reference) regions are renamed into the adapter's
+    // namespace so the worker's getFeatures + reference ordering line up, while
+    // the vertical (query) regions stay canonical because the reordered result
+    // is written straight back to the view. queryRefNameMap lets the worker
+    // translate each alignment's query refName back to canonical to bridge them.
+    const currentRegions = model.vview.displayedRegions
+    const [referenceRegions, queryRefNameMap] = await Promise.all([
+      renameRegionsForAdapter({
+        assemblyManager,
+        sessionId,
+        adapterConfig,
+        regions: model.hview.displayedRegions,
+      }),
+      getAdapterToCanonicalRefNameMap({
+        assemblyManager,
+        sessionId,
+        adapterConfig,
+        regions: currentRegions,
+      }),
+    ])
+    const result = await rpcManager.call(sessionId, 'DiagonalizeDotplot', {
+      referenceRegions,
+      currentRegions,
+      queryRefNameMap,
+      adapterConfig,
+      stopToken: opts.stopToken,
+      statusCallback: opts.statusCallback,
+    })
+    if (result) {
+      model.vview.setDisplayedRegions(result.newRegions)
+      return {
+        totalReordered: result.stats.regionsReordered,
+        totalReversed: result.stats.regionsReversed,
+      }
+    }
+  }
+  return undefined
+}

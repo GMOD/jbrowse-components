@@ -49,7 +49,7 @@ const stateModelFactory = (
        */
       getFetcher(location?: UriLocation) {
         return async (input: RequestInfo, init?: RequestInit) => {
-          const authToken = await self.getToken(location)
+          const authToken = await self.getValidatedToken(location)
           const newInit = self.addAuthHeaderToInit(
             { ...init, method: 'POST' },
             authToken,
@@ -91,10 +91,9 @@ const stateModelFactory = (
         if (!response.ok) {
           const refreshToken = self.retrieveRefreshToken()
           if (refreshToken) {
-            self.removeRefreshToken()
             const newToken =
               await self.exchangeRefreshForAccessToken(refreshToken)
-            return this.validateToken(newToken, location)
+            return self.validateToken(newToken, location)
           }
           throw new Error(
             await getDescriptiveErrorMessage(

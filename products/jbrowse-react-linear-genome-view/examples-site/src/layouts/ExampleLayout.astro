@@ -1,0 +1,44 @@
+---
+import { Code } from 'astro:components'
+
+import Shell from './Shell.astro'
+import { examples } from '../examples.ts'
+import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
+
+import type { MarkdownInstance } from 'astro'
+
+interface Props {
+  slug: string
+  title: string
+  description?: string
+  code: string
+}
+
+const { slug, title, description, code } = Astro.props
+
+// each example page may have a hand-written doc at src/docs/<slug>.md; render it
+// above the live demo when present
+const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
+  '../docs/*.md',
+)
+const loader = docs[`../docs/${slug}.md`]
+const doc = loader ? await loader() : undefined
+const Doc = doc?.Content
+---
+
+<Shell
+  title={title}
+  componentLabel={componentLabel}
+  examples={examples}
+  mainMaxWidth={mainMaxWidth}
+>
+  <h1>{title}</h1>
+  {description && <p class="lead">{description}</p>}
+  {Doc && <div class="doc"><Doc /></div>}
+  <h2>Live demo</h2>
+  <div class:list={['demo', { fill: demoFillHeight }]}><slot /></div>
+  <details class="source">
+    <summary>View source</summary>
+    <Code code={code} lang="tsx" />
+  </details>
+</Shell>

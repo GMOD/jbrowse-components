@@ -1,0 +1,199 @@
+---
+import BaseLayout from './BaseLayout.astro'
+
+interface Props {
+  title: string
+  description?: string
+  toggleLabel: string
+  navLabel: string
+  mdHref?: string
+}
+
+const { title, description, toggleLabel, navLabel, mdHref } = Astro.props
+---
+
+<BaseLayout title={title} description={description} mdHref={mdHref}>
+  <div class="sidebar-layout">
+    <button
+      class="sidebar-toggle"
+      id="sidebar-toggle"
+      aria-expanded="false"
+      aria-controls="sidebar-nav"
+    >
+      ☰ {toggleLabel}
+    </button>
+    <nav class="sidebar" id="sidebar-nav" aria-label={navLabel}>
+      <slot name="nav" />
+    </nav>
+    <slot />
+  </div>
+</BaseLayout>
+
+<script>
+  const sidebar = document.querySelector('.sidebar') as HTMLElement | null
+  // ancestor <details> are already server-rendered open (containsSlug / year
+  // match); just center the active link in the scroll viewport
+  const active = sidebar?.querySelector('a[aria-current="page"]')
+  if (active && sidebar) {
+    const offset =
+      active.getBoundingClientRect().top - sidebar.getBoundingClientRect().top
+    sidebar.scrollTop += offset - sidebar.clientHeight / 2
+  }
+
+  document
+    .getElementById('sidebar-toggle')
+    ?.addEventListener('click', function () {
+      const expanded = this.getAttribute('aria-expanded') === 'true'
+      this.setAttribute('aria-expanded', String(!expanded))
+      sidebar?.classList.toggle('sidebar-open', !expanded)
+    })
+</script>
+
+<style>
+  .sidebar-layout {
+    display: flex;
+    min-height: calc(100vh - var(--nav-height));
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    border-right: 1px solid var(--color-border);
+    overflow-y: auto;
+    padding: 1rem 0;
+    position: sticky;
+    top: var(--nav-height);
+    height: calc(100vh - var(--nav-height));
+  }
+
+  .sidebar :global(ul) {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 1.5rem;
+  }
+  .sidebar > :global(ul) {
+    padding: 0;
+  }
+
+  .sidebar :global(a) {
+    display: block;
+    padding: var(--sidebar-link-padding);
+    color: var(--color-sidebar-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 3px;
+    transition: background 0.15s;
+  }
+  .sidebar :global(a:hover) {
+    background: var(--color-sidebar-hover-bg);
+    color: var(--color-navy);
+  }
+  .sidebar :global(a.active) {
+    background: var(--color-sidebar-active-bg);
+    color: var(--color-sidebar-active-text);
+    font-weight: 500;
+    border-left: 3px solid var(--color-accent);
+    padding-left: calc(12px - 3px);
+  }
+
+  .sidebar :global(details > summary) {
+    cursor: pointer;
+    padding: var(--sidebar-link-padding);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-sidebar-text);
+    list-style: none;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    border-radius: 3px;
+    transition: background 0.15s;
+  }
+  .sidebar :global(details > summary:hover) {
+    background: var(--color-sidebar-hover-bg);
+    color: var(--color-navy);
+  }
+  .sidebar :global(details > summary::-webkit-details-marker) {
+    display: none;
+  }
+  .sidebar :global(details > summary::before) {
+    content: '';
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.4em;
+    height: 0.4em;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.15s ease;
+    opacity: 0.7;
+  }
+  .sidebar :global(details[open] > summary::before) {
+    transform: rotate(45deg);
+  }
+
+  /* A summary that is itself a page link (showcase groups): the summary supplies
+     the padding + caret, so the inner link is plain text that fills the row. */
+  .sidebar :global(summary > .summary-link) {
+    display: block;
+    flex: 1;
+    padding: 0;
+    color: inherit;
+    font-weight: inherit;
+    border-radius: 0;
+  }
+  .sidebar :global(summary > .summary-link:hover) {
+    background: none;
+    color: var(--color-navy);
+    text-decoration: underline;
+  }
+  .sidebar :global(summary > .summary-link.active) {
+    background: none;
+    border-left: none;
+    padding-left: 0;
+    color: var(--color-sidebar-active-text);
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar-layout {
+      flex-direction: column;
+    }
+
+    .sidebar-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.6rem 1rem;
+      background: var(--color-surface);
+      border: none;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--color-sidebar-text);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .sidebar {
+      display: none;
+      width: 100%;
+      height: auto;
+      max-height: 50vh;
+      position: static;
+      border-right: none;
+      border-bottom: 1px solid var(--color-border);
+      overflow-y: auto;
+    }
+    .sidebar.sidebar-open {
+      display: block;
+    }
+  }
+</style>

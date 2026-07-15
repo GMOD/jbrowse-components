@@ -29,15 +29,12 @@ const HierarchicalFab = observer(function HierarchicalFab({
   const { classes } = useStyles()
   const session = getSession(model)
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
-
-  function handleFabClose() {
-    setAnchorEl(null)
-  }
   const hasConnections = isSessionModelWithConnections(session)
   const hasAddTrack = isSessionWithAddTracks(session)
   return hasAddTrack || hasConnections ? (
     <>
       <Fab
+        data-testid="hierarchical-add-track-fab"
         color="secondary"
         className={classes.fab}
         onClick={event => {
@@ -52,11 +49,15 @@ const HierarchicalFab = observer(function HierarchicalFab({
         onClose={() => {
           setAnchorEl(null)
         }}
+        // the FAB sits at the bottom-right of the drawer, so open the menu above
+        // it instead of below (where it covered the FAB and ran off-screen)
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         {hasConnections ? (
           <MenuItem
             onClick={() => {
-              handleFabClose()
+              setAnchorEl(null)
               if (isSessionModelWithWidgets(session)) {
                 session.showWidget(
                   session.addWidget(
@@ -73,7 +74,7 @@ const HierarchicalFab = observer(function HierarchicalFab({
         {hasAddTrack ? (
           <MenuItem
             onClick={() => {
-              handleFabClose()
+              setAnchorEl(null)
               if (isSessionModelWithWidgets(session)) {
                 session.showWidget(
                   session.addWidget('AddTrackWidget', 'addTrackWidget', {

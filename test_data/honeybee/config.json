@@ -2,13 +2,22 @@
   "assemblies": [
     {
       "name": "amel",
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "aliases.txt",
+            "locationType": "UriLocation"
+          }
+        }
+      },
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "amel_seq",
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "out.chrom.sizes",
+            "uri": "amel_hav3.1.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -580,5 +589,8 @@
         }
       }
     ]
+  },
+  "configuration": {
+    "disableAnalytics": true
   }
 }

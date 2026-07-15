@@ -1,0 +1,90 @@
+import { getSession } from '@jbrowse/core/util'
+import { createTestSession } from '@jbrowse/web/testUtils'
+
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+// self-vs-self layout: both axes show ctgA at bpPerPx=1, offsetPx=0. borderY is
+// now derived from the axis labels, so tests read model.viewHeight rather than
+// assuming a fixed border.
+function setup() {
+  const session = createTestSession({
+    sessionSnapshot: {
+      views: [
+        {
+          type: 'DotplotView',
+          height: 600,
+          assemblyNames: ['volvox', 'volvox'],
+          hview: {
+            bpPerPx: 1,
+            offsetPx: 0,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+            ],
+          },
+          vview: {
+            bpPerPx: 1,
+            offsetPx: 0,
+            displayedRegions: [
+              { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+            ],
+          },
+        },
+      ],
+    },
+  }) as any
+  return session.views[0]
+}
+
+test('getHHighlightCoords maps a region to px on the horizontal axis', () => {
+  const model = setup()
+  expect(
+    model.getHHighlightCoords({ refName: 'ctgA', start: 100, end: 200 }),
+  ).toEqual({ left: 100, width: 100 })
+})
+
+test('getVHighlightCoords flips the band into screen space', () => {
+  const model = setup()
+  // top = viewHeight - (left 100 + width 100)
+  expect(
+    model.getVHighlightCoords({ refName: 'ctgA', start: 100, end: 200 }),
+  ).toEqual({ top: model.viewHeight - 200, height: 100 })
+})
+
+test('off-axis region returns undefined', () => {
+  const model = setup()
+  expect(
+    model.getHHighlightCoords({ refName: 'ctgZ', start: 100, end: 200 }),
+  ).toBeUndefined()
+  expect(
+    model.getVHighlightCoords({ refName: 'ctgZ', start: 100, end: 200 }),
+  ).toBeUndefined()
+})
+
+test('settled gates on autoDiagonalize completion when requested', () => {
+  const model = setup()
+  model.markCanvasDrawn()
+  // nothing requested: settled once the canvas is drawn (no displays loading)
+  expect(model.settled).toBe(true)
+
+  // an init-time reorder is requested: the plot is NOT done until it completes,
+  // so a screenshot/browser-test can't capture the pre-diagonalize plot
+  model.setAutoDiagonalizeRequested(true)
+  expect(model.settled).toBe(false)
+
+  // reorder resolved successfully: settled is released
+  model.setAutoDiagonalizeComplete(true)
+  expect(model.settled).toBe(true)
+})
+
+test('highlight actions add/remove and toggle visibility', () => {
+  const model = setup()
+  const h = { refName: 'ctgA', start: 0, end: 10, assemblyName: 'volvox' }
+  model.addToHighlights(h)
+  expect(model.highlight.length).toBe(1)
+  const session = getSession(model)
+  expect(session.highlightsVisible).toBe(true)
+  session.setHighlightsVisible(false)
+  expect(session.highlightsVisible).toBe(false)
+  model.removeHighlight(model.highlight[0])
+  expect(model.highlight.length).toBe(0)
+})

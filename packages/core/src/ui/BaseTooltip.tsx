@@ -1,5 +1,7 @@
 import {
+  flip,
   offset,
+  shift,
   useClientPoint,
   useFloating,
   useInteractions,
@@ -57,7 +59,9 @@ export default function BaseTooltip({
   const { refs, floatingStyles, context } = useFloating({
     placement,
     strategy: 'fixed',
-    middleware: [offset(15)],
+    // flip/shift keep the tooltip on-screen when the cursor is near a viewport
+    // edge instead of letting it clip off the right/bottom
+    middleware: [offset(15), flip(), shift({ padding: 8 })],
   })
 
   const clientPoint = useClientPoint(context, clientPointCoords)
@@ -66,7 +70,6 @@ export default function BaseTooltip({
     <Portal container={popperTheme?.defaultProps?.container}>
       <div
         className={classes.tooltip}
-        // eslint-disable-next-line react-hooks/refs
         ref={refs.setFloating}
         style={{
           ...floatingStyles,

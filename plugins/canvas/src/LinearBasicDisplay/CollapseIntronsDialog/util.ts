@@ -1,0 +1,349 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
+import { getFeatureName } from '../../RenderFeatureDataRPC/labelUtils.ts'
+import {
+  getSubfeatures,
+  isCDS,
+  isExon,
+} from '../../RenderFeatureDataRPC/util.ts'
+
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const isExonOrCDS = (f: Feature) => isExon(f) || isCDS(f)
+
+export function getExonsAndCDS(transcripts: Feature[]) {
+  return transcripts.flatMap(transcript =>
+    getSubfeatures(transcript).filter(isExonOrCDS),
+  )
+}
+
+export function featureHasExonsOrCDS(feature: Feature) {
+  return getSubfeatures(feature).some(isExonOrCDS)
+}
+
+export function getTranscripts(feature?: Feature): Feature[] {
+  if (!feature) {
+    return []
+  }
+  return featureHasExonsOrCDS(feature) ? [feature] : getSubfeatures(feature)
+}
+
+export function hasIntrons(transcripts: Feature[]) {
+  const subs = getExonsAndCDS(transcripts)
+  if (subs.length < 2) {
+    return false
+  }
+  const merged = mergeIntervals(
+    subs.map(f => ({ start: f.get('start'), end: f.get('end') })),
+    0,
+  )
+  return merged.length > 1
+}
+
+/**
+ * Build the collapsed-intron regions from exon/CDS intervals. Each interval is
+ * expanded by `padding` on both sides (the visible window around each splice
+ * boundary), then overlapping padded intervals are merged. Merging uses w=0
+ * because the padding is already baked into start/end; an intron is collapsed
+ * whenever its gap exceeds 2*padding. Regions are clamped to `bounds` (the
+ * chromosome extents) so padding near a contig edge can't run past it.
+ */
+export function buildCollapsedRegions({
+  intervals,
+  padding,
+  refName,
+  assemblyName,
+  bounds,
+}: {
+  intervals: { start: number; end: number }[]
+  padding: number
+  refName: string
+  assemblyName: string
+  bounds?: { start: number; end: number }
+}) {
+  const merged = mergeIntervals(
+    intervals.map(f => ({
+      refName,
+      assemblyName,
+      start: f.start - padding,
+      end: f.end + padding,
+    })),
+    0,
+  )
+  // Interbase min is always 0, so clamp the low end even when the contig
+  // bounds are unknown (assembly.regions lazy/unpopulated, or a refName miss) —
+  // otherwise a gene within `padding` bp of position 0 gets a negative start.
+  // The high end is only clamped when we actually know the contig length.
+  return merged.map(r => ({
+    ...r,
+    start: Math.max(bounds?.start ?? 0, r.start),
+    end: bounds ? Math.min(bounds.end, r.end) : r.end,
+  }))
+}
+
+// The canvas displays expose a solo set ("show only these features"); other
+// display types don't. Structural guard so we can reach it on whichever display
+// in a view is capable of isolating.
+interface SoloCapableDisplay {
+  soloFeatureIds: string[]
+  soloApplied: boolean
+  soloFeature: (featureId: string) => void
+  toggleSoloFeature: (featureId: string) => void
+  applySolo: () => void
+  clearSolo: () => void
+}
+
+function isSoloCapable(d: unknown): d is SoloCapableDisplay {
+  return (
+    typeof d === 'object' &&
+    d !== null &&
+    'soloFeature' in d &&
+    typeof d.soloFeature === 'function'
+  )
+}
+
+// Locate the solo-capable display of the track matched by `trackId` in `view`.
+// The track/display ids still match a pre-stripTrackIds snapshot, so seeding and
+// in-place isolation resolve the same display.
+function findSoloDisplay(view: LinearGenomeViewModel, trackId: string) {
+  const track = view.tracks.find(
+    t => readConfObject(t.configuration, 'trackId') === trackId,
+  )
+  return track?.displays.find(isSoloCapable)
+}
+
+interface DisplaySnapshot {
+  id: string
+  [key: string]: unknown
+}
+interface TrackSnapshot {
+  id: string
+  displays: DisplaySnapshot[]
+  [key: string]: unknown
+}
+
+// Isolate the track (matched by trackId) in `view` to a single feature via the
+// canvas display's solo set, returning a callback that restores the display's
+// prior solo state. Used by the in-place "Replace" action, where the display
+// already exists so isolating is a direct action call — and its Undo needs to
+// reverse the isolation, not just the region/zoom change.
+export function soloFeatureInView(
+  view: LinearGenomeViewModel,
+  trackId: string,
+  featureId: string,
+): () => void {
+  const display = findSoloDisplay(view, trackId)
+  if (!display) {
+    return () => {}
+  }
+  const prevIds = [...display.soloFeatureIds]
+  const prevApplied = display.soloApplied
+  display.soloFeature(featureId)
+  return () => {
+    display.clearSolo()
+    for (const id of prevIds) {
+      display.toggleSoloFeature(id)
+    }
+    // toggleSoloFeature collects without isolating; re-apply only if the prior
+    // set was actually isolating (an applied set is always non-empty).
+    if (prevApplied) {
+      display.applySolo()
+    }
+  }
+}
+
+// Seed the collapsed view's snapshot so its solo-capable display opens already
+// isolated to `featureId` — declarative, so the new view needs no post-init
+// action call. soloFeatureIds/soloApplied are persistent display props; we set
+// them only on the display that actually supports solo (located by id in the
+// source `view`, whose track/display ids still match the snapshot before
+// stripTrackIds runs), so no other display type sees an unknown property.
+export function seedSoloInTracks(
+  tracks: TrackSnapshot[],
+  view: LinearGenomeViewModel,
+  trackId: string,
+  featureId: string,
+): TrackSnapshot[] {
+  const soloDisplayId = findSoloDisplay(view, trackId)?.id
+  return soloDisplayId === undefined
+    ? tracks
+    : tracks.map(t => ({
+        ...t,
+        displays: t.displays.map(d =>
+          d.id === soloDisplayId
+            ? { ...d, soloFeatureIds: [featureId], soloApplied: true }
+            : d,
+        ),
+      }))
+}
+
+interface ViewState {
+  bpPerPx: number
+  offsetPx: number
+}
+
+/**
+ * Calculate the initial view state (zoom and offset) to show all regions
+ * centered and filling ~90% of the viewport width. Mirrors the view's
+ * `showAllRegions` action (SHOW_ALL_REGIONS_FILL=0.9), but is computed up front
+ * so a freshly-created view renders at the right zoom without a flash.
+ */
+export function calculateInitialViewState(
+  regions: { start: number; end: number }[],
+  viewWidth: number,
+): ViewState {
+  const totalBp = regions.reduce((sum, r) => sum + (r.end - r.start), 0)
+  const bpPerPx = totalBp / (viewWidth * 0.9)
+  const offsetPx = Math.round(-0.05 * viewWidth)
+  return { bpPerPx, offsetPx }
+}
+
+function transcriptLabel(transcripts: Feature[]) {
+  const f = transcripts[0]
+  return (f ? getFeatureName(f) : undefined) ?? 'feature'
+}
+
+function buildArgs({
+  view,
+  transcripts,
+  assembly,
+  padding,
+  flip,
+}: {
+  view: LinearGenomeViewModel
+  transcripts: Feature[]
+  assembly: Assembly
+  padding: number
+  flip: boolean
+}) {
+  const r0 = transcripts[0]?.get('refName')
+  if (!r0) {
+    // Surfaced by runIntronAction's catch, which keeps the dialog open — a
+    // silent return here would close it as if the collapse had succeeded.
+    throw new Error('Could not determine the feature refName')
+  }
+  const refName = assembly.getCanonicalRefName2(r0)
+  const bounds = assembly.regions?.find(r => r.refName === refName)
+  const subs = getExonsAndCDS(transcripts)
+  const genomicRegions = buildCollapsedRegions({
+    intervals: subs.map(f => ({ start: f.get('start'), end: f.get('end') })),
+    padding,
+    refName,
+    assemblyName: assembly.name,
+    bounds: bounds ? { start: bounds.start, end: bounds.end } : undefined,
+  })
+  // flip declaratively: reverse region order and mark each reversed so a
+  // minus-strand gene reads 5'->3' left-to-right
+  const mergedRegions = flip
+    ? genomicRegions.map(r => ({ ...r, reversed: true })).reverse()
+    : genomicRegions
+  return {
+    mergedRegions,
+    initialState: calculateInitialViewState(mergedRegions, view.width),
+  }
+}
+
+// Shared args for the two intron actions. `soloFeatureId` (set when the dialog's
+// "Show only this feature" box is checked) isolates the resulting view's track
+// to that feature; `trackId` locates the display to isolate.
+interface IntronActionArgs {
+  view: LinearGenomeViewModel
+  transcripts: Feature[]
+  assembly: Assembly
+  padding: number
+  flip: boolean
+  trackId: string
+  soloFeatureId: string | undefined
+}
+
+export function replaceIntrons({
+  view,
+  transcripts,
+  assembly,
+  padding,
+  flip,
+  trackId,
+  soloFeatureId,
+}: IntronActionArgs) {
+  const args = buildArgs({ view, transcripts, assembly, padding, flip })
+  // snapshot the prior location so "Undo" can restore the original view.
+  // displayedRegions is a types.frozen (plain immutable array), so it's kept
+  // by reference rather than via getSnapshot (which only accepts MST nodes)
+  const previous = {
+    displayedRegions: view.displayedRegions,
+    bpPerPx: view.bpPerPx,
+    offsetPx: view.offsetPx,
+  }
+  view.setDisplayedRegions(args.mergedRegions)
+  view.setNewView(args.initialState.bpPerPx, args.initialState.offsetPx)
+  const restoreSolo =
+    soloFeatureId === undefined
+      ? undefined
+      : soloFeatureInView(view, trackId, soloFeatureId)
+  getSession(view).notify('Introns collapsed', 'info', {
+    name: 'Undo',
+    onClick: () => {
+      view.setDisplayedRegions(previous.displayedRegions)
+      view.setNewView(previous.bpPerPx, previous.offsetPx)
+      restoreSolo?.()
+    },
+  })
+}
+
+// Run a collapse/replace action, close the dialog on success, and surface any
+// failure through the session notifier. Accepts sync or async actions so both
+// intron buttons ("Replace", "Open in new view") share one path.
+export async function runIntronAction(
+  view: LinearGenomeViewModel,
+  action: () => void | Promise<void>,
+  handleClose: () => void,
+) {
+  try {
+    await action()
+    handleClose()
+  } catch (e) {
+    getSession(view).notifyError(`${e}`, e)
+    console.error(e)
+  }
+}
+
+// Pure view snapshot for the collapsed-intron "Open in new view" action:
+// merged regions, precomputed zoom/offset (bpPerPx/offsetPx upfront to avoid
+// layout thrashing on the new view), stripped track ids, and — when a solo
+// feature is requested — the display seeded to open already isolated. Returns
+// data only; collapseIntrons is the imperative sink that hands it to addView.
+export function buildCollapsedViewSnapshot({
+  view,
+  transcripts,
+  assembly,
+  padding,
+  flip,
+  trackId,
+  soloFeatureId,
+}: IntronActionArgs) {
+  const args = buildArgs({ view, transcripts, assembly, padding, flip })
+  const { id, ...rest } = getSnapshot(view)
+  const tracks =
+    soloFeatureId === undefined
+      ? rest.tracks
+      : seedSoloInTracks(rest.tracks, view, trackId, soloFeatureId)
+  return {
+    ...rest,
+    tracks: stripTrackIds(tracks),
+    displayName: `${transcriptLabel(transcripts)} (introns collapsed)`,
+    displayedRegions: args.mergedRegions,
+    bpPerPx: args.initialState.bpPerPx,
+    offsetPx: args.initialState.offsetPx,
+  }
+}
+
+export function collapseIntrons(args: IntronActionArgs) {
+  getSession(args.view).addView(
+    'LinearGenomeView',
+    buildCollapsedViewSnapshot(args),
+  )
+}

@@ -1,0 +1,256 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
+  "workspaces": {
+    "packages": ["packages/*", "products/*", "plugins/*"]
+  },
+  "duplicates": {
+    // Hide pair-only clones; focus on widespread copy-paste
+    // worth refactoring. Lower to 2 to report every duplicate pair.
+    "minOccurrences": 3
+    // Common additions (uncomment to enable):
+    // "ignore": [
+    //   "**/lib/**",          // for repos that publish transpiled output to lib/
+    //   "**/legacy/**",       // for repos with legacy-build artifacts
+    //   "**/__generated__/**", // Relay, GraphQL Code Generator
+    //   "**/generated/**"     // OpenAPI, Protobuf codegen
+    // ]
+  },
+  "rules": {
+    "unused-dependencies": "warn"
+  },
+  "ignoreExports": [
+    {
+      "file": "packages/alignments-core/src/coverageLayout.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "packages/alignments-core/src/indicatorLayout.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "packages/alignments-core/src/interbaseHistogramLayout.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "packages/alignments-core/src/modCoverageLayout.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "packages/alignments-core/src/snpCoverageLayout.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/arc.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/arcLine.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/flatQuad.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/alignments/src/LinearAlignmentsDisplay/shaders/slang/read.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/canvas/src/LinearBasicDisplay/components/shaders/arrow.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/canvas/src/LinearBasicDisplay/components/shaders/chevron.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/canvas/src/LinearBasicDisplay/components/shaders/line.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/canvas/src/LinearBasicDisplay/components/shaders/rect.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/linear-comparative-view/src/LinearSyntenyDisplay/shaders/syntenyEdgeCurve.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/linear-comparative-view/src/LinearSyntenyDisplay/shaders/syntenyEdgeStraight.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/linear-comparative-view/src/LinearSyntenyDisplay/shaders/syntenyFillCurve.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/linear-comparative-view/src/LinearSyntenyDisplay/shaders/syntenyFillStraight.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/variants/src/LDDisplay/components/shaders/ldGenomic.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/variants/src/LDDisplay/components/shaders/ldUniform.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/shaders/variantMatrix.generated.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/canvas/src/LinearBasicDisplay/components/hitTesting.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/canvas/src/LinearBasicDisplay/components/labelPositioning.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/canvas/src/LinearBasicDisplay/baseModel.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/canvas/src/LinearBasicDisplay/model.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "packages/core/src/pluggableElementTypes/renderers/BoxRendererType.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "packages/core/src/pluggableElementTypes/renderers/ServerSideRendererType.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/alignments/src/LinearAlignmentsDisplay/renderers/GpuAlignmentsRenderer.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/authentication/src/DropboxOAuthModel/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/authentication/src/ExternalTokenModel/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/authentication/src/GoogleDriveOAuthModel/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/authentication/src/HTTPBasicModel/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/authentication/src/OAuthModel/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/variants/src/SplitVcfTabixAdapter/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/variants/src/VcfTabixAdapter/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/bed/src/BedpeAdapter/util.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/bed/src/util.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/alignments/src/BamAdapter/configSchema.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/alignments/src/CramAdapter/configSchema.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/bed/src/BedAdapter/configSchema.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/bed/src/BedTabixAdapter/configSchema.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/bed/src/BedpeAdapter/configSchema.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/variants/src/VcfAdapter/configSchema.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/variants/src/VcfTabixAdapter/configSchema.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/add-assembly/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/add-connection.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/add-track-json.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/add-track.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/admin-server/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/create.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/make-pif/index.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/remove-track.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/set-default-session.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/sort-bed.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/sort-gff.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "products/jbrowse-cli/src/commands/upgrade.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/arc/src/LinearArcDisplay/model.ts",
+      "exports": ["*"]
+    },
+    {
+      "file": "plugins/arc/src/LinearPairedArcDisplay/model.ts",
+      "exports": ["*"]
+    }
+  ]
+}

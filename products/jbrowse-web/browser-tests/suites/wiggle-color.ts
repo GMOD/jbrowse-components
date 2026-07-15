@@ -1,0 +1,64 @@
+import {
+  delay,
+  findByTestId,
+  findByText,
+  navigateWithSessionSpec,
+  waitForDataLoaded,
+} from '../helpers.ts'
+import { dualSnapshot } from '../snapshot.ts'
+
+import type { TestSuite } from '../types.ts'
+
+const suite: TestSuite = {
+  name: 'Wiggle Color Change',
+  tests: [
+    {
+      name: 'wiggle track updates color after user changes it',
+      fn: async page => {
+        await navigateWithSessionSpec(page, {
+          views: [
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-4000',
+              tracks: ['volvox_gc'],
+            },
+          ],
+        })
+
+        await findByTestId(page, 'wiggle-display-done', 60000)
+        await waitForDataLoaded(page)
+
+        const menuIcon = await findByTestId(page, 'track_menu_icon', 10000)
+        await menuIcon?.click()
+        await delay(300)
+
+        const colorItem = await findByText(page, 'Color', 10000)
+        await colorItem?.click()
+        await delay(500)
+
+        const colorInput = await page.waitForSelector(
+          'input[aria-describedby]',
+          { timeout: 10000 },
+        )
+        await colorInput?.click({ count: 3 })
+        await colorInput?.type('red')
+        await delay(1500)
+
+        const submitBtn = await page.waitForSelector('button[type="submit"]', {
+          timeout: 10000,
+        })
+        await submitBtn?.click()
+        await delay(1000)
+
+        await dualSnapshot(
+          page,
+          'wiggle-color-after-red',
+          '[data-testid="wiggle-display-done"] canvas',
+        )
+      },
+    },
+  ],
+}
+
+export default suite

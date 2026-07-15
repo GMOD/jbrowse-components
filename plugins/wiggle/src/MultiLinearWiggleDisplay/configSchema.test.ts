@@ -1,0 +1,31 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+
+import multiConfigSchema from './configSchema.ts'
+import linearConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
+
+test('MultiLinearWiggleDisplay config schema has autoscale and numStdDev defaults', () => {
+  const config = multiConfigSchema.create({
+    type: 'MultiLinearWiggleDisplay',
+    displayId: 'test',
+  })
+  expect(readConfObject(config, 'autoscale')).toBe('local')
+  expect(readConfObject(config, 'numStdDev')).toBe(3)
+})
+
+test('LinearWiggleDisplay config schema has autoscale and numStdDev defaults', () => {
+  const config = linearConfigSchema.create({
+    type: 'LinearWiggleDisplay',
+    displayId: 'test',
+  })
+  expect(readConfObject(config, 'autoscale')).toBe('local')
+  expect(readConfObject(config, 'numStdDev')).toBe(3)
+})
+
+test('MultiLinearWiggleDisplay remaps single-source defaultRendering names', () => {
+  const config = multiConfigSchema.create({
+    type: 'MultiLinearWiggleDisplay',
+    displayId: 'test',
+    defaultRendering: 'xyplot',
+  })
+  expect(readConfObject(config, 'defaultRendering')).toBe('multixyplot')
+})

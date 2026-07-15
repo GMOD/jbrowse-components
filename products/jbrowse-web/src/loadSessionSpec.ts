@@ -1,3 +1,8 @@
+import {
+  isSessionWithAddAssembly,
+  isSessionWithAddTracks,
+} from '@jbrowse/core/util'
+
 import type { LayoutNode, ViewSpec } from './types.ts'
 import type { DockviewLayoutNode } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -30,11 +35,13 @@ function convertLayoutNode(
 export async function loadSessionSpec(
   {
     views,
+    sessionAssemblies = [],
     sessionTracks = [],
     layout,
     sessionName,
   }: {
     views: ViewSpec[]
+    sessionAssemblies?: Record<string, unknown>[]
     sessionTracks?: Record<string, unknown>[]
     layout?: LayoutNode
     sessionName?: string
@@ -44,19 +51,49 @@ export async function loadSessionSpec(
   const rootModel = pluginManager.rootModel!
 
   try {
-    // @ts-expect-error
-    rootModel.setSession({
+    rootModel.setSession?.({
       name: sessionName ?? `New session ${new Date().toLocaleString()}`,
     })
 
-    for (const track of sessionTracks) {
-      // @ts-expect-error
-      rootModel.session.addTrackConf(track)
+    const { session } = rootModel
+    // Assemblies first: sessionTracks and the views below reference them by
+    // name, so a self-contained spec (novel assemblies + their tracks, no
+    // hosted config) resolves only if the assemblies exist before either runs.
+    if (isSessionWithAddAssembly(session)) {
+      for (const assembly of sessionAssemblies) {
+        session.addSessionAssembly(assembly)
+      }
+    }
+    if (isSessionWithAddTracks(session)) {
+      for (const track of sessionTracks) {
+        session.addTrackConf(track)
+      }
+    }
+
+    // a view type with no registered LaunchView-<type> extension point (a
+    // typo, or a plugin that wasn't loaded) makes evaluateAsyncExtensionPoint
+    // a silent no-op, leaving an empty session with no diagnostic
+    const unknownViewTypes = [
+      ...new Set(
+        views
+          .map(view => view.type)
+          .filter(
+            type => !pluginManager.extensionPoints.has(`LaunchView-${type}`),
+          ),
+      ),
+    ]
+    if (unknownViewTypes.length) {
+      rootModel.session?.notifyError(
+        `Unknown view type(s) in session spec: ${unknownViewTypes.join(', ')}. The plugin providing the view may be missing, or the type may be misspelled.`,
+      )
     }
 
     await Promise.all(
-      views.map(view =>
-        pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${view.type}`, {
+      // `type` is the dispatch key, not view init data: forwarding it would
+      // land in the view's declarative init blob and trip the spurious
+      // "init ignored unknown key(s): type" warning meant to catch real typos
+      views.map(({ type, ...view }) =>
+        pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${type}`, {
           ...view,
           session: rootModel.session,
         }),

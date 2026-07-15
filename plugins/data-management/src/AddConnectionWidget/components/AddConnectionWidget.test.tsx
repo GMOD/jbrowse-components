@@ -1,13 +1,12 @@
 import { ThemeProvider } from '@emotion/react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-// @ts-expect-error
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
-import { render } from '@testing-library/react'
+import { createTestSession } from '@jbrowse/web/testUtils'
+import { render, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import AddConnectionWidget2 from './AddConnectionWidget.tsx'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 function AddConnectionWidget({ model }: { model: unknown }) {
   return (
@@ -100,11 +99,74 @@ type bigWig
     'Test UCSC connection name',
   )
   await user.type(
-    await findByDisplayValue('http://mysite.com/path/to/hub.txt'),
-    'http://test.com/hub.txt',
+    await findByDisplayValue('https://mysite.com/path/to/hub.txt'),
+    'https://test.com/hub.txt',
   )
   await user.click(await findByText('Connect'))
   expect(session.sessionConnections.length).toBe(1)
+}, 20000)
+
+test('UCSC multi-genome hub auto-adds a missing assembly and its tracks', async () => {
+  jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(async (url: string | Request | URL) => {
+      const urlText = `${url}`
+      if (urlText.endsWith('hub.txt')) {
+        return new Response(`hub TestHub
+shortLabel Test Hub
+longLabel Test multi-genome assembly hub
+genomesFile genomes.txt
+email genome@test.com
+`)
+      } else if (urlText.endsWith('genomes.txt')) {
+        return new Response(`genome newAssembly
+trackDb newAssembly/trackDb.txt
+twoBitPath newAssembly/newAssembly.2bit
+description New Assembly
+defaultPos chr1:1-1000
+`)
+      } else if (urlText.endsWith('trackDb.txt')) {
+        return new Response(`track dnaseSignal
+bigDataUrl dnaseSignal.bigWig
+shortLabel DNAse Signal
+longLabel Depth of alignments of DNAse reads
+type bigWig
+`)
+      }
+      throw new Error('unknown')
+    })
+
+  const {
+    session,
+    user,
+    findByText,
+    getAllByRole,
+    findAllByText,
+    findByDisplayValue,
+  } = renderWidget()
+  expect(session.assemblyManager.get('newAssembly')).toBeUndefined()
+  await user.click(getAllByRole('combobox')[0]!)
+  const ucscTrackHubSelection = await findAllByText('UCSC Track Hub')
+  await user.click(ucscTrackHubSelection.at(-1)!)
+  await user.click(await findByText('Next'))
+  await user.type(
+    await findByDisplayValue('nameOfConnection'),
+    'Multi-genome connection',
+  )
+  await user.type(
+    await findByDisplayValue('https://mysite.com/path/to/hub.txt'),
+    'https://test.com/hub.txt',
+  )
+  await user.click(await findByText('Connect'))
+
+  // doConnect runs async after the connection instance is created; wait for the
+  // hub's track to land, then assert the missing assembly was auto-added
+  await waitFor(() => {
+    expect(session.connectionInstances[0]?.tracks.length).toBe(1)
+  })
+  expect(session.sessionAssemblies.some(a => a.name === 'newAssembly')).toBe(
+    true,
+  )
 }, 20000)
 
 test('can handle a custom JBrowse 1 data directory URL', async () => {
@@ -136,10 +198,9 @@ test('can handle a custom JBrowse 1 data directory URL', async () => {
   await user.click(await findByText('Next'))
   await user.type(await findByDisplayValue('nameOfConnection'), 'testing')
   await user.type(
-    await findByDisplayValue('http://mysite.com/jbrowse/data/'),
-    'http://test.com/jbrowse/data/',
+    await findByDisplayValue('https://mysite.com/jbrowse/data/'),
+    'https://test.com/jbrowse/data/',
   )
-  await user.click(await findByText('Add item'))
   await user.type(await findByPlaceholderText('add new'), 'volMyt1')
   await user.click(await findByTestId('stringArrayAdd-assemblyNames'))
   await user.click(await findByText('Connect'))

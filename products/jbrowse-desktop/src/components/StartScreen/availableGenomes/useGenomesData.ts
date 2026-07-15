@@ -4,12 +4,25 @@ import type { Entry } from './getColumnDefinitions.tsx'
 import type { Fav } from '../types.ts'
 
 type RawEntry = Entry & { orderKey?: number }
-type RawData = RawEntry[] | { ucscGenomes: Record<string, RawEntry> }
+
+// UCSC entries key their taxon by `taxId` (number); GenArk/NCBI entries key
+// it by `taxonId` (also a raw JSON number, despite Entry.taxonId being
+// typed as string for display purposes). processUcscList.ts in jb2hubs now
+// emits both; the `taxId` fallback can be dropped once that's redeployed.
+type IncomingEntry = Omit<RawEntry, 'taxonId'> & {
+  taxId?: number
+  taxonId?: number | string
+}
+type RawData = IncomingEntry[]
 
 function normalizeEntries(data: RawData): RawEntry[] {
-  return Array.isArray(data)
-    ? data.map(r => ({ ...r, id: r.accession })).filter(r => r.id)
-    : Object.values(data.ucscGenomes)
+  return data
+    .map(r => ({
+      ...r,
+      id: r.accession,
+      taxonId: `${r.taxonId ?? r.taxId ?? ''}`,
+    }))
+    .filter(r => r.id)
 }
 
 function matchesSearch(row: RawEntry, query: string) {
@@ -34,49 +47,38 @@ function byOrderKey(a: RawEntry, b: RawEntry) {
 }
 
 export type FilterOption = 'all' | 'refseq' | 'genbank' | 'designatedReference'
-type TypeOption = string
 
-function applyFilter(
-  rows: RawEntry[],
-  filterOption: FilterOption,
-  typeOption: TypeOption,
-): RawEntry[] {
-  let filtered = rows
-  if (typeOption !== 'mainGenomes') {
-    if (filterOption === 'refseq') {
-      filtered = rows.filter(r => r.ncbiName.startsWith('GCF_'))
-    } else if (filterOption === 'genbank') {
-      filtered = rows.filter(r => r.ncbiName.startsWith('GCA_'))
-    } else if (filterOption === 'designatedReference') {
-      filtered = rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
-    }
-  }
-  return filtered
+function applyFilter(rows: RawEntry[], filterOption: FilterOption): RawEntry[] {
+  return filterOption === 'refseq'
+    ? rows.filter(r => r.ncbiName.startsWith('GCF_'))
+    : filterOption === 'genbank'
+      ? rows.filter(r => r.ncbiName.startsWith('GCA_'))
+      : filterOption === 'designatedReference'
+        ? rows.filter(r => r.ncbiRefSeqCategory === 'reference genome')
+        : rows
 }
 
 export function useGenomesData({
   searchQuery,
   filterOption,
-  typeOption,
   showOnlyFavs,
   favorites,
   url,
+  cladeTaxonIds,
 }: {
   searchQuery: string
   filterOption: FilterOption
-  typeOption: TypeOption
   showOnlyFavs: boolean
   favorites: Fav[]
   url?: string
-}): { data: RawEntry[]; error: unknown } {
-  const { data, error } = useFetch<RawData>(url, (u: string) =>
+  cladeTaxonIds?: Set<number>
+}): { data: RawEntry[]; error: unknown; isLoading: boolean } {
+  const { data, error, isLoading } = useFetch<RawData>(url, (u: string) =>
     fetchJson<RawData>(u),
   )
 
   const rows = data
-    ? applyFilter(normalizeEntries(data), filterOption, typeOption).sort(
-        byOrderKey,
-      )
+    ? applyFilter(normalizeEntries(data), filterOption).sort(byOrderKey)
     : undefined
 
   const query = searchQuery.toLowerCase().trim()
@@ -84,10 +86,14 @@ export function useGenomesData({
     ? rows?.filter(row => matchesSearch(row, query))
     : rows
 
-  const favSet = new Set(favorites.map(r => r.id))
-  const result = showOnlyFavs
-    ? searchFilteredRows?.filter(row => favSet.has(row.id))
+  const cladeFilteredRows = cladeTaxonIds
+    ? searchFilteredRows?.filter(row => cladeTaxonIds.has(Number(row.taxonId)))
     : searchFilteredRows
 
-  return { data: result ?? [], error }
+  const favSet = new Set(favorites.map(r => r.id))
+  const result = showOnlyFavs
+    ? cladeFilteredRows?.filter(row => favSet.has(row.id))
+    : cladeFilteredRows
+
+  return { data: result ?? [], error, isLoading }
 }

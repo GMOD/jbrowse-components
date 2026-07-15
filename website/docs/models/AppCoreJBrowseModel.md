@@ -1,135 +1,143 @@
 ---
 id: appcorejbrowsemodel
 title: AppCoreJBrowseModel
+sidebar_label: Root -> AppCoreJBrowseModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseModel/index.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model —
+config models are MST trees themselves, which is why this state model is allowed
+to build on one. Generally found on a property named rootModel.jbrowse
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseModel/index.ts)
+## Members
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/AppCoreJBrowseModel.md)
+| Member                                                         | Kind    | Defined by          | Description                                                                                             |
+| -------------------------------------------------------------- | ------- | ------------------- | ------------------------------------------------------------------------------------------------------- |
+| [assemblyNames](#getter-assemblynames)                         | Getters | AppCoreJBrowseModel |                                                                                                         |
+| [rpcManager](#getter-rpcmanager)                               | Getters | AppCoreJBrowseModel |                                                                                                         |
+| [addAssemblyConf](#action-addassemblyconf)                     | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [removeAssemblyConf](#action-removeassemblyconf)               | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [addTrackConf](#action-addtrackconf)                           | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [addConnectionConf](#action-addconnectionconf)                 | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [deleteConnectionConf](#action-deleteconnectionconf)           | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [deleteTrackConf](#action-deletetrackconf)                     | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [updateTrackConf](#action-updatetrackconf)                     | Actions | AppCoreJBrowseModel | Updates an existing track configuration. Used to sync editable configs back to the frozen tracks array. |
+| [addPlugin](#action-addplugin)                                 | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [removePlugin](#action-removeplugin)                           | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [setDefaultSessionConf](#action-setdefaultsessionconf)         | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [addInternetAccountConf](#action-addinternetaccountconf)       | Actions | AppCoreJBrowseModel |                                                                                                         |
+| [deleteInternetAccountConf](#action-deleteinternetaccountconf) | Actions | AppCoreJBrowseModel |                                                                                                         |
 
-## Docs
-
-note that JBrowseRootConfig is a config model, but config models are MST trees
-themselves, which is why this stateModel is allowed to extend it
-
-the AppCoreJBrowseModel is generally on a property named rootModel.jbrowse
-
-extends
-
-- [JBrowseRootConfig](/docs/config/jbrowserootconfig)
-
-### AppCoreJBrowseModel - Getters
+<details>
+<summary>AppCoreJBrowseModel - Getters</summary>
 
 #### getter: assemblyNames
 
-```js
-// type
-string[]
+```ts
+type assemblyNames = string[]
 ```
 
 #### getter: rpcManager
 
-```js
-// type
-RpcManager
+```ts
+type rpcManager = RpcManager
 ```
 
-### AppCoreJBrowseModel - Actions
+</details>
 
-#### action: addAssemblyConf
-
-```js
-// type signature
-addAssemblyConf: (conf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => { ...; } & ... 2 more ... & IStateTreeNode<...>
-```
-
-#### action: removeAssemblyConf
-
-```js
-// type signature
-removeAssemblyConf: (assemblyName: string) => void
-```
-
-#### action: addTrackConf
-
-```js
-// type signature
-addTrackConf: (trackConf: { trackId: string; type: string; }) => { [key: string]: unknown; trackId: string; } | undefined
-```
-
-#### action: addConnectionConf
-
-```js
-// type signature
-addConnectionConf: (connectionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
-```
-
-#### action: deleteConnectionConf
-
-```js
-// type signature
-deleteConnectionConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
-```
-
-#### action: deleteTrackConf
-
-```js
-// type signature
-deleteTrackConf: (trackConf: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) | { ...; }) => void
-```
+<details>
+<summary>AppCoreJBrowseModel - Actions</summary>
 
 #### action: updateTrackConf
 
 Updates an existing track configuration. Used to sync editable configs back to
 the frozen tracks array.
 
-```js
-// type signature
-updateTrackConf: (trackConf: { [key: string]: unknown; trackId: string; }) => void
+```ts
+type updateTrackConf = (trackConf: {
+  [key: string]: unknown
+  trackId: string
+}) => void
+```
+
+</details>
+
+<details>
+<summary>AppCoreJBrowseModel - Actions (other undocumented members)</summary>
+
+#### action: addAssemblyConf
+
+```ts
+type addAssemblyConf = (conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => ModelInstanceTypeProps<...> & ... 1 more ... & IStateTreeNode<...>
+```
+
+#### action: removeAssemblyConf
+
+```ts
+type removeAssemblyConf = (assemblyName: string) => void
+```
+
+#### action: addTrackConf
+
+```ts
+type addTrackConf = (trackConf: {
+  trackId: string
+  type: string
+}) => { [key: string]: unknown; trackId: string } | undefined
+```
+
+#### action: addConnectionConf
+
+```ts
+type addConnectionConf = (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```
+
+#### action: deleteConnectionConf
+
+```ts
+type deleteConnectionConf = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
+```
+
+#### action: deleteTrackConf
+
+```ts
+type deleteTrackConf = (trackConf: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
 ```
 
 #### action: addPlugin
 
-```js
-// type signature
-addPlugin: (pluginDefinition: PluginDefinition) => void
+```ts
+type addPlugin = (pluginDefinition: PluginDefinition) => void
 ```
 
 #### action: removePlugin
 
-```js
-// type signature
-removePlugin: (pluginDefinition: PluginDefinition) => void
+```ts
+type removePlugin = (pluginDefinition: PluginDefinition) => void
 ```
 
 #### action: setDefaultSessionConf
 
-```js
-// type signature
-setDefaultSessionConf: (sessionConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+```ts
+type setDefaultSessionConf = (sessionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
 ```
 
 #### action: addInternetAccountConf
 
-```js
-// type signature
-addInternetAccountConf: (internetAccountConf: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => any
+```ts
+type addInternetAccountConf = (internetAccountConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteInternetAccountConf
 
-```js
-// type signature
-deleteInternetAccountConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
+```ts
+type deleteInternetAccountConf = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
 ```
+
+</details>

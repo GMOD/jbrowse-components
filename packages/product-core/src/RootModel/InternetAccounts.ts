@@ -1,7 +1,8 @@
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import type { BaseRootModel } from './BaseRootModel.ts'
+import { asRoot } from '../siblingCast.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { UriLocation } from '@jbrowse/core/util'
@@ -29,21 +30,12 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
         internetAccountConfig: AnyConfigurationModel,
         initialSnapshot = {},
       ) {
-        const internetAccountType = pluginManager.getInternetAccountType(
-          internetAccountConfig.type,
-        )
-        if (!internetAccountType) {
-          throw new Error(
-            `unknown internet account type ${internetAccountConfig.type}`,
-          )
-        }
-
-        const length = self.internetAccounts.push({
+        self.internetAccounts.push({
           ...initialSnapshot,
           type: internetAccountConfig.type,
           configuration: internetAccountConfig,
         })
-        return self.internetAccounts[length - 1]
+        return self.internetAccounts.at(-1)
       },
 
       /**
@@ -61,11 +53,9 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           const pathname = urlObj.pathname
           const lastSlash = pathname.lastIndexOf('/')
           const dirPath =
-            lastSlash !== -1
-              ? pathname.slice(0, Math.max(0, lastSlash + 1))
-              : '/'
+            lastSlash !== -1 ? pathname.slice(0, lastSlash + 1) : '/'
           hostUri = `${urlObj.origin}${dirPath}`
-        } catch (e) {
+        } catch {
           // ignore
         }
         const internetAccountSplit = internetAccountId.split('-')
@@ -76,18 +66,15 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           description: '',
           domains: hostUri ? [hostUri] : [],
         }
-        const type = pluginManager.getInternetAccountType(configuration.type)
-        if (!type) {
-          throw new Error(`unknown internet account type ${configuration.type}`)
-        }
-        const internetAccount = type.stateModel.create({
+        self.internetAccounts.push({
           ...initialSnapshot,
           type: configuration.type,
           configuration,
         })
-        self.internetAccounts.push(internetAccount)
-        return internetAccount
+        return self.internetAccounts.at(-1)
       },
+    }))
+    .actions(self => ({
       /**
        * #action
        */
@@ -113,7 +100,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
 
         // if still no existing account, create ephemeral config to use
         return selectedId
-          ? this.createEphemeralInternetAccount(selectedId, {}, location.uri)
+          ? self.createEphemeralInternetAccount(selectedId, {}, location.uri)
           : null
       },
     }))
@@ -123,7 +110,7 @@ export function InternetAccountsRootModelMixin(pluginManager: PluginManager) {
           self,
           autorun(
             function internetAccountsAutorun() {
-              const { jbrowse } = self as typeof self & BaseRootModel
+              const { jbrowse } = asRoot(self)
               for (const internetAccount of jbrowse.internetAccounts) {
                 if (
                   !self.internetAccounts.some(

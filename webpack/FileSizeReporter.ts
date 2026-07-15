@@ -3,7 +3,7 @@ import path from 'path'
 
 import chalk from 'chalk'
 
-function canReadAsset(asset: string) {
+function isJsOrCssAsset(asset: string) {
   return /\.(js|css)$/.test(asset)
 }
 
@@ -19,22 +19,17 @@ export function printFileSizesAfterBuild(
   const assets = (webpackStats.stats || [webpackStats])
     .map(stats =>
       (stats.toJson({ all: false, assets: true }).assets || [])
-        .filter(asset => canReadAsset(asset.name))
-        .map(asset => {
-          const fileContents = fs.readFileSync(
-            path.join(buildFolder, asset.name),
-          )
-          return {
-            folder: path.join(
-              path.basename(buildFolder),
-              path.dirname(asset.name),
-            ),
-            name: path.basename(asset.name),
-            size: fileContents.length,
-          }
-        }),
+        .filter(asset => isJsOrCssAsset(asset.name))
+        .map(asset => ({
+          folder: path.join(
+            path.basename(buildFolder),
+            path.dirname(asset.name),
+          ),
+          name: path.basename(asset.name),
+          size: fs.statSync(path.join(buildFolder, asset.name)).size,
+        })),
     )
-    .reduce((single, all) => all.concat(single), [])
+    .flat()
 
   assets.sort((a, b) => b.size - a.size)
   for (const asset of assets) {

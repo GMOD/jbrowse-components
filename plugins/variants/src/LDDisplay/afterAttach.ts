@@ -1,207 +1,42 @@
 import {
-  getContainingView,
-  getRpcSessionId,
-  getSession,
-  isAbortException,
-} from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { drawCanvasImageData } from '@jbrowse/plugin-linear-genome-view'
-import { autorun, untracked } from 'mobx'
+  installGlobalFetchAutorun,
+  onDisplayedRegionsChange,
+} from '@jbrowse/plugin-linear-genome-view'
 
-import type { SharedLDModel } from './shared.ts'
-import type { LDFlatbushItem } from '../LDRenderer/types.ts'
-import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-type LGV = LinearGenomeViewModel
-
-interface RenderResult {
-  imageData?: ImageBitmap
-  flatbush?: ArrayBufferLike
-  items?: LDFlatbushItem[]
-  ldData?: {
-    snps: LDMatrixResult['snps']
-  }
-  filterStats?: FilterStats
-  recombination?: {
-    values: number[]
-    positions: number[]
-  }
-  maxScore?: number
-  yScalar?: number
-  w?: number
-  width: number
-  height: number
+interface LDModel extends IAnyStateTreeNode {
+  showLDTriangle: boolean
+  regionTooLarge: boolean
+  isMinimized: boolean
+  reloadCounter: number
+  rpcProps(): Record<string, unknown>
+  performLDFetch(): void
+  setFeatureDensityStats(stats?: FeatureDensityStats): void
 }
 
-export function doAfterAttach(self: SharedLDModel) {
-  const performRender = async () => {
-    if (self.isMinimized) {
-      return
-    }
-    // Skip rendering if LD triangle is hidden
-    if (!self.showLDTriangle) {
-      return
-    }
-    const view = getContainingView(self) as LGV
-    const { bpPerPx, dynamicBlocks } = view
-    const regions = dynamicBlocks.contentBlocks
+export function doAfterAttach(self: LDModel) {
+  // A force-load (raising userByteSizeLimit) also clears regionTooLarge and
+  // bumps reloadCounter, so the byte limit needs no tracker of its own — either
+  // of those (already tracked) refires the fetch. regionTooLarge is a derived
+  // getter (see shared.ts), so it self-releases on zoom-in with no imperative
+  // clear; nothing here needs to watch or reset it.
+  installGlobalFetchAutorun(self, {
+    shouldFetch: () => self.showLDTriangle && !self.regionTooLarge,
+    fetch: () => {
+      self.performLDFetch()
+    },
+    delay: 500,
+    name: 'LDDisplayRender',
+  })
 
-    if (!regions.length) {
-      return
-    }
-
-    // Don't render when zoomed out too far
-    if (bpPerPx > 1000) {
-      return
-    }
-
-    // Use untracked to prevent these from being tracked by the autorun
-    // We explicitly list what should trigger re-rendering above
-    const { adapterConfig } = self
-    const renderProps = untracked(() => self.renderProps())
-
-    try {
-      const session = getSession(self)
-      const { rpcManager } = session
-      const rpcSessionId = getRpcSessionId(self)
-
-      const previousToken = untracked(() => self.renderingStopToken)
-      if (previousToken) {
-        stopStopToken(previousToken)
-      }
-
-      const stopToken = createStopToken()
-      self.setRenderingStopToken(stopToken)
-      self.setLoading(true)
-      self.setCanvasDrawn(false)
-
-      const result = (await rpcManager.call(
-        rpcSessionId,
-        'CoreRender',
-        {
-          sessionId: rpcSessionId,
-          rendererType: 'LDRenderer',
-          regions: [...regions],
-          adapterConfig,
-          bpPerPx,
-          stopToken,
-          ...renderProps,
-        },
-        {
-          statusCallback: (msg: string) => {
-            if (isAlive(self)) {
-              self.setStatusMessage(msg)
-            }
-          },
-        },
-      )) as unknown as RenderResult
-
-      if (result.imageData) {
-        self.setRenderingImageData(result.imageData)
-        self.setLastDrawnOffsetPx(view.offsetPx)
-        self.setLastDrawnBpPerPx(view.bpPerPx)
-      }
-      // Store flatbush data for mouseover
-      self.setFlatbushData(
-        result.flatbush,
-        result.items ?? [],
-        result.ldData?.snps ?? [],
-        result.maxScore ?? 1,
-        result.yScalar ?? 1,
-        result.w ?? 0,
-      )
-      // Store filter stats
-      self.setFilterStats(result.filterStats)
-      // Store recombination data
-      self.setRecombination(result.recombination)
-    } catch (error) {
-      if (!isAbortException(error)) {
-        console.error(error)
-        if (isAlive(self)) {
-          self.setError(error)
-        }
-      }
-    } finally {
-      if (isAlive(self)) {
-        self.setRenderingStopToken(undefined)
-        self.setLoading(false)
-      }
-    }
-  }
-
-  // Autorun to trigger rendering when parameters change
-  addDisposer(
-    self,
-    autorun(
-      () => {
-        if (self.isMinimized) {
-          return
-        }
-        const view = getContainingView(self) as LGV
-        if (!view.initialized) {
-          return
-        }
-        const { dynamicBlocks } = view
-        const regions = dynamicBlocks.contentBlocks
-
-        /* eslint-disable @typescript-eslint/no-unused-expressions */
-        // access these to trigger autorun on changes
-        self.ldMetric
-        self.minorAlleleFrequencyFilter
-        self.lengthCutoffFilter
-        self.hweFilterThreshold
-        self.callRateFilter
-        self.colorScheme
-        self.showLDTriangle
-        self.fitToHeight
-        self.useGenomicPositions
-        self.signedLD
-        // When fitToHeight is true, also track ldCanvasHeight so resizing
-        // the display triggers a re-render
-        if (self.fitToHeight) {
-          self.ldCanvasHeight
-        }
-        // Note: lineZoneHeight, recombinationZoneHeight, and showRecombination
-        // are handled by CSS/React, not canvas rendering
-        /* eslint-enable @typescript-eslint/no-unused-expressions */
-
-        if (untracked(() => self.error) || !regions.length) {
-          return
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        performRender()
-      },
-      {
-        delay: 500,
-        name: 'LDDisplayRender',
-      },
-    ),
-  )
-
-  // Autorun to draw the canvas when imageData changes
-  addDisposer(
-    self,
-    autorun(
-      () => {
-        if (self.isMinimized) {
-          return
-        }
-        const view = getContainingView(self) as LGV
-        if (!view.initialized) {
-          return
-        }
-        const success = drawCanvasImageData(self.ref, self.renderingImageData)
-        if (isAlive(self)) {
-          self.setCanvasDrawn(success)
-        }
-      },
-      {
-        delay: 1000,
-        name: 'LDDisplayCanvas',
-      },
-    ),
-  )
+  // Drop the cached byte estimate on chromosome navigation. The estimate
+  // intentionally survives viewport changes so the derived regionTooLarge
+  // banner doesn't flicker on pan; this is the one path that clears it, scoped
+  // to actual region-list mutation, so a previous region's estimate can't gate
+  // the new region against the wrong stats and wedge refetch.
+  onDisplayedRegionsChange(self, () => {
+    self.setFeatureDensityStats(undefined)
+  })
 }

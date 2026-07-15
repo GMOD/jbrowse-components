@@ -82,3 +82,40 @@ test('setVisibleRows(undefined) restores full row list', () => {
   model.setVisibleRows(undefined)
   expect(model.visibleRows?.length).toBe(2)
 })
+
+test('svType getters are inert without an INFO.SVTYPE column', () => {
+  const model = makeModel({
+    rowSet: { rows: [{ cellData: { ALT: '<DEL>' } }] },
+    columns: [{ name: 'ALT' }],
+  })
+  expect(model.svTypeColumnField).toBeUndefined()
+  expect(model.svTypeOptions).toEqual([])
+})
+
+test('svTypeOptions lists the distinct sorted SVTYPE values', () => {
+  const model = makeModel({
+    rowSet: {
+      rows: [
+        { cellData: { 'INFO.SVTYPE': 'DEL' } },
+        { cellData: { 'INFO.SVTYPE': 'DUP' } },
+        { cellData: { 'INFO.SVTYPE': 'DEL' } },
+        { cellData: { 'INFO.SVTYPE': '' } },
+      ],
+    },
+    columns: [{ name: 'INFO.SVTYPE' }],
+  })
+  expect(model.svTypeColumnField).toBe('INFO.SVTYPE')
+  expect(model.svTypeOptions).toEqual(['DEL', 'DUP'])
+})
+
+test('setSvTypeFilter stores the selected value', () => {
+  const model = makeModel({
+    rowSet: { rows: [{ cellData: { 'INFO.SVTYPE': 'DEL' } }] },
+    columns: [{ name: 'INFO.SVTYPE' }],
+  })
+  expect(model.svTypeFilter).toBeUndefined()
+  model.setSvTypeFilter('DEL')
+  expect(model.svTypeFilter).toBe('DEL')
+  model.setSvTypeFilter(undefined)
+  expect(model.svTypeFilter).toBeUndefined()
+})

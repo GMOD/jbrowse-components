@@ -23,11 +23,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-interface Entry {
-  id: string
-  [key: string]: string
-}
-
 export default function DataGridDetails({
   value,
   prefix,
@@ -39,73 +34,51 @@ export default function DataGridDetails({
 }) {
   const { classes } = useStyles()
   const [checked, setChecked] = useState(false)
-  const firstRowKeyCount = Object.keys(value[0]!).length
 
-  // avoids key 'id' from being used in row data
-  const rows = Object.entries(value).map(([k, val]) => {
-    const { id, ...rest } = val
-    return {
-      id: k, // used by material UI
-      identifier: id, // renamed from id to identifier
-      ...rest,
-    } as Entry
-  })
+  // DataGrid needs a unique row id; rather than commandeering any 'id' field
+  // the feature itself carries, tag each row with the array index and point
+  // getRowId at it, leaving the feature's own keys (including 'id') untouched
+  const rows = value.map((val, k) => ({ ...val, __dataGridRowId: k }))
 
-  const unionKeys = new Set<string>()
-  for (const val of value) {
-    for (const k of Object.keys(val)) {
-      unionKeys.add(k)
-    }
-  }
-  // avoids key 'id' from being used in column names, and tries
-  // to make it at the start of the colNames array
-  let colNames: string[]
-  if (unionKeys.has('id')) {
-    unionKeys.delete('id')
-    colNames = ['identifier', ...unionKeys]
-  } else {
-    colNames = [...unionKeys]
-  }
-  const widths = colNames.map(e => measureGridWidth(rows.map(r => r[e])))
-  if (unionKeys.size < firstRowKeyCount + 5) {
-    return (
-      <div className={classes.margin}>
-        <FieldName prefix={prefix} name={name} />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={checked}
-              onChange={event => {
-                setChecked(event.target.checked)
-              }}
-            />
-          }
-          label={<Typography variant="body2">Show options</Typography>}
-        />
-        <DataGridFlexContainer>
-          <DataGrid
-            disableRowSelectionOnClick
-            rows={rows}
-            rowHeight={20}
-            columnHeaderHeight={35}
-            hideFooter={rows.length < 25}
-            showToolbar={checked}
-            columns={colNames.map(
-              (val, index) =>
-                ({
-                  field: val,
-                  width: widths[index],
-                  renderCell: ({ value }) => (
-                    <div className={classes.cell}>
-                      <SanitizedHTML html={getStr(value || '')} />
-                    </div>
-                  ),
-                }) satisfies GridColDef<(typeof rows)[0]>,
-            )}
+  const cols = [...new Set(value.flatMap(Object.keys))]
+  const widths = cols.map(col => measureGridWidth(value.map(r => r[col])))
+  return (
+    <div className={classes.margin}>
+      <FieldName prefix={prefix} name={name} />
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={e => {
+              setChecked(e.target.checked)
+            }}
           />
-        </DataGridFlexContainer>
-      </div>
-    )
-  }
-  return null
+        }
+        label={<Typography variant="body2">Show options</Typography>}
+      />
+      <DataGridFlexContainer>
+        <DataGrid
+          disableRowSelectionOnClick
+          rows={rows}
+          getRowId={row => row.__dataGridRowId}
+          rowHeight={20}
+          columnHeaderHeight={35}
+          hideFooter={rows.length < 25}
+          showToolbar={checked}
+          columns={cols.map(
+            (field, index) =>
+              ({
+                field,
+                width: widths[index],
+                renderCell: ({ value }) => (
+                  <div className={classes.cell}>
+                    <SanitizedHTML html={getStr(value ?? '')} />
+                  </div>
+                ),
+              }) satisfies GridColDef<(typeof rows)[0]>,
+          )}
+        />
+      </DataGridFlexContainer>
+    </div>
+  )
 }

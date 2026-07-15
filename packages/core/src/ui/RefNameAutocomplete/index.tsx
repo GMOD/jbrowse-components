@@ -4,61 +4,21 @@ import type { CSSProperties, ReactNode } from 'react'
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import BaseResult, { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
-import { measureText, useDebounce, useFetch } from '../../util/index.ts'
+import {
+  MAX_OPTIONS,
+  cap,
+  coerceToResult,
+  getDeduplicatedResult,
+  getFiltered,
+  getInputWidth,
+  getOptionLabel,
+} from './util.ts'
+import { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
+import { useDebounce, useFetch } from '../../util/index.ts'
 
+import type { Option } from './util.ts'
+import type BaseResult from '../../TextSearch/BaseResults.ts'
 import type { AbstractSessionModel } from '../../util/index.ts'
-
-// matches the rendered font-size of the TextField
-const INPUT_FONT_SIZE = 14
-// reserve room for the search/help icons and input padding
-const ADORNMENT_RESERVE_PX = 100
-
-interface Option {
-  group?: string
-  result: BaseResult
-}
-
-function getFiltered(options: Option[], inputValue: string) {
-  const query = inputValue.toLocaleLowerCase()
-  // matchedObject is set by text-search adapters (trix, jb1) to signal that
-  // the result was already filtered server-side — always include those so the
-  // adapter's results aren't silently hidden by client-side filtering
-  const filtered = options.filter(
-    ({ result }) =>
-      result.getLabel().toLowerCase().includes(query) || result.matchedObject,
-  )
-  return [
-    ...filtered.slice(0, 100),
-    ...(filtered.length > 100
-      ? [
-          {
-            group: 'limitOption',
-            result: new BaseResult({ label: 'keep typing for more results' }),
-          },
-        ]
-      : []),
-  ]
-}
-
-function getDeduplicatedResult(results: BaseResult[]): Option[] {
-  const m: Record<string, BaseResult[]> = {}
-  for (const result of results) {
-    const key = result.getDisplayString()
-    ;(m[key] ??= []).push(result)
-  }
-  return Object.entries(m).map(([displayString, results]) =>
-    results.length === 1
-      ? { result: results[0]! }
-      : {
-          result: new BaseResult({
-            displayString,
-            results,
-            label: displayString,
-          }),
-        },
-  )
-}
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
   session,
@@ -91,18 +51,12 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
 }) {
   const { assemblyManager } = session
   const externalValue = value ?? ''
-  // MUI Autocomplete needs `inputValue` (the displayed text) controlled
-  // separately from `value` per the docs — they're isolated states. We just
-  // accept whatever MUI tells us via `onInputChange`: MUI emits a 'reset'
-  // event when the `value` prop changes externally, a 'blur'/'selectOption'
-  // event after clearOnBlur fires, and 'input' on each keystroke. Echoing
-  // the value back into state covers all of those without us tracking which
-  // case is which.
+  // MUI Autocomplete tracks `inputValue` (displayed text) separately from
+  // `value` (selected item). We echo every MUI event into `inputValue` so
+  // external value changes, blur snap-back, and keystrokes all stay in sync.
   const [inputValue, setInputValue] = useState(externalValue)
-  // `searchQuery` is what we feed into the listbox filter and the
-  // background fetch. It only tracks real typing — non-'input' events
-  // (blur, reset, select) clear it so we don't fire a phantom search for
-  // the locstring on snap-back.
+  // `searchQuery` drives the fetch and filter — only updated on real typing
+  // so blur/reset events don't trigger phantom searches.
   const [searchQuery, setSearchQuery] = useState('')
   const debouncedSearch = useDebounce(searchQuery, 50)
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
@@ -118,22 +72,22 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     },
   )
 
-  const width = Math.min(
-    Math.max(
-      measureText(externalValue, INPUT_FONT_SIZE) + ADORNMENT_RESERVE_PX,
-      minWidth,
-    ),
-    maxWidth,
-  )
-  const regionOptions: Option[] =
-    assembly?.regions?.map(region => ({
+  const width = getInputWidth(externalValue, minWidth, maxWidth)
+  // assembly.regions can hold ~10^6 refnames. This is only the browse/pre-fetch
+  // fallback list (typed queries resolve through fetchResults), MUI is not
+  // virtualized, and the visible list is capped at MAX_OPTIONS anyway — so only
+  // materialize a bounded slice rather than a million option objects. Slicing
+  // one past the cap lets `cap` still render its "keep typing" hint.
+  const regionOptions: Option[] = (assembly?.regions ?? [])
+    .slice(0, MAX_OPTIONS + 1)
+    .map(region => ({
       result: new RefSequenceResult({
         refName: region.refName,
         label: region.refName,
-        displayString: region.refName,
-        matchedAttribute: 'refName',
       }),
-    })) ?? []
+    }))
+
+  const hasSearchResults = !!searchOptions?.length
 
   return (
     <Autocomplete
@@ -155,32 +109,32 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           setSearchQuery(newInputValue)
           onChange?.(newInputValue)
         } else if (reason === 'blur' || reason === 'selectOption') {
-          // User is done typing — drop the query so a stale fetch doesn't
-          // leave results in the listbox the next time it opens. We do NOT
-          // clear on 'reset', because MUI emits 'reset' on its own
-          // re-render loop (focused-state changes, value-prop identity
-          // churn) and clearing there would kill the in-flight search.
+          // clear so stale results don't linger; skip 'reset' because MUI
+          // fires that during its own re-render loop and clearing it kills
+          // an in-flight search
           setSearchQuery('')
         }
       }}
       loadingText="loading results"
       onChange={(_event, selectedOption) => {
         if (selectedOption) {
-          onSelect?.(
-            typeof selectedOption === 'string'
-              ? new BaseResult({ label: selectedOption })
-              : selectedOption.result,
-          )
-          // Snap the displayed text back to the current `externalValue`. If
-          // navigation succeeds, the parent updates `value` and MUI fires
-          // another 'reset' that puts the new locstring in. If it doesn't,
-          // we still revert from the stale typed text to the current loc.
+          onSelect?.(coerceToResult(selectedOption))
+          // snap back to the current loc; if navigation succeeds the parent
+          // updates `value` and MUI's 'reset' event will reflect the new loc
           setInputValue(externalValue)
         }
       }}
-      options={searchOptions?.length ? searchOptions : regionOptions}
-      getOptionDisabled={option => option.group === 'limitOption'}
-      filterOptions={opts => getFiltered(opts, searchQuery)}
+      options={hasSearchResults ? searchOptions : regionOptions}
+      getOptionDisabled={option => !!option.isLimit}
+      // the two option sources are filtered against different query snapshots:
+      // searchOptions are already server-filtered for `debouncedSearch` (so we
+      // only cap), while regionOptions are filtered live against `searchQuery`.
+      // when a fetch resolves empty, hasSearchResults flips and the list swaps
+      // from search mode to region mode — both stay consistent because regions
+      // re-filter by the same query
+      filterOptions={opts =>
+        hasSearchResults ? cap(opts) : getFiltered(opts, searchQuery)
+      }
       renderInput={({ slotProps: paramSlotProps, ...restParams }) => (
         <TextField
           {...restParams}
@@ -201,9 +155,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
           placeholder="Search for location"
         />
       )}
-      getOptionLabel={opt =>
-        typeof opt === 'string' ? opt : opt.result.getDisplayString()
-      }
+      getOptionLabel={getOptionLabel}
     />
   )
 })

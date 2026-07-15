@@ -1,9 +1,4 @@
-import {
-  BlockSet,
-  makeContentBlock,
-  makeElidedBlock,
-  makeInterRegionPaddingBlock,
-} from './blockTypes.ts'
+import { BlockSet } from './blockTypes.ts'
 import { intersection2 } from './range.ts'
 
 import type { Base1DViewModel } from './calculateStaticBlocks.ts'
@@ -18,19 +13,12 @@ export default function calculateDynamicBlocks(
   padding = true,
   elision = true,
 ) {
-  const {
-    offsetPx,
-    displayedRegions,
-    bpPerPx,
-    width,
-    minimumBlockWidth,
-    interRegionPaddingWidth,
-  } = model
+  const { offsetPx, displayedRegions, bpPerPx, width, minimumBlockWidth } =
+    model
 
-  if (!width) {
-    throw new Error('view has no width, cannot calculate displayed blocks')
-  }
-
+  // A zero-width view yields an empty BlockSet: intersection2 rejects the
+  // degenerate window, so the loop pushes nothing. Mirrors calculateStaticBlocks
+  // rather than throwing inside what callers read as a MobX computed.
   const invBpPerPx = 1 / bpPerPx
   const blocks = new BlockSet()
   let displayedRegionLeftPx = 0
@@ -61,37 +49,28 @@ export default function calculateDynamicBlocks(
       // make end !== regionEnd even when the full region is in view.
       const isLeftEndOfDisplayedRegion = leftPx <= displayedRegionLeftPx
       const isRightEndOfDisplayedRegion = rightPx >= displayedRegionRightPx
-      let start: number
-      let end: number
-      let blockOffsetPx: number
-      if (reversed) {
-        start = Math.max(
-          regionStart,
-          regionEnd - (rightPx - displayedRegionLeftPx) * bpPerPx,
-        )
-        end = regionEnd - (leftPx - displayedRegionLeftPx) * bpPerPx
-        blockOffsetPx = displayedRegionLeftPx + (regionEnd - end) * invBpPerPx
-      } else {
-        start = (leftPx - displayedRegionLeftPx) * bpPerPx + regionStart
-        end = Math.min(
-          regionEnd,
-          (rightPx - displayedRegionLeftPx) * bpPerPx + regionStart,
-        )
-        blockOffsetPx =
-          displayedRegionLeftPx + (start - regionStart) * invBpPerPx
-      }
+      // bp spanned between the region's left edge and the clipped block edges
+      const leftBp = (leftPx - displayedRegionLeftPx) * bpPerPx
+      const rightBp = (rightPx - displayedRegionLeftPx) * bpPerPx
+      const start = reversed
+        ? Math.max(regionStart, regionEnd - rightBp)
+        : regionStart + leftBp
+      const end = reversed
+        ? regionEnd - leftBp
+        : Math.min(regionEnd, regionStart + rightBp)
+      // both reversed/forward offset formulae reduce algebraically to leftPx
+      const blockOffsetPx = leftPx
       const widthPx = (end - start) * invBpPerPx
       const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
 
-      if (padding && blocks.length === 0 && isLeftEndOfDisplayedRegion) {
-        blocks.push(
-          makeInterRegionPaddingBlock({
-            key: `${key}-beforeFirstRegion`,
-            widthPx: -offsetPx,
-            offsetPx: blockOffsetPx + offsetPx,
-            variant: 'boundary',
-          }),
-        )
+      if (padding && displayedRegionIndex === 0 && isLeftEndOfDisplayedRegion) {
+        blocks.push({
+          type: 'InterRegionPaddingBlock',
+          key: `${key}-beforeFirstRegion`,
+          widthPx: -offsetPx,
+          offsetPx: blockOffsetPx + offsetPx,
+          variant: 'boundary',
+        })
       }
 
       const data = {
@@ -109,47 +88,24 @@ export default function calculateDynamicBlocks(
       }
       blocks.push(
         elision && regionWidthPx < minimumBlockWidth
-          ? makeElidedBlock(data)
-          : makeContentBlock(data),
+          ? { ...data, type: 'ElidedBlock' }
+          : { ...data, type: 'ContentBlock' },
       )
 
-      if (padding) {
-        if (
-          regionWidthPx >= minimumBlockWidth &&
-          isRightEndOfDisplayedRegion &&
-          displayedRegionIndex < displayedRegions.length - 1
-        ) {
-          blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
-              offsetPx: blockOffsetPx + widthPx,
-            }),
-          )
-        }
-
-        if (
-          displayedRegionIndex === displayedRegions.length - 1 &&
-          isRightEndOfDisplayedRegion
-        ) {
-          const afterOffsetPx = blockOffsetPx + widthPx
-          blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-afterLastRegion`,
-              widthPx: width - afterOffsetPx + offsetPx,
-              offsetPx: afterOffsetPx,
-              variant: 'boundary',
-            }),
-          )
-        }
+      if (
+        padding &&
+        displayedRegionIndex === displayedRegions.length - 1 &&
+        isRightEndOfDisplayedRegion
+      ) {
+        const afterOffsetPx = blockOffsetPx + widthPx
+        blocks.push({
+          type: 'InterRegionPaddingBlock',
+          key: `${key}-afterLastRegion`,
+          widthPx: width - afterOffsetPx + offsetPx,
+          offsetPx: afterOffsetPx,
+          variant: 'boundary',
+        })
       }
-    }
-    if (
-      padding &&
-      regionWidthPx >= minimumBlockWidth &&
-      displayedRegionIndex < displayedRegions.length - 1
-    ) {
-      displayedRegionLeftPx += interRegionPaddingWidth
     }
     displayedRegionLeftPx += regionWidthPx
   }

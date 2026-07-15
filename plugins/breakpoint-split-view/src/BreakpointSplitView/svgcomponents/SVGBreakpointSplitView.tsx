@@ -1,15 +1,9 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession, renderToStaticMarkup, sum } from '@jbrowse/core/util'
-import {
-  SVGGridlines,
-  SVGRuler,
-  SVGTracks,
-  totalHeight,
-} from '@jbrowse/plugin-linear-genome-view'
-import { ThemeProvider } from '@mui/material'
+import { exportMargin } from '@jbrowse/core/svg/constants'
+import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { getSession, sum } from '@jbrowse/core/util'
+import { SVGView, totalHeight } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
 import { getTrackNameMaxLen, getTrackOffsets } from './util.ts'
 import Overlay from '../components/Overlay.tsx'
 
@@ -20,6 +14,7 @@ type BSV = BreakpointViewModel
 
 // render LGV to SVG
 export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
+  await when(() => model.initialized)
   const {
     textHeight = 18,
     headerHeight = 30,
@@ -29,27 +24,31 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
+    fontFamily,
   } = opts
 
   const session = getSession(model)
-  const theme = session.allThemes?.()[themeName]
+  const theme = session.getActiveThemeOptions?.(themeName)
   const { width, views } = model
-  const shift = 50
   const offset = headerHeight + rulerHeight
-  const heights = views.map(
-    v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
+  // Minimized tracks are dropped (as the standalone LGV export does) so reserved
+  // height, rendered bodies, label width, and overlay offsets stay in sync and a
+  // collapsed track doesn't export as a full-height panel.
+  const visibleTracksByView = views.map(v => v.tracks.filter(t => !t.minimized))
+  const tracksHeights = visibleTracksByView.map(tracks =>
+    totalHeight(tracks, textHeight, trackLabels),
   )
-  const totalHeightSvg = sum(heights) + 100
+  const heights = tracksHeights.map(h => h + offset)
+  const totalHeightSvg = sum(heights) + exportMargin
   const displayResults = await Promise.all(
     views.map(
-      async view =>
+      async (view, idx) =>
         ({
           view,
 
           data: await Promise.all(
-            view.tracks.map(async track => {
+            visibleTracksByView[idx]!.map(async track => {
               const d = track.displays[0]
-              await when(() => d.ready ?? true)
               return { track, result: await d.renderSvg({ ...opts, theme }) }
             }),
           ),
@@ -57,73 +56,75 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     ),
   )
 
-  const trackLabelMaxLen = getTrackNameMaxLen(views, fontSize, session) + 40
+  const trackLabelMaxLen =
+    getTrackNameMaxLen(visibleTracksByView.flat(), fontSize, session) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const textOffset = trackLabels === 'offset' ? textHeight : 0
-  const trackOffsets = views.map((view, idx) =>
+  const trackOffsets = visibleTracksByView.map((tracks, idx) =>
     getTrackOffsets(
-      view,
+      tracks,
       textOffset,
       fontSize + sum(heights.slice(0, idx)) + offset,
     ),
   )
   const w = width + trackLabelOffset
-  const t = createJBrowseTheme(theme)
-  const tracksHeights = views.map(v =>
-    totalHeight(v.tracks, textHeight, trackLabels),
-  )
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
-    <ThemeProvider theme={t}>
-      <Wrapper>
-        <svg
-          width={width}
-          height={totalHeightSvg}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, w + shift * 2, totalHeightSvg].toString()}
-        >
-          <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
-          {displayResults.map(({ view, data }, idx) => {
-            const yOffset = fontSize + sum(heights.slice(0, idx))
-            return (
-              <g key={view.id} transform={`translate(${shift} ${yOffset})`}>
-                <g transform={`translate(${trackLabelOffset})`}>
-                  <text x={0} fontSize={fontSize} fill={t.palette.text.primary}>
-                    {view.assemblyNames.join(', ')}
-                  </text>
-                  <SVGRuler model={view} fontSize={fontSize} />
-                </g>
-                {showGridlines ? (
-                  <g transform={`translate(${trackLabelOffset} ${offset})`}>
-                    <SVGGridlines model={view} height={tracksHeights[idx]!} />
-                  </g>
-                ) : null}
-                <g transform={`translate(0 ${offset})`}>
-                  <SVGTracks
-                    textHeight={textHeight}
-                    trackLabels={trackLabels}
-                    fontSize={fontSize}
-                    model={view}
-                    displayResults={data}
-                    trackLabelOffset={trackLabelOffset}
-                  />
-                </g>
-              </g>
-            )
-          })}
+  return wrapSvgExport({
+    theme,
+    width: w,
+    height: totalHeightSvg,
+    fontFamily,
+    Wrapper,
+    children: (
+      <>
+        {displayResults.map(({ view, data }, idx) => {
+          const yOffset = fontSize + sum(heights.slice(0, idx))
+          return (
+            <g
+              key={view.id}
+              transform={`translate(${exportMargin} ${yOffset})`}
+            >
+              <SVGView
+                view={view}
+                displayResults={data}
+                fontSize={fontSize}
+                textHeight={textHeight}
+                trackLabels={trackLabels}
+                trackLabelOffset={trackLabelOffset}
+                contentTop={offset}
+                rulerHeight={rulerHeight}
+                tracksHeight={tracksHeights[idx]!}
+                showGridlines={showGridlines}
+                leftBuffer={exportMargin}
+              />
+            </g>
+          )
+        })}
 
-          <defs>
-            <clipPath id="clip-bsv">
-              <rect x={0} y={0} width={width} height={totalHeightSvg} />
-            </clipPath>
-          </defs>
-          <g
-            transform={`translate(${trackLabelOffset + shift})`}
-            clipPath="url(#clip-bsv)"
-          >
-            {model.matchedTracks.map(track => {
+        <defs>
+          <clipPath id={`clip-bsv-${model.id}`}>
+            <rect
+              x={trackLabelOffset + exportMargin}
+              y={0}
+              width={width}
+              height={totalHeightSvg}
+            />
+          </clipPath>
+        </defs>
+        <g
+          transform={`translate(${trackLabelOffset + exportMargin})`}
+          clipPath={`url(#clip-bsv-${model.id})`}
+        >
+          {model.matchedTracks
+            .filter(track =>
+              // skip tracks minimized in any view: they have no rendered body
+              // to anchor a ribbon to (getTrackOffsets omits them)
+              trackOffsets.every(
+                o => o[track.configuration.trackId] !== undefined,
+              ),
+            )
+            .map(track => {
               const id = track.configuration.trackId
               return (
                 <Overlay
@@ -134,9 +135,8 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
                 />
               )
             })}
-          </g>
-        </svg>
-      </Wrapper>
-    </ThemeProvider>,
-  )
+        </g>
+      </>
+    ),
+  })
 }

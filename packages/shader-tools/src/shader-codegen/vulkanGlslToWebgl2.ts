@@ -1,0 +1,128 @@
+// Slang emits "Vulkan GLSL" (#version 460, gl_VertexIndex, gl_BaseVertex,
+// `layout(binding=N)` on UBOs, etc.) — WebGL2 needs GLSL ES 3.00. It also
+// mangles identifiers: UBO blocks get `block_<Struct>_0`, vertex attributes
+// from an input struct parameter `P` become `P_<field>_0`. This module
+// normalises both.
+
+function renameUniformBlock(
+  source: string,
+  mangled: string,
+  target = 'Uniforms',
+) {
+  const re = new RegExp(
+    String.raw`(layout\(std140\)\s*uniform\s+)${mangled}\b`,
+    'g',
+  )
+  return source.replace(re, `$1${target}`)
+}
+
+function renameAttributeIdentifiers(
+  source: string,
+  prefix: string,
+  fieldNames: readonly string[],
+) {
+  let out = source
+  for (const f of fieldNames) {
+    const re = new RegExp(String.raw`\b${prefix}_${f}_0\b`, 'g')
+    out = out.replace(re, `a_${f}`)
+  }
+  return out
+}
+
+// Rename mangled varying names to a shared `v_<field>` convention so that
+// vertex outputs and fragment inputs link by name (WebGL2 GLSL ES does not
+// allow `layout(location=N)` on vertex-out or fragment-in).
+function renameVaryings(
+  source: string,
+  prefix: string,
+  fieldNames: readonly string[],
+) {
+  let out = source
+  for (const f of fieldNames) {
+    const re = new RegExp(String.raw`\b${prefix}_${f}_0\b`, 'g')
+    out = out.replace(re, `v_${f}`)
+  }
+  return out
+}
+
+export interface RenameOptions {
+  uniformBlockName?: string
+  attributes?: { prefix: string; fieldNames: readonly string[] }
+  /** Vertex-stage varying output names, e.g. `entryPointParam_vsMain`. */
+  varyings?: { prefix: string; fieldNames: readonly string[] }
+  /** Combined-sampler names (Slang's `Sampler2D<T>` declarations). */
+  samplers?: readonly string[]
+}
+
+// Slang emits `sampler2D <name>_0;` for combined samplers. Rename to
+// `u_<name>` so the TS-side GL uniform lookup uses a predictable name.
+function renameSamplers(source: string, names: readonly string[]) {
+  let out = source
+  for (const n of names) {
+    const re = new RegExp(String.raw`\b${n}_0\b`, 'g')
+    out = out.replace(re, `u_${n}`)
+  }
+  return out
+}
+
+export function vulkanGlslToWebgl2(
+  source: string,
+  stage: 'vertex' | 'fragment',
+  renames: RenameOptions = {},
+) {
+  let out = source
+
+  out = out.replace(
+    /^#version\s+4\d\d\s*\n/,
+    `#version 300 es\nprecision highp float;\nprecision highp int;\n`,
+  )
+  out = out.replace(
+    /^#extension\s+GL_ARB_shader_draw_parameters\s*:\s*require\s*\n/m,
+    '',
+  )
+  out = out.replaceAll(/^layout\(row_major\)\s*(uniform|buffer);\s*\n/gm, '')
+  out = out.replaceAll(/^layout\(binding\s*=\s*\d+\)\s*\n/gm, '')
+  out = out.replaceAll(/gl_VertexIndex\s*-\s*gl_BaseVertex/g, 'gl_VertexID')
+  out = out.replaceAll(
+    /gl_InstanceIndex\s*-\s*gl_BaseInstance/g,
+    'gl_InstanceID',
+  )
+  out = out.replaceAll(/\bgl_VertexIndex\b/g, 'gl_VertexID')
+  out = out.replaceAll(/\bgl_InstanceIndex\b/g, 'gl_InstanceID')
+
+  out =
+    stage === 'vertex'
+      ? out.replaceAll(/layout\(location\s*=\s*\d+\)\s*\nout\s/g, 'out ')
+      : out.replaceAll(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
+
+  // GLSL 4.20+ / HLSL brace initializers aren't legal in GLSL ES 3.00 — rewrite
+  // `Struct_0 v = { a, b, c };` to `Struct_0 v = Struct_0(a, b, c);`. Slang
+  // emits these when a function takes a local struct by value.
+  out = out.replaceAll(
+    /\b(\w+_\d+)\s+(\w+)\s*=\s*\{\s*([^}]*?)\s*\}\s*;/g,
+    (_, type, name, fields) => `${type} ${name} = ${type}(${fields.trim()});`,
+  )
+
+  if (renames.uniformBlockName) {
+    out = renameUniformBlock(out, renames.uniformBlockName)
+  }
+  if (renames.attributes) {
+    out = renameAttributeIdentifiers(
+      out,
+      renames.attributes.prefix,
+      renames.attributes.fieldNames,
+    )
+  }
+  if (renames.varyings) {
+    out = renameVaryings(
+      out,
+      renames.varyings.prefix,
+      renames.varyings.fieldNames,
+    )
+  }
+  if (renames.samplers && renames.samplers.length > 0) {
+    out = renameSamplers(out, renames.samplers)
+  }
+
+  return out
+}

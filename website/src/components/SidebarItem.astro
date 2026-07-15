@@ -1,6 +1,8 @@
 ---
-import type { SidebarEntry } from '../lib/docs-sidebar'
 import SidebarItem from './SidebarItem.astro'
+import { containsSlug } from '../lib/docs-sidebar.ts'
+
+import type { SidebarEntry } from '../lib/docs-sidebar.ts'
 
 interface Props {
   item: SidebarEntry
@@ -22,8 +24,23 @@ const { item, currentSlug } = Astro.props
     </li>
   ) : (
     <li>
-      <details>
-        <summary>{item.label}</summary>
+      <details open={containsSlug(item, currentSlug)}>
+        <summary>
+          {item.href ? (
+            <a
+              href={item.href}
+              class:list={[
+                'summary-link',
+                { active: item.slug === currentSlug },
+              ]}
+              aria-current={item.slug === currentSlug ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ) : (
+            item.label
+          )}
+        </summary>
         <ul>
           {item.items.map(child => (
             <SidebarItem item={child} currentSlug={currentSlug} />

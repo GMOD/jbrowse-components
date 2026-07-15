@@ -1,0 +1,133 @@
+import type { Page } from 'puppeteer'
+
+// Fixed-duration sleep. Shared by the browser-test suites and the website
+// screenshot generator so the helper isn't redefined per consumer.
+export const delay = (ms: number) =>
+  new Promise<void>(resolve => {
+    setTimeout(resolve, ms)
+  })
+
+// Wait until the LoadingOverlay test-id is gone. NOTE: the overlay keeps the
+// literal text "Loading" in the DOM (hidden via opacity), so a text-based wait
+// burns its full timeout — only the `loading-overlay` test-id count is a
+// reliable signal. With `waitForDownloads`, also wait out adapter "Downloading…"
+// status text, which can linger after the overlay clears (e.g. a remote BAM
+// still fetching) so a capture doesn't catch a half-loaded track.
+export async function waitForLoadingComplete(
+  page: Page,
+  {
+    timeout = 30000,
+    waitForDownloads = false,
+  }: { timeout?: number; waitForDownloads?: boolean } = {},
+) {
+  await page.waitForFunction(
+    () =>
+      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
+    { timeout },
+  )
+  if (waitForDownloads) {
+    await page
+      .waitForFunction(() => !document.body.innerText.includes('Downloading'), {
+        timeout,
+      })
+      .catch(() => {})
+  }
+}
+
+// Wait until no element with a *visible* "Loading…/Rendering…/Computing…" label
+// remains on screen. Complements waitForLoadingComplete (which keys off the
+// loading-overlay test-id and "Downloading" text): some views — e.g. the
+// Protein3d ProteinView's "Loading pairwise alignment" banner — paint their own
+// transient status text that no test-id covers, and a screenshot taken while it
+// shows captures a half-loaded view.
+//
+// The match is visibility-aware on purpose. The LoadingOverlay keeps the literal
+// word "Loading" in the DOM hidden via opacity:0, so a plain text search would
+// never clear; here we ignore any element that (or whose ancestor) is
+// display:none / visibility:hidden / opacity:0 / zero-size. We compare each
+// element's OWN text nodes (not descendant text) so a large container that
+// merely wraps a loading child doesn't count.
+//
+// Best-effort: a view that is genuinely stuck loading (rather than slow) would
+// otherwise burn the whole timeout, so we swallow the rejection and let the
+// caller proceed — no worse than not waiting, and slow-but-finishing views now
+// get captured at the right moment instead of relying on a fixed settle.
+export async function waitForQuiescent(
+  page: Page,
+  {
+    timeout = 30000,
+    pattern = /^(loading|rendering|computing|aligning)\b/i,
+  }: { timeout?: number; pattern?: RegExp } = {},
+) {
+  await page
+    .waitForFunction(
+      (source: string, flags: string) => {
+        const re = new RegExp(source, flags)
+        const visible = (el: Element) => {
+          let cur: Element | null = el
+          while (cur) {
+            const s = getComputedStyle(cur)
+            if (
+              s.display === 'none' ||
+              s.visibility === 'hidden' ||
+              Number(s.opacity) === 0
+            ) {
+              return false
+            }
+            cur = cur.parentElement
+          }
+          const r = el.getBoundingClientRect()
+          return r.width > 0 && r.height > 0
+        }
+        const ownText = (el: Element) =>
+          Array.from(el.childNodes)
+            .filter(n => n.nodeType === Node.TEXT_NODE)
+            .map(n => n.textContent ?? '')
+            .join('')
+            .trim()
+        for (const el of document.querySelectorAll('body *')) {
+          const t = ownText(el)
+          if (t.length > 0 && t.length < 80 && re.test(t) && visible(el)) {
+            return false
+          }
+        }
+        return true
+      },
+      { timeout },
+      pattern.source,
+      pattern.flags,
+    )
+    .catch(() => {})
+}
+
+// Wait until every BaseLinearDisplay wrapper has flipped to its `-done` test-id
+// (canvasDrawn fired), or until the timeout elapses (proceed anyway — some views
+// show import forms or other non-canvas content with no done test-ids). For
+// non-LGV views (synteny, dotplot) the `_done` underscore variant is used; any
+// done signal suffices there.
+export async function waitForDisplaysDone(page: Page, timeoutMs: number) {
+  await page
+    .waitForFunction(
+      () => {
+        // Display wrappers use `<name>-display`, flipping in place to
+        // `<name>-display-done` when canvasDrawn fires, so the full set is
+        // both states and "done" is the `-done` subset.
+        const all = document.querySelectorAll(
+          '[data-testid$="-display"],[data-testid$="-display-done"]',
+        )
+        if (all.length > 0) {
+          const done = document.querySelectorAll(
+            '[data-testid$="-display-done"]',
+          )
+          return done.length === all.length
+        }
+        return (
+          document.querySelector(
+            '[data-testid$="-done"],[data-testid$="_done"]',
+          ) !== null
+        )
+      },
+      { timeout: timeoutMs },
+    )
+    .catch(() => {})
+}

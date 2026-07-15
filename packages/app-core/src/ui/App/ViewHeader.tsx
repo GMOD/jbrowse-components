@@ -37,31 +37,35 @@ const ViewHeader = observer(function ViewHeader({
   onClose,
   onMinimize,
   className,
+  scrollOnMount,
 }: {
   view: IBaseViewModel
   onClose: () => void
   onMinimize: () => void
   className?: string
+  scrollOnMount?: boolean
 }) {
   const { classes } = useStyles()
   const scrollRef = useRef<HTMLDivElement>(null)
   const session = getSession(view)
-  let stickyViewHeaders = false
-  if (isSessionWithMultipleViews(session)) {
-    ;({ stickyViewHeaders } = session)
-  }
+  const stickyViewHeaders = isSessionWithMultipleViews(session)
+    ? session.stickyViewHeaders
+    : false
 
-  // scroll the view into view when first mounted. note: this effect will run
-  // only once, because of the empty array second param
+  // Scroll a newly-added view into view on mount. Gated on scrollOnMount so a
+  // cold load / session restore with several views doesn't have every header
+  // race to scrollIntoView (last one wins, landing on the bottom view);
+  // ViewStack only sets it for views added after the initial render.
   useEffect(() => {
     if (
+      scrollOnMount &&
       typeof jest === 'undefined' &&
       !navigator.webdriver &&
       window.self === window.top
     ) {
       scrollRef.current?.scrollIntoView({ block: 'center' })
     }
-  }, [])
+  }, [scrollOnMount])
   return (
     <div
       ref={scrollRef}

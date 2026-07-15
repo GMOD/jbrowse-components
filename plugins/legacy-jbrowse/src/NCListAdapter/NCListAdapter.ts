@@ -6,6 +6,7 @@ import { RemoteFile } from 'generic-filehandle2'
 
 import NCListFeature from './NCListFeature.ts'
 
+import type { NCListRawFeature } from './NCListFeature.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -14,7 +15,7 @@ import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
 
 export default class NCListAdapter extends BaseFeatureDataAdapter {
-  private nclist: any
+  private nclist: NCListStore
 
   private configRefNames?: string[]
 
@@ -41,9 +42,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   }
 
   /**
-   * Fetch features for a certain region. Use getFeaturesInRegion() if you also
-   * want to verify that the store has features for the given reference sequence
-   * before fetching.
+   * Fetch features for a certain region.
    * @param region -
    * @param opts - [stopToken] optional stopTokenling object for aborting the fetch
    * @returns Observable of Feature objects in the region
@@ -51,7 +50,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { stopToken } = opts
-      for await (const feature of this.nclist.getFeatures(region, opts)) {
+      for await (const feature of this.nclist.getFeatures(region)) {
         checkStopToken(stopToken)
         observer.next(this.wrapFeature(feature))
       }
@@ -59,7 +58,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
     })
   }
 
-  wrapFeature(ncFeature: any): NCListFeature {
+  wrapFeature(ncFeature: NCListRawFeature): NCListFeature {
     return new NCListFeature(
       ncFeature,
       undefined,
@@ -78,10 +77,4 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   async getRefNames() {
     return this.configRefNames ?? []
   }
-
-  /**
-   * called to provide a hint that data tied to a certain region
-   * will not be needed for the foreseeable future and can be purged
-   * from caches, etc
-   */
 }

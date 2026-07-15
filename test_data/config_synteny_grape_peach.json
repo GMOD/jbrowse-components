@@ -45,7 +45,9 @@
       }
     }
   ],
-  "configuration": {},
+  "configuration": {
+    "disableAnalytics": true
+  },
   "connections": [],
   "defaultSession": {
     "id": "Afiay0eI1",
@@ -99,7 +101,7 @@
             "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false,
-            "showCytobandsSetting": true
+            "showCytobands": true
           },
           {
             "id": "test1_2",
@@ -121,7 +123,7 @@
             "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false,
-            "showCytobandsSetting": true
+            "showCytobands": true
           }
         ],
         "viewTrackConfigs": [],
@@ -1503,7 +1505,7 @@
             "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false,
-            "showCytobandsSetting": true
+            "showCytobands": true
           },
           {
             "id": "yE3sMpbNtJ",
@@ -1749,7 +1751,7 @@
             "trackSelectorType": "hierarchical",
             "trackLabels": "overlapping",
             "showCenterLine": false,
-            "showCytobandsSetting": true
+            "showCytobands": true
           }
         ],
         "viewTrackConfigs": [],
@@ -1790,7 +1792,6 @@
         "assemblyNames": ["grape", "peach"]
       }
     },
-
     {
       "type": "SyntenyTrack",
       "trackId": "grape_peach_synteny_mcscan_simple",

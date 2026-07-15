@@ -28,8 +28,16 @@ import type { MismatchCallback } from './mismatchCallback.ts'
  * @param seqLength - Length of sequence
  * @param md - MD tag as byte array (or undefined)
  * @param qual - Quality scores (or undefined)
- * @param ref - Reference sequence for comparison when no MD tag
+ * @param ref - Reference sequence for comparison when no MD tag. May be a
+ *   shared region-wide string covering many reads; `refOffset` locates this
+ *   read's start within it (avoids slicing a substring per read).
  * @param callback - Called for each mismatch/indel/clip
+ * @param refOffset - Index in `ref` of this read's first reference base
+ * @param windowLo - Read-relative reference offset (roffset space) of the
+ *   viewport's left edge. Ops/bases fully left of it are skipped so a
+ *   whole-chromosome contig alignment only walks the visible slice of its CIGAR
+ *   (and only needs `ref` covering that slice). Defaults to the whole read.
+ * @param windowHi - Read-relative reference offset of the viewport's right edge.
  */
 export function forEachMismatchNumeric(
   cigar: ArrayLike<number>,
@@ -39,28 +47,41 @@ export function forEachMismatchNumeric(
   qual: ArrayLike<number> | null | undefined,
   ref: string | undefined,
   callback: MismatchCallback,
+  refOffset = 0,
+  windowLo = Number.NEGATIVE_INFINITY,
+  windowHi = Number.POSITIVE_INFINITY,
 ) {
   // Fast path for reads with no sequence (e.g. secondary alignments with SEQ='*')
   if (seqLength === 0) {
     let roffset = 0
     for (let i = 0, l = cigar.length; i < l; i++) {
       const packed = cigar[i]!
-      const len = packed >> 4
+      const len = packed >>> 4
       const op = packed & 0xf
       if ((1 << op) & CIGAR_M_EQ_MASK) {
         roffset += len
       } else if (op === CIGAR_I) {
-        callback(INSERTION_TYPE, roffset, 0, '*', -1, 0, len)
+        if (roffset >= windowLo && roffset < windowHi) {
+          callback(INSERTION_TYPE, roffset, 0, '*', -1, 0, len)
+        }
       } else if (op === CIGAR_D) {
-        callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
+        if (roffset < windowHi && roffset + len > windowLo) {
+          callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
+        }
         roffset += len
       } else if (op === CIGAR_N) {
-        callback(SKIP_TYPE, roffset, len, 'N', -1, 0, 0)
+        if (roffset < windowHi && roffset + len > windowLo) {
+          callback(SKIP_TYPE, roffset, len, 'N', -1, 0, 0)
+        }
         roffset += len
       } else if (op === CIGAR_S) {
-        callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+        if (roffset >= windowLo && roffset < windowHi) {
+          callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+        }
       } else if (op === CIGAR_H) {
-        callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+        if (roffset >= windowLo && roffset < windowHi) {
+          callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+        }
       }
     }
     return
@@ -89,7 +110,7 @@ export function forEachMismatchNumeric(
 
   for (let i = 0, l = cigar.length; i < l; i++) {
     const packed = cigar[i]!
-    const len = packed >> 4
+    const len = packed >>> 4
     const op = packed & 0xf
 
     if ((1 << op) & CIGAR_M_EQ_MASK) {
@@ -108,19 +129,22 @@ export function forEachMismatchNumeric(
             mdMatchRemaining = 0
 
             if (mdIdx < mdLength && md[mdIdx]! >= 65 && md[mdIdx]! <= 90) {
-              const seqIdx = soffset + localOffset
-              const sb = numericSeq[seqIdx >> 1]!
-              const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
+              const pos = roffset + localOffset
+              if (pos >= windowLo && pos < windowHi) {
+                const seqIdx = soffset + localOffset
+                const sb = numericSeq[seqIdx >> 1]!
+                const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
 
-              callback(
-                MISMATCH_TYPE,
-                roffset + localOffset,
-                1,
-                SEQRET[nibble]!,
-                hasQual ? qual[seqIdx]! : -1,
-                md[mdIdx],
-                0,
-              )
+                callback(
+                  MISMATCH_TYPE,
+                  pos,
+                  1,
+                  SEQRET[nibble]!,
+                  hasQual ? qual[seqIdx]! : -1,
+                  md[mdIdx],
+                  0,
+                )
+              }
 
               mdIdx++
               localOffset++
@@ -141,12 +165,18 @@ export function forEachMismatchNumeric(
           }
         }
       } else if (ref) {
-        for (let j = 0; j < len; j++) {
+        // Only compare bases whose reference position falls in the viewport
+        // window. A whole-chromosome contig has M ops totalling ~250M bases;
+        // without this clip every one is compared (and `ref` would have to
+        // cover the whole chromosome). windowLo/Hi are in roffset space.
+        const jLo = windowLo > roffset ? windowLo - roffset : 0
+        const jHi = windowHi < roffset + len ? windowHi - roffset : len
+        for (let j = jLo; j < jHi; j++) {
           const seqIdx = soffset + j
           const sb = numericSeq[seqIdx >> 1]!
           const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
           const seqBaseCode = SEQRET_NUMERIC_DECODER[nibble]!
-          const refCharCode = ref.charCodeAt(roffset + j)
+          const refCharCode = ref.charCodeAt(refOffset + roffset + j)
           // Compare case-insensitively (| 0x20 converts uppercase to lowercase)
           if (seqBaseCode !== (refCharCode | 0x20)) {
             callback(
@@ -190,10 +220,14 @@ export function forEachMismatchNumeric(
         }
         insertedBases = bases.join('')
       }
-      callback(INSERTION_TYPE, roffset, 0, insertedBases, -1, 0, len)
+      if (roffset >= windowLo && roffset < windowHi) {
+        callback(INSERTION_TYPE, roffset, 0, insertedBases, -1, 0, len)
+      }
       soffset += len
     } else if (op === CIGAR_D) {
-      callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
+      if (roffset < windowHi && roffset + len > windowLo) {
+        callback(DELETION_TYPE, roffset, len, '*', -1, 0, 0)
+      }
 
       // eslint-disable-next-line @typescript-eslint/no-confusing-non-null-assertion
       if (hasMD && mdIdx < mdLength && md[mdIdx]! === 94) {
@@ -214,7 +248,9 @@ export function forEachMismatchNumeric(
       }
       roffset += len
     } else if (op === CIGAR_N) {
-      callback(SKIP_TYPE, roffset, len, 'N', -1, 0, 0)
+      if (roffset < windowHi && roffset + len > windowLo) {
+        callback(SKIP_TYPE, roffset, len, 'N', -1, 0, 0)
+      }
       roffset += len
     } else if (op === CIGAR_X) {
       for (let j = 0; j < len; j++) {
@@ -242,26 +278,33 @@ export function forEachMismatchNumeric(
           }
         } else if (ref) {
           // No MD tag - get reference base from ref string
-          altbaseCode = ref.charCodeAt(roffset + j)
+          altbaseCode = ref.charCodeAt(refOffset + roffset + j)
         }
 
-        callback(
-          MISMATCH_TYPE,
-          roffset + j,
-          1,
-          SEQRET[nibble]!,
-          hasQual ? qual[seqIdx]! : -1,
-          altbaseCode,
-          0,
-        )
+        const pos = roffset + j
+        if (pos >= windowLo && pos < windowHi) {
+          callback(
+            MISMATCH_TYPE,
+            pos,
+            1,
+            SEQRET[nibble]!,
+            hasQual ? qual[seqIdx]! : -1,
+            altbaseCode,
+            0,
+          )
+        }
       }
       soffset += len
       roffset += len
     } else if (op === CIGAR_S) {
-      callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+      if (roffset >= windowLo && roffset < windowHi) {
+        callback(SOFTCLIP_TYPE, roffset, 1, `S${len}`, -1, 0, len)
+      }
       soffset += len
     } else if (op === CIGAR_H) {
-      callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+      if (roffset >= windowLo && roffset < windowHi) {
+        callback(HARDCLIP_TYPE, roffset, 1, `H${len}`, -1, 0, len)
+      }
     }
   }
 }

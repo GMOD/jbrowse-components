@@ -1,4 +1,4 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe } from '@jbrowse/core/util'
@@ -6,8 +6,10 @@ import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
+import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 
+import { resolveSessionName } from './sessionName.ts'
 import corePlugins from '../../corePlugins.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
@@ -27,14 +29,29 @@ export async function loadPluginManager(configPath: string) {
   return pm
 }
 
+// Tear down a plugin manager that is being replaced: terminate its RPC worker
+// threads and destroy the root model so its autorun disposers (e.g. autosave)
+// fire. Without this, every session switch / plugin reload orphans the previous
+// worker pool and leaves a live autosave loop holding the old tree.
+export function destroyPluginManager(pluginManager: PluginManager) {
+  const rootModel = pluginManager.rootModel as DesktopRootModel | undefined
+  if (rootModel && isAlive(rootModel)) {
+    rootModel.rpcManager.destroy()
+    destroy(rootModel)
+  }
+}
+
 export async function createPluginManager(
   configSnapshot: JBrowseConfig,
   initialTimestamp = Date.now(),
 ) {
-  const pluginLoader = new PluginLoader(configSnapshot.plugins, {
-    fetchESM: url => import(/* webpackIgnore:true */ url),
-    fetchCJS,
-  })
+  const pluginLoader = new PluginLoader(
+    dropVendoredPlugins(configSnapshot.plugins ?? []),
+    {
+      fetchESM: url => import(/* webpackIgnore:true */ url),
+      fetchCJS,
+    },
+  )
   pluginLoader.installGlobalReExports(window)
   const runtimePlugins = await pluginLoader.load(window.location.href)
   const pluginManager = new PluginManager([
@@ -93,8 +110,6 @@ export async function createPluginManager(
 
   const rootModel = JBrowseRootModel.create({ jbrowse }, { pluginManager })
   const config = rootModel.jbrowse.configuration
-  const { rpc } = config
-  rpc.defaultDriver.set('WebWorkerRpcDriver')
 
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
@@ -107,7 +122,17 @@ export async function createPluginManager(
     writeGAAnalytics(rootModel, initialTimestamp)
   }
 
-  rootModel.setDefaultSession()
+  // Set the session preserving its existing name rather than calling
+  // setDefaultSession(), which re-appends a fresh timestamp every load and made
+  // names grow without bound (doubled on first launch, then one extra timestamp
+  // per reopen). See resolveSessionName.
+  const defaultSession = rootModel.jbrowse.defaultSession as {
+    name?: string
+  } & Record<string, unknown>
+  rootModel.setSession({
+    ...defaultSession,
+    name: resolveSessionName(defaultSession),
+  })
 
   return pluginManager
 }

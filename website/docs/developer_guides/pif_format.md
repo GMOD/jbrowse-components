@@ -1,5 +1,4 @@
 ---
-id: pif_format
 title: PIF (Pairwise Indexed Format)
 description:
   Tabix-indexed pairwise alignment format for large-scale synteny data
@@ -9,7 +8,7 @@ guide_category: Advanced topics
 PIF (Pairwise Indexed Format) is a tabix-indexed variant of
 [PAF](https://github.com/lh3/minimap2/blob/master/doc/minimap2.1). Unlike plain
 PAF, which must be loaded entirely into memory, PIF splits each alignment into
-two indexed records — one per genome — so JBrowse fetches only the alignments
+two indexed records (one per genome), so JBrowse fetches only the alignments
 overlapping the current viewport, and can query from either assembly's
 perspective.
 
@@ -44,10 +43,30 @@ in either assembly with a single region query.
 PAF CIGARs are from the query's perspective. The q-line adjusts them so `I`/`D`
 operations are consistent with the q-line's column order (query is primary):
 
-- **Plus strand**: swap all `I` and `D` operations
-- **Minus strand**: reverse the CIGAR string and swap `I` and `D` operations
+- On the plus strand, swap all `I` and `D` operations
+- On the minus strand, reverse the CIGAR string and swap `I` and `D` operations
 
 The t-line carries the original PAF CIGAR unchanged.
+
+### Identity tag
+
+`make-pif` enriches each alignment with a `de:f:` tag (the gap-compressed
+per-base divergence used by minimap2) when the CIGAR contains `=`/`X` operators
+and no `de:f:` tag is already present. The renderer reads this tag as
+`identity = 1 - de`, falling back to `numMatches / blockLen` when the tag is
+absent.
+
+For accurate identity, run minimap2 with `--eqx` so the CIGAR distinguishes
+matches (`=`) from mismatches (`X`). Without `--eqx` the CIGAR uses ambiguous
+`M` operators and `make-pif` leaves identity to be approximated from the
+standard PAF columns.
+
+This matches the approach used by
+[rustybam](https://github.com/mrvollger/rustybam) (`rb stats --paf` writes the
+same `perID_by_all` quantity) and [SVbyEye](https://github.com/daewoooo/SVbyEye)
+(which derives per-bin identity from the CIGAR for its miropeats-style ribbons).
+Storing identity at file-build time means coloring at view time is a cheap
+column lookup.
 
 ### Tabix index parameters
 
@@ -78,7 +97,9 @@ jbrowse make-pif input.paf --csi
 Full workflow from two genome assemblies:
 
 ```bash
-minimap2 -cx asm5 reference.fa query.fa > alignment.paf
+# --eqx makes minimap2 emit =/X in the CIGAR so make-pif can compute accurate
+# per-alignment identity (stored as a de:f: tag in the PIF).
+minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
 jbrowse make-pif alignment.paf
 jbrowse add-assembly reference.fa --out $OUT --load copy
 jbrowse add-assembly query.fa --out $OUT --load copy
@@ -87,6 +108,50 @@ jbrowse add-track alignment.pif.gz -a query,reference --out $OUT --load copy
 
 `jbrowse add-track` detects the `.pif.gz` extension and automatically configures
 the `PairwiseIndexedPAFAdapter`.
+
+### Level-of-detail coarse tier
+
+By default `make-pif` also writes a second, no-CIGAR "coarse" tier of the same
+alignments (rows prefixed `T`/`Q` instead of `t`/`q`). At low zoom (whole genome
+or whole chromosome), the `PairwiseIndexedPAFAdapter` serves this tier
+automatically (controlled by the
+[`coarseBpPerPxThreshold`](/docs/config/pairwiseindexedpafadapter/#slot-coarsebpperpxthreshold)
+slot, in bp/px), so the renderer draws clean ribbons without downloading or
+parsing megabyte-scale CIGAR strings. Zooming in switches back to the fine
+`t`/`q` tier for per-base detail. No configuration is needed; the view's "Level
+of detail" menu defaults to `auto`.
+
+```bash
+# coarse tier is on by default
+jbrowse make-pif input.paf
+
+# tune the gap (bp) at which a coarse row is split to keep its bbox tight
+jbrowse make-pif input.paf --coarse 50000
+
+# disable the coarse tier (fine t/q tier only)
+jbrowse make-pif input.paf --no-coarse
+```
+
+### Optional preprocessing with rustybam
+
+For large or messy PAFs (millions of short alignments, soft-clipped overhangs,
+inconsistent strand orientation),
+[rustybam](https://github.com/mrvollger/rustybam) can clean the alignments
+before `make-pif`:
+
+```bash
+minimap2 -cx asm5 --eqx reference.fa query.fa \
+  | rb trim-paf \
+  | rb break-paf --max-size 10000 \
+  | rb orient \
+  | rb filter --paired-len 1000 \
+  | jbrowse make-pif /dev/stdin --out alignment.pif.gz
+```
+
+This is entirely optional. The rustybam-produced tags pass through `make-pif`
+and are available to the renderer, but `make-pif` alone is sufficient. The
+[SafFire](https://github.com/mrvollger/SafFire) viewer documents the rationale
+for each rustybam step.
 
 ## JBrowse configuration
 
@@ -122,3 +187,13 @@ Use `"indexType": "CSI"` if you created the index with `--csi`.
 
 PAFAdapter is simpler to set up and fine for small alignments. For large
 whole-genome comparisons PIF is strongly preferred.
+
+## See also
+
+- Adapter config reference:
+  [PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) and
+  [PAFAdapter](/docs/config/pafadapter)
+- [Creating custom view types](/docs/developer_guides/creating_view) - the
+  dotplot and linear synteny views that render PIF data
+- [Synteny track](/docs/config_guides/synteny_track) - the user-facing config
+  guide for tracks that consume PIF/PAF data

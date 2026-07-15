@@ -1,10 +1,10 @@
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
-import { parseArgs } from 'util'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { parseArgs } from 'node:util'
 
 import cors from 'cors'
-import express from 'express'
+import express, { json, static as serveStatic } from 'express'
 
 import {
   generateKey,
@@ -16,7 +16,7 @@ import {
 import { debug, printHelp } from '../../utils.ts'
 
 import type { Request, Response } from 'express'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 
 export async function run(args?: string[]) {
   const options = {
@@ -46,12 +46,32 @@ export async function run(args?: string[]) {
 
   const description = 'Start up a small admin server for JBrowse configuration'
 
-  const examples = ['$ jbrowse admin-server', '$ jbrowse admin-server -p 8888']
+  const examples = [
+    '# start the admin server for the JBrowse install in the current directory',
+    '$ jbrowse admin-server',
+    '',
+    '# start on a specific port',
+    '$ jbrowse admin-server -p 8888',
+    '',
+    '# point at a specific JBrowse installation directory',
+    '$ jbrowse admin-server --root /path/to/jb2/',
+    '',
+    '# raise the body size limit for very large config updates',
+    '$ jbrowse admin-server --bodySizeLimit 100mb',
+  ]
+
+  const notes =
+    'The admin-server lets a browser session write changes back to ' +
+    'config.json on disk, authorized by a one-time key printed in the ' +
+    'startup URL. It is meant for local configuration only: run it on a ' +
+    'trusted machine and do not expose the port to untrusted networks or the ' +
+    'public internet.'
 
   if (flags.help) {
     printHelp({
       description,
       examples,
+      notes,
       usage: 'jbrowse admin-server [options]',
       options,
     })
@@ -64,19 +84,9 @@ export async function run(args?: string[]) {
   const port = parsePort({ portStr: flags.port })
   const app = express()
 
-  app.use(express.static(baseDir))
+  app.use(serveStatic(baseDir))
   app.use(cors())
-  app.use(express.json({ limit: bodySizeLimit }))
-
-  app.use((err: unknown, _req: Request, res: Response, next: () => void) => {
-    if (err) {
-      console.error('Server error:', err)
-      res.status(500).setHeader('Content-Type', 'text/plain')
-      res.send('Internal Server Error')
-    } else {
-      next()
-    }
-  })
+  app.use(json({ limit: bodySizeLimit }))
 
   const key = generateKey()
   const keyPath = path.join(os.tmpdir(), `jbrowse-admin-${key}`)
@@ -95,5 +105,18 @@ export async function run(args?: string[]) {
   const serverRef: { current: Server | null } = { current: null }
 
   setupRoutes({ app, baseDir, outFile, key, serverRef })
+
+  // error-handling middleware must be registered after the routes it guards so
+  // it can catch errors thrown from them (and from the json() body parser)
+  app.use((err: unknown, _req: Request, res: Response, next: () => void) => {
+    if (err) {
+      console.error('Server error:', err)
+      res.status(500).setHeader('Content-Type', 'text/plain')
+      res.send('Internal Server Error')
+    } else {
+      next()
+    }
+  })
+
   startServer({ app, port, key, outFile, keyPath, serverRef })
 }

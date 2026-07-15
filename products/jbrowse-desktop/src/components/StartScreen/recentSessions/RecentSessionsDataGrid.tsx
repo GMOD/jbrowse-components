@@ -5,10 +5,11 @@ import { measureGridWidth } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { formatDistanceToNow } from 'date-fns'
 
 import DateSinceLastUsed from './DateSinceLastUsed.tsx'
 import SessionNameCell from './SessionNameCell.tsx'
+import { formatLastModified } from './formatLastModified.ts'
+import { selectedFromModel } from './selectedFromModel.ts'
 import { useInnerDims } from '../availableGenomes/util.ts'
 
 import type { RecentSessionData } from '../types.ts'
@@ -25,22 +26,22 @@ const useStyles = makeStyles()({
   },
 })
 
-const oneDayMs = 24 * 60 * 60 * 1000
-
-function RecentSessionsList({
+function RecentSessionsDataGrid({
   launch,
   sessions,
   setSelectedSessions,
   setSessionToRename,
-  favorites,
+  setSessionsToDelete,
+  isFavorite,
   toggleFavorite,
   addToQuickstartList,
 }: {
   launch: (path: string) => Promise<void>
   setSessionToRename: (arg: RecentSessionData) => void
+  setSessionsToDelete: (arg: RecentSessionData[]) => void
   setSelectedSessions: (arg: RecentSessionData[]) => void
   sessions: RecentSessionData[]
-  favorites: string[]
+  isFavorite: (sessionPath: string) => boolean
   toggleFavorite: (sessionPath: string) => void
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
@@ -49,16 +50,8 @@ function RecentSessionsList({
   const [now] = useState(() => Date.now())
 
   const rows = sessions.map(session => {
-    const { updated } = session
-    const date = updated !== undefined ? new Date(updated) : null
-    const showDateTooltip = date !== null && now - date.getTime() < oneDayMs
-    const lastModified =
-      date === null
-        ? 'Unknown'
-        : showDateTooltip
-          ? formatDistanceToNow(date, { addSuffix: true })
-          : date.toLocaleString('en-US')
-    return { ...session, showDateTooltip, lastModified }
+    const { label, tooltip } = formatLastModified(session.updated, now)
+    return { ...session, lastModified: label, lastModifiedTooltip: tooltip }
   })
 
   const nameWidth =
@@ -72,8 +65,6 @@ function RecentSessionsList({
       { stripHTML: true },
     ) + 40
 
-  const favs = new Set(favorites)
-
   const columns = [
     {
       field: 'name',
@@ -83,10 +74,11 @@ function RecentSessionsList({
         <SessionNameCell
           value={String(value)}
           row={row}
-          isFavorite={favs.has(row.path)}
+          isFavorite={isFavorite(row.path)}
           launch={launch}
           toggleFavorite={toggleFavorite}
           setSessionToRename={setSessionToRename}
+          setSessionsToDelete={setSessionsToDelete}
           addToQuickstartList={addToQuickstartList}
         />
       ),
@@ -105,6 +97,10 @@ function RecentSessionsList({
       field: 'lastModified',
       headerName: 'Last modified',
       width: lastModifiedWidth,
+      // sort/filter on the numeric timestamp, not the formatted label (which
+      // would order "a minute ago" before "2 days ago" alphabetically)
+      valueGetter: (_value: unknown, row: RecentSessionData) =>
+        row.updated ?? 0,
       renderCell: ({ row }: GridRenderCellParams) => (
         <DateSinceLastUsed row={row} />
       ),
@@ -119,7 +115,7 @@ function RecentSessionsList({
           disableRowSelectionOnClick
           getRowId={row => row.path}
           onRowSelectionModelChange={(model: GridRowSelectionModel) => {
-            setSelectedSessions(sessions.filter(s => model.ids.has(s.path)))
+            setSelectedSessions(selectedFromModel(model, sessions))
           }}
           rows={rows}
           rowHeight={25}
@@ -131,4 +127,4 @@ function RecentSessionsList({
   )
 }
 
-export default RecentSessionsList
+export default RecentSessionsDataGrid

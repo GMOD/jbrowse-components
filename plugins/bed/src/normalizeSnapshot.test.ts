@@ -21,12 +21,25 @@ describe('BedAdapter normalizeSnapshot', () => {
 })
 
 describe('BedTabixAdapter normalizeSnapshot', () => {
-  test('expands uri shorthand to bedGzLocation + index', () => {
+  test('expands uri shorthand to bedGzLocation + tbi index', () => {
     expect(
       normalizeBedTabixSnapshot({ type: 'BedTabixAdapter', uri: 'my.bed.gz' }),
     ).toMatchObject({
       bedGzLocation: { uri: 'my.bed.gz' },
-      index: { location: { uri: 'my.bed.gz.tbi' } },
+      index: { indexType: 'TBI', location: { uri: 'my.bed.gz.tbi' } },
+    })
+  })
+
+  test('expands uri shorthand with csi:true to csi index', () => {
+    expect(
+      normalizeBedTabixSnapshot({
+        type: 'BedTabixAdapter',
+        uri: 'my.bed.gz',
+        csi: true,
+      }),
+    ).toMatchObject({
+      bedGzLocation: { uri: 'my.bed.gz' },
+      index: { indexType: 'CSI', location: { uri: 'my.bed.gz.csi' } },
     })
   })
 

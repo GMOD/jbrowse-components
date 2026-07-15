@@ -11,6 +11,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  CLOUDFRONT_DISTRIBUTION_ID: E13LGELJOT4GQO
+
 jobs:
   createrelease:
     name: Create release tag and JBrowse web release artifacts
@@ -18,27 +21,26 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '22'
-          cache: 'pnpm'
+      - uses: ./.github/actions/setup
       - name: Set release version
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> "$GITHUB_ENV"
       - name: Build jbrowse-web
-        run: |
-          echo $RELEASE_VERSION
-          cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
-          cd build
-          zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
+        uses: ./.github/actions/build-jbrowse-web
+      # Upload the pristine build (before the versioned zip is added to it) so
+      # buildjbrowseweb can deploy the same bytes to latest/ without rebuilding.
+      - name: Upload jbrowse-web build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: jbrowse-web-build
+          path: products/jbrowse-web/build
+          include-hidden-files: true
+          retention-days: 1
+      - name: Zip jbrowse-web build
+        working-directory: products/jbrowse-web/build
+        run: zip -r "jbrowse-web-${RELEASE_VERSION}.zip" .
       - name: Create draft release with jbrowse-web artifact
         run: |
           gh release create "${RELEASE_VERSION}" \
@@ -53,28 +55,27 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    container:
-      image: docker://node:22-bullseye
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Install pnpm
-        run: npm install -g pnpm@10
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      # install: false — pnpm install must run after the Wine/native build deps
+      # below so native modules rebuild against them.
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
       - name: Setup java
-        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        uses: actions/setup-java@0f481fcb613427c0f801b606911222b5b6f3083a # v5.5.0
         with:
           # eclipse 'temurin' openjdk https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#Selecting-a-Java-distribution
           distribution: 'temurin'
           java-version: '21'
-      - name: Install wine
-        # https://wiki.debian.org/Wine
+      - name: Install build deps and Wine
         run: |
-          dpkg --add-architecture i386
-          apt update
-          apt install --yes wine wine32 wine64 libwine libwine:i386 fonts-wine
+          sudo dpkg --add-architecture i386
+          sudo apt update
+          sudo apt install -y wine wine32 wine64 libwine libwine:i386 fonts-wine \
+            python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install NSIS under Wine
         env:
           WINEPREFIX: /tmp/wine
@@ -82,33 +83,22 @@ jobs:
           # Initialize Wine prefix first (suppress GUI prompts)
           WINEDLLOVERRIDES="mscoree,mshtml=" wineboot --init
           # Download and install NSIS silently
-          wget -q https://downloads.sourceforge.net/project/nsis/NSIS%203/3.10/nsis-3.10-setup.exe -O /tmp/nsis-setup.exe
+          wget -q https://downloads.sourceforge.net/project/nsis/NSIS%203/3.12/nsis-3.12-setup.exe -O /tmp/nsis-setup.exe
           wine /tmp/nsis-setup.exe /S
           rm /tmp/nsis-setup.exe
           # Verify NSIS installation
           wine "C:\\Program Files (x86)\\NSIS\\makensis.exe" /VERSION
-      - name: Install gh CLI
-        run: |
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          apt update
-          apt install --yes gh
-      - name: Install build deps
-        run: |
-          apt install --yes python3 make gcc libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-      # We are just cloning the esigner repo instead of calling their github
-      # action directly https://github.com/SSLcom/esigner-codesign
       - name: Get ssl.com esigner zip file and unzip
+        # We use the tool directly rather than the GitHub Action: https://github.com/SSLcom/esigner-codesign
         run: |
           mkdir products/jbrowse-desktop/code_signer
           cd products/jbrowse-desktop/code_signer
-          wget  https://www.ssl.com/download/codesigntool-for-linux-and-macos -O out.zip
+          wget https://www.ssl.com/download/codesigntool-for-linux-and-macos -O out.zip
           unzip out.zip
           chmod +x CodeSignTool.sh
           cd ../../../
-
-      - name: Mark repo as safe for git
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
       - name: Build app
         env:
           WINEPREFIX: /tmp/wine
@@ -117,8 +107,7 @@ jobs:
           WINDOWS_SIGN_CREDENTIAL_ID: ${{ secrets.WINDOWS_SIGN_CREDENTIAL_ID }}
           WINDOWS_SIGN_USER_TOTP: ${{ secrets.WINDOWS_SIGN_USER_TOTP }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pnpm build-electron:win --publish always
+        run: pnpm release-electron:win
         working-directory: products/jbrowse-desktop
 
   buildmac:
@@ -128,17 +117,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      # install: false — pnpm install must run after the brew native build deps
+      # below so native modules rebuild against them.
+      - uses: ./.github/actions/setup
         with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '22'
-          cache: 'pnpm'
+          install: 'false'
       - name: Install build dependencies
         run: |
           brew install pkg-config cairo pango libpng jpeg giflib librsvg
@@ -164,9 +150,13 @@ jobs:
           APPLE_ID: ${{ secrets.APPLEID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLEIDPASS }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pnpm build-electron:mac --publish always
+        run: pnpm release-electron:mac
         working-directory: products/jbrowse-desktop
+      - name: Clean up keychain
+        if: always()
+        run:
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
+
   buildlinux:
     needs: createrelease
     name: Build Linux desktop app
@@ -174,17 +164,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      # install: false — pnpm install must run after the native build deps below
+      # so native modules rebuild against them.
+      - uses: ./.github/actions/setup
         with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '22'
-          cache: 'pnpm'
+          install: 'false'
       - name: Install build dependencies
         run: |
           sudo apt update
@@ -194,34 +181,25 @@ jobs:
       - name: Build Linux app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          pnpm build-electron:linux --publish always
+        run: pnpm release-electron:linux
         working-directory: products/jbrowse-desktop
 
   buildjbrowseweb:
-    name: Deploy jbrowse-web and storybooks to latest folder on tag
+    name: Deploy jbrowse-web to latest folder on tag
+    # Reuse the build createrelease already produced instead of rebuilding.
+    needs: createrelease
+    # Only stable tags update the canonical latest/ folder; a prerelease tag
+    # (v4.4.0-beta.1 etc, which carries a '-') must not overwrite it.
+    if: ${{ !contains(github.ref_name, '-') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Download jbrowse-web build
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-      - name: Build jbrowse-web
-        run: |
-          echo $RELEASE_VERSION
-          cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
-          cd ../../
+          name: jbrowse-web-build
+          path: products/jbrowse-web/build
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
+        uses: aws-actions/configure-aws-credentials@517a711dbcd0e402f90c77e7e2f81e849156e31d # v6.2.2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -231,4 +209,4 @@ jobs:
           cd products/jbrowse-web/build && zip -r jbrowse-web-latest.zip . && cd -
           cp products/jbrowse-web/build/test_data/config.json products/jbrowse-web/build/config.json
           aws s3 sync products/jbrowse-web/build s3://jbrowse.org/code/jb2/latest/
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/latest/*"
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/latest/*"

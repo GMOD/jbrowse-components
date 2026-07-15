@@ -1,26 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
   isAbortException,
-  useLocalStorage,
+  statusFraction,
+  statusProgressLabel,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  TextField,
-  Typography,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import SamplesPerPixelField from './SamplesPerPixelField.tsx'
+import { useClusterSamplingOptions } from './clusterOptions.ts'
+import { runWiggleClustering } from '../../runWiggleClustering.ts'
+
 import type { ReducedModel } from './types.ts'
-import type { Source } from '../../../util.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -33,16 +32,25 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
   children: React.ReactNode
   handleClose: () => void
 }) {
-  const [progress, setProgress] = useState('')
+  const [status, setStatus] = useState<RpcStatus>()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
   const [stopToken, setStopToken] = useState<StopToken>()
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
-    'cluster-samplesPerPixel',
-    '1',
-  )
+  const { showAdvanced, setShowAdvanced, samplesPerPixel, setSamplesPerPixel } =
+    useClusterSamplingOptions()
 
+  // Abort an in-flight clustering RPC if the dialog is dismissed (title-bar X /
+  // Escape) — the explicit Cancel button does this too, but closing any other
+  // way would otherwise leave the RPC running. A ref mirrors the active token
+  // so the unmount cleanup sees its latest value without re-subscribing.
+  const stopTokenRef = useRef<StopToken>(undefined)
+  stopTokenRef.current = stopToken
+  useEffect(
+    () => () => {
+      stopStopToken(stopTokenRef.current)
+    },
+    [],
+  )
   return (
     <>
       <DialogContent>
@@ -57,37 +65,33 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
             {showAdvanced ? 'Hide advanced options' : 'Show advanced options'}
           </Button>
           {showAdvanced ? (
-            <div style={{ marginTop: 20 }}>
-              <Typography>
-                This procedure samples the data at each 'pixel' across the
-                visible by default
-              </Typography>
-              <TextField
-                label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
-                variant="outlined"
-                size="small"
-                value={samplesPerPixel}
-                onChange={event => {
-                  setSamplesPerPixel(event.target.value)
-                }}
-              />
-            </div>
+            <SamplesPerPixelField
+              value={samplesPerPixel}
+              onChange={val => {
+                setSamplesPerPixel(val)
+              }}
+            />
           ) : null}
         </div>
         <div>
           {loading ? (
             <div style={{ padding: 50 }}>
-              <span>{progress || 'Loading...'}</span>
+              <span>{statusProgressLabel(status) || 'Loading...'}</span>
               <Button
+                variant="contained"
                 onClick={() => {
                   stopStopToken(stopToken)
                 }}
               >
                 Stop
               </Button>
+              <StatusProgressBar
+                fraction={statusFraction(status)}
+                style={{ marginTop: 8 }}
+              />
             </div>
           ) : null}
-          {error ? <ErrorMessage error={error} /> : null}
+          {error ? <ErrorBanner error={error} /> : null}
         </div>
       </DialogContent>
       <DialogActions>
@@ -97,59 +101,33 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
           onClick={async () => {
             try {
               setError(undefined)
-              setProgress('Initializing')
-              setLoading(true)
               const view = getContainingView(model) as LinearGenomeViewModel
+              const { sourcesWithoutLayout } = model
               if (!view.initialized) {
-                return
-              }
-              const { rpcManager } = getSession(model)
-              const { sourcesWithoutLayout, adapterConfig } = model
-              if (sourcesWithoutLayout) {
-                const sessionId = getRpcSessionId(model)
+                setError(
+                  new Error(
+                    'The view is not initialized yet, please wait and try again',
+                  ),
+                )
+              } else if (!sourcesWithoutLayout.length) {
+                setError(new Error('No subtracks available to cluster'))
+              } else {
+                setStatus('Initializing')
+                setLoading(true)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
-                const ret = (await rpcManager.call(
-                  sessionId,
-                  'MultiWiggleClusterScoreMatrix',
-                  {
-                    regions: view.dynamicBlocks.contentBlocks,
-                    sources: sourcesWithoutLayout,
-                    sessionId,
-                    adapterConfig,
-                    stopToken,
-                    bpPerPx: view.bpPerPx / +samplesPerPixel,
-                    statusCallback: (arg: string) => {
-                      setProgress(arg)
-                    },
+                await runWiggleClustering({
+                  model,
+                  rpcManager: getSession(model).rpcManager,
+                  sessionId: getRpcSessionId(model),
+                  samplesPerPixel,
+                  stopToken,
+                  statusCallback: (arg: RpcStatus) => {
+                    setStatus(arg)
                   },
-                )) as { order: number[]; tree: string }
-
-                // Preserve color and other layout customizations
-                const currentLayout = model.layout?.length
-                  ? model.layout
-                  : sourcesWithoutLayout
-                const sourcesByName = Object.fromEntries(
-                  currentLayout.map((s: Source) => [s.name, s]),
-                )
-
-                model.setLayout(
-                  ret.order.map(idx => {
-                    const sourceItem = sourcesWithoutLayout[idx]
-                    if (!sourceItem) {
-                      throw new Error(`out of bounds at ${idx}`)
-                    }
-                    // Preserve customizations from current layout
-                    return {
-                      ...sourceItem,
-                      ...sourcesByName[sourceItem.name],
-                    }
-                  }),
-                  false,
-                )
-                model.setClusterTree(ret.tree)
+                })
+                handleClose()
               }
-              handleClose()
             } catch (e) {
               if (!isAbortException(e) && isAlive(model)) {
                 console.error(e)
@@ -157,8 +135,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               }
             } finally {
               setLoading(false)
-              setProgress('')
-              setStopToken('')
+              setStatus(undefined)
+              setStopToken(undefined)
             }
           }}
         >

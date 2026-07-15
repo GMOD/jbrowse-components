@@ -1,0 +1,140 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`gap in assembly1 1`] = `
+{
+  "colToGenomePos": [
+    100,
+    101,
+    102,
+    103,
+    104,
+  ],
+  "rows": [
+    ".....",
+    "...t.",
+  ],
+}
+`;
+
+exports[`includeInsertions - insertions at multiple positions 1`] = `
+{
+  "colToGenomePos": [
+    100,
+    -1,
+    101,
+    102,
+    -1,
+    103,
+    104,
+    105,
+  ],
+  "rows": [
+    "atcggtac",
+    "a-cg-tac",
+  ],
+}
+`;
+
+exports[`includeInsertions - insertions in multiple samples with different lengths 1`] = `
+{
+  "colToGenomePos": [
+    100,
+    101,
+    -1,
+    -1,
+    -1,
+    102,
+    103,
+    104,
+    105,
+  ],
+  "rows": [
+    "act--gtac",
+    "actttgtac",
+  ],
+}
+`;
+
+exports[`includeInsertions - single insertion in one sample 1`] = `
+{
+  "colToGenomePos": [
+    100,
+    101,
+    -1,
+    -1,
+    102,
+    103,
+    104,
+    105,
+  ],
+  "rows": [
+    "ac--gtac",
+    "acttgtac",
+  ],
+}
+`;
+
+exports[`includeInsertions with no insertions present 1`] = `
+{
+  "colToGenomePos": [
+    100,
+    101,
+    102,
+    103,
+    104,
+  ],
+  "rows": [
+    "acgta",
+    "ac-tt",
+  ],
+}
+`;
+
+exports[`includeInsertions=false ignores insertions 1`] = `
+{
+  "colToGenomePos": [
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+  ],
+  "rows": [
+    "acgtac",
+    "acgtac",
+  ],
+}
+`;
+
+exports[`no showAllLetters 1`] = `
+{
+  "colToGenomePos": [
+    100,
+    101,
+    102,
+    103,
+    104,
+  ],
+  "rows": [
+    ".....",
+    "..-.t",
+  ],
+}
+`;
+
+exports[`showAllLetters 1`] = `
+{
+  "colToGenomePos": [
+    100,
+    101,
+    102,
+    103,
+    104,
+  ],
+  "rows": [
+    "acgta",
+    "ac-tt",
+  ],
+}
+`;

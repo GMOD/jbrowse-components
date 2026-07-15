@@ -1,62 +1,54 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  getSession,
-  max,
-  measureText,
-  renderToStaticMarkup,
-} from '@jbrowse/core/util'
+import type { ReactNode } from 'react'
+
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { exportMargin } from '@jbrowse/core/svg/constants'
+import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { getEnv, getSession, max, measureText } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
+import SVGHighlights from './SVGHighlights.tsx'
 import SVGTracks from './SVGTracks.tsx'
-import { totalHeight } from './util.ts'
+import { getHeaderLayout, totalHeight } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ExportSvgOptions } from '../types.ts'
 
 type LGV = LinearGenomeViewModel
 
-// render LGV to SVG
 export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   await when(() => model.initialized)
   const {
     textHeight = 18,
-    headerHeight = 40,
-    rulerHeight = 50,
+    rulerHeight = 34,
     fontSize = 13,
-    cytobandHeight = 100,
     trackLabels = 'offset',
     themeName = 'default',
+    fontFamily,
     showGridlines = false,
     Wrapper = ({ children }) => children,
   } = opts
   const session = getSession(model)
-  const { allThemes } = session
-
-  const theme = allThemes?.()[themeName]
-  const jbrowseTheme = createJBrowseTheme(theme)
-  const { width, pinnedTracks, unpinnedTracks, showCytobands } = model
+  const theme = session.getActiveThemeOptions?.(themeName)
+  const { width, pinnedTracks, unpinnedTracks, effectiveShowCytobands } = model
   const visibleTracks = [...pinnedTracks, ...unpinnedTracks].filter(
     t => !t.minimized,
   )
-  const shift = 50
-  const c = +showCytobands * cytobandHeight
-  const offset = headerHeight + rulerHeight + c + 10
-  const height =
-    totalHeight(visibleTracks, textHeight, trackLabels) + offset + 100
+  const { tracksTop } = getHeaderLayout({
+    fontSize,
+    showCytobands: effectiveShowCytobands,
+    rulerHeight,
+  })
+  const offset = tracksTop
+  const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
+  const height = tracksHeight + offset + exportMargin
 
-  // Calculate maximum legend width across all displays
   const legendWidth = max(
-    visibleTracks.map(track => {
-      const display = track.displays[0]
-      return display?.svgLegendWidth?.(jbrowseTheme) ?? 0
-    }),
+    visibleTracks.map(track => track.displays[0]!.svgLegendWidth?.() ?? 0),
     0,
   )
 
@@ -65,69 +57,82 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   // `renderBaseLinearDisplaySvg`, GPU renderers await their data/layout
   // inside their own `renderSvg` implementations.
   const displayResults = await Promise.all(
-    visibleTracks.map(async track => {
-      const display = track.displays[0]
-      return {
-        track,
-        result: await display.renderSvg({ ...opts, theme, legendWidth }),
-      }
-    }),
+    visibleTracks.map(async track => ({
+      track,
+      result: await track.displays[0]!.renderSvg({
+        ...opts,
+        theme,
+        legendWidth,
+      }),
+    })),
   )
-  const trackLabelMaxLen =
-    max(
-      visibleTracks.map(t =>
-        measureText(getTrackName(t.configuration, session), fontSize),
-      ),
-      0,
-    ) + 40
-  const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
+  const trackLabelOffset =
+    trackLabels === 'left'
+      ? max(
+          visibleTracks.map(t =>
+            measureText(getTrackName(t.configuration, session), fontSize),
+          ),
+          0,
+        ) + 40
+      : 0
   const w = width + trackLabelOffset + legendWidth
-  const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
+
+  const { pluginManager } = getEnv(model)
+  const bookmarkHighlights = pluginManager.evaluateExtensionPoint(
+    'LinearGenomeView-HighlightSVGComponent',
+    [] as ReactNode[],
+    { model, height: tracksHeight },
+  )
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
-    <ThemeProvider theme={jbrowseTheme}>
-      <Wrapper>
-        <svg
-          width={w}
-          height={height}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, w + shift * 2, height].toString()}
-        >
-          <SVGBackground width={w} height={height} shift={shift} />
-          <g transform={`translate(${shift} 0)`}>
-            <g transform={`translate(${trackLabelOffset})`}>
-              <SVGHeader
-                model={model}
-                fontSize={fontSize}
-                rulerHeight={rulerHeight}
-                cytobandHeight={cytobandHeight}
-              />
-            </g>
-            {showGridlines ? (
-              <g transform={`translate(${trackLabelOffset} ${offset})`}>
-                <SVGGridlines model={model} height={tracksHeight} />
-              </g>
-            ) : null}
-            <g transform={`translate(0 ${offset})`}>
-              <SVGTracks
-                textHeight={textHeight}
-                fontSize={fontSize}
-                model={model}
-                displayResults={displayResults}
-                trackLabels={trackLabels}
-                trackLabelOffset={trackLabelOffset}
-                leftBuffer={shift}
-              />
-            </g>
+  return wrapSvgExport({
+    theme,
+    width: w,
+    height,
+    fontFamily,
+    Wrapper,
+    children: (
+      <g transform={`translate(${exportMargin} 0)`}>
+        <g transform={`translate(${trackLabelOffset})`}>
+          <SVGHeader
+            model={model}
+            fontSize={fontSize}
+            rulerHeight={rulerHeight}
+          />
+        </g>
+        {showGridlines ? (
+          <g transform={`translate(${trackLabelOffset} ${offset})`}>
+            <SVGGridlines model={model} height={tracksHeight} />
           </g>
-        </svg>
-      </Wrapper>
-    </ThemeProvider>,
-  )
+        ) : null}
+        <g transform={`translate(0 ${offset})`}>
+          <SVGTracks
+            textHeight={textHeight}
+            fontSize={fontSize}
+            model={model}
+            displayResults={displayResults}
+            trackLabels={trackLabels}
+            trackLabelOffset={trackLabelOffset}
+            leftBuffer={exportMargin}
+            legendWidth={legendWidth}
+          />
+        </g>
+        <g transform={`translate(${trackLabelOffset} ${offset})`}>
+          <SvgClipRect
+            id={`highlight-clip-${model.id}`}
+            width={width}
+            height={tracksHeight}
+          >
+            <SVGHighlights model={model} height={tracksHeight} />
+            {bookmarkHighlights}
+          </SvgClipRect>
+        </g>
+      </g>
+    ),
+  })
 }
 
 export { default as SVGGridlines } from './SVGGridlines.tsx'
 export { default as SVGRuler } from './SVGRuler.tsx'
 export { default as SVGTracks } from './SVGTracks.tsx'
+export { default as SVGView } from './SVGView.tsx'

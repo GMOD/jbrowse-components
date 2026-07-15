@@ -1,60 +1,61 @@
 ---
-id: quantitative_track
-title: Quantitative tracks
+title: Quantitative track
 description: BigWig/BedGraph signal tracks
 guide_category: Track types
 ---
 
-BigWig and BedGraph files store genome-wide quantitative signals — read depth,
-ChIP-seq enrichment, conservation scores, and more. JBrowse renders them as
-continuous tracks with several visual styles.
+BigWig and BedGraph files store genome-wide quantitative signals such as read
+depth, ChIP-seq enrichment, conservation scores, and more. JBrowse renders them
+as continuous tracks with several visual styles.
 
-## Renderer types
+## Rendering types
 
-Switch renderer via **Track menu → Renderer type**:
+The **Rendering type** option (the display's
+[`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
+slot) offers these styles:
 
-- **XY plot** (default) — filled bar chart; good for coverage and discrete peaks
-- **Line** — connects data points with a line; better for smooth signals and
-  fine resolution comparisons
+- XY plot - filled bar chart; good for coverage and discrete peaks
+- Density - a single-row heatmap where color intensity encodes the value;
+  compact for browsing many tracks at once
+- Line (step) - traces the tops of the bars as a stepped line; best for dense
+  binned data where each pixel is a real bin
+- Line (interpolated) - joins the midpoint of each data point straight to the
+  next; smoother for sparse or discrete signals where the stepped plateaus look
+  wrong
+- Scatter - draws individual points without filling; useful for sparse data and
+  seeing single values
 
-<Figure caption="XY plot (bar) renderer for a wiggle/BigWig track. Each bar represents the signal value at that position; colored mismatches relative to the reference appear in the coverage of alignment-derived BigWigs." src="/img/bigwig_xyplot.png" />
+Switch between them from the track menu's **Plot type** submenu.
 
-<Figure caption="Line renderer for the same track. The line renderer emphasizes the shape of the signal rather than amplitude, and is useful for comparing multiple overlapping tracks." src="/img/bigwig_line.png" />
+<Figure caption="The same BigWig rendered in every plot type at once — XY plot, Density, Line (step), Line (interpolated), and Scatter — so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
 
 ## Autoscale options
 
-**Track menu → Autoscale type** controls the Y-axis range:
+The **Autoscale type** option controls the Y-axis range:
 
-- **Global min–max** — scales to the full range of values in the file (good for
-  consistent comparison across sessions)
-- **Local min–max** — rescales to the current view (useful when navigating to
+- Local (default) - rescales to the current view (useful when navigating to
   regions with very different signal levels)
-- **Local +/− 3SD** — scales to three standard deviations of the local signal,
-  clipping outlier spikes; recommended for coverage tracks that have a few
-  anomalously high positions
+- Local ± 3σ - scales to three standard deviations of the local signal, clipping
+  outlier spikes; recommended for coverage tracks that have a few anomalously
+  high positions
 
 ## Other track options
 
-- **Track menu → Set log scale** — log-transforms the Y axis; useful when signal
-  spans several orders of magnitude
-- **Track menu → Fill mode** — toggles between filled bars and outline-only
-- **Track menu → Resolution** — manually increase or decrease the data
-  resolution; JBrowse auto-selects resolution based on view width but you can
+- Scale type - switch the Y axis between linear and log scaling; log is useful
+  when signal spans several orders of magnitude
+- Resolution - JBrowse auto-selects resolution from the view width; use this to
   override it
-- **Track menu → Set min/max score** — pin the Y axis to specific values for
-  side-by-side comparison across samples
+- Set min/max score - pin the Y axis to specific values for side-by-side
+  comparison across samples
 
 ## Viewing whole-genome coverage for CNV profiling
 
 To get a chromosome-scale view of copy-number changes:
 
-1. Open your BigWig track
-2. View menu → **Show all assembly regions**
-3. Track menu → **Autoscale type → Local +/- 3SD** (clips outlier spikes)
-4. Track menu → **Turn off histogram fill** (shows individual data points more
-   clearly at small scale)
-5. Track menu → **Resolution → Finer resolution** a few times until the profile
-   looks smooth
+- Open your BigWig track
+- Show all regions in the assembly to get the whole-genome overview
+- Set **Autoscale type** to **Local ± 3σ** to clip outlier spikes
+- Increase the **Resolution** a few times until the profile looks smooth
 
 Drag the bottom edge of the track down to make it taller.
 
@@ -62,3 +63,23 @@ Drag the bottom edge of the track down to make it taller.
 
 For tumor vs normal comparisons using two BigWig tracks on the same Y-axis, see
 [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track).
+
+Not every dip or spike in a coverage profile is a true copy-number change.
+Coverage is shaped by GC content, mappability, repeats, PCR bias, and (when
+mapping a divergent strain) hyper-divergent regions. For these reasons coverage
+is often uneven even in samples with no true copy-number changes.
+
+## See also
+
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) -
+  combine several BigWigs on a shared axis
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) - score-based variant
+  display
+- [SV visualization: working with large SVs](/docs/user_guides/sv_visualization#working-with-large-svs) -
+  using coverage tracks to survey copy-number changes at chromosome scale
+- [Quantitative track configuration](/docs/config_guides/quantitative_track) -
+  adapters and display slots
+- [LinearWiggleDisplay config schema](/docs/config/linearwiggledisplay) - every
+  display slot, autogenerated from source
+- [Gallery: coverage, copy number, and epigenomics](/gallery/#quantitative) -
+  live CNV, Hi-C, ChromHMM, and single-cell ATAC examples to open and explore

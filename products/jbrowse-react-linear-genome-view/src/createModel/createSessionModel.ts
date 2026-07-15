@@ -1,5 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import { EmbeddedSessionThemeMixin } from '@jbrowse/embedded-core'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
@@ -10,22 +9,42 @@ import {
   TrackMenuSessionMixin,
 } from '@jbrowse/product-core'
 
+import type { ViewModel } from './createModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util/types'
+import type {
+  AssemblyManager,
+  SessionWithAddTracks,
+  SessionWithConfigEditing,
+  SessionWithConnections,
+  SessionWithDrawerWidgets,
+} from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
+import type { AssertExtends, AssertSessionModel } from '@jbrowse/product-core'
+
+// This session lives at rootModel.session, so its MST parent is the root model;
+// this is the slice it reaches for. A typed contract in place of getParent<any>,
+// mirroring product-core's ConfigModelParent and web-core's AbstractWebRootModel.
+interface SessionModelParent {
+  version: string
+  disableAddTracks: boolean
+  assemblyManager: AssemblyManager
+  config: {
+    assemblyName: string
+  }
+}
+
+// Compile-time guard binding this shadow to the real root. getParent<T> is an
+// unchecked assertion, so this catches SessionModelParent drifting from the
+// root model (e.g. a renamed/removed prop) at build time, not runtime.
+export type _SessionModelParentCheck = AssertExtends<
+  ViewModel,
+  SessionModelParent
+>
 
 /**
  * #stateModel JBrowseReactLinearGenomeViewSessionModel
- * composed of
- * - [BaseSessionModel](../basesessionmodel)
- * - [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
- * - [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
- * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
- * - [SnackbarModel](../snackbarmodel)
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function sessionModelFactory(pluginManager: PluginManager) {
   return types
@@ -37,7 +56,7 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       ReferenceManagementSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
       TrackMenuSessionMixin(pluginManager),
-      SnackbarModel(),
+      EmbeddedSessionThemeMixin(pluginManager),
     )
     .props({
       /**
@@ -52,37 +71,29 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get version() {
-        return getParent<any>(self).version
+        return getParent<SessionModelParent>(self).version
       },
       /**
        * #getter
        */
       get disableAddTracks() {
-        return getParent<any>(self).disableAddTracks
+        return getParent<SessionModelParent>(self).disableAddTracks
       },
       /**
        * #getter
        */
-      get assemblies() {
-        return [getParent<any>(self).config.assembly]
-      },
-      /**
-       * #getter
-       */
+      // `assemblies` and `connections` are intentionally omitted: BaseSessionModel
+      // and ConnectionManagementSessionMixin already resolve them through
+      // `self.jbrowse` (= root.config), so re-declaring here would just duplicate
+      // the base getters with looser types
       get assemblyNames() {
-        return [getParent<any>(self).config.assemblyName]
-      },
-      /**
-       * #getter
-       */
-      get connections() {
-        return getParent<any>(self).config.connections
+        return [getParent<SessionModelParent>(self).config.assemblyName]
       },
       /**
        * #getter
        */
       get assemblyManager() {
-        return getParent<any>(self).assemblyManager
+        return getParent<SessionModelParent>(self).assemblyManager
       },
       /**
        * #getter
@@ -90,26 +101,12 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       get views() {
         return [self.view]
       },
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          theme: getConf(self, 'theme'),
-          highResolutionScaling: getConf(self, 'highResolutionScaling'),
-        }
-      },
     }))
     .actions(self => ({
       /**
        * #action
        */
       addView(typeName: string, initialState = {}) {
-        const typeDefinition = pluginManager.getElementType('view', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown view type ${typeName}`)
-        }
-
         self.view = cast({
           ...initialState,
           type: typeName,
@@ -121,12 +118,28 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
     }))
 }
 
-export type SessionStateModel = ReturnType<typeof sessionModelFactory>
-export type SessionModel = Instance<SessionStateModel>
+type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function z(x: Instance<SessionStateModel>): AbstractSessionModel {
-  // this function's sole purpose is to get typescript to check
-  // that the session model implements all of AbstractSessionModel
-  return x
-}
+// compile-time checks that the session model implements AbstractSessionModel
+// and each capability contract this embedded view relies on. AbstractSessionModel
+// marks these capabilities optional, so it can't catch a member drifting out of
+// sync with the SessionWith* interface plugins narrow to — these do.
+export type _AssertSessionModel = AssertSessionModel<
+  Instance<SessionStateModel>
+>
+export type _AssertDrawerWidgets = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithDrawerWidgets
+>
+export type _AssertConnections = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithConnections
+>
+export type _AssertAddTracks = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithAddTracks
+>
+export type _AssertConfigEditing = AssertExtends<
+  Instance<SessionStateModel>,
+  SessionWithConfigEditing
+>

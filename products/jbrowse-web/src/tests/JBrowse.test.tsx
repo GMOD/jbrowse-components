@@ -11,18 +11,19 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
   setup,
 } from './util.tsx'
+import { buildShareUrl } from '../components/buildShareUrl.ts'
 import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
-import { shareSessionToDynamo } from '../sessionSharing.ts'
-
-jest.mock('../sessionSharing.ts', () => ({
-  shareSessionToDynamo: jest.fn(),
-}))
 
 jest.mock('../makeWorkerInstance', () => () => {})
+jest.mock('../components/buildShareUrl.ts', () => ({
+  ...jest.requireActual('../components/buildShareUrl.ts'),
+  buildShareUrl: jest.fn(),
+}))
 
 setup()
 
@@ -69,9 +70,8 @@ test('assembly aliases', async () => {
   fireEvent.click(
     await findByTestId(hts('volvox_filtered_vcf_assembly_alias'), {}, delay),
   )
-  expectCanvasMatch(
-    (await findAllByTestId(/prerendered_canvas/, {}, delay))[0]!,
-  )
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, delay)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 30000)
 
 xtest('nclist track test with long name', async () => {
@@ -87,12 +87,10 @@ xtest('nclist track test with long name', async () => {
 }, 20000)
 
 test('test sharing', async () => {
-  jest.mocked(shareSessionToDynamo).mockResolvedValue({
-    encryptedSession: 'A',
-    json: {
-      sessionId: 'abc',
-    },
-    password: '123',
+  jest.mocked(buildShareUrl).mockResolvedValue({
+    url: 'http://localhost/?session=share-abc&password=123',
+    sessionParam: 'share-abc',
+    passwordParam: '123',
   })
   const { findByLabelText, findByText } = await createView()
   fireEvent.click(await findByText('Share'))

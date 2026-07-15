@@ -1,9 +1,23 @@
 import { Suspense, lazy } from 'react'
 
-import { TextField } from '@mui/material'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import ConfigurationTextField from './ConfigurationTextField.tsx'
+
 const PopoverPicker = lazy(() => import('@jbrowse/core/ui/PopoverPicker'))
+
+const useStyles = makeStyles()({
+  root: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+  field: {
+    flex: 1,
+    minWidth: 0,
+  },
+})
 
 const ColorEditor = observer(function ColorEditor(props: {
   slot: {
@@ -14,13 +28,14 @@ const ColorEditor = observer(function ColorEditor(props: {
   }
 }) {
   const { slot } = props
+  const { classes } = useStyles()
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <TextField
+    <div className={classes.root}>
+      <ConfigurationTextField
         value={slot.value}
         label={slot.name}
         helperText={slot.description}
-        style={{ flex: 1, minWidth: 0 }}
+        className={classes.field}
         onChange={event => {
           slot.set(event.target.value)
         }}

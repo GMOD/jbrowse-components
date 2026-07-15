@@ -3,9 +3,11 @@ name: Push
 on:
   push:
     branches:
-      - '*'
+      # '**' (not '*') so branches containing '/' (dependabot/*, port/*, …)
+      # also get CI — '*' does not match across slashes.
+      - '**'
     tags:
-      - '*'
+      - '**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -14,58 +16,32 @@ concurrency:
 permissions:
   contents: read
 
-jobs:
-  check_commit_message:
-    name: Check Commit Message
-    runs-on: ubuntu-latest
-    outputs:
-      skip_jobs: ${{ steps.check_message.outputs.skip_jobs }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 1
-          persist-credentials: false
-      - name: Check commit message
-        id: check_message
-        env:
-          COMMIT_MSG: ${{ github.event.head_commit.message }}
-        run: |
-          # Use env variable for safe expansion of special characters like quotes.
-          if [[ "$COMMIT_MSG" == *"[update docs only]"* ]]; then
-            echo "skip_jobs=true" >> $GITHUB_OUTPUT
-            echo "Commit message contains [update docs only], skipping regular push jobs"
-          else
-            echo "skip_jobs=false" >> $GITHUB_OUTPUT
-            echo "Running regular push jobs"
-          fi
+env:
+  CLOUDFRONT_DISTRIBUTION_ID: E13LGELJOT4GQO
 
+# A commit with '[update docs only]' in its message skips CI. Each job gates on
+# this inline via its `if:` rather than depending on a separate gate job, which
+# would serialize the whole pipeline behind one cold runner. (Job-level `if:`
+# can't read workflow `env`, so the expression is repeated verbatim.)
+
+jobs:
   test:
-    name: Test and typecheck
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    name: Test
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt-get -y install tabix
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - run: sudo apt-get update && sudo apt-get -y install tabix
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Test codebase
         id: tests
         run: pnpm test-ci
         continue-on-error: true
       - name: Configure AWS credentials
         if: steps.tests.outcome == 'failure'
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
+        uses: aws-actions/configure-aws-credentials@517a711dbcd0e402f90c77e7e2f81e849156e31d # v6.2.2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -96,28 +72,35 @@ jobs:
         if: steps.tests.outcome == 'failure'
         run: exit 1
       - name: Upload coverage
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6.0.1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+
+  typecheck:
+    name: Typecheck
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
       - name: Typecheck codebase
         run: pnpm typecheck
 
   lint:
     name: Lint
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev glslang-tools
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
+      - name: Fast lint (oxlint) — fail fast before slower checks
+        run: pnpm lint:fast
       - name: Check @jbrowse/core exports are up-to-date
         run: |
           node packages/core/scripts/generateExports.mjs
@@ -131,122 +114,126 @@ jobs:
         run:
           node --experimental-strip-types
           website/scripts/generate-guide-indexes.ts --check
+      - name: Check README-derived docs are up to date
+        run:
+          node --experimental-strip-types website/scripts/generate-img-doc.ts
+          --check && node --experimental-strip-types
+          website/scripts/generate-cli-doc.ts --check
+      - name: Check gallery links are up to date
+        run:
+          node --experimental-strip-types website/scripts/gen-gallery-links.ts
+          --check
+      - name: Check doc code/path references resolve
+        run:
+          node --experimental-strip-types website/scripts/check-doc-imports.ts
+      - name: Check every doc is reachable from the sidebar
+        run: node --experimental-strip-types website/scripts/check-sidebar.ts
+      - name: Check color tables are up to date
+        run: node --experimental-strip-types docs/generateColorDocs.ts --check
+      - name: Check jexl catalog is up to date
+        run: node --experimental-strip-types docs/generateJexlDocs.ts --check
+      - name: Check extension point index is up to date
+        run:
+          node --experimental-strip-types docs/generateExtensionPointDocs.ts
+          --check
+      - name: Check config/model/api docs are up to date
+        run: |
+          pnpm gendocs
+          if ! git diff --quiet website/docs/config website/docs/models website/docs/api; then
+            echo "Error: generated docs are out of date!"
+            echo "Run 'pnpm autogen' and commit the changes."
+            git diff --stat website/docs/config website/docs/models website/docs/api
+            exit 1
+          fi
+      - name: Check generated shaders are up to date
+        # slangc is auto-fetched + version-pinned by the build script, so the
+        # generated output is deterministic; glslang-tools (installed above)
+        # validates the GLSL-ES fallback. A stale *.generated.ts (hand-edited,
+        # or a .slang changed without running gen:shaders) fails the diff.
+        run: |
+          pnpm gen:shaders
+          if ! git diff --quiet -- '**/*.generated.ts'; then
+            echo "Error: generated shaders are out of date!"
+            echo "Run 'pnpm gen:shaders' and commit the changes."
+            git diff --stat -- '**/*.generated.ts'
+            exit 1
+          fi
       - name: Lint codebase
-        run: pnpm lint
+        run: pnpm lint:strict
 
   format:
     name: Format
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Check codebase format
         run: pnpm prettier --check .
 
-  check_docs_links:
-    name: Check docs links
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+  typecheck_infrastructure:
+    name: Typecheck infrastructure
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - name: Check documentation links
-        run: bash check-links.sh
-        working-directory: website
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Install deps
+        run: npm ci
+        working-directory: infrastructure/newsletter
+      - name: Typecheck newsletter infrastructure
+        run: npm run typecheck
+        working-directory: infrastructure/newsletter
+
+  # typecheck_aws:
+  #   name: Typecheck AWS Lambdas
+  #   if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+  #       with:
+  #         persist-credentials: false
+  #     - uses: ./.github/actions/setup
+  #       with:
+  #         working-directory: aws/blat-proxy
+  #     - name: Typecheck blat-proxy Lambda
+  #       run: pnpm run typecheck
+  #       working-directory: aws/blat-proxy
 
   spellcheck:
     name: Spell check
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
       - name: Check spelling
-        uses: crate-ci/typos@7b04f660f4ee4f048d18fd341887cf28dfbedfe2 # v1.46.3
+        uses: crate-ci/typos@bee27e3a4fd1ea2111cf90ab89cd076c870fce14 # v1.48.0
 
   build_and_pack_artifacts:
     name: Build and pack artifacts
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev xvfb
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+          sudo apt-get -y install tabix libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-
+      - uses: ./.github/actions/setup
       - name: Pack artifacts for component tests
         run: node --experimental-strip-types scripts/pack.ts
       - name: Test build
         run: BUILT_TESTS=1 pnpm built-test-ci
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      # - name: Install Chrome for Puppeteer
-      #   run: npx puppeteer browsers install chrome
-      # - name: Run browser tests with Puppeteer
-      #   id: browser-tests
-      #   run: node --experimental-strip-types browser-tests/runner.ts
-      #   working-directory: products/jbrowse-web
-      #   continue-on-error: true
-      # - name: Upload snapshot diffs to S3
-      #   if: steps.browser-tests.outcome == 'failure'
-      #   run: |
-      #     SNAPSHOTS_DIR="products/jbrowse-web/browser-tests/__snapshots__"
-      #     S3_PATH="s3://jbrowse.org/demos/imagediff/${{ github.run_id }}"
-      #
-      #     if ls ${SNAPSHOTS_DIR}/*.diff*.png 1> /dev/null 2>&1; then
-      #       echo "Uploading snapshot diffs to S3..."
-      #       aws s3 cp ${SNAPSHOTS_DIR}/ ${S3_PATH}/ --recursive --exclude "*" --include "*.diff*.png"
-      #
-      #       echo ""
-      #       echo "============================================"
-      #       echo "SNAPSHOT DIFF IMAGES UPLOADED TO S3"
-      #       echo "============================================"
-      #       for file in ${SNAPSHOTS_DIR}/*.diff*.png; do
-      #         filename=$(basename "$file")
-      #         echo "https://jbrowse.org/demos/imagediff/${{ github.run_id }}/${filename}"
-      #       done
-      #       echo "============================================"
-      #     else
-      #       echo "No snapshot diff files found"
-      #     fi
-      # - name: Fail if browser tests failed
-      #   if: steps.browser-tests.outcome == 'failure'
-      #   run: exit 1
-
       - name: Upload packed artifacts for component tests
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -256,39 +243,35 @@ jobs:
 
   deploy:
     name: Build and deploy jbrowse-web to S3
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    # Skip the per-branch S3 preview for Dependabot branches — nobody shares a
+    # preview URL for a dep bump. Build/smoke jobs still run to catch breakage.
+    if:
+      ${{ !contains(github.event.head_commit.message, '[update docs only]') &&
+      !startsWith(github.ref_name, 'dependabot/') }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24'
-          cache: 'pnpm'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
-      - name: Validate branch/tag name for S3 path safety
+      - uses: ./.github/actions/setup
+      - name: Sanitize branch/tag name for S3 path safety
         env:
           REF_NAME: ${{ github.ref_name }}
         run: |
-          if ! [[ "$REF_NAME" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
-            echo "Error: Invalid ref name '$REF_NAME'"
-            echo "Ref names must contain only alphanumeric characters, hyphens, underscores, and periods"
+          # Collapse slashes to dashes so nested branch names (dependabot/*,
+          # port/*, …) map to a flat, traversal-safe S3 prefix, then assert the
+          # result is only [A-Za-z0-9_.-].
+          SAFE_REF="${REF_NAME//\//-}"
+          if ! [[ "$SAFE_REF" =~ ^[a-zA-Z0-9_.\-]+$ ]]; then
+            echo "Error: ref name '$REF_NAME' has characters unsafe for an S3 path"
             exit 1
           fi
-          echo "Ref name validated: $REF_NAME"
-          echo "REF_NAME=$REF_NAME" >> "$GITHUB_ENV"
+          echo "Ref name sanitized to: $SAFE_REF"
+          echo "REF_NAME=$SAFE_REF" >> "$GITHUB_ENV"
       - name: Build jbrowse-web
-        run: |
-          cd products/jbrowse-web/
-          NODE_OPTIONS='--max-old-space-size=6500' pnpm build
+        uses: ./.github/actions/build-jbrowse-web
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6.1.1
+        uses: aws-actions/configure-aws-credentials@517a711dbcd0e402f90c77e7e2f81e849156e31d # v6.2.2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -299,73 +282,121 @@ jobs:
           zip -r "jbrowse-web-${REF_NAME}.zip" .
           cp test_data/config.json config.json
           aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/code/jb2/${REF_NAME}/*"
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/${REF_NAME}/*"
 
-      - name: Build LGV storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-linear-genome-view
-      - name: Deploy LGV storybook
+      # The Astro examples-sites replace the old per-package Storybooks at the
+      # same public URLs (/storybook/{lgv,app,cgv}/). Their astro `base` is the
+      # fixed, unversioned prefix, so each deploys to the prefix root. No
+      # --delete: the canonical site overlays the prefix without touching any
+      # historical per-ref Storybook subdirs (e.g. /storybook/lgv/v3.0.0/).
+      - name: Build and deploy examples-sites
         if:
           github.ref == 'refs/heads/main' || startsWith(github.ref,
           'refs/tags/')
         run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/lgv/${REF_NAME}/*"
-        working-directory: products/jbrowse-react-linear-genome-view
+          # site filter -> product dir -> public S3 prefix
+          for entry in \
+            "lgv-examples-site:jbrowse-react-linear-genome-view:lgv" \
+            "app-examples-site:jbrowse-react-app:app" \
+            "cgv-examples-site:jbrowse-react-circular-genome-view:cgv"; do
+            IFS=: read -r filter dir prefix <<<"$entry"
+            pnpm --filter "$filter" build
+            aws s3 sync "products/$dir/examples-site/dist" "s3://jbrowse.org/storybook/$prefix"
+          done
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/storybook/lgv/*" "/storybook/app/*" "/storybook/cgv/*"
 
-      - name: Build React App storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-app
-      - name: Deploy React App storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/app/${REF_NAME}/*"
-        working-directory: products/jbrowse-react-app
-
-      - name: Build CGV storybook
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-circular-genome-view
-      - name: Deploy CGV storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id E13LGELJOT4GQO --paths "/storybook/cgv/${REF_NAME}/*"
-        working-directory: products/jbrowse-react-circular-genome-view
-
-  # Conditionally run the buildwebsite job
-  buildwebsite:
-    name: Build website
-    needs: check_commit_message
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+  # Builds each Astro examples-site with Vite/Rollup (whose strict ESM surfaces
+  # circular-dependency init-order errors that webpack tolerates), then loads
+  # every page in headless Chrome. The web-worker examples assert an RPC worker
+  # actually spawns — the guard for the TextSearchManager-class of TDZ crashes.
+  # See products/jbrowse-react-linear-genome-view/examples-site/MIGRATION.md.
+  examples_site_smoke:
+    name: Smoke-test ${{ matrix.site }} examples-site
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        site: [lgv-examples-site, app-examples-site, cgv-examples-site]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '22'
-          cache: 'pnpm'
+      - uses: ./.github/actions/setup
+      - name: Typecheck examples-site
+        run: pnpm --filter ${{ matrix.site }} typecheck
+      - name: Build examples-site
+        run: pnpm --filter ${{ matrix.site }} build
+      - name: Smoke-test examples-site
+        run: pnpm --filter ${{ matrix.site }} smoke
 
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+  # Differential render test: build jbrowse-web, then render every local suite
+  # with both the canvas2d and (swiftshader) webgl backends and diff the two in
+  # memory. canvas2d and webgl are independent implementations of the same
+  # drawing, so a pair that disagrees past its threshold means one backend is
+  # wrong — a shader-regression oracle that needs no GPU (swiftshader) and no
+  # committed golden (the two renders are compared to each other in one run, so
+  # there is no cross-machine baseline to drift). See
+  # products/jbrowse-web/browser-tests/crossBackendGate.ts.
+  cross_backend_gate:
+    name: Cross-backend render gate
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: sudo apt-get update && sudo apt-get -y install tabix
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Build jbrowse-web
+        uses: ./.github/actions/build-jbrowse-web
+      # Non-blocking (continue-on-error): three real runs showed a rare (~1% of
+      # pairs) intermittent cross-process race on alignment PILEUP views — a
+      # different pileup drifts 7-27% each run; no non-pileup view ever drifts,
+      # and same-backend re-renders reproduce exactly (so it's a race, not gross
+      # nondeterminism). The deterministic view types are a clean oracle, but a
+      # trustworthy *blocking* full-suite gate needs the pileup race isolated/
+      # fixed or the gate scoped to non-pileup views. Until then this runs for
+      # signal (drift log + diff artifacts) without gating merges. See
+      # products/jbrowse-web/browser-tests/crossBackendGate.ts EXCLUDED_SUBSTRINGS.
+      - name: Run cross-backend render gate
+        run: pnpm test:browser:gate
+        working-directory: products/jbrowse-web
+        continue-on-error: true
+      - name: Upload backend diff images
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: backend-diffs
+          path: products/jbrowse-web/browser-tests/__snapshots__/backend-diffs/*.png
+          retention-days: 7
+          if-no-files-found: ignore
+
+  buildwebsite:
+    name: Build website
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          working-directory: website
+      - name: Typecheck website
+        run: pnpm typecheck
         working-directory: website
       - name: Build website
         run: |
           cd website/
           pnpm build
+          node --experimental-strip-types scripts/check-llms.ts
           mkdir testing
           mv dist testing/jb2
       - name: Check website links
-        uses: untitaker/hyperlink@fb5bb9c5011a3d143a54b4b30aedc30ec5bc0f89 # 0.2.0
+        uses: untitaker/hyperlink@9375bc4063712ad490d5eb3d54df0b6aade15e54 # 0.3.2
         with:
           args: website/testing/ --check-anchors
 
@@ -377,15 +408,15 @@ jobs:
   # code, create issues/PRs, access secrets, or call GitHub APIs.
   component_tests:
     name: Test embedded components
-    needs: [check_commit_message, build_and_pack_artifacts]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    needs: build_and_pack_artifacts
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
       - name: Download packed artifacts
@@ -404,15 +435,15 @@ jobs:
   # This job has no permissions since it installs npm packages without a lockfile.
   test_cli_compat:
     name: Test CLI on Node 18
-    needs: [check_commit_message, build_and_pack_artifacts]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    needs: build_and_pack_artifacts
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '18'
       - name: Download packed artifacts
@@ -431,15 +462,15 @@ jobs:
   # This job has no permissions since it installs npm packages without a lockfile.
   test_jbrowse_img:
     name: Test @jbrowse/img
-    needs: [check_commit_message, build_and_pack_artifacts]
-    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    needs: build_and_pack_artifacts
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
       - name: Download packed artifacts
@@ -455,24 +486,16 @@ jobs:
 
   windows_electron_e2e:
     name: Windows Electron E2E Tests
-    needs: [check_commit_message, test, lint, format, build_and_pack_artifacts]
+    needs: [test, typecheck, lint, format]
     if:
-      needs.check_commit_message.outputs.skip_jobs != 'true' && github.ref ==
-      'refs/heads/main'
+      ${{ !contains(github.event.head_commit.message, '[update docs only]') &&
+      github.ref == 'refs/heads/main' }}
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-        with:
-          version: 10
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
       - name: Build and test Electron on Windows
         run: pnpm test:e2e:ci:win
         working-directory: products/jbrowse-desktop

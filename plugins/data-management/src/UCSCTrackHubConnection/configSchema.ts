@@ -4,7 +4,6 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 /**
  * #config UCSCTrackHubConnection
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const UCSCTrackHubConnection = ConfigurationSchema(
   'UCSCTrackHubConnection',
@@ -15,7 +14,7 @@ const UCSCTrackHubConnection = ConfigurationSchema(
     hubTxtLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http://mysite.com/path/to/hub.txt',
+        uri: 'https://mysite.com/path/to/hub.txt',
         locationType: 'UriLocation',
       },
       description: 'location of the hub file (usually called hub.txt)',
@@ -35,6 +34,19 @@ const UCSCTrackHubConnection = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: baseConnectionConfig,
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, where `uri` points at the hub.txt:
+     *
+     * ```json
+     * {
+     *   "type": "UCSCTrackHubConnection",
+     *   "uri": "https://mysite.com/path/to/hub.txt"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       return snap.uri
         ? {

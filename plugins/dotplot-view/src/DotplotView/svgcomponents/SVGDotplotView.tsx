@@ -1,67 +1,76 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession, renderToStaticMarkup } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { exportMargin } from '@jbrowse/core/svg/constants'
+import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { getEnv, getSession } from '@jbrowse/core/util'
+import { coerceColorBy } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
+import { SVGColorByLegend } from './SVGColorByLegend.tsx'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../model.ts'
 
-// render LGV to SVG
+// render the dotplot view to an SVG string
 export async function renderToSvg(
   model: DotplotViewModel,
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper = ({ children }) => children } = opts
+  const { themeName = 'default', fontFamily, Wrapper } = opts
 
   const session = getSession(model)
-  const theme = session.allThemes?.()[themeName]
+  const theme = session.getActiveThemeOptions?.(themeName)
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
-  const shift = 50
+  const display = model.dotplotDisplays[0]
+  const legendColorBy =
+    model.showColorLegend && display
+      ? coerceColorBy(display.colorBy)
+      : undefined
   const displayResults = await Promise.all(
     tracks.map(async track => {
-      const display = track.displays[0]
-      await when(() => (display.ready !== undefined ? display.ready : true))
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
+      const trackDisplay = track.displays[0]
+      return { track, result: await trackDisplay.renderSvg({ ...opts, theme }) }
     }),
   )
-  const w = width + shift * 2
+
+  const { pluginManager } = getEnv(model)
+  const additional = pluginManager.evaluateExtensionPoint(
+    'DotplotView-OverlaySVGComponent',
+    [],
+    { model },
+  )
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
-      <Wrapper>
-        <svg
-          width={width}
-          height={height}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, w, height].toString()}
-        >
-          <SVGBackground width={w} height={height} />
-          <VerticalAxisRaw model={model} />
-          <g transform={`translate(${borderX} 0)`}>
-            <DotplotGrid model={model} />
-            <defs>
-              <clipPath id="clip-ruler">
-                <rect x={0} y={0} width={viewWidth} height={viewHeight} />
-              </clipPath>
-            </defs>
-            <g clipPath="url(#clip-ruler)">
-              {displayResults.map(({ result }, i) => (
-                /* biome-ignore lint/suspicious/noArrayIndexKey: */
-                <g key={i}>{result}</g>
-              ))}
-            </g>
-          </g>
-          <g transform={`translate(${borderX} ${viewHeight})`}>
-            <HorizontalAxisRaw model={model} />
-          </g>
-        </svg>
-      </Wrapper>
-    </ThemeProvider>,
-  )
+  return wrapSvgExport({
+    theme,
+    width,
+    height,
+    fontFamily,
+    Wrapper,
+    children: (
+      <g transform={`translate(${exportMargin} 0)`}>
+        <VerticalAxisRaw model={model} />
+        <g transform={`translate(${borderX} 0)`}>
+          <DotplotGrid model={model} />
+          <SvgClipRect
+            id={`clip-ruler-${model.id}`}
+            width={viewWidth}
+            height={viewHeight}
+          >
+            {additional}
+            {displayResults.map(({ track, result }) => (
+              <g key={track.configuration.trackId}>{result}</g>
+            ))}
+          </SvgClipRect>
+          {legendColorBy ? (
+            <SVGColorByLegend colorBy={legendColorBy} viewWidth={viewWidth} />
+          ) : null}
+        </g>
+        <g transform={`translate(${borderX} ${viewHeight})`}>
+          <HorizontalAxisRaw model={model} />
+        </g>
+      </g>
+    ),
+  })
 }

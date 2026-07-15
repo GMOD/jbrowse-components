@@ -328,15 +328,51 @@ describe('init configuration', () => {
     expect(session.init).toBeUndefined()
   })
 
-  it('init is excluded from snapshot', () => {
+  it('init round-trips through the snapshot (so a loaded session can carry a layout)', () => {
     const session = createTestSession()
-    session.setInit({
-      direction: 'horizontal',
+    const initConfig = {
+      direction: 'horizontal' as const,
       children: [{ viewIds: ['view-1'] }, { viewIds: ['view-2'] }],
-    })
+    }
+    session.setInit(initConfig)
+
+    expect(getSnapshot(session)).toHaveProperty('init', initConfig)
+  })
+
+  it('init is stripped from the snapshot once cleared', () => {
+    const session = createTestSession()
+    session.setInit({ viewIds: ['view-1'] })
+    session.setInit(undefined)
+
+    expect(getSnapshot(session)).not.toHaveProperty('init')
+  })
+})
+
+describe('pending move', () => {
+  it('starts with no pending move', () => {
+    const session = createTestSession()
+    expect(session.pendingMove).toBeUndefined()
+  })
+
+  it('setPendingMove queues a move', () => {
+    const session = createTestSession()
+    session.setPendingMove({ type: 'newTab', viewId: 'view-1' })
+    expect(session.pendingMove).toEqual({ type: 'newTab', viewId: 'view-1' })
+  })
+
+  it('setPendingMove can clear the move', () => {
+    const session = createTestSession()
+    session.setPendingMove({ type: 'splitRight', viewId: 'view-1' })
+    session.setPendingMove(undefined)
+    expect(session.pendingMove).toBeUndefined()
+  })
+
+  it('pendingMove is excluded from snapshot', () => {
+    const session = createTestSession()
+    session.setPendingMove({ type: 'newTab', viewId: 'view-1' })
     const snapshot = getSnapshot(session)
 
-    expect(snapshot).not.toHaveProperty('init')
+    expect(snapshot).not.toHaveProperty('pendingMove')
   })
 })
 

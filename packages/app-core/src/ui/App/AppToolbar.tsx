@@ -24,22 +24,38 @@ const useStyles = makeStyles()(theme => ({
     borderColor: theme.palette.secondary.main,
     backgroundColor: theme.palette.primary.light,
   },
+  logo: {
+    // stretch to the toolbar height so the logo's height follows the bar
+    // rather than a hardcoded pixel value
+    alignSelf: 'stretch',
+    display: 'flex',
+    alignItems: 'center',
+    // autofit any logo (custom <img> or the default svg): full toolbar height
+    // with auto width preserves aspect ratio, maxWidth caps horizontal room
+    '& img, & svg': {
+      height: '100%',
+      width: 'auto',
+      maxWidth: 150,
+      objectFit: 'contain',
+    },
+  },
 }))
 
+// bind the session into each item's onClick (the renderer invokes onClick with
+// no args), recursing into sub-menus; dividers/sub-headers pass through
 function wrapMenuItems(items: JBMenuItem[], session: AppSession): JBMenuItem[] {
-  return items.map(item => ({
-    ...item,
-    ...('onClick' in item
-      ? {
-          onClick: () => {
-            item.onClick(session)
-          },
-        }
-      : {}),
-    ...('subMenu' in item
-      ? { subMenu: wrapMenuItems(item.subMenu, session) }
-      : {}),
-  }))
+  return items.map(item =>
+    'subMenu' in item
+      ? { ...item, subMenu: wrapMenuItems(item.subMenu, session) }
+      : 'onClick' in item
+        ? {
+            ...item,
+            onClick: () => {
+              item.onClick(session)
+            },
+          }
+        : item,
+  )
 }
 
 const AppToolbar = observer(function AppToolbar({
@@ -84,12 +100,7 @@ const AppToolbar = observer(function AppToolbar({
       </Tooltip>
       {HeaderButtons}
       <div className={classes.grow} />
-      <div
-        style={{
-          width: 150,
-          maxHeight: 48,
-        }}
-      >
+      <div className={classes.logo}>
         <AppLogo session={session} />
       </div>
     </Toolbar>

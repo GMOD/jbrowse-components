@@ -1,6 +1,6 @@
 import type { FeatureDensityStats } from '../data_adapters/BaseAdapter/types.ts'
-import type { ResultsSerialized } from '../pluggableElementTypes/renderers/ServerSideRendererType.ts'
-import type { Feature, SimpleFeatureSerialized } from '../util/simpleFeature.ts'
+import type { StatusCallback } from '../util/progress.ts'
+import type { Feature } from '../util/simpleFeature.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { Region } from '../util/types/index.ts'
 
@@ -18,6 +18,7 @@ export interface RpcRegistry {
       sequenceAdapter?: Record<string, unknown>
       assemblyName?: string
       stopToken?: StopToken
+      statusCallback?: StatusCallback
     }
     return: string[]
   }
@@ -39,7 +40,8 @@ export interface RpcRegistry {
     args: {
       regions: RegionLike[]
       adapterConfig: Record<string, unknown>
-      statusCallback?: (arg: string) => void
+      sequenceAdapter?: Record<string, unknown>
+      statusCallback?: StatusCallback
       stopToken?: StopToken
       opts?: Record<string, unknown>
     }
@@ -51,7 +53,7 @@ export interface RpcRegistry {
       regions: RegionLike[]
       stopToken?: StopToken
       headers?: Record<string, string>
-      statusCallback?: (arg: string) => void
+      statusCallback?: StatusCallback
     }
     return: FeatureDensityStats
   }
@@ -81,14 +83,6 @@ export interface RpcRegistry {
   CoreFreeResources: {
     args: Record<string, unknown>
     return: undefined
-  }
-  CoreRender: {
-    args: Record<string, unknown>
-    return: ResultsSerialized
-  }
-  CoreGetFeatureDetails: {
-    args: Record<string, unknown>
-    return: { feature: SimpleFeatureSerialized | undefined }
   }
 }
 

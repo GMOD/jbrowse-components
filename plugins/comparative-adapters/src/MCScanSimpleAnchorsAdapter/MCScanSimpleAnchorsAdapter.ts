@@ -6,6 +6,7 @@ import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { parseBed, readFile } from '../util.ts'
 
+import type { MCScanSimpleAnchorsAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { Region } from '@jbrowse/core/util/types'
@@ -28,7 +29,7 @@ type Row = [
   number,
 ]
 
-export default class MCScanSimpleAnchorsAdapter extends BaseFeatureDataAdapter {
+export default class MCScanSimpleAnchorsAdapter extends BaseFeatureDataAdapter<MCScanSimpleAnchorsAdapterConfig> {
   private setupP?: Promise<{
     assemblyNames: string[]
     feats: Row[]
@@ -63,10 +64,10 @@ export default class MCScanSimpleAnchorsAdapter extends BaseFeatureDataAdapter {
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
         const [n11, n12, n21, n22, score, strand] = line.split('\t')
-        const r11 = bed1Map.get(n11)
-        const r12 = bed1Map.get(n12)
-        const r21 = bed2Map.get(n21)
-        const r22 = bed2Map.get(n22)
+        const r11 = bed1Map.get(n11!)
+        const r12 = bed1Map.get(n12!)
+        const r21 = bed2Map.get(n21!)
+        const r22 = bed2Map.get(n22!)
         if (!r11 || !r12 || !r21 || !r22) {
           throw new Error(
             `feature not found, ${n11} ${n12} ${n21} ${n22} ${r11} ${r12} ${r21} ${r22}`,

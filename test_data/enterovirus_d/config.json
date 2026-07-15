@@ -1,0 +1,67 @@
+{
+  "assemblies": [
+    {
+      "name": "GCF_000861205.1",
+      "displayName": "Enterovirus D (GCF_000861205.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "GCF_000861205.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "GCF_000861205.1.2bit",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_genes_enterovirus_d",
+      "name": "NCBI genes (with mature peptides)",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "GCF_000861205.1_ViralProj15297_genomic.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "GCF_000861205.1_ViralProj15297_genomic.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["GCF_000861205.1"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "ncbi_genes_enterovirus_d-LinearBasicDisplay",
+          "height": 250,
+          "subfeatureLabels": "overlay",
+          "labels": {
+            "name": "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "Enterovirus D polyprotein",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "GCF_000861205.1",
+          "loc": "NC_001430.1:727-7311",
+          "tracks": ["ncbi_genes_enterovirus_d"]
+        }
+      }
+    ]
+  }
+}

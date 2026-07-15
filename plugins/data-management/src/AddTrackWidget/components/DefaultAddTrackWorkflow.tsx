@@ -4,6 +4,7 @@ import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
+  Link,
   Step,
   StepContent,
   StepLabel,
@@ -15,6 +16,7 @@ import { observer } from 'mobx-react'
 import ConfirmTrack from './ConfirmTrack.tsx'
 import TrackSourceSelect from './TrackSourceSelect.tsx'
 import { doSubmit } from './doSubmit.ts'
+import { BULK_WORKFLOW } from '../workflowNames.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -29,58 +31,87 @@ const useStyles = makeStyles()(theme => ({
     marginRight: theme.spacing(1),
   },
   actionsContainer: {
-    marginTop: theme.spacing(10),
+    marginTop: theme.spacing(3),
     marginBottom: theme.spacing(2),
   },
 }))
 
-const steps = ['Enter track data', 'Confirm track type']
+const steps = [
+  {
+    label: 'Enter track data',
+    content: (model: AddTrackModel) => <TrackSourceSelect model={model} />,
+    isComplete: (model: AddTrackModel) => !!model.trackData,
+  },
+  {
+    label: 'Confirm track type',
+    content: (model: AddTrackModel) => <ConfirmTrack model={model} />,
+    isComplete: (model: AddTrackModel) =>
+      !!(
+        model.trackName &&
+        model.trackType &&
+        model.trackAdapter?.type &&
+        model.assembly
+      ),
+  },
+]
 
 const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
   model,
+  switchWorkflow,
 }: {
   model: AddTrackModel
+  switchWorkflow: (name: string) => void
 }) {
   const [activeStep, setActiveStep] = useState(0)
   const { classes } = useStyles()
-  const { assembly, trackAdapter, trackData, trackName, trackType } = model
+  const isLastStep = activeStep === steps.length - 1
 
-  function getStepContent(step: number) {
-    switch (step) {
-      case 0:
-        return <TrackSourceSelect model={model} />
-      case 1:
-        return <ConfirmTrack model={model} />
-      default:
-        return <Typography>Unknown step</Typography>
-    }
-  }
-
-  function isNextDisabled() {
-    switch (activeStep) {
-      case 0:
-        return !trackData
-      case 1:
-        return !(trackName && trackType && trackAdapter?.type && assembly)
-      default:
-        return true
+  function handleNext() {
+    if (isLastStep) {
+      try {
+        doSubmit({ model })
+      } catch (e) {
+        getSession(model).notifyError(`${e}`, e)
+      }
+    } else {
+      setActiveStep(activeStep + 1)
     }
   }
 
   return (
-    <div className={classes.root}>
+    <div className={classes.root} data-testid="addTrackWorkflow">
+      <Typography variant="body2" color="textSecondary">
+        Have multiple files?{' '}
+        <Link
+          component="button"
+          variant="body2"
+          onClick={() => {
+            switchWorkflow(BULK_WORKFLOW)
+          }}
+        >
+          Add multiple tracks at once
+        </Link>
+      </Typography>
       <Stepper
         className={classes.stepper}
         activeStep={activeStep}
         orientation="vertical"
       >
-        {steps.map((label, idx) => (
+        {steps.map(({ label, content, isComplete }) => (
           <Step key={label}>
-            <StepLabel>{label}</StepLabel>
+            {/* hide the numbered step badge — with the second step collapsed the
+                lone "1" reads as an orphaned label rather than a real sequence */}
+            <StepLabel
+              slotProps={{ stepIcon: { sx: { display: 'none' } } }}
+              sx={{ '& .MuiStepLabel-iconContainer': { display: 'none' } }}
+            >
+              {label}
+            </StepLabel>
             <StepContent>
-              {getStepContent(idx)}
+              {content(model)}
               <div className={classes.actionsContainer}>
                 <Button
+                  variant="contained"
                   disabled={activeStep === 0}
                   className={classes.button}
                   onClick={() => {
@@ -91,24 +122,16 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
                   Back
                 </Button>
                 <Button
-                  disabled={isNextDisabled()}
+                  disabled={!isComplete(model)}
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    if (activeStep !== steps.length - 1) {
-                      setActiveStep(activeStep + 1)
-                    } else {
-                      try {
-                        doSubmit({ model })
-                      } catch (e) {
-                        getSession(model).notifyError(`${e}`, e)
-                      }
-                    }
+                    handleNext()
                   }}
                   className={classes.button}
                   data-testid="addTrackNextButton"
                 >
-                  {activeStep === steps.length - 1 ? 'Add' : 'Next'}
+                  {isLastStep ? 'Add' : 'Next'}
                 </Button>
               </div>
             </StepContent>

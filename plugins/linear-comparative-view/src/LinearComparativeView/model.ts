@@ -3,13 +3,8 @@ import { lazy } from 'react'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { avg, getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import {
-  addDisposer,
-  addMiddleware,
-  cast,
-  getPath,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import { autorun } from 'mobx'
 
@@ -20,7 +15,6 @@ import type {
   LinearGenomeViewModel,
   LinearGenomeViewStateModel,
 } from '@jbrowse/plugin-linear-genome-view'
-
 // lazies
 const ReturnToImportFormDialog = lazy(
   () => import('@jbrowse/core/ui/ReturnToImportFormDialog'),
@@ -28,13 +22,11 @@ const ReturnToImportFormDialog = lazy(
 
 /**
  * #stateModel LinearComparativeView
- * extends
- * - [BaseViewModel](../baseviewmodel)
  */
 function stateModelFactory(pluginManager: PluginManager) {
   const LinearSyntenyViewHelper = pluginManager.getViewType(
     'LinearSyntenyViewHelper',
-  )?.stateModel
+  ).stateModel
   return types
     .compose(
       'LinearComparativeView',
@@ -46,38 +38,35 @@ function stateModelFactory(pluginManager: PluginManager) {
         id: ElementId,
         /**
          * #property
+         * Abstract base: never registered or instantiated standalone, always
+         * composed into a concrete subclass (e.g. LinearSyntenyView) that
+         * overrides `type` with its own literal. Kept as `types.string` rather
+         * than a literal so subclass models stay assignable to this base type.
          */
-        type: types.literal('LinearComparativeView'),
+        type: types.string,
         /**
          * #property
          */
-        trackSelectorType: 'hierarchical',
+        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
          */
-        showIntraviewLinks: true,
+        showIntraviewLinks: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
-        linkViews: false,
+        linkViews: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        interactiveOverlay: false,
+        levels: types.array(LinearSyntenyViewHelper),
         /**
          * #property
-         */
-        showDynamicControls: true,
-        /**
-         * #property
-         */
-        levels: types.array(LinearSyntenyViewHelper!),
-        /**
-         * #property
-         * currently this is limited to an array of two
+         * N genome rows, with N-1 synteny `levels` between adjacent pairs. The
+         * views/levels invariant is maintained by reconcileLevels().
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')!
+          pluginManager.getViewType('LinearGenomeView')
             .stateModel as LinearGenomeViewStateModel,
         ),
 
@@ -87,8 +76,9 @@ function stateModelFactory(pluginManager: PluginManager) {
          * read vs ref dotplots where this track would not really apply
          * elsewhere
          */
-        viewTrackConfigs: types.array(
-          pluginManager.pluggableConfigSchemaType('track'),
+        viewTrackConfigs: types.stripDefault(
+          types.array(pluginManager.pluggableConfigSchemaType('track')),
+          [],
         ),
       }),
     )
@@ -97,14 +87,16 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
       width: undefined as number | undefined,
-      /**
-       * #volatile
-       * Set to true when the view is being initialized from a launch spec to
-       * avoid showing the import form during loading
-       */
-      isLoading: false,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * scroll-to-zoom is a global, personal preference resolved from the
+       * session; toggling it in any view applies everywhere
+       */
+      get scrollZoom() {
+        return getSession(self).scrollZoom
+      },
       /**
        * #getter
        */
@@ -120,64 +112,51 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get refNames() {
-        return self.views.map(v => [
-          ...new Set(v.staticBlocks.map(m => m.refName)),
-        ])
-      },
-
-      /**
-       * #getter
-       */
       get assemblyNames() {
         return [...new Set(self.views.flatMap(v => v.assemblyNames))]
       },
 
       /**
-       * #getter
+       * #method
        */
-      get loadingMessage() {
-        return this.showLoading ? 'Loading' : undefined
+      isViewCompact(idx: number) {
+        return self.views[idx]?.scalebarOnly ?? false
       },
-
+    }))
+    .actions(self => ({
       /**
-       * #getter
-       * Whether to show a loading indicator instead of the import form or view
+       * #action
+       * Reconcile the levels array to the views array: exactly one synteny
+       * level per gap between adjacent views (N views -> N-1 levels). Grows or
+       * shrinks from the end, preserving existing levels and their tracks. The
+       * single source of truth for the views/levels invariant.
        */
-      get showLoading() {
-        return self.isLoading || (!this.initialized && self.views.length > 0)
+      reconcileLevels() {
+        while (self.levels.length < self.views.length - 1) {
+          self.levels.push(cast({ level: self.levels.length }))
+        }
+        while (self.levels.length > Math.max(self.views.length - 1, 0)) {
+          self.levels.pop()
+        }
       },
     }))
     .actions(self => ({
       afterAttach() {
+        // doesn't link showTrack/hideTrack, doesn't make sense in synteny
+        // views most time
+        installLinkedViewSync(self, ['horizontalScroll', 'zoomTo'])
         addDisposer(
           self,
-          addMiddleware(self, (rawCall, next) => {
-            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
-              // doesn't link showTrack/hideTrack, doesn't make sense in
-              // synteny views most time
-              const syncActions = [
-                'horizontalScroll',
-                'zoomTo',
-                'setScaleFactor',
-              ]
-
-              if (self.linkViews && syncActions.includes(rawCall.name)) {
-                const sourcePath = getPath(rawCall.context)
-                next(rawCall)
-                // Sync to all other views
+          autorun(
+            function comparativeViewWidthAutorun() {
+              if (self.width) {
                 for (const view of self.views) {
-                  const viewPath = getPath(view)
-                  if (viewPath !== sourcePath) {
-                    // @ts-expect-error
-                    view[rawCall.name](rawCall.args[0])
-                  }
+                  view.setWidth(self.width)
                 }
-                return
               }
-            }
-            next(rawCall)
-          }),
+            },
+            { name: 'ComparativeViewWidth' },
+          ),
         )
       },
 
@@ -200,37 +179,36 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setIsLoading(arg: boolean) {
-        self.isLoading = arg
-      },
-
-      /**
-       * #action
-       */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
-        const levels = []
-        for (let i = 0; i < views.length - 1; i++) {
-          levels.push({ level: i })
+        self.levels = cast([])
+        self.reconcileLevels()
+      },
+
+      /**
+       * #action
+       * Push a new genome row. The new trailing level starts with no synteny
+       * tracks.
+       */
+      addView(view: SnapshotIn<LinearGenomeViewModel>) {
+        self.views.push(view)
+        self.reconcileLevels()
+      },
+
+      /**
+       * #action
+       * Drop the bottom genome row and its synteny level. Only terminal removal
+       * is supported: a level's `level` index addresses views[level]/[level+1],
+       * so removing a middle row would require reindexing every level below it.
+       * Growth and shrinkage both happen at the end of the chain.
+       */
+      removeLastRow() {
+        if (self.views.length > 0) {
+          self.views.pop()
+          self.reconcileLevels()
         }
-        self.levels = cast(levels)
       },
 
-      /**
-       * #action
-       */
-      removeView(view: LinearGenomeViewModel) {
-        self.views.remove(view)
-      },
-
-      /**
-       * #action
-       */
-      setLevelHeight(newHeight: number, level = 0) {
-        const l = self.levels[level]!
-        l.setHeight(newHeight)
-        return l.height
-      },
       /**
        * #action
        */
@@ -240,8 +218,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setShowDynamicControls(arg: boolean) {
-        self.showDynamicControls = arg
+      setScrollZoom(arg: boolean) {
+        getSession(self).setScrollZoom?.(arg)
       },
       /**
        * #action
@@ -268,7 +246,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string, level = 0) {
-        self.levels[level]?.toggleTrack(trackId)
+        return self.levels[level]?.toggleTrack(trackId)
       },
 
       /**
@@ -296,7 +274,7 @@ function stateModelFactory(pluginManager: PluginManager) {
           const center = view.pxToBp(view.width / 2)
           view.setNewView(average, view.offsetPx)
           if (center.refName) {
-            view.centerAt(center.coord, center.refName, center.index)
+            view.centerAt(center.coord0, center.refName, center.index)
           }
         }
       },
@@ -307,6 +285,77 @@ function stateModelFactory(pluginManager: PluginManager) {
         self.views = cast([])
         self.levels = cast([])
       },
+      /**
+       * #action
+       */
+      toggleCompactView(idx: number) {
+        const view = self.views[idx]
+        if (view) {
+          view.setScalebarOnly(!view.scalebarOnly)
+        }
+      },
+      /**
+       * #action
+       */
+      compactAllViews() {
+        for (const view of self.views) {
+          view.setScalebarOnly(true)
+        }
+      },
+      /**
+       * #action
+       */
+      expandAllViews() {
+        for (const view of self.views) {
+          view.setScalebarOnly(false)
+        }
+      },
+      /**
+       * #action
+       */
+      autoScaleLevelHeights() {
+        const numLevels = self.levels.length
+        if (numLevels <= 0) {
+          return
+        }
+        const targetHeight = Math.max(40, Math.min(100, 400 / numLevels))
+        for (const level of self.levels) {
+          level.setHeight(targetHeight)
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Append an assembly to the bottom of the stack and optionally show a
+       * synteny track on the new level connecting it to the previous bottom
+       * row. A synteny dataset is an edge between two adjacent assemblies, so
+       * rows are only ever added at the chain's end.
+       *
+       * The new row is created with a LinearGenomeView `init` — its own
+       * afterAttach autorun loads the assembly regions and navigates (whole
+       * genome, or `loc` when given), so we don't reimplement that imperatively
+       * here.
+       */
+      appendRow({
+        assembly,
+        loc,
+        syntenyTrackId,
+      }: {
+        assembly: string
+        loc?: string
+        syntenyTrackId?: string
+      }) {
+        const level = self.views.length - 1
+        self.addView({
+          type: 'LinearGenomeView',
+          hideHeader: true,
+          init: { assembly, loc },
+        })
+        if (syntenyTrackId) {
+          self.showTrack(syntenyTrackId, level)
+        }
+      },
     }))
     .views(() => ({
       /**
@@ -315,6 +364,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * little overwhelming. overridden by subclasses
        */
       headerMenuItems(): MenuItem[] {
+        return []
+      },
+      /**
+       * #method
+       * items for the "Show..." submenu in the header. overridden by
+       * subclasses to add view-specific toggle options
+       */
+      showMenuItems(): MenuItem[] {
         return []
       },
     }))
@@ -358,55 +415,17 @@ function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function comparativeViewWidthAutorun() {
-              if (self.width) {
-                for (const view of self.views) {
-                  view.setWidth(self.width)
-                }
-              }
-            },
-            { name: 'ComparativeViewWidth' },
-          ),
-        )
-      },
-    }))
-    .preProcessSnapshot(snap => {
-      // @ts-expect-error
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    .preProcessSnapshot<
+      // legacy snapshots stored `tracks` at the top level before the `levels`
+      // restructure; accept the loose shape and let MST revalidate at runtime
+      | ({ tracks?: unknown; levels?: unknown } & Record<string, unknown>)
+      | undefined
+    >(snap => {
       const { tracks, levels = [{ tracks, level: 0 }], ...rest } = snap || {}
       return {
         ...rest,
         levels,
       }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const {
-        trackSelectorType,
-        showIntraviewLinks,
-        linkViews,
-        interactiveOverlay,
-        showDynamicControls,
-        viewTrackConfigs,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
-        ...(linkViews ? { linkViews } : {}),
-        ...(interactiveOverlay ? { interactiveOverlay } : {}),
-        ...(!showDynamicControls ? { showDynamicControls } : {}),
-        ...(viewTrackConfigs.length ? { viewTrackConfigs } : {}),
-      } as typeof snap
     })
 }
 

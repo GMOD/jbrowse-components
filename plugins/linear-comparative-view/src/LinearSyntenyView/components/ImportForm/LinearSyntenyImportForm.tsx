@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Container } from '@mui/material'
@@ -24,10 +24,7 @@ const useStyles = makeStyles()(theme => ({
     flexGrow: 11,
   },
   leftPanel: {
-    // proportionally smaller than right panel
     flexGrow: 4,
-
-    // and don't shrink when right panel grows
     flexShrink: 0,
   },
 }))
@@ -41,17 +38,19 @@ const LinearSyntenyViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const { assemblyNames } = session
-    const defaultAssemblyName = assemblyNames[0] || ''
+    const defaultAssemblyName = assemblyNames[0] ?? ''
     const [selectedRow, setSelectedRow] = useState(0)
     const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
       defaultAssemblyName,
       defaultAssemblyName,
     ])
     const [error, setError] = useState<unknown>()
+    const [submitting, setSubmitting] = useState(false)
 
     const handleLaunch = async () => {
       try {
         setError(undefined)
+        setSubmitting(true)
         await doSubmit({
           selectedAssemblyNames,
           model,
@@ -59,12 +58,13 @@ const LinearSyntenyViewImportForm = observer(
       } catch (e) {
         console.error(e)
         setError(e)
+        setSubmitting(false)
       }
     }
 
     return (
       <Container className={classes.importFormContainer}>
-        {error ? <ErrorMessage error={error} /> : null}
+        {error ? <ErrorBanner error={error} /> : null}
         <div className={classes.flex}>
           <div className={classes.leftPanel}>
             <LeftPanel
@@ -74,19 +74,19 @@ const LinearSyntenyViewImportForm = observer(
               selectedRow={selectedRow}
               setSelectedRow={setSelectedRow}
               defaultAssemblyName={defaultAssemblyName}
+              submitting={submitting}
               onLaunch={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                handleLaunch()
+                void handleLaunch()
               }}
             />
           </div>
-
           <div className={classes.rightPanel}>
-            <div>
+            <div role="status" aria-live="polite">
               Synteny dataset to display between row {selectedRow + 1} and{' '}
               {selectedRow + 2}
             </div>
             <ImportSyntenyTrackSelector
+              key={`${selectedRow}-${selectedAssemblyNames[selectedRow]}-${selectedAssemblyNames[selectedRow + 1]}`}
               model={model}
               selectedRow={selectedRow}
               assembly1={selectedAssemblyNames[selectedRow]!}

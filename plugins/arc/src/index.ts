@@ -1,7 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { set1 } from '@jbrowse/core/ui/colors'
 
-import ArcRendererF from './ArcRenderer/index.ts'
 import LinearArcDisplayF from './LinearArcDisplay/index.ts'
 import LinearPairedArcDisplayF from './LinearPairedArcDisplay/index.ts'
 
@@ -11,14 +10,13 @@ import type { Feature } from '@jbrowse/core/util'
 export default class ArcPlugin extends Plugin {
   name = 'ArcRenderer'
   install(pluginManager: PluginManager) {
-    ArcRendererF(pluginManager)
     LinearArcDisplayF(pluginManager)
     LinearPairedArcDisplayF(pluginManager)
 
     pluginManager.jexl.addFunction(
       'logThickness',
       (feature: Feature, attributeName: string) =>
-        Math.log(feature.get(attributeName) + 1),
+        Math.log((feature.get(attributeName) as number) + 1),
     )
     const svTypeColors: [string, string][] = [
       ['<DEL', set1[0]!],

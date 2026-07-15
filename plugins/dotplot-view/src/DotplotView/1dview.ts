@@ -1,7 +1,6 @@
 import Base1DView from '@jbrowse/core/util/Base1DViewModel'
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { getParent } from '@jbrowse/mobx-state-tree'
-import { observable } from 'mobx'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -9,10 +8,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #stateModel Dotplot1DView
  * ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state used here
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 const Dotplot1DView = Base1DView.extend(self => {
-  const scaleFactor = observable.box(1)
   return {
     views: {
       /**
@@ -21,13 +17,6 @@ const Dotplot1DView = Base1DView.extend(self => {
        */
       get dynamicBlocks() {
         return calculateDynamicBlocks(self, false, false)
-      },
-      /**
-       * #getter
-       */
-
-      get scaleFactor() {
-        return scaleFactor.get()
       },
 
       /**
@@ -44,44 +33,35 @@ const Dotplot1DView = Base1DView.extend(self => {
         return 1 / 50
       },
 
+      // When content is smaller than the view (zoomed out), both bounds
+      // collapse to this centered offset; otherwise min/max open up a small
+      // padded scroll range.
+      get centeredOffset() {
+        return (self.displayedRegionsTotalPx - self.width) / 2
+      },
+
       /**
        * #getter
        */
       get maxOffset() {
         const contentPx = self.displayedRegionsTotalPx
-        const viewWidth = self.width
-        // When content is smaller than view (zoomed out), center it
-        if (contentPx <= viewWidth) {
-          return (contentPx - viewWidth) / 2
-        }
-        // Otherwise allow scrolling with small padding
         const leftPadding = 10
-        return contentPx - leftPadding
+        return contentPx <= self.width
+          ? this.centeredOffset
+          : contentPx - leftPadding
       },
 
       /**
        * #getter
        */
       get minOffset() {
-        const contentPx = self.displayedRegionsTotalPx
-        const viewWidth = self.width
-        // When content is smaller than view (zoomed out), center it
-        if (contentPx <= viewWidth) {
-          return (contentPx - viewWidth) / 2
-        }
-        // Otherwise allow scrolling with small padding
         const rightPadding = 30
-        return -viewWidth + rightPadding
+        return self.displayedRegionsTotalPx <= self.width
+          ? this.centeredOffset
+          : -self.width + rightPadding
       },
     },
     actions: {
-      /**
-       * #action
-       */
-      setScaleFactor(n: number) {
-        scaleFactor.set(n)
-      },
-
       /**
        * #action
        */
@@ -97,7 +77,7 @@ const Dotplot1DView = Base1DView.extend(self => {
 const DotplotHView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      return getParent<any>(self).viewWidth
+      return getParent<{ viewWidth: number }>(self).viewWidth
     },
   },
 }))
@@ -105,7 +85,7 @@ const DotplotHView = Dotplot1DView.extend(self => ({
 const DotplotVView = Dotplot1DView.extend(self => ({
   views: {
     get width() {
-      return getParent<any>(self).viewHeight
+      return getParent<{ viewHeight: number }>(self).viewHeight
     },
   },
 }))

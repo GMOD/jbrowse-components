@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { fetchJson as fetchjson, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import deepmerge from 'deepmerge'
@@ -8,7 +8,9 @@ import deepmerge from 'deepmerge'
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
 import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
+import { useNotifyError } from '../../NotifyContext.ts'
 import defaultFavs from '../defaultFavs.ts'
+import { newSessionName } from '../sessionName.ts'
 import { addRelativeUris, loadPluginManager } from '../util.tsx'
 
 import type { Fav, JBrowseConfig } from '../types.ts'
@@ -30,7 +32,14 @@ async function fetchData(sel: { shortName: string; jbrowseConfig: string }[]) {
     sel.map(async r => {
       const ret = await fetchjson(r.jbrowseConfig)
       addRelativeUris(ret as Record<string, unknown>, new URL(r.jbrowseConfig))
-      return ret as JBrowseConfig
+      // record where this hub config came from so "export to web" can reuse it
+      // as the session base (?config=<sourceConfigUrl>)
+      const cfg = ret as JBrowseConfig
+      cfg.configuration = {
+        ...cfg.configuration,
+        sourceConfigUrl: r.jbrowseConfig,
+      }
+      return cfg
     }),
   )
 }
@@ -47,7 +56,7 @@ export default function LeftSidePanel({
   setPluginManager: (arg0: PluginManager) => void
 }) {
   const { classes } = useStyles()
-  const [error, setError] = useState<unknown>()
+  const notifyError = useNotifyError()
   const [loading, setLoading] = useState('')
 
   const [favorites, setFavorites] = useLocalStorage<Fav[]>(
@@ -59,19 +68,25 @@ export default function LeftSidePanel({
     try {
       setLoading('Loading session')
       const entries = await getEntries()
+      const merged = deepmerge.all(entries) as JBrowseConfig
+      // a single hub config can be reused as the export base; merging several
+      // leaves no single source config, so drop the marker the entries carry
+      if (entries.length > 1 && merged.configuration) {
+        merged.configuration = { ...merged.configuration, sourceConfigUrl: '' }
+      }
       setPluginManager(
         await loadPluginManager(
           await ipcRenderer.invoke('createInitialAutosaveFile', {
-            ...deepmerge.all(entries),
+            ...merged,
             defaultSession: entries[0]?.defaultSession ?? {
-              name: `New session ${new Date().toLocaleString('en-US')}`,
+              name: newSessionName(),
             },
           }),
         ),
       )
     } catch (e) {
       console.error(e)
-      setError(e)
+      notifyError(e)
     } finally {
       setLoading('')
     }
@@ -82,11 +97,10 @@ export default function LeftSidePanel({
   ) => launchSession(() => fetchData(sel))
 
   const launchFromSnap = (snap: JBrowseConfig) =>
-    launchSession(async () => [snap])
+    launchSession(() => Promise.resolve([snap]))
 
   return (
     <div className={classes.form}>
-      {error ? <ErrorMessage error={error} /> : null}
       {loading ? (
         <LoadingEllipses variant="h6" message={loading} />
       ) : (

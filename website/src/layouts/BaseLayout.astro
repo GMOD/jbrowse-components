@@ -1,19 +1,35 @@
 ---
-import { baseUrl } from '../lib/base-url'
+import { Font } from 'astro:assets'
+
 import styles from './BaseLayout.module.css'
+import { baseUrl } from '../lib/base-url.ts'
+import { navLinks } from '../lib/nav.ts'
 
 interface Props {
   title?: string
   description?: string
+  // When set, advertises a raw-Markdown alternate of this page (for LLMs) via
+  // a <link rel="alternate" type="text/markdown">.
+  mdHref?: string
 }
-const { title = 'JBrowse', description } = Astro.props
+const DEFAULT_DESCRIPTION =
+  'JBrowse is a pluggable, open-source platform for genome visualization — linear, circular, dotplot, and synteny views, structural variant inspection, and alignments, running on the web, on desktop, or embedded in your own app.'
+const {
+  title = 'JBrowse',
+  description = DEFAULT_DESCRIPTION,
+  mdHref,
+} = Astro.props
 const pathname = Astro.url.pathname
+const ogImage = new URL(`${baseUrl}/img/jbrowse-og.png`, Astro.site).href
 
 function isActive(href: string) {
   return (
     pathname === href || (href !== `${baseUrl}/` && pathname.startsWith(href))
   )
 }
+// CSS module access is always defined; ! silences noUncheckedIndexedAccess
+const navActive = styles.navActive!
+const year = new Date().getFullYear()
 ---
 
 <!doctype html>
@@ -22,29 +38,50 @@ function isActive(href: string) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    <meta name="description" content={description} />
     <meta property="og:title" content={title} />
-    {description && <meta property="og:description" content={description} />}
+    <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={Astro.url.href} />
-    <meta property="og:image" content={`${baseUrl}/img/logo.svg`} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
-    {description && <meta name="twitter:description" content={description} />}
-    <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="canonical" href={Astro.url.href} />
+    {
+      mdHref && (
+        <link
+          rel="alternate"
+          type="text/markdown"
+          href={mdHref}
+          title="Markdown"
+        />
+      )
+    }
+    <link rel="sitemap" href={`${baseUrl}/sitemap.xml`} />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
+      rel="alternate"
+      type="application/rss+xml"
+      title="JBrowse Blog"
+      href={`${baseUrl}/rss.xml`}
     />
+    <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
+    <Font cssVariable="--font-roboto" preload />
     <style is:global>
       :root {
         --nav-height: 60px;
         --sidebar-width: 320px;
+        --font-mono:
+          ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas',
+          'Liberation Mono', monospace;
         --sidebar-link-padding: 6px 12px;
         --color-accent: hsl(160, 51%, 35%);
         --color-accent-dark: hsl(160, 55%, 26%);
-        --color-primary: #1565c0;
-        --color-primary-dark: #0d47a1;
+        --color-primary: #1a3f72;
+        --color-primary-dark: #122d54;
         --color-navy: #0d223f;
         --color-teal-bright: #46cbae;
         --color-border: #dadde1;
@@ -59,8 +96,10 @@ function isActive(href: string) {
         --color-text-muted: #606770;
         --color-code-bg: #1e1e2e;
         --color-code-text: #cdd6f4;
-        --color-inline-code-bg: #f0f0f0;
-        --color-inline-code-text: #c7254e;
+        --color-inline-code-bg: #f2f3f5;
+        --color-inline-code-border: #dfe1e5;
+        --color-inline-code-text: #1c1e21;
+        --color-table-stripe: #fafafa;
         --color-blockquote-bg: #f0faf8;
         --color-highlight-bg: #fff3cd;
       }
@@ -72,7 +111,7 @@ function isActive(href: string) {
       }
       body {
         margin: 0;
-        font-family: 'Roboto', sans-serif;
+        font-family: var(--font-roboto), sans-serif;
         color: var(--color-text);
         display: flex;
         flex-direction: column;
@@ -94,55 +133,47 @@ function isActive(href: string) {
       </a>
 
       <div class={styles.navLinks} id="nav-links">
-        <a href="http://genomes.jbrowse.org/">Genomes</a>
+        {
+          navLinks.map(({ path, label }) => (
+            <a
+              href={`${baseUrl}/${path}/`}
+              class:list={[{ [navActive]: isActive(`${baseUrl}/${path}/`) }]}
+            >
+              {label}
+            </a>
+          ))
+        }
+      </div>
+
+      <div class={styles.navRight}>
         <a
-          href={`${baseUrl}/docs/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/docs/`) }]}
-          >Docs</a
+          href="https://genomes.jbrowse.org/"
+          class={styles.navExternal}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Browse hosted genomes — opens the JBrowse 2 Genome Hubs app in a new tab"
         >
-        <a
-          href={`${baseUrl}/blog/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/blog/`) }]}
-          >Blog</a
-        >
-        <a
-          href={`${baseUrl}/download/`}
-          class:list={[
-            { [styles.navActive]: isActive(`${baseUrl}/download/`) },
-          ]}>Download</a
-        >
-        <a
-          href={`${baseUrl}/plugin_store/`}
-          class:list={[
-            { [styles.navActive]: isActive(`${baseUrl}/plugin_store/`) },
-          ]}>Plugins</a
-        >
-        <a
-          href={`${baseUrl}/features/`}
-          class:list={[
-            { [styles.navActive]: isActive(`${baseUrl}/features/`) },
-          ]}>Features</a
-        >
-        <a
-          href={`${baseUrl}/gallery/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/gallery/`) }]}
-          >Gallery</a
-        >
-        <a
-          href={`${baseUrl}/demos/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/demos/`) }]}
-          >Demos</a
-        >
-        <a
-          href={`${baseUrl}/contact/`}
-          class:list={[{ [styles.navActive]: isActive(`${baseUrl}/contact/`) }]}
-          >Contact</a
-        >
+          Genome Hubs
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M7 17 17 7"></path><path d="M7 7h10v10"></path>
+          </svg>
+        </a>
         <a
           href={`${baseUrl}/search/`}
           class:list={[
             styles.navSearchLink,
-            { [styles.navActive]: isActive(`${baseUrl}/search/`) },
+            { [navActive]: isActive(`${baseUrl}/search/`) },
           ]}
         >
           <svg
@@ -160,10 +191,6 @@ function isActive(href: string) {
             ></path>
           </svg>Search
         </a>
-      </div>
-
-      <div class={styles.navRight}>
-        <a href="https://jbrowse.org/jbrowse1.html">Looking for JBrowse 1?</a>
         <a
           href="https://github.com/GMOD/jbrowse-components"
           class:list={[styles.socialIcon, styles.githubIcon]}
@@ -176,6 +203,10 @@ function isActive(href: string) {
           href="https://bsky.app/profile/jbrowse.org"
           class:list={[styles.socialIcon, styles.blueskyIcon]}
           aria-label="Bluesky"></a>
+        <a
+          href="https://www.youtube.com/@jbrowse6740"
+          class:list={[styles.socialIcon, styles.youtubeIcon]}
+          aria-label="YouTube"></a>
       </div>
 
       <button
@@ -225,6 +256,13 @@ function isActive(href: string) {
                 rel="noopener noreferrer">Mastodon ↗</a
               >
             </li>
+            <li>
+              <a
+                href="https://www.youtube.com/@jbrowse6740"
+                target="_blank"
+                rel="noopener noreferrer">YouTube ↗</a
+              >
+            </li>
           </ul>
         </div>
         <div class={styles.footerCol}>
@@ -250,19 +288,17 @@ function isActive(href: string) {
         </div>
       </div>
       <div class={styles.footerBottom}>
-        Copyright &copy; 2026 Evolutionary Software Foundation, Inc.
+        Copyright &copy; {year} Evolutionary Software Foundation, Inc.
       </div>
     </footer>
 
-    <script is:inline define:vars={{ baseUrl }}>
-      ;(function () {
-        document
-          .getElementById('nav-toggle')
-          .addEventListener('click', function () {
-            const expanded = this.getAttribute('aria-expanded') === 'true'
-            this.setAttribute('aria-expanded', String(!expanded))
-          })
-      })()
+    <script>
+      document
+        .getElementById('nav-toggle')
+        ?.addEventListener('click', function () {
+          const expanded = this.getAttribute('aria-expanded') === 'true'
+          this.setAttribute('aria-expanded', String(!expanded))
+        })
     </script>
   </body>
 </html>

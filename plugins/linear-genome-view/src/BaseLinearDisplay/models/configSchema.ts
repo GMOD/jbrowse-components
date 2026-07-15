@@ -4,12 +4,11 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config BaseLinearDisplay
  * #category display
  *
- * `BaseLinearDisplay` is a "base" config that is extended by other configs including
- * - `LinearBasicDisplay` (used for feature tracks, etc)
- * - `LinearBareDisplay` (more stripped down than even the basic display, not
- *   commonly used)
+ * Shared base config for linear displays — its slots (`height`,
+ * `maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
+ * common to all of them. The GPU stack's `LinearCanvasBaseDisplay` config
+ * extends it, and third-party plugins extend it too.
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const baseLinearDisplayConfigSchema = ConfigurationSchema(
   'BaseLinearDisplay',
@@ -20,8 +19,9 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
     maxFeatureScreenDensity: {
       type: 'number',
       description:
-        'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-      defaultValue: 0.3,
+        'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
+      defaultValue: 1,
+      advanced: true,
     },
     /**
      * #slot
@@ -31,6 +31,7 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
       defaultValue: 1_000_000,
       description:
         "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
+      advanced: true,
     },
     /**
      * #slot
@@ -46,8 +47,11 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
     mouseover: {
       type: 'string',
       description: 'text to display when the cursor hovers over a feature',
-      defaultValue: `jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')`,
-      contextVariable: ['feature', 'mouseoverExtraInformation'],
+      // `function` (INSDC/GFF3 qualifier) before the id fallback so hovering a
+      // feature with no name — e.g. an NCBI viral `stem_loop` — surfaces its
+      // descriptor rather than a bare id. get() since `function` is reserved.
+      defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
+      contextVariable: ['feature'],
     },
     /**
      * #slot

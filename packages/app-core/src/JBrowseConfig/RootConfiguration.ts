@@ -4,12 +4,15 @@ import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
+  PreferencesConfigSchemaFactory,
 } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 
 /**
  * #config JBrowseConfiguration
+ * #category root
  * this is the entry under the `configuration` key
  * e.g.
  * ```json
@@ -22,47 +25,73 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  */
 export default function RootConfiguration({
   pluginManager,
+  extraConfigSlots = {},
 }: {
   pluginManager: PluginManager
+  // product-specific config slots, e.g. desktop's sourceConfigUrl; kept out of
+  // the shared schema so they don't appear on web/embedded
+  extraConfigSlots?: ConfigurationSchemaDefinition
 }) {
   return ConfigurationSchema('Root', {
+    ...extraConfigSlots,
     /**
      * #slot configuration.rpc
+     * configuration for the RPC system that runs data adapters in web workers,
+     * see RpcOptions
      */
     rpc: RpcManager.configSchema,
 
     /**
-     * #slot configuration.highResolutionScaling
+     * #slot configuration.formatDetails
+     * jexl callbacks that add or reformat fields shown in the feature details
+     * panel, see FormatDetails
      */
-    highResolutionScaling: {
-      type: 'number',
-      defaultValue: 2,
-    },
-
     formatDetails: FormatDetailsConfigSchemaFactory(),
+
+    /**
+     * #slot configuration.formatAbout
+     * jexl callbacks that add or reformat fields shown in a track's About
+     * dialog, see FormatAbout
+     */
     formatAbout: FormatAboutConfigSchemaFactory(),
 
-    /*
+    /**
      * #slot configuration.shareURL
+     * URL of the session-sharing backend used by the Share button, a
+     * JBrowse-hosted service by default
      */
     shareURL: {
       type: 'string',
       defaultValue: 'https://share.jbrowse.org/api/v1/',
+      advanced: true,
     },
     /**
      * #slot configuration.disableAnalytics
+     * disables collection of anonymous usage analytics
      */
     disableAnalytics: {
       type: 'boolean',
       defaultValue: false,
+      advanced: true,
     },
-
+    /**
+     * #slot configuration.hierarchical
+     * configuration for the hierarchical track selector, controlling sorting
+     * and default categories, see HierarchicalConfigSchema
+     */
     hierarchical: HierarchicalConfigSchemaFactory(),
+    /**
+     * #slot configuration.preferences
+     * user preferences such as scroll-to-zoom and animation behavior, see
+     * PreferencesConfigSchema
+     */
+    preferences: PreferencesConfigSchemaFactory(),
     /**
      * #slot configuration.theme
      */
     theme: {
       type: 'frozen',
+      description: 'Material UI theme overrides applied to the JBrowse UI',
       defaultValue: {},
     },
     /**
@@ -70,17 +99,21 @@ export default function RootConfiguration({
      */
     extraThemes: {
       type: 'frozen',
+      description: 'additional named themes the user can switch between',
       defaultValue: {},
+      advanced: true,
     },
     /**
      * #slot configuration.logoPath
      */
     logoPath: {
       type: 'fileLocation',
+      description: 'path to a custom logo image displayed in the app header',
       defaultValue: {
         uri: '',
         locationType: 'UriLocation',
       },
+      advanced: true,
     },
     /**
      * #slotAnnot

@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-
 import CloseIcon from '@mui/icons-material/Close'
 import {
   Button,
@@ -11,13 +9,28 @@ import {
 } from '@mui/material'
 import { SourceMapConsumer } from 'source-map-js'
 
+import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import {
   availableRenderers,
   preferredRenderer,
 } from './getGraphicsCapabilities.ts'
+import { stripStackTraceMessage } from './stripStackTraceMessage.ts'
 import { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'
+import { readConfObject } from '../configuration/index.ts'
+import { hasSharedArrayBuffer } from '../util/stopToken.ts'
+import { useFetch } from '../util/useFetch.ts'
+
+import type { AnyConfigurationModel } from '../configuration/index.ts'
+
+interface SessionGlobal {
+  version?: string
+  rpcManager: {
+    mainConfiguration: AnyConfigurationModel
+    defaultDriverName: string
+  }
+}
 
 async function myfetchtext(uri: string) {
   const res = await fetch(uri)
@@ -35,7 +48,8 @@ async function myfetchjson(uri: string) {
 // reference code https://stackoverflow.com/a/77158517/2129219
 const sourceMaps: Record<string, SourceMapConsumer> = {}
 const sourceMappingUrlRe = /\/\/# sourceMappingURL=(.*)/
-const stackLineRe = /(.*)((?:https?|file):\/\/.*):(\d+):(\d+)/
+const protocolRe = /(?:https?|file):\/\//
+const digitsRe = /^\d+$/
 
 async function getSourceMapFromUri(uri: string) {
   if (sourceMaps[uri]) {
@@ -50,41 +64,56 @@ async function getSourceMapFromUri(uri: string) {
   return map
 }
 
+// parses a "frame" line like "  at f (file:///foo.js:12:34)" into its
+// prefix ("  at f ("), source uri, line, and column, or undefined if the
+// line doesn't end with a uri:line:column reference
+function parseStackLine(line: string) {
+  const protocolMatch = protocolRe.exec(line)
+  if (!protocolMatch) {
+    return undefined
+  }
+
+  const urlStart = protocolMatch.index
+  const rest = line.slice(urlStart).replace(/\)$/, '')
+  const lastColon = rest.lastIndexOf(':')
+  const secondLastColon = rest.lastIndexOf(':', lastColon - 1)
+  const lineStr = rest.slice(secondLastColon + 1, lastColon)
+  const columnStr = rest.slice(lastColon + 1)
+
+  return secondLastColon > 0 &&
+    digitsRe.test(lineStr) &&
+    digitsRe.test(columnStr)
+    ? {
+        prefix: line.slice(0, urlStart).trim(),
+        uri: rest.slice(0, secondLastColon),
+        line: +lineStr,
+        column: +columnStr,
+      }
+    : undefined
+}
+
 async function mapStackTrace(stack: string) {
   const mappedStack = []
   for (const line of stack.split('\n')) {
-    const match = stackLineRe.exec(line)
-    if (!match) {
+    const frame = parseStackLine(line)
+    if (frame) {
+      const consumer = await getSourceMapFromUri(frame.uri)
+      const pos = consumer.originalPositionFor(frame)
+      mappedStack.push(
+        // source-map-js types line/column/source as non-nullable, but at runtime
+        // they are null for unmapped frames, so guard with truthiness
+        pos.source && pos.line && pos.column
+          ? `${pos.source}:${pos.line}:${pos.column + 1} (${frame.prefix})`
+          : line,
+      )
+    } else {
       mappedStack.push(line)
-      continue
     }
-
-    const uri = match[2]!
-    const consumer = await getSourceMapFromUri(uri)
-    const pos = consumer.originalPositionFor({
-      line: +match[3]!,
-      column: +match[4]!,
-    })
-
-    if (!pos.source || !pos.line || !pos.column) {
-      mappedStack.push(line)
-      continue
-    }
-
-    mappedStack.push(
-      `${pos.source}:${pos.line}:${pos.column + 1} (${match[1]!.trim()})`,
-    )
   }
   return mappedStack.join('\n')
 }
 
 const MAX_ERR_LEN = 10_000
-
-// Chrome has the error message in the stacktrace, firefox doesn't.
-// Remove it since it can be very long due to mobx-state-tree stuff
-function stripMessage(trace: string, error: unknown) {
-  return trace.startsWith('Error:') ? trace.slice(`${error}`.length) : trace
-}
 
 function getStackTrace(error: unknown) {
   return typeof error === 'object' && error !== null && 'stack' in error
@@ -101,39 +130,30 @@ export default function ErrorMessageStackTraceDialog({
   error: unknown
   extra?: unknown
 }) {
-  const [mappedStackTrace, setMappedStackTrace] = useState<string>()
-  const [secondaryError, setSecondaryError] = useState<unknown>()
-  const [clicked, setClicked] = useState(false)
   const graphicsCapabilities = useGraphicsCapabilities()
   const errorText = error ? `${error}` : ''
-  const stackTrace = stripMessage(getStackTrace(error), errorText)
+  const stackTrace = stripStackTraceMessage(getStackTrace(error), errorText)
 
-  useEffect(() => {
-    let cancelled = false
-    mapStackTrace(stackTrace)
-      .then(result => {
-        if (!cancelled) {
-          setMappedStackTrace(result)
-        }
-      })
-      .catch((e: unknown) => {
-        console.error(e)
-        if (!cancelled) {
-          setMappedStackTrace(stackTrace)
-          setSecondaryError(e)
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [stackTrace])
+  const {
+    data: mappedStackTrace,
+    error: secondaryError,
+    isLoading,
+  } = useFetch(['mappedStackTrace', stackTrace], () =>
+    mapStackTrace(stackTrace),
+  )
 
   const graphicsInfo = graphicsCapabilities
     ? `Graphics: ${preferredRenderer(graphicsCapabilities)} (${availableRenderers(graphicsCapabilities).join(', ')})`
     : ''
+  const sabInfo = `Worker abort: ${hasSharedArrayBuffer ? 'SharedArrayBuffer' : 'XHR fallback'}`
 
-  // @ts-expect-error
-  const version = window.JBrowseSession?.version
+  const session = (window as unknown as { JBrowseSession?: SessionGlobal })
+    .JBrowseSession
+  const version = session?.version
+  const rpcManager = session?.rpcManager
+  const rpcInfo = rpcManager
+    ? `RPC: ${readConfObject(rpcManager.mainConfiguration, 'defaultDriver') || rpcManager.defaultDriverName}`
+    : ''
   const errorBoxText = [
     secondaryError
       ? 'Error loading source map, showing raw stack trace below:'
@@ -141,19 +161,36 @@ export default function ErrorMessageStackTraceDialog({
     errorText.length > MAX_ERR_LEN
       ? `${errorText.slice(0, MAX_ERR_LEN)}...`
       : errorText,
-    mappedStackTrace || 'No stack trace available',
+    mappedStackTrace || stackTrace || 'No stack trace available',
+    '--- environment ---',
     version ? `JBrowse ${version}` : '',
     graphicsInfo,
+    rpcInfo,
+    sabInfo,
+    `Cross-origin isolated: ${crossOriginIsolated}`,
+    `CPU cores: ${navigator.hardwareConcurrency}`,
+    `Device pixel ratio: ${window.devicePixelRatio}`,
+    `Window size: ${window.innerWidth}x${window.innerHeight}`,
+    `URL: ${window.location.href}`,
+    `User agent: ${navigator.userAgent}`,
   ]
     .filter(Boolean)
     .join('\n')
 
   return (
-    <Dialog open onClose={onClose} maxWidth="xl">
+    <Dialog
+      open
+      onClose={() => {
+        onClose()
+      }}
+      maxWidth="xl"
+    >
       <DialogTitle>
         Stack trace
         <IconButton
-          onClick={onClose}
+          onClick={() => {
+            onClose()
+          }}
           sx={{
             position: 'absolute',
             right: 8,
@@ -164,28 +201,28 @@ export default function ErrorMessageStackTraceDialog({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        {mappedStackTrace === undefined ? (
+        {isLoading ? (
           <LoadingEllipses variant="h6" />
         ) : (
           <ErrorMessageStackTraceContents text={errorBoxText} extra={extra} />
         )}
       </DialogContent>
       <DialogActions>
-        <Button
+        <CopyToClipboardButton
           variant="contained"
           color="secondary"
-          onClick={async () => {
-            const { default: copy } = await import('copy-to-clipboard')
-            await copy(errorBoxText)
-            setClicked(true)
-            setTimeout(() => {
-              setClicked(false)
-            }, 1000)
+          value={errorBoxText}
+          copiedLabel="Copied!"
+        >
+          Copy stack trace to clipboard
+        </CopyToClipboardButton>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            onClose()
           }}
         >
-          {clicked ? 'Copied!' : 'Copy stack trace to clipboard'}
-        </Button>
-        <Button variant="contained" color="primary" onClick={onClose}>
           Close
         </Button>
       </DialogActions>

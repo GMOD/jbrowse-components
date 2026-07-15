@@ -1,4 +1,4 @@
-import PluginLoader from '@jbrowse/core/PluginLoader'
+import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 
 import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
 
@@ -11,7 +11,10 @@ export default async function loadPlugins(
   pluginDefinitions: PluginDefinition[],
   args?: { fetchESM: (url: string) => Promise<LoadedPlugin> },
 ) {
-  const pluginLoader = new PluginLoader(pluginDefinitions, args)
+  const pluginLoader = new PluginLoader(
+    dropVendoredPlugins(pluginDefinitions),
+    args,
+  )
   pluginLoader.installGlobalReExports(window)
   return pluginLoader.load(window.location.href)
 }

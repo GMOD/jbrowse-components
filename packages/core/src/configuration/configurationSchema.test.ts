@@ -1,4 +1,9 @@
-import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import {
+  getSnapshot,
+  getType,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { getConf, readConfObject } from './index.ts'
 import PluginManager from '../PluginManager.ts'
@@ -34,15 +39,15 @@ describe('configuration schemas', () => {
     expect(getConf(model, 'backgroundColor')).toBe('#eee')
     expect(getConf(model, 'someInteger')).toBe(12)
 
-    model.configuration.backgroundColor.set(`jexl:'#'+a`)
+    model.configuration.setSlot('backgroundColor', `jexl:'#'+a`)
     expect(getConf(model, 'backgroundColor', { a: 'zonk' })).toBe('#zonk')
     expect(getConf(model, 'backgroundColor', { a: 'bar' })).toBe('#bar')
-    model.configuration.backgroundColor.set('hoog')
+    model.configuration.setSlot('backgroundColor', 'hoog')
     expect(getConf(model, 'backgroundColor', { a: 'zonk' })).toBe('hoog')
 
-    model.configuration.someInteger.set('jexl:5+a')
+    model.configuration.setSlot('someInteger', 'jexl:5+a')
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(10)
-    model.configuration.someInteger.set(42)
+    model.configuration.setSlot('someInteger', 42)
     expect(getConf(model, 'someInteger', { a: 5 })).toBe(42)
 
     // type "tests"
@@ -143,6 +148,57 @@ describe('configuration schemas', () => {
     // let slot: ConfigurationSlotName<typeof schema>
   })
 
+  describe('baseConfiguration hook composition', () => {
+    // The options merge in preprocessConfigurationSchemaArguments is a shallow
+    // `{...base, ...child}` spread: a child that redefines the same hook the
+    // base already defines would silently replace it rather than compose.
+    // Caught eagerly at schema-construction time instead of shipping that.
+    test.each(['actions', 'views', 'extend', 'preProcessSnapshot'] as const)(
+      'throws when both base and child define %s',
+      hook => {
+        const base = ConfigurationSchema(
+          'HookBase',
+          { x: { type: 'number', defaultValue: 1 } },
+          { [hook]: (self: unknown) => (hook === 'extend' ? {} : self) },
+        )
+        expect(() =>
+          ConfigurationSchema(
+            'HookChild',
+            {},
+            {
+              baseConfiguration: base,
+              [hook]: (self: unknown) => (hook === 'extend' ? {} : self),
+            },
+          ),
+        ).toThrow(new RegExp(`HookChild and its baseConfiguration.*${hook}`))
+      },
+    )
+
+    test('does not throw when base and child define different hooks', () => {
+      const base = ConfigurationSchema(
+        'DistinctHookBase',
+        { x: { type: 'number', defaultValue: 1 } },
+        { actions: () => ({ baseAction: () => 'base' }) },
+      )
+      const child = ConfigurationSchema(
+        'DistinctHookChild',
+        {},
+        {
+          baseConfiguration: base,
+          views: () => ({ childView: () => 'child' }),
+        },
+      )
+      const node = child.create(undefined, { pluginManager }) as unknown as {
+        baseAction: () => string
+        childView: () => string
+      }
+      // both the base's action and the child's view are present — proof the
+      // merge composes across different hook keys, only same-key overlap throws
+      expect(node.baseAction()).toBe('base')
+      expect(node.childView()).toBe('child')
+    })
+  })
+
   test('can snapshot a simple schema', () => {
     const container = types.model({
       configuration: ConfigurationSchema('Foo', {
@@ -162,8 +218,10 @@ describe('configuration schemas', () => {
     expect(getSnapshot(model)).toEqual({ configuration: { someInteger: 42 } })
     expect(getConf(model, 'someInteger')).toEqual(42)
 
+    // an all-default config schema is stripped entirely from the parent
+    // snapshot (it reloads to its defaults), so `configuration` is omitted
     const model2 = container.create({ configuration: {} }, { pluginManager })
-    expect(getSnapshot(model2)).toEqual({ configuration: {} })
+    expect(getSnapshot(model2)).toEqual({})
     expect(getConf(model2, 'someInteger')).toEqual(12)
   })
   test('can snapshot a nested schema 1', () => {
@@ -288,8 +346,8 @@ describe('configuration schemas', () => {
     })
 
     const model = container.create(undefined, { pluginManager })
-    model.configuration.frozenSlot.set({})
-    model.configuration.listSlot.set([])
+    model.configuration.setSlot('frozenSlot', {})
+    model.configuration.setSlot('listSlot', [])
 
     const snap = getSnapshot(model)
     expect(snap).toEqual({ configuration: { frozenSlot: {}, listSlot: [] } })
@@ -345,9 +403,130 @@ describe('configuration schemas', () => {
   })
 })
 
+describe('setSubschema', () => {
+  test('replaces a direct sub-schema slot', () => {
+    const schema = ConfigurationSchema('WithSub', {
+      sub: ConfigurationSchema('Sub', {
+        x: { type: 'number', defaultValue: 1 },
+      }),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    node.setSubschema('sub', { x: 5 })
+    expect(readConfObject(node, ['sub', 'x'])).toBe(5)
+  })
+
+  test('throws a friendly error for a non-subschema slot', () => {
+    const schema = ConfigurationSchema('WithScalar', {
+      count: { type: 'integer', defaultValue: 1 },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() => node.setSubschema('count', {})).toThrow(
+      /count is not a subschema, cannot replace/,
+    )
+  })
+
+  test('throws the same friendly error for a collection (array) of sub-schemas, not an MST validation error', () => {
+    // isConfigurationSchemaType recognizes an array-of-schema slot as a schema
+    // type too, but setSubschema's `.create(data)` call assumes a single
+    // sub-schema snapshot. Without excluding collections from the membership
+    // check, this throws a confusing "not assignable" MST error instead.
+    const schema = ConfigurationSchema('WithCollection', {
+      items: types.array(
+        ConfigurationSchema('Item', {
+          x: { type: 'number', defaultValue: 1 },
+        }),
+      ),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() => node.setSubschema('items', { x: 2 })).toThrow(
+      /items is not a subschema, cannot replace/,
+    )
+  })
+
+  test('throws the same friendly error for a collection (map) of sub-schemas', () => {
+    const schema = ConfigurationSchema('WithMapCollection', {
+      items: types.map(
+        ConfigurationSchema('MapItem', {
+          x: { type: 'number', defaultValue: 1 },
+        }),
+      ),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() => node.setSubschema('items', { x: 2 })).toThrow(
+      /items is not a subschema, cannot replace/,
+    )
+  })
+})
+
+describe('schema definition entry classification', () => {
+  test('a slot definition missing its type throws a specific error', () => {
+    expect(() =>
+      ConfigurationSchema('Bad', { broken: { defaultValue: 1 } }),
+    ).toThrow(/no type set for config slot Bad.broken/)
+  })
+
+  test('a non-slot, non-constant, non-schema entry throws', () => {
+    expect(() =>
+      // @ts-expect-error a bare boolean is not a valid definition entry
+      ConfigurationSchema('Bad', { broken: true }),
+    ).toThrow(/invalid configuration schema definition/)
+  })
+
+  test('string/number entries become read-only volatile constants', () => {
+    const schema = ConfigurationSchema('WithConstants', {
+      label: 'hello',
+      count: 42,
+      real: { type: 'string', defaultValue: 'x' },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(node.label).toBe('hello')
+    expect(node.count).toBe(42)
+    // constants are not part of the persisted snapshot
+    expect(getSnapshot(node)).toEqual({})
+  })
+})
+
+describe('union error scoping', () => {
+  // ConfigurationSchema with explicitlyTyped:true produces types.optional(model)
+  // members. The MST discriminator must drill through that wrapper so errors are
+  // scoped to the one member whose `type` literal matches, not dumped for all.
+  test('error is scoped to the matching type member, not all union members', () => {
+    if (process.env.NODE_ENV !== 'production') {
+      const AlphaConfig = ConfigurationSchema(
+        'AlphaTestTrack',
+        { count: { type: 'integer', defaultValue: 0 } },
+        { explicitlyTyped: true },
+      )
+      const BetaConfig = ConfigurationSchema(
+        'BetaTestTrack',
+        { label: { type: 'string', defaultValue: '' } },
+        { explicitlyTyped: true },
+      )
+      const Union = types.union(AlphaConfig, BetaConfig)
+
+      let msg = ''
+      try {
+        // 'bad' is not a valid slot-object shape for the count field
+        Union.create(
+          { type: 'AlphaTestTrack', count: 'bad' },
+          { pluginManager },
+        )
+      } catch (e) {
+        msg = String(e)
+      }
+
+      expect(msg).not.toBe('')
+      // Error must be scoped to the AlphaTestTrack member's field
+      expect(msg).toContain('/count')
+      // Pre-fix: BetaTestTrack's field errors would also appear in the dump
+      expect(msg).not.toContain('/label')
+    }
+  })
+})
+
 describe('ConfigurationReference', () => {
   // Minimal session shim. isSessionModel needs `rpcManager` + `configuration`;
-  // tracksById is what TrackConfigurationReference reads.
+  // getTrackById is what TrackConfigurationReference reads.
   function buildTrackEnv() {
     const TrackConfig = ConfigurationSchema(
       'TestTrack',
@@ -362,18 +541,21 @@ describe('ConfigurationReference', () => {
         rpcManager: types.frozen({}),
         configuration: types.frozen({}),
         _tracks: types.array(TrackConfig),
+        // tree-resident configs deliberately NOT surfaced via getTrackById, to
+        // exercise the resolveIdentifier fallback (the viewTrackConfigs case)
+        _viewTrackConfigs: types.array(TrackConfig),
         holder: Holder,
       })
       .views(self => ({
-        get tracksById() {
-          return Object.fromEntries(self._tracks.map(t => [t.trackId, t]))
+        getTrackById(id: string) {
+          return self._tracks.find(t => t.trackId === id)
         },
       }))
     return { TrackConfig, Holder, Session }
   }
 
   describe('TrackConfigurationReference', () => {
-    test('resolves a known trackId via session.tracksById', () => {
+    test('resolves a known trackId via session.getTrackById', () => {
       const { Session } = buildTrackEnv()
       const session = Session.create(
         {
@@ -420,10 +602,45 @@ describe('ConfigurationReference', () => {
       )
       expect(getSnapshot(session.holder)).toEqual({ ref: 'aaa' })
     })
+
+    // Fast unit canary for the tree-wide resolveIdentifier fallback documented
+    // in configuration/CLAUDE.md — otherwise only covered by the slow
+    // ReadVsRef.test.tsx integration test (LinearSyntenyView.viewTrackConfigs).
+    test('falls back to tree-wide resolveIdentifier when the id is absent from getTrackById', () => {
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          _viewTrackConfigs: [{ trackId: 'view-local', name: 'ephemeral' }],
+          holder: { ref: 'view-local' },
+        },
+        { pluginManager },
+      )
+      expect(session.getTrackById('view-local')).toBeUndefined()
+      expect(readConfObject(session.holder.ref, 'name')).toBe('ephemeral')
+    })
+
+    // Fast unit canary for the inline-snapshot union branch documented in
+    // configuration/CLAUDE.md — otherwise only covered by the slow
+    // SVInspector.test.tsx integration test (CircularView.addTrackConf /
+    // SvInspectorView push a full config object, not an id string).
+    test('accepts a full inline config snapshot held as an owned instance, not a ref', () => {
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          holder: { ref: { trackId: 'inline1', name: 'inline-name' } },
+        },
+        { pluginManager },
+      )
+      expect(session.getTrackById('inline1')).toBeUndefined()
+      expect(readConfObject(session.holder.ref, 'name')).toBe('inline-name')
+      expect(getSnapshot(session.holder)).toEqual({
+        ref: { trackId: 'inline1', name: 'inline-name' },
+      })
+    })
   })
 
   describe('TrackConfigurationReference with frozen tracks', () => {
-    // Session where tracksById returns plain frozen objects, not MST nodes.
+    // Session where getTrackById returns plain frozen objects, not MST nodes.
     // This is the real production path: jbrowse.tracks is types.frozen.
     function buildFrozenTrackEnv() {
       const TrackConfig = ConfigurationSchema(
@@ -442,8 +659,8 @@ describe('ConfigurationReference', () => {
           holder: Holder,
         })
         .views(self => ({
-          get tracksById() {
-            return Object.fromEntries(self._tracks.map(t => [t.trackId, t]))
+          getTrackById(id: string) {
+            return self._tracks.find(t => t.trackId === id)
           },
         }))
         .actions(self => ({
@@ -454,13 +671,13 @@ describe('ConfigurationReference', () => {
       return { TrackConfig, Session }
     }
 
-    test('tracksById entry is a plain object before any reference is resolved', () => {
+    test('getTrackById entry is a plain object before any reference is resolved', () => {
       const { Session } = buildFrozenTrackEnv()
       const session = Session.create(
         { _tracks: [{ trackId: 'f1', name: 'frozen' }], holder: { ref: 'f1' } },
         { pluginManager },
       )
-      expect(isStateTreeNode(session.tracksById.f1)).toBe(false)
+      expect(isStateTreeNode(session.getTrackById('f1'))).toBe(false)
     })
 
     test('resolves and hydrates a frozen plain object to an MST node', () => {
@@ -494,6 +711,70 @@ describe('ConfigurationReference', () => {
       const after = session.holder.ref
       expect(after).not.toBe(before)
       expect(readConfObject(after, 'name')).toBe('updated')
+    })
+
+    test('the same frozen object hydrates independently per schemaType (no cross-instance collision)', () => {
+      // Regression: the hydration cache used to be a bare module-level WeakMap
+      // keyed by the frozen object alone. Two schemas built by two separate
+      // buildFrozenTrackEnv() calls sharing one frozen track object used to
+      // collide on that shared identity.
+      const { Session: SessionA } = buildFrozenTrackEnv()
+      const { Session: SessionB } = buildFrozenTrackEnv()
+
+      const sharedFrozenTrack = { trackId: 'shared', name: 'orig' }
+
+      const sessionA = SessionA.create(
+        { _tracks: [sharedFrozenTrack], holder: { ref: 'shared' } },
+        { pluginManager },
+      )
+      const sessionB = SessionB.create(
+        { _tracks: [sharedFrozenTrack], holder: { ref: 'shared' } },
+        { pluginManager },
+      )
+
+      const resolvedA = sessionA.holder.ref
+      const resolvedB = sessionB.holder.ref
+
+      // Pre-fix, sessionB's lookup would hit the cache entry sessionA's access
+      // just created (keyed on the frozen object alone) and hand back sessionA's
+      // node verbatim, even though buildFrozenTrackEnv gave each session its
+      // own distinct schemaType.
+      expect(resolvedA).not.toBe(resolvedB)
+      expect(getType(resolvedA)).not.toBe(getType(resolvedB))
+    })
+
+    test('two independent PluginManager instances never share a hydration cache entry', () => {
+      // The realistic version of the collision above: two independent
+      // PluginManager instances (e.g. two createViewState() calls on one page)
+      // that happen to be handed the identical frozen track object — the
+      // schemaType each one builds for "TestFrozenTrack" differs even though
+      // the model name is the same string, but the cache lives on
+      // pluginManager.trackConfigHydrationCache, so isolation holds
+      // structurally rather than depending on that.
+      const pluginManagerA = new PluginManager([]).createPluggableElements()
+      pluginManagerA.configure()
+      const pluginManagerB = new PluginManager([]).createPluggableElements()
+      pluginManagerB.configure()
+
+      const { Session } = buildFrozenTrackEnv()
+      const sharedFrozenTrack = { trackId: 'shared', name: 'orig' }
+
+      const sessionA = Session.create(
+        { _tracks: [sharedFrozenTrack], holder: { ref: 'shared' } },
+        { pluginManager: pluginManagerA },
+      )
+      const sessionB = Session.create(
+        { _tracks: [sharedFrozenTrack], holder: { ref: 'shared' } },
+        { pluginManager: pluginManagerB },
+      )
+
+      const resolvedA = sessionA.holder.ref
+      const resolvedB = sessionB.holder.ref
+
+      expect(resolvedA).not.toBe(resolvedB)
+      expect(pluginManagerA.trackConfigHydrationCache).not.toBe(
+        pluginManagerB.trackConfigHydrationCache,
+      )
     })
   })
 
@@ -658,6 +939,69 @@ describe('ConfigurationReference', () => {
         { pluginManager },
       )
       expect(typeof getSnapshot(session.holder).ref).toBe('string')
+    })
+  })
+})
+
+describe('readConfObject path resolution', () => {
+  test('no path returns the whole config snapshot (defaults stripped)', () => {
+    const schema = ConfigurationSchema('Whole', {
+      a: { type: 'number', defaultValue: 1 },
+      b: { type: 'string', defaultValue: 'x' },
+    })
+    const node = schema.create({ b: 'y' }, { pluginManager })
+    expect(readConfObject(node)).toEqual({ b: 'y' })
+  })
+
+  test('a nested array path evaluates a jexl callback with args', () => {
+    const schema = ConfigurationSchema('Outer', {
+      labels: ConfigurationSchema('Labels', {
+        name: {
+          type: 'string',
+          defaultValue: "jexl:get(feature,'n')",
+          contextVariable: ['feature'],
+        },
+      }),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    const out = readConfObject(node, ['labels', 'name'], {
+      feature: { get: (k: string) => (k === 'n' ? 'HELLO' : undefined) },
+    })
+    expect(out).toBe('HELLO')
+  })
+
+  test('a missing sub-config in an array path yields undefined, not a throw', () => {
+    const schema = ConfigurationSchema('Outer', {
+      a: { type: 'number', defaultValue: 1 },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(readConfObject(node, ['missing', 'deeper'])).toBeUndefined()
+  })
+
+  // A top-level config can itself be a types.map (e.g. an assembly's per-key
+  // configs). rawSlotValue falls back from property access to map.get() so the
+  // same readConfObject API drills into map entries. Easy to break unknowingly.
+  describe('top-level types.map config (rawSlotValue map fallback)', () => {
+    const MapConfig = types.map(
+      ConfigurationSchema('Item', { val: { type: 'number', defaultValue: 1 } }),
+    )
+    const make = () =>
+      MapConfig.create({ a: { val: 5 }, b: { val: 1 } }, { pluginManager })
+
+    test('reading a key returns that entry as a snapshot', () => {
+      expect(readConfObject(make(), 'a')).toEqual({ val: 5 })
+    })
+
+    test('an all-default entry snapshots as an empty object', () => {
+      expect(readConfObject(make(), 'b')).toEqual({})
+    })
+
+    test('a missing key returns undefined', () => {
+      expect(readConfObject(make(), 'zzz')).toBeUndefined()
+    })
+
+    test('an array path drills into a map entry slot', () => {
+      expect(readConfObject(make(), ['a', 'val'])).toBe(5)
     })
   })
 })

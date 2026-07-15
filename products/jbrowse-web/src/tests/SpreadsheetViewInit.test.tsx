@@ -1,37 +1,19 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
-import { configure } from 'mobx'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
-
-configure({ disableErrorBoundaries: true })
-
-const getFile = (url: string) => {
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/volvox/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
-
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-})
+utilizeFetchMockForTest(volvoxGetFile)
 
 async function createSpreadsheetViewWithInit(init: {
   assembly: string
@@ -109,4 +91,28 @@ test('SpreadsheetView without init shows import form', () => {
 
   expect(view.spreadsheet).toBeUndefined()
   expect(view.init).toBeUndefined()
+}, 40000)
+
+// Regression: the reaction clears init synchronously, so the cached file
+// location is the reconstruction source. It must be persisted synchronously
+// (not just the volatile fileSource) so a snapshot taken before the async load
+// finishes can still reload the file instead of stranding on the import form.
+test('snapshot persists cached file location synchronously', () => {
+  const { rootModel } = getPluginManager()
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+
+  const view = session.addView('SpreadsheetView', {
+    init: {
+      assembly: 'volvox',
+      uri: 'test_data/volvox/volvox.filtered.vcf.gz',
+    },
+  })
+
+  const snap: {
+    init?: unknown
+    importWizard: { cachedFileLocation?: unknown }
+  } = getSnapshot(view)
+  expect(snap.init).toBeUndefined()
+  expect(snap.importWizard.cachedFileLocation).toBeDefined()
 }, 40000)

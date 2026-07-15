@@ -1,8 +1,6 @@
-import { createElementId } from '@jbrowse/core/util/types/mst'
 import { observer } from 'mobx-react'
 
-import ConfigWarningDialog from './ConfigWarningDialog.tsx'
-import SessionWarningDialog from './SessionWarningDialog.tsx'
+import PluginWarningDialog from './PluginWarningDialog.tsx'
 import factoryReset from '../factoryReset.ts'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'
@@ -15,37 +13,30 @@ const SessionTriaged = observer(function SessionTriaged({
   loader: SessionLoaderModel
   sessionTriaged: SessionTriagedInfo
 }) {
-  return sessionTriaged.origin === 'session' ? (
-    <SessionWarningDialog
+  const { origin, snap, reason } = sessionTriaged
+  return (
+    <PluginWarningDialog
+      kind={origin}
+      reason={reason}
       onConfirm={async () => {
-        // second param true says we passed user confirmation
-        await loader.loadSession(
-          { ...sessionTriaged.snap, id: createElementId() },
-          true,
-        )
-        loader.setSessionTriaged(undefined)
+        if (origin === 'session') {
+          await loader.loadImportedSession(snap, true)
+          loader.setSessionTriaged(undefined)
+        } else {
+          // applyTriagedConfig clears the config triage and resolves the
+          // session itself, which may surface a new (session) triage
+          await loader.applyTriagedConfig(snap)
+        }
       }}
       onCancel={() => {
-        loader.setBlankSession(true)
-        loader.setSessionTriaged(undefined)
+        if (origin === 'session') {
+          loader.setSessionSource({ type: 'default' })
+          loader.setSessionTriaged(undefined)
+        } else {
+          // factoryReset() navigates the page away, so there's nothing to clear
+          factoryReset()
+        }
       }}
-      reason={sessionTriaged.reason}
-    />
-  ) : (
-    <ConfigWarningDialog
-      onConfirm={async () => {
-        await loader.fetchPlugins(sessionTriaged.snap)
-        loader.setConfigSnapshot({
-          ...sessionTriaged.snap,
-          id: createElementId(),
-        })
-        loader.setSessionTriaged(undefined)
-      }}
-      onCancel={() => {
-        factoryReset()
-        loader.setSessionTriaged(undefined)
-      }}
-      reason={sessionTriaged.reason}
     />
   )
 })

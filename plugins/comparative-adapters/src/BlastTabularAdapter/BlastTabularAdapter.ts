@@ -5,7 +5,9 @@ import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
+import { getAssemblyNamesFromConf } from '../util.ts'
 
+import type { BlastTabularAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
@@ -151,10 +153,20 @@ function createBlastLineParser(columns: string) {
     sstart: sstartIndex,
     send: sendIndex,
   } = requiredIndices
-  const columnNameSet = new Map<string, number>(
+  // BlastColumns fields are all string except qstart/qend/sstart/send (number);
+  // those are all in REQUIRED_COLUMNS and filtered out below, so remaining
+  // entries are safely writable as strings.
+  type StringColumn = Exclude<
+    keyof BlastColumns,
+    'qstart' | 'qend' | 'sstart' | 'send'
+  >
+  const extraColumns = new Map<StringColumn, number>(
     columnNames
       .map((c, idx) => [c, idx] as const)
-      .filter(f => !(REQUIRED_COLUMNS as readonly string[]).includes(f[0])),
+      .filter(
+        (f): f is [StringColumn, number] =>
+          !(REQUIRED_COLUMNS as readonly string[]).includes(f[0]),
+      ),
   )
   return (line: string): BlastRecord | undefined => {
     if (line.startsWith('#')) {
@@ -180,19 +192,17 @@ function createBlastLineParser(columns: string) {
       sstart: Number.parseInt(sstart),
       send: Number.parseInt(send),
     }
-    for (const [columnName, idx] of columnNameSet.entries()) {
+    for (const [columnName, idx] of extraColumns.entries()) {
       const value = row[idx]
-      if (!value) {
-        continue
+      if (value) {
+        record[columnName] = value
       }
-      // @ts-expect-error
-      record[columnName] = value
     }
     return record
   }
 }
 
-export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
+export default class BlastTabularAdapter extends BaseFeatureDataAdapter<BlastTabularAdapterConfig> {
   private setupP?: Promise<BlastRecord[]>
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -206,7 +216,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
   }
 
   async setupPre(opts?: BaseOptions): Promise<BlastRecord[]> {
-    const columns = this.getConf('columns') as string
+    const columns = this.getConf('columns')
     const lines: BlastRecord[] = []
     const cb = createBlastLineParser(columns)
     parseLineByLine(
@@ -234,13 +244,7 @@ export default class BlastTabularAdapter extends BaseFeatureDataAdapter {
   }
 
   getAssemblyNames() {
-    const assemblyNames = this.getConf('assemblyNames') as string[]
-    if (assemblyNames.length === 0) {
-      const query = this.getConf('queryAssembly') as string
-      const target = this.getConf('targetAssembly') as string
-      return [query, target]
-    }
-    return assemblyNames
+    return getAssemblyNamesFromConf(this)
   }
 
   async getRefNames(opts: BaseOptions = {}) {

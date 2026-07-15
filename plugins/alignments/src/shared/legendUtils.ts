@@ -1,158 +1,259 @@
-import { fillColor } from './color.ts'
+import {
+  methylated5hmC,
+  methylated5mC,
+  unmethylated5mC,
+} from '@jbrowse/core/ui/theme'
 
-import type { ColorBy, ModificationTypeWithColor } from './types.ts'
+import { isModificationScheme } from './colorSchemes.ts'
+import { getModificationName } from './modificationData.ts'
+import { isModificationTypeVisible, paintsUnmethylatedState } from './types.ts'
+import {
+  categorySwatchColor,
+  rgb255,
+} from '../LinearAlignmentsDisplay/colorUtils.ts'
+
+import type {
+  ColorBy,
+  ColorSchemeType,
+  ModificationColorBy,
+  ModificationTypeWithColor,
+} from './types.ts'
+import type {
+  ReadColorCategory,
+  SwatchCategory,
+} from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ColorPalette } from '../LinearAlignmentsDisplay/shaders/colors.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
-import type { Theme } from '@mui/material'
 
-// Re-export from linear-genome-view for convenience
-export { calculateSvgLegendWidth } from '@jbrowse/plugin-linear-genome-view'
 export type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
-const supplementaryItem: LegendItem = {
-  color: fillColor.color_supplementary,
-  label: 'Supplementary/split',
-}
-
-const unmappedMateItem: LegendItem = {
-  color: fillColor.color_unmapped_mate,
-  label: 'Unmapped mate',
-}
-
-const orientationItems: LegendItem[] = [
-  { color: fillColor.color_pair_lr, label: 'LR - Normal pair orientation' },
-  { color: fillColor.color_pair_rl, label: 'RL - Mates point outward' },
-  { color: fillColor.color_pair_ll, label: 'LL - Both mates forward strand' },
-  { color: fillColor.color_pair_rr, label: 'RR - Both mates reverse strand' },
-]
-
-const insertSizeItems: LegendItem[] = [
-  { color: fillColor.color_longinsert, label: 'Long insert' },
-  { color: fillColor.color_shortinsert, label: 'Short insert' },
-  { color: fillColor.color_interchrom, label: 'Inter-chromosomal' },
-]
-
-const normalInsertItem: LegendItem = {
-  color: fillColor.color_pair_lr,
-  label: 'Normal',
-}
-
-const orientationLegendItems: LegendItem[] = [
-  ...orientationItems,
-  unmappedMateItem,
-  supplementaryItem,
-]
-
-const insertSizeLegendItems: LegendItem[] = [
-  normalInsertItem,
-  ...insertSizeItems,
-  unmappedMateItem,
-  supplementaryItem,
-]
-
-const insertSizeAndOrientationLegendItems: LegendItem[] = [
-  ...orientationItems,
-  ...insertSizeItems,
-  unmappedMateItem,
-  supplementaryItem,
-]
-
-function getBaseItems(theme: Theme): LegendItem[] {
-  const { bases, insertion, deletion, hardclip, softclip } = theme.palette
-  return [
-    { color: bases.A.main, label: 'A' },
-    { color: bases.C.main, label: 'C' },
-    { color: bases.G.main, label: 'G' },
-    { color: bases.T.main, label: 'T' },
-    { color: insertion, label: 'Insertion' },
-    { color: deletion, label: 'Deletion' },
-    { color: hardclip, label: 'Hard clip' },
-    { color: softclip, label: 'Soft clip' },
-  ]
-}
-
-/**
- * Get legend items for pileup display based on colorBy setting
- */
-export function getPileupLegendItems(
-  colorBy: ColorBy | undefined,
-  theme: Theme,
+function hslRamp(
+  saturation: number,
+  steps: { hue: number; label: string }[],
 ): LegendItem[] {
-  const colorType = colorBy?.type
-
-  if (colorType === 'strand') {
-    return [
-      { color: fillColor.color_fwd_strand, label: 'Forward strand' },
-      { color: fillColor.color_rev_strand, label: 'Reverse strand' },
-      supplementaryItem,
-    ]
-  } else if (colorType === 'stranded') {
-    return [
-      { color: fillColor.color_fwd_strand, label: 'First-of-pair forward' },
-      { color: fillColor.color_rev_strand, label: 'First-of-pair reverse' },
-      supplementaryItem,
-    ]
-  } else if (colorType === 'insertSize') {
-    return insertSizeLegendItems
-  } else if (colorType === 'pairOrientation') {
-    return orientationLegendItems
-  } else if (colorType === 'insertSizeAndPairOrientation') {
-    return insertSizeAndOrientationLegendItems
-  } else {
-    return getBaseItems(theme)
-  }
+  return steps.map(({ hue, label }) => ({
+    color: `hsl(${hue}, ${saturation}%, 50%)`,
+    label,
+  }))
 }
 
-/**
- * Get legend items for SNP coverage display based on colorBy setting
- */
-export function getSNPCoverageLegendItems(
-  colorBy: ColorBy | undefined,
+// Each fixed-swatch category with its label, in display order. The swatch color
+// is resolved from the live palette (categorySwatchColor), so the only thing
+// the legend hard-codes is the wording. Categories not listed here ('plain',
+// 'mapq', 'tag', 'modFwd'/'modRev') are dynamic ramps/palettes with no single
+// swatch. Driving the legend off this table means it lists exactly the buckets
+// the renderer produced (readColorCategory) — no per-scheme item arrays.
+const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
+  { category: 'fwdStrand', label: 'Forward strand' },
+  { category: 'revStrand', label: 'Reverse strand' },
+  { category: 'nonSplit', label: 'Unsplit read' },
+  { category: 'pairLR', label: 'LR - Normal pair orientation' },
+  { category: 'pairRL', label: 'RL - Mates point outward' },
+  { category: 'pairLL', label: 'LL - Both mates forward strand' },
+  { category: 'pairRR', label: 'RR - Both mates reverse strand' },
+  { category: 'normalInsert', label: 'Normal' },
+  { category: 'longInsert', label: 'Long insert' },
+  { category: 'shortInsert', label: 'Short insert' },
+  { category: 'splitInversion', label: 'Split-read inversion' },
+  { category: 'splitDeletion', label: 'Split read (deletion)' },
+  { category: 'interchrom', label: 'Inter-chromosomal' },
+  { category: 'unmappedMate', label: 'Unmapped mate' },
+  { category: 'supplementary', label: 'Supplementary/split' },
+]
+
+// Under any scheme that colors ordinary reads by something OTHER than their own
+// strand (normal, insert size, pair orientation, mapq, modifications, tag …), a
+// fwd/rev-strand bucket can only have been produced by the split-read
+// (chained-supplementary) branch of readColorCategory — the scheme's own
+// classifier yields a different category (plain/mapq/insert/pair/…) for a
+// non-split read. Naming these as split reads is what distinguishes the colored
+// split segments from the scheme's grey/base-colored non-split reads in
+// linked-reads (chain) mode, where only the splits pick up a color.
+const SPLIT_STRAND_LABELS: Partial<Record<SwatchCategory, string>> = {
+  fwdStrand: 'Split read (forward)',
+  revStrand: 'Split read (reverse)',
+}
+
+// The first-of-pair-strand scheme colors by the FRAGMENT strand inferred from
+// the first mate (read2's strand is inverted), not each read's own strand — so a
+// reverse-mapped read1 lands in the "forward" bucket. Spell that out rather than
+// reusing the plain "Forward strand" wording of the strand scheme, which would
+// read as the read's own strand.
+const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
+  fwdStrand: 'Forward (first-in-pair)',
+  revStrand: 'Reverse (first-in-pair)',
+}
+
+// Per-scheme relabeling of the shared fwd/rev-strand swatches. The plain
+// `strand` scheme (and undefined = no relabel here) keeps CATEGORY_LEGEND's
+// wording; every other scheme reframes fwd/rev as either the fragment strand or
+// a split read (see the two maps above).
+function strandLabelOverrides(colorType: ColorSchemeType | undefined) {
+  return colorType === 'firstOfPairStrand' || colorType === 'stranded'
+    ? FIRST_OF_PAIR_LABELS
+    : colorType === 'strand'
+      ? undefined
+      : SPLIT_STRAND_LABELS
+}
+
+// Per-base nucleotide swatches, colored from the live palette base colors.
+const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
+  { key: 'colorBaseA', label: 'A' },
+  { key: 'colorBaseC', label: 'C' },
+  { key: 'colorBaseG', label: 'G' },
+  { key: 'colorBaseT', label: 'T' },
+  { key: 'colorBaseN', label: 'N' },
+]
+
+// Tags that encode strand rather than a categorical value; buildReadTagColors
+// paints these from the fixed strand colors (not colorTagMap), so their legend
+// is the strand key, not a per-value list.
+const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
+
+// The methylation (fill-unmarked) view keys exactly what extractMethylation
+// paints: 5mC red, 5hmC pink, and every implicitly-unmodified cytosine — the
+// color that floods a hypomethylated region — blue. The by-type MM palette (a
+// magenta 5hmC, no "unmethylated" swatch at all) would mismatch the reads.
+function fillUnmarkedLegend(
+  modifications: ModificationColorBy | undefined,
   visibleModifications: ReadonlyMap<string, ModificationTypeWithColor>,
-  theme: Theme,
 ): LegendItem[] {
-  if (colorBy?.type === 'methylation') {
-    return [
-      { color: 'red', label: 'CpG methylated' },
-      { color: 'blue', label: 'CpG unmethylated' },
-    ]
-  } else if (colorBy?.type === 'modifications') {
-    const items: LegendItem[] = []
-    for (const [type, mod] of visibleModifications.entries()) {
-      items.push({ color: mod.color, label: type })
-    }
-    return items
-  } else {
-    return getBaseItems(theme)
+  const items: LegendItem[] = []
+  if (
+    visibleModifications.has('m') &&
+    isModificationTypeVisible(modifications, 'm')
+  ) {
+    items.push({ color: methylated5mC, label: '5mC methylated' })
   }
+  if (
+    visibleModifications.has('h') &&
+    isModificationTypeVisible(modifications, 'h')
+  ) {
+    items.push({ color: methylated5hmC, label: '5hmC methylated' })
+  }
+  items.push({ color: unmethylated5mC, label: 'Unmethylated' })
+  return items
+}
+
+// The fixed-swatch buckets actually present in the reads, in CATEGORY_LEGEND
+// order. These are cross-cutting: under most schemes they mark exceptions
+// layered over the scheme's primary coloring — unmapped mate, inter-chromosomal,
+// supplementary, and (in chain mode) the split-read strand framing — so every
+// scheme appends them after its own key rather than any one branch owning them.
+// fwd/rev are reworded per scheme (split read vs. fragment strand) — see
+// strandLabelOverrides.
+function crossCuttingBuckets(
+  presentCategories: ReadonlySet<ReadColorCategory>,
+  palette: ColorPalette,
+  colorType: ColorSchemeType | undefined,
+): LegendItem[] {
+  const overrides = strandLabelOverrides(colorType)
+  return CATEGORY_LEGEND.filter(({ category }) =>
+    presentCategories.has(category),
+  ).map(({ category, label }) => ({
+    color: categorySwatchColor(category, palette),
+    label: overrides?.[category] ?? label,
+  }))
 }
 
 /**
- * Get legend items for read cloud/arcs display based on colorBy setting.
- * Used by both LinearReadCloudDisplay and LinearReadArcsDisplay.
+ * Legend items for the alignments display. `presentCategories` is the set of
+ * read buckets actually seen in the rendered reads (from readColorCategory), so
+ * only relevant swatches are listed, and `palette` is the live render palette so
+ * swatch colors match the painted reads exactly. Modification swatches come from
+ * `visibleModifications`; mapping/per-base quality are fixed hue ramps.
  */
 export function getReadDisplayLegendItems(
   colorBy: ColorBy | undefined,
+  presentCategories: ReadonlySet<ReadColorCategory>,
+  palette: ColorPalette,
   visibleModifications?: ReadonlyMap<string, ModificationTypeWithColor>,
+  colorTagMap?: Record<string, string>,
 ): LegendItem[] {
   const colorType = colorBy?.type
+  const buckets = crossCuttingBuckets(presentCategories, palette, colorType)
 
-  if (colorType === 'modifications' && visibleModifications) {
-    const items: LegendItem[] = []
-    for (const [type, mod] of visibleModifications.entries()) {
-      items.push({ color: mod.color, label: type })
+  if (colorType === 'tag') {
+    const tag = colorBy?.tag
+    if (tag && STRAND_TAGS.has(tag)) {
+      // Just the two strand keys; reads with no resolvable XS/TS/ts value fall
+      // back to the neutral color (see buildReadTagColors), which needs no
+      // legend entry of its own.
+      return [
+        { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
+        { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
+      ]
     }
-    items.push(supplementaryItem)
-    return items
-  }
-  if (colorType === 'insertSizeAndOrientation') {
-    return insertSizeAndOrientationLegendItems
-  }
-  if (colorType === 'insertSize') {
-    return insertSizeLegendItems
-  }
-  if (colorType === 'orientation') {
-    return orientationLegendItems
+    // One swatch per discovered tag value, colored exactly as painted
+    // (colorTagMap holds the palette color baked into readTagColors). Sorted by
+    // value so the legend order stays stable as reads stream in rather than
+    // reordering by discovery. Empty until reads with the tag load.
+    const values = Object.entries(colorTagMap ?? {})
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([value, color]) => ({ color, label: value }))
+    return [...values, ...buckets]
   }
 
-  return [supplementaryItem]
+  if (colorType === 'mappingQuality') {
+    return [
+      ...hslRamp(50, [
+        { hue: 0, label: 'MAPQ 0' },
+        { hue: 30, label: 'MAPQ 30' },
+        { hue: 60, label: 'MAPQ ≥60' },
+      ]),
+      ...buckets,
+    ]
+  }
+  if (colorType === 'perBaseQuality') {
+    return [
+      ...hslRamp(55, [
+        { hue: 0, label: 'BQ 0' },
+        { hue: 15, label: 'BQ 10' },
+        { hue: 30, label: 'BQ 20' },
+        { hue: 45, label: 'BQ 30' },
+        { hue: 60, label: 'BQ 40' },
+      ]),
+      ...buckets,
+    ]
+  }
+  if (colorType === 'perBaseLetter') {
+    return [
+      ...BASE_LEGEND.map(({ key, label }) => ({
+        color: rgb255(palette[key]),
+        label,
+      })),
+      ...buckets,
+    ]
+  }
+  if (colorType && isModificationScheme(colorType) && visibleModifications) {
+    // The methylation views that paint an explicit unmethylated state
+    // (fill-unmarked and bisulfite) key those states, not the per-type MM
+    // palette; every other modification view keys each detected type in the
+    // color the reads use.
+    const items = paintsUnmethylatedState(colorBy)
+      ? fillUnmarkedLegend(colorBy.modifications, visibleModifications)
+      : [...visibleModifications]
+          .filter(([type]) =>
+            isModificationTypeVisible(colorBy.modifications, type),
+          )
+          .map(([type, mod]) => ({
+            color: mod.color,
+            label: getModificationName(type),
+          }))
+    // Split reads (chain mode) and supplementary/unmapped-mate exceptions carry
+    // their own fixed swatches, appended after the modification-type key.
+    return [...items, ...buckets]
+  }
+
+  // The normal scheme paints every read one flat color ('plain' → colorPairLR),
+  // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
+  // legend would be empty and "Show legend" would render nothing. Prepend a
+  // base-reads swatch so the toggle always shows something, keeping any
+  // cross-cutting buckets (unmapped mate, split reads in chain mode) after it.
+  if (colorType === undefined || colorType === 'normal') {
+    return [{ color: rgb255(palette.colorPairLR), label: 'Reads' }, ...buckets]
+  }
+  // The strand / insert-size / orientation schemes are described entirely by
+  // which fixed-swatch buckets occurred.
+  return buckets
 }

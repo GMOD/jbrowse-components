@@ -1,43 +1,46 @@
 ---
 id: formatabout
 title: FormatAbout
+sidebar_label: Root -> FormatAbout
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/FormatAbout.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/FormatAbout.md)
-
-## Docs
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/FormatAbout.ts).
 
 generally exists on the config.json or root config as configuration.formatAbout
 
-### FormatAbout - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                                                         | Type      | Description                                  |
+| ---------------------------------------------------------------------------- | --------- | -------------------------------------------- |
+| [configuration.formatAbout.config](#slot-configurationformataboutconfig)     | `frozen`  | formats configuration object in about dialog |
+| [configuration.formatAbout.hideUris](#slot-configurationformatabouthideuris) | `boolean` |                                              |
+
+<details>
+<summary>FormatAbout - Slots</summary>
 
 #### slot: configuration.formatAbout.config
 
+formats configuration object in about dialog
+
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
+
 ```js
-config: {
-      type: 'frozen',
-      description: 'formats configuration object in about dialog',
-      defaultValue: {},
-      contextVariable: ['config'],
-    }
+{
+  type: 'frozen',
+  description: 'formats configuration object in about dialog',
+  defaultValue: {},
+  contextVariable: ['config'],
+}
 ```
 
 #### slot: configuration.formatAbout.hideUris
 
-```js
-hideUris: {
-      type: 'boolean',
-      defaultValue: false,
-    }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
+
+</details>

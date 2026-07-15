@@ -1,7 +1,12 @@
 import { Suspense, lazy, useLayoutEffect, useRef } from 'react'
 
-import escapeHTML from 'escape-html'
+declare global {
+  interface Element {
+    setHTML?(html: string): void
+  }
+}
 
+import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
 import { linkify } from '../util/index.ts'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
@@ -58,6 +63,17 @@ function isHTML(str: string) {
   return full.test(str)
 }
 
+const htmlEscapes: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+}
+function escapeHTML(str: string) {
+  return str.replaceAll(/[&<>"']/g, c => htmlEscapes[c]!)
+}
+
 function needsSanitization(str: string) {
   return str.includes('<') || str.includes('://')
 }
@@ -68,12 +84,8 @@ function SetHTML({ value, className }: { value: string; className?: string }) {
     const el = spanRef.current
     if (el) {
       try {
-        // @ts-expect-error
-        el.setHTML(value)
-        for (const a of el.querySelectorAll('a')) {
-          a.setAttribute('rel', 'noopener noreferrer')
-          a.setAttribute('target', '_blank')
-        }
+        el.setHTML?.(value)
+        rewriteExternalAnchors(el)
       } catch (e) {
         console.error(e)
       }
@@ -97,7 +109,6 @@ export default function SanitizedHTML({
   const html = linkify(str)
   const value = isHTML(html) ? html : escapeHTML(html)
 
-  // @ts-expect-error
   if (typeof Element !== 'undefined' && Element.prototype.setHTML) {
     return <SetHTML value={value} className={className} />
   }

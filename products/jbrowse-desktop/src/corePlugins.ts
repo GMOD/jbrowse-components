@@ -2,6 +2,7 @@ import Alignments from '@jbrowse/plugin-alignments'
 import Arc from '@jbrowse/plugin-arc'
 import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
+import Blat from '@jbrowse/plugin-blat'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import Canvas from '@jbrowse/plugin-canvas'
 import CircularView from '@jbrowse/plugin-circular-view'
@@ -18,6 +19,7 @@ import JobsManagementPlugin from '@jbrowse/plugin-jobs-management'
 import LegacyJBrowse from '@jbrowse/plugin-legacy-jbrowse'
 import LinearComparativeView from '@jbrowse/plugin-linear-comparative-view'
 import LinearGenomeView from '@jbrowse/plugin-linear-genome-view'
+import Maf from '@jbrowse/plugin-maf'
 import Menus from '@jbrowse/plugin-menus'
 import RDF from '@jbrowse/plugin-rdf'
 import Sequence from '@jbrowse/plugin-sequence'
@@ -50,6 +52,7 @@ const corePlugins = [
   Variants,
   Wiggle,
   GCContent,
+  Maf,
   SpreadsheetViewPlugin,
   SvInspectorPlugin,
   BreakpointSplitView,
@@ -58,6 +61,7 @@ const corePlugins = [
   GridBookmarkPlugin,
   ComparativeAdapters,
   Arc,
+  Blat,
 ]
 
 export default corePlugins

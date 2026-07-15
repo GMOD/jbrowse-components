@@ -6,7 +6,14 @@ import FieldName from './FieldName.tsx'
 import { isObject } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
 
+import type { FeatureFormatter } from '../types.tsx'
+
 const MAX_ARRAY_LENGTH = 100
+
+// Numeric arrays (e.g. base-modification probabilities, per-base scores) are
+// rarely read element-by-element and can be thousands long, so only a handful
+// are shown until expanded
+const MAX_NUMERIC_ARRAY_LENGTH = 5
 
 const useStyles = makeStyles()(theme => ({
   field: {
@@ -34,36 +41,31 @@ export default function ArrayValue({
   description?: React.ReactNode
   name: string
   value: unknown[]
-  formatter?: (value: unknown, key: string) => React.ReactNode
+  formatter?: FeatureFormatter
   prefix?: string[]
 }) {
   const { classes } = useStyles()
   const [showAll, setShowAll] = useState(false)
-  const needsTruncation = value.length > MAX_ARRAY_LENGTH
+  const limit = value.every(v => typeof v === 'number')
+    ? MAX_NUMERIC_ARRAY_LENGTH
+    : MAX_ARRAY_LENGTH
+  const needsTruncation = value.length > limit
   const displayedValues =
-    needsTruncation && !showAll ? value.slice(0, MAX_ARRAY_LENGTH) : value
+    needsTruncation && !showAll ? value.slice(0, limit) : value
 
-  if (value.length === 1) {
-    return isObject(value[0]) ? (
+  return value.every(isObject) ? (
+    value.length === 1 ? (
       <Attributes
         formatter={formatter}
-        attributes={value[0]}
+        attributes={value[0]!}
         prefix={[...prefix, name]}
       />
     ) : (
-      <div className={classes.field}>
-        <FieldName prefix={prefix} description={description} name={name} />
-        <BasicValue value={formatter ? formatter(value[0], name) : value[0]} />
-      </div>
-    )
-  } else if (value.every(val => isObject(val))) {
-    // note: this branch is rarely reached since Attributes.tsx routes
-    // arrays of objects with length > 1 to DataGridDetails
-    return (
       <>
         {value.map((val, i) => (
           <Attributes
-            key={`${JSON.stringify(val)}-${i}`}
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of attribute objects, no unique field available
+            key={i}
             formatter={formatter}
             attributes={val}
             prefix={[...prefix, `${name}-${i}`]}
@@ -71,31 +73,35 @@ export default function ArrayValue({
         ))}
       </>
     )
-  } else {
-    return (
-      <div className={classes.field}>
-        <FieldName prefix={prefix} description={description} name={name} />
-        {displayedValues.map((val, i) => (
-          <div
-            key={`${JSON.stringify(val)}-${i}`}
-            className={classes.fieldSubvalue}
-          >
-            <BasicValue value={formatter ? formatter(val, name) : val} />
-          </div>
-        ))}
-        {needsTruncation ? (
-          <button
-            type="button"
-            onClick={() => {
-              setShowAll(val => !val)
-            }}
-          >
-            {showAll
-              ? 'Show less'
-              : `Showing ${MAX_ARRAY_LENGTH} of ${value.length}. Show all...`}
-          </button>
-        ) : null}
-      </div>
-    )
-  }
+  ) : (
+    <div className={classes.field}>
+      <FieldName prefix={prefix} description={description} name={name} />
+      {value.length === 1 ? (
+        <BasicValue
+          value={formatter ? formatter(value[0], name, 0) : value[0]}
+        />
+      ) : (
+        <>
+          {displayedValues.map((val, i) => (
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- static positional list of primitive values, no unique field available
+            <div key={`${String(val)}-${i}`} className={classes.fieldSubvalue}>
+              <BasicValue value={formatter ? formatter(val, name, i) : val} />
+            </div>
+          ))}
+          {needsTruncation ? (
+            <button
+              type="button"
+              onClick={() => {
+                setShowAll(v => !v)
+              }}
+            >
+              {showAll
+                ? 'Show less'
+                : `Showing ${limit} of ${value.length}. Show all...`}
+            </button>
+          ) : null}
+        </>
+      )}
+    </div>
+  )
 }

@@ -1,49 +1,39 @@
 import { useState, useTransition } from 'react'
 
-import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+import { MonospaceTextField } from '@jbrowse/core/ui'
+import {
+  ensureJexlPrefix,
+  stringToJexlExpression,
+} from '@jbrowse/core/util/jexlStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getEnv } from '@jbrowse/mobx-state-tree'
 import HelpIcon from '@mui/icons-material/Help'
-import { IconButton, TextField, Tooltip } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-const fontFamily =
-  'Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace'
+import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()(theme => ({
   callbackEditor: {
     marginTop: '16px',
     borderBottom: `1px solid ${theme.palette.divider}`,
     width: '100%',
-    fontFamily,
-  },
-  textAreaFont: {
-    fontFamily,
-  },
-  callbackContainer: {
-    width: '100%',
-    overflowX: 'auto',
-  },
-
-  error: {
-    color: 'red',
-    fontSize: '0.8em',
   },
 }))
 
 function validateAndSetCode(
   code: string,
-  slot: { set: (arg: string) => void },
+  slot: { set: (arg: string) => void; pluginManager: PluginManager },
   setCodeError: (e: unknown) => void,
 ) {
   // empty buffer is "in progress", not invalid — don't commit and don't warn
-  if (code.trim() === '' || code.trim() === 'jexl:') {
+  const trimmed = code.trim()
+  if (trimmed === '' || trimmed === 'jexl:') {
     setCodeError(undefined)
     return
   }
   try {
-    const jexlCode = code.startsWith('jexl:') ? code : `jexl:${code}`
-    stringToJexlExpression(jexlCode, getEnv(slot).pluginManager?.jexl)
+    const jexlCode = ensureJexlPrefix(code)
+    stringToJexlExpression(jexlCode, slot.pluginManager.jexl)
     slot.set(jexlCode)
     setCodeError(undefined)
   } catch (e) {
@@ -60,70 +50,55 @@ const CallbackEditor = observer(function CallbackEditor({
     description: string
     name: string
     value: string
-    contextVariable: string
+    contextVariable: string[]
+    pluginManager: PluginManager
   }
 }) {
   const { classes } = useStyles()
 
   const [code, setCode] = useState(slot.value)
-  const [error, setCodeError] = useState<unknown>()
+  const [codeError, setCodeError] = useState<unknown>()
   const [, startTransition] = useTransition()
 
   // if default value is a callback, will have to remove jexl:
   // do this last
   return (
-    <>
-      {error ? <p className={classes.error}>{`${error}`}</p> : null}
-      <div className={classes.callbackContainer}>
-        <TextField
-          multiline
-          className={classes.callbackEditor}
-          value={code}
-          onChange={event => {
-            const value = event.target.value
-            setCode(value)
-            startTransition(() => {
-              validateAndSetCode(value, slot, setCodeError)
-            })
+    <MonospaceTextField
+      className={classes.callbackEditor}
+      value={code}
+      error={codeError}
+      onChange={value => {
+        setCode(value)
+        startTransition(() => {
+          validateAndSetCode(value, slot, setCodeError)
+        })
+      }}
+    >
+      <p>{slot.description}</p>
+      <Tooltip
+        title={
+          <div>
+            Callbacks are written in Jexl format. Click to learn more.
+            <br /> Names of available context items:{' '}
+            {slot.contextVariable.join(', ')}
+          </div>
+        }
+        arrow
+      >
+        <IconButton
+          color="primary"
+          onClick={() => {
+            window.open(
+              'https://jbrowse.org/jb2/docs/config_guides/jexl/',
+              '_blank',
+              'noopener,noreferrer',
+            )
           }}
-          style={{ background: error ? '#fdd' : undefined }}
-          slotProps={{
-            input: {
-              classes: {
-                input: classes.textAreaFont,
-              },
-            },
-          }}
-        />
-
-        <p>{slot.description}</p>
-        <Tooltip
-          title={
-            <div>
-              Callbacks are written in Jexl format. Click to learn more.
-              <br /> Names of available context items: {slot.contextVariable}
-            </div>
-          }
-          arrow
         >
-          <IconButton
-            color="primary"
-            onClick={() => {
-              const newWindow = window.open(
-                'https://github.com/TomFrost/Jexl',
-                '_blank',
-                'noopener,noreferrer',
-              )
-              if (newWindow) {
-                newWindow.opener = null
-              }
-            }}
-          >
-            <HelpIcon />
-          </IconButton>
-        </Tooltip>
-      </div>
-    </>
+          <HelpIcon />
+        </IconButton>
+      </Tooltip>
+    </MonospaceTextField>
   )
 })
 

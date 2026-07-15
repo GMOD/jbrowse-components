@@ -1,16 +1,20 @@
 import { useState } from 'react'
 
-import { useFetch, useLocalStorage } from '@jbrowse/core/util'
+import { ErrorMessage } from '@jbrowse/core/ui'
+import { mutate, useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import DeleteIcon from '@mui/icons-material/Delete'
 import ListIcon from '@mui/icons-material/List'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
-  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
+  IconButton,
+  Menu,
+  MenuItem,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
@@ -18,10 +22,12 @@ import {
 } from '@mui/material'
 
 import RecentSessionsCards from './RecentSessionsCards.tsx'
-import RecentSessionsList from './RecentSessionsDataGrid.tsx'
-import { useLoadSession } from './useLoadSession.ts'
+import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
+import { useNotifyError } from '../../NotifyContext.ts'
+import OpenLocalFileButton from '../OpenLocalFileButton.tsx'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
+import { loadPluginManager } from '../util.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -32,43 +38,65 @@ const { ipcRenderer } = window.require('electron')
 const useStyles = makeStyles()({
   flex: {
     display: 'flex',
+    alignItems: 'center',
     gap: 10,
-  },
-  verticalCenter: {
-    margin: 'auto 0',
   },
 })
 
 type RecentSessions = RecentSessionData[]
 
-// uses span to allow disabled button to have a tooltip
-function ToggleButtonWithTooltip(props: ToggleButtonProps) {
-  const { title = '', children, ...rest } = props
+function ToggleButtonWithTooltip({
+  title = '',
+  children,
+  ...rest
+}: ToggleButtonProps) {
+  return (
+    <Tooltip title={title}>
+      <ToggleButton {...rest}>{children}</ToggleButton>
+    </Tooltip>
+  )
+}
+
+function IconButtonWithTooltip({
+  title,
+  disabled,
+  onClick,
+  children,
+}: {
+  title: string
+  disabled?: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
   return (
     <Tooltip title={title}>
       <span>
-        <ToggleButton {...rest}>{children}</ToggleButton>
+        <IconButton
+          disabled={disabled}
+          onClick={() => {
+            onClick()
+          }}
+        >
+          {children}
+        </IconButton>
       </span>
     </Tooltip>
   )
 }
 
 export default function RecentSessionPanel({
-  setError,
   setPluginManager,
 }: {
-  setError: (e: unknown) => void
   setPluginManager: (pm: PluginManager) => void
 }) {
   const { classes } = useStyles()
-  const { launch, loading: sessionLoading } = useLoadSession({
-    setPluginManager,
-    setError,
-  })
+  const notifyError = useNotifyError()
   const [displayMode, setDisplayMode] = useLocalStorage('displayMode', 'list')
   const [sessionToRename, setSessionToRename] = useState<RecentSessionData>()
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
+  const [moreMenuAnchor, setMoreMenuAnchor] = useState<HTMLElement>()
+  const [now] = useState(() => Date.now())
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
     'showAutosaves',
     true,
@@ -81,50 +109,88 @@ export default function RecentSessionPanel({
     'startScreen-favoriteSessions',
     [] as string[],
   )
-
-  const { data: sessions = [], mutate: mutateSessions } = useFetch(
-    ['listSessions', showAutosaves],
-    () =>
-      ipcRenderer.invoke('listSessions', showAutosaves) as Promise<
-        RecentSessionData[]
-      >,
-    {
-      onError: e => {
-        console.error(e)
-        setError(e)
-      },
-    },
+  const {
+    data: sessions = [],
+    error: listSessionsError,
+    mutate: mutateSessions,
+  } = useFetch(
+    ['listSessions'],
+    () => ipcRenderer.invoke('listSessions') as Promise<RecentSessionData[]>,
   )
+
+  const launch = async (path: string) => {
+    try {
+      setPluginManager(await loadPluginManager(path))
+    } catch (e) {
+      console.error(e)
+      notifyError(e, {
+        label: 'Remove from recent sessions',
+        onClick: () => {
+          ipcRenderer
+            .invoke('removeRecentSession', path)
+            .then(refreshSessions)
+            .catch(console.error)
+        },
+      })
+    }
+  }
+
+  const refreshSessions = () => {
+    mutateSessions().catch(console.error)
+  }
 
   async function addToQuickstartList(arg: RecentSessionData[]) {
     try {
       await Promise.all(
         arg.map(s => ipcRenderer.invoke('addToQuickstartList', s.path, s.name)),
       )
+      // Revalidate the QuickstartPanel's shared SWR cache key now that the
+      // list has changed on disk.
+      await mutate('listQuickstarts')
     } catch (e) {
       console.error(e)
-      setError(e)
+      notifyError(e)
     }
   }
 
   const favs = new Set(favorites)
+  const isFavorite = (sessionPath: string) => favs.has(sessionPath)
+  const toggleFavorite = (sessionPath: string) => {
+    if (favs.has(sessionPath)) {
+      setFavorites(favorites.filter(path => path !== sessionPath))
+    } else {
+      setFavorites([...favorites, sessionPath])
+    }
+  }
   const sortedSessions = sessions.toSorted(
     (a, b) => (b.updated ?? 0) - (a.updated ?? 0),
   )
   const filteredSessions = sortedSessions.filter(
-    f => !showFavoritesOnly || favs.has(f.path),
+    f =>
+      (showAutosaves || !f.isAutosave) &&
+      (!showFavoritesOnly || favs.has(f.path)),
+  )
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
+  const oldAutosaves = sessions.filter(
+    f => f.isAutosave && now - (f.updated ?? 0) > thirtyDaysMs,
+  )
+  // The grid doesn't re-emit its selection when a filter toggle hides rows, so
+  // selectedSessions can outlive the visible list. Intersect before acting so
+  // delete/quickstart never touch a session the user can no longer see.
+  const visiblePaths = new Set(filteredSessions.map(s => s.path))
+  const visibleSelection = selectedSessions.filter(s =>
+    visiblePaths.has(s.path),
   )
 
   return (
     <div>
+      {listSessionsError ? <ErrorMessage error={listSessionsError} /> : null}
       {sessionToRename ? (
         <RenameSessionDialog
           sessionToRename={sessionToRename}
           onClose={() => {
             setSessionToRename(undefined)
-            mutateSessions().catch((e: unknown) => {
-              console.error(e)
-            })
+            refreshSessions()
           }}
         />
       ) : null}
@@ -133,9 +199,7 @@ export default function RecentSessionPanel({
           sessionsToDelete={sessionsToDelete}
           onClose={() => {
             setSessionsToDelete(undefined)
-            mutateSessions().catch((e: unknown) => {
-              console.error(e)
-            })
+            refreshSessions()
           }}
         />
       ) : null}
@@ -145,7 +209,9 @@ export default function RecentSessionPanel({
             exclusive
             value={displayMode}
             onChange={(_, newVal) => {
-              setDisplayMode(newVal)
+              if (newVal) {
+                setDisplayMode(newVal)
+              }
             }}
           >
             <ToggleButtonWithTooltip value="grid" title="Grid view">
@@ -156,30 +222,28 @@ export default function RecentSessionPanel({
             </ToggleButtonWithTooltip>
           </ToggleButtonGroup>
         </FormControl>
-        <FormControl>
-          <ToggleButtonGroup>
-            <ToggleButtonWithTooltip
-              value="delete"
+        {displayMode === 'list' ? (
+          <div style={{ display: 'flex' }}>
+            <IconButtonWithTooltip
               title="Delete sessions"
-              disabled={!selectedSessions.length}
+              disabled={!visibleSelection.length}
               onClick={() => {
-                setSessionsToDelete(selectedSessions)
+                setSessionsToDelete(visibleSelection)
               }}
             >
               <DeleteIcon />
-            </ToggleButtonWithTooltip>
-            <ToggleButtonWithTooltip
-              value="quickstart"
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip
               title="Add sessions to quickstart list"
-              disabled={!selectedSessions.length}
+              disabled={!visibleSelection.length}
               onClick={async () => {
-                await addToQuickstartList(selectedSessions)
+                await addToQuickstartList(visibleSelection)
               }}
             >
               <PlaylistAddIcon />
-            </ToggleButtonWithTooltip>
-          </ToggleButtonGroup>
-        </FormControl>
+            </IconButtonWithTooltip>
+          </div>
+        ) : null}
         <FormControlLabel
           label="Show autosaves"
           control={
@@ -203,52 +267,72 @@ export default function RecentSessionPanel({
           }
         />
 
-        <div className={classes.verticalCenter}>
-          <Button
-            variant="contained"
-            component="label"
-            disabled={sessionLoading}
+        <OpenLocalFileButton
+          variant="contained"
+          accept=".jbrowse,.json,application/json"
+          onPick={path => {
+            launch(path).catch((e: unknown) => {
+              console.error(e)
+            })
+          }}
+        >
+          Open .jbrowse or config.json file
+        </OpenLocalFileButton>
+        <Tooltip title="More actions">
+          <IconButton
+            onClick={event => {
+              setMoreMenuAnchor(event.currentTarget)
+            }}
           >
-            Open saved session (.jbrowse) file
-            <input
-              type="file"
-              hidden
-              onChange={async event => {
-                const file = event.target.files?.[0]
-                if (file) {
-                  const { webUtils } = window.require('electron')
-                  await launch(webUtils.getPathForFile(file))
-                }
-              }}
-            />
-          </Button>
-        </div>
+            <MoreVertIcon />
+          </IconButton>
+        </Tooltip>
+        <Menu
+          anchorEl={moreMenuAnchor}
+          open={Boolean(moreMenuAnchor)}
+          onClose={() => {
+            setMoreMenuAnchor(undefined)
+          }}
+        >
+          <MenuItem
+            disabled={!oldAutosaves.length}
+            onClick={() => {
+              setMoreMenuAnchor(undefined)
+              setSessionsToDelete(oldAutosaves)
+            }}
+          >
+            {oldAutosaves.length
+              ? `Delete ${oldAutosaves.length} autosave${oldAutosaves.length === 1 ? '' : 's'} older than 30 days`
+              : 'No autosaves older than 30 days'}
+          </MenuItem>
+        </Menu>
       </div>
 
-      {!sortedSessions.length ? (
-        <Typography>No sessions available</Typography>
+      {!filteredSessions.length ? (
+        <Typography>
+          {showFavoritesOnly && sortedSessions.length
+            ? 'No favorite sessions'
+            : 'No sessions available'}
+        </Typography>
       ) : displayMode === 'grid' ? (
         <RecentSessionsCards
           launch={launch}
-          addToQuickstartList={async entry => addToQuickstartList([entry])}
+          addToQuickstartList={entry => addToQuickstartList([entry])}
           sessions={filteredSessions}
           setSessionsToDelete={setSessionsToDelete}
           setSessionToRename={setSessionToRename}
+          isFavorite={isFavorite}
+          toggleFavorite={toggleFavorite}
         />
       ) : (
-        <RecentSessionsList
+        <RecentSessionsDataGrid
           launch={launch}
           setSelectedSessions={setSelectedSessions}
           setSessionToRename={setSessionToRename}
+          setSessionsToDelete={setSessionsToDelete}
           sessions={filteredSessions}
-          favorites={favorites}
-          toggleFavorite={sessionPath => {
-            if (favs.has(sessionPath)) {
-              setFavorites(favorites.filter(path => path !== sessionPath))
-            } else {
-              setFavorites([...favorites, sessionPath])
-            }
-          }}
+          isFavorite={isFavorite}
+          toggleFavorite={toggleFavorite}
           addToQuickstartList={entry => addToQuickstartList([entry])}
         />
       )}

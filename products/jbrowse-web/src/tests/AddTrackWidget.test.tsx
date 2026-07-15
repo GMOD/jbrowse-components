@@ -1,6 +1,12 @@
 import { fireEvent, within } from '@testing-library/react'
 
-import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
+import {
+  createView,
+  doBeforeEach,
+  expectCanvasMatch,
+  findCanvasIn,
+  setup,
+} from './util.tsx'
 
 setup()
 
@@ -29,26 +35,30 @@ test('adds a PAF via the add track workflow', async () => {
     },
   })
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
-  fireEvent.mouseDown(getByTestId('adapterTypeSelect'))
   fireEvent.change(getByTestId('trackNameInput'), {
     target: {
       value: 'volvox_del vs volvox',
     },
   })
-  const selectors = await findAllByTestId('assembly-selector-textfield')
-
   // change query assembly
-  fireEvent.mouseDown(await within(selectors[0]!).findByText('volvox'))
+  fireEvent.mouseDown(
+    await findByRole('combobox', { name: 'Query assembly', hidden: true }),
+  )
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 
-  const res = await findAllByTestId(/prerendered_canvas/, ...opts)
-  expectCanvasMatch(res[0]!)
+  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
+  expectCanvasMatch(findCanvasIn(displays[0]!))
 }, 60000)
 
 test('bug: error message persists after fixing URL', async () => {
-  const { getAllByTestId, findByText, findAllByTestId, queryByText } =
-    await createView()
+  const {
+    getAllByTestId,
+    findByText,
+    findByTestId,
+    findAllByTestId,
+    queryByText,
+  } = await createView()
 
   // Open add track widget
   fireEvent.click(await findByText('File', ...opts))
@@ -80,10 +90,11 @@ test('bug: error message persists after fixing URL', async () => {
   // Click "Next" again
   fireEvent.click(getAllByTestId('addTrackNextButton')[0]!)
 
-  // The bug: JBrowse still shows a message about not being able to guess the adapter
-  // even though the URL was fixed. This should NOT happen.
-  const errorMessage = queryByText(
-    /JBrowse was not able to guess the adapter type/,
-  )
-  expect(errorMessage).toBeNull() // This should pass if the bug is fixed
+  // volvox.bam has a guessable adapter, so the form advances to the confirm
+  // step (trackNameInput). The bug was that the "not able to guess" message
+  // lingered from the previous URL; assert it is gone once we've advanced.
+  await findByTestId('trackNameInput', ...opts)
+  expect(
+    queryByText(/JBrowse was not able to guess the adapter type/),
+  ).toBeNull()
 }, 60000)

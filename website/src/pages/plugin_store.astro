@@ -1,14 +1,18 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro'
 import { Icon } from 'astro-icon/components'
-import page from '../styles/page.module.css'
+
+import pluginJSON from '../../plugins.json'
+import BaseLayout from '../layouts/BaseLayout.astro'
 import btn from '../styles/button.module.css'
-import pluginJSON from '../../../website/plugins.json'
+import page from '../styles/page.module.css'
 
 const { plugins } = pluginJSON
 ---
 
-<BaseLayout title="JBrowse 2 Plugin Store">
+<BaseLayout
+  title="JBrowse 2 Plugin Store"
+  description="Browse and install community plugins that add view types, track types, and data adapters to JBrowse 2."
+>
   <div class={page.content}>
     <h1>Plugin Store</h1>
 
@@ -22,7 +26,7 @@ const { plugins } = pluginJSON
             core application, such as a new data adapter or a custom track type.
           </p>
           <p>
-            The configuration specified for each plugin can be added to the
+            The configuration specified for each plugin can be added to the{' '}
             <code>plugins</code> array as a top-level entry. For example:
           </p>
           <pre><code>{`{
@@ -44,7 +48,7 @@ const { plugins } = pluginJSON
         <div class="info-body">
           <p>
             We welcome developers who want to create a new JBrowse 2 plugin. The
-            primary resource for getting started is the
+            primary resource for getting started is the{' '}
             <a
               href="https://github.com/GMOD/jbrowse-plugin-template"
               target="_blank"
@@ -55,7 +59,7 @@ const { plugins } = pluginJSON
           </p>
           <p>
             If you build a plugin you'd like featured in this store, follow the
-            instructions found
+            instructions found{' '}
             <a
               href="https://github.com/GMOD/jbrowse-plugin-list"
               target="_blank"
@@ -189,7 +193,9 @@ const { plugins } = pluginJSON
   .plugin-image {
     width: 100%;
     height: auto;
+    aspect-ratio: 16 / 9;
     display: block;
+    object-fit: cover;
     border-bottom: 1px solid var(--color-border);
   }
   .plugin-body {

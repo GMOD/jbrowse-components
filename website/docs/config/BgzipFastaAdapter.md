@@ -1,79 +1,72 @@
 ---
 id: bgzipfastaadapter
 title: BgzipFastaAdapter
+sidebar_label: Adapter -> BgzipFastaAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/BgzipFastaAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
+The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/BgzipFastaAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BgzipFastaAdapter.md)
-
-## Docs
-
-### BgzipFastaAdapter - Pre-processor / simplified config
-
-preprocessor to allow minimal config, assumes yourfile.fa.fai and
-yourfile.fa.gzi:
-
-```json
+```js
 {
-  "type": "BgzipFastaAdapter",
-  "uri": "yourfile.fa"
+  type: 'ReferenceSequenceTrack',
+  trackId: 'my_assembly-ReferenceSequenceTrack',
+  adapter: {
+    type: 'BgzipFastaAdapter',
+    uri: 'https://example.com/genome.fa.gz',
+  },
 }
 ```
 
-### BgzipFastaAdapter - Slots
+_See the **Config slots** section below for all available configuration fields._
+
+## Related links
+
+- **Track:** [ReferenceSequenceTrack](../referencesequencetrack)
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                       | Type           | Description            |
+| ------------------------------------------ | -------------- | ---------------------- |
+| [fastaLocation](#slot-fastalocation)       | `fileLocation` |                        |
+| [faiLocation](#slot-failocation)           | `fileLocation` |                        |
+| [metadataLocation](#slot-metadatalocation) | `fileLocation` | Optional metadata file |
+| [gziLocation](#slot-gzilocation)           | `fileLocation` |                        |
+
+<details>
+<summary>BgzipFastaAdapter - Slots</summary>
 
 #### slot: fastaLocation
 
-```js
-fastaLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa.gz', locationType: 'UriLocation' }`
 
 #### slot: faiLocation
 
-```js
-faiLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/seq.fa.gz.fai',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa.gz.fai', locationType: 'UriLocation' }`
 
 #### slot: metadataLocation
 
-```js
-metadataLocation: {
-      description: 'Optional metadata file',
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/fa.metadata.yaml',
-        locationType: 'UriLocation',
-      },
-    }
-```
+Optional metadata file
+
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/fa.metadata.yaml', locationType: 'UriLocation' }`
 
 #### slot: gziLocation
 
-```js
-gziLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/seq.fa.gz.gzi',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/seq.fa.gz.gzi', locationType: 'UriLocation' }`
+
+</details>

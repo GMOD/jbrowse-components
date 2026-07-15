@@ -1,28 +1,36 @@
-import { Suspense, useEffect, useRef } from 'react'
+import { Suspense, useCallback } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { LoadingOverlay } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { MINIMIZED_TRACK_HEIGHT } from '../consts.ts'
 
+import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
   // aligns with block boundaries. check for example the breakpoint split view
-  // demo to see if features align if wanting to change things
+  // demo to see if features align if wanting to change things. the -1 left
+  // offset (cancels the Paper's 1px border) is applied inline since it's
+  // conditional on showTrackOutlines, the same condition the border is gated on
   renderingComponentContainer: {
     position: 'absolute',
-    // -1 offset because of the 1px border of the Paper
-    left: -1,
     height: '100%',
     width: '100%',
   },
 
+  // Tracks never scroll natively on this outer container — every display owns
+  // its own vertical scroll: canvas displays scroll an inner sticky-canvas
+  // container (FeatureComponent), while alignments and variants draw a custom
+  // VerticalScrollbar overlay and redraw the canvas at `scrollTop`. A native
+  // scroll port here only produced a *second*, spurious scrollbar whenever a
+  // display's absolutely-positioned overlays extended a pixel past `height`
+  // (the reported double/flickering/full-height scrollbars). `contain: strict`
+  // already clips the paint, so overflow stays hidden with no scrollbar.
   trackRenderingContainer: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
+    overflow: 'hidden',
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
@@ -40,21 +48,26 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   track: BaseTrackModel
 }) {
   const { classes } = useStyles()
-  const display = track.displays[0]
+  // an LGV track always holds at least one linear display (activeDisplay =
+  // displays[0]); narrow to the linear shape for height/RenderingComponent
+  const display = track.activeDisplay as LinearDisplayModel
   const { height, RenderingComponent, DisplayBlurb } = display
-  const { trackRefs, id } = model
+  const { trackRefs, showTrackOutlines } = model
   const trackId = track.trackId
-  const ref = useRef<HTMLDivElement>(null)
   const minimized = track.minimized
 
-  useEffect(() => {
-    if (ref.current) {
-      trackRefs[trackId] = ref.current
-    }
-    return () => {
-      delete trackRefs[trackId]
-    }
-  }, [trackRefs, trackId])
+  // callback ref keeps trackRefs in sync as the rendering div mounts/unmounts
+  // (e.g. on minimize/restore), unlike a useEffect that misses the toggle
+  const setRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (el) {
+        trackRefs[trackId] = el
+      } else {
+        delete trackRefs[trackId]
+      }
+    },
+    [trackRefs, trackId],
+  )
 
   return (
     <div
@@ -62,13 +75,16 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
       style={{
         height: minimized ? MINIMIZED_TRACK_HEIGHT : height,
       }}
-      onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
-      data-testid={`trackRenderingContainer-${id}-${trackId}`}
+      data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
     >
       {!minimized ? (
         <>
-          <div ref={ref} className={classes.renderingComponentContainer}>
-            <Suspense fallback={<LoadingEllipses />}>
+          <div
+            ref={setRef}
+            className={classes.renderingComponentContainer}
+            style={{ left: showTrackOutlines ? -1 : 0 }}
+          >
+            <Suspense fallback={<LoadingOverlay isVisible immediate />}>
               <RenderingComponent
                 model={display}
                 onHorizontalScroll={model.horizontalScroll}

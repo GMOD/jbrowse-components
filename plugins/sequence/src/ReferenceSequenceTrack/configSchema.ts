@@ -1,17 +1,35 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  preprocessTrackConfigSnapshot,
+  trackConfigActions,
+} from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// Note: this is primarily a copy of createBaseTrackConfig, except with a
-// subset of the config slots, to avoid including fields that don't make sense
-// for the ReferenceSequenceTrack
+// Deliberately a subset of createBaseTrackConfig's slots — it omits fields that
+// don't make sense for the ReferenceSequenceTrack (assemblyNames, category,
+// textSearching, formatDetails, ...). The snapshot preprocessing and
+// addDisplayConf action are shared with the base track config.
 
 /**
  * #config ReferenceSequenceTrack
  * used to display base level DNA sequence tracks
+ *
+ * #example
+ * Usually authored as the `sequence` member of an assembly rather than a
+ * top-level track:
+ * ```js
+ * sequence: {
+ *   type: 'ReferenceSequenceTrack',
+ *   trackId: 'hg38-ref',
+ *   adapter: {
+ *     type: 'IndexedFastaAdapter',
+ *     uri: 'https://example.com/hg38.fa',
+ *   },
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
   return ConfigurationSchema(
@@ -87,53 +105,13 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       }),
     },
     {
-      preProcessSnapshot: s => {
-        const snap = JSON.parse(JSON.stringify(s))
-        const displayTypes = new Set()
-        const { displays = [] } = snap
-        if (snap.trackId !== 'placeholderId') {
-          // Gets the displays on the track snapshot and the possible displays
-          // from the track type and adds any missing possible displays to the
-          // snapshot
-          for (const d of displays) {
-            if (d) {
-              displayTypes.add(d.type)
-            }
-          }
-          const trackType = pluginManager.getTrackType(snap.type)
-          for (const displayType of trackType?.displayTypes ?? []) {
-            if (!displayTypes.has(displayType.name)) {
-              displays.push({
-                displayId: `${snap.trackId}-${displayType.name}`,
-                type: displayType.name,
-              })
-            }
-          }
-        }
-        return { ...snap, displays }
-      },
+      preProcessSnapshot: s => preprocessTrackConfigSnapshot(pluginManager, s),
       /**
        * #identifier
-       * all tracks have a globally unique 'trackId'
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,
-      actions: (self: any) => ({
-        addDisplayConf(displayConf: { type: string; displayId: string }) {
-          const { type } = displayConf
-          if (!type) {
-            throw new Error('display type not specified')
-          }
-          const display = self.displays.find(
-            (d: any) => d?.displayId === displayConf.displayId,
-          )
-          if (display) {
-            return display
-          }
-          const length = self.displays.push(displayConf)
-          return self.displays[length - 1]
-        },
-      }),
+      actions: trackConfigActions,
     },
   )
 }

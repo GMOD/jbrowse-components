@@ -2,92 +2,87 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
-import type { DotplotDisplayModel } from '../../DotplotDisplay/stateModelFactory.tsx'
 import type { DotplotViewModel } from '../model.ts'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
+
+const COLOR_BY_OPTIONS: readonly {
+  value: SyntenyColorBy
+  label: string
+  helpText: string
+}[] = [
+  {
+    value: 'default',
+    label: 'Default',
+    helpText:
+      'Draw all alignments in black, the conventional dotplot line color.',
+  },
+  {
+    value: 'identity',
+    label: 'Identity',
+    helpText:
+      'Color alignments by per-alignment sequence identity on a perceptually-uniform viridis scale: low identity is dark purple, high identity is bright yellow. Useful for distinguishing divergent vs. conserved regions.',
+  },
+  {
+    value: 'meanQueryIdentity',
+    label: 'Mean query identity',
+    helpText:
+      'Color by the length-weighted mean sequence identity across all alignments of each query/target pair (a true 0–100% value). A single long query split into many smaller hits is colored by its overall identity to the target. Similar to the program dotPlotly.',
+  },
+  {
+    value: 'mappingQuality',
+    label: 'Mapping quality',
+    helpText:
+      'Color alignments by per-alignment PAF mapping quality (MAPQ, 0–60) on a perceptually-uniform cividis scale: low MAPQ dark blue, high MAPQ yellow. Useful for identifying ambiguous or multi-mapping regions.',
+  },
+  {
+    value: 'strand',
+    label: 'Strand',
+    helpText:
+      'Color alignments by strand orientation. Forward and reverse strand alignments use different colors, making inversions and strand-specific patterns easy to spot.',
+  },
+  {
+    value: 'query',
+    label: 'Query',
+    helpText:
+      "Color by the query sequence (this assembly's own refName). Each unique sequence gets a consistent color, making it easy to distinguish different contigs/chromosomes.",
+  },
+  {
+    value: 'target',
+    label: 'Target',
+    helpText:
+      "Color by the target/mate sequence (the other assembly's refName). The complement of Query coloring — useful when one query maps across several targets.",
+  },
+]
 
 const ColorBySelector = observer(function ColorBySelector({
   model,
 }: {
   model: DotplotViewModel
 }) {
-  // Get the first display from the first track (if it exists)
-  const firstDisplay = model.tracks[0]?.displays[0] as
-    | DotplotDisplayModel
-    | undefined
-
-  const colorBy = firstDisplay?.colorBy ?? 'default'
-
-  const setColorBy = (value: string) => {
-    // Set colorBy for all displays across all tracks
-    for (const track of model.tracks) {
-      for (const display of track.displays) {
-        ;(display as DotplotDisplayModel).setColorBy(value)
-      }
-    }
-  }
+  const { dotplotDisplays, showColorLegend } = model
+  const colorBy = dotplotDisplays[0]?.colorBy ?? 'default'
 
   return (
     <CascadingMenuButton
       menuItems={[
-        {
-          label: 'Default',
-          type: 'radio',
-          checked: colorBy === 'default',
+        ...COLOR_BY_OPTIONS.map(opt => ({
+          label: opt.label,
+          type: 'radio' as const,
+          checked: colorBy === opt.value,
           onClick: () => {
-            setColorBy('default')
+            for (const d of dotplotDisplays) {
+              d.setColorBy(opt.value)
+            }
           },
-          helpText:
-            'Use the default color scheme specified in the track configuration. This respects the color settings defined in the config file.',
-        },
+          helpText: opt.helpText,
+        })),
         {
-          label: 'Identity',
-          type: 'radio',
-          checked: colorBy === 'identity',
+          label: 'Show color legend',
+          type: 'checkbox' as const,
+          checked: showColorLegend,
           onClick: () => {
-            setColorBy('identity')
+            model.setShowColorLegend(!showColorLegend)
           },
-          helpText:
-            'Color alignments by sequence identity percentage. Higher identity matches appear in warmer colors, while lower identity matches appear cooler. Useful for identifying highly conserved vs. divergent regions.',
-        },
-        {
-          label: 'Mean Query Identity',
-          type: 'radio',
-          checked: colorBy === 'meanQueryIdentity',
-          onClick: () => {
-            setColorBy('meanQueryIdentity')
-          },
-          helpText:
-            'Color alignments based on the mean identity across the query sequence. This provides a smoothed view of overall alignment quality, reducing noise from local variations. For instance, a single long query of e.g. a contig of an assembly, when aligned to the target, may get split into many smaller "hits". This score aggregates across them, and colors them all the same. Similar code exists in the program dotPlotly',
-        },
-        {
-          label: 'Mapping Quality',
-          type: 'radio',
-          checked: colorBy === 'mappingQuality',
-          onClick: () => {
-            setColorBy('mappingQuality')
-          },
-          helpText:
-            'Color alignments by mapping quality score (MAPQ). Higher quality mappings (more unique/confident) appear in darker colors. Useful for identifying ambiguous or multi-mapping regions.',
-        },
-        {
-          label: 'Strand',
-          type: 'radio',
-          checked: colorBy === 'strand',
-          onClick: () => {
-            setColorBy('strand')
-          },
-          helpText:
-            'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
-        },
-        {
-          label: 'Query',
-          type: 'radio',
-          checked: colorBy === 'query',
-          onClick: () => {
-            setColorBy('query')
-          },
-          helpText:
-            'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
         },
       ]}
     >

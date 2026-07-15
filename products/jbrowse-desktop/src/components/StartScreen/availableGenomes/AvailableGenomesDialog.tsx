@@ -5,7 +5,7 @@ import GenomesDataTable from './GenomesDataTable.tsx'
 
 import type { Fav, LaunchCallback } from '../types.ts'
 
-export default function AllGenomesDialog({
+export default function AvailableGenomesDialog({
   favorites,
   setFavorites,
   onClose,

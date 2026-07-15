@@ -33,7 +33,6 @@ export interface ContentBlock extends BlockData {
 
 export interface ElidedBlock extends BlockData {
   type: 'ElidedBlock'
-  elidedBlockCount: number
 }
 
 export interface InterRegionPaddingBlock extends BlockData {
@@ -41,24 +40,6 @@ export interface InterRegionPaddingBlock extends BlockData {
 }
 
 export type BaseBlock = ContentBlock | ElidedBlock | InterRegionPaddingBlock
-
-export function makeContentBlock(
-  data: Omit<ContentBlock, 'type'>,
-): ContentBlock {
-  return { ...data, type: 'ContentBlock' }
-}
-
-export function makeElidedBlock(
-  data: Omit<ElidedBlock, 'type' | 'elidedBlockCount'>,
-): ElidedBlock {
-  return { ...data, type: 'ElidedBlock', elidedBlockCount: 0 }
-}
-
-export function makeInterRegionPaddingBlock(
-  data: Omit<InterRegionPaddingBlock, 'type'>,
-): InterRegionPaddingBlock {
-  return { ...data, type: 'InterRegionPaddingBlock' }
-}
 
 export function blockToRegion(b: ContentBlock) {
   return {
@@ -82,7 +63,11 @@ export class BlockSet {
   push(block: BaseBlock) {
     const last = this.blocks.at(-1)
     if (block.type === 'ElidedBlock' && last?.type === 'ElidedBlock') {
-      last.elidedBlockCount += 1
+      // A merged elided run can span several displayed regions, so its
+      // per-region identity is meaningless: refName/start/end are cleared and
+      // only widthPx stays valid. The leftover key, assemblyName,
+      // displayedRegionIndex, isRightEndOfDisplayedRegion belong to the FIRST
+      // sub-block — don't key off them for an ElidedBlock.
       last.refName = ''
       last.start = 0
       last.end = 0
@@ -93,12 +78,14 @@ export class BlockSet {
   }
 
   map<T, U = this>(func: Func<T>, thisarg?: U) {
+    // deliberately mirrors Array#map's (callback, thisArg) signature
     // eslint-disable-next-line unicorn/no-array-method-this-argument
     return this.blocks.map(func, thisarg)
   }
 
   forEach<T, U = this>(func: Func<T>, thisarg?: U) {
-    // eslint-disable-next-line unicorn/no-array-method-this-argument,unicorn/no-array-for-each
+    // deliberately mirrors Array#forEach's (callback, thisArg) signature
+    // eslint-disable-next-line unicorn/no-array-method-this-argument
     this.blocks.forEach(func, thisarg)
   }
 

@@ -1,22 +1,12 @@
 ---
 id: jbrowserootconfig
 title: JBrowseRootConfig
+sidebar_label: Root -> JBrowseRootConfig
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/index.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/JBrowseRootConfig.md)
-
-## Docs
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/JBrowseConfig/index.ts).
 
 this is a config model representing a config.json (for jbrowse-web) or
 somefile.jbrowse (for jbrowse-desktop, where configs have the .jbrowse
@@ -25,7 +15,24 @@ extension)
 also includes any pluginManager.pluginConfigurationSchemas(), so plugins that
 have a configurationSchema field on their class are mixed into this object
 
-### JBrowseRootConfig - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                                             | Type | Description                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------------- | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [plugins](#slot-plugins)                                         |      | defines plugins of the format `typescript type PluginDefinition= { umdUrl: string, name:string } \| { url: string, name: string } \| { esmUrl: string } \| { cjsUrl: string } \| { umdLoc: { uri: string } } \| { esmLoc: { uri: string } } \| ` |
+| [assemblies](#slot-assemblies)                                   |      | configuration of the assemblies in the instance, see BaseAssembly                                                                                                                                                                                |
+| [tracks](#slot-tracks)                                           |      | track configuration is an array of track config schemas.                                                                                                                                                                                         |
+| [internetAccounts](#slot-internetaccounts)                       |      | configuration for internet accounts, see InternetAccounts                                                                                                                                                                                        |
+| [aggregateTextSearchAdapters](#slot-aggregatetextsearchadapters) |      | configuration for aggregate text search adapters (created by e.g. jbrowse text-index, but can be a pluggable TextSearchAdapter type)                                                                                                             |
+| [connections](#slot-connections)                                 |      | configuration for connections                                                                                                                                                                                                                    |
+| [defaultSession](#slot-defaultsession)                           |      | the session loaded when no session is otherwise specified, e.g. the initial view shown on first load                                                                                                                                             |
+| [preConfiguredSessions](#slot-preconfiguredsessions)             |      | named sessions bundled with the config that a user can open from the session selector                                                                                                                                                            |
+
+<details>
+<summary>JBrowseRootConfig - Slots</summary>
 
 #### slot: plugins
 
@@ -42,7 +49,7 @@ type PluginDefinition=
 ```
 
 ```js
-plugins: types.array(types.frozen<PluginDefinition>())
+types.array(types.frozen<PluginDefinition>())
 ```
 
 #### slot: assemblies
@@ -50,7 +57,7 @@ plugins: types.array(types.frozen<PluginDefinition>())
 configuration of the assemblies in the instance, see BaseAssembly
 
 ```js
-assemblies: types.array(assemblyConfigSchema)
+types.array(assemblyConfigSchema)
 ```
 
 #### slot: tracks
@@ -60,7 +67,7 @@ track can exist that use the same configuration. Always uses frozen for
 performance - editing creates temporary MST models.
 
 ```js
-tracks: types.frozen([] as { trackId: string; [key: string]: unknown }[])
+types.frozen([] as { trackId: string; [key: string]: unknown }[])
 ```
 
 #### slot: internetAccounts
@@ -68,9 +75,7 @@ tracks: types.frozen([] as { trackId: string; [key: string]: unknown }[])
 configuration for internet accounts, see InternetAccounts
 
 ```js
-internetAccounts: types.array(
-  pluginManager.pluggableConfigSchemaType('internet account'),
-)
+types.array(pluginManager.pluggableConfigSchemaType('internet account'))
 ```
 
 #### slot: aggregateTextSearchAdapters
@@ -79,9 +84,7 @@ configuration for aggregate text search adapters (created by e.g. jbrowse
 text-index, but can be a pluggable TextSearchAdapter type)
 
 ```js
-aggregateTextSearchAdapters: types.array(
-  pluginManager.pluggableConfigSchemaType('text search adapter'),
-)
+types.array(pluginManager.pluggableConfigSchemaType('text search adapter'))
 ```
 
 #### slot: connections
@@ -89,19 +92,27 @@ aggregateTextSearchAdapters: types.array(
 configuration for connections
 
 ```js
-connections: types.array(pluginManager.pluggableConfigSchemaType('connection'))
+types.array(pluginManager.pluggableConfigSchemaType('connection'))
 ```
 
 #### slot: defaultSession
 
+the session loaded when no session is otherwise specified, e.g. the initial view
+shown on first load
+
 ```js
-defaultSession: types.optional(types.frozen(), {
+types.optional(types.frozen(), {
   name: 'New Session',
 })
 ```
 
 #### slot: preConfiguredSessions
 
+named sessions bundled with the config that a user can open from the session
+selector
+
 ```js
-preConfiguredSessions: types.array(types.frozen())
+types.array(types.frozen())
 ```
+
+</details>

@@ -21,6 +21,11 @@ const preservedExports = [
   '@jbrowse/core/util/layouts',
   // jest.mock target for stable adapter ids in tests
   '@jbrowse/core/data_adapters/BaseAdapter/getAdapterId',
+  // util/index.ts <-> offscreenCanvasPonyfill.ts re-export each other; only
+  // imported by relative path in-package, but bundlers resolving that cycle
+  // through the canvas-sequencer-ts CJS interop boundary re-resolve it as a
+  // package subpath, so it needs its own exports entry
+  '@jbrowse/core/util/offscreenCanvasPonyfill',
 ]
 
 // Scan the codebase for all @jbrowse/core imports
@@ -28,7 +33,7 @@ function findAllImports() {
   try {
     // Find static imports: from '@jbrowse/core/...'
     const staticImports = execSync(
-      `grep -roh "from '@jbrowse/core[^']*'" packages plugins products --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | sed "s/from '//;s/'$//" | sort -u`,
+      `grep -roh "from '@jbrowse/core[^']*'" packages plugins products --include="*.ts" --include="*.tsx" --exclude="*.d.ts" 2>/dev/null | grep -v node_modules | sed "s/from '//;s/'$//" | sort -u`,
       { cwd: repoRoot, encoding: 'utf8' },
     )
       .trim()
@@ -37,7 +42,7 @@ function findAllImports() {
 
     // Find dynamic imports: import('@jbrowse/core/...')
     const dynamicImports = execSync(
-      `grep -roh "import('@jbrowse/core[^']*')" packages plugins products --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v node_modules | sed "s/import('//;s/')$//" | sort -u`,
+      `grep -roh "import('@jbrowse/core[^']*')" packages plugins products --include="*.ts" --include="*.tsx" --exclude="*.d.ts" 2>/dev/null | grep -v node_modules | sed "s/import('//;s/')$//" | sort -u`,
       { cwd: repoRoot, encoding: 'utf8' },
     )
       .trim()

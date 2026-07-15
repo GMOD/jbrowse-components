@@ -5,6 +5,8 @@ import {
   makeIndexType,
 } from '@jbrowse/core/util/tracks'
 
+import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AdapterGuesser,
@@ -30,7 +32,7 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
             type: 'VcfTabixAdapter',
             vcfGzLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }
@@ -54,7 +56,7 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
             type: 'PlinkLDTabixAdapter',
             ldLocation: file,
             index: {
-              location: index || makeIndex(file, '.tbi'),
+              location: index ?? makeIndex(file, '.tbi'),
               indexType: makeIndexType(indexName, 'CSI', 'TBI'),
             },
           }
@@ -88,9 +90,7 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
           return 'VariantTrack'
         }
         if (
-          ['PlinkLDAdapter', 'PlinkLDTabixAdapter', 'LdmatAdapter'].includes(
-            adapterName,
-          )
+          (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(adapterName)
         ) {
           return 'LDTrack'
         }

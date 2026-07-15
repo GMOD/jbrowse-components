@@ -1,15 +1,29 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`GenBank export can export a feature with subfeatures (mRNA, CDS, exon) 1`] = `
-"LOCUS       chr1:1001..2000      1000 bp        DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_1001..2000         1000 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:1001..2000 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
+     source          1..1000
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
      gene            1..1000
-                     /name="gene2"
-     mRNA            1..1000
                      /gene="gene2"
-                     /name="mrna1"
+                     /label="gene2"
+     mRNA            join(1..200,801..1000)
+                     /gene="gene2"
+                     /label="mrna1"
      CDS             join(51..150,851..950)
-                     /mRNA="mrna1"
+                     /gene="gene2"
+                     /label="gene2"
+                     /codon_start=1
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
@@ -33,11 +47,21 @@ ORIGIN
 `;
 
 exports[`GenBank export can export a simple feature 1`] = `
-"LOCUS       chr1:101..200        100 bp         DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_101..200            100 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:101..200 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
+     source          1..100
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
      gene            1..100
-                     /name="gene1"
-                     /Name="gene_name"
+                     /label="gene_name"
                      /note="some note"
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
@@ -47,10 +71,21 @@ ORIGIN
 `;
 
 exports[`GenBank export formats ORIGIN section with proper line breaks for long sequences 1`] = `
-"LOCUS       chr1:1..150          150 bp         DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_1..150              150 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:1..150 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
+     source          1..150
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
      gene            1..150
-                     /name="gene7"
+                     /label="gene7"
 ORIGIN
         1 acgtacgtac gtacgtacgt acgtacgtac gtacgtacgt acgtacgtac gtacgtacgt
        61 acgtacgtac gtacgtacgt acgtacgtac gtacgtacgt acgtacgtac gtacgtacgt
@@ -60,13 +95,24 @@ ORIGIN
 `;
 
 exports[`GenBank export handles custom attributes 1`] = `
-"LOCUS       chr1:701..800        100 bp         DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_701..800            100 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:701..800 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
+     source          1..100
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
      gene            1..100
-                     /name="gene6"
+                     /label="gene6"
                      /custom_tag="custom_value"
                      /another_tag="val1,val2"
-                     /complex_obj="{"key":"value"}"
+                     /complex_obj="{""key"":""value""}"
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
@@ -75,15 +121,29 @@ ORIGIN
 `;
 
 exports[`GenBank export handles features on negative strand 1`] = `
-"LOCUS       chr1:501..600        100 bp         DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_501..600            100 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:501..600 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
+     source          1..100
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
      gene            complement(1..100)
-                     /name="gene5"
+                     /gene="gene5"
+                     /label="gene5"
      mRNA            complement(1..100)
                      /gene="gene5"
-                     /name="mrna2"
+                     /label="mrna2"
      CDS             complement(21..80)
-                     /mRNA="mrna2"
+                     /gene="gene5"
+                     /label="gene5"
+                     /codon_start=1
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
@@ -92,13 +152,25 @@ ORIGIN
 `;
 
 exports[`GenBank export handles mRNA with only exons (no CDS) 1`] = `
-"LOCUS       chr1:1..500          500 bp         DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_1..500              500 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:1..500 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
+     source          1..500
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
      gene            1..500
-                     /name="gene11"
-     mRNA            1..500
                      /gene="gene11"
-                     /name="mrna4"
+                     /label="gene11"
+     mRNA            join(1..100,401..500)
+                     /gene="gene11"
+                     /label="mrna4"
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
@@ -114,12 +186,23 @@ ORIGIN
 `;
 
 exports[`GenBank export handles multiple top-level features 1`] = `
-"LOCUS       chr1:101..400        300 bp         DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_101..400            300 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:101..400 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
+     source          1..300
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
      gene            1..100
-                     /name="gene3"
+                     /label="gene3"
      gene            201..300
-                     /name="gene4"
+                     /label="gene4"
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
@@ -131,15 +214,29 @@ ORIGIN
 `;
 
 exports[`GenBank export handles single CDS without join() wrapper 1`] = `
-"LOCUS       chr1:101..300        200 bp         DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_101..300            200 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:101..300 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
+     source          1..200
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
      gene            1..200
-                     /name="gene8"
+                     /gene="gene8"
+                     /label="gene8"
      mRNA            1..200
                      /gene="gene8"
-                     /name="mrna3"
+                     /label="mrna3"
      CDS             21..180
-                     /mRNA="mrna3"
+                     /gene="gene8"
+                     /label="gene8"
+                     /codon_start=1
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
@@ -150,10 +247,21 @@ ORIGIN
 `;
 
 exports[`GenBank export truncates long feature type names to 16 characters 1`] = `
-"LOCUS       chr1:1..100          100 bp         DNA       linear    UNK 10-JAN-1970
+"LOCUS       chr1_1..100              100 bp    DNA    linear    UNK 10-JAN-1970
+DEFINITION  chr1:1..100 from testAssembly.
+ACCESSION   chr1
+VERSION     chr1
+KEYWORDS    .
+SOURCE      testAssembly
+  ORGANISM  testAssembly
+            .
 FEATURES             Location/Qualifiers
-     very_long_featur1..100
-                     /name="gene9"
+     source          1..100
+                     /organism="testAssembly"
+                     /mol_type="genomic DNA"
+                     /chromosome="chr1"
+     very_long_featu 1..100
+                     /label="gene9"
 ORIGIN
         1 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa
        61 aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaaa

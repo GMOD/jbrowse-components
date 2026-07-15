@@ -69,37 +69,31 @@ const BreakpointSplitViewChoiceDialog = observer(
     const isSplitLevel = viewType === 'split'
 
     const handleLaunch = () => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      ;(async () => {
+      const tracks =
+        copyTracks && view ? (getSnapshot(view.tracks) as Track[]) : []
+      const windowSizeNum = Number(windowSize) || 0
+      const suffixedId = (suffix: string) =>
+        stableViewId === undefined ? undefined : `${stableViewId}_${suffix}`
+      void (async () => {
         try {
           await (isSplitLevel
             ? navToMultiLevelBreak({
-                stableViewId: stableViewId
-                  ? `${stableViewId}_multilevel`
-                  : undefined,
+                stableViewId: suffixedId('multilevel'),
                 session,
-                tracks:
-                  copyTracks && view
-                    ? (getSnapshot(view.tracks) as Track[])
-                    : [],
+                tracks,
                 mirror,
                 feature,
                 assemblyName,
-                windowSize: +windowSize || 0,
+                windowSize: windowSizeNum,
               })
             : navToSingleLevelBreak({
                 feature,
                 assemblyName,
                 focusOnBreakends,
                 session,
-                stableViewId: stableViewId
-                  ? `${stableViewId}_singlelevel`
-                  : undefined,
-                tracks:
-                  copyTracks && view
-                    ? (getSnapshot(view.tracks) as Track[])
-                    : undefined,
-                windowSize: +windowSize || 0,
+                stableViewId: suffixedId('singlelevel'),
+                tracks,
+                windowSize: windowSizeNum,
               }))
         } catch (e) {
           console.error(e)
@@ -197,6 +191,7 @@ const BreakpointSplitViewChoiceDialog = observer(
         </DialogContent>
         <DialogActions>
           <Button
+            variant="contained"
             onClick={() => {
               setStep('choose')
             }}

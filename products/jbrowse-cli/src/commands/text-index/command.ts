@@ -1,4 +1,6 @@
-import { parseArgs } from 'util'
+import { parseArgs } from 'node:util'
+
+import { defaultAttributesToIndex } from '@jbrowse/text-indexing-core'
 
 import { aggregateIndex, indexFileList, perTrackIndex } from './index.ts'
 import { printHelp } from '../../utils.ts'
@@ -18,7 +20,7 @@ export async function run(args?: string[]) {
     excludeTracks: {
       type: 'string',
       description:
-        'Specific tracks to exclude from indexing, formatted as comma separated trackIds',
+        'Specific tracks to exclude from indexing, formatted as comma separated trackIds. To exclude a track permanently, set metadata.skipTextIndex on it in config.json instead (see Notes)',
     },
     target: {
       type: 'string',
@@ -29,7 +31,7 @@ export async function run(args?: string[]) {
     attributes: {
       type: 'string',
       description: 'Comma separated list of attributes to index',
-      default: 'Name,ID',
+      default: defaultAttributesToIndex.join(','),
     },
     assemblies: {
       type: 'string',
@@ -55,7 +57,8 @@ export async function run(args?: string[]) {
     },
     exclude: {
       type: 'string',
-      description: 'Adds gene type to list of excluded types',
+      description:
+        'Comma separated list of feature types to exclude from indexing',
       default: 'CDS,exon',
     },
     prefixSize: {
@@ -88,6 +91,15 @@ export async function run(args?: string[]) {
 
   const description = 'Make a text-indexing file for any given track(s).'
 
+  const notes =
+    'Individual tracks in config.json can be permanently excluded from ' +
+    'indexing by setting "metadata": { "skipTextIndex": true } on the track. ' +
+    'Such tracks are skipped even when indexing all tracks or a whole ' +
+    'assembly, so you do not have to pass --excludeTracks on every run.\n\n' +
+    'Only tracks with an indexable adapter type (e.g. Gff3TabixAdapter, ' +
+    'VcfTabixAdapter) are indexed; tracks with other adapter types are ' +
+    'skipped automatically.'
+
   const examples = [
     "# indexes all tracks that it can find in the current directory's config.json",
     '$ jbrowse text-index',
@@ -96,7 +108,7 @@ export async function run(args?: string[]) {
     '$ jbrowse text-index --tracks=track1,track2,track3',
     '',
     '# indexes all tracks except specific trackIds',
-    '$ jbrowse text-index --exclude-tracks=track1,track2,track3',
+    '$ jbrowse text-index --excludeTracks=track1,track2,track3',
     '',
     "# indexes all tracks in a directory's config.json or in a specific config file",
     '$ jbrowse text-index --out /path/to/jb2/',
@@ -112,6 +124,7 @@ export async function run(args?: string[]) {
     printHelp({
       description,
       examples,
+      notes,
       usage: 'jbrowse text-index [options]',
       options,
     })

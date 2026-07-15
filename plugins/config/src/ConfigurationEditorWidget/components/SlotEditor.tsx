@@ -1,17 +1,21 @@
 import { useState } from 'react'
 
+import {
+  isCallbackValue,
+  toCallbackValue,
+  toFixedValue,
+} from '@jbrowse/core/configuration'
 import { FileSelector } from '@jbrowse/core/ui'
-import { getEnv } from '@jbrowse/core/util'
-import { getSubType, getUnionSubTypes } from '@jbrowse/core/util/mst-reflection'
-import { getPropertyMembers } from '@jbrowse/mobx-state-tree'
-import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked'
-import { IconButton, MenuItem, Paper, SvgIcon, TextField } from '@mui/material'
+import CodeIcon from '@mui/icons-material/Code'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import { IconButton, MenuItem, Paper, TextField, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BooleanEditor from './BooleanEditor.tsx'
 import CallbackEditor from './CallbackEditor.tsx'
 import ColorEditor from './ColorEditor.tsx'
 import ConfigurationTextField from './ConfigurationTextField.tsx'
+import IntegerEditor from './IntegerEditor.tsx'
 import JsonEditor from './JsonEditor.tsx'
 import NumberEditor from './NumberEditor.tsx'
 import NumberMapEditor from './NumberMapEditor.tsx'
@@ -19,23 +23,21 @@ import StringArrayEditor from './StringArrayEditor.tsx'
 import StringArrayMapEditor from './StringArrayMapEditor.tsx'
 import { useSlotEditorStyles } from './useSlotEditorStyles.ts'
 
-import type {
-  AnyConfigurationSlot,
-  AnyConfigurationSlotType,
-} from '@jbrowse/core/configuration'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { SlotFacade } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
-import type { ILiteralType } from '@jbrowse/core/util/mst-reflection'
-import type { IAnyType } from '@jbrowse/mobx-state-tree'
+
+interface StringSlot {
+  name: string
+  description: string
+  value: string
+  set: (arg: string) => void
+}
 
 const StringEditor = observer(function StringEditor({
   slot,
 }: {
-  slot: {
-    name: string
-    description: string
-    value: string
-    set: (arg: string) => void
-  }
+  slot: StringSlot
 }) {
   return (
     <ConfigurationTextField
@@ -52,12 +54,7 @@ const StringEditor = observer(function StringEditor({
 const TextEditor = observer(function TextEditor({
   slot,
 }: {
-  slot: {
-    name: string
-    description: string
-    value: string
-    set: (arg: string) => void
-  }
+  slot: StringSlot
 }) {
   return (
     <TextField
@@ -72,54 +69,17 @@ const TextEditor = observer(function TextEditor({
   )
 })
 
-// checked checkbox, looks like a styled (x)
-const SvgCheckbox = () => (
-  <SvgIcon>
-    <path d="M20.41,3C21.8,5.71 22.35,8.84 22,12C21.8,15.16 20.7,18.29 18.83,21L17.3,20C18.91,17.57 19.85,14.8 20,12C20.34,9.2 19.89,6.43 18.7,4L20.41,3M5.17,3L6.7,4C5.09,6.43 4.15,9.2 4,12C3.66,14.8 4.12,17.57 5.3,20L3.61,21C2.21,18.29 1.65,15.17 2,12C2.2,8.84 3.3,5.71 5.17,3M12.08,10.68L14.4,7.45H16.93L13.15,12.45L15.35,17.37H13.09L11.71,14L9.28,17.33H6.76L10.66,12.21L8.53,7.45H10.8L12.08,10.68Z" />
-  </SvgIcon>
-)
-
-const IntegerEditor = observer(function IntegerEditor({
+const StringEnumEditor = observer(function StringEnumEditor({
   slot,
 }: {
   slot: {
     name: string
-    value: number
+    value: string
     description: string
-    set: (num: number) => void
+    choices?: string[]
+    set: (arg: string) => void
   }
 }) {
-  const [val, setVal] = useState(String(slot.value))
-  return (
-    <ConfigurationTextField
-      label={slot.name}
-      helperText={slot.description}
-      value={val}
-      type="number"
-      onChange={evt => {
-        const v = evt.target.value
-        setVal(v)
-        const num = Number.parseInt(v, 10)
-        if (!Number.isNaN(num)) {
-          slot.set(num)
-        }
-      }}
-    />
-  )
-})
-
-const StringEnumEditor = observer(function StringEnumEditor({
-  slot,
-  slotSchema,
-}: {
-  slot: AnyConfigurationSlot
-  slotSchema: AnyConfigurationSlotType
-}) {
-  const p = getPropertyMembers(getSubType(slotSchema))
-  const choices = getUnionSubTypes(
-    getUnionSubTypes(getSubType(p.properties.value!))[1]!,
-  ).map(t => (t as ILiteralType<string>).value)
-
   return (
     <ConfigurationTextField
       value={slot.value}
@@ -130,7 +90,7 @@ const StringEnumEditor = observer(function StringEnumEditor({
         slot.set(evt.target.value)
       }}
     >
-      {choices.map(str => (
+      {(slot.choices ?? []).map(str => (
         <MenuItem key={str} value={str}>
           {str}
         </MenuItem>
@@ -147,6 +107,7 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
     value: FileLocation
     set: (arg: FileLocation) => void
     description: string
+    pluginManager: PluginManager
   }
 }) {
   return (
@@ -157,12 +118,17 @@ const FileSelectorWrapper = observer(function FileSelectorWrapper({
       }}
       name={slot.name}
       description={slot.description}
-      rootModel={getEnv(slot).pluginManager.rootModel}
+      rootModel={slot.pluginManager.rootModel}
     />
   )
 })
 
-const valueComponents = {
+// dynamic dispatch from a runtime slot `type` string to a typed editor. The
+// `any` is irreducible here: each editor declares a narrow `slot.value` type
+// (number, boolean, FileLocation, string[], ...) but makeSlotFacade can only
+// type value as `unknown`, so no single registry prop type satisfies them all.
+// The editors stay fully typed internally; only this lookup is untyped.
+const valueComponents: Record<string, React.ComponentType<any>> = {
   string: StringEditor,
   text: TextEditor,
   fileLocation: FileSelectorWrapper,
@@ -170,55 +136,95 @@ const valueComponents = {
   stringArrayMap: StringArrayMapEditor,
   numberMap: NumberMapEditor,
   number: NumberEditor,
+  maybeNumber: NumberEditor,
   integer: IntegerEditor,
   color: ColorEditor,
   stringEnum: StringEnumEditor,
   boolean: BooleanEditor,
+  maybeBoolean: BooleanEditor,
   frozen: JsonEditor,
-  configRelationships: JsonEditor,
 }
 
 const SlotEditor = observer(function SlotEditor({
   slot,
-  slotSchema,
 }: {
-  slot: any
-  slotSchema: IAnyType
+  slot: SlotFacade
 }) {
   const { classes } = useSlotEditorStyles()
   const { type } = slot
-  const TypedComponent = (
-    valueComponents as Record<string, React.ComponentType<any>>
-  )[type]
-  if (!slot.editorIsCallback && !TypedComponent) {
+  // editor mode is UI-only state, derived once from whether the stored value is
+  // a jexl callback. Toggling rewrites the value; typing a "jexl:" prefix into a
+  // value field does not auto-swap the editor, since this state only changes on
+  // the explicit toggle.
+  const [callbackMode, setCallbackMode] = useState(() =>
+    isCallbackValue(slot.value),
+  )
+  // bumped on reset to remount the value editor: the buffered editors (number,
+  // json, callback) seed internal state from slot.value only on mount, so an
+  // external set wouldn't otherwise show in the field
+  const [resetNonce, setResetNonce] = useState(0)
+  const TypedComponent = valueComponents[type]
+  if (!callbackMode && !TypedComponent) {
     console.warn(`no slot editor defined for ${type}, editing as string`)
   }
-  const ValueComponent: React.ComponentType<any> = slot.editorIsCallback
+  const ValueComponent: React.ComponentType<any> = callbackMode
     ? CallbackEditor
     : (TypedComponent ?? StringEditor)
+  // a promotable slot's default is its inherit sentinel, so resetting it here
+  // doubles as "un-pin / follow the session-wide default"
+  const { modified } = slot
   return (
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
-        <ValueComponent slot={slot} slotSchema={slotSchema} />
+        <ValueComponent key={resetNonce} slot={slot} />
       </div>
+      {modified ? (
+        <div className={classes.resetButton}>
+          <Tooltip title="Reset to default">
+            <IconButton
+              aria-label="reset to default"
+              onClick={() => {
+                slot.set(slot.defaultValue)
+                setCallbackMode(isCallbackValue(slot.defaultValue))
+                setResetNonce(nonce => nonce + 1)
+              }}
+            >
+              <RestartAltIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
+      ) : null}
       {slot.contextVariable.length ? (
         <div className={classes.slotModeSwitch}>
-          <IconButton
-            onClick={() =>
-              slot.editorIsCallback
-                ? slot.convertToValue()
-                : slot.convertToCallback()
+          <Tooltip
+            title={
+              callbackMode
+                ? 'Editing as a callback (Jexl expression). Click to use a fixed value.'
+                : 'Editing as a fixed value. Click to use a callback (Jexl expression).'
             }
-            title={`convert to ${
-              slot.editorIsCallback ? 'regular value' : 'callback'
-            }`}
           >
-            {slot.editorIsCallback ? (
-              <SvgCheckbox />
-            ) : (
-              <RadioButtonUncheckedIcon />
-            )}
-          </IconButton>
+            <IconButton
+              color={callbackMode ? 'primary' : 'default'}
+              onClick={() => {
+                if (callbackMode) {
+                  slot.set(
+                    toFixedValue(
+                      slot.value,
+                      type,
+                      slot.defaultValue,
+                      slot.pluginManager.jexl,
+                    ),
+                  )
+                  setCallbackMode(false)
+                } else {
+                  slot.set(toCallbackValue(slot.value))
+                  setCallbackMode(true)
+                }
+              }}
+            >
+              <CodeIcon />
+            </IconButton>
+          </Tooltip>
         </div>
       ) : null}
     </Paper>

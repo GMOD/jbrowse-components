@@ -1,251 +1,223 @@
 ---
-id: synteny_track
-title: Synteny track config
+title: Synteny track
 description: Synteny track config for dotplot and linear synteny views
 guide_category: Track types
 ---
 
-Example SyntenyTrack config:
+A `SyntenyTrack` powers both the **dotplot view** and the **linear synteny
+view**. It pairs two assemblies using a whole-genome or gene-level alignment
+file.
+
+For a full end-to-end walkthrough (from generating alignments to navigating the
+views), see the
+[synteny visualization tutorial](/docs/tutorials/synteny_visualization).
+
+## Choosing an adapter
+
+Pick the adapter that matches how your alignment was produced:
+
+| Alignment source                               | Adapter                      |
+| ---------------------------------------------- | ---------------------------- |
+| minimap2, wfmash, or any PAF-producing aligner | `PAFAdapter`                 |
+| PAF tabix-indexed for large alignments         | `PairwiseIndexedPAFAdapter`  |
+| MUMmer / nucmer (`.delta`)                     | `DeltaAdapter`               |
+| UCSC liftOver / lastz (`.chain`)               | `ChainAdapter`               |
+| MCScan gene-level synteny (`.anchors`)         | `MCScanAnchorsAdapter`       |
+| MCScan simplified anchors (`.anchors.simple`)  | `MCScanSimpleAnchorsAdapter` |
+
+## Quick start: PAF from minimap2
+
+The most common workflow is whole-genome alignment with minimap2, which outputs
+PAF.
+
+**Step 1. Align your genomes:**
+
+```bash
+minimap2 -cx asm5 target.fa query.fa > alignment.paf
+```
+
+**Step 2. Add the track with the CLI:**
+
+```bash
+jbrowse add-track alignment.paf \
+  --assemblyNames query,target \
+  --load copy \
+  --out /var/www/html/jbrowse2
+```
+
+The first assembly name is the **query** and the second is the **target**. This
+is the **reverse** of the minimap2 argument order. minimap2 takes
+`target.fa query.fa`, but `--assemblyNames` takes `query,target`. The query is
+drawn on the horizontal axis of the dotplot (top row in linear synteny). The
+target is on the vertical axis (bottom row).
+
+To avoid the ordering confusion entirely, you can set the named `queryAssembly`
+and `targetAssembly` fields on the adapter instead of the positional
+`assemblyNames` array (see [Adapter reference](#adapter-reference) below).
+
+This produces a config entry like:
 
 ```json
 {
   "type": "SyntenyTrack",
-  "trackId": "dotplot_track",
-  "assemblyNames": ["YJM1447", "R64"],
-  "name": "dotplot",
+  "trackId": "alignment",
+  "assemblyNames": ["query", "target"],
+  "name": "alignment",
   "adapter": {
     "type": "PAFAdapter",
-    "pafLocation": {
-      "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
-    },
-    "assemblyNames": ["YJM1447", "R64"]
+    "pafLocation": { "uri": "alignment.paf" },
+    "assemblyNames": ["query", "target"]
   }
 }
 ```
 
-We can load a SyntenyTrack from PAF with the CLI e.g. with:
+Or set the adapter's named `queryAssembly`/`targetAssembly` fields, which spell
+out the direction so it can't be read in the wrong order:
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "alignment",
+  "assemblyNames": ["query", "target"],
+  "name": "alignment",
+  "adapter": {
+    "type": "PAFAdapter",
+    "pafLocation": { "uri": "alignment.paf" },
+    "queryAssembly": "query",
+    "targetAssembly": "target"
+  }
+}
+```
+
+See [adding a synteny track from a PAF file](/docs/quickstart_web/#synteny-paf)
+for more CLI options.
+
+## Adapter reference
+
+All adapters accept `assemblyNames` as a two-element `["query", "target"]` array
+(query first, which is the reverse of the order minimap2/nucmer take their
+inputs, so double-check it). The alignment-file adapters (`PAFAdapter`,
+`DeltaAdapter`, `ChainAdapter`) also accept the named
+`queryAssembly`/`targetAssembly` fields. The MCScan adapters take only
+`assemblyNames`. All file locations accept gzip-compressed input. The PAF,
+delta, chain, and anchors adapters read the whole file into memory. For very
+large alignments use `PairwiseIndexedPAFAdapter` instead, which reads a
+tabix-indexed PIF region by region.
+
+### PAFAdapter
+
+Used for `.paf` files from minimap2, wfmash, and similar aligners.
+
+```json
+{
+  "type": "PAFAdapter",
+  "pafLocation": { "uri": "alignment.paf.gz" },
+  "assemblyNames": ["query", "target"]
+}
+```
+
+A short form using `uri` directly is also accepted. See the
+[PAFAdapter config docs](/docs/config/pafadapter) for all options.
+
+### PairwiseIndexedPAFAdapter
+
+Used for large alignments: convert a PAF to a tabix-indexed PIF with
+`jbrowse make-pif alignment.paf` (writes `alignment.pif.gz` + `.tbi`), so only
+the visible region is read instead of loading the whole file into memory.
+
+```json
+{
+  "type": "PairwiseIndexedPAFAdapter",
+  "uri": "alignment.pif.gz",
+  "queryAssembly": "query",
+  "targetAssembly": "target"
+}
+```
+
+The `uri` shorthand auto-resolves the `.tbi` index (pass `"csi": true` for a
+`.csi` index). See the
+[PairwiseIndexedPAFAdapter config docs](/docs/config/pairwiseindexedpafadapter)
+for all options.
+
+### DeltaAdapter
+
+Used for `.delta` files from MUMmer/nucmer.
 
 ```bash
-jbrowse add-track myfile.paf --assemblyNames grape,peach --load copy --out /var/www/html/jbrowse2
+nucmer target.fa query.fa -p alignment
+# produces alignment.delta
 ```
-
-The first assembly is the "target" and the second assembly is the "query."
-
-See how to [configure JBrowse using the CLI](/docs/quickstart_web/#synteny-paf)
-for more ways to load synteny tracks with the CLI.
-
-### PAFAdapter config
-
-The PAF adapter reflects a pairwise alignment, and is outputted by tools like
-minimap2. It can be used for SyntenyTracks:
-
-```json
-{
-  "type": "PAFAdapter",
-  "pafLocation": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.paf"
-  },
-  "assemblyNames": ["YJM1447", "R64"]
-}
-```
-
-Slots
-
-- `pafLocation` - the location of the PAF file. The pafLocation can refer to a
-  gzip'ed or plaintext PAF file. It will be read into memory entirely as it is
-  not an indexed file format.
-- `assemblyNames` - list of assembly names, typically two (first in list is
-  target assembly, second is query assembly)
-- `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
-  query
-- `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
-  target
-
-A reduced form is also accepted:
-
-```json
-{
-  "type": "PAFAdapter",
-  "uri": "file.paf.gz",
-  "assemblyNames": ["YJM1447", "R64"]
-}
-```
-
-### DeltaAdapter config
-
-The DeltaAdapter is used to load .delta files from MUMmer/nucmer. It can be used
-for SyntenyTracks:
 
 ```json
 {
   "type": "DeltaAdapter",
-  "deltaLocation": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.delta"
-  },
-  "assemblyNames": ["YJM1447", "R64"]
+  "deltaLocation": { "uri": "alignment.delta.gz" },
+  "assemblyNames": ["query", "target"]
 }
 ```
 
-Slots
+See the [DeltaAdapter config docs](/docs/config/deltaadapter) for all options.
 
-- `deltaLocation` - the location of the delta file. The deltaLocation can refer
-  to a gzip'ed or unzipped delta file. It will be read into memory entirely as
-  it is not an indexed file format.
-- `assemblyNames` - list of assembly names, typically two (first in list is
-  target assembly, second is query assembly)
-- `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
-  query
-- `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
-  target
+### ChainAdapter
 
-A reduced form is also accepted:
-
-```json
-{
-  "type": "DeltaAdapter",
-  "uri": "yourfile.delta.gz",
-  "assemblyNames": ["YJM1447", "R64"]
-}
-```
-
-### ChainAdapter config
-
-The ChainAdapter is used to load .chain files in the UCSC chain format. It can
-be used for SyntenyTracks:
+Used for `.chain` files in the UCSC chain format, produced by tools like lastz
+or liftOver pipelines.
 
 ```json
 {
   "type": "ChainAdapter",
-  "chainLocation": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/yeast/YJM1447_vs_R64.chain"
-  },
-  "assemblyNames": ["YJM1447", "R64"]
+  "chainLocation": { "uri": "alignment.chain.gz" },
+  "assemblyNames": ["query", "target"]
 }
 ```
 
-Slots
-
-- `chainLocation` - the location of the UCSC chain file. The chainLocation can
-  refer to a gzip'ed or unzipped chain file. It will be read into memory
-  entirely as it is not an indexed file format.
-- `assemblyNames` - list of assembly names, typically two (first in list is
-  target assembly, second is query assembly)
-- `queryAssembly` - alternative to assemblyNames: just the assemblyName of the
-  query
-- `targetAssembly` - alternative to assemblyNames: just the assemblyName of the
-  target
-
-A reduced form is also accepted:
-
-```json
-{
-  "type": "ChainAdapter",
-  "uri": "yourfile.chain.gz",
-  "assemblyNames": ["YJM1447", "R64"]
-}
-```
+See the [ChainAdapter config docs](/docs/config/chainadapter) for all options.
 
 ### MCScanAnchorsAdapter
 
-The .anchors file from MCScan refers to pairs of homologous genes and can be
-loaded into synteny tracks in JBrowse 2:
+Used for gene-level synteny from the
+[MCScan pipeline](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).
+Requires the `.anchors` file and one BED file per assembly (these BED files are
+intermediate outputs of the MCScan workflow).
 
 ```json
 {
   "type": "MCScanAnchorsAdapter",
-  "mcscanAnchorsLocation": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.gz"
-  },
-  "bed1Location": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
-  },
-  "bed2Location": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
-  },
+  "mcscanAnchorsLocation": { "uri": "grape.peach.anchors.gz" },
+  "bed1Location": { "uri": "grape.bed.gz" },
+  "bed2Location": { "uri": "peach.bed.gz" },
   "assemblyNames": ["grape", "peach"]
 }
 ```
 
-[This guide](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>)
-shows a demonstration of how to create the anchors and bed files (the .bed files
-are intermediate steps in creating the anchors files and are required by the
-MCScanAnchorsAdapter).
-
-Slots:
-
-- `mcscanAnchorsLocation` - the location of the .anchors file from the MCScan
-  workflow. The .anchors file has three columns. It can be gzip'd or plaintext,
-  and is read into memory whole
-- `bed1Location` - the location of the first assemblies .bed file from the
-  MCScan workflow. It can be gzip'ed or plaintext, and is read into memory
-  whole. This would refer to the gene names on the "left" side of the .anchors
-  file.
-- `bed2Location` - the location of the second assemblies .bed file from the
-  MCScan workflow. It can be gzipped or ungzipped, and is read into memory
-  whole. This would refer to the gene names on the "right" side of the .anchors
-  file.
-
-A reduced form is also accepted using `uri`, `bed1`, and `bed2`:
-
-```json
-{
-  "type": "MCScanAnchorsAdapter",
-  "uri": "file.anchors.gz",
-  "bed1": "grape.bed.gz",
-  "bed2": "peach.bed.gz",
-  "assemblyNames": ["grape", "peach"]
-}
-```
+A short form using `uri`, `bed1`, and `bed2` is also accepted. See the
+[MCScanAnchorsAdapter config docs](/docs/config/mcscananchorsadapter) for all
+options.
 
 ### MCScanSimpleAnchorsAdapter
 
-The "simple" .anchors.simple file from MCScan refers to pairs of homologous
-genes and can be loaded into synteny tracks in JBrowse 2:
+Used for `.anchors.simple` files from MCScan (5-column format: start/end gene
+from each assembly plus score). Requires the same BED files as
+`MCScanAnchorsAdapter`.
 
 ```json
 {
   "type": "MCScanSimpleAnchorsAdapter",
-  "mcscanSimpleAnchorsLocation": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape.peach.anchors.simple.gz"
-  },
-  "bed1Location": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/grape.bed.gz"
-  },
-  "bed2Location": {
-    "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/grape_vs_peach/peach.bed.gz"
-  },
+  "mcscanSimpleAnchorsLocation": { "uri": "grape.peach.anchors.simple.gz" },
+  "bed1Location": { "uri": "grape.bed.gz" },
+  "bed2Location": { "uri": "peach.bed.gz" },
   "assemblyNames": ["grape", "peach"]
 }
 ```
 
-[This guide](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>)
-shows a demonstration of how to create the anchors and bed files (the .bed files
-are intermediate steps in creating the anchors.simple files and are required by
-the MCScanSimpleAnchorsAdapter)
+See the
+[MCScanSimpleAnchorsAdapter config docs](/docs/config/mcscansimpleanchorsadapter)
+for all options.
 
-Slots:
+## See also
 
-- `mcscanSimpleAnchorsLocation` - the location of the .anchors.simple file from
-  the MCScan workflow (this file has 5 columns, start and end gene from bed1,
-  start and end genes from bed2, and score). It can be gzipped or ungzipped, and
-  is read into memory whole
-- `bed1Location` - the location of the first assemblies .bed file from the
-  MCScan workflow. It can be gzipped or ungzipped, and is read into memory
-  whole. This would refer to the gene names on the "left" side of the .anchors
-  file.
-- `bed2Location` - the location of the second assemblies .bed file from the
-  MCScan workflow. It can be gzipped or ungzipped, and is read into memory
-  whole. This would refer to the gene names on the "right" side of the .anchors
-  file.
-
-A reduced form is also accepted using `uri`, `bed1`, and `bed2`:
-
-```json
-{
-  "type": "MCScanSimpleAnchorsAdapter",
-  "uri": "file.anchors.simple.gz",
-  "bed1": "grape.bed.gz",
-  "bed2": "peach.bed.gz",
-  "assemblyNames": ["grape", "peach"]
-}
-```
+- [Linear synteny view](/docs/user_guides/linear_synteny_view), side-by-side
+  alignment of two genomes
+- [Dotplot view](/docs/user_guides/dotplot_view), whole-genome synteny overview
+- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization),
+  generating a PAF with minimap2 end-to-end

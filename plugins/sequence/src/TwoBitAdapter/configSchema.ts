@@ -1,9 +1,21 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config TwoBitAdapter
+ * #trackType ReferenceSequenceTrack
+ *
+ * #example
+ * A `.2bit` file is self-contained; add `chromSizes` to skip an initial
+ * full-file scan on genomes with many contigs:
+ * ```js
+ * {
+ *   type: 'TwoBitAdapter',
+ *   uri: 'https://example.com/genome.2bit',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -73,4 +85,5 @@ const TwoBitAdapter = ConfigurationSchema(
   },
 )
 
+export type TwoBitAdapterConfig = Instance<typeof TwoBitAdapter>
 export default TwoBitAdapter

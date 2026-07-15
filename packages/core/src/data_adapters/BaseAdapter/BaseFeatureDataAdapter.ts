@@ -2,22 +2,21 @@ import { type Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { BaseAdapter } from './BaseAdapter.ts'
-import {
-  aggregateQuantitativeStats,
-  calculateFeatureDensityStats,
-} from './stats.ts'
+import { aggregateQuantitativeStats } from './stats.ts'
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 
-import type { BaseOptions } from './types.ts'
+import type { BaseOptions, FeatureDensityStats } from './types.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
-import type { RectifiedQuantitativeStats } from '../../util/stats.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 
 /**
  * Base class for feature adapters to extend. Defines some methods that
  * subclasses must implement.
  */
-export abstract class BaseFeatureDataAdapter extends BaseAdapter {
+export abstract class BaseFeatureDataAdapter<
+  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+> extends BaseAdapter<CONF> {
   /**
    * Get all reference sequence names used in the data source
    * Example:
@@ -78,20 +77,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   }
 
   /**
-   * Alias for getFeatures, retained because it is called from many sites
-   * across the codebase. Previously did an upfront hasDataForRefName check
-   * before fetching, but every modern indexed adapter (BigWig, Tabix, BAM,
-   * CRAM, etc.) already returns nothing for missing ref names, so the extra
-   * await per region just doubled the metadata round-trips.
-   */
-  public getFeaturesInRegion(
-    region: Region,
-    opts: BaseOptions = {},
-  ): Observable<Feature> {
-    return this.getFeatures(region, opts)
-  }
-
-  /**
    * Adapters that are frequently called on multiple regions simultaneously
    * may want to implement a more efficient custom version of this method.
    */
@@ -103,6 +88,31 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   }
 
   /**
+   * Convenience wrapper that collects {@link getFeatures} for a region into an
+   * array — the common shape across RPC methods (RenderFeatureData, Manhattan,
+   * Wiggle, etc.). Pass `opts` so `statusCallback`/`stopToken` reach the
+   * adapter; omitting them means no download progress and a fetch that can't be
+   * interrupted mid-flight.
+   */
+  public getFeaturesArray(region: Region, opts: BaseOptions = {}) {
+    return firstValueFrom(this.getFeatures(region, opts).pipe(toArray()))
+  }
+
+  /**
+   * {@link getFeaturesArray} across multiple regions — collects
+   * {@link getFeaturesInMultipleRegions} into an array. The common shape in
+   * matrix/comparative RPC methods (variants, synteny, dotplot, breakpoint).
+   */
+  public getFeaturesInMultipleRegionsArray(
+    regions: Region[],
+    opts: BaseOptions = {},
+  ) {
+    return firstValueFrom(
+      this.getFeaturesInMultipleRegions(regions, opts).pipe(toArray()),
+    )
+  }
+
+  /**
    * Check if the store has data for the given reference name.
    * @param refName - Name of the reference sequence
    * @returns Whether data source has data for the given reference name
@@ -110,16 +120,6 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   public async hasDataForRefName(refName: string, opts: BaseOptions = {}) {
     const refNames = await this.getRefNames(opts)
     return refNames.includes(refName)
-  }
-
-  /**
-   * Calculates global statistics across the entire dataset.
-   * Adapters with precomputed global stats (e.g. BigWig) should override this.
-   */
-  public async getGlobalStats(
-    _opts?: BaseOptions,
-  ): Promise<Partial<RectifiedQuantitativeStats> | undefined> {
-    return undefined
   }
 
   /**
@@ -151,50 +151,47 @@ export abstract class BaseFeatureDataAdapter extends BaseAdapter {
   }
 
   /**
-   * Calculates the "feature density" of a region. The primary purpose of this
-   * API is to alert the user if they are going to be downloading too much
-   * information, and give them a hint to zoom in to see more. The default
-   * implementation samples from the regions, downloads feature data with
-   * getFeatures, and returns an object with the form \{featureDensity:number\}
-
-   * 1. alternative calculations for featureDensity
-   * 2. they can also return an object containing a byte size calculation with
-   * the format \{bytes:number, fetchSizeLimit:number\}
-   *
-   * In 2. the fetchSizeLimit is the adapter-defined limit for what it thinks
-   * is 'too much data' (e.g. CRAM and BAM may vary on what they think too much
-   * data is)
-   */
-  getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
-    return calculateFeatureDensityStats(
-      region,
-      (region2, opts2) => this.getFeatures(region2, opts2),
-      opts,
-    )
-  }
-
-  /**
-   * Calculates the "feature density" of a set of regions. Note: Currently only
-   * fetches from the first region because it is a heuristic
+   * Estimates how much data a fetch of `regions` would pull, so a display can
+   * warn the user (and offer force-load) before downloading too much. Returns
+   * the adapter's cheap index-only byte estimate via `getRegionByteSize` (the
+   * tabix family overrides it); adapters with no index estimate return no bytes
+   * and aren't byte-gated. BAM/CRAM/VCF override this to attach their own
+   * `fetchSizeLimit`; self-summarizing adapters (BigWig) return `alwaysRender`.
    */
   public async getMultiRegionFeatureDensityStats(
     regions: Region[],
     opts?: BaseOptions,
-  ) {
+  ): Promise<FeatureDensityStats> {
     return regions[0]
-      ? this.getRegionFeatureDensityStats(regions[0], opts)
-      : { featureDensity: 0 }
+      ? { bytes: await this.getRegionByteSize(regions, opts) }
+      : {}
+  }
+
+  /**
+   * Cheap upper bound on the compressed bytes a fetch of `regions` would pull,
+   * derived from an index without downloading or parsing any features. The
+   * default returns `undefined` ("no cheap estimate"); indexed adapters (tabix)
+   * override it. Lets a fetch short-circuit an over-budget region before
+   * touching feature data — see `executeRenderFeatureData`.
+   */
+  async getRegionByteSize(
+    _regions: Region[],
+    _opts?: BaseOptions,
+  ): Promise<number | undefined> {
+    return undefined
   }
 
   async getSources(
     regions: Region[],
+    opts: BaseOptions = {},
   ): Promise<{ name: string; color?: string; [key: string]: unknown }[]> {
-    const features = await firstValueFrom(
-      this.getFeaturesInMultipleRegions(regions).pipe(toArray()),
-    )
+    const features = await this.getFeaturesInMultipleRegionsArray(regions, opts)
     const sources = new Set<string>()
     for (const f of features) {
-      sources.add(f.get('source'))
+      const source = f.get('source')
+      if (source !== undefined) {
+        sources.add(source)
+      }
     }
     return [...sources].map(source => ({
       name: source,

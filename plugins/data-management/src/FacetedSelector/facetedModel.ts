@@ -1,16 +1,26 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   localStorageGetBoolean,
+  localStorageGetItem,
   localStorageGetNumber,
+  localStorageSetBoolean,
+  localStorageSetItem,
+  localStorageSetNumber,
   measureGridWidth,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { autorun, observable } from 'mobx'
+import { types } from '@jbrowse/mobx-state-tree'
+import { observable } from 'mobx'
 
-import { getRowStr } from './components/util.ts'
+import { getRowStr, isMetadataFacet, metadataFacet } from './components/util.ts'
+import {
+  computeFacetCategoryCounts,
+  filterRowsByFacets,
+  filterRowsByText,
+} from './facetedFilter.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
 import { measureNameColumnWidth } from '../HierarchicalTrackSelectorWidget/components/shared/trackGridUtils.ts'
+import { configScopedKey } from '../shared/configScopedKey.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -18,8 +28,28 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
 
+// Hidden columns are config+assembly scoped: the metadata columns differ per
+// dataset, so hiding one shouldn't carry over to an unrelated config.
+function hiddenColumnsKey(assemblyNames: string[]) {
+  return configScopedKey('facet-hiddenColumns', assemblyNames)
+}
+
+// Tolerant of a corrupt/missing entry (falls back to none hidden).
+function readHiddenColumns(key: string): string[] {
+  try {
+    const parsed: unknown = JSON.parse(localStorageGetItem(key) ?? '[]')
+    return Array.isArray(parsed)
+      ? parsed.filter(x => typeof x === 'string')
+      : []
+  } catch (e) {
+    console.error(e)
+    return []
+  }
+}
+
 /**
  * #stateModel FacetedModel
+ * #category widget
  */
 export function facetedStateTreeF() {
   return types
@@ -44,23 +74,21 @@ export function facetedStateTreeF() {
       /**
        * #property
        */
-      showOptions: types.optional(types.boolean, () =>
-        localStorageGetBoolean('facet-showTableOptions', false),
-      ),
-
-      /**
-       * #property
-       */
       panelWidth: types.optional(types.number, () =>
         localStorageGetNumber('facet-panelWidth', 400),
       ),
+      /**
+       * #property
+       * Column names the user has hidden. Loaded from a config+assembly scoped
+       * localStorage entry in setTrackConfigurations (once assemblies are known).
+       */
+      hiddenColumns: types.optional(types.array(types.string), []),
     })
     .volatile(() => ({
       /**
        * #volatile
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      visible: {} as Record<string, boolean>,
+      assemblyNames: [] as string[],
       /**
        * #volatile
        */
@@ -69,6 +97,15 @@ export function facetedStateTreeF() {
        * #volatile
        */
       filters: observable.map<string, string[]>(),
+      /**
+       * #volatile
+       * Field id the grid is sorted by; empty string keeps natural order.
+       */
+      sortField: '',
+      /**
+       * #volatile
+       */
+      sortAscending: true,
       /**
        * #volatile
        */
@@ -85,9 +122,14 @@ export function facetedStateTreeF() {
       setTrackConfigurations(
         tracks: AnyConfigurationModel[],
         session: AbstractSessionModel,
+        assemblyNames: string[],
       ) {
         self.trackConfigurations = tracks
         self.session = session
+        self.assemblyNames = assemblyNames
+        self.hiddenColumns.replace(
+          readHiddenColumns(hiddenColumnsKey(assemblyNames)),
+        )
       },
       /**
        * #action
@@ -98,9 +140,22 @@ export function facetedStateTreeF() {
       /**
        * #action
        */
+      clearFilters() {
+        self.filters.clear()
+      },
+      /**
+       * #action
+       */
+      setSort(field: string, ascending: boolean) {
+        self.sortField = field
+        self.sortAscending = ascending
+      },
+      /**
+       * #action
+       */
       setPanelWidth(width: number) {
         self.panelWidth = width
-        return self.panelWidth
+        localStorageSetNumber('facet-panelWidth', width)
       },
       /**
        * #action
@@ -119,24 +174,27 @@ export function facetedStateTreeF() {
        */
       setShowSparse(f: boolean) {
         self.showSparse = f
-      },
-      /**
-       * #action
-       */
-      setShowOptions(f: boolean) {
-        self.showOptions = f
+        localStorageSetBoolean('facet-showSparse', f)
       },
       /**
        * #action
        */
       setShowFilters(f: boolean) {
         self.showFilters = f
+        localStorageSetBoolean('facet-showFilters', f)
       },
       /**
        * #action
        */
-      setVisible(args: Record<string, boolean>) {
-        self.visible = args
+      setColumnVisible(field: string, visible: boolean) {
+        const next = visible
+          ? self.hiddenColumns.filter(c => c !== field)
+          : [...new Set([...self.hiddenColumns, field])]
+        self.hiddenColumns.replace(next)
+        localStorageSetItem(
+          hiddenColumnsKey(self.assemblyNames),
+          JSON.stringify(next),
+        )
       },
     }))
     .views(self => ({
@@ -147,26 +205,25 @@ export function facetedStateTreeF() {
        */
       get allRows() {
         const session = self.session
-        if (!session) {
-          return []
-        }
-        return self.trackConfigurations.map(
-          track =>
-            ({
-              id: track.trackId as string,
-              conf: track,
-              name: getTrackName(track, session),
-              category: readConfObject(track, 'category')?.join(', '),
-              adapter: (track.adapter as { type?: string } | undefined)?.type,
-              description: readConfObject(track, 'description') as
-                | string
-                | undefined,
-              metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
-                string,
-                unknown
-              >,
-            }) as const,
-        )
+        return session
+          ? self.trackConfigurations.map(
+              track =>
+                ({
+                  id: track.trackId as string,
+                  conf: track,
+                  name: getTrackName(track, session),
+                  category: readConfObject(track, 'category')?.join(', '),
+                  adapter: (track.adapter as { type?: string } | undefined)
+                    ?.type,
+                  description: readConfObject(track, 'description') as
+                    string | undefined,
+                  metadata: (readConfObject(track, 'metadata') ?? {}) as Record<
+                    string,
+                    unknown
+                  >,
+                }) as const,
+            )
+          : []
       },
     }))
     .views(self => ({
@@ -175,38 +232,11 @@ export function facetedStateTreeF() {
        * Text-filtered rows. Cheap string filtering on already-built allRows.
        */
       get rows() {
-        const queryLower = self.filterText.toLowerCase()
-        if (!queryLower) {
-          return self.allRows
-        }
-        return self.allRows.filter(
-          row =>
-            row.name.toLowerCase().includes(queryLower) ||
-            row.category?.toLowerCase().includes(queryLower) ||
-            row.description?.toLowerCase().includes(queryLower) ||
-            Object.values(row.metadata).some(
-              v =>
-                v !== null &&
-                v !== undefined &&
-                `${v}`.toLowerCase().includes(queryLower),
-            ),
-        )
+        return filterRowsByText(self.allRows, self.filterText)
       },
     }))
 
     .views(self => ({
-      /**
-       * #getter
-       */
-      get filteredNonMetadataKeys() {
-        return self.showSparse
-          ? nonMetadataKeys
-          : findNonSparseKeys(
-              nonMetadataKeys,
-              self.allRows,
-              (r, f) => r[f as keyof typeof r],
-            )
-      },
       /**
        * #getter
        */
@@ -217,78 +247,104 @@ export function facetedStateTreeF() {
       },
       /**
        * #getter
+       * Facet field ids in column order (non-metadata first, then
+       * `metadata.<key>`); both kinds resolve through getRowStr. Sparse fields
+       * are dropped unless showSparse.
        */
-      get filteredMetadataKeys() {
+      get facetFields() {
+        const candidates = [
+          ...nonMetadataKeys,
+          ...this.metadataKeys.map(metadataFacet),
+        ]
         return self.showSparse
-          ? this.metadataKeys
-          : findNonSparseKeys(
-              this.metadataKeys,
-              self.allRows,
-              (r, f) => r.metadata[f],
+          ? candidates
+          : findNonSparseKeys(candidates, self.allRows, (r, f) =>
+              getRowStr(f, r),
             )
       },
       /**
        * #getter
        */
       get fields() {
-        return [
+        return ['name', ...this.facetFields]
+      },
+      /**
+       * #getter
+       * The non-metadata field names, used to detect when a metadata key
+       * collides with one (so the header can show "x (from metadata)").
+       */
+      get nonMetadataFieldSet() {
+        return new Set([
           'name',
-          ...this.filteredNonMetadataKeys,
-          ...this.filteredMetadataKeys.map(m => `metadata.${m}`),
-        ]
+          ...this.facetFields.filter(f => !isMetadataFacet(f)),
+        ])
+      },
+      /**
+       * #getter
+       * Per-field visibility derived from the persisted hiddenColumns list. A
+       * field absent from the list (e.g. newly introduced) defaults to visible.
+       */
+      get visible(): Record<string, boolean> {
+        const hidden = new Set(self.hiddenColumns)
+        return Object.fromEntries(this.fields.map(f => [f, !hidden.has(f)]))
       },
       /**
        * #getter
        */
       get filteredRows() {
-        const arrFilters = [...self.filters.entries()]
-          .filter(f => f[1].length > 0)
-          .map(([key, val]) => [key, new Set(val)] as const)
-        return self.rows.filter(row =>
-          arrFilters.every(([key, val]) => val.has(getRowStr(key, row))),
+        return filterRowsByFacets(self.rows, self.filters)
+      },
+      /**
+       * #getter
+       * Per-facet category counts for the filter sidebar. Cached by MobX so it
+       * recomputes only when rows or filters change, not on every render.
+       */
+      get facetCategoryCounts() {
+        return computeFacetCategoryCounts(
+          self.rows,
+          this.facetFields,
+          self.filters,
         )
       },
       /**
        * #getter
-       * Measured pixel widths for every column. Cached by MobX; recomputes
-       * only when rows or the key set change, not on visibility toggles.
+       * Measured pixel widths for every column. Measured over allRows so widths
+       * stay stable and don't recompute on every filterText keystroke.
        */
       get initialWidths(): Record<string, number> {
-        return {
-          name: measureNameColumnWidth(self.rows),
-          ...Object.fromEntries(
-            this.filteredNonMetadataKeys.map(e => [
-              e,
-              measureGridWidth(
-                self.rows.map(r => r[e as keyof typeof r] as string),
-                { maxWidth: 400, stripHTML: true },
-              ),
-            ]),
-          ),
-          ...Object.fromEntries(
-            this.filteredMetadataKeys.map(e => [
-              `metadata.${e}`,
-              measureGridWidth(
-                self.rows.map(r => r.metadata[e]),
-                { maxWidth: 400, stripHTML: true },
-              ),
-            ]),
-          ),
-        }
+        return Object.fromEntries(
+          this.fields.map(f => [
+            f,
+            f === 'name'
+              ? measureNameColumnWidth(self.allRows)
+              : measureGridWidth(
+                  self.allRows.map(r => getRowStr(f, r)),
+                  { maxWidth: 400, stripHTML: true },
+                ),
+          ]),
+        )
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function facetedVisibleAutorun() {
-              self.setVisible(
-                Object.fromEntries(self.fields.map(c => [c, true])),
-              )
-            },
-            { name: 'FacetedVisible' },
-          ),
+    .views(self => ({
+      /**
+       * #getter
+       * Faceted rows in display order: filteredRows sorted by the active sort
+       * field (natural order when no field is selected).
+       */
+      get sortedRows() {
+        const { sortField, sortAscending, filteredRows } = self
+        if (!sortField) {
+          return filteredRows
+        }
+        const dir = sortAscending ? 1 : -1
+        return [...filteredRows].sort(
+          (a, b) =>
+            dir *
+            getRowStr(sortField, a).localeCompare(
+              getRowStr(sortField, b),
+              undefined,
+              { numeric: true },
+            ),
         )
       },
     }))

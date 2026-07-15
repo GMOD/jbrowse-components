@@ -18,24 +18,25 @@ export default function InfoDialog({
     >
       <DialogContent>
         <DialogContentText>
-          Because everything about the JBrowse session is encoded in the URL
-          (e.g. state of the tracks, views, features selected, etc.) the
-          sessions can get very long. Therefore, we created a URL shortener,
-          both as a convenience and because long URLs can break some programs.
-          Note that both the long and short URLs encode the same data, but due
-          to long URLs causing problems with some programs, we recommend sharing
-          short URLs.
+          A session encodes your tracks, views, and selections in the URL, so it
+          can get long. All three formats below carry the same data.
         </DialogContentText>
         <DialogContentText>
-          We generate the short URLs in a secure manner which involves
-          encrypting the session on the client side with a random password
-          string and uploading them to a central database. Then the random
-          password is added to the URL but is not uploaded to the central
-          database, making these short URLs effectively &quot;end-to-end
-          encrypted&quot;
+          <strong>Short URL</strong> (recommended): the session is encrypted in
+          your browser with a random password, then uploaded to a central
+          database. The password lives only in the URL, never on the server, so
+          short URLs are effectively end-to-end encrypted — only someone with
+          the link can read the session.
         </DialogContentText>
         <DialogContentText>
-          Only users with a share link can read the session.
+          <strong>Long URL</strong>: the full session is compressed into the URL
+          itself. Nothing is uploaded, but the URL can get long enough to break
+          some programs.
+        </DialogContentText>
+        <DialogContentText>
+          <strong>Plaintext JSON</strong>: the readable session embedded in the
+          URL, uncompressed. Longest of the three, but lets you inspect exactly
+          what the session contains.
         </DialogContentText>
       </DialogContent>
     </Dialog>

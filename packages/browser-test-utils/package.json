@@ -1,0 +1,16 @@
+{
+  "name": "@jbrowse/browser-test-utils",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared Puppeteer harness primitives for jbrowse-web browser tests and website screenshot generation",
+  "license": "Apache-2.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "puppeteer": "^25.3.0",
+    "serve-handler": "^6.1.7"
+  },
+  "devDependencies": {
+    "@types/serve-handler": "^6.1.4"
+  }
+}

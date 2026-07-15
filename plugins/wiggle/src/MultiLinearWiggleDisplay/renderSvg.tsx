@@ -1,32 +1,137 @@
+/* eslint-disable react-refresh/only-export-components */
+import type React from 'react'
+
 import { getContainingView } from '@jbrowse/core/util'
-import { when } from 'mobx'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import {
+  SvgChrome,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
+import { SvgTreePath } from '@jbrowse/tree-sidebar'
 
-import { isReadyOrHasError } from '../svgExportUtil.ts'
-import YScaleBars from './components/YScaleBars.tsx'
-import { makeSidebarSvg } from './makeSidebarSvg.tsx'
+import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
+import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
+import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
+import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
+import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 
-import type { WiggleDisplayModel } from './model.ts'
+import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
+type LGV = LinearGenomeViewModel
+
 export async function renderSvg(
-  self: WiggleDisplayModel,
-  opts: ExportSvgDisplayOptions,
-  superRenderSvg: (opts: ExportSvgDisplayOptions) => Promise<React.ReactNode>,
-) {
-  await when(() => isReadyOrHasError(self))
-  const { offsetPx } = getContainingView(self) as LinearGenomeViewModel
-  const sidebarSvg = await makeSidebarSvg(self)
+  model: MultiLinearWiggleDisplayModel,
+  opts?: ExportSvgDisplayOptions,
+): Promise<React.ReactNode> {
+  await awaitSvgReady(model)
+  const view = getContainingView(model) as LGV
+  const height = opts?.overrideHeight ?? model.height
+  return (
+    <SvgChrome
+      error={model.error}
+      regionTooLarge={model.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
+      <MultiWiggleSvgBody
+        model={model}
+        view={view}
+        height={height}
+        opts={opts}
+      />
+    </SvgChrome>
+  )
+}
+
+function MultiWiggleSvgBody({
+  model,
+  view,
+  height,
+  opts,
+}: {
+  model: MultiLinearWiggleDisplayModel
+  view: LGV
+  height: number
+  opts: ExportSvgDisplayOptions | undefined
+}) {
+  const { offsetPx } = view
+  // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
+  const scalebarLeft = Math.max(-offsetPx, 0)
+  const { rpcDataMap, renderState } = model
+
+  // No data-size gate: renderState is always defined (a [0,1] stub until
+  // autoscale resolves), so an empty region paints an empty plot; the per-source
+  // scales draw only where a real domain exists (MultiWiggleSvgScales).
+  // Wiggle can't use the shared SvgTreeSidebar: its row labels live in
+  // MultiWiggleSvgScales (shared with the on-screen path, alongside the
+  // scalebars). So keep the split, but derive the label offset and the tree from
+  // one `treeShowing` so a blank gutter can't appear.
+  const { hierarchy, showTree, treeAreaWidth } = model
+  const treeShowing = showTree && !!hierarchy
+
+  const props = model.gpuProps()
+  // canvas spans the viewport (visibleRegions coords are viewport-relative and
+  // clipped to view.width below), matching the on-screen canvas rather than the
+  // full-genome totalWidthPx
+  const canvasWidth = view.width
+  const renderBlocks = buildRenderBlocks(view.visibleRegions)
+  const state = {
+    ...renderState,
+    canvasWidth,
+    canvasHeight: height,
+  }
 
   return (
     <>
-      <g id="data-layer">{await superRenderSvg(opts)}</g>
-      <g transform={`translate(${Math.max(-offsetPx, 0)})`}>
-        <YScaleBars model={self} orientation="left" exportSVG />
-      </g>
-      {sidebarSvg}
+      <SvgClipRect
+        id={`wiggle-clip-${model.id}`}
+        width={view.width}
+        height={height}
+      >
+        <PaintLayer
+          width={canvasWidth}
+          height={height}
+          opts={opts}
+          paint={ctx => {
+            drawWiggleToCtx(
+              ctx,
+              {
+                rpcDataMap,
+                encode: data => buildSourceRenderData(data, props),
+              },
+              renderBlocks,
+              state,
+            )
+          }}
+        />
+      </SvgClipRect>
+      {/* Row separators and Y-scale cross-hatches, shared with the on-screen
+          path so an exported SVG matches the track when either is enabled. */}
+      <MultiWiggleOverlayLines model={model} width={view.width} />
+      <MultiWiggleSvgScales
+        model={model}
+        canvasWidth={view.width}
+        scalebarLeft={scalebarLeft}
+        labelOffset={treeShowing ? treeAreaWidth : 0}
+      />
+      {/* Overlay-mode color legend, drawn inline here (no inter-region masks in
+          the flat export SVG). On screen this same legend is the hoisted
+          MultiWiggleLegendOverlay instead. */}
+      {model.isOverlay && model.sources.length > 1 ? (
+        <OverlayColorLegend
+          sources={model.sources}
+          fallbackColor={model.posColor}
+          canvasWidth={view.width}
+          maxHeight={height}
+        />
+      ) : null}
+      {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}
     </>
   )
 }

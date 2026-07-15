@@ -1,20 +1,9 @@
-import { useState } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import AddIcon from '@mui/icons-material/Add'
-import DeleteIcon from '@mui/icons-material/Delete'
-import {
-  Card,
-  CardContent,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  List,
-  ListItem,
-  Paper,
-  TextField,
-} from '@mui/material'
+import { InputLabel, Paper } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import EditableStringList from './EditableStringList.tsx'
+import { defaultIndexingConf } from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -24,13 +13,7 @@ const useStyles = makeStyles()(theme => ({
     flexDirection: 'column',
     padding: theme.spacing(1),
   },
-
-  card: {
-    marginTop: theme.spacing(1),
-  },
 }))
-
-const defaultConf = { attributes: ['Name', 'ID'], exclude: ['CDS', 'exon'] }
 
 const TextIndexingConfig = observer(function TextIndexingConfig({
   model,
@@ -38,99 +21,27 @@ const TextIndexingConfig = observer(function TextIndexingConfig({
   model: AddTrackModel
 }) {
   const { classes } = useStyles()
-  const [attributeInput, setAttributeInput] = useState('')
-  const [excludeInput, setExcludeInput] = useState('')
-  const conf = model.textIndexingConf ?? defaultConf
-  const sections = [
-    {
-      label: 'Indexing attributes',
-      key: 'attributes' as const,
-      values: conf.attributes,
-      inputValue: attributeInput,
-      setInputValue: setAttributeInput,
-    },
-    {
-      label: 'Feature types to exclude',
-      key: 'exclude' as const,
-      values: conf.exclude,
-      inputValue: excludeInput,
-      setInputValue: setExcludeInput,
-    },
-  ]
+  const conf = model.textIndexingConf ?? defaultIndexingConf
 
   return (
     <Paper className={classes.paper}>
       <InputLabel>Indexing configuration</InputLabel>
-      {sections.map(section => (
-        <Card raised key={section.label} className={classes.card}>
-          <CardContent>
-            <InputLabel>{section.label}</InputLabel>
-            <List disablePadding>
-              {section.values.map((val, idx) => (
-                /* biome-ignore lint/suspicious/noArrayIndexKey: */
-                <ListItem key={`${val}-${idx}`} disableGutters>
-                  <TextField
-                    value={val}
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => {
-                                model.setTextIndexingConf({
-                                  ...conf,
-                                  [section.key]: section.values.filter(
-                                    (_, i) => i !== idx,
-                                  ),
-                                })
-                              }}
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                  />
-                </ListItem>
-              ))}
-              <ListItem disableGutters>
-                <TextField
-                  value={section.inputValue}
-                  placeholder="add new"
-                  onChange={event => {
-                    section.setInputValue(event.target.value)
-                  }}
-                  slotProps={{
-                    input: {
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => {
-                              model.setTextIndexingConf({
-                                ...conf,
-                                [section.key]: [
-                                  ...section.values,
-                                  section.inputValue,
-                                ],
-                              })
-                              section.setInputValue('')
-                            }}
-                            disabled={section.inputValue === ''}
-                            data-testid="stringArrayAdd-Feat"
-                          >
-                            <AddIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
-              </ListItem>
-            </List>
-          </CardContent>
-        </Card>
-      ))}
+      <EditableStringList
+        label="Indexing attributes"
+        testId="stringArrayAdd-attributes"
+        values={conf.attributes}
+        onChange={attributes => {
+          model.setTextIndexingConf({ ...conf, attributes })
+        }}
+      />
+      <EditableStringList
+        label="Feature types to exclude"
+        testId="stringArrayAdd-exclude"
+        values={conf.exclude}
+        onChange={exclude => {
+          model.setTextIndexingConf({ ...conf, exclude })
+        }}
+      />
     </Paper>
   )
 })

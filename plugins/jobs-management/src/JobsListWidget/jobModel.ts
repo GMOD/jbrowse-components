@@ -1,7 +1,10 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #stateModel
+ * #category widget
  */
 export const Job = types
   .model('Job', {
@@ -9,17 +12,17 @@ export const Job = types
      * #property
      */
     name: types.string,
-    /**
-     * #property
-     */
-    statusMessage: types.maybe(types.string),
-    /**
-     * #property
-     */
-    progressPct: types.number,
   })
   .volatile(() => ({
     cancelCallback() {},
+    /**
+     * #volatile
+     */
+    statusMessage: undefined as string | undefined,
+    /**
+     * #volatile
+     */
+    progressPct: 0,
   }))
   .actions(self => ({
     /**
@@ -43,3 +46,5 @@ export const Job = types
       self.progressPct = pct
     },
   }))
+
+export type JobModel = Instance<typeof Job>

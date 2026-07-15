@@ -1,1 +1,5 @@
 *.diff.png
+*.diff-visual.png
+__downloads__/
+__compare__/
+snapshot-review.json

@@ -1,13 +1,19 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
         ...snap,
         vcfGzLocation: { uri: snap.uri, baseUri: snap.baseUri },
         index: {
-          location: { uri: `${snap.uri}.tbi`, baseUri: snap.baseUri },
+          indexType: snap.csi ? 'CSI' : 'TBI',
+          location: {
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
+            baseUri: snap.baseUri,
+          },
         },
       }
     : snap
@@ -15,9 +21,19 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config VcfTabixAdapter
+ * #trackType VariantTrack
  * used to load bgzip-compressed, tabix-indexed VCF files
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
+ * `.csi` index):
+ * ```js
+ * {
+ *   type: 'VcfTabixAdapter',
+ *   uri: 'https://example.com/variants.vcf.gz',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const VcfTabixAdapter = ConfigurationSchema(
   'VcfTabixAdapter',
@@ -65,6 +81,20 @@ const VcfTabixAdapter = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     * Matches the feature-track default (5 Mb): the tabix byte estimate is
+     * block-granular (a small region still pulls whole BGZF blocks), so a
+     * tighter gate trips on routine variant views. VCF text downloads fast; the
+     * feature-density gate remains the backstop for genuinely over-dense views.
+     */
+    fetchSizeLimit: {
+      type: 'number',
+      description:
+        'size in bytes over which to display a warning to the user that too much data will be fetched',
+      defaultValue: 5_000_000,
+      advanced: true,
+    },
   },
   {
     explicitlyTyped: true,
@@ -86,5 +116,7 @@ const VcfTabixAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type VcfTabixAdapterConfig = Instance<typeof VcfTabixAdapter>
 
 export default VcfTabixAdapter

@@ -1,8 +1,9 @@
+import { spawnSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 
-import { APPLE_TEAM_ID, DIST } from './config.ts'
-import { ensureDir, log, run } from './utils.ts'
+import { APPLE_TEAM_ID, DIST, ROOT } from './config.ts'
+import { ensureDir, log } from './utils.ts'
 
 export async function notarizeMacApp(appPath: string) {
   if (!process.env.APPLE_ID || !process.env.APPLE_ID_PASSWORD) {
@@ -42,24 +43,41 @@ export function signWindowsFile(filePath: string) {
   ensureDir(inputDir)
   ensureDir(outputDir)
 
-  const tmpExe = path.join(inputDir, `tmp-${Date.now()}.exe`)
+  // Use the original filename so the signed output has a predictable name
+  const tmpExe = path.join(inputDir, path.basename(filePath))
   fs.copyFileSync(filePath, tmpExe)
 
-  const signCmd = [
-    'CODE_SIGN_TOOL_PATH=code_signer bash code_signer/CodeSignTool.sh sign',
-    `-input_file_path='${tmpExe}'`,
-    `-output_dir_path='${outputDir}'`,
-    `-credential_id='${process.env.WINDOWS_SIGN_CREDENTIAL_ID}'`,
-    `-username='${process.env.WINDOWS_SIGN_USER_NAME}'`,
-    `-password='${process.env.WINDOWS_SIGN_USER_PASSWORD}'`,
-    `-totp_secret='${process.env.WINDOWS_SIGN_USER_TOTP}'`,
-  ].join(' ')
+  try {
+    // Use spawnSync with an explicit args array to avoid shell injection —
+    // credentials are passed as process arguments, not interpolated into a shell string
+    const result = spawnSync(
+      'bash',
+      [
+        'code_signer/CodeSignTool.sh',
+        'sign',
+        `-input_file_path=${tmpExe}`,
+        `-output_dir_path=${outputDir}`,
+        `-credential_id=${process.env.WINDOWS_SIGN_CREDENTIAL_ID}`,
+        `-username=${process.env.WINDOWS_SIGN_USER_NAME}`,
+        `-password=${process.env.WINDOWS_SIGN_USER_PASSWORD}`,
+        `-totp_secret=${process.env.WINDOWS_SIGN_USER_TOTP}`,
+      ],
+      {
+        stdio: 'inherit',
+        cwd: ROOT,
+        env: { ...process.env, CODE_SIGN_TOOL_PATH: 'code_signer' },
+      },
+    )
 
-  run(signCmd)
+    if (result.status !== 0) {
+      throw new Error(`CodeSignTool exited with status ${result.status}`)
+    }
 
-  fs.copyFileSync(path.join(outputDir, path.basename(tmpExe)), filePath)
-  fs.rmSync(inputDir, { recursive: true, force: true })
-  fs.rmSync(outputDir, { recursive: true, force: true })
+    fs.copyFileSync(path.join(outputDir, path.basename(tmpExe)), filePath)
+  } finally {
+    fs.rmSync(inputDir, { recursive: true, force: true })
+    fs.rmSync(outputDir, { recursive: true, force: true })
+  }
 
   log(`Signed: ${path.basename(filePath)}`)
 }

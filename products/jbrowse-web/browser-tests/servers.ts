@@ -1,11 +1,16 @@
 /* eslint-disable no-console */
-import crypto from 'crypto'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import crypto from 'node:crypto'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import OAuthServer from '@node-oauth/express-oauth-server'
 import cors from 'cors'
-import express from 'express'
+import express, {
+  Router,
+  json,
+  static as serveStatic,
+  urlencoded,
+} from 'express'
 import expressBasicAuth from 'express-basic-auth'
 
 import type {
@@ -17,7 +22,7 @@ import type {
   Token,
 } from '@node-oauth/oauth2-server'
 import type { Request } from 'express'
-import type http from 'http'
+import type http from 'node:http'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const defaultDataPath = path.resolve(__dirname, '../test_data/volvox')
@@ -124,7 +129,7 @@ export function startOAuthServer(
       },
     })
 
-    const router = express.Router()
+    const router = Router()
 
     router.get('/', (_req, res) => {
       res.send(`
@@ -183,10 +188,10 @@ export function startOAuthServer(
 
     const app = express()
     app.use(cors())
-    app.use(express.urlencoded({ extended: false }))
-    app.use(express.json())
+    app.use(urlencoded({ extended: false }))
+    app.use(json())
     app.use('/oauth', router)
-    app.use('/data', oauthServer.authenticate(), express.static(dataPath))
+    app.use('/data', oauthServer.authenticate(), serveStatic(dataPath))
 
     const server = app.listen(port, () => {
       console.log(`OAuth Server listening on port ${port}`)
@@ -203,10 +208,24 @@ export function startBasicAuthServer(
   return new Promise(resolve => {
     const app = express()
     app.use(cors())
+    // Per-path credentials must mount BEFORE the catch-all `/data`: express
+    // matches in registration order, and a failed expressBasicAuth on `/data`
+    // 401s before the more-specific handler is reached. These back the
+    // "multiple BasicAuth credentials on same domain" test (alice/bob).
+    app.use(
+      '/data/public',
+      expressBasicAuth({ users: { alice: 'public123' } }),
+      serveStatic(dataPath),
+    )
+    app.use(
+      '/data/private',
+      expressBasicAuth({ users: { bob: 'private456' } }),
+      serveStatic(dataPath),
+    )
     app.use(
       '/data',
       expressBasicAuth({ users: { admin: 'password' } }),
-      express.static(dataPath),
+      serveStatic(dataPath),
     )
 
     const server = app.listen(port, () => {

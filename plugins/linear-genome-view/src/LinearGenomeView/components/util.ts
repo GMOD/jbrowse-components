@@ -1,11 +1,18 @@
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
-export function getRelativeX(
-  event: { clientX: number; target: EventTarget | null },
-  element: HTMLElement | null,
-) {
-  return event.clientX - (element?.getBoundingClientRect().left ?? 0)
-}
+// getHighlightColor/highlightKey live in core so the dotplot highlight bands can
+// share the exact same color and React-key semantics
+export { getHighlightColor, highlightKey } from '@jbrowse/core/util/highlights'
+
+// Shared style for elided (collapsed) blocks — striped grey pattern used
+// consistently across OverviewScalebar, ScalebarCoordinateLabels, and Gridlines
+export const elidedBlockStyles = {
+  backgroundColor: '#999',
+  backgroundImage:
+    'repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(255,255,255,.5) 1px, rgba(255,255,255,.5) 3px)',
+} as const
+
+export type Cytoband = ReturnType<typeof getCytobands>[number]
 
 export function getCytobands(assembly: Assembly | undefined, refName: string) {
   return (

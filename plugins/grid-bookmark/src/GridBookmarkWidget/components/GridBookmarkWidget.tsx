@@ -2,17 +2,13 @@ import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getSession } from '@jbrowse/core/util'
-import Delete from '@mui/icons-material/Delete'
 import GetApp from '@mui/icons-material/GetApp'
 import Menu from '@mui/icons-material/Menu'
-import Palette from '@mui/icons-material/Palette'
 import Publish from '@mui/icons-material/Publish'
 import Settings from '@mui/icons-material/Settings'
-import Share from '@mui/icons-material/Share'
-import { Alert, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import AssemblySelector from './AssemblySelector.tsx'
 import BookmarkGrid from './BookmarkGrid.tsx'
 import HighlightGrid from './HighlightGrid.tsx'
 
@@ -25,17 +21,8 @@ const ExportBookmarksDialog = lazy(
 const ImportBookmarksDialog = lazy(
   () => import('./dialogs/ImportBookmarksDialog.tsx'),
 )
-const ShareBookmarksDialog = lazy(
-  () => import('./dialogs/ShareBookmarksDialog.tsx'),
-)
 const HighlightSettingsDialog = lazy(
   () => import('./dialogs/HighlightSettingsDialog.tsx'),
-)
-const EditHighlightColorDialog = lazy(
-  () => import('./dialogs/EditHighlightColorDialog.tsx'),
-)
-const DeleteBookmarksDialog = lazy(
-  () => import('./dialogs/DeleteBookmarksDialog.tsx'),
 )
 
 const GridBookmarkWidget = observer(function GridBookmarkWidget({
@@ -45,11 +32,7 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
 }) {
   return (
     <div>
-      <Alert severity="info">
-        Click and type within the <strong>label</strong> field to annotate your
-        bookmark
-      </Alert>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', pt: 4 }}>
         <CascadingMenuButton
           data-testid="grid_bookmark_menu"
           menuItems={[
@@ -74,36 +57,6 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
               },
             },
             {
-              label: 'Delete',
-              icon: Delete,
-              onClick: () => {
-                getSession(model).queueDialog(onClose => [
-                  DeleteBookmarksDialog,
-                  { model, onClose },
-                ])
-              },
-            },
-            {
-              label: 'Share',
-              icon: Share,
-              onClick: () => {
-                getSession(model).queueDialog(onClose => [
-                  ShareBookmarksDialog,
-                  { model, onClose },
-                ])
-              },
-            },
-            {
-              label: 'Edit colors',
-              icon: Palette,
-              onClick: () => {
-                getSession(model).queueDialog(onClose => [
-                  EditHighlightColorDialog,
-                  { model, onClose },
-                ])
-              },
-            },
-            {
               label: 'Settings',
               icon: Settings,
               onClick: () => {
@@ -118,7 +71,6 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
           <Menu />
         </CascadingMenuButton>
 
-        <AssemblySelector model={model} />
         <ToggleButtonGroup
           size="small"
           exclusive
@@ -131,13 +83,11 @@ const GridBookmarkWidget = observer(function GridBookmarkWidget({
         >
           <ToggleButton value="bookmarks">Bookmarks</ToggleButton>
           <ToggleButton value="highlights">Highlights</ToggleButton>
+          <ToggleButton value="both">Both</ToggleButton>
         </ToggleButtonGroup>
       </Stack>
-      {model.gridView === 'bookmarks' ? (
-        <BookmarkGrid model={model} />
-      ) : (
-        <HighlightGrid model={model} />
-      )}
+      {model.gridView !== 'highlights' ? <BookmarkGrid model={model} /> : null}
+      {model.gridView !== 'bookmarks' ? <HighlightGrid model={model} /> : null}
     </div>
   )
 })

@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { drawerGridTemplateColumns } from '@jbrowse/product-core'
 import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -18,7 +19,13 @@ const DrawerWidget = lazy(() => import('./DrawerWidget.tsx'))
 const useStyles = makeStyles()(theme => ({
   root: {
     display: 'grid',
-    height: '100vh',
+    // Embedders can fit the app to its container by setting the
+    // --jbrowse-app-height CSS variable (e.g. to 100%); it defaults to the
+    // full viewport for standalone/full-window use.
+    height: 'var(--jbrowse-app-height, 100vh)',
+    // pin the single implicit row to the container height so appContainer
+    // fills it (an auto row would instead grow to content and overflow)
+    gridTemplateRows: 'minmax(0, 1fr)',
     width: '100%',
     colorScheme: theme.palette.mode,
   },
@@ -26,9 +33,8 @@ const useStyles = makeStyles()(theme => ({
     gridColumn: 'main',
     display: 'grid',
     gridTemplateRows: '[menubar] min-content [components] auto',
-    height: '100vh',
+    height: '100%',
   },
-
   appBar: {
     flexGrow: 1,
     gridRow: 'menubar',
@@ -40,32 +46,29 @@ interface Props {
   session: AppSession
 }
 
-const LazyDrawerWidget = observer(function LazyDrawerWidget(props: Props) {
-  const { session } = props
-  return (
-    <Suspense fallback={null}>
-      <DrawerWidget session={session} />
-    </Suspense>
-  )
-})
-
 const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
   const { minimized, visibleWidget, drawerWidth, drawerPosition } = session
-  const drawerVisible = visibleWidget && !minimized
-  const d = drawerVisible ? `[drawer] ${drawerWidth}px` : undefined
-  const main = '[main] minmax(0, 1fr)'
-  const grid = drawerPosition === 'right' ? [main, d] : [d, main]
+  const drawerVisible = Boolean(visibleWidget) && !minimized
+  const gridTemplateColumns = drawerGridTemplateColumns({
+    drawerVisible,
+    drawerPosition,
+    drawerWidth,
+  })
+
+  // one element placed into either the left or right grid column by DOM order
+  // (the drawer isn't self-positioning, so it must be rendered on the matching
+  // side of the app container)
+  const drawerWidget = drawerVisible ? (
+    <Suspense fallback={null}>
+      <DrawerWidget session={session} />
+    </Suspense>
+  ) : null
 
   return (
-    <div
-      className={classes.root}
-      style={{ gridTemplateColumns: grid.filter(f => !!f).join(' ') }}
-    >
-      {drawerVisible && drawerPosition === 'left' ? (
-        <LazyDrawerWidget session={session} />
-      ) : null}
+    <div className={classes.root} style={{ gridTemplateColumns }}>
+      {drawerPosition === 'left' ? drawerWidget : null}
       <DialogQueue session={session} />
       <div className={classes.appContainer}>
         <AppBar className={classes.appBar} position="static">
@@ -74,11 +77,7 @@ const App = observer(function App(props: Props) {
         <ViewsContainer {...props} />
       </div>
       <AppFab session={session} />
-
-      {drawerVisible && drawerPosition === 'right' ? (
-        <LazyDrawerWidget session={session} />
-      ) : null}
-
+      {drawerPosition === 'right' ? drawerWidget : null}
       <Snackbar session={session} />
     </div>
   )

@@ -45,8 +45,7 @@ const AssemblyTable = observer(function AssemblyTable({
                 renderCell: ({ row }) => {
                   const { assembly, name } = row
                   const editable =
-                    // @ts-expect-error
-                    session.sessionAssemblies.includes(assembly) ||
+                    session.sessionAssemblies?.includes(assembly) ||
                     session.adminMode
                   return (
                     <>

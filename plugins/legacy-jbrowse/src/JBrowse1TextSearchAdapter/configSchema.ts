@@ -4,8 +4,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config JBrowse1TextSearchAdapter
  * note: metadata about tracks and assemblies covered by text search adapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export default ConfigurationSchema(
   'JBrowse1TextSearchAdapter',
   {

@@ -3,8 +3,20 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config DeltaAdapter
  * #category adapter
+ * #trackType SyntenyTrack
+ * used to load MUMmer `.delta` alignment files (query and target assembly
+ * required)
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'DeltaAdapter',
+ *   uri: 'https://example.com/aln.delta',
+ *   queryAssembly: 'hg19',
+ *   targetAssembly: 'hg38',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

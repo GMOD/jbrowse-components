@@ -1,4 +1,10 @@
+products/jbrowse-web/browser-tests/suites/demo-inventory.ts
+products/jbrowse-img/src/options.ts
+products/jbrowse-img/src/options.test.ts
+packages/core/src/util/geneticCodes.ts
 *.ix
+*.gff3.gz
+test_data/maize_te
 test_data/many_contigs/large.chrom.sizes
 packages/core/src/ui/react-colorful.ts
 plugins/legacy-jbrowse/test_data
@@ -32,3 +38,10 @@ packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.test.t
 *.svg
 *.tai
 website/static/pagefind/
+packages/core/src/util/geneticCodes.mito.test.ts
+*.nh
+products/jbrowse-react-linear-genome-view/examples-site/public/panukbPhenotypes.json
+peptidePositioning.ts
+website/scripts/screenshot-specs.ts
+website/scripts/screenshot-spec-helpers.ts
+agent-docs/dotplot-diagonalize-analysis/proto_final.py

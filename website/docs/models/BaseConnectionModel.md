@@ -1,87 +1,157 @@
 ---
 id: baseconnectionmodel
 title: BaseConnectionModel
+sidebar_label: Connection -> BaseConnectionModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseConnectionModelFactory.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+## Members
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseConnectionModelFactory.ts)
+| Member                                   | Kind       | Defined by          | Description                                                                                                                                                                                                                                                                                   |
+| ---------------------------------------- | ---------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [tracks](#property-tracks)               | Properties | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
+| [configuration](#property-configuration) | Properties | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
+| [silent](#property-silent)               | Properties | BaseConnectionModel | set when the connection is being re-established on session load (its open tracks are already restored from `connectionTrackConfigs`), so `doConnect` suppresses first-connect side effects like launching a view or a success snackbar. Runtime-only: connection instances aren't serialized. |
+| [loading](#volatile-loading)             | Volatiles  | BaseConnectionModel | true while `connect()` is fetching this connection's tracks; drives a loading affordance in the track selector. Distinct from an empty `tracks` array, which is also the state of a connection that loaded successfully but has no tracks.                                                    |
+| [connectionId](#getter-connectionid)     | Getters    | BaseConnectionModel | the connection's unique id, resolved from its configuration (the config is the source of truth; connection names are not guaranteed unique)                                                                                                                                                   |
+| [name](#getter-name)                     | Getters    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
+| [connect](#action-connect)               | Actions    | BaseConnectionModel | no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to fetch and populate their `tracks`. Returns a promise so `afterAttach` can clear the loading flag once the fetch settles.                                                                                        |
+| [setLoading](#action-setloading)         | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
+| [addTrackConf](#action-addtrackconf)     | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
+| [addTrackConfs](#action-addtrackconfs)   | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
+| [setTrackConfs](#action-settrackconfs)   | Actions    | BaseConnectionModel |                                                                                                                                                                                                                                                                                               |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseConnectionModel.md)
+<details>
+<summary>BaseConnectionModel - Properties</summary>
 
-## Docs
+#### property: silent
 
-### BaseConnectionModel - Properties
+set when the connection is being re-established on session load (its open tracks
+are already restored from `connectionTrackConfigs`), so `doConnect` suppresses
+first-connect side effects like launching a view or a success snackbar.
+Runtime-only: connection instances aren't serialized.
 
-#### property: name
-
-```js
+```ts
 // type signature
-ISimpleType<string>
+type silent = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-name: types.identifier
+silent: types.optional(types.boolean, false)
 ```
+
+</details>
+
+<details>
+<summary>BaseConnectionModel - Properties (other undocumented members)</summary>
 
 #### property: tracks
 
-```js
+```ts
 // type signature
-IArrayType<IAnyModelType>
+type tracks = IArrayType<IAnyModelType>
 // code
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
-### BaseConnectionModel - Actions
+</details>
+
+<details>
+<summary>BaseConnectionModel - Volatiles</summary>
+
+#### volatile: loading
+
+true while `connect()` is fetching this connection's tracks; drives a loading
+affordance in the track selector. Distinct from an empty `tracks` array, which
+is also the state of a connection that loaded successfully but has no tracks.
+
+```ts
+// type signature
+type loading = false
+// code
+loading: false
+```
+
+</details>
+
+<details>
+<summary>BaseConnectionModel - Getters</summary>
+
+#### getter: connectionId
+
+the connection's unique id, resolved from its configuration (the config is the
+source of truth; connection names are not guaranteed unique)
+
+```ts
+type connectionId = string
+```
+
+</details>
+
+<details>
+<summary>BaseConnectionModel - Getters (other undocumented members)</summary>
+
+#### getter: name
+
+```ts
+type name = string
+```
+
+</details>
+
+<details>
+<summary>BaseConnectionModel - Actions</summary>
 
 #### action: connect
 
-```js
-// type signature
-connect: (_arg: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => void
+no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to
+fetch and populate their `tracks`. Returns a promise so `afterAttach` can clear
+the loading flag once the fetch settles.
+
+```ts
+type connect = () => Promise<void>
+```
+
+</details>
+
+<details>
+<summary>BaseConnectionModel - Actions (other undocumented members)</summary>
+
+#### action: setLoading
+
+```ts
+type setLoading = (loading: boolean) => void
 ```
 
 #### action: addTrackConf
 
-```js
-// type signature
-addTrackConf: (trackConf: TrackConf) => any
+```ts
+type addTrackConf = (trackConf: TrackConf) => any
 ```
 
 #### action: addTrackConfs
 
-```js
-// type signature
-addTrackConfs: (trackConfs: TrackConf[]) => void
+```ts
+type addTrackConfs = (trackConfs: TrackConf[]) => void
 ```
 
 #### action: setTrackConfs
 
-```js
-// type signature
-setTrackConfs: (trackConfs: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+```ts
+type setTrackConfs = (trackConfs: TrackConf[]) => void
 ```
 
-#### action: clear
-
-```js
-// type signature
-clear: () => void
-```
+</details>

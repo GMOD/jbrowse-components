@@ -4,6 +4,8 @@ import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { getScalebarRefNameLabels, regionMoveActions } from '../util.ts'
+
 import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
@@ -29,10 +31,12 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     '&:hover': {
-      background: theme.palette.grey[300],
+      // action.hover is a mode-aware translucent overlay; the old hardcoded
+      // grey[300] stayed light in dark mode, washing out the light label text
+      background: theme.palette.action.hover,
     },
   },
-  b0: {
+  prefixLabel: {
     zIndex: 100,
   },
 }))
@@ -45,92 +49,64 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const { classes, cx } = useStyles()
   const [menuState, setMenuState] = useState<MenuState>()
 
-  const { staticBlocks, offsetPx } = model
-  const blocks = staticBlocks.blocks
-  const val = model.scalebarDisplayPrefix()
-  const regionEndPx = model.scalebarRegionEndPx
-
-  // rightmost content block whose offsetPx is left of viewport (= sticky)
-  let lastLeftBlock = -1
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i]!
-    if (b.type !== 'ContentBlock') {
-      continue
-    }
-    if (lastLeftBlock === -1 || b.offsetPx < offsetPx) {
-      lastLeftBlock = i
-    }
-  }
-
-  const labels = []
-
-  if (blocks[0]?.type !== 'ContentBlock' && val) {
-    labels.push(
-      <span
-        key="b0"
-        className={cx(classes.b0, classes.refLabel)}
-        data-testid="refLabel-prefix"
-      >
-        {val}
-      </span>,
-    )
-  }
-
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i]!
-    if (block.type !== 'ContentBlock') {
-      continue
-    }
-    const last = i === lastLeftBlock
-    if (!block.isLeftEndOfDisplayedRegion && !last) {
-      continue
-    }
-    const regEndPxVal =
-      block.displayedRegionIndex !== undefined
-        ? regionEndPx.get(block.displayedRegionIndex)
-        : undefined
-    const labelStartPx = last ? offsetPx : block.offsetPx
-    const maxWidth =
-      regEndPxVal !== undefined ? regEndPxVal - labelStartPx - 2 : undefined
-    if (maxWidth !== undefined && maxWidth < 20) {
-      continue
-    }
-    const transform = last
-      ? Math.max(0, -offsetPx)
-      : block.offsetPx - offsetPx - 1
-    const refName = block.refName
-    const displayedRegionIndex = block.displayedRegionIndex ?? -1
-    labels.push(
-      <span
-        key={block.key}
-        className={classes.refLabel}
-        style={{
-          transform: `translateX(${transform}px)`,
-          paddingLeft: last ? 0 : 1,
-          maxWidth,
-        }}
-        data-testid={`refLabel-${refName}`}
-        onMouseDown={() => {
-          model.setScalebarRefNameClickPending(true)
-        }}
-        onClick={e => {
-          model.setScalebarRefNameClickPending(false)
-          model.setIsScalebarRefNameMenuOpen(true)
-          setMenuState({
-            anchorEl: e.currentTarget,
-            refName,
-            displayedRegionIndex,
-          })
-        }}
-      >
-        {last && val ? `${val}:${refName}` : refName}
-      </span>,
-    )
-  }
+  const prefix = model.scalebarDisplayPrefix
+  const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+    blocks: model.staticBlocks.blocks,
+    offsetPx: model.offsetPx,
+    regionEndPx: model.scalebarRegionEndPx,
+    prefix,
+  })
 
   return (
     <>
-      <div>{labels}</div>
+      <div>
+        {labels.map(
+          ({
+            key,
+            refName,
+            displayedRegionIndex,
+            transform,
+            maxWidth,
+            paddingLeft,
+            text,
+          }) => (
+            <span
+              key={key}
+              className={classes.refLabel}
+              style={{
+                transform: `translateX(${transform}px)`,
+                paddingLeft,
+                maxWidth,
+              }}
+              data-testid={`refLabel-${refName}`}
+              onMouseDown={() => {
+                model.setScalebarRefNameClickPending(true)
+              }}
+              onClick={e => {
+                model.setScalebarRefNameClickPending(false)
+                model.setIsScalebarRefNameMenuOpen(true)
+                setMenuState({
+                  anchorEl: e.currentTarget,
+                  refName,
+                  displayedRegionIndex,
+                })
+              }}
+            >
+              {text}
+            </span>
+          ),
+        )}
+        {/* Fallback: bare assembly name pinned far-left when no sticky label
+        carried it (e.g. the leftmost region was too narrow to label) */}
+        {showPrefixFallback ? (
+          <span
+            className={cx(classes.prefixLabel, classes.refLabel)}
+            data-testid="refLabel-prefix"
+          >
+            {prefix}
+          </span>
+        ) : null}
+      </div>
       {menuState ? (
         <RefNameMenu
           model={model}
@@ -145,7 +121,7 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   )
 })
 
-function RefNameMenu({
+const RefNameMenu = observer(function RefNameMenu({
   model,
   menuState,
   onClose,
@@ -155,8 +131,10 @@ function RefNameMenu({
   onClose: () => void
 }) {
   const { displayedRegions } = model
-  const { refName, displayedRegionIndex } = menuState
+  const { refName, displayedRegionIndex: idx } = menuState
   const numRegions = displayedRegions.length
+  const { canMoveLeft, canMoveRight, canMoveFarLeft, canMoveFarRight } =
+    regionMoveActions(idx, numRegions)
 
   function moveRegion(fromIndex: number, toIndex: number) {
     const regions = [...displayedRegions]
@@ -170,61 +148,19 @@ function RefNameMenu({
     model.setDisplayedRegions(regions)
   }
 
-  const actionItems = [
-    ...(displayedRegionIndex > 0
-      ? [
-          {
-            label: 'Move left',
-            onClick: () => {
-              moveRegion(displayedRegionIndex, displayedRegionIndex - 1)
-            },
-          },
-        ]
-      : []),
-    ...(displayedRegionIndex < numRegions - 1
-      ? [
-          {
-            label: 'Move right',
-            onClick: () => {
-              moveRegion(displayedRegionIndex, displayedRegionIndex + 1)
-            },
-          },
-        ]
-      : []),
-    ...(numRegions > 2 && displayedRegionIndex > 0
-      ? [
-          {
-            label: 'Move to far left',
-            onClick: () => {
-              moveRegion(displayedRegionIndex, 0)
-            },
-          },
-        ]
-      : []),
-    ...(numRegions > 2 && displayedRegionIndex < numRegions - 1
-      ? [
-          {
-            label: 'Move to far right',
-            onClick: () => {
-              moveRegion(displayedRegionIndex, numRegions - 1)
-            },
-          },
-        ]
-      : []),
-    {
-      label: 'Remove this region from view',
-      onClick: () => {
-        removeRegion(displayedRegionIndex)
-      },
-    },
-  ]
+  function reverseRegion(index: number) {
+    const regions = displayedRegions.map((r, i) =>
+      i === index ? { ...r, reversed: !r.reversed } : r,
+    )
+    model.setDisplayedRegions(regions)
+  }
 
   return (
     <Menu
       anchorEl={menuState.anchorEl}
       open
       onClose={onClose}
-      onMenuItemClick={(_, callback) => {
+      onMenuItemClick={callback => {
         callback()
         onClose()
       }}
@@ -235,17 +171,65 @@ function RefNameMenu({
             model.navTo({ refName })
           },
         },
-        ...(numRegions > 1
-          ? [
-              {
-                label: 'Actions',
-                subMenu: actionItems,
+        {
+          label: 'Actions',
+          subMenu: [
+            {
+              show: true,
+              label: 'Reverse region',
+              onClick: () => {
+                reverseRegion(idx)
               },
-            ]
-          : []),
+            },
+            {
+              show: true,
+              label: 'Horizontally flip view',
+              onClick: () => {
+                model.horizontallyFlip()
+              },
+            },
+            {
+              show: canMoveLeft,
+              label: 'Move left',
+              onClick: () => {
+                moveRegion(idx, idx - 1)
+              },
+            },
+            {
+              show: canMoveRight,
+              label: 'Move right',
+              onClick: () => {
+                moveRegion(idx, idx + 1)
+              },
+            },
+            {
+              show: canMoveFarLeft,
+              label: 'Move to far left',
+              onClick: () => {
+                moveRegion(idx, 0)
+              },
+            },
+            {
+              show: canMoveFarRight,
+              label: 'Move to far right',
+              onClick: () => {
+                moveRegion(idx, numRegions - 1)
+              },
+            },
+            {
+              show: numRegions > 1,
+              label: 'Remove this region from view',
+              onClick: () => {
+                removeRegion(idx)
+              },
+            },
+          ]
+            .filter(item => item.show)
+            .map(({ label, onClick }) => ({ label, onClick })),
+        },
       ]}
     />
   )
-}
+})
 
 export default ScalebarRefNameLabels

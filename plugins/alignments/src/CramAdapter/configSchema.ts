@@ -1,10 +1,24 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config CramAdapter
+ * #trackType AlignmentsTrack
  * used to configure CRAM adapter
+ *
+ * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
+ * automatically supplies it from the enclosing assembly's sequence track.
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.crai` index:
+ * ```js
+ * {
+ *   type: 'CramAdapter',
+ *   uri: 'https://example.com/sample.cram',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -33,6 +47,7 @@ const configSchema = ConfigurationSchema(
       description:
         'size in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 3_000_000,
+      advanced: true,
     },
 
     /**
@@ -75,4 +90,5 @@ const configSchema = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+export type CramAdapterConfig = Instance<typeof configSchema>
 export default configSchema

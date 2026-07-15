@@ -15,6 +15,7 @@ export async function* indexGff3({
   featureTypesToExclude,
   onStart,
   onUpdate,
+  checkAbort,
 }: Gff3IndexerOptions) {
   const { trackId } = config
 
@@ -30,9 +31,8 @@ export async function* indexGff3({
   const encodedTrackId = encodeURIComponent(trackId)
 
   for await (const line of rl) {
-    if (!line.trim()) {
-      continue
-    } else if (line.startsWith('#')) {
+    checkAbort?.()
+    if (!line.trim() || line.startsWith('#')) {
       continue
     } else if (line.startsWith('>')) {
       break
@@ -40,8 +40,21 @@ export async function* indexGff3({
 
     const [seq_id, , type, start, end, , , , col9] = line.split('\t')
 
-    if (!excludeSet.has(type!)) {
-      const col9attrs = parseAttributes(col9!, decodeURIComponentNoThrow)
+    // a valid GFF3 feature row has 9 tab-delimited columns; skip malformed or
+    // truncated lines that would otherwise make parseAttributes throw on an
+    // undefined column 9 (mirrors the guard in the vcf indexer)
+    if (
+      seq_id === undefined ||
+      type === undefined ||
+      start === undefined ||
+      end === undefined ||
+      col9 === undefined
+    ) {
+      continue
+    }
+
+    if (!excludeSet.has(type)) {
+      const col9attrs = parseAttributes(col9, decodeURIComponentNoThrow)
       const attrs = attributesToIndex
         .map(attr => col9attrs[attr])
         .filter((f): f is string => !!f)

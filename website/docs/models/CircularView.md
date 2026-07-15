@@ -1,275 +1,344 @@
 ---
 id: circularview
 title: CircularView
+sidebar_label: View -> CircularView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`circular-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/model.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
+Hand-authored under `defaultSession.views`. The `init` shorthand takes a single
+`assembly` and the structural-variant `tracks` to draw as arcs:
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/CircularView/model.ts)
+```js
+{
+  type: 'CircularView',
+  init: {
+    assembly: 'hg38',
+    tracks: ['my-sv-vcf'],
+  },
+}
+```
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/CircularView.md)
+## Overview
 
-## Docs
+## Members
 
-extends
+| Member                                                               | Kind       | Defined by                        | Description                                                                                                                                                                                          |
+| -------------------------------------------------------------------- | ---------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [type](#property-type)                                               | Properties | CircularView                      | this is a string instead of the const literal 'CircularView' to reduce some typescripting strictness, but you should pass the string 'CircularView' to the model explicitly                          |
+| [offsetRadians](#property-offsetradians)                             | Properties | CircularView                      | similar to offsetPx in linear genome view                                                                                                                                                            |
+| [bpPerPx](#property-bpperpx)                                         | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [autoFit](#property-autofit)                                         | Properties | CircularView                      | whether the view keeps re-fitting to its container on resize. Cleared once the user manually zooms/pans so their view (persisted via bpPerPx/offsetRadians) is preserved across resizes and reloads. |
+| [tracks](#property-tracks)                                           | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [hideVerticalResizeHandle](#property-hideverticalresizehandle)       | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [hideTrackSelectorButton](#property-hidetrackselectorbutton)         | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [disableImportForm](#property-disableimportform)                     | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [height](#property-height)                                           | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [displayedRegions](#property-displayedregions)                       | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [minimumRadiusPx](#property-minimumradiuspx)                         | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [spacingPx](#property-spacingpx)                                     | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [paddingPx](#property-paddingpx)                                     | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [minVisibleWidth](#property-minvisiblewidth)                         | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [minimumBlockWidth](#property-minimumblockwidth)                     | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [trackSelectorType](#property-trackselectortype)                     | Properties | CircularView                      |                                                                                                                                                                                                      |
+| [init](#property-init)                                               | Properties | CircularView                      | used for initializing the view from a session snapshot                                                                                                                                               |
+| [volatileWidth](#volatile-volatilewidth)                             | Volatiles  | CircularView                      |                                                                                                                                                                                                      |
+| [volatileError](#volatile-volatileerror)                             | Volatiles  | CircularView                      |                                                                                                                                                                                                      |
+| [panX](#volatile-panx)                                               | Volatiles  | CircularView                      |                                                                                                                                                                                                      |
+| [panY](#volatile-pany)                                               | Volatiles  | CircularView                      |                                                                                                                                                                                                      |
+| [width](#getter-width)                                               | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [circumferencePx](#getter-circumferencepx)                           | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [radiusPx](#getter-radiuspx)                                         | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [bpPerRadian](#getter-bpperradian)                                   | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [centerXY](#getter-centerxy)                                         | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [totalBp](#getter-totalbp)                                           | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [maximumRadiusPx](#getter-maximumradiuspx)                           | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [maxBpPerPx](#getter-maxbpperpx)                                     | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [minBpPerPx](#getter-minbpperpx)                                     | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [atMaxBpPerPx](#getter-atmaxbpperpx)                                 | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [atMinBpPerPx](#getter-atminbpperpx)                                 | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [figureSize](#getter-figuresize)                                     | Getters    | CircularView                      | figure is always square, so width === height                                                                                                                                                         |
+| [elidedRegions](#getter-elidedregions)                               | Getters    | CircularView                      | this is displayedRegions, post-processed to elide regions that are too small to see reasonably                                                                                                       |
+| [assemblyNames](#getter-assemblynames)                               | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [initialized](#getter-initialized)                                   | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [assemblyErrors](#getter-assemblyerrors)                             | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [error](#getter-error)                                               | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [hasSomethingToShow](#getter-hassomethingtoshow)                     | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [showLoading](#getter-showloading)                                   | Getters    | CircularView                      | Whether to show a loading indicator instead of the import form or view                                                                                                                               |
+| [showView](#getter-showview)                                         | Getters    | CircularView                      | Whether the view is fully initialized and ready to display                                                                                                                                           |
+| [showImportForm](#getter-showimportform)                             | Getters    | CircularView                      | Whether to show the import form (when not ready to display and import form is enabled, or when there's an error)                                                                                     |
+| [staticSlices](#getter-staticslices)                                 | Getters    | CircularView                      |                                                                                                                                                                                                      |
+| [menuItems](#method-menuitems)                                       | Methods    | CircularView                      | return the view menu items                                                                                                                                                                           |
+| [fitToWindow](#action-fittowindow)                                   | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [setWidth](#action-setwidth)                                         | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [setHeight](#action-setheight)                                       | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [rotateClockwiseButton](#action-rotateclockwisebutton)               | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [rotateCounterClockwiseButton](#action-rotatecounterclockwisebutton) | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [rotate](#action-rotate)                                             | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [resetView](#action-resetview)                                       | Actions    | CircularView                      | reset rotation, pan, and zoom back to the default fit-to-window view                                                                                                                                 |
+| [zoomInButton](#action-zoominbutton)                                 | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [zoomOutButton](#action-zoomoutbutton)                               | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [setBpPerPx](#action-setbpperpx)                                     | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [zoomToPoint](#action-zoomtopoint)                                   | Actions    | CircularView                      | zoom toward/away from a specific angle on the circle, keeping the genome position at that angle visually fixed under the cursor                                                                      |
+| [setDisplayedRegions](#action-setdisplayedregions)                   | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [activateTrackSelector](#action-activatetrackselector)               | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [toggleTrack](#action-toggletrack)                                   | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [setError](#action-seterror)                                         | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [setInit](#action-setinit)                                           | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [showTrack](#action-showtrack)                                       | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [addTrackConf](#action-addtrackconf)                                 | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [hideTrack](#action-hidetrack)                                       | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [openExportDialog](#action-openexportdialog)                         | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [exportSvg](#action-exportsvg)                                       | Actions    | CircularView                      | creates an svg export and save using FileSaver                                                                                                                                                       |
+| [resizeHeight](#action-resizeheight)                                 | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [resizeWidth](#action-resizewidth)                                   | Actions    | CircularView                      |                                                                                                                                                                                                      |
+| [id](#property-id)                                                   | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                      |
+| [displayName](#property-displayname)                                 | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified                                                                                                |
+| [minimized](#property-minimized)                                     | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                      |
+| [width](#volatile-width)                                             | Volatiles  | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                      |
+| [setDisplayName](#action-setdisplayname)                             | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                      |
+| [setMinimized](#action-setminimized)                                 | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                                                                                                                      |
 
-- [BaseViewModel](../baseviewmodel)
-
-### CircularView - Properties
+<details>
+<summary>CircularView - Properties</summary>
 
 #### property: type
 
-```js
+this is a string instead of the const literal 'CircularView' to reduce some
+typescripting strictness, but you should pass the string 'CircularView' to the
+model explicitly
+
+```ts
 // type signature
-ISimpleType<"CircularView">
+type type = string
 // code
-type: types.literal('CircularView')
+type: types.literal('CircularView') as unknown as string
 ```
 
 #### property: offsetRadians
 
 similar to offsetPx in linear genome view
 
-```js
+```ts
 // type signature
-number
+type offsetRadians = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-offsetRadians: defaultOffsetRadians
+offsetRadians: types.stripDefault(types.number, defaultOffsetRadians)
 ```
 
-#### property: bpPerPx
+#### property: autoFit
 
-```js
+whether the view keeps re-fitting to its container on resize. Cleared once the
+user manually zooms/pans so their view (persisted via bpPerPx/offsetRadians) is
+preserved across resizes and reloads.
+
+```ts
 // type signature
-number
+type autoFit = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-bpPerPx: defaultBpPerPx
-```
-
-#### property: tracks
-
-```js
-// type signature
-IArrayType<IAnyType>
-// code
-tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        )
-```
-
-#### property: hideVerticalResizeHandle
-
-```js
-// type signature
-false
-// code
-hideVerticalResizeHandle: false
-```
-
-#### property: hideTrackSelectorButton
-
-```js
-// type signature
-false
-// code
-hideTrackSelectorButton: false
-```
-
-#### property: disableImportForm
-
-```js
-// type signature
-false
-// code
-disableImportForm: false
-```
-
-#### property: height
-
-```js
-// type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-height: types.optional(types.number, defaultHeight)
-```
-
-#### property: minimumRadiusPx
-
-```js
-// type signature
-number
-// code
-minimumRadiusPx: defaultMinimumRadiusPx
-```
-
-#### property: spacingPx
-
-```js
-// type signature
-number
-// code
-spacingPx: defaultSpacingPx
-```
-
-#### property: paddingPx
-
-```js
-// type signature
-number
-// code
-paddingPx: defaultPaddingPx
-```
-
-#### property: minVisibleWidth
-
-```js
-// type signature
-number
-// code
-minVisibleWidth: defaultMinVisibleWidth
-```
-
-#### property: minimumBlockWidth
-
-```js
-// type signature
-number
-// code
-minimumBlockWidth: defaultMinimumBlockWidth
-```
-
-#### property: trackSelectorType
-
-```js
-// type signature
-string
-// code
-trackSelectorType: 'hierarchical'
+autoFit: types.stripDefault(types.boolean, true)
 ```
 
 #### property: init
 
 used for initializing the view from a session snapshot
 
-```js
+```ts
 // type signature
-IType<CircularViewInit | undefined, CircularViewInit | undefined, CircularViewInit | undefined>
+type init = IType<
+  CircularViewInit | undefined,
+  CircularViewInit | undefined,
+  CircularViewInit | undefined
+>
 // code
 init: types.frozen<CircularViewInit | undefined>()
 ```
 
-### CircularView - Getters
+</details>
 
-#### getter: width
+<details>
+<summary>CircularView - Properties (other undocumented members)</summary>
 
-```js
-// type
-number
+#### property: bpPerPx
+
+```ts
+// type signature
+type bpPerPx = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+bpPerPx: types.stripDefault(types.number, defaultBpPerPx)
 ```
 
-#### getter: visibleSection
+#### property: tracks
 
-```js
-// type
-{
-  rho: [number, number]
-  theta: [number, number]
-}
+```ts
+// type signature
+type tracks = IArrayType<IAnyType>
+// code
+tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
 ```
 
-#### getter: circumferencePx
+#### property: hideVerticalResizeHandle
 
-```js
-// type
-number
+```ts
+// type signature
+type hideVerticalResizeHandle = IOptionalIType<
+  ISimpleType<boolean>,
+  [undefined]
+>
+// code
+hideVerticalResizeHandle: types.stripDefault(types.boolean, false)
 ```
 
-#### getter: radiusPx
+#### property: hideTrackSelectorButton
 
-```js
-// type
-number
+```ts
+// type signature
+type hideTrackSelectorButton = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+hideTrackSelectorButton: types.stripDefault(types.boolean, false)
 ```
 
-#### getter: bpPerRadian
+#### property: disableImportForm
 
-```js
-// type
-number
+```ts
+// type signature
+type disableImportForm = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+disableImportForm: types.stripDefault(types.boolean, false)
 ```
 
-#### getter: pxPerRadian
+#### property: height
 
-```js
-// type
-number
+```ts
+// type signature
+type height = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+height: types.stripDefault(types.number, defaultHeight)
 ```
 
-#### getter: centerXY
+#### property: displayedRegions
 
-```js
-// type
-;[number, number]
+```ts
+// type signature
+type displayedRegions = IOptionalIType<
+  IType<Region[], Region[], Region[]>,
+  [undefined]
+>
+// code
+displayedRegions: types.stripDefault(types.frozen<Region[]>(), [])
 ```
 
-#### getter: totalBp
+#### property: minimumRadiusPx
 
-```js
-// type
-number
+```ts
+// type signature
+type minimumRadiusPx = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minimumRadiusPx: types.stripDefault(types.number, defaultMinimumRadiusPx)
 ```
 
-#### getter: maximumRadiusPx
+#### property: spacingPx
 
-```js
-// type
-number
+```ts
+// type signature
+type spacingPx = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+spacingPx: types.stripDefault(types.number, defaultSpacingPx)
 ```
 
-#### getter: maxBpPerPx
+#### property: paddingPx
 
-```js
-// type
-number
+```ts
+// type signature
+type paddingPx = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+paddingPx: types.stripDefault(types.number, defaultPaddingPx)
 ```
 
-#### getter: minBpPerPx
+#### property: minVisibleWidth
 
-```js
-// type
-number
+```ts
+// type signature
+type minVisibleWidth = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minVisibleWidth: types.stripDefault(types.number, defaultMinVisibleWidth)
 ```
 
-#### getter: atMaxBpPerPx
+#### property: minimumBlockWidth
 
-```js
-// type
-boolean
+```ts
+// type signature
+type minimumBlockWidth = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+minimumBlockWidth: types.stripDefault(types.number, defaultMinimumBlockWidth)
 ```
 
-#### getter: atMinBpPerPx
+#### property: trackSelectorType
 
-```js
-// type
-boolean
+```ts
+// type signature
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
+
+</details>
+
+<details>
+<summary>CircularView - Volatiles</summary>
+
+#### volatile: volatileWidth
+
+```ts
+// type signature
+type volatileWidth = number | undefined
+// code
+volatileWidth: undefined as number | undefined
+```
+
+#### volatile: volatileError
+
+```ts
+// type signature
+type volatileError = unknown
+// code
+volatileError: undefined as unknown
+```
+
+#### volatile: panX
+
+```ts
+// type signature
+type panX = number
+// code
+panX: 0
+```
+
+#### volatile: panY
+
+```ts
+// type signature
+type panY = number
+// code
+panY: 0
+```
+
+</details>
+
+<details>
+<summary>CircularView - Getters</summary>
 
 #### getter: figureSize
 
 figure is always square, so width === height
 
-```js
-// type
-number
+```ts
+type figureSize = number
 ```
 
 #### getter: elidedRegions
@@ -277,69 +346,24 @@ number
 this is displayedRegions, post-processed to elide regions that are too small to
 see reasonably
 
-```js
-// type
-SliceRegion[]
-```
-
-#### getter: assemblyNames
-
-```js
-// type
-string[]
-```
-
-#### getter: initialized
-
-```js
-// type
-boolean
-```
-
-#### getter: assemblyErrors
-
-```js
-// type
-string
-```
-
-#### getter: error
-
-```js
-// type
-unknown
-```
-
-#### getter: loadingMessage
-
-```js
-// type
-'Loading' | undefined
-```
-
-#### getter: hasSomethingToShow
-
-```js
-// type
-boolean
+```ts
+type elidedRegions = SliceRegion[]
 ```
 
 #### getter: showLoading
 
 Whether to show a loading indicator instead of the import form or view
 
-```js
-// type
-boolean
+```ts
+type showLoading = boolean
 ```
 
 #### getter: showView
 
 Whether the view is fully initialized and ready to display
 
-```js
-// type
-boolean
+```ts
+type showView = boolean
 ```
 
 #### getter: showImportForm
@@ -347,99 +371,141 @@ boolean
 Whether to show the import form (when not ready to display and import form is
 enabled, or when there's an error)
 
-```js
-// type
-boolean
+```ts
+type showImportForm = boolean
+```
+
+</details>
+
+<details>
+<summary>CircularView - Getters (other undocumented members)</summary>
+
+#### getter: width
+
+```ts
+type width = number
+```
+
+#### getter: circumferencePx
+
+```ts
+type circumferencePx = number
+```
+
+#### getter: radiusPx
+
+```ts
+type radiusPx = number
+```
+
+#### getter: bpPerRadian
+
+```ts
+type bpPerRadian = number
+```
+
+#### getter: centerXY
+
+```ts
+type centerXY = [number, number]
+```
+
+#### getter: totalBp
+
+```ts
+type totalBp = number
+```
+
+#### getter: maximumRadiusPx
+
+```ts
+type maximumRadiusPx = number
+```
+
+#### getter: maxBpPerPx
+
+```ts
+type maxBpPerPx = number
+```
+
+#### getter: minBpPerPx
+
+```ts
+type minBpPerPx = number
+```
+
+#### getter: atMaxBpPerPx
+
+```ts
+type atMaxBpPerPx = boolean
+```
+
+#### getter: atMinBpPerPx
+
+```ts
+type atMinBpPerPx = boolean
+```
+
+#### getter: assemblyNames
+
+```ts
+type assemblyNames = string[]
+```
+
+#### getter: initialized
+
+```ts
+type initialized = boolean
+```
+
+#### getter: assemblyErrors
+
+```ts
+type assemblyErrors = string
+```
+
+#### getter: error
+
+```ts
+type error = unknown
+```
+
+#### getter: hasSomethingToShow
+
+```ts
+type hasSomethingToShow = boolean
 ```
 
 #### getter: staticSlices
 
-```js
-// type
-Slice[]
+```ts
+type staticSlices = Slice[]
 ```
 
-### CircularView - Methods
+</details>
+
+<details>
+<summary>CircularView - Methods</summary>
 
 #### method: menuItems
 
 return the view menu items
 
-```js
-// type signature
-menuItems: () => MenuItem[]
+```ts
+type menuItems = () => MenuItem[]
 ```
 
-### CircularView - Actions
+</details>
 
-#### action: fitToWindow
+<details>
+<summary>CircularView - Actions</summary>
 
-```js
-// type signature
-fitToWindow: () => void
-```
+#### action: resetView
 
-#### action: setHeight
+reset rotation, pan, and zoom back to the default fit-to-window view
 
-```js
-// type signature
-setHeight: (newHeight: number) => number
-```
-
-#### action: resizeHeight
-
-```js
-// type signature
-resizeHeight: (distance: number) => number
-```
-
-#### action: resizeWidth
-
-```js
-// type signature
-resizeWidth: (distance: number) => number
-```
-
-#### action: rotateClockwiseButton
-
-```js
-// type signature
-rotateClockwiseButton: () => void
-```
-
-#### action: rotateCounterClockwiseButton
-
-```js
-// type signature
-rotateCounterClockwiseButton: () => void
-```
-
-#### action: rotate
-
-```js
-// type signature
-rotate: (delta: number) => void
-```
-
-#### action: zoomInButton
-
-```js
-// type signature
-zoomInButton: () => void
-```
-
-#### action: zoomOutButton
-
-```js
-// type signature
-zoomOutButton: () => void
-```
-
-#### action: setBpPerPx
-
-```js
-// type signature
-setBpPerPx: (newVal: number) => void
+```ts
+type resetView = () => void
 ```
 
 #### action: zoomToPoint
@@ -447,79 +513,214 @@ setBpPerPx: (newVal: number) => void
 zoom toward/away from a specific angle on the circle, keeping the genome
 position at that angle visually fixed under the cursor
 
-```js
-// type signature
-zoomToPoint: (newBpPerPx: number, cursorAngle: number) => void
-```
-
-#### action: setDisplayedRegions
-
-```js
-// type signature
-setDisplayedRegions: (regions: Region[]) => void
-```
-
-#### action: activateTrackSelector
-
-```js
-// type signature
-activateTrackSelector: () => Widget | undefined
-```
-
-#### action: toggleTrack
-
-```js
-// type signature
-toggleTrack: (trackId: string) => void
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (error: unknown) => void
-```
-
-#### action: setInit
-
-```js
-// type signature
-setInit: (init?: CircularViewInit | undefined) => void
-```
-
-#### action: showTrack
-
-```js
-// type signature
-showTrack: (trackId: string, initialSnapshot?: {}) => void
-```
-
-#### action: addTrackConf
-
-```js
-// type signature
-addTrackConf: (configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>, initialSnapshot?: {}) => void
-```
-
-#### action: hideTrack
-
-```js
-// type signature
-hideTrack: (trackId: string) => void
-```
-
-#### action: openExportDialog
-
-```js
-// type signature
-openExportDialog: () => void
+```ts
+type zoomToPoint = (newBpPerPx: number, cursorAngle: number) => void
 ```
 
 #### action: exportSvg
 
 creates an svg export and save using FileSaver
 
-```js
-// type signature
-exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```ts
+type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
+
+</details>
+
+<details>
+<summary>CircularView - Actions (other undocumented members)</summary>
+
+#### action: fitToWindow
+
+```ts
+type fitToWindow = () => void
+```
+
+#### action: setWidth
+
+```ts
+type setWidth = (newWidth: number) => number
+```
+
+#### action: setHeight
+
+```ts
+type setHeight = (newHeight: number) => number
+```
+
+#### action: rotateClockwiseButton
+
+```ts
+type rotateClockwiseButton = () => void
+```
+
+#### action: rotateCounterClockwiseButton
+
+```ts
+type rotateCounterClockwiseButton = () => void
+```
+
+#### action: rotate
+
+```ts
+type rotate = (delta: number) => void
+```
+
+#### action: zoomInButton
+
+```ts
+type zoomInButton = () => void
+```
+
+#### action: zoomOutButton
+
+```ts
+type zoomOutButton = () => void
+```
+
+#### action: setBpPerPx
+
+```ts
+type setBpPerPx = (newVal: number) => void
+```
+
+#### action: setDisplayedRegions
+
+```ts
+type setDisplayedRegions = (regions: Region[]) => void
+```
+
+#### action: activateTrackSelector
+
+```ts
+type activateTrackSelector = () => Widget | undefined
+```
+
+#### action: toggleTrack
+
+```ts
+type toggleTrack = (trackId: string) => boolean
+```
+
+#### action: setError
+
+```ts
+type setError = (error: unknown) => void
+```
+
+#### action: setInit
+
+```ts
+type setInit = (init?: CircularViewInit | undefined) => void
+```
+
+#### action: showTrack
+
+```ts
+type showTrack = (trackId: string, initialSnapshot?: any) => any
+```
+
+#### action: addTrackConf
+
+```ts
+type addTrackConf = (
+  configuration: Record<string, unknown>,
+  initialSnapshot?: any,
+) => any
+```
+
+#### action: hideTrack
+
+```ts
+type hideTrack = (trackId: string) => boolean
+```
+
+#### action: openExportDialog
+
+```ts
+type openExportDialog = () => void
+```
+
+#### action: resizeHeight
+
+```ts
+type resizeHeight = (distance: number) => number
+```
+
+#### action: resizeWidth
+
+```ts
+type resizeWidth = (distance: number) => number
+```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from BaseViewModel</summary>
+
+[BaseViewModel →](../baseviewmodel)
+
+**Properties**
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: displayName
+
+displayName is displayed in the header of the view, or assembly names being used
+if none is specified
+
+```ts
+// type signature
+type displayName = IMaybe<ISimpleType<string>>
+// code
+displayName: types.maybe(types.string)
+```
+
+#### property: minimized
+
+```ts
+// type signature
+type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+minimized: types.stripDefault(types.boolean, false)
+```
+
+**Volatiles**
+
+#### volatile: width
+
+```ts
+// type signature
+type width = number
+// code
+width: 800
+```
+
+**Actions**
+
+#### action: setDisplayName
+
+```ts
+type setDisplayName = (name: string) => void
+```
+
+#### action: setMinimized
+
+```ts
+type setMinimized = (flag: boolean) => void
+```
+
+</details>

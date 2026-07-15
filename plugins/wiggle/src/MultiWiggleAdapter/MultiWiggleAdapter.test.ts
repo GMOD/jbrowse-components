@@ -1,6 +1,117 @@
 import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
 import configSchema from './configSchema.ts'
 
+import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+// getSources strips dataAdapter before returning — these tests only exercise
+// metadata flow, never call into dataAdapter. One named stub avoids per-call
+// casts.
+const stubDataAdapter = {} as BaseFeatureDataAdapter
+
+describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
+  it('derives source names from URI filenames', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: [
+          'https://example.com/path/sample.bw',
+          'https://example.com/path/track.bigwig',
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('sample')
+    expect(adapters[1]!.source).toBe('track')
+  })
+
+  it('does not strip the last char from filenames with no extension', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({ bigWigs: ['https://example.com/data/noext'] }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('noext')
+  })
+
+  it('disambiguates same-basename files in different directories (#5598)', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: [
+          'https://example.com/cond1/sample.bw',
+          'https://example.com/cond2/sample.bw',
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('cond1/sample')
+    expect(adapters[1]!.source).toBe('cond2/sample')
+  })
+
+  it('falls back to a numeric suffix when paths do not disambiguate', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'BigWigAdapter',
+            source: 'dup',
+            bigWigLocation: { uri: 'a' },
+          },
+          {
+            type: 'BigWigAdapter',
+            source: 'dup',
+            bigWigLocation: { uri: 'b' },
+          },
+          {
+            type: 'BigWigAdapter',
+            source: 'dup',
+            bigWigLocation: { uri: 'c' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters.map(a => a.source)).toEqual(['dup', 'dup (2)', 'dup (3)'])
+  })
+
+  it('handles filenames with multiple dots', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: ['https://example.com/data/sample.data.bw'],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('sample.data')
+  })
+})
+
 describe('MultiWiggleAdapter.getSources', () => {
   let adapter: MultiWiggleAdapter
 
@@ -13,14 +124,14 @@ describe('MultiWiggleAdapter.getSources', () => {
               type: 'BigWigAdapter',
               name: 'test-data-1',
               bigWigLocation: {
-                uri: 'http://example.com/data/sample1.bw',
+                uri: 'https://example.com/data/sample1.bw',
               },
             },
             {
               type: 'BigWigAdapter',
               name: 'test-data-2',
               bigWigLocation: {
-                uri: 'http://example.com/data/sample2.bw',
+                uri: 'https://example.com/data/sample2.bw',
               },
             },
           ],
@@ -33,17 +144,17 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'source-1',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/sample1.bw',
+            uri: 'https://example.com/data/sample1.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
         {
           source: 'source-2',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/sample2.bw',
+            uri: 'https://example.com/data/sample2.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -92,7 +203,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             localPath: '/home/user/data/file1.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -131,7 +242,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             blob: mockFile,
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -155,7 +266,7 @@ describe('MultiWiggleAdapter.getSources', () => {
               type: 'BigWigAdapter',
               name: 'provided-name',
               bigWigLocation: {
-                uri: 'http://example.com/data/sample.bw',
+                uri: 'https://example.com/data/sample.bw',
               },
             },
           ],
@@ -168,9 +279,9 @@ describe('MultiWiggleAdapter.getSources', () => {
           name: 'provided-name',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/sample.bw',
+            uri: 'https://example.com/data/sample.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -197,7 +308,7 @@ describe('MultiWiggleAdapter.getSources', () => {
         {
           source: 'fallback-source',
           type: 'OtherAdapter',
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -234,7 +345,7 @@ describe('MultiWiggleAdapter.getSources', () => {
             {
               type: 'BigWigAdapter',
               bigWigLocation: {
-                uri: 'http://example.com/data/test.bw',
+                uri: 'https://example.com/data/test.bw',
               },
               customProp: 'custom-value',
               anotherProp: 42,
@@ -248,11 +359,11 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'test-source',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/test.bw',
+            uri: 'https://example.com/data/test.bw',
           },
           customProp: 'custom-value',
           anotherProp: 42,
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -284,9 +395,9 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'test1',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/path/to/deep/nested/sample.bw',
+            uri: 'https://example.com/path/to/deep/nested/sample.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
         {
           source: 'test2',
@@ -294,7 +405,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'file:///local/path/file.with.dots.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
         {
           source: 'test3',
@@ -302,7 +413,7 @@ describe('MultiWiggleAdapter.getSources', () => {
           bigWigLocation: {
             uri: 'https://s3.amazonaws.com/bucket/key/data.no-extension',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -334,9 +445,9 @@ describe('MultiWiggleAdapter.getSources', () => {
           source: 'test-source',
           type: 'BigWigAdapter',
           bigWigLocation: {
-            uri: 'http://example.com/data/test.bw',
+            uri: 'https://example.com/data/test.bw',
           },
-          dataAdapter: {} as any,
+          dataAdapter: stubDataAdapter,
         },
       ])
     })
@@ -354,5 +465,175 @@ describe('MultiWiggleAdapter.getSources', () => {
 
       expect(sources1).toEqual(sources2)
     })
+  })
+})
+
+describe('MultiWiggleAdapter.getMultiSourceFeatureArrays', () => {
+  const region = { refName: 'chr1', start: 0, end: 100, assemblyName: 'hg38' }
+
+  function makeRaw(score: number) {
+    return {
+      starts: new Int32Array([10]),
+      ends: new Int32Array([20]),
+      scores: new Float32Array([score]),
+      minScores: undefined,
+      maxScores: undefined,
+      count: 1,
+    }
+  }
+
+  it('takes the fast path on inner adapters that expose getFeatureArrays', async () => {
+    const fastA = jest.fn().mockResolvedValue(makeRaw(1))
+    const fastB = jest.fn().mockResolvedValue(makeRaw(2))
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async (conf: { source?: string }) =>
+        ({
+          dataAdapter: {
+            id: conf.source ?? 'mock',
+            getFeatureArrays: conf.source === 'a' ? fastA : fastB,
+          },
+        }) as any,
+    )
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'BigWigAdapter',
+            source: 'a',
+            bigWigLocation: { uri: 'a.bw' },
+          },
+          {
+            type: 'BigWigAdapter',
+            source: 'b',
+            bigWigLocation: { uri: 'b.bw' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const result = await adapter.getMultiSourceFeatureArrays(region, {
+      bpPerPx: 1,
+      resolution: 1,
+    })
+    expect(fastA).toHaveBeenCalledTimes(1)
+    expect(fastB).toHaveBeenCalledTimes(1)
+    expect(result.map(r => r.source)).toEqual(['a', 'b'])
+    expect(result[0]!.raw.scores[0]).toBe(1)
+    expect(result[1]!.raw.scores[0]).toBe(2)
+  })
+
+  it('falls back to getFeatures+featuresToRaw when getFeatureArrays is absent', async () => {
+    const slowGetFeatures = jest.fn().mockReturnValue({
+      pipe: () => ({
+        subscribe: (subscriber: any) => {
+          subscriber.next?.([
+            { get: (k: string) => ({ start: 5, end: 15, score: 7 })[k] },
+          ])
+          subscriber.complete?.()
+        },
+      }),
+    })
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async () =>
+        ({
+          dataAdapter: {
+            id: 'slow',
+            getFeatures: slowGetFeatures,
+          },
+        }) as any,
+    )
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'OtherAdapter',
+            source: 'slow',
+            bigWigLocation: { uri: 's.bw' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const result = await adapter.getMultiSourceFeatureArrays(region, {
+      bpPerPx: 1,
+      resolution: 1,
+    })
+    expect(slowGetFeatures).toHaveBeenCalledTimes(1)
+    expect(result[0]!.source).toBe('slow')
+    expect(result[0]!.raw.scores[0]).toBe(7)
+  })
+
+  it('filters inner adapters by opts.sources', async () => {
+    const fastA = jest.fn().mockResolvedValue(makeRaw(1))
+    const fastB = jest.fn().mockResolvedValue(makeRaw(2))
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async (conf: { source?: string }) =>
+        ({
+          dataAdapter: {
+            id: conf.source,
+            getFeatureArrays: conf.source === 'a' ? fastA : fastB,
+          },
+        }) as any,
+    )
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'BigWigAdapter',
+            source: 'a',
+            bigWigLocation: { uri: 'a.bw' },
+          },
+          {
+            type: 'BigWigAdapter',
+            source: 'b',
+            bigWigLocation: { uri: 'b.bw' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const result = await adapter.getMultiSourceFeatureArrays(region, {
+      bpPerPx: 1,
+      resolution: 1,
+      sources: [{ name: 'b' }],
+    })
+    expect(fastA).not.toHaveBeenCalled()
+    expect(fastB).toHaveBeenCalledTimes(1)
+    expect(result.map(r => r.source)).toEqual(['b'])
+  })
+
+  it('returns raw arrays unchanged — bicolor split happens at the executor', async () => {
+    const fast = jest.fn().mockResolvedValue({
+      starts: new Int32Array([0, 10]),
+      ends: new Int32Array([5, 15]),
+      scores: new Float32Array([3, -2]),
+      minScores: undefined,
+      maxScores: undefined,
+      count: 2,
+    })
+    const mockGetSubAdapter = jest.fn().mockImplementation(
+      async () =>
+        ({
+          dataAdapter: { id: 'a', getFeatureArrays: fast },
+        }) as any,
+    )
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          {
+            type: 'BigWigAdapter',
+            source: 'a',
+            bigWigLocation: { uri: 'a.bw' },
+          },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const result = await adapter.getMultiSourceFeatureArrays(region, {
+      bpPerPx: 1,
+      resolution: 1,
+    })
+    expect(result[0]!.raw.count).toBe(2)
+    expect(Array.from(result[0]!.raw.scores)).toEqual([3, -2])
   })
 })

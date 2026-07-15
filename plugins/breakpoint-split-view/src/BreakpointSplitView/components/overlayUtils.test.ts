@@ -1,8 +1,13 @@
 import {
   buildBreakpointPath,
   buildSimplePath,
+  resolvedPairs,
   strandToSign,
 } from './overlayUtils.tsx'
+
+import type { LayoutMatch } from '../types.ts'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+import type { Feature } from '@jbrowse/core/util'
 
 describe('strandToSign', () => {
   test('returns 1 for positive strand', () => {
@@ -32,6 +37,42 @@ describe('buildSimplePath', () => {
     expect(path).toContain('M 0 100')
     expect(path).toContain('100 100')
     expect(path).toContain('50 70')
+  })
+})
+
+describe('resolvedPairs', () => {
+  const feat = (refName: string) =>
+    ({
+      id: () => refName,
+      get: (k: string) => (k === 'refName' ? refName : undefined),
+    }) as unknown as Feature
+  const entry = (
+    refName: string,
+    hiddenSegmentsBefore?: string[],
+  ): LayoutMatch => ({
+    feature: feat(refName),
+    layout: [0, 0, 0, 0],
+    level: 0,
+    clipLengthAtStartOfRead: 0,
+    hiddenSegmentsBefore,
+  })
+  const assembly = {
+    getCanonicalRefName: (r: string) => r,
+  } as unknown as Assembly
+  const tracks = [{ minimized: false }]
+
+  test("carries the second entry's hiddenSegmentsBefore onto the pair", () => {
+    const match = {
+      layoutMatches: [[entry('chr1'), entry('chr2', ['chrX:500..549'])]],
+    }
+    const [pair] = [...resolvedPairs({ match, assembly, tracks })]
+    expect(pair?.hiddenSegmentsBetween).toEqual(['chrX:500..549'])
+  })
+
+  test('leaves hiddenSegmentsBetween undefined for truly-consecutive segments', () => {
+    const match = { layoutMatches: [[entry('chr1'), entry('chr2')]] }
+    const [pair] = [...resolvedPairs({ match, assembly, tracks })]
+    expect(pair?.hiddenSegmentsBetween).toBeUndefined()
   })
 })
 

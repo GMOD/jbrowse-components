@@ -1,10 +1,10 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { generateFastaIndex } from '@gmod/faidx'
 import { app, dialog } from 'electron'
 
-import { getFileStream } from '../generateFastaIndex.ts'
+import { getFileStream } from '../fileStream.ts'
 import { getFaiPath } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
 
@@ -12,6 +12,13 @@ import type { AppPaths } from '../paths.ts'
 
 const FILE_FILTERS = [
   { name: 'JBrowse Session', extensions: ['jbrowse'] },
+  { name: 'All Files', extensions: ['*'] },
+]
+
+// the open dialog accepts a saved .jbrowse session OR a hand-written/CLI-built
+// config.json, so lead with both extensions (save-as keeps FILE_FILTERS)
+const OPEN_FILTERS = [
+  { name: 'config.json or .jbrowse file', extensions: ['json', 'jbrowse'] },
   { name: 'All Files', extensions: ['*'] },
 ]
 
@@ -26,9 +33,10 @@ export function registerFileHandlers(paths: AppPaths) {
 
   ipcHandle('indexFasta', async (_, location) => {
     const filename = 'localPath' in location ? location.localPath : location.uri
+    // getFaiPath appends the .fai extension
     const faiPath = getFaiPath(
       paths,
-      `${path.basename(filename)}${Date.now()}.fai`,
+      `${path.basename(filename)}-${Date.now()}`,
     )
     const stream = await getFileStream(location)
     const write = fs.createWriteStream(faiPath)
@@ -40,7 +48,7 @@ export function registerFileHandlers(paths: AppPaths) {
   ipcHandle('promptOpenFile', async () => {
     const choice = await dialog.showOpenDialog({
       defaultPath: paths.jbrowseDocDir,
-      filters: FILE_FILTERS,
+      filters: OPEN_FILTERS,
     })
     return choice.filePaths[0]
   })

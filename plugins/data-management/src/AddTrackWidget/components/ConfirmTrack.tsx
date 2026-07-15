@@ -23,7 +23,6 @@ import UnknownAdapterPrompt from './AddTrackUnknownAdapterPrompt.tsx'
 import TextIndexingConfig from './TextIndexingConfig.tsx'
 import TrackAdapterSelector from './TrackAdapterSelector.tsx'
 import TrackTypeSelector from './TrackTypeSelector.tsx'
-import Unsupported from './Unsupported.tsx'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -67,27 +66,19 @@ const ConfirmTrack = observer(function ConfirmTrack({
   const { classes } = useStyles()
   const {
     trackName,
-    unsupported,
     trackAdapter,
     trackType,
     warningMessage,
-    adapterHint,
     textIndexTrack,
     adapterHintNotConfigurable,
   } = model
 
-  if (unsupported) {
-    return <Unsupported />
-  } else if (trackAdapter?.type === UNKNOWN) {
+  if (trackAdapter?.type === UNKNOWN || adapterHintNotConfigurable) {
+    // Either the format couldn't be guessed, or the user picked an adapter the
+    // extension point can't configure for this file. Both cases keep the
+    // adapter dropdown on screen (it surfaces its own inline error) so the user
+    // can recover by choosing a different adapter without going Back.
     return <UnknownAdapterPrompt model={model} />
-  } else if (adapterHintNotConfigurable) {
-    return (
-      <Typography color="error">
-        The &quot;{adapterHint}&quot; adapter cannot be configured for the
-        provided file. This adapter may require a specific file extension or
-        format. Please check the file or select a different adapter.
-      </Typography>
-    )
   } else if (!trackAdapter?.type) {
     return <Typography>Could not recognize this data type.</Typography>
   } else {

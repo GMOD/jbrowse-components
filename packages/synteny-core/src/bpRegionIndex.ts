@@ -2,8 +2,6 @@ import type { Region } from '@jbrowse/core/util'
 
 export interface BpIndexViewSnap {
   bpPerPx: number
-  interRegionPaddingWidth: number
-  minimumBlockWidth: number
   displayedRegions: Region[]
 }
 
@@ -11,7 +9,6 @@ interface RegionIndexEntry {
   index: number
   region: Region
   bpBefore: number
-  paddingPxBefore: number
 }
 
 export interface BpRegionIndex {
@@ -20,49 +17,32 @@ export interface BpRegionIndex {
 }
 
 export function buildBpRegionIndex(self: BpIndexViewSnap): BpRegionIndex {
-  const {
-    interRegionPaddingWidth,
-    bpPerPx,
-    displayedRegions,
-    minimumBlockWidth,
-  } = self
+  const { displayedRegions } = self
   const entries = new Map<string, RegionIndexEntry[]>()
   let bpSoFar = 0
-  let paddingPx = 0
 
   for (let i = 0, l = displayedRegions.length; i < l; i++) {
     const r = displayedRegions[i]!
-    const len = r.end - r.start
-    const entry: RegionIndexEntry = {
-      index: i,
-      region: r,
-      bpBefore: bpSoFar,
-      paddingPxBefore: paddingPx,
-    }
+    const entry: RegionIndexEntry = { index: i, region: r, bpBefore: bpSoFar }
     let list = entries.get(r.refName)
     if (!list) {
       list = []
       entries.set(r.refName, list)
     }
     list.push(entry)
-
-    bpSoFar += len
-    const regionWidthPx = len / bpPerPx
-    if (regionWidthPx >= minimumBlockWidth && i < l - 1) {
-      paddingPx += interRegionPaddingWidth
-    }
+    bpSoFar += r.end - r.start
   }
-  return { entries, bpPerPx }
+  return { entries, bpPerPx: self.bpPerPx }
 }
 
-// Returns cumBp (bpBefore + bpOffset, no padding) and padPx (accumulated
-// inter-region gap in CSS pixels, stable across zoom levels).
-export function bpToCumBpAndPad(
+// Cumulative-bp offset (bpBefore + bpOffset) of a coordinate within the region
+// index, or undefined when the refName/coord isn't in the displayed regions.
+export function bpToCumBp(
   idx: BpRegionIndex,
   refName: string,
   coord: number,
   displayedRegionIndex?: number,
-): { cumBp: number; padPx: number } | undefined {
+): number | undefined {
   const list = idx.entries.get(refName)
   if (!list) {
     return undefined
@@ -76,7 +56,7 @@ export function bpToCumBpAndPad(
         displayedRegionIndex === entry.index)
     ) {
       const bpOffset = r.reversed ? r.end - coord : coord - r.start
-      return { cumBp: entry.bpBefore + bpOffset, padPx: entry.paddingPxBefore }
+      return entry.bpBefore + bpOffset
     }
   }
   return undefined

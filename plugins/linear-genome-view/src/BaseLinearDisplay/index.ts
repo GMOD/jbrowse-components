@@ -1,48 +1,62 @@
 export { default as baseLinearDisplayConfigSchema } from './models/configSchema.ts'
 export type {
-  BlockModel,
-  RenderedProps,
-} from './models/serverSideRenderedBlock.ts'
-export { BaseLinearDisplay } from './model.ts'
-export type {
-  BaseLinearDisplayModel,
-  BaseLinearDisplayStateModel,
-  LegendItem,
-} from './model.ts'
-export type {
   ExportSvgDisplayOptions,
-  FloatingLabelData,
-  LayoutFeatureMetadata,
   LayoutRecord,
+  LinearDisplayModel,
 } from './types.ts'
-export { createSubfeatureLabelMetadata } from './types.ts'
 
 export {
   BlockMsg,
   Tooltip,
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
-export {
-  DisplayErrorBar,
-  DisplayLoadingOverlay,
-} from './components/DisplayStatusOverlays.tsx'
-export {
-  default as ConfigOverrideMixin,
-  migrateOldSettingSnapshots,
-} from './models/ConfigOverrideMixin.ts'
+export type { LegendItem, LegendSection } from './components/FloatingLegend.tsx'
+export { default as DisplayChrome } from './components/DisplayChrome.tsx'
+export type { ChromeModel } from './components/DisplayChrome.tsx'
+export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
+export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
-export { default as FeatureDensityMixin } from '../shared/FeatureDensityMixin.tsx'
+export {
+  default as HeightModeMixin,
+  installGrowExitBake,
+} from './models/HeightModeMixin.ts'
+export { default as PromotableDefaultsMixin } from './models/PromotableDefaultsMixin.tsx'
+export { MIN_DISPLAY_HEIGHT } from './models/const.ts'
+export {
+  GROW_MAX_HEIGHT,
+  HEIGHT_MODE_VALUES,
+  getHeightModeOptions,
+} from './models/heightMode.ts'
+export type { HeightMode } from './models/heightMode.ts'
+export {
+  getTrackSizingMenuItem,
+  heightModeMenuItems,
+} from './models/heightModeMenu.ts'
+export type { HeightModeMenuModel } from './models/heightModeMenu.ts'
+
+export { default as RegionTooLargeMixin } from '../shared/RegionTooLargeMixin.tsx'
 export {
   type ByteEstimateConfig,
   type FetchContext,
   type MultiRegionDisplayMixinType,
+  autorunOnReadyView,
+  checkByteEstimate,
   default as MultiRegionDisplayMixin,
+  fetchAllRegions,
+  fetchEachRegion,
   onDisplayedRegionsChange,
 } from './models/MultiRegionDisplayMixin.ts'
 export {
   type GlobalDataDisplayMixinType,
+  GlobalFetchMixin,
+  type GlobalFetchMixinType,
   default as GlobalDataDisplayMixin,
+  installGlobalFetchAutorun,
 } from './models/GlobalDataDisplayMixin.ts'
+export {
+  type FetchMixinType,
+  default as FetchMixin,
+} from './models/FetchMixin.ts'
 export {
   type StaleViewportRescaleMixinType,
   default as StaleViewportRescaleMixin,
@@ -51,17 +65,21 @@ export {
   type RenderTransform,
   type RenderTransformInputs,
   computeRenderTransform,
+  computeTriangleYScalar,
+  viewportMatchesLastDrawn,
 } from './models/renderTransform.ts'
-export type { FeatureLabelData } from './components/util.ts'
 export { drawCanvasImageData } from './util.ts'
-export { getDisplayStr } from './models/util.ts'
+export {
+  TOO_MANY_FEATURES_REASON,
+  bytesTooLargeReason,
+  evaluateRegionTooLarge,
+  getDisplayStr,
+  raiseLimitPast,
+  resolveByteLimit,
+  scaleByteEstimate,
+  scaledForceLoadByteLimit,
+} from '../shared/featureDensityUtils.ts'
+export type { RegionTooLargeStatus } from '../shared/featureDensityUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'
-export { default as SVGLegend } from './SVGLegend.tsx'
-export { calculateSvgLegendWidth } from './calculateSvgLegendWidth.ts'
-export {
-  type NonBlockCanvasDisplayMixinType,
-  default as NonBlockCanvasDisplayMixin,
-} from './models/NonBlockCanvasDisplayMixin.tsx'
-export { default as NonBlockCanvasDisplayComponent } from './components/NonBlockCanvasDisplayComponent.tsx'
-export type { NonBlockCanvasDisplayModel } from './components/NonBlockCanvasDisplayComponent.tsx'
+export { default as TrackHeightIndicator } from './components/TrackHeightIndicator.tsx'

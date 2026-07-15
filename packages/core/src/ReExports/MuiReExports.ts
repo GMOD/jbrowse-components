@@ -1,6 +1,51 @@
-import { lazy } from 'react'
+import { type ComponentType, lazy } from 'react'
 
-export const Entries = {
+import Checkbox from '@mui/material/Checkbox'
+import Divider from '@mui/material/Divider'
+import ListItem from '@mui/material/ListItem'
+import ListItemButton from '@mui/material/ListItemButton'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
+import ListSubheader from '@mui/material/ListSubheader'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import MenuList from '@mui/material/MenuList'
+import Popover from '@mui/material/Popover'
+import Popper from '@mui/material/Popper'
+import Radio from '@mui/material/Radio'
+import Switch from '@mui/material/Switch'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
+
+// A `lazy(...)` entry is served to plugins Suspense-wrapped (see lazify); a bare
+// (eager) entry is served as-is. Overlay containers (Menu/Popover/Popper/
+// Tooltip) and the primitives that compose inside them MUST be eager: MUI's
+// Popover measures its paper once on open to place it, so if a menu's children
+// are still-unresolved `Suspense fallback={null}` boundaries the paper is
+// measured empty, its width is underestimated, the right-edge clamp never fires,
+// and the menu opens offscreen — self-correcting only on the next window resize
+// (there's no ResizeObserver on the paper). That's the "wrong on first open,
+// right on the second" bug. These are all already statically imported elsewhere
+// in the host, so eager-loading them costs no extra bundle — `lazy` was saving
+// nothing here and only introduced the misposition.
+export const Entries: Record<string, ComponentType<any>> = {
+  Checkbox,
+  Divider,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  Menu,
+  MenuItem,
+  MenuList,
+  Popover,
+  Popper,
+  Radio,
+  Switch,
+  Tooltip,
+  Typography,
+
   Accordion: lazy(() => import('@mui/material/Accordion')),
   AccordionActions: lazy(() => import('@mui/material/AccordionActions')),
   AccordionDetails: lazy(() => import('@mui/material/AccordionDetails')),
@@ -26,14 +71,12 @@ export const Entries = {
   Collapse: lazy(() => import('@mui/material/Collapse')),
   ClickAwayListener: lazy(() => import('@mui/material/ClickAwayListener')),
   Chip: lazy(() => import('@mui/material/Chip')),
-  Checkbox: lazy(() => import('@mui/material/Checkbox')),
   Container: lazy(() => import('@mui/material/Container')),
   Dialog: lazy(() => import('@mui/material/Dialog')),
   DialogActions: lazy(() => import('@mui/material/DialogActions')),
   DialogTitle: lazy(() => import('@mui/material/DialogTitle')),
   DialogContent: lazy(() => import('@mui/material/DialogContent')),
   DialogContentText: lazy(() => import('@mui/material/DialogContentText')),
-  Divider: lazy(() => import('@mui/material/Divider')),
   Drawer: lazy(() => import('@mui/material/Drawer')),
   Fab: lazy(() => import('@mui/material/Fab')),
   Fade: lazy(() => import('@mui/material/Fade')),
@@ -55,28 +98,17 @@ export const Entries = {
   Link: lazy(() => import('@mui/material/Link')),
   LinearProgress: lazy(() => import('@mui/material/LinearProgress')),
   List: lazy(() => import('@mui/material/List')),
-  ListItem: lazy(() => import('@mui/material/ListItem')),
   ListItemAvatar: lazy(() => import('@mui/material/ListItemAvatar')),
-  ListItemButton: lazy(() => import('@mui/material/ListItemButton')),
   ListItemSecondaryAction: lazy(
     () => import('@mui/material/ListItemSecondaryAction'),
   ),
-  ListItemIcon: lazy(() => import('@mui/material/ListItemIcon')),
-  ListSubheader: lazy(() => import('@mui/material/ListSubheader')),
-  ListItemText: lazy(() => import('@mui/material/ListItemText')),
-  Menu: lazy(() => import('@mui/material/Menu')),
-  MenuItem: lazy(() => import('@mui/material/MenuItem')),
-  MenuList: lazy(() => import('@mui/material/MenuList')),
   Modal: lazy(() => import('@mui/material/Modal')),
   NativeSelect: lazy(() => import('@mui/material/NativeSelect')),
   OutlinedInput: lazy(() => import('@mui/material/OutlinedInput')),
   Pagination: lazy(() => import('@mui/material/Pagination')),
   PaginationItem: lazy(() => import('@mui/material/PaginationItem')),
   Paper: lazy(() => import('@mui/material/Paper')),
-  Popover: lazy(() => import('@mui/material/Popover')),
-  Popper: lazy(() => import('@mui/material/Popper')),
   Portal: lazy(() => import('@mui/material/Portal')),
-  Radio: lazy(() => import('@mui/material/Radio')),
   RadioGroup: lazy(() => import('@mui/material/RadioGroup')),
   Rating: lazy(() => import('@mui/material/Rating')),
   ScopedCssBaseline: lazy(() => import('@mui/material/ScopedCssBaseline')),
@@ -96,7 +128,6 @@ export const Entries = {
   StepIcon: lazy(() => import('@mui/material/StepIcon')),
   Stepper: lazy(() => import('@mui/material/Stepper')),
   SvgIcon: lazy(() => import('@mui/material/SvgIcon')),
-  Switch: lazy(() => import('@mui/material/Switch')),
   Tab: lazy(() => import('@mui/material/Tab')),
   Table: lazy(() => import('@mui/material/Table')),
   TableBody: lazy(() => import('@mui/material/TableBody')),
@@ -113,6 +144,4 @@ export const Entries = {
   ToggleButton: lazy(() => import('@mui/material/ToggleButton')),
   ToggleButtonGroup: lazy(() => import('@mui/material/ToggleButtonGroup')),
   Toolbar: lazy(() => import('@mui/material/Toolbar')),
-  Tooltip: lazy(() => import('@mui/material/Tooltip')),
-  Typography: lazy(() => import('@mui/material/Typography')),
 }

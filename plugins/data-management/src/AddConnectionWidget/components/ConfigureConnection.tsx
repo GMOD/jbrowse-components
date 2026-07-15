@@ -6,23 +6,22 @@ import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ConnectionType } from '@jbrowse/core/pluggableElementTypes'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+// a custom configEditorComponent can derive the session from its MST `model`
+// via getSession, so no session prop is plumbed through here
 const ConfigureConnection = observer(function ConfigureConnection({
   connectionType,
   model,
-  session,
 }: {
   connectionType: ConnectionType
   model: AnyConfigurationModel
-  session: AbstractSessionModel
 }) {
   const ConfigEditorComponent =
     connectionType.configEditorComponent ?? ConfigurationEditor
 
   return (
     <Suspense fallback={<LoadingEllipses />}>
-      <ConfigEditorComponent model={{ target: model }} session={session} />
+      <ConfigEditorComponent model={{ target: model }} />
     </Suspense>
   )
 })

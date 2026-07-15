@@ -49,7 +49,7 @@ const DrawerWidget = observer(function DrawerWidget({
         <ErrorBoundary
           FallbackComponent={({ error }) => <ErrorBanner error={error} />}
         >
-          {widgetType && visibleWidget ? (
+          {widgetType ? (
             popoutDrawer ? (
               <>
                 <div>Opened in dialog...</div>
@@ -61,18 +61,16 @@ const DrawerWidget = observer(function DrawerWidget({
                 />
               </>
             ) : (
-              <>
-                <PluggableComponent
-                  pluginManager={pluginManager}
-                  name="Core-replaceWidget"
-                  component={widgetType.ReactComponent}
-                  props={{
-                    model: visibleWidget,
-                    session,
-                    toolbarHeight,
-                  }}
-                />
-              </>
+              <PluggableComponent
+                pluginManager={pluginManager}
+                name="Core-replaceWidget"
+                component={widgetType.ReactComponent}
+                props={{
+                  model: visibleWidget,
+                  session,
+                  toolbarHeight,
+                }}
+              />
             )
           ) : null}
         </ErrorBoundary>

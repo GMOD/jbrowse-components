@@ -1,67 +1,54 @@
 ---
 id: sequencesearchadapter
 title: SequenceSearchAdapter
+sidebar_label: Adapter -> SequenceSearchAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/SequenceSearchAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Config slots
 
-## Links
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/SequenceSearchAdapter/configSchema.ts)
+| Slot                                     | Type      | Description                          |
+| ---------------------------------------- | --------- | ------------------------------------ |
+| [search](#slot-search)                   | `string`  | Search string or regex to search for |
+| [sequenceAdapter](#slot-sequenceadapter) | `frozen`  |                                      |
+| [searchForward](#slot-searchforward)     | `boolean` |                                      |
+| [searchReverse](#slot-searchreverse)     | `boolean` |                                      |
+| [caseInsensitive](#slot-caseinsensitive) | `boolean` |                                      |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/SequenceSearchAdapter.md)
-
-## Docs
-
-### SequenceSearchAdapter - Slots
+<details>
+<summary>SequenceSearchAdapter - Slots</summary>
 
 #### slot: search
 
-```js
-search: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Search string or regex to search for',
-    }
-```
+Search string or regex to search for
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: sequenceAdapter
 
-```js
-sequenceAdapter: {
-      type: 'frozen',
-      defaultValue: null,
-    }
-```
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null`
 
 #### slot: searchForward
 
-```js
-searchForward: {
-      type: 'boolean',
-      defaultValue: true,
-    }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: searchReverse
 
-```js
-searchReverse: {
-      type: 'boolean',
-      defaultValue: true,
-    }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
 
 #### slot: caseInsensitive
 
-```js
-caseInsensitive: {
-      type: 'boolean',
-      defaultValue: true,
-    }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`true`
+
+</details>

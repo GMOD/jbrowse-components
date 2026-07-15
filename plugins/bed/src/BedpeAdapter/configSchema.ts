@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
@@ -15,9 +17,17 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config BedpeAdapter
+ * #trackType VariantTrack
  * intended for SVs in a single assembly
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'BedpeAdapter',
+ *   uri: 'https://example.com/sv.bedpe',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const BedpeAdapter = ConfigurationSchema(
   'BedpeAdapter',
@@ -61,4 +71,6 @@ const BedpeAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+export type BedpeAdapterConfig = Instance<typeof BedpeAdapter>
+
 export default BedpeAdapter

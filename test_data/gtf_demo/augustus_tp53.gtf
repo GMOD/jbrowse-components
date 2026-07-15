@@ -1,0 +1,15 @@
+chr17	AUGUSTUS	gene	7571720	7590868	0.42	-	.	g1
+chr17	AUGUSTUS	transcript	7571720	7590868	0.42	-	.	g1.t1
+chr17	AUGUSTUS	tss	7590868	7590868	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	7590692	7590868	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	7579839	7579940	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	7578177	7578289	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	7573927	7574033	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	exon	7571720	7573008	.	-	.	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	start_codon	7590738	7590740	.	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	7590692	7590740	0.9	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	7579839	7579940	0.9	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	7578177	7578289	0.9	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	7573927	7574033	0.9	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	CDS	7572950	7573008	0.9	-	0	transcript_id "g1.t1"; gene_id "g1";
+chr17	AUGUSTUS	stop_codon	7572947	7572949	.	-	0	transcript_id "g1.t1"; gene_id "g1";

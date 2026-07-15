@@ -4,7 +4,10 @@ import RootConfiguration from './RootConfiguration.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationSchemaType,
+  ConfigurationSchemaDefinition,
+} from '@jbrowse/core/configuration'
 
 /**
  * #config JBrowseRootConfig
@@ -21,14 +24,16 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 export function JBrowseConfigF({
   pluginManager,
   assemblyConfigSchema,
+  extraConfigSlots,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
-  adminMode?: boolean
+  extraConfigSlots?: ConfigurationSchemaDefinition
 }) {
   return types.model('JBrowseConfig', {
     configuration: RootConfiguration({
       pluginManager,
+      extraConfigSlots,
     }),
     /**
      * #slot
@@ -82,6 +87,8 @@ export function JBrowseConfigF({
 
     /**
      * #slot
+     * the session loaded when no session is otherwise specified, e.g. the
+     * initial view shown on first load
      */
     defaultSession: types.optional(types.frozen(), {
       name: 'New Session',
@@ -89,6 +96,8 @@ export function JBrowseConfigF({
 
     /**
      * #slot
+     * named sessions bundled with the config that a user can open from the
+     * session selector
      */
     preConfiguredSessions: types.array(types.frozen()),
 

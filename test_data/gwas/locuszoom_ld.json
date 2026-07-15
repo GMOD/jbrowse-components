@@ -1,0 +1,117 @@
+{
+  "defaultSession": {
+    "name": "LocusZoom-style LD coloring (GIANT BMI, FTO locus)",
+    "views": [
+      {
+        "id": "giant_fto_view",
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg19",
+          "loc": "chr16:53,700,000..53,900,000",
+          "tracks": ["giant_bmi_ld", "ncbi_refseq_hg19"]
+        }
+      }
+    ]
+  },
+  "assemblies": [
+    {
+      "name": "hg19",
+      "aliases": ["GRCh37"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg19_refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "GWASTrack",
+      "trackId": "giant_bmi_ld",
+      "name": "GIANT BMI (LD colored to lead SNP)",
+      "category": ["GWAS"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/gwas/gwas_giant-bmi_meta_women-only.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gwas/gwas_giant-bmi_meta_women-only.gz.tbi"
+          }
+        },
+        "ldAdapter": {
+          "type": "PlinkLDTabixAdapter",
+          "ldLocation": {
+            "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz"
+          },
+          "index": {
+            "indexType": "TBI",
+            "location": {
+              "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz.tbi"
+            }
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "giant_bmi_ld-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay",
+          "height": 250,
+          "colorBy": "ld",
+          "scatterPointSize": 8
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_refseq_hg19",
+      "name": "NCBI RefSeq genes",
+      "category": ["Genes"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "ncbi_refseq_hg19-LinearBasicDisplay",
+          "type": "LinearBasicDisplay",
+          "height": 150,
+          "labels": {
+            "name": "jexl:feature.gene_id || feature.name || feature.id"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,10 @@
 import SerializableFilterChain from './serializableFilterChain.ts'
+import createJexlInstance from '../../../util/jexl.ts'
 
 test('one', () => {
   const c = new SerializableFilterChain({
     filters: ['jexl:feature.y == 2'],
+    jexl: createJexlInstance(),
   })
 
   expect(c.passes({ y: 1 })).toBe(false)

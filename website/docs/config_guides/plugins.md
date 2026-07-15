@@ -1,13 +1,12 @@
 ---
-id: plugins
-title: Configuring plugins
+title: Plugins
 description: Adding first- and third-party plugins via config.json
 guide_category: Core configuration
 ---
 
 In jbrowse-web and jbrowse-desktop, plugins are added via `config.json`.
-Embedded components use a different approach — see the
-[storybook example](https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page).
+Embedded components use a different approach. See the
+[inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
 
 External plugins can be added to the config.json file like so:
 
@@ -22,8 +21,13 @@ External plugins can be added to the config.json file like so:
 }
 ```
 
+The `name` must match the name the plugin registers itself under in its source
+(e.g. `name = 'GDC'` in the plugin class). If it doesn't match, the plugin fails
+to load. The `url` (or one of the location fields below) points at the built
+plugin bundle.
+
 Our plugin store lists unpkg URLs for published plugins at
-https://jbrowse.org/jb2/plugin_store/. You can also download plugin files from
+[the plugin store](/plugin_store/). You can also download plugin files from
 those URLs to your own server.
 
 The `url` field shown above is the simplest option and is equivalent to
@@ -43,7 +47,7 @@ rather than at the app root. Use `esmUrl`/`esmLoc` for a pure ESM module. Use
 `cjsUrl` for jbrowse-desktop, since Electron does not support ESM and the
 jbrowse-plugin-template outputs CJS-specific code for desktop.
 
-#### umdLoc example
+## umdLoc example
 
 ```json
 {
@@ -56,7 +60,7 @@ jbrowse-plugin-template outputs CJS-specific code for desktop.
 }
 ```
 
-#### esmUrl example
+## esmUrl example
 
 ```json
 {
@@ -69,15 +73,24 @@ jbrowse-plugin-template outputs CJS-specific code for desktop.
 }
 ```
 
-### Plugin store
+## Plugin store
 
 Plugin authors can submit their plugin via PR to
 [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list).
 
 You can verify the plugin is installed properly by checking the Plugin Store:
 
-<Figure src="/img/plugin-store.png" caption="Example screenshot showing how installed plugins are represented in the plugin store interface. Plugins installed via the config are shown with a lock icon, indicating they cannot be removed via the GUI."/>
+<Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, indicating they cannot be removed through the GUI. The Available plugins list below offers one-click installs."/>
 
 See our [developer guide](/docs/developer_guide/) for more information on
 developing plugins, or our [plugins page](/plugin_store) to browse currently
 published plugins.
+
+## See also
+
+- [Plugin store](/docs/user_guides/plugin_store), installing community plugins
+  from inside the app
+- [No-build plugin](/docs/developer_guides/no_build_plugin), writing a small
+  single-file plugin with no build step
+- [Simple plugin tutorial](/docs/developer_guides/simple_plugin), scaffolding a
+  full plugin with the plugin template

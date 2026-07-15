@@ -2,64 +2,96 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import PaletteIcon from '@mui/icons-material/Palette'
 import { observer } from 'mobx-react'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
+
+// Flat list, ordered so related modes sit together: structural colorings
+// first, then the identity ramps, then the mapping-quality ramps.
+const COLOR_MODES = [
+  {
+    label: 'Default',
+    value: 'default',
+    helpText:
+      'Default ribbon color (red) with CIGAR operation coloring — insertions, deletions, and skips drawn in distinct colors over the alignment.',
+  },
+  {
+    label: 'Strand',
+    value: 'strand',
+    helpText:
+      'Color alignments by strand orientation. Forward and reverse strand alignments use different colors, making inversions and strand-specific patterns easy to spot.',
+  },
+  {
+    label: 'Query',
+    value: 'query',
+    helpText:
+      "Color by the query sequence (this assembly's own refName). Each unique sequence gets a consistent color, making it easy to distinguish different contigs/chromosomes.",
+  },
+  {
+    label: 'Target',
+    value: 'target',
+    helpText:
+      "Color by the target/mate sequence (the other assembly's refName). The complement of Query coloring — useful when one query maps across several targets.",
+  },
+  {
+    label: 'Reference',
+    value: 'reference',
+    helpText:
+      "Color every level by the shared reference assembly's chromosome names, so a region keeps one consistent color as it's traced across all levels of a stacked multi-genome view.",
+  },
+  {
+    label: 'Identity',
+    value: 'identity',
+    helpText:
+      'Color by per-alignment sequence identity on a perceptually-uniform viridis scale: low identity is dark purple, high identity is bright yellow. Useful for distinguishing divergent vs conserved regions.',
+  },
+  {
+    label: 'Mean query identity',
+    value: 'meanQueryIdentity',
+    helpText:
+      'Color by the length-weighted mean sequence identity across all alignments of each query/target pair (a true 0–100% value). Smooths local noise — e.g. a contig split into many hits is colored by its overall identity to the target.',
+  },
+  {
+    label: 'Mapping quality',
+    value: 'mappingQuality',
+    helpText:
+      'Color by per-alignment PAF mapping quality (MAPQ, 0–60) on a perceptually-uniform cividis scale: low MAPQ dark blue, high MAPQ yellow. Highlights ambiguous or multi-mapping regions.',
+  },
+] as const
 
 const ColorBySelector = observer(function ColorBySelector({
   model,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
 }) {
-  // Get the first display from the first level (if it exists)
-  const firstDisplay = model.levels[0]?.tracks[0]?.displays[0] as
-    | LinearSyntenyDisplayModel
-    | undefined
+  const { colorBy, showColorLegend } = model
 
-  const colorBy = firstDisplay?.colorBy ?? 'default'
-
-  const setColorBy = (value: string) => {
-    // Set colorBy for all displays across all levels
-    for (const level of model.levels) {
-      for (const track of level.tracks) {
-        for (const display of track.displays) {
-          ;(display as LinearSyntenyDisplayModel).setColorBy(value)
-        }
-      }
-    }
-  }
+  // 'reference' coloring only carries meaning across a stack of ≥2 levels;
+  // for a single-level (two-genome) view it degenerates to query/target, so
+  // hide it there to keep the menu focused.
+  const modes = COLOR_MODES.filter(
+    m => m.value !== 'reference' || model.levels.length > 1,
+  )
+  const active = COLOR_MODES.find(m => m.value === colorBy)
 
   return (
     <CascadingMenuButton
+      tooltip={active ? `Color by: ${active.label}` : 'Color by'}
       menuItems={[
-        {
-          label: 'Default',
-          type: 'radio',
-          checked: colorBy === 'default',
+        ...modes.map(({ label, value, helpText }) => ({
+          label,
+          type: 'radio' as const,
+          checked: colorBy === value,
+          helpText,
           onClick: () => {
-            setColorBy('default')
+            model.setColorBy(value)
           },
-          helpText:
-            'Use the default color scheme with CIGAR operation coloring. Insertions, deletions, matches, and mismatches are shown in different colors with transparency.',
-        },
+        })),
         {
-          label: 'Strand',
-          type: 'radio',
-          checked: colorBy === 'strand',
+          label: 'Show color legend',
+          type: 'checkbox' as const,
+          checked: showColorLegend,
           onClick: () => {
-            setColorBy('strand')
+            model.setShowColorLegend(!showColorLegend)
           },
-          helpText:
-            'Color alignments by strand orientation. Forward strand alignments and reverse strand alignments are shown in different colors, making it easy to identify inversions and strand-specific patterns.',
-        },
-        {
-          label: 'Query',
-          type: 'radio',
-          checked: colorBy === 'query',
-          onClick: () => {
-            setColorBy('query')
-          },
-          helpText:
-            'Color alignments by query sequence name. Each unique query sequence is assigned a consistent color based on its name, making it easy to visually distinguish between different sequences.',
         },
       ]}
     >

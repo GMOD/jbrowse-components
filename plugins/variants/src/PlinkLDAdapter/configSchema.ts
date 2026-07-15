@@ -10,8 +10,14 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  *
  * Expected columns: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2
  * Optional columns: DP (D'), MAF_A, MAF_B
+ *
+ * Used by the
+ * [variant LD display](/docs/config_guides/variant_track#linkage-disequilibrium-ld-display)
+ * (triangular r² heatmap) and by
+ * [GWAS Manhattan LD coloring](/docs/config_guides/gwas_track#preparing-the-ld-file)
+ * (LocusZoom-style r² to an index SNP). See either guide for generating the .ld
+ * file with `plink --r2`.
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

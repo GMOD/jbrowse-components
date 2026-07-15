@@ -1,20 +1,26 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { downloadStatus, updateStatus } from '@jbrowse/core/util'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { makeBedGraphFeature } from '../bedGraphUtil.ts'
 import { parseNamesFromHeader } from '../util.ts'
 
+import type { BedGraphTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
+export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGraphTabixAdapterConfig> {
   private configured?: Promise<{
     bedGraph: TabixIndexedFile
     header: string
     columnNames: string[]
   }>
+
+  // true once the index has finished downloading; gates the status label so
+  // pan/zoom re-entry into configure() doesn't re-flash "Downloading index"
+  private configureReady = false
 
   private async configurePre() {
     const pm = this.pluginManager
@@ -22,12 +28,9 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
     const location = this.getConf(['index', 'location'])
     const indexType = this.getConf(['index', 'indexType'])
 
-    const filehandle = openLocation(bedGraphGzLocation, pm)
-    const isCSI = indexType === 'CSI'
     const bedGraph = new TabixIndexedFile({
-      filehandle,
-      csiFilehandle: isCSI ? openLocation(location, pm) : undefined,
-      tbiFilehandle: !isCSI ? openLocation(location, pm) : undefined,
+      filehandle: openLocation(bedGraphGzLocation, pm),
+      ...openTabixIndexFilehandle(location, indexType, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
     const columnNames = this.getConf('columnNames')
@@ -40,12 +43,28 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  protected async configure() {
-    this.configured ??= this.configurePre().catch((e: unknown) => {
-      this.configured = undefined
-      throw e
-    })
+  private async configureOnce() {
+    this.configured ??= this.configurePre()
+      .then(result => {
+        this.configureReady = true
+        return result
+      })
+      .catch((e: unknown) => {
+        this.configured = undefined
+        throw e
+      })
     return this.configured
+  }
+
+  // Show "Downloading index" only while the index is genuinely downloading. Once
+  // configured, callers (every getFeatures/byte-estimate on pan/zoom) await the
+  // cached promise silently rather than re-flashing the label.
+  protected async configure(opts?: BaseOptions) {
+    return this.configureReady
+      ? this.configureOnce()
+      : updateStatus('Downloading index', opts?.statusCallback, () =>
+          this.configureOnce(),
+        )
   }
 
   async getNames() {
@@ -54,8 +73,12 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    const { bedGraph } = await this.configure()
-    return bedGraph.getReferenceSequenceNames(opts)
+    const { bedGraph } = await this.configure(opts)
+    return downloadStatus(
+      'Downloading index',
+      opts.statusCallback,
+      onProgress => bedGraph.getReferenceSequenceNames({ ...opts, onProgress }),
+    )
   }
 
   async getHeader() {
@@ -65,7 +88,7 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { bedGraph } = await this.configure()
+      const { bedGraph } = await this.configure(opts)
       const meta = await bedGraph.getMetadata()
       const { columnNumbers } = meta
       const colRef = columnNumbers.ref - 1
@@ -73,45 +96,46 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter {
       const colEnd = columnNumbers.end - 1
       const same = colStart === colEnd
       const names = (await this.getNames())?.slice(same ? 2 : 3) ?? []
-      await bedGraph.getLines(
-        query.refName,
-        query.start + (same ? -1 : 0),
-        query.end,
-        {
-          lineCallback: (line, fileOffset) => {
-            const cols = line.split('\t')
-            const refName = cols[colRef]!
-            const start = +cols[colStart]!
-            const end = +(same ? start + 1 : cols[colEnd]!)
-            const rest = cols.slice(colEnd + 1)
-            if (Number.isNaN(start) || Number.isNaN(end)) {
-              throw new Error(
-                `start/end NaN on line "${line}", with colStart:${colStart} and colEnd:${colEnd}. run "tabix -p bed" to ensure bed preset`,
-              )
-            }
+      await downloadStatus(
+        'Downloading features',
+        opts.statusCallback,
+        onProgress =>
+          bedGraph.getLines(
+            query.refName,
+            query.start + (same ? -1 : 0),
+            query.end,
+            {
+              lineCallback: (line, fileOffset) => {
+                const cols = line.split('\t')
+                const refName = cols[colRef]!
+                const start = +cols[colStart]!
+                const end = +(same ? start + 1 : cols[colEnd]!)
+                const rest = cols.slice(colEnd + 1)
+                if (Number.isNaN(start) || Number.isNaN(end)) {
+                  throw new Error(
+                    `start/end NaN on line "${line}", with colStart:${colStart} and colEnd:${colEnd}. run "tabix -p bed" to ensure bed preset`,
+                  )
+                }
 
-            for (let j = 0; j < rest.length; j++) {
-              const uniqueId = `${this.id}-${fileOffset}-${j}`
-              const score = +rest[j]!
-              const source = names[j] || `col${j}`
-              if (!Number.isNaN(score)) {
-                observer.next(
-                  new SimpleFeature({
-                    id: uniqueId,
-                    data: {
-                      refName,
-                      start,
-                      end,
-                      score,
-                      source,
-                    },
-                  }),
-                )
-              }
-            }
-          },
-          ...opts,
-        },
+                for (let j = 0; j < rest.length; j++) {
+                  const feat = makeBedGraphFeature({
+                    uniqueId: `${this.id}-${fileOffset}-${j}`,
+                    refName,
+                    start,
+                    end,
+                    names,
+                    j,
+                    value: rest[j]!,
+                  })
+                  if (feat) {
+                    observer.next(feat)
+                  }
+                }
+              },
+              ...opts,
+              onProgress,
+            },
+          ),
       )
       observer.complete()
     }, opts.stopToken)

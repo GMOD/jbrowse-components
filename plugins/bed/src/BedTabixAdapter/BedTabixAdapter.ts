@@ -1,8 +1,14 @@
 import BED from '@gmod/bed'
 import { TabixIndexedFile } from '@gmod/tabix'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import {
+  SimpleFeature,
+  downloadStatus,
+  unzip,
+  updateStatus,
+} from '@jbrowse/core/util'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
   checkStopToken2,
@@ -10,16 +16,35 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { featureData, parseNamesFromHeader } from '../util.ts'
+import { bedFeatureLocus, featureData, parseNamesFromHeader } from '../util.ts'
 
+import type { BedTabixAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
-export default class BedTabixAdapter extends BaseFeatureDataAdapter {
+// 0-based column offsets + coordinate conventions derived from the tabix index
+// metadata. `hasEndColumn` is false when the index has a begin but no end
+// column (`-b` only, e.g. LocusZoom GWAS / point data, where end column is 0) —
+// those features are a single position, so callers use end = start + 1.
+function resolveBedColumns(
+  metadata: Awaited<ReturnType<TabixIndexedFile['getMetadata']>>,
+) {
+  const { columnNumbers, coordinateType } = metadata
+  return {
+    colRef: columnNumbers.ref - 1,
+    colStart: columnNumbers.start - 1,
+    colEnd: columnNumbers.end - 1,
+    hasEndColumn: columnNumbers.end > 0,
+    oneBased: coordinateType === '1-based-closed',
+  }
+}
+
+export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdapterConfig> {
   private parser: BED
+
+  private readonly bedGzLoc: FileLocation
 
   protected bed: TabixIndexedFile
 
@@ -27,70 +52,120 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
 
   setupP?: Promise<Awaited<ReturnType<TabixIndexedFile['getMetadata']>>>
 
+  // true once the index metadata has downloaded; gates the status label so
+  // pan/zoom re-entry into getMetadata() doesn't re-flash "Downloading index"
+  private setupReady = false
+
   public constructor(
-    config: AnyConfigurationModel,
+    config: BedTabixAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const bedGzLoc = this.getConf('bedGzLocation') as FileLocation
-    const type = this.getConf(['index', 'indexType'])
-    const loc = this.getConf(['index', 'location'])
+    this.bedGzLoc = readConfObject(this.config, 'bedGzLocation') as FileLocation
+    const type = readConfObject(this.config, ['index', 'indexType'])
+    const loc = readConfObject(this.config, ['index', 'location'])
     const pm = this.pluginManager
 
     this.bed = new TabixIndexedFile({
-      filehandle: openLocation(bedGzLoc, pm),
-      csiFilehandle: type === 'CSI' ? openLocation(loc, pm) : undefined,
-      tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
+      filehandle: openLocation(this.bedGzLoc, pm),
+      ...openTabixIndexFilehandle(loc, type, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
-    this.parser = new BED({ autoSql: this.getConf('autoSql') })
+    this.parser = new BED({ autoSql: readConfObject(this.config, 'autoSql') })
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    return this.bed.getReferenceSequenceNames(opts)
+    return downloadStatus(
+      'Downloading index',
+      opts.statusCallback,
+      onProgress => this.bed.getReferenceSequenceNames({ ...opts, onProgress }),
+    )
   }
 
   async getHeader(opts?: BaseOptions) {
     return this.bed.getHeader(opts)
   }
 
+  /**
+   * Estimate compressed bytes for regions straight from the tabix index — no
+   * feature download. Lets wrapping adapters (e.g. MafTabix) byte-budget a
+   * fetch before pulling the (potentially huge) per-line payload.
+   */
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    return this.bed.bytesForRegions(regions, opts)
+  }
+
   private async configure() {
-    this.setupP ??= this.bed.getMetadata().catch((e: unknown) => {
-      this.setupP = undefined
-      throw e
-    })
+    this.setupP ??= this.bed
+      .getMetadata()
+      .then(metadata => {
+        this.setupReady = true
+        return metadata
+      })
+      .catch((e: unknown) => {
+        this.setupP = undefined
+        throw e
+      })
     return this.setupP
   }
 
+  // Show "Downloading index" only while the index metadata is genuinely
+  // downloading. Once loaded, callers (every getFeatures on pan/zoom) await the
+  // cached promise silently rather than re-flashing the label.
   async getMetadata(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts ?? {}
-    return updateStatus('Downloading index', statusCallback, () =>
-      this.configure(),
-    )
+    return this.setupReady
+      ? this.configure()
+      : updateStatus('Downloading index', statusCallback, () =>
+          this.configure(),
+        )
   }
 
   async getNames() {
-    const columnNames: string[] = this.getConf('columnNames')
+    const columnNames: string[] = readConfObject(this.config, 'columnNames')
     if (columnNames.length) {
       return columnNames
     }
-    return parseNamesFromHeader(await this.getHeader())
+    return (
+      parseNamesFromHeader(await this.getHeader()) ??
+      (await this.parseSkipLineHeader())
+    )
+  }
+
+  // When a tabix file uses skipLines (not #-comment) for its header,
+  // getHeader() returns empty. Read the raw first bgzf block to recover names.
+  private async parseSkipLineHeader(): Promise<string[] | undefined> {
+    const { skipLines } = await this.configure()
+    if (!skipLines) {
+      return undefined
+    }
+    const buf = await openLocation(this.bedGzLoc, this.pluginManager).read(
+      65536,
+      0,
+    )
+    const text = new TextDecoder().decode(await unzip(buf))
+    const lines = text.split(/\n|\r\n|\r/).filter(Boolean)
+    const defline = lines[skipLines - 1]
+    return defline?.includes('\t')
+      ? defline.split('\t').map(f => f.trim())
+      : undefined
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
     const { stopToken, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const { columnNumbers } = await this.getMetadata()
-      const colRef = columnNumbers.ref - 1
-      const colStart = columnNumbers.start - 1
-      const colEnd = columnNumbers.end - 1
+      const { colRef, colStart, colEnd, hasEndColumn, oneBased } =
+        resolveBedColumns(await this.getMetadata())
       const names = await this.getNames()
-      const scoreColumn: string = this.getConf('scoreColumn')
-      const disableGeneHeuristic: boolean = this.getConf('disableGeneHeuristic')
+      const scoreColumn = readConfObject(this.config, 'scoreColumn')
+      const disableGeneHeuristic = readConfObject(
+        this.config,
+        'disableGeneHeuristic',
+      )
       const stopTokenCheck = createStopTokenChecker(stopToken)
       checkStopToken(stopToken)
-      await updateStatus('Downloading features', statusCallback, () =>
+      await downloadStatus('Downloading features', statusCallback, onProgress =>
         this.bed.getLines(query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
             checkStopToken2(stopTokenCheck)
@@ -99,9 +174,14 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
               new SimpleFeature(
                 featureData({
                   splitLine,
-                  refName: splitLine[colRef]!,
-                  start: +splitLine[colStart]!,
-                  end: +splitLine[colEnd]! + (colStart === colEnd ? 1 : 0),
+                  ...bedFeatureLocus({
+                    splitLine,
+                    colRef,
+                    colStart,
+                    colEnd,
+                    oneBased,
+                    hasEndColumn,
+                  }),
                   scoreColumn,
                   parser: this.parser,
                   uniqueId: `${this.id}-${fileOffset}`,
@@ -111,6 +191,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter {
               ),
             )
           },
+          onProgress,
         }),
       )
       observer.complete()

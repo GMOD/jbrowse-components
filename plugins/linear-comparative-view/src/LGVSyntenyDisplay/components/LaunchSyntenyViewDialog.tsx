@@ -1,23 +1,17 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  Checkbox,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-  TextField,
-} from '@mui/material'
+import { Checkbox, FormControlLabel } from '@mui/material'
 
 import { navToSynteny } from './util.ts'
 
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const DEFAULT_WINDOW_SIZE = 1000
 
 const useStyles = makeStyles()({
-  padding: {
+  formControl: {
     margin: 10,
     border: '1px solid #ccc',
   },
@@ -25,13 +19,13 @@ const useStyles = makeStyles()({
 
 export default function LaunchSyntenyViewDialog({
   session,
-  view,
+  visibleRegion,
   feature,
   trackId,
   handleClose,
 }: {
   session: AbstractSessionModel
-  view?: LinearGenomeViewModel
+  visibleRegion?: { refName: string; start: number; end: number }
   feature: Feature
   trackId: string
   handleClose: () => void
@@ -40,86 +34,67 @@ export default function LaunchSyntenyViewDialog({
   const inverted = feature.get('strand') === -1
   const hasCIGAR = !!feature.get('CIGAR')
   const [horizontallyFlip, setHorizontallyFlip] = useState(inverted)
-  const [windowSize, setWindowSize] = useState('1000')
+  const [windowSize, setWindowSize] = useState<number | undefined>(
+    DEFAULT_WINDOW_SIZE,
+  )
   const [useRegionOfInterest, setUseRegionOfInterest] = useState(true)
   return (
-    <Dialog open title="Launch synteny view" onClose={handleClose}>
-      <DialogContent>
-        {view && hasCIGAR ? (
-          <FormControlLabel
-            className={classes.padding}
-            control={
-              <Checkbox
-                checked={useRegionOfInterest}
-                onChange={event => {
-                  setUseRegionOfInterest(event.target.checked)
-                }}
-              />
-            }
-            label="Use CIGAR string to navigate the current visible to the target"
-          />
-        ) : null}
-        {inverted ? (
-          <FormControlLabel
-            className={classes.padding}
-            control={
-              <Checkbox
-                checked={horizontallyFlip}
-                onChange={event => {
-                  setHorizontallyFlip(event.target.checked)
-                }}
-              />
-            }
-            label="Note: The feature is inverted in orientation on the target
-            sequence. This will result in the lower panel having genomic
-            coordinates decreasing left to right. Horizontally flip?"
-          />
-        ) : null}
-        <TextField
-          label="Add window size in bp"
-          value={windowSize}
-          onChange={event => {
-            setWindowSize(event.target.value)
-          }}
+    <SubmitDialog
+      open
+      title="Launch synteny view"
+      submitDisabled={windowSize === undefined}
+      onCancel={() => {
+        handleClose()
+      }}
+      onSubmit={() => {
+        if (windowSize !== undefined) {
+          navToSynteny({
+            feature,
+            windowSize,
+            horizontallyFlip,
+            trackId,
+            session,
+            region: useRegionOfInterest ? visibleRegion : undefined,
+          })
+          handleClose()
+        }
+      }}
+    >
+      {visibleRegion && hasCIGAR ? (
+        <FormControlLabel
+          className={classes.formControl}
+          control={
+            <Checkbox
+              checked={useRegionOfInterest}
+              onChange={event => {
+                setUseRegionOfInterest(event.target.checked)
+              }}
+            />
+          }
+          label="Use CIGAR to map the current visible region to the target"
         />
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ;(async () => {
-              try {
-                await navToSynteny({
-                  feature,
-                  windowSize: +windowSize,
-                  horizontallyFlip,
-                  trackId,
-                  session,
-                  region: useRegionOfInterest
-                    ? view?.dynamicBlocks.contentBlocks[0]
-                    : undefined,
-                })
-              } catch (e) {
-                console.error(e)
-                session.notifyError(`${e}`, e)
-              }
-            })()
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Cancel
-        </Button>
-      </DialogActions>
-    </Dialog>
+      ) : null}
+      {inverted ? (
+        <FormControlLabel
+          className={classes.formControl}
+          control={
+            <Checkbox
+              checked={horizontallyFlip}
+              onChange={event => {
+                setHorizontallyFlip(event.target.checked)
+              }}
+            />
+          }
+          label="Horizontally flip target (feature is inverted on the target — without flipping, the lower panel's coordinates will decrease left to right)"
+        />
+      ) : null}
+      <NumberTextField
+        label="Add window size in bp"
+        defaultValue={DEFAULT_WINDOW_SIZE}
+        onValueChange={setWindowSize}
+        min={0}
+        errorText="Must be a non-negative number"
+      />
+    </SubmitDialog>
   )
 }

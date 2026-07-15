@@ -1,38 +1,22 @@
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
-import { configure } from 'mobx'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import {
+  grapePeachGetFile,
+  utilizeFetchMockForTest,
+} from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
-
-configure({ disableErrorBoundaries: true })
-
-const getFile = (url: string) => {
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/grape_peach_synteny/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
-
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-})
+utilizeFetchMockForTest(grapePeachGetFile)
 
 test('Open linear synteny view from dotplot view', async () => {
   const { rootModel } = getPluginManager(configSnapshot)

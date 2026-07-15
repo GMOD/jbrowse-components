@@ -1,7 +1,19 @@
-import { getType, types, unprotect } from '@jbrowse/mobx-state-tree'
+import {
+  getRoot,
+  getType,
+  resolveIdentifier,
+  types,
+  unprotect,
+} from '@jbrowse/mobx-state-tree'
 import { runInAction } from 'mobx'
 
-import { filterSessionInPlace } from './sessionUtils.ts'
+import {
+  addRelativeUris,
+  analyzeWebPortability,
+  buildWebExportUrl,
+  filterSessionInPlace,
+  planWebExport,
+} from './sessionUtils.ts'
 
 const Item = types.model('Item', {
   id: types.identifier,
@@ -24,4 +36,575 @@ test('filterSessionInPlace removes stale references from maps', () => {
     filterSessionInPlace(container, getType(container))
   })
   expect([...container.refs.keys()]).toEqual(['a'])
+})
+
+const ArrayContainer = types.model('ArrayContainer', {
+  items: types.map(Item),
+  refs: types.array(types.reference(Item)),
+})
+
+test('filterSessionInPlace removes stale references from arrays', () => {
+  const container = ArrayContainer.create({
+    items: { a: { id: 'a', name: 'A' }, b: { id: 'b', name: 'B' } },
+    refs: ['a', 'b'],
+  })
+  unprotect(container)
+  runInAction(() => {
+    container.items.delete('b')
+    filterSessionInPlace(container, getType(container))
+  })
+  expect(container.refs.map(r => r.id)).toEqual(['a'])
+})
+
+// A child whose property read throws stands in for an open track whose
+// `configuration` reference resolves to a structurally-invalid config and
+// fails to hydrate.
+const ExplodingChild = types.model('ExplodingChild', {
+  id: types.identifier,
+  target: types.reference(Item, {
+    get(id, parent) {
+      const item = resolveIdentifier(Item, getRoot(parent), id)
+      if (!item) {
+        throw new Error(`cannot hydrate "${id}"`)
+      }
+      return item
+    },
+    set(value: { id: string }) {
+      return value.id
+    },
+  }),
+})
+
+const ExplodingContainer = types.model('ExplodingContainer', {
+  items: types.map(Item),
+  children: types.array(ExplodingChild),
+})
+
+test('filterSessionInPlace drops an element whose walk throws, keeps the rest', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const container = ExplodingContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: [
+      { id: 'good', target: 'a' },
+      { id: 'bad', target: 'broken' },
+    ],
+  })
+  unprotect(container)
+  runInAction(() => {
+    filterSessionInPlace(container, getType(container))
+  })
+  expect(container.children.map(c => c.id)).toEqual(['good'])
+  errorSpy.mockRestore()
+})
+
+// The array walk splices in place while iterating; two adjacent bad elements
+// must both go without the splice skipping the second.
+test('filterSessionInPlace drops multiple adjacent throwing array elements', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const container = ExplodingContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: [
+      { id: 'bad1', target: 'x' },
+      { id: 'bad2', target: 'y' },
+      { id: 'good', target: 'a' },
+      { id: 'bad3', target: 'z' },
+    ],
+  })
+  unprotect(container)
+  runInAction(() => {
+    filterSessionInPlace(container, getType(container))
+  })
+  expect(container.children.map(c => c.id)).toEqual(['good'])
+  errorSpy.mockRestore()
+})
+
+const ExplodingMapContainer = types.model('ExplodingMapContainer', {
+  items: types.map(Item),
+  children: types.map(ExplodingChild),
+})
+
+// The map walk deletes keys while iterating map.keys(); several bad entries in a
+// row must all be dropped (guards against a concurrent-modification skip).
+test('filterSessionInPlace drops multiple throwing map elements', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const container = ExplodingMapContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: {
+      bad1: { id: 'bad1', target: 'x' },
+      good1: { id: 'good1', target: 'a' },
+      bad2: { id: 'bad2', target: 'y' },
+      bad3: { id: 'bad3', target: 'z' },
+      good2: { id: 'good2', target: 'a' },
+    },
+  })
+  unprotect(container)
+  runInAction(() => {
+    filterSessionInPlace(container, getType(container))
+  })
+  expect([...container.children.keys()].sort()).toEqual(['good1', 'good2'])
+  errorSpy.mockRestore()
+})
+
+// Models a track (resolvable `configuration` reference) whose subtree contains
+// a child that throws when instantiated — standing in for a display whose
+// afterAttach reads view.width before the view is measured. The walk must
+// validate the track via its config reference WITHOUT descending into the
+// subtree, so a throwing child can't make a valid track get dropped.
+const ConfigBearingChild = types.model('ConfigBearingChild', {
+  id: types.identifier,
+  configuration: types.reference(Item, {
+    get(id, parent) {
+      const item = resolveIdentifier(Item, getRoot(parent), id)
+      if (!item) {
+        throw new Error(`cannot hydrate config "${id}"`)
+      }
+      return item
+    },
+    set(value: { id: string }) {
+      return value.id
+    },
+  }),
+  // never reached by the walk; throws if it ever is
+  subtree: types.array(ExplodingChild),
+})
+
+const ConfigBearingContainer = types.model('ConfigBearingContainer', {
+  items: types.map(Item),
+  children: types.array(ConfigBearingChild),
+})
+
+test('filterSessionInPlace validates a config-bearing element by its config, not by walking its subtree', () => {
+  const container = ConfigBearingContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: [
+      // valid config; a child in its subtree would throw if walked
+      {
+        id: 'keep',
+        configuration: 'a',
+        subtree: [{ id: 'boom', target: 'x' }],
+      },
+    ],
+  })
+  unprotect(container)
+  runInAction(() => {
+    filterSessionInPlace(container, getType(container))
+  })
+  expect(container.children.map(c => c.id)).toEqual(['keep'])
+})
+
+test('filterSessionInPlace drops a config-bearing element whose config is dangling and reports it', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const container = ConfigBearingContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: [
+      { id: 'keep', configuration: 'a' },
+      { id: 'drop', configuration: 'missing' },
+    ],
+  })
+  unprotect(container)
+  const dropped = runInAction(() =>
+    filterSessionInPlace(container, getType(container)),
+  )
+  expect(container.children.map(c => c.id)).toEqual(['keep'])
+  expect(dropped).toEqual([{ type: undefined, configuration: 'missing' }])
+  errorSpy.mockRestore()
+})
+
+test('addRelativeUris stamps baseUri next to a uri key', () => {
+  const config: Record<string, unknown> = { uri: 'data.bam' }
+  addRelativeUris(config, new URL('https://example.com/config/'))
+  expect(config.baseUri).toBe('https://example.com/config/')
+})
+
+test('addRelativeUris recurses into nested objects and arrays', () => {
+  const config: Record<string, unknown> = {
+    adapter: { uri: 'data.bam' },
+    tracks: [{ uri: 'a.bam' }, { uri: 'b.bam' }],
+  }
+  addRelativeUris(config, new URL('https://example.com/'))
+  expect((config.adapter as Record<string, unknown>).baseUri).toBe(
+    'https://example.com/',
+  )
+  expect(
+    (config.tracks as Record<string, unknown>[]).map(t => t.baseUri),
+  ).toEqual(['https://example.com/', 'https://example.com/'])
+})
+
+// preserve-existing is the behavior that differed from the (now-deleted)
+// data-management copy, which overwrote unconditionally
+test('addRelativeUris preserves an existing baseUri', () => {
+  const config: Record<string, unknown> = {
+    uri: 'data.bam',
+    baseUri: 'https://other.com/',
+  }
+  addRelativeUris(config, new URL('https://example.com/config/'))
+  expect(config.baseUri).toBe('https://other.com/')
+})
+
+test('addRelativeUris tolerates null', () => {
+  expect(() => {
+    addRelativeUris(null, new URL('https://example.com/'))
+  }).not.toThrow()
+})
+
+test('analyzeWebPortability reports an all-remote session as portable', () => {
+  const snap = {
+    assemblies: [
+      {
+        name: 'hg38',
+        sequence: {
+          trackId: 'hg38-ref',
+          adapter: {
+            type: 'TwoBitAdapter',
+            twoBitLocation: {
+              locationType: 'UriLocation',
+              uri: 'https://example.com/hg38.2bit',
+            },
+          },
+        },
+      },
+    ],
+    tracks: [
+      {
+        trackId: 't1',
+        name: 'remote bam',
+        adapter: {
+          bamLocation: {
+            locationType: 'UriLocation',
+            uri: 'https://example.com/a.bam',
+          },
+        },
+      },
+    ],
+  }
+  const report = analyzeWebPortability(snap)
+  expect(report.portable).toBe(true)
+  expect(report.nonPortable).toEqual([])
+})
+
+test('analyzeWebPortability flags a desktop local path and names its track', () => {
+  const snap = {
+    tracks: [
+      {
+        trackId: 'local-bam',
+        name: 'My local alignments',
+        adapter: {
+          bamLocation: {
+            locationType: 'LocalPathLocation',
+            localPath: '/home/user/data/a.bam',
+          },
+          index: {
+            indexType: 'BAI',
+            location: {
+              locationType: 'LocalPathLocation',
+              localPath: '/home/user/data/a.bam.bai',
+            },
+          },
+        },
+      },
+    ],
+  }
+  const report = analyzeWebPortability(snap)
+  expect(report.portable).toBe(false)
+  expect(report.nonPortable).toEqual([
+    {
+      locationType: 'LocalPathLocation',
+      name: '/home/user/data/a.bam',
+      trackId: 'local-bam',
+      trackName: 'My local alignments',
+    },
+    {
+      locationType: 'LocalPathLocation',
+      name: '/home/user/data/a.bam.bai',
+      trackId: 'local-bam',
+      trackName: 'My local alignments',
+    },
+  ])
+})
+
+test('planWebExport reuses the hosted base, carrying only user-added tracks', () => {
+  const hubTrack = { trackId: 'hub-track', name: 'Hub track' }
+  const userTrack = { trackId: 'user-track', name: 'My track' }
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [hubTrack, userTrack],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: { name: 'session', views: [] },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [hubTrack] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  expect(plan.configUrl).toBe('https://jbrowse.org/ucsc/hg38/config.json')
+  expect(plan.session.sessionTracks).toEqual([userTrack])
+  expect(plan.session).not.toHaveProperty('sessionAssemblies')
+})
+
+test('planWebExport falls back to self-contained without a source config', () => {
+  const t1 = { trackId: 't1', name: 'remote' }
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [t1],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.strategy).toBe('selfContained')
+  expect(plan.configUrl).toBeUndefined()
+  expect(plan.session.sessionAssemblies).toEqual([{ name: 'mine' }])
+  expect(plan.session.sessionTracks).toEqual([t1])
+})
+
+test('planWebExport self-contained keeps prior session assemblies alongside config assemblies', () => {
+  const sessionAsm = { name: 'sessionAsm' }
+  const plan = planWebExport({
+    assemblies: [{ name: 'configAsm' }],
+    tracks: [],
+    defaultSession: { name: 'session', sessionAssemblies: [sessionAsm] },
+  })
+  expect(plan.strategy).toBe('selfContained')
+  expect(plan.session.sessionAssemblies).toEqual([
+    sessionAsm,
+    { name: 'configAsm' },
+  ])
+})
+
+test('planWebExport falls back to self-contained when an assembly is not in the base', () => {
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }, { name: 'myCustomAsm' }],
+      tracks: [],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: { name: 'session' },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [] },
+  )
+  expect(plan.strategy).toBe('selfContained')
+})
+
+test('planWebExport carries the portability report through', () => {
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [
+      {
+        trackId: 'local',
+        name: 'Local track',
+        adapter: {
+          bamLocation: {
+            locationType: 'LocalPathLocation',
+            localPath: '/data/a.bam',
+          },
+        },
+      } as { trackId: string },
+    ],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.report.portable).toBe(false)
+  expect(plan.report.nonPortable[0]?.trackId).toBe('local')
+  // the local track is reported, then dropped from the exported session
+  expect(plan.droppedTracks).toEqual(['Local track'])
+  expect(plan.session.sessionTracks).toEqual([])
+})
+
+test('planWebExport drops a local session track but keeps a remote one', () => {
+  const remote = { trackId: 'remote', name: 'Remote track' }
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [],
+    defaultSession: {
+      name: 'session',
+      sessionTracks: [
+        remote,
+        {
+          trackId: 'local',
+          name: 'Local track',
+          adapter: {
+            bamLocation: {
+              locationType: 'LocalPathLocation',
+              localPath: '/data/a.bam',
+            },
+          },
+        },
+      ],
+    },
+  })
+  expect(plan.session.sessionTracks).toEqual([remote])
+  expect(plan.droppedTracks).toEqual(['Local track'])
+})
+
+// An assembly's sequence config carries a trackId, so its local file surfaces
+// in the portability report tagged with that trackId — but it isn't a droppable
+// track. It must be reported as a blocking file (the session can't shed the
+// assembly), NOT as a dropped track, and the assembly still ships.
+test('planWebExport classifies a local assembly sequence as a blocking file, not a dropped track', () => {
+  const plan = planWebExport({
+    assemblies: [
+      {
+        name: 'myasm',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'myasm-ReferenceSequenceTrack',
+          adapter: {
+            type: 'IndexedFastaAdapter',
+            fastaLocation: {
+              locationType: 'LocalPathLocation',
+              localPath: '/home/me/genome.fa',
+            },
+            faiLocation: {
+              locationType: 'LocalPathLocation',
+              localPath: '/home/me/genome.fa.fai',
+            },
+          },
+        },
+      } as { name: string },
+    ],
+    tracks: [],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.strategy).toBe('selfContained')
+  // not misreported as a dropped track
+  expect(plan.droppedTracks).toEqual([])
+  // reported as blocking, with the local file names
+  expect(plan.blockingFiles).toEqual([
+    '/home/me/genome.fa',
+    '/home/me/genome.fa.fai',
+  ])
+  // the assembly still ships (dropping it would destroy the whole session)
+  expect(plan.session.sessionAssemblies).toHaveLength(1)
+})
+
+// A remote-sequence assembly alongside a local user track: the track is dropped,
+// the assembly ships, and nothing is reported as blocking.
+test('planWebExport keeps a remote assembly and drops only the local user track', () => {
+  const plan = planWebExport({
+    assemblies: [
+      {
+        name: 'hg38',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'hg38-ReferenceSequenceTrack',
+          adapter: {
+            type: 'TwoBitAdapter',
+            twoBitLocation: {
+              locationType: 'UriLocation',
+              uri: 'https://example.com/hg38.2bit',
+            },
+          },
+        },
+      } as { name: string },
+    ],
+    tracks: [
+      {
+        trackId: 'local',
+        name: 'Local track',
+        adapter: {
+          bamLocation: {
+            locationType: 'LocalPathLocation',
+            localPath: '/data/a.bam',
+          },
+        },
+      } as { trackId: string },
+    ],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.droppedTracks).toEqual(['Local track'])
+  expect(plan.blockingFiles).toEqual([])
+  expect(plan.session.sessionTracks).toEqual([])
+  expect(plan.session.sessionAssemblies).toHaveLength(1)
+})
+
+test('buildWebExportUrl puts an encoded- long link in the hash, keeping config', () => {
+  const url = buildWebExportUrl(
+    {
+      strategy: 'hostedConfigBase',
+      configUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      session: {},
+      report: { nonPortable: [], portable: true },
+      droppedTracks: [],
+      blockingFiles: [],
+    },
+    'encoded-ABC',
+  )
+  const parsed = new URL(url)
+  expect(parsed.origin + parsed.pathname).toBe(
+    'https://jbrowse.org/code/jb2/latest/',
+  )
+  // inline session lives in the hash (never sent to the server, avoids HTTP 414)
+  expect(parsed.search).toBe('')
+  const hashParams = new URLSearchParams(parsed.hash.slice(1))
+  expect(hashParams.get('config')).toBe(
+    'https://jbrowse.org/ucsc/hg38/config.json',
+  )
+  expect(hashParams.get('session')).toBe('encoded-ABC')
+})
+
+test('buildWebExportUrl puts a self-contained encoded- session in the hash', () => {
+  const url = buildWebExportUrl(
+    {
+      strategy: 'selfContained',
+      session: {},
+      report: { nonPortable: [], portable: true },
+      droppedTracks: [],
+      blockingFiles: [],
+    },
+    'encoded-XYZ',
+  )
+  const parsed = new URL(url)
+  expect(parsed.search).toBe('')
+  const hashParams = new URLSearchParams(parsed.hash.slice(1))
+  expect(hashParams.get('config')).toBe('none')
+  expect(hashParams.get('session')).toBe('encoded-XYZ')
+})
+
+test('buildWebExportUrl adds the password param for a short share link', () => {
+  const url = buildWebExportUrl(
+    {
+      strategy: 'selfContained',
+      session: {},
+      report: { nonPortable: [], portable: true },
+      droppedTracks: [],
+      blockingFiles: [],
+    },
+    'share-abc123',
+    { password: 'sekret' },
+  )
+  const parsed = new URL(url)
+  expect(parsed.searchParams.get('session')).toBe('share-abc123')
+  expect(parsed.searchParams.get('password')).toBe('sekret')
+})
+
+test('analyzeWebPortability flags blob and file-handle locations by name', () => {
+  const snap = {
+    tracks: [
+      {
+        trackId: 'blob-track',
+        name: 'Dropped file',
+        adapter: {
+          bamLocation: {
+            locationType: 'BlobLocation',
+            name: 'dropped.bam',
+            blobId: 'b123',
+          },
+        },
+      },
+      {
+        trackId: 'handle-track',
+        name: 'Picked file',
+        adapter: {
+          bamLocation: {
+            locationType: 'FileHandleLocation',
+            name: 'picked.bam',
+            handleId: 'fh123',
+          },
+        },
+      },
+    ],
+  }
+  const report = analyzeWebPortability(snap)
+  expect(report.nonPortable.map(l => [l.locationType, l.name])).toEqual([
+    ['BlobLocation', 'dropped.bam'],
+    ['FileHandleLocation', 'picked.bam'],
+  ])
 })

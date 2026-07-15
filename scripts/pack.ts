@@ -1,7 +1,7 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
-import spawn from 'cross-spawn'
+import { sync as spawnSync } from 'cross-spawn'
 
 const subDirs = [
   'cgv-vite',
@@ -12,6 +12,8 @@ const subDirs = [
 ]
 const root = path.resolve(import.meta.dirname, '..')
 const workspaceDirs = ['packages', 'products', 'plugins']
+const packedTarballsByPackageName: Record<string, string> = {}
+const dependenciesByPackageName: Record<string, Record<string, string>> = {}
 
 for (const dir of subDirs) {
   fs.mkdirSync(path.join(root, 'component_tests', dir, 'packed'), {
@@ -33,7 +35,7 @@ for (const dir of workspaceDirs) {
         // Use --config.ignore-scripts=false to ensure prepack hooks run,
         // even if user has ignore-scripts=true in their .npmrc (which is
         // useful to avoid postinstall scripts but would otherwise block prepack)
-        const { signal, status } = spawn.sync(
+        const { signal, status } = spawnSync(
           'pnpm',
           ['--config.ignore-scripts=false', 'pack'],
           {
@@ -44,7 +46,7 @@ for (const dir of workspaceDirs) {
         )
         if (signal || (status !== null && status > 0)) {
           console.error(`Failed to pack ${pkgJson.name}`)
-          process.exit(status || 1)
+          process.exit(status ?? 1)
         }
 
         // Verify esm folder exists for packages that should have it
@@ -68,6 +70,8 @@ for (const dir of workspaceDirs) {
         }
         if (tarball) {
           const newName = tarball.replace(/-\d+\.\d+\.\d+/, '')
+          packedTarballsByPackageName[pkgJson.name] = newName
+          dependenciesByPackageName[pkgJson.name] = pkgJson.dependencies ?? {}
           for (const sub of subDirs) {
             fs.copyFileSync(
               path.join(location, tarball),
@@ -78,5 +82,61 @@ for (const dir of workspaceDirs) {
         }
       }
     }
+  }
+}
+
+// A hand-curated "resolutions" list pinning packed tarballs can silently
+// drift (e.g. a new plugin dependency added but never pinned, falling
+// through to whatever version is on the npm registry - this broke cgv-vite's
+// build when @jbrowse/plugin-canvas was added without a pin). Walk each
+// app's @jbrowse/* dependency closure and pin exactly that set instead of
+// hand-maintaining it. Pinning every packed package unconditionally (not
+// just the closure) was tried and rejected: yarn still resolves the full
+// dependency tree of every "resolutions" entry even if nothing in the app
+// depends on it, so an unrelated package's transitive dependency with a
+// stricter "engines.node" (e.g. puppeteer, pulled in only by
+// @jbrowse/browser-test-utils) can fail an install on an older Node even
+// though it's never actually used.
+function closureOf(startDeps: Record<string, string>) {
+  const closure = new Set<string>()
+  const queue = Object.keys(startDeps).filter(
+    name => name in packedTarballsByPackageName,
+  )
+  while (queue.length > 0) {
+    const name = queue.pop()!
+    if (!closure.has(name)) {
+      closure.add(name)
+      queue.push(
+        ...Object.keys(dependenciesByPackageName[name] ?? {}).filter(
+          depName => depName in packedTarballsByPackageName,
+        ),
+      )
+    }
+  }
+  return closure
+}
+
+for (const dir of subDirs) {
+  const pkgJsonPath = path.join(root, 'component_tests', dir, 'package.json')
+  const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+  if (pkgJson.resolutions) {
+    const closure = closureOf(pkgJson.dependencies ?? {})
+    const preserved = Object.fromEntries(
+      Object.entries(pkgJson.resolutions as Record<string, string>).filter(
+        ([name]) => !(name in packedTarballsByPackageName),
+      ),
+    )
+    pkgJson.resolutions = {
+      ...preserved,
+      ...Object.fromEntries(
+        [...closure]
+          .sort()
+          .map(name => [
+            name,
+            `file:./packed/${packedTarballsByPackageName[name]}`,
+          ]),
+      ),
+    }
+    fs.writeFileSync(pkgJsonPath, `${JSON.stringify(pkgJson, null, 2)}\n`)
   }
 }

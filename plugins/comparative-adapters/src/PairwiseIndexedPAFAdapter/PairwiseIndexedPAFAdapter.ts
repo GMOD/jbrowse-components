@@ -1,30 +1,55 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { pafIdentity, parsePAFLine } from '../util.ts'
+import {
+  getAssemblyNamesFromConf,
+  makeIndexedSyntenyFeature,
+  parsePifLine,
+  resolveCoarseTier,
+} from '../util.ts'
 
+import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
 import type { FileLocation, Region } from '@jbrowse/core/util/types'
 
-interface PAFOptions extends BaseOptions {
-  config?: AnyConfigurationModel
+// PIF indexes each line by perspective: a 'q' prefix means indexed by query
+// coordinates (drawn when viewing the query), 't' means indexed by target
+// coordinates. Uppercase T/Q are the optional coarse no-CIGAR tier (see
+// resolveCoarseTier). pickPifPrefix chooses the perspective letter for the fine
+// tier and upper-cases it when the coarse tier should be served.
+export function pickPifPrefix({
+  flip,
+  bpPerPx,
+  threshold,
+  hasCoarseTier,
+  lodMode = 'auto',
+}: {
+  flip: boolean
+  bpPerPx: number | undefined
+  threshold: number
+  hasCoarseTier: boolean
+  lodMode?: BaseOptions['lodMode']
+}) {
+  const fineLetter = flip ? 'q' : 't'
+  return resolveCoarseTier({ bpPerPx, threshold, hasCoarseTier, lodMode })
+    ? fineLetter.toUpperCase()
+    : fineLetter
 }
 
-export default class PAFAdapter extends BaseFeatureDataAdapter {
+export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<PairwiseIndexedPAFAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames']
 
   protected pif: TabixIndexedFile
+  private refSeqNamesP?: Promise<string[]>
 
   public constructor(
-    config: AnyConfigurationModel,
+    config: PairwiseIndexedPAFAdapterConfig,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
@@ -36,8 +61,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
 
     this.pif = new TabixIndexedFile({
       filehandle: openLocation(pifGzLoc, pm),
-      csiFilehandle: type === 'CSI' ? openLocation(loc, pm) : undefined,
-      tbiFilehandle: type !== 'CSI' ? openLocation(loc, pm) : undefined,
+      ...openTabixIndexFilehandle(loc, type, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
   }
@@ -49,17 +73,24 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getAssemblyNames(): string[] {
-    const assemblyNames = this.getConf('assemblyNames') as string[]
-    return assemblyNames.length === 0
-      ? [
-          this.getConf('queryAssembly') as string,
-          this.getConf('targetAssembly') as string,
-        ]
-      : assemblyNames
+    return getAssemblyNamesFromConf(this)
   }
 
   public async hasDataForRefName() {
     return true
+  }
+
+  // The tabix contig list, read once. Every seqid is a refName prefixed with its
+  // tier letter (fine q/t, coarse Q/T); both getRefNames and the coarse-tier
+  // probe derive from this one fetch.
+  private async refSeqNames(opts?: BaseOptions) {
+    this.refSeqNamesP ??= this.pif
+      .getReferenceSequenceNames(opts)
+      .catch((e: unknown) => {
+        this.refSeqNamesP = undefined
+        throw e
+      })
+    return this.refSeqNamesP
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -69,7 +100,9 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     }
 
     const idx = this.getAssemblyNames().indexOf(r1)
-    const names = await this.pif.getReferenceSequenceNames(opts)
+    const names = await this.refSeqNames(opts)
+    // Only consider the fine tier here so we don't double-report chroms when
+    // the coarse T/Q tier is also present.
     if (idx === 0) {
       return names.filter(n => n.startsWith('q')).map(n => n.slice(1))
     } else if (idx === 1) {
@@ -79,7 +112,13 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     }
   }
 
-  getFeatures(query: Region, opts: PAFOptions = {}) {
+  private async hasCoarseTier(opts?: BaseOptions) {
+    return (await this.refSeqNames(opts)).some(
+      n => n.startsWith('T') || n.startsWith('Q'),
+    )
+  }
+
+  getFeatures(query: Region, opts: BaseOptions = {}) {
     const { statusCallback = () => {} } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
@@ -87,65 +126,42 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       // assemblyNames = [queryAssembly, targetAssembly]
       const assemblyNames = this.getAssemblyNames()
       const index = assemblyNames.indexOf(assemblyName)
+      if (index === -1) {
+        console.warn(`${assemblyName} not found in this adapter`)
+        observer.complete()
+        return
+      }
 
       // flip=true when viewing from query assembly perspective
       // flip=false when viewing from target assembly perspective
       const flip = index === 0
 
-      // PIF format indexes lines by perspective:
-      // - 'q' prefix lines are indexed by query coordinates
-      // - 't' prefix lines are indexed by target coordinates
-      const letter = flip ? 'q' : 't'
+      const letter = pickPifPrefix({
+        flip,
+        bpPerPx: opts.bpPerPx,
+        threshold: this.getConf('coarseBpPerPxThreshold'),
+        hasCoarseTier: await this.hasCoarseTier(opts),
+        lodMode: opts.lodMode,
+      })
 
       // The "other" assembly is the mate
-      const mateAssemblyName = assemblyNames[flip ? 1 : 0]
+      const mateAssemblyName = assemblyNames[flip ? 1 : 0]!
 
-      await updateStatus('Downloading features', statusCallback, () =>
+      const label = 'Downloading features'
+      await updateStatus(label, statusCallback, () =>
         this.pif.getLines(letter + query.refName, query.start, query.end, {
           lineCallback: (line, fileOffset) => {
-            const r = parsePAFLine(line)
-            const { extra, strand } = r
-            const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
-
-            // PIF format pre-orients each line from its perspective:
-            // - When querying 'q' lines: columns 2-3 have query coords (the "main" feature)
-            // - When querying 't' lines: columns 2-3 have target coords (the "main" feature)
-            // The first column has the indexed refName (with q/t prefix to strip)
-            // The 6th column (tname) has the mate's refName (no prefix)
-            //
-            // This means r.qstart/qend always represent the "main" feature coords
-            // for whichever perspective we're viewing from, and r.tstart/tend
-            // represent the mate coords
-            const start = r.qstart
-            const end = r.qend
-            const refName = r.qname.slice(1) // Strip 'q'/'t' prefix
-            const mateName = r.tname
-            const mateStart = r.tstart
-            const mateEnd = r.tend
-
-            // PIF format already has pre-computed CIGARs for each perspective
-            // (q-lines have D↔I swapped relative to t-lines)
-            const CIGAR = extra.cg
-
+            const parsed = parsePifLine(line)
             observer.next(
-              new SyntenyFeature({
-                uniqueId: fileOffset + assemblyName,
+              makeIndexedSyntenyFeature({
+                line: parsed,
+                fileOffset,
                 assemblyName,
-                start,
-                end,
-                type: 'match',
-                refName,
-                strand,
-                ...rest,
-                CIGAR,
-                syntenyId: fileOffset,
-                identity: pafIdentity(extra),
-                numMatches,
-                blockLen,
+                refName: parsed.indexedName.slice(1), // strip q/t prefix
                 mate: {
-                  start: mateStart,
-                  end: mateEnd,
-                  refName: mateName,
+                  start: parsed.mateStart,
+                  end: parsed.mateEnd,
+                  refName: parsed.mateName,
                   assemblyName: mateAssemblyName,
                 },
               }),

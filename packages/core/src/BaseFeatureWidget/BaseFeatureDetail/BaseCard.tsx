@@ -30,6 +30,7 @@ export default function BaseCard({
     <Accordion
       defaultExpanded={defaultExpanded}
       slotProps={{ transition: { unmountOnExit: true } }}
+      data-testid={`BaseCard-${title}`}
     >
       <AccordionSummary expandIcon={<ExpandMore className={classes.icon} />}>
         <Typography variant="button">{title}</Typography>

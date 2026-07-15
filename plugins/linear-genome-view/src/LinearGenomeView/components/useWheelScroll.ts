@@ -1,6 +1,15 @@
 import type React from 'react'
 import { useEffect, useRef } from 'react'
 
+import {
+  applyZoomAccum,
+  isActivelyZooming,
+  normalizeWheelDelta,
+  wheelFrameElapsedMs,
+  wheelZoomAccum,
+} from '@jbrowse/core/util'
+import { trackPointerPresence } from '@jbrowse/core/util/pointerPresence'
+
 interface GenomeViewModel {
   bpPerPx: number
   scrollZoom?: boolean
@@ -8,38 +17,12 @@ interface GenomeViewModel {
   horizontalScroll: (delta: number) => void
 }
 
-const SCROLL_ZOOM_FACTOR_DIVISOR = 500
-// max zoom delta per millisecond — equivalent to 0.2 per frame at 60fps
-const MAX_ZOOM_RATE_PER_MS = 0.2 / 16.67
-
-// NOTE: The getNormalizer function and zoom logic below are also implemented in
-// plugins/breakpoint-split-view/src/BreakpointSplitView/components/BreakpointSplitViewOverlay.tsx
-// If you modify the normalizer logic or zoom calculations here, you must also update
-// the corresponding code in BreakpointSplitViewOverlay.tsx to keep wheel zoom behavior
-// consistent across all genome views.
-
-export function getNormalizer(deltaY: number) {
-  const abs = Math.abs(deltaY)
-  if (abs < 6) {
-    return 25
-  }
-  if (abs > 150) {
-    return 500
-  }
-  if (abs > 30) {
-    return 150
-  }
-  return 75
-}
-
-export function normalizeWheel(delta: number, mode: number) {
-  if (mode === 1) {
-    return delta * 16
-  }
-  if (mode === 2) {
-    return delta * 100
-  }
-  return delta
+// accumulate horizontal scroll across a frame, restarting from zero when the
+// gesture reverses direction so a flick the opposite way isn't cancelled out by
+// leftover momentum
+function accumulateScroll(prev: number, deltaX: number) {
+  const reversed = prev !== 0 && Math.sign(deltaX) !== Math.sign(prev)
+  return (reversed ? 0 : prev) + deltaX
 }
 
 interface WheelState {
@@ -49,28 +32,30 @@ interface WheelState {
   rectLeft: number
   rafId: number | null
   lastRafTime: number | null
+  lastZoomTime: number | null
 }
 
 export function useWheelScroll(
   ref: React.RefObject<HTMLDivElement | null>,
   model: GenomeViewModel,
 ) {
-  const state = useRef<WheelState>({
+  const stateRef = useRef<WheelState>({
     scrollDelta: 0,
     zoomAccum: 0,
     lastClientX: 0,
     rectLeft: 0,
     rafId: null,
     lastRafTime: null,
+    lastZoomTime: null,
   })
 
   useEffect(() => {
     const curr = ref.current
     if (!curr) {
-      return () => {}
+      return
     }
 
-    const s = state.current
+    const s = stateRef.current
 
     // cache the element's left position via ResizeObserver to avoid calling
     // getBoundingClientRect() inside the wheel handler, which forces a
@@ -86,17 +71,29 @@ export function useWheelScroll(
       : undefined
     observer?.observe(curr)
 
+    // Once the pointer leaves the view, drop any in-flight accumulation and
+    // stop consuming the wheel events the browser keeps latching here (see
+    // trackPointerPresence) so a continued gesture pans/zooms nothing and
+    // chains to the page instead of staying stuck to this view.
+    const presence = trackPointerPresence(curr, () => {
+      s.scrollDelta = 0
+      s.zoomAccum = 0
+    })
+
     // the handler must be non-passive (passive: false) so we can
     // preventDefault to suppress native scroll during zoom. to compensate,
     // the handler only accumulates deltas — all heavy work (model.zoomTo,
     // model.horizontalScroll) is deferred to a single requestAnimationFrame
     function onWheel(event: WheelEvent) {
+      if (!presence.isOver) {
+        return
+      }
       if (event.shiftKey && model.scrollZoom) {
         return
       }
 
-      const deltaY = normalizeWheel(event.deltaY, event.deltaMode)
-      const deltaX = normalizeWheel(event.deltaX, event.deltaMode)
+      const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
+      const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
       const isCtrlZoom = event.ctrlKey || event.metaKey
       const isScrollZoom =
         model.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX)
@@ -109,10 +106,19 @@ export function useWheelScroll(
           )
         }
         event.preventDefault()
-        s.zoomAccum +=
-          deltaY /
-          (isCtrlZoom ? getNormalizer(deltaY) : SCROLL_ZOOM_FACTOR_DIVISOR)
+        s.zoomAccum += wheelZoomAccum(deltaY, isCtrlZoom)
         s.lastClientX = event.clientX
+        s.lastZoomTime = event.timeStamp
+        // drop any side-scroll accumulated earlier this frame — we're zooming,
+        // and a deltaX that arrived just before the zoom is part of the same
+        // noisy gesture
+        s.scrollDelta = 0
+      } else if (isActivelyZooming(event.timeStamp, s.lastZoomTime)) {
+        // ignore stray horizontal deltas that arrive mid-zoom — trackpads emit
+        // an unintentional side-scroll during a pinch/scroll-zoom gesture that
+        // would otherwise pan the view away from where the user is zooming.
+        // preventDefault anyway so the page itself doesn't scroll instead.
+        event.preventDefault()
       } else {
         // when scrollZoom is on, always preventDefault to stop the page
         // from scrolling on diagonal trackpad gestures that fall outside
@@ -123,33 +129,20 @@ export function useWheelScroll(
         if (model.scrollZoom || Math.abs(deltaX) > Math.abs(2 * deltaY)) {
           event.preventDefault()
         }
-        if (
-          s.scrollDelta !== 0 &&
-          Math.sign(deltaX) !== Math.sign(s.scrollDelta)
-        ) {
-          s.scrollDelta = 0
-        }
-        s.scrollDelta += deltaX
+        s.scrollDelta = accumulateScroll(s.scrollDelta, deltaX)
       }
 
       // coalesce all wheel events into one update per frame so that bursts
       // of events (e.g. fast trackpad scrolling) don't each trigger expensive
       // model updates
       s.rafId ??= requestAnimationFrame(now => {
-        const elapsed = Math.min(
-          100,
-          s.lastRafTime !== null ? now - s.lastRafTime : 16.67,
-        )
-
+        const elapsed = wheelFrameElapsedMs(now, s.lastRafTime)
         s.lastRafTime = now
-        const maxZoomDelta = MAX_ZOOM_RATE_PER_MS * elapsed
         if (s.zoomAccum !== 0) {
-          const d = Math.max(-maxZoomDelta, Math.min(maxZoomDelta, s.zoomAccum))
           model.zoomTo(
-            d > 0 ? model.bpPerPx * (1 + d) : model.bpPerPx / (1 - d),
+            applyZoomAccum(model.bpPerPx, s.zoomAccum, elapsed),
             s.lastClientX - s.rectLeft,
           )
-
           s.zoomAccum = 0
         }
         if (s.scrollDelta !== 0) {
@@ -174,6 +167,7 @@ export function useWheelScroll(
     return () => {
       curr.removeEventListener('wheel', onWheel)
       document.removeEventListener('visibilitychange', onVisibilityChange)
+      presence.dispose()
       observer?.disconnect()
       if (s.rafId !== null) {
         cancelAnimationFrame(s.rafId)

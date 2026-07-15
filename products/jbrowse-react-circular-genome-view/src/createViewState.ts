@@ -1,5 +1,4 @@
 import { onPatch } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
 
 import createModel from './createModel/index.ts'
 
@@ -17,7 +16,9 @@ type Tracks = ConfigSnapshot['tracks']
 type InternetAccounts = ConfigSnapshot['internetAccounts']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 
-interface ViewStateOptions {
+// engine-construction inputs shared by the imperative createViewState and the
+// declarative <CircularGenomeView> component
+export interface CreateViewStateBaseOptions {
   assembly: Assembly
   tracks: Tracks
   internetAccounts?: InternetAccounts
@@ -25,8 +26,13 @@ interface ViewStateOptions {
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
   makeWorkerInstance?: () => Worker
-  defaultSession?: SessionSnapshot
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
+}
+
+// the imperative API adds a full session snapshot; the managed
+// <CircularGenomeView> component expresses initial state through an `init` blob
+export interface ViewStateOptions extends CreateViewStateBaseOptions {
+  defaultSession?: SessionSnapshot
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -36,59 +42,42 @@ export default function createViewState(opts: ViewStateOptions) {
     internetAccounts,
     configuration,
     aggregateTextSearchAdapters,
-    plugins,
+    plugins = [],
     makeWorkerInstance,
     onChange,
   } = opts
-  const { model, pluginManager } = createModel(
-    plugins ?? [],
-    makeWorkerInstance,
+  const { model, pluginManager } = createModel(plugins, makeWorkerInstance)
+  const stateTree = model.create(
+    {
+      config: {
+        configuration,
+        assembly,
+        tracks,
+        internetAccounts,
+        aggregateTextSearchAdapters,
+      },
+      session: opts.defaultSession ?? {
+        name: `New session ${new Date().toLocaleString()}`,
+        view: {
+          id: 'circularView',
+          type: 'CircularView',
+        },
+      },
+    },
+    { pluginManager },
   )
-  let { defaultSession } = opts
-  defaultSession ??= {
-    name: 'this session',
-    view: {
-      id: 'circularView',
-      type: 'CircularView',
-    },
-  }
-  const stateSnapshot = {
-    config: {
-      configuration,
-      assembly,
-      tracks,
-      internetAccounts,
-      aggregateTextSearchAdapters,
-    },
-    session: defaultSession,
-  }
-  const stateTree = model.create(stateSnapshot, { pluginManager })
-  for (const account of stateTree.config.internetAccounts) {
-    const internetAccountType = pluginManager.getInternetAccountType(
-      account.type,
-    )
-    if (!internetAccountType) {
-      throw new Error(`unknown internet account type ${account.type}`)
-    }
-    stateTree.addInternetAccount({
-      type: account.type,
-      configuration: account,
-    })
-  }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
-  autorun(reaction => {
-    const { session, assemblyManager } = stateTree
-    if (!session.view.initialized) {
-      return
-    }
-    const regions = assembly && assemblyManager.get(assembly.name)?.regions
-    if (!regions) {
-      return
-    }
-    session.view.setDisplayedRegions(regions)
-    reaction.dispose()
-  })
+  const { view } = stateTree.session
+  if (!view.displayedRegions.length && !view.init) {
+    // a session that specifies neither regions to draw nor an `init` blob
+    // (e.g. the default whole-genome case) auto-displays the configured
+    // assembly. route it through the view's own `init` field — the same path
+    // as URL/session-spec launches — instead of a bespoke autorun here. the
+    // view's init autorun sets displayedRegions once the assembly loads, then
+    // clears init. a session that already has displayedRegions is left as-is
+    view.setInit({ assembly: assembly.name })
+  }
   if (onChange) {
     onPatch(stateTree, onChange)
   }

@@ -2,12 +2,11 @@ import '@testing-library/jest-dom'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { RefNameAutocomplete } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-// @ts-expect-error
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 const sessionSnapshot = {
   views: [
@@ -61,6 +60,29 @@ function setupWithChromosome() {
             seq: 'A'.repeat(100),
           },
         ],
+      },
+    },
+  })
+  const model = session.views[0]
+  return { model, session: getSession(model) }
+}
+
+function setupManyChromosomes(count: number) {
+  const session = createTestSession({ sessionSnapshot }) as any
+  session.addAssemblyConf({
+    name: 'volvox',
+    sequence: {
+      trackId: 'ref0',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: Array.from({ length: count }, (_, i) => ({
+          refName: `ctg${i}`,
+          uniqueId: `ctg${i}`,
+          start: 0,
+          end: 1,
+          seq: 'A',
+        })),
       },
     },
   })
@@ -443,6 +465,28 @@ describe('RefNameAutocomplete', () => {
       expect(onSelect).toHaveBeenCalled()
       expect(input.value).toBe('ctgA:1-100')
     }, patience)
+  })
+
+  it('bounds the browse list for a huge assembly instead of rendering every refname', async () => {
+    const user = userEvent.setup()
+    const { session } = setupManyChromosomes(500)
+
+    render(
+      <RefNameAutocomplete
+        session={session}
+        assemblyName="volvox"
+        fetchResults={async () => []}
+      />,
+    )
+
+    const input = screen.getByPlaceholderText('Search for location')
+    await user.click(input)
+
+    await waitFor(() => {
+      expect(screen.getByText('keep typing for more results')).toBeTruthy()
+    }, patience)
+    // 100 capped rows + the single disabled "keep typing" hint
+    expect(screen.getAllByRole('option')).toHaveLength(101)
   })
 
   it('shows chromosome names when value is a locstring (regression: chromosomes were filtered out)', async () => {

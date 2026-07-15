@@ -1,4 +1,5 @@
-import path from 'path'
+import { createHash } from 'node:crypto'
+import path from 'node:path'
 
 import { app } from 'electron'
 
@@ -49,6 +50,18 @@ export function getDeletedMarkerPath(paths: AppPaths, sessionName: string) {
 }
 
 export function getThumbnailPath(paths: AppPaths, sessionPath: string) {
+  // Hash rather than encodeURIComponent(sessionPath): a URI-encoded absolute
+  // path (C%3A%5CUsers%5C...) blows past Windows' 260-char MAX_PATH for deeply
+  // nested / OneDrive-redirected sessions, making the thumbnail write throw.
+  // The cache is internal, so the name only needs to be stable and collision
+  // free, not reversible.
+  const hash = createHash('sha256').update(sessionPath).digest('hex')
+  return path.join(paths.thumbnailDir, `${hash}.data`)
+}
+
+// Pre-sha256 builds named thumbnails encodeURIComponent(sessionPath); kept so
+// loadThumbnail can migrate them lazily instead of blanking cards on upgrade.
+export function getLegacyThumbnailPath(paths: AppPaths, sessionPath: string) {
   return path.join(
     paths.thumbnailDir,
     `${encodeURIComponent(sessionPath)}.data`,
@@ -62,3 +75,5 @@ export function getFaiPath(paths: AppPaths, name: string) {
 export function stringify(obj: unknown) {
   return JSON.stringify(obj, null, 2)
 }
+
+export const ENCODING = 'utf8'

@@ -1,23 +1,41 @@
-import { lazy } from 'react'
+import { lazy, useState } from 'react'
 
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import {
+  getEnv,
+  getPluginUpdate,
+  getSession,
+  installedVersionFromUrl,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import DeleteIcon from '@mui/icons-material/Delete'
 import LockIcon from '@mui/icons-material/Lock'
-import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
+import UpgradeIcon from '@mui/icons-material/Upgrade'
+import {
+  Button,
+  IconButton,
+  ListItem,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { isSessionPlugin } from './util.ts'
 
 import type { PluginStoreModel } from '../model.ts'
-import type { BasePlugin } from '@jbrowse/core/util/types'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { PluginUpdate } from '@jbrowse/core/util'
+import type { BasePlugin, JBrowsePlugin } from '@jbrowse/core/util/types'
 
 // lazies
 const DeletePluginDialog = lazy(() => import('./DeletePluginDialog.tsx'))
 
 const useStyles = makeStyles()(() => ({
   iconMargin: {
+    marginRight: '0.5rem',
+  },
+  name: {
     marginRight: '0.5rem',
   },
 }))
@@ -41,12 +59,13 @@ function LockedPluginIconButton() {
 const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
   plugin,
   model,
+  definition,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
+  definition: PluginDefinition
 }) {
   const { classes } = useStyles()
-  const { pluginManager } = getEnv(model)
   const session = getSession(model)
   const { jbrowse, adminMode } = session
   return (
@@ -60,13 +79,10 @@ const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
               plugin: plugin.name,
               onClose: (name?: string) => {
                 if (name) {
-                  const pluginMetadata =
-                    pluginManager.pluginMetadata[plugin.name]
-
                   if (adminMode) {
-                    jbrowse.removePlugin(pluginMetadata)
+                    jbrowse.removePlugin(definition)
                   } else if (isSessionWithSessionPlugins(session)) {
-                    session.removeSessionPlugin(pluginMetadata)
+                    session.removeSessionPlugin(definition)
                   }
                 }
                 onClose()
@@ -81,28 +97,113 @@ const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
   )
 })
 
-const InstalledPlugin = observer(function InstalledPlugin({
+const UpdatePluginButton = observer(function UpdatePluginButton({
   plugin,
   model,
+  update,
+  current,
+  fromVersion,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
+  update: PluginUpdate
+  current: PluginDefinition
+  fromVersion?: string
 }) {
   const session = getSession(model)
+  const { jbrowse, adminMode } = session
+  const [queued, setQueued] = useState(false)
+  return (
+    <Tooltip title={`Update from v${fromVersion} to v${update.pluginVersion}`}>
+      <Button
+        size="small"
+        variant="outlined"
+        startIcon={<UpgradeIcon />}
+        disabled={queued}
+        data-testid={`updatePlugin-${plugin.name}`}
+        onClick={() => {
+          // swap the version-pinned definition: remove the current url, add the
+          // newer one. Both actions flag pluginsUpdated, prompting a reload that
+          // loads the new build. Install under the store's name (the UMD global,
+          // e.g. "GWAS") — not the runtime class name (e.g. "GWASPlugin"), which
+          // would make the UMD bundle fail to load.
+          const next = { ...update.definition, name: update.name }
+          if (adminMode) {
+            jbrowse.removePlugin(current)
+            jbrowse.addPlugin(next)
+          } else if (isSessionWithSessionPlugins(session)) {
+            session.removeSessionPlugin(current)
+            session.addSessionPlugin(next)
+          } else {
+            session.notify('No way to update plugin')
+          }
+          setQueued(true)
+        }}
+      >
+        {queued ? 'Update queued' : `Update to v${update.pluginVersion}`}
+      </Button>
+    </Tooltip>
+  )
+})
+
+const InstalledPlugin = observer(function InstalledPlugin({
+  plugin,
+  model,
+  storeEntry,
+}: {
+  plugin: BasePlugin
+  model: PluginStoreModel
+  storeEntry?: JBrowsePlugin
+}) {
+  const { classes } = useStyles()
+  const { pluginManager } = getEnv(model)
+  const session = getSession(model)
   const { adminMode } = session
+  const updatable = adminMode || isSessionPlugin(plugin, session)
+
+  // the install url is recorded in the plugin metadata at load time; the matching
+  // runtime definition is the concrete, version-pinned thing we remove/replace
+  const installedUrl = pluginManager.pluginMetadata[plugin.name]?.url
+  const definition = pluginManager.runtimePluginDefinitions.find(
+    d => pluginUrl(d) === installedUrl,
+  )
+  // read the installed version from the store-minted, version-pinned url rather
+  // than the plugin's self-declared version, which is optional and often unset
+  const installedVersion = installedVersionFromUrl(
+    installedUrl,
+    storeEntry?.packageName,
+  )
+  const update = storeEntry
+    ? getPluginUpdate(storeEntry, session.version, installedVersion)
+    : undefined
 
   return (
     <ListItem key={plugin.name}>
-      {adminMode || isSessionPlugin(plugin, session) ? (
-        <UninstallPluginIconButton plugin={plugin} model={model} />
+      {updatable && definition ? (
+        <UninstallPluginIconButton
+          plugin={plugin}
+          model={model}
+          definition={definition}
+        />
       ) : (
         <LockedPluginIconButton />
       )}
-      <Typography>
-        {[plugin.name, plugin.version ? `(v${plugin.version})` : '']
-          .filter(f => !!f)
-          .join(' ')}
+      <Typography className={classes.name}>
+        {/* prefer the store's display name (the UMD global, e.g. "GWAS") over
+        the runtime Plugin class name (e.g. "GWASPlugin") so it matches the
+        available-plugins list */}
+        {storeEntry?.name ?? plugin.name}
+        {plugin.version ? ` (v${plugin.version})` : ''}
       </Typography>
+      {update && updatable && definition ? (
+        <UpdatePluginButton
+          plugin={plugin}
+          model={model}
+          update={update}
+          current={definition}
+          fromVersion={installedVersion}
+        />
+      ) : null}
     </ListItem>
   )
 })

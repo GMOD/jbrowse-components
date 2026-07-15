@@ -28,13 +28,7 @@ export function parseExtraCols(
 }
 
 export function parseStrand(strand?: string) {
-  if (strand === '+') {
-    return 1
-  } else if (strand === '-') {
-    return -1
-  } else {
-    return undefined
-  }
+  return strand === '+' ? 1 : strand === '-' ? -1 : undefined
 }
 
 export function bufferToLines(buffer: Uint8Array) {
@@ -42,5 +36,36 @@ export function bufferToLines(buffer: Uint8Array) {
     .decode(buffer)
     .split(/\n|\r\n|\r/)
     .map(f => f.trim())
-    .filter(f => !!f)
+    .filter(f => f !== '')
+}
+
+export function filterBedHeaderLines(lines: string[]) {
+  return lines.filter(
+    line =>
+      !line.startsWith('#') &&
+      !line.startsWith('browser') &&
+      !line.startsWith('track'),
+  )
+}
+
+// shared scaffolding for BED-like formats: strips header lines, derives the
+// extra-column names (from the last `#` header line, or field_N as a fallback),
+// and returns the data lines plus the resolved column list
+export function computeBedColumns(lines: string[], coreColumns: string[]) {
+  const rest = filterBedHeaderLines(lines)
+  const lastHeaderLine = lines.findLast(line => line.startsWith('#'))
+  const numExtraColumns = Math.max(
+    0,
+    (rest[0]?.split('\t').length ?? 0) - coreColumns.length,
+  )
+  const extraNames = parseExtraColNames(
+    lastHeaderLine,
+    coreColumns.length,
+    numExtraColumns,
+  )
+  return {
+    rest,
+    extraNames,
+    columns: [...coreColumns, ...extraNames].map(name => ({ name })),
+  }
 }

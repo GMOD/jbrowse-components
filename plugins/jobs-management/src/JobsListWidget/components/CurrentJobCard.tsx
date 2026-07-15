@@ -1,24 +1,27 @@
 import { useState } from 'react'
 
+import { StatusProgressBar } from '@jbrowse/core/ui'
 import {
   Box,
   Button,
   Card,
   CardActions,
   CardContent,
-  LinearProgress,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { NewJob } from '../model.ts'
+import type { JobModel } from '../jobModel.ts'
 
 const CurrentJobCard = observer(function CurrentJobCard({
   job,
 }: {
-  job: NewJob
+  job: JobModel
 }) {
   const [clicked, setClicked] = useState(false)
+  // 0% (not started) and 100% (finishing) show an indeterminate bar with no
+  // percent readout; anything between is a determinate bar plus the number.
+  const determinate = job.progressPct !== 0 && job.progressPct !== 100
   return (
     <Card variant="outlined">
       <CardContent>
@@ -34,41 +37,35 @@ const CurrentJobCard = observer(function CurrentJobCard({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            marginTop: 10,
-            marginBottom: 10,
-            marginLeft: 10,
+            marginTop: 1,
+            marginBottom: 1,
+            marginLeft: 1,
           }}
         >
-          {job.progressPct === 0 || job.progressPct === 100 ? (
-            <Box sx={{ width: '100%' }}>
-              <LinearProgress variant="indeterminate" />
+          <Box sx={{ width: '100%' }}>
+            <StatusProgressBar
+              fraction={determinate ? job.progressPct / 100 : undefined}
+            />
+          </Box>
+          {determinate ? (
+            <Box sx={{ m: 1 }}>
+              <Typography>{`${Math.round(job.progressPct)}%`}</Typography>
             </Box>
-          ) : (
-            <>
-              <Box sx={{ width: '100%' }}>
-                <LinearProgress variant="determinate" value={job.progressPct} />
-              </Box>
-              <Box sx={{ m: 1 }}>
-                <Typography>{`${Math.round(
-                  job.progressPct || 0,
-                )}%`}</Typography>
-              </Box>
-            </>
-          )}
+          ) : null}
         </Box>
       </CardContent>
       <CardActions>
         <Button
           variant="contained"
           color="inherit"
-          disabled={clicked || job.progressPct === 0}
+          disabled={clicked}
           onClick={() => {
-            job.setStatusMessage('Aborted via cancel button')
+            job.setStatusMessage('Cancelling…')
             job.cancelCallback()
             setClicked(true)
           }}
         >
-          Cancel
+          {clicked ? 'Cancelling…' : 'Cancel'}
         </Button>
       </CardActions>
     </Card>

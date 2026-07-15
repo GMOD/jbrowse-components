@@ -1,22 +1,19 @@
 ---
-id: from_config
 title: FromConfig adapters
 description:
   Inline data adapters for embedding small datasets directly in config
 guide_category: Callbacks and customization
 ---
 
-There are two useful adapter types that can be used for more advanced use cases,
-such as generating configuration for data returned by an API. These are the
-`FromConfigAdapter` and `FromConfigSequenceAdapter`. They can be used as the
-`adapter` value for any track type.
+`FromConfigAdapter` and `FromConfigSequenceAdapter` embed feature data directly
+in the config rather than reading a file, useful for small datasets or features
+returned by an API. Either can be the `adapter` value for any track type.
 
-#### FromConfigAdapter
+## FromConfigAdapter
 
-This adapter can be used to generate features directly from values stored in the
-configuration.
-
-Example `FromConfigAdapter`:
+Each entry in `features` is a feature object. `refName`, `start`, `end`, and a
+unique `uniqueId` are required. `type`, `name`, and any other attributes are
+optional. Use it with any feature track type, such as a `FeatureTrack`:
 
 ```json
 {
@@ -24,22 +21,28 @@ Example `FromConfigAdapter`:
   "features": [
     {
       "refName": "ctgA",
-      "uniqueId": "alias1",
-      "aliases": ["A", "contigA"]
+      "uniqueId": "feature1",
+      "start": 190,
+      "end": 250,
+      "type": "gene",
+      "name": "MyGene"
     },
     {
-      "refName": "ctgB",
-      "uniqueId": "alias2",
-      "aliases": ["B", "contigB"]
+      "refName": "ctgA",
+      "uniqueId": "feature2",
+      "start": 300,
+      "end": 400,
+      "type": "mRNA",
+      "name": "MyTranscript"
     }
   ]
 }
 ```
 
-#### FromConfigSequenceAdapter
+## FromConfigSequenceAdapter
 
-Similar behavior to `FromConfigAdapter`, with a specific emphasis on performance
-when the features are sequences.
+Like `FromConfigAdapter`, but optimized for sequence features (used by reference
+sequence tracks, see [configuring assemblies](/docs/config_guides/assemblies)).
 
 Example `FromConfigSequenceAdapter`:
 
@@ -64,3 +67,11 @@ Example `FromConfigSequenceAdapter`:
   ]
 }
 ```
+
+## See also
+
+- [Configuring tracks](/docs/config_guides/tracks), the track config these
+  adapters plug into
+- [FromConfigAdapter config docs](/docs/config/fromconfigadapter) and
+  [FromConfigSequenceAdapter config docs](/docs/config/fromconfigsequenceadapter),
+  the full slot reference

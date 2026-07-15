@@ -1,0 +1,95 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "volvox_snp",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_snp-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": {
+            "uri": "volvox_snp.fa",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "volvox_snp.fa.fai",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "volvox_snp_synteny",
+      "name": "volvox vs volvox_snp (cs mismatches)",
+      "assemblyNames": ["volvox_snp", "volvox"],
+      "metadata": {
+        "command": "minimap2 -c --cs -x asm5 volvox.fa volvox_snp.fa"
+      },
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "volvox_snp.paf",
+          "locationType": "UriLocation"
+        },
+        "assemblyNames": ["volvox_snp", "volvox"]
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "volvox cs mismatches",
+    "views": [
+      {
+        "id": "snp_lgv",
+        "type": "LinearGenomeView",
+        "bpPerPx": 1,
+        "offsetPx": 10000,
+        "displayedRegions": [
+          {
+            "refName": "ctgA",
+            "start": 0,
+            "end": 50001,
+            "assemblyName": "volvox"
+          }
+        ],
+        "tracks": [
+          {
+            "type": "SyntenyTrack",
+            "configuration": "volvox_snp_synteny",
+            "displays": [
+              {
+                "type": "LGVSyntenyDisplay",
+                "configuration": "volvox_snp_synteny-LGVSyntenyDisplay"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "snp_synteny",
+        "type": "LinearSyntenyView"
+      }
+    ]
+  },
+  "configuration": { "disableAnalytics": true }
+}

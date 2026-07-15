@@ -1,4 +1,3 @@
-import { namedColorToHex } from './color/cssColorsLevel4.ts'
 import {
   alpha as cbAlpha,
   blend,
@@ -14,6 +13,8 @@ import {
   toHSLA,
   toRGBA,
 } from './color-bits/index.ts'
+import { parseCssColorOr } from './colorBits.ts'
+import { clamp } from './numericUtils.ts'
 
 import type { Color } from './color-bits/index.ts'
 
@@ -44,10 +45,6 @@ export interface Colord {
   lighten(amount?: number): Colord
 }
 
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value))
-}
-
 function round(value: number, precision = 0) {
   const mult = 10 ** precision
   return Math.round(value * mult) / mult
@@ -67,23 +64,7 @@ function parseInput(
     const { h, s, l } = input
     return parse(`hsl(${h}, ${s}%, ${l}%)`)
   }
-
-  const str = input.trim().toLowerCase()
-
-  if (str === 'transparent') {
-    return newColor(0, 0, 0, 0)
-  }
-
-  const namedHex = namedColorToHex(str)
-  if (namedHex) {
-    return parse(namedHex)
-  }
-
-  try {
-    return parse(str)
-  } catch {
-    return newColor(0, 0, 0, 255)
-  }
+  return parseCssColorOr(input, newColor(0, 0, 0, 255))
 }
 
 function createColord(c: Color): Colord {

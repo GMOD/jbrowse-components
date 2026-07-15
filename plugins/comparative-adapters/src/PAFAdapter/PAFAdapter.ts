@@ -5,24 +5,13 @@ import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import SyntenyFeature from '../SyntenyFeature/index.ts'
-import {
-  flipCigar,
-  pafIdentity,
-  parsePAFLine,
-  swapIndelCigar,
-} from '../util.ts'
-import { getWeightedMeans } from './util.ts'
+import { getAssemblyNamesFromConf, parsePAFLine } from '../util.ts'
+import { getWeightedMeans, makeSyntenyFeature } from './util.ts'
 
 import type { PAFRecord } from './util.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-
-interface PAFOptions extends BaseOptions {
-  config?: AnyConfigurationModel
-}
 
 export default class PAFAdapter extends BaseFeatureDataAdapter {
   private setupP?: Promise<PAFRecord[]>
@@ -61,13 +50,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
   }
 
   getAssemblyNames() {
-    const assemblyNames = this.getConf('assemblyNames') as string[]
-    if (assemblyNames.length === 0) {
-      const query = this.getConf('queryAssembly') as string
-      const target = this.getConf('targetAssembly') as string
-      return [query, target]
-    }
-    return assemblyNames
+    return getAssemblyNamesFromConf(this)
   }
 
   async getRefNames(opts: BaseOptions = {}) {
@@ -85,7 +68,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
     return []
   }
 
-  getFeatures(query: Region, opts: PAFOptions = {}) {
+  getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
 
@@ -103,70 +86,53 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
       const flip = index === 0
       if (index === -1) {
         console.warn(`${assemblyName} not found in this adapter`)
-        observer.complete()
-      }
+      } else {
+        for (let i = 0; i < pafRecords.length; i++) {
+          const r = pafRecords[i]!
 
-      for (let i = 0; i < pafRecords.length; i++) {
-        const r = pafRecords[i]!
+          let start: number
+          let end: number
+          let refName: string
+          let mateName: string
+          let mateStart: number
+          let mateEnd: number
 
-        let start: number
-        let end: number
-        let refName: string
-        let mateName: string
-        let mateStart: number
-        let mateEnd: number
-
-        if (flip) {
-          start = r.qstart
-          end = r.qend
-          refName = r.qname
-          mateName = r.tname
-          mateStart = r.tstart
-          mateEnd = r.tend
-        } else {
-          start = r.tstart
-          end = r.tend
-          refName = r.tname
-          mateName = r.qname
-          mateStart = r.qstart
-          mateEnd = r.qend
-        }
-        const { extra, strand } = r
-        if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
-          const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
-
-          let CIGAR = cg
-          if (cg) {
-            if (flip && strand === -1) {
-              CIGAR = flipCigar(cg)
-            } else if (flip) {
-              CIGAR = swapIndelCigar(cg)
-            }
+          if (flip) {
+            start = r.qstart
+            end = r.qend
+            refName = r.qname
+            mateName = r.tname
+            mateStart = r.tstart
+            mateEnd = r.tend
+          } else {
+            start = r.tstart
+            end = r.tend
+            refName = r.tname
+            mateName = r.qname
+            mateStart = r.qstart
+            mateEnd = r.qend
           }
-
-          observer.next(
-            new SyntenyFeature({
-              uniqueId: i + assemblyName,
-              assemblyName,
-              start,
-              end,
-              type: 'match',
-              refName,
-              strand,
-              ...rest,
-              CIGAR,
-              syntenyId: i,
-              identity: pafIdentity(extra),
-              numMatches,
-              blockLen,
-              mate: {
-                start: mateStart,
-                end: mateEnd,
-                refName: mateName,
-                assemblyName: assemblyNames[+flip],
-              },
-            }),
-          )
+          const { extra, strand } = r
+          if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
+            observer.next(
+              makeSyntenyFeature({
+                syntenyId: i,
+                assemblyName,
+                refName,
+                start,
+                end,
+                strand,
+                extra,
+                flip,
+                mate: {
+                  start: mateStart,
+                  end: mateEnd,
+                  refName: mateName,
+                  assemblyName: assemblyNames[+flip]!,
+                },
+              }),
+            )
+          }
         }
       }
 

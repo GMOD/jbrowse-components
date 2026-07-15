@@ -1,4 +1,5 @@
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { getSyntenyTracks, resolveRowTrackAction } from '@jbrowse/synteny-core'
 import { toJS } from 'mobx'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
@@ -12,7 +13,6 @@ export async function doSubmit({
 }) {
   const session = getSession(model)
   const { assemblyManager } = session
-  const { importFormSyntenyTrackSelections } = model
 
   model.setViews(
     await Promise.all(
@@ -38,14 +38,24 @@ export async function doSubmit({
   if (!isSessionWithAddTracks(session)) {
     session.notify("Can't add tracks", 'warning')
   } else {
-    toJS(importFormSyntenyTrackSelections).map((f, idx) => {
-      if (f.type === 'userOpened') {
-        session.addTrackConf(f.value)
-        model.toggleTrack(f.value?.trackId, idx)
-      } else if (f.type === 'preConfigured') {
-        model.showTrack(f.value, idx)
+    for (let idx = 0; idx < selectedAssemblyNames.length - 1; idx++) {
+      const action = resolveRowTrackAction(
+        model.importFormSyntenyTrackSelections[idx],
+        getSyntenyTracks(session.tracks, [
+          selectedAssemblyNames[idx]!,
+          selectedAssemblyNames[idx + 1]!,
+        ]),
+      )
+      if (action?.kind === 'open') {
+        session.addTrackConf(toJS(action.conf))
+        model.toggleTrack(action.conf.trackId, idx)
+      } else if (action?.kind === 'show') {
+        model.showTrack(action.trackId, idx)
       }
-    })
+    }
   }
+  // no-op for few levels (per-level height is capped at the 100px default), so
+  // safe to always run; only shrinks bands once the stack gets tall
+  model.autoScaleLevelHeights()
   model.clearImportFormSyntenyTracks()
 }

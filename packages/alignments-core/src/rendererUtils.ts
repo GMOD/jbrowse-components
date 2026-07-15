@@ -4,6 +4,10 @@ import {
   INSTANCE_STRIDE_F32 as INDICATOR_STRIDE,
 } from './indicatorLayout.generated.ts'
 import {
+  FIELD_OFFSET_F32 as INTERBASE_FIELD,
+  INSTANCE_STRIDE_F32 as INTERBASE_STRIDE,
+} from './interbaseHistogramLayout.generated.ts'
+import {
   INDICATOR_TRIANGLE_H,
   drawIndicatorTriangle,
 } from './labelConstants.ts'
@@ -12,10 +16,6 @@ import {
   INSTANCE_STRIDE_F32 as MOD_COV_STRIDE,
 } from './modCoverageLayout.generated.ts'
 import {
-  FIELD_OFFSET_F32 as NONCOV_FIELD,
-  INSTANCE_STRIDE_F32 as NONCOV_STRIDE,
-} from './noncovHistogramLayout.generated.ts'
-import {
   FIELD_OFFSET_F32 as SNP_FIELD,
   INSTANCE_STRIDE_F32 as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
@@ -23,7 +23,7 @@ import {
 import type { CigarOpDrawColors } from './labelConstants.ts'
 import type { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-interface NoncovDrawColors {
+interface InterbaseDrawColors {
   insertion: string
   softclip: string
   hardclip: string
@@ -41,15 +41,21 @@ export function coverageLayout(coverageHeight: number) {
   return { effectiveH, bottom }
 }
 
+// colorType: 1=A 2=C 3=G 4=T 5=N. N and any unknown type fall back to the muted
+// grey. Mirrors snpColor() in snpCoverage.slang so Canvas2D and GPU match.
 export function snpColorForType(colorType: number, colors: CigarOpDrawColors) {
-  if (colorType === 1) {
-    return colors.baseA
-  } else if (colorType === 2) {
-    return colors.baseC
-  } else if (colorType === 3) {
-    return colors.baseG
+  switch (colorType) {
+    case 1:
+      return colors.baseA
+    case 2:
+      return colors.baseC
+    case 3:
+      return colors.baseG
+    case 4:
+      return colors.baseT
+    default:
+      return colors.baseN
   }
-  return colors.baseT
 }
 
 // Canvas2D coverage buffer defers normalization to draw time to support log
@@ -61,9 +67,52 @@ export const CANVAS2D_COVERAGE = {
   FIELD: { position: 0, bandBottom: 1, bandTop: 2 },
 } as const
 
+// A coverage buffer in the CANVAS2D_COVERAGE layout (raw depth, 3-float). The
+// nominal brand stops a GPU coverage buffer (relDepth, 2-float, from
+// `packCoverageBinsForGpu`) being handed to `drawCoverageBins`, which reads them
+// at incompatible offsets — a silent mis-render with no runtime error. The two
+// casts below are the only ones: the layout boundary is enforced here so every
+// consumer stays cast-free. The brand is erased at the worker transfer boundary.
+declare const canvas2dCoverageBrand: unique symbol
+export type Canvas2DCoverageBuffer = ArrayBuffer & {
+  readonly [canvas2dCoverageBrand]: true
+}
+
+// Empty placeholder (no bins) carrying the Canvas2D coverage brand. A fresh
+// buffer per call: the worker transfers these, which detaches them, so a shared
+// singleton would throw DataCloneError on the second RPC reply.
+export function emptyCanvas2DCoverageBuffer(): Canvas2DCoverageBuffer {
+  return new ArrayBuffer(0) as Canvas2DCoverageBuffer
+}
+
+// Pack per-position depths into the Canvas2D coverage buffer that
+// `drawCoverageBins` reads. Stores raw depth (not pre-normalized) so the
+// normalizer — linear or log — is chosen at draw time. Co-located with the
+// format constant + draw function so the layout has a single source of truth;
+// `bandBottom`/`bandTop` make each bin a band, with `bandBottom` 0 for a plain
+// depth bar. Distinct from the GPU `packCoverageBinsForGpu` (relDepth + 2-float
+// shader layout) — don't feed a GPU coverage buffer to `drawCoverageBins`.
+export function packCoverageBinsCanvas2D(
+  depths: Float32Array,
+  startPos: number,
+): Canvas2DCoverageBuffer {
+  const { STRIDE_F32, FIELD } = CANVAS2D_COVERAGE
+  const n = depths.length
+  const buf = new ArrayBuffer(n * STRIDE_F32 * 4)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  for (let i = 0; i < n; i++) {
+    const off = i * STRIDE_F32
+    u32[off + FIELD.position] = startPos + i
+    f32[off + FIELD.bandBottom] = 0
+    f32[off + FIELD.bandTop] = depths[i]!
+  }
+  return buf as Canvas2DCoverageBuffer
+}
+
 export function drawCoverageBins(
   ctx: Ctx,
-  buffer: ArrayBuffer,
+  buffer: Canvas2DCoverageBuffer,
   normalizeDepth: (depth: number) => number,
   coverageHeight: number,
   coverageColor: string,
@@ -142,7 +191,7 @@ export function drawSnpSegments(
 export function drawIndicators(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  colors: NoncovDrawColors,
+  colors: InterbaseDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
 ) {
@@ -161,37 +210,47 @@ export function drawIndicators(
   }
 }
 
-export function drawNoncovSegments(
+export function drawInterbaseSegments(
   ctx: Ctx,
   buffer: ArrayBuffer,
-  noncovMaxCount: number,
-  colors: NoncovDrawColors,
+  interbaseMaxCount: number,
+  colors: InterbaseDrawColors,
   bpToX: (bp: number) => number,
   viewWidth: number,
+  coverageHeight: number,
+  domainMax: number,
 ) {
-  if (noncovMaxCount === 0) {
+  if (interbaseMaxCount === 0 || domainMax === 0) {
     return
   }
 
-  const noncovHeight = Math.min(noncovMaxCount * 2, 20)
+  // Inverted clip/insertion bars scale to half the coverage drawing height
+  // (matches origin/main's `range: [0, height/2]`), so they grow with the
+  // track rather than being clipped at a fixed pixel cap. The worker bakes each
+  // bar as a fraction of the region's raw peak depth (interbaseMaxCount); divide
+  // it back out and multiply by the display's autoscaled domain so the bars
+  // track the same depth scale as the coverage bars (origin/main parity).
+  const interbaseHeight =
+    (coverageLayout(coverageHeight).effectiveH / 2) *
+    (interbaseMaxCount / domainMax)
   const u32 = new Uint32Array(buffer)
   const f32 = new Float32Array(buffer)
   const colorLut = [colors.insertion, colors.softclip, colors.hardclip]
-  const segmentCount = buffer.byteLength / (NONCOV_STRIDE * 4)
+  const segmentCount = buffer.byteLength / (INTERBASE_STRIDE * 4)
 
   for (let i = 0; i < segmentCount; i++) {
-    const off = i * NONCOV_STRIDE
-    const pos = u32[off + NONCOV_FIELD.position]!
+    const off = i * INTERBASE_STRIDE
+    const pos = u32[off + INTERBASE_FIELD.position]!
     const px = bpToX(pos)
     const px2 = bpToX(pos + 1)
     if (px > viewWidth || px2 < 0) {
       continue
     }
-    const yOffset = f32[off + NONCOV_FIELD.yOffset]!
-    const segH = f32[off + NONCOV_FIELD.segHeight]!
-    const colorType = f32[off + NONCOV_FIELD.colorType]!
-    const segTop = INDICATOR_TRIANGLE_H + yOffset * noncovHeight
-    const segHeight = segH * noncovHeight
+    const yOffset = f32[off + INTERBASE_FIELD.yOffset]!
+    const segH = f32[off + INTERBASE_FIELD.segHeight]!
+    const colorType = f32[off + INTERBASE_FIELD.colorType]!
+    const segTop = INDICATOR_TRIANGLE_H + yOffset * interbaseHeight
+    const segHeight = segH * interbaseHeight
     ctx.fillStyle = colorLut[colorType - 1] ?? colorLut[0]!
     ctx.fillRect(px - 0.5, segTop, 1, segHeight)
   }

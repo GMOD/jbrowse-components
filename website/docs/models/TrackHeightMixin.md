@@ -1,61 +1,77 @@
 ---
 id: trackheightmixin
 title: TrackHeightMixin
+sidebar_label: Mixin -> TrackHeightMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`linear-genome-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+The display height is stored directly on the `height` config slot (drag-resize
+writes it via `setSlot`), so it survives a track being unticked and reticked —
+the config node outlives the ephemeral display instance. Displays with an
+auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`) and
+override the `height` getter to fall back to their computed content height when
+unset.
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/TrackHeightMixin.tsx)
+## Members
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/TrackHeightMixin.md)
+| Member                               | Kind      | Defined by       | Description |
+| ------------------------------------ | --------- | ---------------- | ----------- |
+| [scrollTop](#volatile-scrolltop)     | Volatiles | TrackHeightMixin |             |
+| [height](#getter-height)             | Getters   | TrackHeightMixin |             |
+| [setScrollTop](#action-setscrolltop) | Actions   | TrackHeightMixin |             |
+| [setHeight](#action-setheight)       | Actions   | TrackHeightMixin |             |
+| [resizeHeight](#action-resizeheight) | Actions   | TrackHeightMixin |             |
 
-## Docs
+<details>
+<summary>TrackHeightMixin - Volatiles</summary>
 
-### TrackHeightMixin - Properties
+#### volatile: scrollTop
 
-#### property: heightPreConfig
-
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type scrollTop = number
 // code
-heightPreConfig: types.maybe(
-        types.refinement(
-          'displayHeight',
-          types.number,
-          n => n >= minDisplayHeight,
-        ),
-      )
+scrollTop: 0
 ```
 
-### TrackHeightMixin - Actions
+</details>
+
+<details>
+<summary>TrackHeightMixin - Getters</summary>
+
+#### getter: height
+
+```ts
+type height = number
+```
+
+</details>
+
+<details>
+<summary>TrackHeightMixin - Actions</summary>
 
 #### action: setScrollTop
 
-```js
-// type signature
-setScrollTop: (scrollTop: number) => void
+```ts
+type setScrollTop = (scrollTop: number) => void
 ```
 
 #### action: setHeight
 
-```js
-// type signature
-setHeight: (displayHeight: number) => number
+```ts
+type setHeight = (displayHeight: number) => number
 ```
 
 #### action: resizeHeight
 
-```js
-// type signature
-resizeHeight: (distance: number) => number
+```ts
+type resizeHeight = (distance: number) => number
 ```
+
+</details>

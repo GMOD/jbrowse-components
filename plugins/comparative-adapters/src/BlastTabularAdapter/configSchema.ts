@@ -1,9 +1,10 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BlastTabularAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const BlastTabularAdapter = ConfigurationSchema(
   'BlastTabularAdapter',
@@ -57,5 +58,7 @@ const BlastTabularAdapter = ConfigurationSchema(
   },
   { explicitlyTyped: true },
 )
+
+export type BlastTabularAdapterConfig = Instance<typeof BlastTabularAdapter>
 
 export default BlastTabularAdapter

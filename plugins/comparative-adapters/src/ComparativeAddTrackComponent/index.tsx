@@ -13,10 +13,14 @@ export default function ComparativeAddTrackComponentF(
   pluginManager: PluginManager,
 ) {
   pluginManager.addToExtensionPoint(
+    /** #extensionPoint Core-addTrackComponent | sync | Inject a custom React component into a track's rendering area */
     'Core-addTrackComponent',
-    // @ts-expect-error
-    (comp, { model }: { trackAdapterType: string }) => {
-      return pairwiseTypes.includes(model.trackAdapterType)
+    (
+      comp: unknown,
+      { model }: { model?: { trackAdapterType?: string } },
+    ): unknown => {
+      const t = model?.trackAdapterType
+      return t !== undefined && pairwiseTypes.includes(t)
         ? ComparativeAddTrackComponent
         : comp
     },

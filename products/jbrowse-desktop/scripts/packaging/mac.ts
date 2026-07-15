@@ -34,10 +34,15 @@ export async function buildMac({ noInstaller = false } = {}) {
   log('Creating DMG...')
   const applicationsLink = path.join(electronAppDir, 'Applications')
   fs.symlinkSync('/Applications', applicationsLink)
-  run(
-    `hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${electronAppDir}" -ov -format UDZO "${dmgPath}"`,
-  )
-  fs.unlinkSync(applicationsLink)
+  try {
+    run(
+      `hdiutil create -volname "${PRODUCT_NAME}" -srcfolder "${electronAppDir}" -ov -format UDZO "${dmgPath}"`,
+    )
+  } finally {
+    try {
+      fs.unlinkSync(applicationsLink)
+    } catch {}
+  }
 
   // Sign the DMG too
   if (process.env.APPLE_ID) {

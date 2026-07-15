@@ -1,16 +1,14 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  ReactRendering,
-  getContainingView,
-  makeAbortableReaction,
-} from '@jbrowse/core/util'
-import { getParentRenderProps } from '@jbrowse/core/util/tracks'
+import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
+import { isDataCurrent } from '@jbrowse/synteny-core'
 
-import ServerSideRenderedBlockContent from '../ServerSideRenderedBlockContent.tsx'
-import { renderBlockData, renderBlockEffect } from './renderDotplotBlock.ts'
+import { dotplotFetchKey } from './fetchKey.ts'
+import { renderSvg } from './renderSvg.tsx'
 
+import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
+import type { DotplotRpcData } from './types.ts'
 import type {
   DotplotViewModel,
   ExportSvgOptions,
@@ -18,6 +16,7 @@ import type {
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 import type { ThemeOptions } from '@mui/material'
 
 /**
@@ -44,172 +43,143 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            * color by setting that overrides the config setting
            */
           colorBy: types.optional(types.string, 'default'),
+          /**
+           * #property
+           */
+          alpha: types.optional(types.number, 1),
+          /**
+           * #property
+           */
+          minAlignmentLength: types.optional(types.number, 0),
         })
         .volatile(() => ({
           /**
            * #volatile
+           * RPC-computed feature data
            */
-          stopToken: undefined as StopToken | undefined,
+          rpcData: undefined as DotplotRpcData | undefined,
           /**
            * #volatile
+           * GPU-instance geometry produced from featPositions, self-
+           * describing via embedded bpPerPx. The containing DotplotView
+           * aggregates one of these per display and uploads them to the
+           * shared backend keyed by track index.
            */
-          warnings: [] as { message: string; effect: string }[],
-          /**
-           * #volatile
-           */
-          filled: false,
-          /**
-           * #volatile
-           */
-          data: undefined as any,
-          /**
-           * #volatile
-           */
-          reactElement: undefined as React.ReactElement | undefined,
-          /**
-           * #volatile
-           */
-          message: undefined as string | undefined,
-          /**
-           * #volatile
-           */
-          renderingComponent: undefined as any,
-          /**
-           * #volatile
-           */
-          ReactComponent2: ServerSideRenderedBlockContent,
-          /**
-           * #volatile
-           * alpha transparency value for synteny drawing (0-1)
-           */
-          alpha: 1,
-          /**
-           * #volatile
-           * minimum alignment length to display (in bp)
-           */
-          minAlignmentLength: 0,
+          geometry: undefined as DotplotGeometryData | undefined,
+          fetchStopToken: undefined as StopToken | undefined,
+          fetchWarnings: [] as { message: string; effect: string }[],
+          // Signature of the view inputs the current rpcData was fetched for
+          // (see fetchKey.ts). Compared against the live inputs in `dataCurrent`
+          // to detect data gone stale after a zoom or diagonalize reorder.
+          loadedFetchKey: undefined as string | undefined,
+          // Set once at view load by a refName-comparison check, independent of
+          // the per-render fetch. See afterAttach.
+          assembliesSwapped: false,
         })),
     )
     .views(self => ({
-      get shouldDisplay() {
-        const { vview, hview } = getContainingView(self) as DotplotViewModel
-        return (
-          vview.bpPerPx === self.data.bpPerPxY &&
-          hview.bpPerPx === self.data.bpPerPxX
-        )
+      get isLoading() {
+        return self.fetchStopToken !== undefined && !self.rpcData
+      },
+      get isRefetching() {
+        return self.fetchStopToken !== undefined && !!self.rpcData
       },
       /**
        * #getter
+       * The fetch-input signature (see fetchKey.ts) for the view's current
+       * state. Reactive: recomputes when either axis's zoom or displayed-region
+       * order/orientation changes.
        */
-      get rendererTypeName() {
-        return getConf(self, ['renderer', 'type'])
+      get currentFetchKey(): string {
+        const view = getContainingView(self) as DotplotViewModel
+        return dotplotFetchKey(view.lodMode, view.hview, view.vview)
       },
       /**
-       * #method
+       * #getter
+       * True when the rendered rpcData was fetched for the view's current
+       * inputs. Goes false the instant a zoom or diagonalize reorder changes the
+       * axes — before the debounced refetch begins and while stale geometry is
+       * still on screen — so the `settled` done-gate can't fire on it. The
+       * dotplot analog of LGV's `viewportWithinLoadedData`.
        */
-      renderProps() {
-        return {
-          ...getParentRenderProps(self),
-          rpcDriverName: self.rpcDriverName,
-          config: self.configuration.renderer,
-        }
+      get dataCurrent(): boolean {
+        return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
+      },
+      /**
+       * #getter
+       * Per-render fetch warnings, plus the load-time reversed-assembly hint.
+       */
+      get warnings() {
+        return self.assembliesSwapped
+          ? [
+              ...self.fetchWarnings,
+              {
+                message: 'The assemblies appear to be in the wrong order',
+                effect:
+                  'The chromosome names in the file match the opposite axis. Try switching the X and Y assemblies in the dotplot import form.',
+              },
+            ]
+          : self.fetchWarnings
+      },
+      /**
+       * #getter
+       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
+       * Dotplot is non-rectangular (square canvas), so it keeps a bespoke
+       * `SVGErrorBox` error UI instead of `SvgChrome`, but still exposes
+       * `svgReady` + awaits it via the shared `awaitSvgReady` — no inlined
+       * `when()`. No `regionTooLarge` state. Stale-safe via `dataCurrent`: an
+       * export fired right after a zoom/diagonalize reorder waits for geometry
+       * rebuilt from the fresh fetch instead of exporting the stale plot (the
+       * follow-up the synteny gate also now carries).
+       */
+      get svgReady() {
+        return (!!self.geometry && this.dataCurrent) || !!self.error
       },
     }))
     .views(self => ({
       /**
        * #method
        */
-      async renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
-        const props = renderBlockData(self)
-        if (!props) {
-          return null
-        }
-
-        const { rendererType, rpcManager, renderProps, renderingProps } = props
-        const rendering = await rendererType.renderInClient(rpcManager, {
-          ...renderProps,
-          renderingProps,
-          exportSVG: opts,
-          theme: opts.theme || renderProps.theme,
-        })
-        const { hview, vview } = getContainingView(self) as DotplotViewModel
-        const offX = -hview.offsetPx + rendering.offsetX
-        const offY = -vview.offsetPx + rendering.offsetY
-        return (
-          <g transform={`translate(${offX} ${-offY})`}>
-            <ReactRendering rendering={rendering} />
-          </g>
-        )
+      renderSvg(opts: ExportSvgOptions & { theme?: ThemeOptions }) {
+        return renderSvg(self, opts)
       },
     }))
     .actions(self => ({
-      afterAttach() {
-        makeAbortableReaction(
-          self,
-          () => renderBlockData(self),
-          blockData => renderBlockEffect(blockData),
-          {
-            name: `${self.type} ${self.id} rendering`,
-            delay: 500,
-            fireImmediately: true,
-          },
-          this.setLoading,
-          this.setRendered,
-          this.setError,
-        )
-      },
       /**
        * #action
        */
-      setLoading(stopToken?: StopToken) {
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.data = undefined
+      setLoading(stopToken: StopToken) {
+        self.fetchStopToken = stopToken
         self.error = undefined
-        self.renderingComponent = undefined
-        self.stopToken = stopToken
       },
       /**
        * #action
        */
-      setMessage(messageText: string) {
-        self.message = messageText
+      setRpcData(data: DotplotRpcData, fetchKey: string) {
+        self.rpcData = data
+        self.loadedFetchKey = fetchKey
+        self.fetchStopToken = undefined
+        self.statusMessage = undefined
+        self.statusProgress = undefined
       },
-      /**
-       * #action
-       */
-      setRendered(args?: {
-        data: any
-        reactElement: React.ReactElement
-        renderingComponent: React.Component
-      }) {
-        if (args === undefined) {
-          return
-        }
-        const { data, reactElement, renderingComponent } = args
-        self.warnings = data.warnings
-        self.filled = true
-        self.message = undefined
-        self.reactElement = reactElement
-        self.data = data
-        self.error = undefined
-        self.renderingComponent = renderingComponent
-        self.stopToken = undefined
+      setWarnings(w: { message: string; effect: string }[]) {
+        self.fetchWarnings = w
+      },
+      setAssembliesSwapped(arg: boolean) {
+        self.assembliesSwapped = arg
+      },
+      setGeometry(data: DotplotGeometryData | undefined) {
+        self.geometry = data
       },
       /**
        * #action
        */
       setError(error: unknown) {
         console.error(error)
-        // the rendering failed for some reason
-        self.filled = false
-        self.message = undefined
-        self.reactElement = undefined
-        self.data = undefined
         self.error = error
-        self.renderingComponent = undefined
-        self.stopToken = undefined
+        self.fetchStopToken = undefined
+        self.statusMessage = undefined
+        self.statusProgress = undefined
       },
       /**
        * #action
@@ -226,11 +196,24 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #action
        */
-      setColorBy(value: string) {
+      setColorBy(value: SyntenyColorBy) {
         self.colorBy = value
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        ;(async () => {
+          try {
+            const { doAfterAttach } = await import('./afterAttach.ts')
+            doAfterAttach(self)
+          } catch (e) {
+            console.error(e)
+            self.setError(e)
+          }
+        })()
       },
     }))
 }
 
-export type DotplotDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type DotplotDisplayModel = Instance<DotplotDisplayStateModel>
+export type DotplotDisplayModel = Instance<ReturnType<typeof stateModelFactory>>

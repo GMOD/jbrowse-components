@@ -8,6 +8,13 @@ import StarIcon from '../StarIcon.tsx'
 
 import type { LaunchCallback } from '../types.ts'
 
+// ISO datetime -> YYYY-MM-DD (first 10 chars); empty for missing or
+// unparsable values (guards against `toISOString()` throwing RangeError)
+function formatReleaseDate(date: string) {
+  const d = date ? new Date(date) : undefined
+  return d && !Number.isNaN(d.getTime()) ? d.toISOString().slice(0, 10) : ''
+}
+
 export interface Entry {
   suppressed: boolean
   jbrowseConfig: string
@@ -26,12 +33,14 @@ export interface Entry {
   seqReleaseDate: string
   taxonId: string
   submitterOrg: string
-  favorite: boolean
 }
 
 export interface GenomeColumn {
-  id: keyof Entry
+  id: string
   header: string
+  // plain-text accessor used for the default cell and for default sorting;
+  // columns with a custom `cell` (favorite, name) omit it
+  value?: (row: Entry) => string
   cell?: (row: Entry) => React.ReactNode
   sortFn?: (a: Entry, b: Entry) => number
 }
@@ -91,16 +100,20 @@ export function getColumnDefinitions({
           />
         ),
       },
-      { id: 'scientificName', header: 'Scientific Name' },
-      { id: 'organism', header: 'Organism' },
-      { id: 'description', header: 'Description' },
+      {
+        id: 'scientificName',
+        header: 'Scientific name',
+        value: r => r.scientificName,
+      },
+      { id: 'organism', header: 'Organism', value: r => r.organism },
+      { id: 'description', header: 'Description', value: r => r.description },
     ]
   } else {
     const baseColumns: GenomeColumn[] = [
       favoriteColumn,
       {
         id: 'commonName',
-        header: 'Common Name',
+        header: 'Common name',
         cell: row => (
           <GenomeNameCell
             displayName={row.commonName}
@@ -128,23 +141,32 @@ export function getColumnDefinitions({
           </GenomeNameCell>
         ),
       },
-      { id: 'assemblyStatus', header: 'Assembly Status' },
+      {
+        id: 'assemblyStatus',
+        header: 'Assembly status',
+        value: r => r.assemblyStatus,
+      },
       {
         id: 'seqReleaseDate',
-        header: 'Release Date',
-        cell: row =>
-          row.seqReleaseDate
-            ? new Date(row.seqReleaseDate).toISOString().split('T')[0]
-            : '',
+        header: 'Release date',
+        value: r => formatReleaseDate(r.seqReleaseDate),
       },
-      { id: 'scientificName', header: 'Scientific Name' },
-      { id: 'ncbiAssemblyName', header: 'NCBI Assembly Name' },
+      {
+        id: 'scientificName',
+        header: 'Scientific name',
+        value: r => r.scientificName,
+      },
+      {
+        id: 'ncbiAssemblyName',
+        header: 'NCBI assembly name',
+        value: r => r.ncbiAssemblyName,
+      },
     ]
 
     const extraColumns: GenomeColumn[] = [
-      { id: 'accession', header: 'Accession' },
-      { id: 'taxonId', header: 'Taxonomy ID' },
-      { id: 'submitterOrg', header: 'Submitter' },
+      { id: 'accession', header: 'Accession', value: r => r.accession },
+      { id: 'taxonId', header: 'Taxonomy ID', value: r => r.taxonId },
+      { id: 'submitterOrg', header: 'Submitter', value: r => r.submitterOrg },
     ]
 
     return showAllColumns ? [...baseColumns, ...extraColumns] : baseColumns

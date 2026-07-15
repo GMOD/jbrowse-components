@@ -1,24 +1,24 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
+import {
+  groupLinesByRef,
+  makeFeatureIntervalTreeMap,
+} from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseStringSyncJBrowse } from 'gff-nostream'
+import { parseRecords } from 'gff-nostream'
 
+import type { Gff3AdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { StatusCallback } from '@jbrowse/core/util/parseLineByLine'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
+import type { GffFeature } from 'gff-nostream'
 
-export default class Gff3Adapter extends BaseFeatureDataAdapter {
-  private gffFeatures?: Promise<{
-    header: string
-    intervalTreeMap: Record<
-      string,
-      (sc?: StatusCallback) => IntervalTree<Feature>
-    >
-  }>
+type Gff3Feature = GffFeature & { uniqueId: string }
+
+export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfig> {
+  private gffFeatures?: ReturnType<Gff3Adapter['loadDataP']>
 
   private async loadDataP(opts?: BaseOptions) {
     const buffer = await fetchAndMaybeUnzip(
@@ -31,35 +31,17 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
       opts?.statusCallback,
     )
 
-    const calculatedIntervalTreeMap: Record<string, IntervalTree<Feature>> = {}
-
-    const intervalTreeMap = Object.fromEntries(
-      Object.entries(linesByRef).map(([refName, refLines]) => {
-        let lines: string[] | null = refLines
-        return [
-          refName,
-          (sc?: StatusCallback) => {
-            if (!calculatedIntervalTreeMap[refName]) {
-              sc?.('Parsing GFF data')
-              const intervalTree = new IntervalTree<Feature>()
-              const features = parseStringSyncJBrowse(`${lines!.join('\n')}\n`)
-              lines = null
-              for (let i = 0; i < features.length; i++) {
-                const f = features[i]!
-                intervalTree.insert(
-                  [f.start, f.end],
-                  new SimpleFeature({
-                    data: f,
-                    id: `${this.id}-${refName}-${i}`,
-                  }),
-                )
-              }
-              calculatedIntervalTreeMap[refName] = intervalTree
-            }
-            return calculatedIntervalTreeMap[refName]
-          },
-        ]
-      }),
+    const intervalTreeMap = makeFeatureIntervalTreeMap<Gff3Feature>(
+      linesByRef,
+      // lines are already split and comment/FASTA-filtered by groupLinesByRef,
+      // so feed them straight to parseRecords rather than re-joining and
+      // re-splitting through parseStringSync
+      (lines, refName) =>
+        parseRecords(lines.map(line => ({ line }))).map(({ feature }, i) => ({
+          ...feature,
+          uniqueId: `${this.id}-${refName}-${i}`,
+        })),
+      'Parsing GFF data',
     )
 
     return { header: headerLines.join('\n'), intervalTreeMap }
@@ -91,7 +73,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
         const tree = intervalTreeMap[refName]
         if (tree) {
           for (const f of tree(opts.statusCallback).search([start, end])) {
-            observer.next(f)
+            observer.next(new SimpleFeature({ data: f, id: f.uniqueId }))
           }
         }
         observer.complete()

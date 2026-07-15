@@ -1,14 +1,36 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #config ChordVariantDisplay
+ *
+ * #example
+ * The circular-view display for a `VariantTrack` of structural variants;
+ * translocations are drawn as chords across the circle. `bezierRadiusRatio`
+ * controls how far the chords bow toward the center:
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'sv',
+ *   name: 'Structural variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/sv.vcf.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'ChordVariantDisplay',
+ *       displayId: 'sv-ChordVariantDisplay',
+ *       bezierRadiusRatio: 0.1,
+ *     },
+ *   ],
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
-function configSchemaF(pluginManager: PluginManager) {
+function configSchemaF(_pluginManager: PluginManager) {
   return ConfigurationSchema(
     'ChordVariantDisplay',
     {
@@ -25,14 +47,54 @@ function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        */
-      renderer: types.optional(
-        pluginManager.pluggableConfigSchemaType('renderer'),
-        { type: 'StructuralVariantChordRenderer' },
-      ),
+      strokeColor: {
+        type: 'color',
+        description: 'the line color of each arc',
+        defaultValue: 'rgba(255,133,0,0.32)',
+        contextVariable: ['feature'],
+      },
+      /**
+       * #slot
+       */
+      strokeColorSelected: {
+        type: 'color',
+        description: 'the line color of an arc that has been selected',
+        defaultValue: 'black',
+        contextVariable: ['feature'],
+      },
+      /**
+       * #slot
+       */
+      strokeColorHover: {
+        type: 'color',
+        description:
+          'the line color of an arc that is being hovered over with the mouse',
+        defaultValue: '#555',
+        contextVariable: ['feature'],
+      },
     },
     {
       explicitIdentifier: 'displayId',
       explicitlyTyped: true,
+      preProcessSnapshot: (snap: Record<string, unknown>) => {
+        const { renderer, ...rest } = snap
+        if (renderer && typeof renderer === 'object') {
+          const r = renderer as Record<string, unknown>
+          return {
+            ...rest,
+            ...(r.strokeColor !== undefined
+              ? { strokeColor: r.strokeColor }
+              : {}),
+            ...(r.strokeColorSelected !== undefined
+              ? { strokeColorSelected: r.strokeColorSelected }
+              : {}),
+            ...(r.strokeColorHover !== undefined
+              ? { strokeColorHover: r.strokeColorHover }
+              : {}),
+          }
+        }
+        return snap
+      },
     },
   )
 }

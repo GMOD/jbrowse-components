@@ -1,76 +1,193 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import sharedWiggleConfigFactory from '../shared/SharedWiggleConfigSchema.ts'
+import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
+import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
+import { MULTI_WIGGLE_RENDERING_TYPES } from '../util.ts'
 
-import type PluginManager from '@jbrowse/core/PluginManager'
+// Configs are sometimes hand-authored (or copy-pasted from a single-source
+// wiggle track) with a single-source rendering name even though this display
+// only draws multi-source renderings. Map each to its closest multi-source
+// equivalent rather than throwing an opaque MST union error.
+const SINGLE_TO_MULTI_RENDERING: Record<string, string> = {
+  xyplot: 'multixyplot',
+  density: 'multirowdensity',
+  line: 'multiline',
+  scatter: 'multiscatter',
+}
+
+// Rewrites a single-source `defaultRendering` to its multi-source equivalent on
+// a MultiLinearWiggleDisplay snapshot. Shared by this schema's
+// preProcessSnapshot and the Core-preProcessTrackConfig handler — the latter is
+// needed because preProcessSnapshot does NOT run while a types.union validates
+// the display snapshot (union dispatch checks the raw snapshot).
+export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
+  const { defaultRendering } = snap
+  const remapped =
+    typeof defaultRendering === 'string'
+      ? SINGLE_TO_MULTI_RENDERING[defaultRendering]
+      : undefined
+  return remapped ? { ...snap, defaultRendering: remapped } : snap
+}
+
+// Both legacy remaps a MultiLinearWiggleDisplay snapshot needs before the
+// types.union validates it: single-source rendering names and retired autoscale
+// values.
+export function remapMultiWiggleConfig(snap: Record<string, unknown>) {
+  return remapRetiredAutoscale(remapMultiWiggleRendering(snap))
+}
 
 /**
  * #config MultiLinearWiggleDisplay
- * extends
- * - [SharedWiggleDisplay](../sharedwiggledisplay)
+ * #category display
+ * configuration for the multi-wiggle display, which draws several quantitative
+ * subtracks (e.g. BigWig files) on a shared Y axis
+ *
+ * These are display-level slots: set them inside a track's `displays` to
+ * change its defaults (setting them at the track top level has no effect).
+ * The object shorthand `displayDefaults: { key: value }` is equivalent to the
+ * full `displays: [{ type: 'MultiLinearWiggleDisplay', displayId: '...', key: value }]`
+ * array form — see
+ * [configuring displays](/docs/config_guides/tracks#configuring-displays).
+ *
+ * Per-subtrack metadata (a `name`, `color`, and `group` for each subtrack) is
+ * preloaded on the *adapter*, not here — use `MultiWiggleAdapter`'s
+ * `subadapters` slot, where `group` drives the sidebar clustering tree and
+ * `color` sets each subtrack's line/fill.
+ *
+ * #example
+ * Minimal `MultiQuantitativeTrack` config. See the
+ * [multi-quantitative track guide](/docs/config_guides/multiquantitative_track)
+ * for all adapter and display options:
+ * ```js
+ * {
+ *   type: 'MultiQuantitativeTrack',
+ *   trackId: 'coverage_by_sample',
+ *   name: 'Coverage by sample',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'MultiWiggleAdapter',
+ *     bigWigs: [
+ *       'https://example.com/sample1.bw',
+ *       'https://example.com/sample2.bw',
+ *     ],
+ *   },
+ * }
+ * ```
+ *
+ * #example
+ * Taller track overlaying two samples in one shared plot (`multixyplot`)
+ * instead of the default stacked-per-subtrack layout:
+ * ```js
+ * {
+ *   type: 'MultiQuantitativeTrack',
+ *   trackId: 'coverage_by_sample',
+ *   name: 'Coverage by sample',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'MultiWiggleAdapter',
+ *     bigWigs: [
+ *       'https://example.com/sample1.bw',
+ *       'https://example.com/sample2.bw',
+ *     ],
+ *   },
+ *   displayDefaults: { height: 300, defaultRendering: 'multixyplot' },
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
-export default function WiggleConfigFactory(pluginManager: PluginManager) {
-  const MultiXYPlotRendererConfigSchema = pluginManager.getRendererType(
-    'MultiXYPlotRenderer',
-  )!.configSchema
-  const MultiDensityRendererConfigSchema = pluginManager.getRendererType(
-    'MultiDensityRenderer',
-  )!.configSchema
-  const MultiRowXYPlotRendererConfigSchema = pluginManager.getRendererType(
-    'MultiRowXYPlotRenderer',
-  )!.configSchema
-  const MultiLineRendererConfigSchema =
-    pluginManager.getRendererType('MultiLineRenderer')!.configSchema
-  const MultiRowLineRendererConfigSchema = pluginManager.getRendererType(
-    'MultiRowLineRenderer',
-  )!.configSchema
-
-  return ConfigurationSchema(
-    'MultiLinearWiggleDisplay',
-    {
-      /**
-       * #slot
-       */
-      defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', [
-          'multirowxy',
-          'xyplot',
-          'multirowdensity',
-          'multiline',
-          'multirowline',
-        ]),
-        defaultValue: 'multirowxy',
-      },
-
-      /**
-       * #slot
-       */
-      renderers: ConfigurationSchema('RenderersConfiguration', {
-        MultiXYPlotRenderer: MultiXYPlotRendererConfigSchema,
-        MultiDensityRenderer: MultiDensityRendererConfigSchema,
-        MultiRowXYPlotRenderer: MultiRowXYPlotRendererConfigSchema,
-        MultiLineRenderer: MultiLineRendererConfigSchema,
-        MultiRowLineRenderer: MultiRowLineRendererConfigSchema,
-      }),
-
-      /**
-       * #slot
-       */
-      height: {
-        type: 'number',
-        defaultValue: 200,
-      },
+export default ConfigurationSchema(
+  'MultiLinearWiggleDisplay',
+  {
+    ...wiggleConfigSchemaFields,
+    /**
+     * #slot
+     */
+    height: {
+      type: 'number',
+      defaultValue: 200,
+      description: 'Default height of the track',
     },
-    {
-      /**
-       * #baseConfiguration
-       */
-      baseConfiguration: sharedWiggleConfigFactory(),
-      explicitlyTyped: true,
+    /**
+     * #slot
+     */
+    summaryScoreMode: {
+      type: 'stringEnum',
+      model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+      description:
+        'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+      defaultValue: 'avg',
     },
-  )
-}
+    /**
+     * #slot
+     * Default rendering type. Multi-row modes (`multirowxy`, `multirowdensity`,
+     * `multirowline`, `multirowscatter`) draw one stacked plot per subtrack;
+     * overlapping modes (`multixyplot`, `multiline`, `multiscatter`) draw all
+     * subtracks together in one shared plot.
+     * #example
+     * ```json
+     * {
+     *   "type": "MultiLinearWiggleDisplay",
+     *   "defaultRendering": "multixyplot"
+     * }
+     * ```
+     */
+    defaultRendering: {
+      type: 'stringEnum',
+      model: types.enumeration('Rendering', [...MULTI_WIGGLE_RENDERING_TYPES]),
+      defaultValue: 'multirowxy',
+      description: 'Default rendering type',
+    },
+    /**
+     * #slot
+     */
+    minimalTicks: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Draw only the min/max Y-axis ticks',
+      advanced: true,
+    },
+    /**
+     * #slot
+     */
+    showTree: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'Show the subtrack clustering tree in the sidebar',
+    },
+    /**
+     * #slot
+     */
+    showBranchLength: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Draw the clustering tree with branch lengths',
+    },
+    /**
+     * #slot
+     */
+    showRowSeparators: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Draw separator lines between subtrack rows',
+    },
+    /**
+     * #slot
+     */
+    showLegend: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'Draw the source color key in overlay mode',
+    },
+  },
+  {
+    explicitlyTyped: true,
+    explicitIdentifier: 'displayId',
+    // NOTE: this only fires on a direct schema create. The display config is
+    // normally reached through a types.union (a track's `displays` array), and
+    // union dispatch validates the RAW snapshot without running
+    // preProcessSnapshot — so the same remap is also registered as a
+    // Core-preProcessTrackConfig handler (see ./preProcessTrackConfig.ts).
+    preProcessSnapshot: (snap: Record<string, unknown>) =>
+      remapMultiWiggleConfig(snap),
+  },
+)

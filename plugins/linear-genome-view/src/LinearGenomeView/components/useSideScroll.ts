@@ -7,33 +7,50 @@ export function useSideScroll(model: LinearGenomeViewModel) {
   const [mouseDragging, setMouseDragging] = useState(false)
   // refs are to store these variables to avoid repeated rerenders associated
   // with useState/setState
-  const scheduled = useRef(false)
+  const scheduledRef = useRef(false)
+  const rafRef = useRef<number | null>(null)
 
-  const prevX = useRef(0)
+  const prevXRef = useRef(0)
+  const currXRef = useRef(0)
 
   useEffect(() => {
-    let cleanup = () => {}
+    // apply the movement accumulated since the previous frame, then advance the
+    // baseline. shared by the rAF tick and the mouseup flush
+    function flushScroll() {
+      const distance = currXRef.current - prevXRef.current
+      if (distance) {
+        model.horizontalScroll(-distance)
+        prevXRef.current = currXRef.current
+      }
+    }
 
     function globalMouseMove(event: MouseEvent) {
       event.preventDefault()
-      const currX = event.clientX
-      const distance = currX - prevX.current
-      if (distance) {
-        // use rAF to make it so multiple event handlers aren't fired per-frame
-        // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
-        if (!scheduled.current) {
-          scheduled.current = true
-          window.requestAnimationFrame(() => {
-            model.horizontalScroll(-distance)
-            scheduled.current = false
-            prevX.current = event.clientX
-          })
-        }
+      currXRef.current = event.clientX
+      const distance = currXRef.current - prevXRef.current
+      // use rAF to make it so multiple event handlers aren't fired per-frame
+      // see https://calendar.perfplanet.com/2013/the-runtime-performance-checklist/
+      if (distance && !scheduledRef.current) {
+        scheduledRef.current = true
+        rafRef.current = window.requestAnimationFrame(() => {
+          rafRef.current = null
+          scheduledRef.current = false
+          flushScroll()
+        })
       }
     }
 
     function globalMouseUp() {
-      prevX.current = 0
+      // flush any movement still queued for the next frame before ending the
+      // drag; otherwise a quick flick (mousedown/move/up within one frame) or
+      // the cleanup below would cancel it and drop the scroll
+      if (rafRef.current !== null) {
+        window.cancelAnimationFrame(rafRef.current)
+        rafRef.current = null
+        scheduledRef.current = false
+        flushScroll()
+      }
+      prevXRef.current = 0
       if (mouseDragging) {
         setMouseDragging(false)
       }
@@ -42,27 +59,41 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     if (mouseDragging) {
       window.addEventListener('mousemove', globalMouseMove, true)
       window.addEventListener('mouseup', globalMouseUp, true)
-      cleanup = () => {
+      return () => {
         window.removeEventListener('mousemove', globalMouseMove, true)
         window.removeEventListener('mouseup', globalMouseUp, true)
+        // drop a frame queued mid-drag so it can't fire a stray scroll after
+        // unmount (matches useWheelScroll's cleanup)
+        if (rafRef.current !== null) {
+          window.cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
+        scheduledRef.current = false
       }
     }
-    return cleanup
+    return undefined
   }, [model, mouseDragging])
 
   function mouseDown(event: React.MouseEvent) {
     if (event.shiftKey) {
       return
     }
-    // check if clicking a draggable element or a resize handle
+    // skip the click-drag pan when pressing an interactive control: a
+    // draggable element, a resize handle, or a button (e.g. the menu button on
+    // a highlight/bookmark chip, whose actual target is the icon inside it)
     const target = event.target as HTMLElement
-    if (target.draggable || target.dataset.resizer) {
+    if (
+      target.draggable ||
+      target.dataset.resizer ||
+      target.closest('button')
+    ) {
       return
     }
 
     // otherwise do click and drag scroll
     if (event.button === 0) {
-      prevX.current = event.clientX
+      prevXRef.current = event.clientX
+      currXRef.current = event.clientX
       setMouseDragging(true)
     }
   }

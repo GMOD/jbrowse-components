@@ -1,78 +1,67 @@
 ---
 id: baseinternetaccount
 title: BaseInternetAccount
+sidebar_label: Internet Account -> BaseInternetAccount
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseInternetAccountConfig.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseInternetAccountConfig.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BaseInternetAccount.md)
-
-## Docs
+## Overview
 
 the "base" internet account type
 
 ### BaseInternetAccount - Identifier
 
-#### slot: explicitIdentifier
+Every BaseInternetAccount has a unique `internetAccountId`, a required top-level
+field that identifies it (not one of the config slots below).
 
-### BaseInternetAccount - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                             | Type          | Description                                                    |
+| -------------------------------- | ------------- | -------------------------------------------------------------- |
+| [name](#slot-name)               | `string`      | descriptive name of the internet account                       |
+| [description](#slot-description) | `string`      | a description of the internet account                          |
+| [authHeader](#slot-authheader)   | `string`      | request header for credentials                                 |
+| [tokenType](#slot-tokentype)     | `string`      | a custom name for a token to include in the header             |
+| [domains](#slot-domains)         | `stringArray` | array of valid domains the url can contain to use this account |
+
+<details>
+<summary>BaseInternetAccount - Slots</summary>
 
 #### slot: name
 
-```js
-name: {
-      description: 'descriptive name of the internet account',
-      type: 'string',
-      defaultValue: '',
-    }
-```
+descriptive name of the internet account
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: description
 
-```js
-description: {
-      description: 'a description of the internet account',
-      type: 'string',
-      defaultValue: '',
-    }
-```
+a description of the internet account
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: authHeader
 
-```js
-authHeader: {
-      description: 'request header for credentials',
-      type: 'string',
-      defaultValue: 'Authorization',
-    }
-```
+request header for credentials
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'Authorization'`
 
 #### slot: tokenType
 
-```js
-tokenType: {
-      description: 'a custom name for a token to include in the header',
-      type: 'string',
-      defaultValue: '',
-    }
-```
+a custom name for a token to include in the header
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: domains
 
-```js
-domains: {
-      description:
-        'array of valid domains the url can contain to use this account',
-      type: 'stringArray',
-      defaultValue: [],
-    }
-```
+array of valid domains the url can contain to use this account
+
+**Type:** `stringArray` · **Default:** `[]`
+
+</details>

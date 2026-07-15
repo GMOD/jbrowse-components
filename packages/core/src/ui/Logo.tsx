@@ -4,32 +4,32 @@ interface LogoProps {
   variant?: LogoVariant
 }
 
-function getColors(variant?: LogoVariant) {
-  if (variant === 'black') {
-    return {
-      midnight: '#808080',
-      forrest: '#666666',
-      grape: '#4d4d4d',
-      mandarin: '#333333',
-      gray: '#1a1a1a',
-    }
-  }
-  if (variant === 'white') {
-    return {
-      midnight: '#ffffff',
-      forrest: '#e6e6e6',
-      grape: '#cccccc',
-      mandarin: '#b3b3b3',
-      gray: '#999999',
-    }
-  }
-  return {
+const colorSets: Record<LogoVariant, Record<string, string>> = {
+  black: {
+    midnight: '#808080',
+    forest: '#666666',
+    grape: '#4d4d4d',
+    mandarin: '#333333',
+    gray: '#1a1a1a',
+  },
+  white: {
+    midnight: '#ffffff',
+    forest: '#e6e6e6',
+    grape: '#cccccc',
+    mandarin: '#b3b3b3',
+    gray: '#999999',
+  },
+  color: {
     midnight: '#0d233f',
-    forrest: '#135560',
+    forest: '#135560',
     grape: '#721e63',
     mandarin: '#ffb11d',
     gray: '#dadada',
-  }
+  },
+}
+
+function getColors(variant: LogoVariant = 'color') {
+  return colorSets[variant]
 }
 
 export function Logomark({ variant }: LogoProps) {
@@ -58,7 +58,7 @@ function Icon({ variant }: LogoProps) {
         d="M120.5,57.5c.168,0,.333.012.5.013V40.506c-.167,0-.333-.006-.5-.006a98.325,98.325,0,0,0-77.4,37.565q-2.664,3.378-5.023,6.994l14.206,9.327Q54.043,91.709,56,89.179A81.363,81.363,0,0,1,120.5,57.5Z"
       />
       <path
-        style={{ fill: colors.forrest }}
+        style={{ fill: colors.forest }}
         d="M148.668,86.223c.308.133.6.283.908.42l6.746-15.618c-.153-.067-.3-.143-.454-.21a81.36,81.36,0,0,0-71.777,3.5q-2.8,1.544-5.469,3.309l9.249,14.054A63.93,63.93,0,0,1,148.668,86.223Z"
       />
       <path

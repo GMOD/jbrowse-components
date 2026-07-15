@@ -4,6 +4,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+/**
+ * #stateModel PluginStoreWidget
+ * Widget backing the plugin store: holds the text filter applied to the
+ * installable plugin list and the view it was opened from.
+ */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .model('PluginStoreModel', {
@@ -27,12 +32,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       ),
     })
     .actions(self => ({
-      /**
-       * #action
-       */
-      clearFilterText() {
-        self.filterText = ''
-      },
       /**
        * #action
        */

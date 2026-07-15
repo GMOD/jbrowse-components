@@ -3,12 +3,12 @@ import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/
 import { types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './configSchema.ts'
+import { lazyConnect } from '../lazyConnect.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 /**
  * #stateModel UCSCTrackHubConnection
- * extends BaseConnectionModel
  */
 export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
   return types
@@ -30,11 +30,8 @@ export default function UCSCTrackHubConnection(pluginManager: PluginManager) {
       /**
        * #action
        */
-      async connect() {
-        const { doConnect } = await import('./doConnect.ts')
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        doConnect(self)
+      connect() {
+        return lazyConnect(self, () => import('./doConnect.ts'))
       },
     }))
 }

@@ -1,23 +1,39 @@
-import path from 'path'
-import { pathToFileURL } from 'url'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
-import electron, { BrowserWindow, Menu, app, shell } from 'electron'
+import { BrowserWindow, Menu, app, shell } from 'electron'
 
+import { checkForUpdatesManually } from './autoUpdater.ts'
+import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
 import type { AppUpdater } from 'electron-updater'
 
-const DEFAULT_WINDOW_SIZE = {
-  width: 1400,
-  height: 800,
-}
-
+const DEFAULT_WINDOW_WIDTH = 1400
+const DEFAULT_WINDOW_HEIGHT = 800
 const DEFAULT_DEV_SERVER_URL = 'http://localhost:3000'
 
-function getAppUrl(devServerUrl: URL): URL {
-  return app.isPackaged
+export interface AuthWindowParams {
+  internetAccountId: string
+  data: { redirect_uri: string }
+  url: string
+}
+
+export function buildAppUrl(
+  devServerUrl: string | undefined,
+  sessionPath?: string,
+  renderer?: string,
+) {
+  const url = app.isPackaged
     ? pathToFileURL(path.join(app.getAppPath(), 'index.html'))
-    : devServerUrl
+    : new URL(devServerUrl ?? DEFAULT_DEV_SERVER_URL)
+  if (sessionPath) {
+    url.searchParams.set('config', sessionPath)
+  }
+  if (renderer) {
+    url.searchParams.set('renderer', renderer)
+  }
+  return url
 }
 
 function createMenu(autoUpdater: AppUpdater) {
@@ -33,11 +49,15 @@ function createMenu(autoUpdater: AppUpdater) {
       submenu: [
         {
           label: 'Visit jbrowse.org',
-          click: () => electron.shell.openExternal('https://jbrowse.org'),
+          click: () => {
+            shell.openExternal('https://jbrowse.org').catch(logError)
+          },
         },
         {
           label: 'Check for updates...',
-          click: () => autoUpdater.checkForUpdates(),
+          click: () => {
+            checkForUpdatesManually(autoUpdater)
+          },
         },
       ],
     },
@@ -46,11 +66,13 @@ function createMenu(autoUpdater: AppUpdater) {
 
 export async function createMainWindow(
   autoUpdater: AppUpdater,
-  devServerUrl?: string,
+  devServerUrl: string | undefined,
+  initialSessionPath: string | undefined,
+  renderer: string | undefined,
 ): Promise<BrowserWindow> {
   const mainWindowState = windowStateKeeper({
-    defaultWidth: DEFAULT_WINDOW_SIZE.width,
-    defaultHeight: DEFAULT_WINDOW_SIZE.height,
+    defaultWidth: DEFAULT_WINDOW_WIDTH,
+    defaultHeight: DEFAULT_WINDOW_HEIGHT,
   })
 
   const { x, y, width, height } = mainWindowState
@@ -74,27 +96,16 @@ export async function createMainWindow(
   // Skip auto-update check in CI environments to avoid blocking dialogs
   if (!process.env.CI) {
     mainWindow.once('ready-to-show', () => {
-      autoUpdater.checkForUpdatesAndNotify().catch((e: unknown) => {
-        console.error(e)
-      })
+      autoUpdater.checkForUpdatesAndNotify().catch(logError)
     })
   }
 
-  const serverUrl = new URL(devServerUrl || DEFAULT_DEV_SERVER_URL)
-  const appUrl = getAppUrl(serverUrl)
-
-  // Handle opening .jbrowse files from command line
-  const lastArg = process.argv.at(-1)
-  if (lastArg?.endsWith('.jbrowse')) {
-    appUrl.searchParams.append('config', lastArg)
-  }
-
-  await mainWindow.loadURL(appUrl.href)
+  await mainWindow.loadURL(
+    buildAppUrl(devServerUrl, initialSessionPath, renderer).href,
+  )
 
   mainWindow.webContents.setWindowOpenHandler(edata => {
-    shell.openExternal(edata.url).catch((e: unknown) => {
-      console.error(e)
-    })
+    shell.openExternal(edata.url).catch(logError)
     return { action: 'deny' }
   })
 
@@ -107,11 +118,63 @@ export async function createMainWindow(
   return mainWindow
 }
 
-export function createAuthWindow(params: {
-  internetAccountId: string
-  data: { redirect_uri: string }
-  url: string
-}) {
+/**
+ * Open genome.ucsc.edu (or any BLAT server) in a window so the user can solve
+ * the Cloudflare Turnstile CAPTCHA that now fronts hgBlat. This window shares
+ * the default session cookie jar with the app, so once solved the cf_clearance
+ * cookie is available to subsequent main-process BLAT requests. Resolves true
+ * when the clearance cookie appears, false if the user closes the window first.
+ */
+export function createChallengeWindow(url: string): Promise<boolean> {
+  const win = new BrowserWindow({
+    width: 900,
+    height: 700,
+    title: 'Solve CAPTCHA to enable BLAT',
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  })
+
+  win.loadURL(url).catch(logError)
+
+  return new Promise(resolve => {
+    let settled = false
+    const finish = (ok: boolean) => {
+      if (!settled) {
+        settled = true
+        resolve(ok)
+        if (!win.isDestroyed()) {
+          win.close()
+        }
+      }
+    }
+    // scope the cookie lookup to the challenge host: cf_clearance is
+    // domain-bound, and an unfiltered lookup would match a cf_clearance left by
+    // any other Cloudflare site and finish(true) before the user solves this one
+    const timer = setInterval(() => {
+      win.webContents.session.cookies
+        .get({ url, name: 'cf_clearance' })
+        .then(cookies => {
+          if (cookies.length) {
+            finish(true)
+          }
+        })
+        .catch(logError)
+    }, 1000)
+    win.on('closed', () => {
+      clearInterval(timer)
+      if (!settled) {
+        settled = true
+        resolve(false)
+      }
+    })
+  })
+}
+
+export function createAuthWindow(
+  params: AuthWindowParams,
+): Promise<string | undefined> {
   const win = new BrowserWindow({
     width: 1000,
     height: 600,
@@ -123,22 +186,18 @@ export function createAuthWindow(params: {
 
   win.title = `JBrowseAuthWindow-${params.internetAccountId}`
 
-  win.loadURL(params.url).catch((e: unknown) => {
-    console.error(e)
-  })
+  win.loadURL(params.url).catch(logError)
 
   return new Promise(resolve => {
-    win.webContents.on(
-      // @ts-expect-error - 'will-redirect' is missing from Electron's WebContents event types
-      'will-redirect',
-      (event: Event, redirectUrl: string) => {
-        if (redirectUrl.startsWith(params.data.redirect_uri)) {
-          event.preventDefault()
-          resolve(redirectUrl)
-          win.close()
-        }
-      },
-    )
-    win.on('closed', () => resolve(undefined))
+    win.webContents.on('will-redirect', details => {
+      if (details.url.startsWith(params.data.redirect_uri)) {
+        details.preventDefault()
+        resolve(details.url)
+        win.close()
+      }
+    })
+    win.on('closed', () => {
+      resolve(undefined)
+    })
   })
 }

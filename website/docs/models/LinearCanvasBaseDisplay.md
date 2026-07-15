@@ -1,0 +1,2443 @@
+---
+id: linearcanvasbasedisplay
+title: LinearCanvasBaseDisplay
+sidebar_label: Display -> LinearCanvasBaseDisplay
+---
+
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`canvas` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/canvas/src/LinearBasicDisplay/baseModel.ts).
+
+## Overview
+
+Shared GPU-accelerated feature display base for canvas-rendered tracks. Handles
+fetching, layout, the "Show labels" / "Show descriptions" UI, and the
+fetch-invalidation autorun. Subclasses layer schema-specific properties and
+menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
+super-extension pattern, and extend rpcProps() via the standard super-capture
+pattern.
+
+## Members
+
+| Member                                                                   | Kind       | Defined by                                            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------ | ---------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [refName](#property-refname)                                             | Properties | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [start](#property-start)                                                 | Properties | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [end](#property-end)                                                     | Properties | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [name](#property-name)                                                   | Properties | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [configuration](#property-configuration)                                 | Properties | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [jexlFiltersSetting](#property-jexlfilterssetting)                       | Properties | LinearCanvasBaseDisplay                               | Runtime "Filter by..." override. When set (even to an empty list) it replaces the `jexlFilters` config slot; when undefined the config default applies. Stored as already-`jexl:`-prefixed expressions (runtime convention), unlike the deferred-evaluation config slot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [pinnedFeatureIds](#property-pinnedfeatureids)                           | Properties | LinearCanvasBaseDisplay                               | Feature ids the user pinned to the top of the layout via the feature right-click menu. Pinned features are inserted first into the greedy row-packer, so they hold the topmost rows in their bp range across zoom re-packs (see packRef in layout.ts). stripDefault so a display with nothing pinned omits the empty array from its snapshot. Persisted by uniqueId, which resolves back to the same feature after a plain reload of the same remote file: every adapter id is `adp-<configHash>` (idMaker over the config) plus a file byte offset (tabix/BigBed) or a deterministic full-file parse index (plain GFF3/BED/VCF). Caveat: NOT robust to editing a file read by a plain (non-tabix) adapter (the indices shift), nor to local blob files (their handleId changes each session — but a blob can't reload its data across refresh anyway). Same basis for solo/hiddenFeatureIds.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [soloFeatureIds](#property-solofeatureids)                               | Properties | LinearCanvasBaseDisplay                               | "Show only these features": the collected set the user builds by ctrl+clicking features (or via the right-click menu). Only isolates the view once `soloApplied` is true — before that it's a highlighted selection that hides nothing, so the candidates stay clickable. Persistent so a view can be opened pre-focused declaratively (e.g. collapse-introns seeds it in the new view's snapshot). stripDefault so an unfocused display omits the empty array from its snapshot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [soloApplied](#property-soloapplied)                                     | Properties | LinearCanvasBaseDisplay                               | Whether the collected soloFeatureIds set is actually isolating the view (worker drops non-members). Decoupled from collection so building a multi-feature set doesn't hide the features mid-build.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [hiddenFeatureIds](#property-hiddenfeatureids)                           | Properties | LinearCanvasBaseDisplay                               | "Hide this feature" exclusion set (inverse of solo): the worker drops these from layout/drawing. Applies immediately per feature — no collect-then-apply. Persistent like the solo set, so a hidden feature stays hidden across reload/session save. stripDefault so a display with nothing hidden omits the empty array from its snapshot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [featureHighlights](#property-featurehighlights)                         | Properties | LinearCanvasBaseDisplay                               | Declarative feature highlights, typically seeded by a text search (highlight the gene you searched for). Each entry pins a feature by its span+name signature rather than its uniqueId — a search result carries no uniqueId to persist (unlike solo/hidden/pinned, which come from a click on a rendered feature and so DO have a reload-stable id) — and is resolved against rendered features on the main thread. stripDefault so a display with no highlights omits it from snapshot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [rpcDataMap](#volatile-rpcdatamap)                                       | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [densityStatsPerRegion](#volatile-densitystatsperregion)                 | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [featureIdUnderMouse](#volatile-featureidundermouse)                     | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [subfeatureIdUnderMouse](#volatile-subfeatureidundermouse)               | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [mouseoverExtraInformation](#volatile-mouseoverextrainformation)         | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [contextMenuInfo](#volatile-contextmenuinfo)                             | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [userFeatureDensityLimit](#volatile-userfeaturedensitylimit)             | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [incrementalLayout](#volatile-incrementallayout)                         | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [incrementalLayoutLabelsOnly](#volatile-incrementallayoutlabelsonly)     | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [incrementalLayoutBodiesOnly](#volatile-incrementallayoutbodiesonly)     | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [morphFromTops](#volatile-morphfromtops)                                 | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [morphProgress](#volatile-morphprogress)                                 | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [morphStartMs](#volatile-morphstartms)                                   | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [morphFromMaxY](#volatile-morphfrommaxy)                                 | Volatiles  | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [conf](#getter-conf)                                                     | Getters    | LinearCanvasBaseDisplay                               | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so direct reads route through this to stay typed (same move as `BaseAdapter<CONF>`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [visibleFeatureDensityPerPx](#getter-visiblefeaturedensityperpx)         | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [renderState](#getter-renderstate)                                       | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [labelScrollBucket](#getter-labelscrollbucket)                           | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [DisplayMessageComponent](#getter-displaymessagecomponent)               | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [maxHeight](#getter-maxheight)                                           | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [displayMode](#getter-displaymode)                                       | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [labelFontSize](#getter-labelfontsize)                                   | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [showLabelsMode](#getter-showlabelsmode)                                 | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [showLabels](#getter-showlabels)                                         | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [showDescriptions](#getter-showdescriptions)                             | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [showOutline](#getter-showoutline)                                       | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [featureColor](#getter-featurecolor)                                     | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [utrColor](#getter-utrcolor)                                             | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [colorByMode](#getter-colorbymode)                                       | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [colorByAttribute](#getter-colorbyattribute)                             | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [effectiveShowDescriptions](#getter-effectiveshowdescriptions)           | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [selectedFeatureId](#getter-selectedfeatureid)                           | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [maxFeatureDensity](#getter-maxfeaturedensity)                           | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [colorByCDS](#getter-colorbycds)                                         | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [sequenceAdapter](#getter-sequenceadapter)                               | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [regionKeys](#getter-regionkeys)                                         | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [reversedRegions](#getter-reversedregions)                               | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [pinnedFeatureIdSet](#getter-pinnedfeatureidset)                         | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [resolvedHighlights](#getter-resolvedhighlights)                         | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [highlightedFeatureIdSet](#getter-highlightedfeatureidset)               | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [layoutPinnedFeatureIdSet](#getter-layoutpinnedfeatureidset)             | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [soloFeatureIdSet](#getter-solofeatureidset)                             | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [featureWidgetType](#getter-featurewidgettype)                           | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [densityTooLarge](#getter-densitytoolarge)                               | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)     | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)             | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate)   | Getters    | LinearCanvasBaseDisplay                               | Folds canvas's feature-density gate into the shared derived verdict (`RegionTooLargeMixin.tooLargeStatus`), which is byte-only by default.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [layoutInputs](#getter-layoutinputs)                                     | Getters    | LinearCanvasBaseDisplay                               | Layout inputs shared by the base layout and every fit-escalation layout, minus the per-config label/description reservation flags. One source so the candidate layouts can't drift on bpPerPx / region keys / display mode / pins.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [layoutReady](#getter-layoutready)                                       | Getters    | LinearCanvasBaseDisplay                               | Whether features can be laid out: data is fetched, in-bounds, and the view is measured. The shared readiness guard for every layout getter — an empty stack until then, so the GPU upload autorun has nothing to push and view-geometry getters aren't read before the view is measured.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [baseLaidOutDataMap](#getter-baselaidoutdatamap)                         | Getters    | LinearCanvasBaseDisplay                               | Full reservation (names + descriptions): rendered at fit stage `full` and in non-fit modes, and the first stack `fitStage` probes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [fitLabelsOnlyLayout](#getter-fitlabelsonlylayout)                       | Getters    | LinearCanvasBaseDisplay                               | Names reserved, descriptions dropped — the `labels` stage's stack.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [fitDecimatedSolved](#getter-fitdecimatedsolved)                         | Getters    | LinearCanvasBaseDisplay                               | The `decimated` stack with its whitespace factor SOLVED to the track height. A name is kept only where the feature has at least `factor ×` its label width in neighbor whitespace (plus pinned/highlighted, always); the factor is binary-searched so the packed stack just fits `fitTargetHeight`. This fills the height with as many non-overlapping names as fit — rather than snapping between a few fixed rungs — because stack height is monotone in the factor (higher factor drops more names → shorter), so the search keeps the SMALLEST fitting factor, i.e. the MOST names. It decimates by isolation, not feature size/"importance" (no reliable importance signal — a tiny miRNA can outrank a large pseudogene), so it just maximizes how many readable names fit. Both the ~8 trial factors and the committed layout go through the same pure `computeLaidOutData` at a factor: the committed stack is _byte-identical_ to the probe that was measured against `trackHeight`, so the height the solve fits is exactly the height `resolveFitLadder` sees. It deliberately does NOT reuse the incremental memo here — the memo seeds each re-pack with the previous layout's rows (`captureFeatureTops`), and seeding a new factor's (different) label set from the old factor's rows packs the stack taller than the fresh probe, pushing the committed stack over `trackHeight` and making the ladder wrongly fall through to `bodies` (every label vanishing as the track grows). When even `FIT_MAX_ROOM_FACTOR` overflows, the returned stack still overflows and `resolveFitLadder` descends to `bodies`. |
+| [fitBodiesOnlyLayout](#getter-fitbodiesonlylayout)                       | Getters    | LinearCanvasBaseDisplay                               | Nothing reserved: bodies packed edge-to-edge (the tightest stack), labels hidden — the `bodies` stage's stack.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [fitBodyPx](#getter-fitbodypx)                                           | Getters    | LinearCanvasBaseDisplay                               | The unscaled feature-body height (px): configured `featureHeight` times the display-mode multiplier (what the layout already applied). Basis for the fit squeeze/grow scale floors.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [fitMinScale](#getter-fitminscale)                                       | Getters    | LinearCanvasBaseDisplay                               | Floor on the fit squeeze: the smallest vertical scale that still leaves a feature body at least `MIN_FIT_BOX_PX` tall. When bodies would pack tighter than this the squeeze stops here and the surplus scrolls instead of vanishing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [fitMaxScale](#getter-fitmaxscale)                                       | Getters    | LinearCanvasBaseDisplay                               | Ceiling on the fit grow: the largest vertical scale before a feature body exceeds the configured (normal-mode) `featureHeight`. A sparse stack grows to fill the track only until its bodies reach their normal height, so fit never makes a feature taller than it would be outside fit mode. In normal display mode fitBodyPx already is the normal height, pinning the scale at 1 (no grow, surplus stays whitespace); a compact mode (fitBodyPx below normal) may grow back up to — but not past — the normal height. This is exactly `1 / multiplier`: the grow target is the normal `featureHeight` and the laid-out body is `featureHeight * multiplier`, so `featureHeight` cancels and the ceiling is purely the display mode's compact ratio (1 in normal mode → no grow).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [fitStage](#getter-fitstage)                                             | Getters    | LinearCanvasBaseDisplay                               | The resolved fit outcome — which reservation `level` survived, its unscaled `layout`, and the vertical `scale` to fill the track — bundled so the three can never disagree. The ladder keeps the least reduction whose _unscaled_ stack fits the track height: `full` (names + descriptions), else `labels` (drop descriptions), else `decimated` at a whitespace factor solved to the height (`fitDecimatedSolved` — keeps as many non-overlapping names as fit, filling the space continuously), else `bodies` (drop names too, pack tight) when even the tightest decimation overflows. The kept rung is then scaled to fill the track: grown up to `fitMaxScale` when it fits with room to spare, but never past the normal feature height — so in normal display mode grow is pinned at 1 and spare space stays whitespace, while a compact mode may enlarge back up to normal; or — only at the last `bodies` rung — squeezed down to `fitMinScale` and scrolled if even that overflows. Non-fit modes stay at `full`, scale 1. Read off the unscaled candidate heights so it can't feed back on its own `scale`. The ladder walk + scale math live in `resolveFitLadder`.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [fitScale](#getter-fitscale)                                             | Getters    | LinearCanvasBaseDisplay                               | Uniform vertical scale for fit mode; 1 unless the resolved stack is being grown to fill the track (> 1) or the bodies stack squeezed to fit (< 1).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [laidOutDataMap](#getter-laidoutdatamap)                                 | Getters    | LinearCanvasBaseDisplay                               | What every consumer (hit test, GPU upload, React render) reads: the resolved fit layout, cloned and scaled only when grown or squeezed. Returned by reference off the unscaled path so the incremental-layout upload diff and Y-morph idle check stay intact.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [renderedShowDescriptions](#getter-renderedshowdescriptions)             | Getters    | LinearCanvasBaseDisplay                               | Descriptions are painted only at the `full` stage (and whenever fit is off). Every render-time consumer — label draw and the highlight/hit/SVG label-width reservation — reads this so a box never reserves width for a description it won't draw.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [renderedShowLabels](#getter-renderedshowlabels)                         | Getters    | LinearCanvasBaseDisplay                               | Names are painted at every stage short of `bodies` (and whenever fit is off), where the packer reserved row height + overhang for the names it kept so they never overlap — including the `decimated` stage, whose per-feature pruning happens inside the layout (dropped names are removed from floatingLabelsData), not via this flag. At the `bodies` stage nothing is reserved, so all names are hidden rather than drawn on top of the boxes. Every render-time consumer reads this so hidden names reserve nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [renderDataMap](#getter-renderdatamap)                                   | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [settledMaxY](#getter-settledmaxy)                                       | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [maxY](#getter-maxy)                                                     | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [hasOverflow](#getter-hasoverflow)                                       | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [contentHeight](#getter-contentheight)                                   | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [scrollableHeight](#getter-scrollableheight)                             | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [naturalContentHeight](#getter-naturalcontentheight)                     | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [grownHeight](#getter-grownheight)                                       | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [height](#getter-height)                                                 | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [featureIdIndex](#getter-featureidindex)                                 | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [subfeatureIdIndex](#getter-subfeatureidindex)                           | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [hoveredFeature](#getter-hoveredfeature)                                 | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [hoveredSubfeature](#getter-hoveredsubfeature)                           | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [featureItemMap](#getter-featureitemmap)                                 | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [flatbushIndexes](#getter-flatbushindexes)                               | Getters    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [observedMaxDensity](#method-observedmaxdensity)                         | Methods    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [activeFilters](#method-activefilters)                                   | Methods    | LinearCanvasBaseDisplay                               | The filters actually applied, as `jexl:`-prefixed expressions. The runtime override shadows the config slot when set; otherwise the deferred-evaluation `jexlFilters` config slot is prefixed on read. This is the single source of truth for both the worker (via rpcProps) and the "Filter by..." dialog (so existing config filters show up and are editable).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [rpcProps](#method-rpcprops)                                             | Methods    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [fitLayoutAt](#method-fitlayoutat)                                       | Methods    | LinearCanvasBaseDisplay                               | One fit-escalation candidate: the stack packed with the given label/description reservation, via that config's own memo instance so each keeps stable references across renders. Empty until initialized/in-bounds, so the GPU upload autorun has nothing to push.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [getFeatureById](#method-getfeaturebyid)                                 | Methods    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [searchFeatureByID](#method-searchfeaturebyid)                           | Methods    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [renderSvg](#method-rendersvg)                                           | Methods    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [showSubmenuMenuItems](#method-showsubmenumenuitems)                     | Methods    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [contextMenuItems](#method-contextmenuitems)                             | Methods    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [colorBySubMenuItems](#method-colorbysubmenuitems)                       | Methods    | LinearCanvasBaseDisplay                               | The "Color by..." radio choices (solid/strand/attribute). Split out so subclasses can reuse them while assembling their own color menu.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [colorMenuItems](#method-colormenuitems)                                 | Methods    | LinearCanvasBaseDisplay                               | Color-related track menu entries: a single "Color by..." entry whose "Solid color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants) override to drop the gene-oriented UTR picker.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [featureHeightMenuItems](#method-featureheightmenuitems)                 | Methods    | LinearCanvasBaseDisplay                               | One "Feature height" menu with two independent radio groups, mirroring the alignments display: the size presets (how tall each feature is drawn) and, under a "Track sizing" subheader, how the track responds when there are more features than fit — scroll / expand / squeeze. The two axes are orthogonal, so picking a size never changes the mode and vice versa. Shared by every canvas display (genes, variants).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [trackMenuItems](#method-trackmenuitems)                                 | Methods    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [beginYMorph](#action-beginymorph)                                       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setMorphProgress](#action-setmorphprogress)                             | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [endYMorph](#action-endymorph)                                           | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setRpcData](#action-setrpcdata)                                         | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setDensityStats](#action-setdensitystats)                               | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [clearDisplaySpecificData](#action-cleardisplayspecificdata)             | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [pruneRpcDataMapToVisible](#action-prunerpcdatamaptovisible)             | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [startRenderingBackend](#action-startrenderingbackend)                   | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setHover](#action-sethover)                                             | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [clearHover](#action-clearhover)                                         | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [closeContextMenu](#action-closecontextmenu)                             | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [togglePinnedFeature](#action-togglepinnedfeature)                       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [toggleSoloFeature](#action-togglesolofeature)                           | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [clearSolo](#action-clearsolo)                                           | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [hideFeature](#action-hidefeature)                                       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [showAllHidden](#action-showallhidden)                                   | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setFeatureHighlights](#action-setfeaturehighlights)                     | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [addFeatureHighlightForItem](#action-addfeaturehighlightforitem)         | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [removeFeatureHighlightsForItem](#action-removefeaturehighlightsforitem) | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [clearFeatureHighlights](#action-clearfeaturehighlights)                 | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [applySolo](#action-applysolo)                                           | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [soloFeature](#action-solofeature)                                       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [clearAllFeatureFilters](#action-clearallfeaturefilters)                 | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [selectFeature](#action-selectfeature)                                   | Actions    | LinearCanvasBaseDisplay                               | Open the feature-details widget. The adapter's header metadata (VCF INFO/FORMAT descriptions, etc.) is fetched first and passed as `descriptions` so the widget can label attribute rows and — for the variant widget — resolve the ANN/CSQ column names; without it that table renders headerless. CoreGetMetadata returns null for adapters that expose none, so this is a no-op for those tracks.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [clearSelection](#action-clearselection)                                 | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setShowLabels](#action-setshowlabels)                                   | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setShowDescriptions](#action-setshowdescriptions)                       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setJexlFilters](#action-setjexlfilters)                                 | Actions    | LinearCanvasBaseDisplay                               | Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass undefined to clear it and fall back to the config `jexlFilters` slot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [setShowOutline](#action-setshowoutline)                                 | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setFeatureColor](#action-setfeaturecolor)                               | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setUtrColor](#action-setutrcolor)                                       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [openContextMenu](#action-opencontextmenu)                               | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setDisplayMode](#action-setdisplaymode)                                 | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setHeightMode](#action-setheightmode)                                   | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [openSetColorDialog](#action-opensetcolordialog)                         | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [openColorByAttributeDialog](#action-opencolorbyattributedialog)         | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [openFilterDialog](#action-openfilterdialog)                             | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [fetchFullFeature](#action-fetchfullfeature)                             | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [isCacheValid](#action-iscachevalid)                                     | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [byteSizeLimit](#action-bytesizelimit)                                   | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [selectFeatureById](#action-selectfeaturebyid)                           | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [reload](#action-reload)                                                 | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [fetchNeeded](#action-fetchneeded)                                       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [clearStaleDensityState](#action-clearstaledensitystate)                 | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [resizeHeight](#action-resizeheight)                                     | Actions    | LinearCanvasBaseDisplay                               | A manual drag-resize means the user wants a fixed height; leave grow mode first, otherwise the reactive `height` getter re-derives grownHeight on the next layout change and the drag appears to do nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [afterAttach](#action-afterattach)                                       | Actions    | LinearCanvasBaseDisplay                               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [id](#property-id)                                                       | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [type](#property-type)                                                   | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [rpcDriverName](#property-rpcdrivername)                                 | Properties | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [ignorePromotedDefaults](#property-ignorepromoteddefaults)               | Properties | [BaseDisplay](../basedisplay)                         | true for a display that arrived inside a session received from someone else (a share link, an encoded/json session, a `spec-` URL). Such a display resolves its `promotable` config slots from its own config only, never from this browser's promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the received session is a record of what the sender saw, and a local preference silently repainting it would make it a lie. A track opened _afterwards_ in that same session is a fresh track of this user's, so it never gets the flag and picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user deliberately makes the display follow a default.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [error](#volatile-error)                                                 | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [statusMessage](#volatile-statusmessage)                                 | Volatiles  | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [statusProgress](#volatile-statusprogress)                               | Volatiles  | [BaseDisplay](../basedisplay)                         | determinate progress fraction [0,1] for the current status, or undefined when the in-flight phase is indeterminate. Set alongside `statusMessage` by `setStatusMessage`; a display that never shows a bar simply leaves it undefined.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [parentTrack](#getter-parenttrack)                                       | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [parentDisplay](#getter-parentdisplay)                                   | Getters    | [BaseDisplay](../basedisplay)                         | Returns the parent display if this display is nested within another display (e.g., PileupDisplay inside LinearAlignmentsDisplay)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [RenderingComponent](#getter-renderingcomponent)                         | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [DisplayBlurb](#getter-displayblurb)                                     | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [adapterConfig](#getter-adapterconfig)                                   | Getters    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [isMinimized](#getter-isminimized)                                       | Getters    | [BaseDisplay](../basedisplay)                         | Returns true if the parent track is minimized. Used to skip expensive operations like autoruns when track is not visible.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [effectiveRpcDriverName](#getter-effectiverpcdrivername)                 | Getters    | [BaseDisplay](../basedisplay)                         | Returns the effective RPC driver name with hierarchical fallback: 1. This display's explicit rpcDriverName 2. Parent display's effectiveRpcDriverName (for nested displays) 3. Track config's rpcDriverName                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [renderingProps](#method-renderingprops)                                 | Methods    | [BaseDisplay](../basedisplay)                         | props passed to the renderer's React "Rendering" component. these are client-side only and never sent to the worker. includes displayModel and callbacks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [regionCannotBeRendered](#method-regioncannotberendered)                 | Methods    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setIgnorePromotedDefaults](#action-setignorepromoteddefaults)           | Actions    | [BaseDisplay](../basedisplay)                         | see the `ignorePromotedDefaults` property                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [setStatusMessage](#action-setstatusmessage)                             | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setError](#action-seterror)                                             | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setRpcDriverName](#action-setrpcdrivername)                             | Actions    | [BaseDisplay](../basedisplay)                         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [scrollTop](#volatile-scrolltop)                                         | Volatiles  | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setScrollTop](#action-setscrolltop)                                     | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setHeight](#action-setheight)                                           | Actions    | [TrackHeightMixin](../trackheightmixin)               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [heightMode](#getter-heightmode)                                         | Getters    | [HeightModeMixin](../heightmodemixin)                 | The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel slot: getConfResolved walks the customized-track -> session-default -> `fixed` cascade and never returns the `inherit` sentinel.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [fitTargetHeight](#getter-fittargetheight)                               | Getters    | [HeightModeMixin](../heightmodemixin)                 | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. Read there instead of the reactive `height` getter to break the grow-mode cycle (`height`->grownHeight->layout->height). Equals `height` in fixed/fit.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [autoHeight](#getter-autoheight)                                         | Getters    | [HeightModeMixin](../heightmodemixin)                 | `grow` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [fitHeightToDisplay](#getter-fitheighttodisplay)                         | Getters    | [HeightModeMixin](../heightmodemixin)                 | `fit` mode as a boolean, derived from the unified `heightMode` slot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [loadedRegions](#volatile-loadedregions)                                 | Volatiles  | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | regions whose data has been fetched and committed, keyed by displayedRegionIndex; populated only after the fetch work callback returns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [isReady](#getter-isready)                                               | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once the canvas has painted and no fetch is in flight                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [viewportWithinLoadedData](#getter-viewportwithinloadeddata)             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true when every visible block lies within an already-fetched region — i.e. the viewport shows data we actually loaded, not the stale fringe left after a zoom-out/pan. Drives the loading overlay through the pre-refetch debounce. Spatial only; see CLAUDE.md for why this is exact and for the resolution-staleness gap.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [svgReady](#getter-svgready)                                             | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | true once an off-screen (SVG) export can safely read this display's data: every visible region has loaded, or the fetch reached a terminal error / too-large state. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of inlining the condition. Regions stream in one at a time, so gating on `viewportWithinLoadedData` (not the first datum) is what keeps multi-region/whole-genome exports complete; `loadedRegions.size` guards the vacuously-true empty-viewport case.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data. Sequence sets it when zoomed past base resolution — it renders a static "zoom in" message and fetches nothing, so `svgReady` would otherwise never resolve.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [renderBlocks](#getter-renderblocks)                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Shared cached view for every LGV-based GPU display. A single displayedRegion may produce multiple render blocks (shared GPU buffer, different scissor clips on screen). Plugins that want to suppress rendering in certain states (e.g. no domain yet) can override this getter to return [] — the autorun lifecycle will then issue an empty-blocks render that clears the canvas.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [displayPhase](#getter-displayphase)                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data (viewport past loaded) is still on screen through the pre-refetch debounce.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [setLoadedRegion](#action-setloadedregion)                               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [clearAllRpcData](#action-clearallrpcdata)                               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag. The too-large gate is derived (a pure function of the cached estimate × viewport), so it needs no explicit clear here — it self-releases when the viewport changes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [invalidateLoadedRegions](#action-invalidateloadedregions)               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [getByteEstimateConfig](#action-getbyteestimateconfig)                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook: return config to enable byte-estimate gating before fetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [onRegionTooLarge](#action-onregiontoolarge)                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (no-op base): called when `regionTooLarge` transitions to true. Displays with transient hover/tooltip state override it to clear that state — the too-large banner replaces the rendered content, so a lingering hover would otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [fetchRegions](#action-fetchregions)                                     | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating. Marks regions as loaded only AFTER the work callback has populated display-specific data (rpcDataMap, cellData, etc) so the GPU upload autorun sees committed data when it observes loadedRegions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [userByteSizeLimit](#property-userbytesizelimit)                         | Properties | [RegionTooLargeMixin](../regiontoolargemixin)         | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [featureDensityStats](#volatile-featuredensitystats)                     | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [byteEstimateVisibleBp](#volatile-byteestimatevisiblebp)                 | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | visibleBp at which the current `featureDensityStats` byte estimate was captured, so the derived gate (`estimatedVisibleBytes`) can scale it to the current view. Written by `setFeatureDensityStats`; ignored unless `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [estimatedVisibleBytes](#getter-estimatedvisiblebytes)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The cached byte estimate scaled from the span it was measured over (`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to span, so scaling makes the derived verdict a pure function of the current view and self-releases on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [tooLargeStatus](#getter-toolargestatus)                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in. Same helper as every other gating path so the banner text can't drift.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [regionTooLarge](#getter-regiontoolarge)                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [regionTooLargeReason](#getter-regiontoolargereason)                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [regionCannotBeRenderedText](#method-regioncannotberenderedtext)         | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)         | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setFeatureDensityStats](#action-setfeaturedensitystats)                 | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Commits the byte estimate and records the span it was measured at (`byteEstimateVisibleBp`) so the derived gate can scale it to the current view. The capture is harmless for non-gated displays (they ignore it).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [forceLoad](#action-forceload)                                           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [canvasDrawn](#volatile-canvasdrawn)                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [currentRenderingBackend](#volatile-currentrenderingbackend)             | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [renderTick](#volatile-rendertick)                                       | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [autorunsInstalled](#volatile-autorunsinstalled)                         | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [renderError](#volatile-rendererror)                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [markCanvasDrawn](#action-markcanvasdrawn)                               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [resetCanvasDrawn](#action-resetcanvasdrawn)                             | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [stopRenderingBackend](#action-stoprenderingbackend)                     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [renderNow](#action-rendernow)                                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [setRenderError](#action-setrendererror)                                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [attachRenderingBackend](#action-attachrenderingbackend)                 | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin)       | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [activeStopToken](#volatile-activestoptoken)                             | Volatiles  | [FetchMixin](../fetchmixin)                           | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [fetchGeneration](#volatile-fetchgeneration)                             | Volatiles  | [FetchMixin](../fetchmixin)                           | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [fetchCanceled](#volatile-fetchcanceled)                                 | Volatiles  | [FetchMixin](../fetchmixin)                           | true after the user explicitly cancels a load (the loading overlay's cancel button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`, it does not retrigger the fetch autoruns — so the load stays stopped until the user retries (`reload`) or the viewport changes. Any new fetch clears it (`runFetch` resets it at the start).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [regionStatuses](#volatile-regionstatuses)                               | Volatiles  | [FetchMixin](../fetchmixin)                           | latest status of each concurrent in-flight operation, keyed by an arbitrary id (the canvas display uses displayedRegionIndex). Plain bookkeeping — not read reactively; setRegionStatus derives the observable statusMessage/statusProgress from it on every update so N parallel region fetches aggregate into one bar instead of clobbering.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [lastStatusMs](#volatile-laststatusms)                                   | Volatiles  | [FetchMixin](../fetchmixin)                           | Date.now() of the last applied status write; the status callbacks gate on it to throttle a high-frequency progress stream.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [isLoading](#getter-isloading)                                           | Getters    | [FetchMixin](../fetchmixin)                           | true while a fetch is active                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [makeStatusCallback](#method-makestatuscallback)                         | Methods    | [FetchMixin](../fetchmixin)                           | An RPC `statusCallback` bound to this display: forwards progress to the shared `statusMessage`, guarded by `isAlive` so a callback that fires after the node is torn down (RPCs resolve their status stream asynchronously) is a safe no-op. Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard at every call site.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [makeRegionStatusCallback](#method-makeregionstatuscallback)             | Methods    | [FetchMixin](../fetchmixin)                           | Per-region variant of `makeStatusCallback`: routes progress through `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one status bar instead of clobbering each other. Same `isAlive` guard.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [throttleStatus](#action-throttlestatus)                                 | Actions    | [FetchMixin](../fetchmixin)                           | Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last status write. A leading-edge throttle: sparse updates pass straight through, dense progress bursts are thinned so the loading overlay stops re-rendering faster than the view animates. The final status doesn't need a trailing flush — fetch completion clears it via `resetStatus`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [resetStatus](#action-resetstatus)                                       | Actions    | [FetchMixin](../fetchmixin)                           | Drop the active stop token and clear all status bookkeeping. Shared by both cancel paths and runFetch's cleanup.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [stopActiveFetch](#action-stopactivefetch)                               | Actions    | [FetchMixin](../fetchmixin)                           | Abort the in-flight fetch (if any) and clear its status. The shared preamble of both cancel paths; the difference between them is only what they do to `fetchCanceled` / `fetchGeneration` afterward.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [setRegionStatus](#action-setregionstatus)                               | Actions    | [FetchMixin](../fetchmixin)                           | Record one concurrent operation's latest status (keyed) and recompute the shared statusMessage/statusProgress as the aggregate across all in-flight keys. Pass undefined to drop a key. Used by displays that fan a single fetch out into parallel per-region RPCs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [cancelFetch](#action-cancelfetch)                                       | Actions    | [FetchMixin](../fetchmixin)                           | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight). This is the _internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any user-cancel flag so the retrigger actually re-fetches.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [cancelFetchByUser](#action-cancelfetchbyuser)                           | Actions    | [FetchMixin](../fetchmixin)                           | User-initiated cancel from the loading overlay. Stops the in-flight fetch and lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns don't immediately restart the load. The user retries via `reload` (the overlay's retry button), or it clears on the next viewport change.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| [runFetch](#action-runfetch)                                             | Actions    | [FetchMixin](../fetchmixin)                           | Run a cancel-safe fetch (cancels any prior). The work callback gets a FetchContext with a stopToken to forward to the RPC and an isStale() check to short-circuit commits once the user has moved on. Abort errors are swallowed; others are stored in `error` if not stale.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [displayTypeDefaultChanges](#method-displaytypedefaultchanges)           | Methods    | [PromotableDefaultsMixin](../promotabledefaultsmixin) | Effective config differences a track following the default inherits from session-wide defaults (distinct from per-track config edits / trackConfigDeltas). Drives the "affected by a session default" badge.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [clearDisplayTypeDefaults](#action-cleardisplaytypedefaults)             | Actions    | [PromotableDefaultsMixin](../promotabledefaultsmixin) | Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this display (and its siblings of the same type) revert to their config values. Backs the "clear default" action on the selector badge.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+
+### LinearCanvasBaseDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearcanvasbasedisplay).
+
+<details>
+<summary>LinearCanvasBaseDisplay - Properties</summary>
+
+#### property: jexlFiltersSetting
+
+Runtime "Filter by..." override. When set (even to an empty list) it replaces
+the `jexlFilters` config slot; when undefined the config default applies. Stored
+as already-`jexl:`-prefixed expressions (runtime convention), unlike the
+deferred-evaluation config slot.
+
+```ts
+// type signature
+type jexlFiltersSetting = IMaybe<IArrayType<ISimpleType<string>>>
+// code
+jexlFiltersSetting: types.maybe(types.array(types.string))
+```
+
+#### property: pinnedFeatureIds
+
+Feature ids the user pinned to the top of the layout via the feature right-click
+menu. Pinned features are inserted first into the greedy row-packer, so they
+hold the topmost rows in their bp range across zoom re-packs (see packRef in
+layout.ts). stripDefault so a display with nothing pinned omits the empty array
+from its snapshot.
+
+Persisted by uniqueId, which resolves back to the same feature after a plain
+reload of the same remote file: every adapter id is `adp-<configHash>` (idMaker
+over the config) plus a file byte offset (tabix/BigBed) or a deterministic
+full-file parse index (plain GFF3/BED/VCF). Caveat: NOT robust to editing a file
+read by a plain (non-tabix) adapter (the indices shift), nor to local blob files
+(their handleId changes each session — but a blob can't reload its data across
+refresh anyway). Same basis for solo/hiddenFeatureIds.
+
+```ts
+// type signature
+type pinnedFeatureIds = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
+// code
+pinnedFeatureIds: types.stripDefault(types.array(types.string), [])
+```
+
+#### property: soloFeatureIds
+
+"Show only these features": the collected set the user builds by ctrl+clicking
+features (or via the right-click menu). Only isolates the view once
+`soloApplied` is true — before that it's a highlighted selection that hides
+nothing, so the candidates stay clickable. Persistent so a view can be opened
+pre-focused declaratively (e.g. collapse-introns seeds it in the new view's
+snapshot). stripDefault so an unfocused display omits the empty array from its
+snapshot.
+
+```ts
+// type signature
+type soloFeatureIds = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
+// code
+soloFeatureIds: types.stripDefault(types.array(types.string), [])
+```
+
+#### property: soloApplied
+
+Whether the collected soloFeatureIds set is actually isolating the view (worker
+drops non-members). Decoupled from collection so building a multi-feature set
+doesn't hide the features mid-build.
+
+```ts
+// type signature
+type soloApplied = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+soloApplied: types.stripDefault(types.boolean, false)
+```
+
+#### property: hiddenFeatureIds
+
+"Hide this feature" exclusion set (inverse of solo): the worker drops these from
+layout/drawing. Applies immediately per feature — no collect-then-apply.
+Persistent like the solo set, so a hidden feature stays hidden across
+reload/session save. stripDefault so a display with nothing hidden omits the
+empty array from its snapshot.
+
+```ts
+// type signature
+type hiddenFeatureIds = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
+// code
+hiddenFeatureIds: types.stripDefault(types.array(types.string), [])
+```
+
+#### property: featureHighlights
+
+Declarative feature highlights, typically seeded by a text search (highlight the
+gene you searched for). Each entry pins a feature by its span+name signature
+rather than its uniqueId — a search result carries no uniqueId to persist
+(unlike solo/hidden/pinned, which come from a click on a rendered feature and so
+DO have a reload-stable id) — and is resolved against rendered features on the
+main thread. stripDefault so a display with no highlights omits it from
+snapshot.
+
+```ts
+// type signature
+type featureHighlights = IOptionalIType<IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; name: IMaybe<ISimpleType<string>>; }, {}, _NotCustomized, _NotCustomized>>, [...]>
+// code
+featureHighlights: types.stripDefault(
+            types.array(FeatureHighlightModel),
+            [],
+          )
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Properties (other undocumented members)</summary>
+
+#### property: refName
+
+```ts
+// type signature
+type refName = ISimpleType<string>
+// code
+refName: types.string
+```
+
+#### property: start
+
+```ts
+// type signature
+type start = ISimpleType<number>
+// code
+start: types.number
+```
+
+#### property: end
+
+```ts
+// type signature
+type end = ISimpleType<number>
+// code
+end: types.number
+```
+
+#### property: name
+
+```ts
+// type signature
+type name = IMaybe<ISimpleType<string>>
+// code
+name: types.maybe(types.string)
+```
+
+#### property: configuration
+
+```ts
+// type signature
+type configuration = ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Volatiles</summary>
+
+#### volatile: rpcDataMap
+
+```ts
+// type signature
+type rpcDataMap = ObservableMap<number, LoadedFeatureData>
+// code
+rpcDataMap: observable.map<number, LoadedFeatureData>()
+```
+
+#### volatile: densityStatsPerRegion
+
+```ts
+// type signature
+type densityStatsPerRegion = ObservableMap<number, RegionDensityStats>
+// code
+densityStatsPerRegion: observable.map<number, RegionDensityStats>()
+```
+
+#### volatile: featureIdUnderMouse
+
+```ts
+// type signature
+type featureIdUnderMouse = string | null
+// code
+featureIdUnderMouse: null as string | null
+```
+
+#### volatile: subfeatureIdUnderMouse
+
+```ts
+// type signature
+type subfeatureIdUnderMouse = string | null
+// code
+subfeatureIdUnderMouse: null as string | null
+```
+
+#### volatile: mouseoverExtraInformation
+
+```ts
+// type signature
+type mouseoverExtraInformation = string | undefined
+// code
+mouseoverExtraInformation: undefined as string | undefined
+```
+
+#### volatile: contextMenuInfo
+
+```ts
+// type signature
+type contextMenuInfo =
+  | {
+      item: FlatbushItem
+      displayedRegionIndex: number
+      clientX: number
+      clientY: number
+    }
+  | undefined
+// code
+contextMenuInfo: undefined as
+  | {
+      item: FlatbushItem
+      displayedRegionIndex: number
+      clientX: number
+      clientY: number
+    }
+  | undefined
+```
+
+#### volatile: userFeatureDensityLimit
+
+```ts
+// type signature
+type userFeatureDensityLimit = number | undefined
+// code
+userFeatureDensityLimit: undefined as number | undefined
+```
+
+#### volatile: incrementalLayout
+
+```ts
+// type signature
+type incrementalLayout = (
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  inputs: LayoutInputs,
+) => Map<number, FeatureDataResult>
+// code
+incrementalLayout: createIncrementalLayout()
+```
+
+#### volatile: incrementalLayoutLabelsOnly
+
+```ts
+// type signature
+type incrementalLayoutLabelsOnly = (
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  inputs: LayoutInputs,
+) => Map<number, FeatureDataResult>
+// code
+incrementalLayoutLabelsOnly: createIncrementalLayout()
+```
+
+#### volatile: incrementalLayoutBodiesOnly
+
+```ts
+// type signature
+type incrementalLayoutBodiesOnly = (
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  inputs: LayoutInputs,
+) => Map<number, FeatureDataResult>
+// code
+incrementalLayoutBodiesOnly: createIncrementalLayout()
+```
+
+#### volatile: morphFromTops
+
+```ts
+// type signature
+type morphFromTops = Map<string, number> | undefined
+// code
+morphFromTops: undefined as Map<string, number> | undefined
+```
+
+#### volatile: morphProgress
+
+```ts
+// type signature
+type morphProgress = number
+// code
+morphProgress: 1
+```
+
+#### volatile: morphStartMs
+
+```ts
+// type signature
+type morphStartMs = number
+// code
+morphStartMs: 0
+```
+
+#### volatile: morphFromMaxY
+
+```ts
+// type signature
+type morphFromMaxY = number
+// code
+morphFromMaxY: 0
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Getters</summary>
+
+#### getter: conf
+
+the config typed off the concrete schema; `ConfigurationReference` erases
+`self.configuration` to `any`, so direct reads route through this to stay typed
+(same move as `BaseAdapter<CONF>`).
+
+```ts
+type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
+
+#### getter: densityTooLargeForDerivedGate
+
+Folds canvas's feature-density gate into the shared derived verdict
+(`RegionTooLargeMixin.tooLargeStatus`), which is byte-only by default.
+
+```ts
+type densityTooLargeForDerivedGate = boolean
+```
+
+#### getter: layoutInputs
+
+Layout inputs shared by the base layout and every fit-escalation layout, minus
+the per-config label/description reservation flags. One source so the candidate
+layouts can't drift on bpPerPx / region keys / display mode / pins.
+
+```ts
+type layoutInputs = {
+  bpPerPx: number
+  regionKeys: Map<number, string>
+  reversedRegions: Set<number>
+  displayMode: DisplayMode
+  pinnedFeatureIds: ReadonlySet<string>
+}
+```
+
+#### getter: layoutReady
+
+Whether features can be laid out: data is fetched, in-bounds, and the view is
+measured. The shared readiness guard for every layout getter — an empty stack
+until then, so the GPU upload autorun has nothing to push and view-geometry
+getters aren't read before the view is measured.
+
+```ts
+type layoutReady = boolean
+```
+
+#### getter: baseLaidOutDataMap
+
+Full reservation (names + descriptions): rendered at fit stage `full` and in
+non-fit modes, and the first stack `fitStage` probes.
+
+```ts
+type baseLaidOutDataMap = Map<number, FeatureDataResult>
+```
+
+#### getter: fitLabelsOnlyLayout
+
+Names reserved, descriptions dropped — the `labels` stage's stack.
+
+```ts
+type fitLabelsOnlyLayout = Map<number, FeatureDataResult>
+```
+
+#### getter: fitDecimatedSolved
+
+The `decimated` stack with its whitespace factor SOLVED to the track height. A
+name is kept only where the feature has at least `factor ×` its label width in
+neighbor whitespace (plus pinned/highlighted, always); the factor is
+binary-searched so the packed stack just fits `fitTargetHeight`. This fills the
+height with as many non-overlapping names as fit — rather than snapping between
+a few fixed rungs — because stack height is monotone in the factor (higher
+factor drops more names → shorter), so the search keeps the SMALLEST fitting
+factor, i.e. the MOST names. It decimates by isolation, not feature
+size/"importance" (no reliable importance signal — a tiny miRNA can outrank a
+large pseudogene), so it just maximizes how many readable names fit. Both the ~8
+trial factors and the committed layout go through the same pure
+`computeLaidOutData` at a factor: the committed stack is _byte-identical_ to the
+probe that was measured against `trackHeight`, so the height the solve fits is
+exactly the height `resolveFitLadder` sees. It deliberately does NOT reuse the
+incremental memo here — the memo seeds each re-pack with the previous layout's
+rows (`captureFeatureTops`), and seeding a new factor's (different) label set
+from the old factor's rows packs the stack taller than the fresh probe, pushing
+the committed stack over `trackHeight` and making the ladder wrongly fall
+through to `bodies` (every label vanishing as the track grows). When even
+`FIT_MAX_ROOM_FACTOR` overflows, the returned stack still overflows and
+`resolveFitLadder` descends to `bodies`.
+
+```ts
+type fitDecimatedSolved = Map<number, FeatureDataResult>
+```
+
+#### getter: fitBodiesOnlyLayout
+
+Nothing reserved: bodies packed edge-to-edge (the tightest stack), labels hidden
+— the `bodies` stage's stack.
+
+```ts
+type fitBodiesOnlyLayout = Map<number, FeatureDataResult>
+```
+
+#### getter: fitBodyPx
+
+The unscaled feature-body height (px): configured `featureHeight` times the
+display-mode multiplier (what the layout already applied). Basis for the fit
+squeeze/grow scale floors.
+
+```ts
+type fitBodyPx = number
+```
+
+#### getter: fitMinScale
+
+Floor on the fit squeeze: the smallest vertical scale that still leaves a
+feature body at least `MIN_FIT_BOX_PX` tall. When bodies would pack tighter than
+this the squeeze stops here and the surplus scrolls instead of vanishing.
+
+```ts
+type fitMinScale = number
+```
+
+#### getter: fitMaxScale
+
+Ceiling on the fit grow: the largest vertical scale before a feature body
+exceeds the configured (normal-mode) `featureHeight`. A sparse stack grows to
+fill the track only until its bodies reach their normal height, so fit never
+makes a feature taller than it would be outside fit mode. In normal display mode
+fitBodyPx already is the normal height, pinning the scale at 1 (no grow, surplus
+stays whitespace); a compact mode (fitBodyPx below normal) may grow back up to —
+but not past — the normal height.
+
+This is exactly `1 / multiplier`: the grow target is the normal `featureHeight`
+and the laid-out body is `featureHeight * multiplier`, so `featureHeight`
+cancels and the ceiling is purely the display mode's compact ratio (1 in normal
+mode → no grow).
+
+```ts
+type fitMaxScale = number
+```
+
+#### getter: fitStage
+
+The resolved fit outcome — which reservation `level` survived, its unscaled
+`layout`, and the vertical `scale` to fill the track — bundled so the three can
+never disagree. The ladder keeps the least reduction whose _unscaled_ stack fits
+the track height: `full` (names + descriptions), else `labels` (drop
+descriptions), else `decimated` at a whitespace factor solved to the height
+(`fitDecimatedSolved` — keeps as many non-overlapping names as fit, filling the
+space continuously), else `bodies` (drop names too, pack tight) when even the
+tightest decimation overflows. The kept rung is then scaled to fill the track:
+grown up to `fitMaxScale` when it fits with room to spare, but never past the
+normal feature height — so in normal display mode grow is pinned at 1 and spare
+space stays whitespace, while a compact mode may enlarge back up to normal; or —
+only at the last `bodies` rung — squeezed down to `fitMinScale` and scrolled if
+even that overflows. Non-fit modes stay at `full`, scale 1. Read off the
+unscaled candidate heights so it can't feed back on its own `scale`. The ladder
+walk + scale math live in `resolveFitLadder`.
+
+```ts
+type fitStage = FitStage
+```
+
+#### getter: fitScale
+
+Uniform vertical scale for fit mode; 1 unless the resolved stack is being grown
+to fill the track (> 1) or the bodies stack squeezed to fit (< 1).
+
+```ts
+type fitScale = number
+```
+
+#### getter: laidOutDataMap
+
+What every consumer (hit test, GPU upload, React render) reads: the resolved fit
+layout, cloned and scaled only when grown or squeezed. Returned by reference off
+the unscaled path so the incremental-layout upload diff and Y-morph idle check
+stay intact.
+
+```ts
+type laidOutDataMap = Map<number, FeatureDataResult>
+```
+
+#### getter: renderedShowDescriptions
+
+Descriptions are painted only at the `full` stage (and whenever fit is off).
+Every render-time consumer — label draw and the highlight/hit/SVG label-width
+reservation — reads this so a box never reserves width for a description it
+won't draw.
+
+```ts
+type renderedShowDescriptions = any
+```
+
+#### getter: renderedShowLabels
+
+Names are painted at every stage short of `bodies` (and whenever fit is off),
+where the packer reserved row height + overhang for the names it kept so they
+never overlap — including the `decimated` stage, whose per-feature pruning
+happens inside the layout (dropped names are removed from floatingLabelsData),
+not via this flag. At the `bodies` stage nothing is reserved, so all names are
+hidden rather than drawn on top of the boxes. Every render-time consumer reads
+this so hidden names reserve nothing.
+
+```ts
+type renderedShowLabels = boolean
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Getters (other undocumented members)</summary>
+
+#### getter: visibleFeatureDensityPerPx
+
+```ts
+type visibleFeatureDensityPerPx = number
+```
+
+#### getter: renderState
+
+```ts
+type renderState = {
+  scrollY: number
+  canvasWidth: number
+  canvasHeight: number
+}
+```
+
+#### getter: labelScrollBucket
+
+```ts
+type labelScrollBucket = number
+```
+
+#### getter: DisplayMessageComponent
+
+```ts
+type DisplayMessageComponent = LazyExoticComponent<
+  ({ model }: Props) => Element
+>
+```
+
+#### getter: maxHeight
+
+```ts
+type maxHeight = any
+```
+
+#### getter: displayMode
+
+```ts
+type displayMode = DisplayMode
+```
+
+#### getter: labelFontSize
+
+```ts
+type labelFontSize = number
+```
+
+#### getter: showLabelsMode
+
+```ts
+type showLabelsMode = any
+```
+
+#### getter: showLabels
+
+```ts
+type showLabels = boolean
+```
+
+#### getter: showDescriptions
+
+```ts
+type showDescriptions = any
+```
+
+#### getter: showOutline
+
+```ts
+type showOutline = boolean
+```
+
+#### getter: featureColor
+
+```ts
+type featureColor = any
+```
+
+#### getter: utrColor
+
+```ts
+type utrColor = any
+```
+
+#### getter: colorByMode
+
+```ts
+type colorByMode = 'strand' | 'attribute' | 'solid'
+```
+
+#### getter: colorByAttribute
+
+```ts
+type colorByAttribute = string
+```
+
+#### getter: effectiveShowDescriptions
+
+```ts
+type effectiveShowDescriptions = any
+```
+
+#### getter: selectedFeatureId
+
+```ts
+type selectedFeatureId = string | undefined
+```
+
+#### getter: maxFeatureDensity
+
+```ts
+type maxFeatureDensity = any
+```
+
+#### getter: colorByCDS
+
+```ts
+type colorByCDS = boolean
+```
+
+#### getter: sequenceAdapter
+
+```ts
+type sequenceAdapter = any
+```
+
+#### getter: regionKeys
+
+```ts
+type regionKeys = Map<number, string>
+```
+
+#### getter: reversedRegions
+
+```ts
+type reversedRegions = Set<number>
+```
+
+#### getter: pinnedFeatureIdSet
+
+```ts
+type pinnedFeatureIdSet = ReadonlySet<string>
+```
+
+#### getter: resolvedHighlights
+
+```ts
+type resolvedHighlights = { box: ReadonlySet<string>; pin: ReadonlySet<string> }
+```
+
+#### getter: highlightedFeatureIdSet
+
+```ts
+type highlightedFeatureIdSet = ReadonlySet<string>
+```
+
+#### getter: layoutPinnedFeatureIdSet
+
+```ts
+type layoutPinnedFeatureIdSet = ReadonlySet<string>
+```
+
+#### getter: soloFeatureIdSet
+
+```ts
+type soloFeatureIdSet = ReadonlySet<string>
+```
+
+#### getter: featureWidgetType
+
+```ts
+type featureWidgetType = { type: string; id: string }
+```
+
+#### getter: densityTooLarge
+
+```ts
+type densityTooLarge = boolean
+```
+
+#### getter: derivedRegionTooLargeEnabled
+
+```ts
+type derivedRegionTooLargeEnabled = boolean
+```
+
+#### getter: configuredFetchSizeLimit
+
+```ts
+type configuredFetchSizeLimit = number
+```
+
+#### getter: renderDataMap
+
+```ts
+type renderDataMap = Map<number, FeatureDataResult>
+```
+
+#### getter: settledMaxY
+
+```ts
+type settledMaxY = number
+```
+
+#### getter: maxY
+
+```ts
+type maxY = number
+```
+
+#### getter: hasOverflow
+
+```ts
+type hasOverflow = boolean
+```
+
+#### getter: contentHeight
+
+```ts
+type contentHeight = number
+```
+
+#### getter: scrollableHeight
+
+```ts
+type scrollableHeight = number
+```
+
+#### getter: naturalContentHeight
+
+```ts
+type naturalContentHeight = number
+```
+
+#### getter: grownHeight
+
+```ts
+type grownHeight = number
+```
+
+#### getter: height
+
+```ts
+type height = number
+```
+
+#### getter: featureIdIndex
+
+```ts
+type featureIdIndex = Map<string, FlatbushItem>
+```
+
+#### getter: subfeatureIdIndex
+
+```ts
+type subfeatureIdIndex = Map<string, SubfeatureInfo>
+```
+
+#### getter: hoveredFeature
+
+```ts
+type hoveredFeature = FlatbushItem | null
+```
+
+#### getter: hoveredSubfeature
+
+```ts
+type hoveredSubfeature = SubfeatureInfo | null
+```
+
+#### getter: featureItemMap
+
+```ts
+type featureItemMap = Map<string, FeatureItemEntry>
+```
+
+#### getter: flatbushIndexes
+
+```ts
+type flatbushIndexes = Map<number, FlatbushRegionIndexes>
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Methods</summary>
+
+#### method: activeFilters
+
+The filters actually applied, as `jexl:`-prefixed expressions. The runtime
+override shadows the config slot when set; otherwise the deferred-evaluation
+`jexlFilters` config slot is prefixed on read. This is the single source of
+truth for both the worker (via rpcProps) and the "Filter by..." dialog (so
+existing config filters show up and are editable).
+
+```ts
+type activeFilters = () => string[]
+```
+
+#### method: fitLayoutAt
+
+One fit-escalation candidate: the stack packed with the given label/description
+reservation, via that config's own memo instance so each keeps stable references
+across renders. Empty until initialized/in-bounds, so the GPU upload autorun has
+nothing to push.
+
+```ts
+type fitLayoutAt = (memo: (rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>, showLabels: boolean, showDescriptions: boolean, labelDecimation?: LabelDecimation, labelRoomFactor?: number) => Map<...>
+```
+
+#### method: colorBySubMenuItems
+
+The "Color by..." radio choices (solid/strand/attribute). Split out so
+subclasses can reuse them while assembling their own color menu.
+
+```ts
+type colorBySubMenuItems = () => {
+  label: string
+  type: 'radio'
+  checked: boolean
+  onClick: () => void
+}[]
+```
+
+#### method: colorMenuItems
+
+Color-related track menu entries: a single "Color by..." entry whose "Solid
+color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants)
+override to drop the gene-oriented UTR picker.
+
+```ts
+type colorMenuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  subMenu: {
+    label: string
+    type: 'radio'
+    checked: boolean
+    onClick: () => void
+  }[]
+}[]
+```
+
+#### method: featureHeightMenuItems
+
+One "Feature height" menu with two independent radio groups, mirroring the
+alignments display: the size presets (how tall each feature is drawn) and, under
+a "Track sizing" subheader, how the track responds when there are more features
+than fit — scroll / expand / squeeze. The two axes are orthogonal, so picking a
+size never changes the mode and vice versa. Shared by every canvas display
+(genes, variants).
+
+```ts
+type featureHeightMenuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  subMenu: MenuItem[]
+}[]
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Methods (other undocumented members)</summary>
+
+#### method: observedMaxDensity
+
+```ts
+type observedMaxDensity = (bpPerPx: number) => number
+```
+
+#### method: rpcProps
+
+```ts
+type rpcProps = () => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<...>>) | undefined; hiddenFeatureIds: (IMSTArray<...> & IStateTreeNode<...>) | undefined; theme: SerializableThemeArgs | undefined; }
+```
+
+#### method: getFeatureById
+
+```ts
+type getFeatureById = (featureId: string) => FlatbushItem | undefined
+```
+
+#### method: searchFeatureByID
+
+```ts
+type searchFeatureByID = (
+  id: string,
+) => readonly [number, number, number, number] | undefined
+```
+
+#### method: renderSvg
+
+```ts
+type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
+```
+
+#### method: showSubmenuMenuItems
+
+```ts
+type showSubmenuMenuItems = () => (
+  | {
+      label: string
+      subMenu: {
+        label: string
+        type: 'radio'
+        checked: boolean
+        onClick: () => void
+      }[]
+    }
+  | { label: string; type: 'checkbox'; checked: any; onClick: () => void }
+)[]
+```
+
+#### method: contextMenuItems
+
+```ts
+type contextMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
+```
+
+#### method: trackMenuItems
+
+```ts
+type trackMenuItems = () => MenuItem[]
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Actions</summary>
+
+#### action: selectFeature
+
+Open the feature-details widget. The adapter's header metadata (VCF INFO/FORMAT
+descriptions, etc.) is fetched first and passed as `descriptions` so the widget
+can label attribute rows and — for the variant widget — resolve the ANN/CSQ
+column names; without it that table renders headerless. CoreGetMetadata returns
+null for adapters that expose none, so this is a no-op for those tracks.
+
+```ts
+type selectFeature = (feature: Feature) => void
+```
+
+#### action: setJexlFilters
+
+Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass
+undefined to clear it and fall back to the config `jexlFilters` slot.
+
+```ts
+type setJexlFilters = (filters?: string[] | undefined) => void
+```
+
+#### action: resizeHeight
+
+A manual drag-resize means the user wants a fixed height; leave grow mode first,
+otherwise the reactive `height` getter re-derives grownHeight on the next layout
+change and the drag appears to do nothing.
+
+```ts
+type resizeHeight = (distance: number) => number
+```
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Actions (other undocumented members)</summary>
+
+#### action: beginYMorph
+
+```ts
+type beginYMorph = (fromTops: Map<string, number>, fromMaxY: number) => void
+```
+
+#### action: setMorphProgress
+
+```ts
+type setMorphProgress = (t: number) => void
+```
+
+#### action: endYMorph
+
+```ts
+type endYMorph = () => void
+```
+
+#### action: setRpcData
+
+```ts
+type setRpcData = (
+  displayedRegionIndex: number,
+  data: FeatureDataResult,
+  loadedBpPerPx: number,
+  region: Region,
+) => void
+```
+
+#### action: setDensityStats
+
+```ts
+type setDensityStats = (
+  displayedRegionIndex: number,
+  stats: RegionDensityStats,
+) => void
+```
+
+#### action: clearDisplaySpecificData
+
+```ts
+type clearDisplaySpecificData = () => void
+```
+
+#### action: pruneRpcDataMapToVisible
+
+```ts
+type pruneRpcDataMapToVisible = (
+  visibleDisplayedRegionIndices: Set<number>,
+) => void
+```
+
+#### action: startRenderingBackend
+
+```ts
+type startRenderingBackend = (backend: CanvasFeatureRenderingBackend) => void
+```
+
+#### action: setFeatureDensityStatsLimit
+
+```ts
+type setFeatureDensityStatsLimit = (
+  stats?:
+    | { bytes?: number | undefined; fetchSizeLimit?: number | undefined }
+    | undefined,
+) => void
+```
+
+#### action: setHover
+
+```ts
+type setHover = (
+  featureId: string | null,
+  subfeatureId: string | null,
+  tooltip: string | undefined,
+) => void
+```
+
+#### action: clearHover
+
+```ts
+type clearHover = () => void
+```
+
+#### action: closeContextMenu
+
+```ts
+type closeContextMenu = () => void
+```
+
+#### action: togglePinnedFeature
+
+```ts
+type togglePinnedFeature = (featureId: string) => void
+```
+
+#### action: toggleSoloFeature
+
+```ts
+type toggleSoloFeature = (featureId: string) => void
+```
+
+#### action: clearSolo
+
+```ts
+type clearSolo = () => void
+```
+
+#### action: hideFeature
+
+```ts
+type hideFeature = (featureId: string) => void
+```
+
+#### action: showAllHidden
+
+```ts
+type showAllHidden = () => void
+```
+
+#### action: setFeatureHighlights
+
+```ts
+type setFeatureHighlights = (highlights: FeatureHighlight[]) => void
+```
+
+#### action: addFeatureHighlightForItem
+
+```ts
+type addFeatureHighlightForItem = (
+  item: Pick<FlatbushItem, 'name' | 'startBp' | 'endBp'>,
+  refName: string,
+) => void
+```
+
+#### action: removeFeatureHighlightsForItem
+
+```ts
+type removeFeatureHighlightsForItem = (
+  item: Pick<FlatbushItem, 'name' | 'startBp' | 'endBp'>,
+  refName: string,
+) => void
+```
+
+#### action: clearFeatureHighlights
+
+```ts
+type clearFeatureHighlights = () => void
+```
+
+#### action: applySolo
+
+```ts
+type applySolo = () => void
+```
+
+#### action: soloFeature
+
+```ts
+type soloFeature = (featureId: string) => void
+```
+
+#### action: clearAllFeatureFilters
+
+```ts
+type clearAllFeatureFilters = () => void
+```
+
+#### action: clearSelection
+
+```ts
+type clearSelection = () => void
+```
+
+#### action: setShowLabels
+
+```ts
+type setShowLabels = (value: 'auto' | 'off' | 'on') => void
+```
+
+#### action: setShowDescriptions
+
+```ts
+type setShowDescriptions = (value: boolean) => void
+```
+
+#### action: setShowOutline
+
+```ts
+type setShowOutline = (value: boolean) => void
+```
+
+#### action: setFeatureColor
+
+```ts
+type setFeatureColor = (color?: string | undefined) => void
+```
+
+#### action: setUtrColor
+
+```ts
+type setUtrColor = (color?: string | undefined) => void
+```
+
+#### action: openContextMenu
+
+```ts
+type openContextMenu = (
+  featureInfo: FlatbushItem,
+  displayedRegionIndex: number,
+  clientX: number,
+  clientY: number,
+) => void
+```
+
+#### action: setDisplayMode
+
+```ts
+type setDisplayMode = (value: DisplayMode) => void
+```
+
+#### action: setHeightMode
+
+```ts
+type setHeightMode = (mode: HeightMode) => void
+```
+
+#### action: openSetColorDialog
+
+```ts
+type openSetColorDialog = (showUtrColor?: any) => void
+```
+
+#### action: openColorByAttributeDialog
+
+```ts
+type openColorByAttributeDialog = () => void
+```
+
+#### action: openFilterDialog
+
+```ts
+type openFilterDialog = () => void
+```
+
+#### action: fetchFullFeature
+
+```ts
+type fetchFullFeature = (
+  featureId: string,
+  displayedRegionIndex: number,
+) => Promise<SimpleFeature | undefined>
+```
+
+#### action: isCacheValid
+
+```ts
+type isCacheValid = (displayedRegionIndex: number) => boolean
+```
+
+#### action: byteSizeLimit
+
+```ts
+type byteSizeLimit = () => number | undefined
+```
+
+#### action: selectFeatureById
+
+```ts
+type selectFeatureById = (
+  featureId: string,
+  subfeatureInfo: SubfeatureInfo | undefined,
+  displayedRegionIndex: number,
+) => void
+```
+
+#### action: reload
+
+```ts
+type reload = () => Promise<void>
+```
+
+#### action: fetchNeeded
+
+```ts
+type fetchNeeded = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+) => void
+```
+
+#### action: clearStaleDensityState
+
+```ts
+type clearStaleDensityState = () => void
+```
+
+#### action: afterAttach
+
+```ts
+type afterAttach = () => void
+```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from BaseDisplay</summary>
+
+[BaseDisplay →](../basedisplay)
+
+**Properties**
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<string>
+// code
+type: types.string
+```
+
+#### property: rpcDriverName
+
+```ts
+// type signature
+type rpcDriverName = IMaybe<ISimpleType<string>>
+// code
+rpcDriverName: types.maybe(types.string)
+```
+
+#### property: ignorePromotedDefaults
+
+true for a display that arrived inside a session received from someone else (a
+share link, an encoded/json session, a `spec-` URL). Such a display resolves its
+`promotable` config slots from its own config only, never from this browser's
+promoted display-type defaults (see `configuration/promotableDefaults.ts`) — the
+received session is a record of what the sender saw, and a local preference
+silently repainting it would make it a lie. A track opened _afterwards_ in that
+same session is a fresh track of this user's, so it never gets the flag and
+picks up their defaults normally. Cleared by `resetSlotsToInherit` when the user
+deliberately makes the display follow a default.
+
+```ts
+// type signature
+type ignorePromotedDefaults = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+ignorePromotedDefaults: types.stripDefault(types.boolean, false)
+```
+
+**Volatiles**
+
+#### volatile: error
+
+```ts
+// type signature
+type error = unknown
+// code
+error: undefined as unknown
+```
+
+#### volatile: statusMessage
+
+```ts
+// type signature
+type statusMessage = string | undefined
+// code
+statusMessage: undefined as string | undefined
+```
+
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate. Set alongside `statusMessage` by
+`setStatusMessage`; a display that never shows a bar simply leaves it undefined.
+
+```ts
+// type signature
+type statusProgress = number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
+**Getters**
+
+#### getter: parentTrack
+
+```ts
+type parentTrack = AbstractTrackModel
+```
+
+#### getter: parentDisplay
+
+Returns the parent display if this display is nested within another display
+(e.g., PileupDisplay inside LinearAlignmentsDisplay)
+
+```ts
+type parentDisplay =
+  | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
+  | undefined
+```
+
+#### getter: RenderingComponent
+
+```ts
+type RenderingComponent = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: ((distance: number) => void) | undefined;...
+```
+
+#### getter: DisplayBlurb
+
+```ts
+type DisplayBlurb = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
+```
+
+#### getter: adapterConfig
+
+```ts
+type adapterConfig = any
+```
+
+#### getter: isMinimized
+
+Returns true if the parent track is minimized. Used to skip expensive operations
+like autoruns when track is not visible.
+
+```ts
+type isMinimized = boolean
+```
+
+#### getter: effectiveRpcDriverName
+
+Returns the effective RPC driver name with hierarchical fallback:
+
+1. This display's explicit rpcDriverName
+2. Parent display's effectiveRpcDriverName (for nested displays)
+3. Track config's rpcDriverName
+
+```ts
+type effectiveRpcDriverName = any
+```
+
+**Methods**
+
+#### method: renderingProps
+
+props passed to the renderer's React "Rendering" component. these are
+client-side only and never sent to the worker. includes displayModel and
+callbacks
+
+```ts
+type renderingProps = () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; ignorePromotedDefaults: IOptionalIType<...>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
+```
+
+#### method: regionCannotBeRendered
+
+```ts
+type regionCannotBeRendered = () => null
+```
+
+**Actions**
+
+#### action: setIgnorePromotedDefaults
+
+see the `ignorePromotedDefaults` property
+
+```ts
+type setIgnorePromotedDefaults = (flag: boolean) => void
+```
+
+#### action: setStatusMessage
+
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
+```
+
+#### action: setError
+
+```ts
+type setError = (error?: unknown) => void
+```
+
+#### action: setRpcDriverName
+
+```ts
+type setRpcDriverName = (rpcDriverName: string) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from TrackHeightMixin</summary>
+
+[TrackHeightMixin →](../trackheightmixin)
+
+**Volatiles**
+
+#### volatile: scrollTop
+
+```ts
+// type signature
+type scrollTop = number
+// code
+scrollTop: 0
+```
+
+**Actions**
+
+#### action: setScrollTop
+
+```ts
+type setScrollTop = (scrollTop: number) => void
+```
+
+#### action: setHeight
+
+```ts
+type setHeight = (displayHeight: number) => number
+```
+
+</details>
+
+<details>
+<summary>Derived from HeightModeMixin</summary>
+
+[HeightModeMixin →](../heightmodemixin)
+
+**Getters**
+
+#### getter: heightMode
+
+The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel
+slot: getConfResolved walks the customized-track -> session-default -> `fixed`
+cascade and never returns the `inherit` sentinel.
+
+```ts
+type heightMode = HeightMode
+```
+
+#### getter: fitTargetHeight
+
+The drag-resizable track height as stored in the config slot — the fit target
+the fit/grow layout scales or packs content into. Read there instead of the
+reactive `height` getter to break the grow-mode cycle
+(`height`->grownHeight->layout->height). Equals `height` in fixed/fit.
+
+```ts
+type fitTargetHeight = number
+```
+
+#### getter: autoHeight
+
+`grow` mode as a boolean, derived from the unified `heightMode` slot.
+
+```ts
+type autoHeight = boolean
+```
+
+#### getter: fitHeightToDisplay
+
+`fit` mode as a boolean, derived from the unified `heightMode` slot.
+
+```ts
+type fitHeightToDisplay = boolean
+```
+
+</details>
+
+<details>
+<summary>Derived from MultiRegionDisplayMixin</summary>
+
+[MultiRegionDisplayMixin →](../multiregiondisplaymixin)
+
+**Volatiles**
+
+#### volatile: loadedRegions
+
+regions whose data has been fetched and committed, keyed by
+displayedRegionIndex; populated only after the fetch work callback returns
+
+```ts
+// type signature
+type loadedRegions = ObservableMap<number, Region>
+// code
+loadedRegions: observable.map<number, Region>()
+```
+
+**Getters**
+
+#### getter: isReady
+
+true once the canvas has painted and no fetch is in flight
+
+```ts
+type isReady = boolean
+```
+
+#### getter: viewportWithinLoadedData
+
+true when every visible block lies within an already-fetched region — i.e. the
+viewport shows data we actually loaded, not the stale fringe left after a
+zoom-out/pan. Drives the loading overlay through the pre-refetch debounce.
+Spatial only; see CLAUDE.md for why this is exact and for the
+resolution-staleness gap.
+
+```ts
+type viewportWithinLoadedData = boolean
+```
+
+#### getter: svgReady
+
+true once an off-screen (SVG) export can safely read this display's data: every
+visible region has loaded, or the fetch reached a terminal error / too-large
+state. Off-screen renderers gate on it via `awaitSvgReady(model)` instead of
+inlining the condition. Regions stream in one at a time, so gating on
+`viewportWithinLoadedData` (not the first datum) is what keeps
+multi-region/whole-genome exports complete; `loadedRegions.size` guards the
+vacuously-true empty-viewport case.
+
+```ts
+type svgReady = boolean
+```
+
+#### getter: svgReadyExtraTerminal
+
+Overridable hook (default false): a subclass returns true to mark an extra
+terminal state where off-screen export can proceed with no loaded data. Sequence
+sets it when zoomed past base resolution — it renders a static "zoom in" message
+and fetches nothing, so `svgReady` would otherwise never resolve.
+
+```ts
+type svgReadyExtraTerminal = boolean
+```
+
+#### getter: renderBlocks
+
+Shared cached view for every LGV-based GPU display. A single displayedRegion may
+produce multiple render blocks (shared GPU buffer, different scissor clips on
+screen). Plugins that want to suppress rendering in certain states (e.g. no
+domain yet) can override this getter to return [] — the autorun lifecycle will
+then issue an empty-blocks render that clears the canvas.
+
+```ts
+type renderBlocks = RenderBlock[]
+```
+
+#### getter: displayPhase
+
+The display's mutually-exclusive visual state, precedence single-sourced in
+`computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data
+(viewport past loaded) is still on screen through the pre-refetch debounce.
+
+```ts
+type displayPhase = DisplayPhase
+```
+
+**Actions**
+
+#### action: setLoadedRegion
+
+Action wrapper so callers after async boundaries stay in MST strict mode.
+
+```ts
+type setLoadedRegion = (displayedRegionIndex: number, region: Region) => void
+```
+
+#### action: clearAllRpcData
+
+full reset: cancels fetch, clears error, loadedRegions, display-specific data,
+and the canvas-drawn flag. The too-large gate is derived (a pure function of the
+cached estimate × viewport), so it needs no explicit clear here — it
+self-releases when the viewport changes.
+
+```ts
+type clearAllRpcData = () => void
+```
+
+#### action: invalidateLoadedRegions
+
+lighter reset: cancels fetch and clears loadedRegions, leaving error and
+regionTooLarge intact
+
+```ts
+type invalidateLoadedRegions = () => void
+```
+
+#### action: getByteEstimateConfig
+
+Overridable hook: return config to enable byte-estimate gating before fetch.
+
+```ts
+type getByteEstimateConfig = () => ByteEstimateConfig | null
+```
+
+#### action: onRegionTooLarge
+
+Overridable hook (no-op base): called when `regionTooLarge` transitions to true.
+Displays with transient hover/tooltip state override it to clear that state —
+the too-large banner replaces the rendered content, so a lingering hover would
+otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge`
+autorun, fired by the derived too-large gate.
+
+```ts
+type onRegionTooLarge = () => void
+```
+
+#### action: fetchRegions
+
+Run a per-region fetch with byte-estimate gating. Marks regions as loaded only
+AFTER the work callback has populated display-specific data (rpcDataMap,
+cellData, etc) so the GPU upload autorun sees committed data when it observes
+loadedRegions.
+
+```ts
+type fetchRegions = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+  work: (ctx: FetchContext) => Promise<void>,
+) => Promise<void>
+```
+
+</details>
+
+<details>
+<summary>Derived from RegionTooLargeMixin</summary>
+
+[RegionTooLargeMixin →](../regiontoolargemixin)
+
+**Properties**
+
+#### property: userByteSizeLimit
+
+user-confirmed byte limit after a force-load, disabling the gate
+
+```ts
+// type signature
+type userByteSizeLimit = IMaybe<ISimpleType<number>>
+// code
+userByteSizeLimit: types.maybe(types.number)
+```
+
+**Volatiles**
+
+#### volatile: featureDensityStats
+
+```ts
+// type signature
+type featureDensityStats = FeatureDensityStats | undefined
+// code
+featureDensityStats: undefined as FeatureDensityStats | undefined
+```
+
+#### volatile: byteEstimateVisibleBp
+
+visibleBp at which the current `featureDensityStats` byte estimate was captured,
+so the derived gate (`estimatedVisibleBytes`) can scale it to the current view.
+Written by `setFeatureDensityStats`; ignored unless
+`derivedRegionTooLargeEnabled`.
+
+```ts
+// type signature
+type byteEstimateVisibleBp = number | undefined
+// code
+byteEstimateVisibleBp: undefined as number | undefined
+```
+
+**Getters**
+
+#### getter: estimatedVisibleBytes
+
+The cached byte estimate scaled from the span it was measured over
+(`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to
+span, so scaling makes the derived verdict a pure function of the current view
+and self-releases on zoom-in — without it a large zoomed-out estimate stays
+above the limit forever and gates refetch. Only meaningful when
+`derivedRegionTooLargeEnabled`.
+
+```ts
+type estimatedVisibleBytes = number | undefined
+```
+
+#### getter: tooLargeStatus
+
+Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then
+bytes-over-limit, then the density axis), fed the scaled estimate so the byte
+gate self-releases on zoom-in. Same helper as every other gating path so the
+banner text can't drift.
+
+```ts
+type tooLargeStatus = RegionTooLargeStatus
+```
+
+#### getter: regionTooLarge
+
+```ts
+type regionTooLarge = boolean
+```
+
+#### getter: regionTooLargeReason
+
+```ts
+type regionTooLargeReason = string
+```
+
+**Methods**
+
+#### method: regionCannotBeRenderedText
+
+Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the
+display chrome via `TooLargeMessage`, not the model.
+
+```ts
+type regionCannotBeRenderedText = () => '' | 'Force load to see features'
+```
+
+**Actions**
+
+#### action: setFeatureDensityStats
+
+Commits the byte estimate and records the span it was measured at
+(`byteEstimateVisibleBp`) so the derived gate can scale it to the current view.
+The capture is harmless for non-gated displays (they ignore it).
+
+```ts
+type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
+```
+
+#### action: forceLoad
+
+Raises the byte limit past the current density stats and triggers a reload. The
+display chrome calls this via TooLargeMessage's force-load button; concrete
+display models override reload() to do the actual refetch.
+
+```ts
+type forceLoad = () => void
+```
+
+</details>
+
+<details>
+<summary>Derived from RenderLifecycleMixin</summary>
+
+[RenderLifecycleMixin →](../renderlifecyclemixin)
+
+**Volatiles**
+
+#### volatile: canvasDrawn
+
+flips true on first paint; read by test selectors to detect render
+
+```ts
+// type signature
+type canvasDrawn = false
+// code
+canvasDrawn: false
+```
+
+#### volatile: currentRenderingBackend
+
+current backend reference, updated on context-loss recovery. Typed `unknown`
+(not generic `B`) on purpose: this mixin is composed by every display via a
+non-generic factory, so the per-display backend type `B` isn't known here — it's
+supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
+autoruns. Don't "fix" the cast.
+
+```ts
+// type signature
+type currentRenderingBackend = undefined
+// code
+currentRenderingBackend: undefined
+```
+
+#### volatile: renderTick
+
+counter the render autorun observes; bumped to force a re-render
+
+```ts
+// type signature
+type renderTick = number
+// code
+renderTick: 0
+```
+
+#### volatile: autorunsInstalled
+
+guards attachRenderingBackend so the autorun pair spawns once per instance
+
+```ts
+// type signature
+type autorunsInstalled = false
+// code
+autorunsInstalled: false
+```
+
+#### volatile: renderError
+
+the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
+Single source of truth for the render-error terminal state:
+`useRenderingBackend` writes it from the canvas-init mechanism so the model —
+not React-local hook state — owns every terminal state. Read by `displayPhase`
+(whose `renderError` term outranks `loading`, suppressing the scrim) and by
+`DisplayChrome` (shows the retry overlay).
+
+```ts
+// type signature
+type renderError = undefined
+// code
+renderError: undefined
+```
+
+**Actions**
+
+#### action: markCanvasDrawn
+
+```ts
+type markCanvasDrawn = () => void
+```
+
+#### action: resetCanvasDrawn
+
+```ts
+type resetCanvasDrawn = () => void
+```
+
+#### action: stopRenderingBackend
+
+```ts
+type stopRenderingBackend = () => void
+```
+
+#### action: renderNow
+
+```ts
+type renderNow = () => void
+```
+
+#### action: setRenderError
+
+set/clear the render-backend error. Called by `useRenderingBackend`: with the
+error when the canvas factory rejects (or context-loss re-init fails), and with
+`undefined` on successful (re)init and on retry.
+
+```ts
+type setRenderError = (error: unknown) => void
+```
+
+#### action: attachRenderingBackend
+
+attach a GPU/Canvas2D backend and install the upload + render autorun pair
+(idempotent — re-calling only swaps the backend)
+
+```ts
+type attachRenderingBackend = <B>(
+  backend: B,
+  cbs: RenderingBackendCallbacks<B>,
+) => void
+```
+
+</details>
+
+<details>
+<summary>Derived from FetchMixin</summary>
+
+[FetchMixin →](../fetchmixin)
+
+**Volatiles**
+
+#### volatile: activeStopToken
+
+stop token of the in-flight fetch, or undefined when idle
+
+```ts
+// type signature
+type activeStopToken = StopToken | undefined
+// code
+activeStopToken: undefined as StopToken | undefined
+```
+
+#### volatile: fetchGeneration
+
+bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the
+staleness epoch inside runFetch
+
+```ts
+// type signature
+type fetchGeneration = number
+// code
+fetchGeneration: 0
+```
+
+#### volatile: fetchCanceled
+
+true after the user explicitly cancels a load (the loading overlay's cancel
+button → `cancelFetchByUser`). A durable, blocking state — unlike `cancelFetch`,
+it does not retrigger the fetch autoruns — so the load stays stopped until the
+user retries (`reload`) or the viewport changes. Any new fetch clears it
+(`runFetch` resets it at the start).
+
+```ts
+// type signature
+type fetchCanceled = false
+// code
+fetchCanceled: false
+```
+
+#### volatile: regionStatuses
+
+latest status of each concurrent in-flight operation, keyed by an arbitrary id
+(the canvas display uses displayedRegionIndex). Plain bookkeeping — not read
+reactively; setRegionStatus derives the observable statusMessage/statusProgress
+from it on every update so N parallel region fetches aggregate into one bar
+instead of clobbering.
+
+```ts
+// type signature
+type regionStatuses = Map<number, RpcStatus>
+// code
+regionStatuses: new Map<number, RpcStatus>()
+```
+
+#### volatile: lastStatusMs
+
+Date.now() of the last applied status write; the status callbacks gate on it to
+throttle a high-frequency progress stream.
+
+```ts
+// type signature
+type lastStatusMs = number
+// code
+lastStatusMs: 0
+```
+
+**Getters**
+
+#### getter: isLoading
+
+true while a fetch is active
+
+```ts
+type isLoading = boolean
+```
+
+**Methods**
+
+#### method: makeStatusCallback
+
+An RPC `statusCallback` bound to this display: forwards progress to the shared
+`statusMessage`, guarded by `isAlive` so a callback that fires after the node is
+torn down (RPCs resolve their status stream asynchronously) is a safe no-op.
+Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard
+at every call site.
+
+```ts
+type makeStatusCallback = () => (status: RpcStatus) => void
+```
+
+#### method: makeRegionStatusCallback
+
+Per-region variant of `makeStatusCallback`: routes progress through
+`setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
+status bar instead of clobbering each other. Same `isAlive` guard.
+
+```ts
+type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
+```
+
+**Actions**
+
+#### action: throttleStatus
+
+Run `apply` only if at least `STATUS_THROTTLE_MS` has passed since the last
+status write. A leading-edge throttle: sparse updates pass straight through,
+dense progress bursts are thinned so the loading overlay stops re-rendering
+faster than the view animates. The final status doesn't need a trailing flush —
+fetch completion clears it via `resetStatus`.
+
+```ts
+type throttleStatus = (apply: () => void) => void
+```
+
+#### action: resetStatus
+
+Drop the active stop token and clear all status bookkeeping. Shared by both
+cancel paths and runFetch's cleanup.
+
+```ts
+type resetStatus = () => void
+```
+
+#### action: stopActiveFetch
+
+Abort the in-flight fetch (if any) and clear its status. The shared preamble of
+both cancel paths; the difference between them is only what they do to
+`fetchCanceled` / `fetchGeneration` afterward.
+
+```ts
+type stopActiveFetch = () => void
+```
+
+#### action: setRegionStatus
+
+Record one concurrent operation's latest status (keyed) and recompute the shared
+statusMessage/statusProgress as the aggregate across all in-flight keys. Pass
+undefined to drop a key. Used by displays that fan a single fetch out into
+parallel per-region RPCs.
+
+```ts
+type setRegionStatus = (key: number, status?: RpcStatus | undefined) => void
+```
+
+#### action: cancelFetch
+
+cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers
+can retrigger fetch autoruns even when nothing was in flight). This is the
+_internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any
+user-cancel flag so the retrigger actually re-fetches.
+
+```ts
+type cancelFetch = () => void
+```
+
+#### action: cancelFetchByUser
+
+User-initiated cancel from the loading overlay. Stops the in-flight fetch and
+lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump
+fetchGeneration — so the fetch autoruns don't immediately restart the load. The
+user retries via `reload` (the overlay's retry button), or it clears on the next
+viewport change.
+
+```ts
+type cancelFetchByUser = () => void
+```
+
+#### action: runFetch
+
+Run a cancel-safe fetch (cancels any prior). The work callback gets a
+FetchContext with a stopToken to forward to the RPC and an isStale() check to
+short-circuit commits once the user has moved on. Abort errors are swallowed;
+others are stored in `error` if not stale.
+
+```ts
+type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+```
+
+</details>
+
+<details>
+<summary>Derived from PromotableDefaultsMixin</summary>
+
+[PromotableDefaultsMixin →](../promotabledefaultsmixin)
+
+**Methods**
+
+#### method: displayTypeDefaultChanges
+
+Effective config differences a track following the default inherits from
+session-wide defaults (distinct from per-track config edits /
+trackConfigDeltas). Drives the "affected by a session default" badge.
+
+```ts
+type displayTypeDefaultChanges = () => TrackConfigChange[]
+```
+
+**Actions**
+
+#### action: clearDisplayTypeDefaults
+
+Clear the session-wide defaults reported by `displayTypeDefaultChanges` so this
+display (and its siblings of the same type) revert to their config values. Backs
+the "clear default" action on the selector badge.
+
+```ts
+type clearDisplayTypeDefaults = () => void
+```
+
+</details>

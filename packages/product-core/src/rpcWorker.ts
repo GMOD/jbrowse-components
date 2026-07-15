@@ -4,6 +4,7 @@ import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { RpcStatus } from '@jbrowse/core/util'
 
 declare global {
   interface Window {
@@ -20,9 +21,11 @@ interface WorkerConfiguration {
 // must be sent on boot
 function receiveConfiguration() {
   const configurationP = new Promise<WorkerConfiguration>(resolve => {
-    function listener(e: MessageEvent) {
-      if (e.data.message === 'config') {
-        resolve(e.data.config as WorkerConfiguration)
+    function listener(
+      e: MessageEvent<{ message?: string; config?: WorkerConfiguration }>,
+    ) {
+      if (e.data.message === 'config' && e.data.config) {
+        resolve(e.data.config)
         removeEventListener('message', listener)
       }
     }
@@ -67,7 +70,7 @@ function wrapForRpc(func: RpcFunc) {
     return func(
       {
         ...wrappedArgs,
-        statusCallback: (message: string) => {
+        statusCallback: (message: RpcStatus) => {
           self.rpcServer?.emit(channel, message)
         },
       },
@@ -105,5 +108,4 @@ export async function initializeWorker(
   } catch (e) {
     postMessage({ message: 'error', error: serializeError(e) })
   }
-  /* do nothing */
 }

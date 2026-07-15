@@ -1,9 +1,19 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BigBedAdapter
+ * #trackType FeatureTrack
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'BigBedAdapter',
+ *   uri: 'https://example.com/features.bb',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -77,5 +87,7 @@ const BigBedAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type BigBedAdapterConfig = Instance<typeof BigBedAdapter>
 
 export default BigBedAdapter

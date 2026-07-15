@@ -2,12 +2,15 @@ import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
 
+import { applyDefaultSessionViewInit } from './applyDefaultSessionViewInit.ts'
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
 import { loadSessionSpec } from './loadSessionSpec.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 
+import type { WebRootModel } from './rootModel/rootModel.ts'
+import type { SessionSource } from './types.ts'
 import type { PluginRecord } from '@jbrowse/core/PluginLoader'
 
 // Structural read-only view of SessionLoader. Kept narrow so it can be
@@ -19,13 +22,18 @@ export interface PluginManagerSource {
   readonly configSnapshot?: Record<string, unknown>
   readonly configPath?: string
   readonly adminKey?: string
-  readonly sessionError: unknown
-  readonly sessionSpec?: Record<string, unknown>
-  readonly sessionSnapshot?: Record<string, unknown>
-  readonly hubSpec?: Record<string, unknown>
+  readonly sessionSource?: SessionSource
   readonly sessionName?: string
   readonly initialTimestamp: number
   readonly sessionQuery?: string
+  readonly defaultSessionViewInit?: {
+    loc?: string
+    assembly?: string
+    tracks?: string[]
+    tracklist?: boolean
+    nav?: boolean
+    highlight?: string[]
+  }
 }
 
 function asPluginRecord({ plugin: P, definition }: PluginRecord) {
@@ -57,56 +65,59 @@ export function createPluginManager(
     ...(model.sessionPlugins ?? []).map(asPluginRecord),
   ]).createPluggableElements()
 
-  const RootModel = JBrowseRootModelFactory({
+  const rootModel = JBrowseRootModelFactory({
     pluginManager,
     sessionModelFactory,
     adminMode: !!model.adminKey,
-  })
-
-  const rootModel = RootModel.create(
+  }).create(
     {
       jbrowse: model.configSnapshot,
       configPath: model.configPath,
     },
     { pluginManager },
   )
-
   rootModel.setReloadPluginManagerCallback(reloadPluginManagerCallback)
 
-  const configuredRpc = (
-    model.configSnapshot as {
-      configuration?: { rpc?: { defaultDriver?: unknown } }
-    }
-  ).configuration?.rpc?.defaultDriver
-  if (!configuredRpc) {
-    rootModel.jbrowse.configuration.rpc.defaultDriver.set('WebWorkerRpcDriver')
-  }
+  // configure() before initSession so hub/spec sessions see registered
+  // views/tracks/extension-points; safe because configure() doesn't read
+  // session state
+  pluginManager.setRootModel(rootModel).configure()
+  doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
+  initSession(rootModel, pluginManager, model)
+  return pluginManager
+}
 
-  const { sessionError, sessionSpec, sessionSnapshot, hubSpec, sessionName } =
-    model
-
-  // hub/spec sessions need a configured pluginManager (views/tracks registered)
-  // so they are deferred until after pluginManager.configure() below
-  let initAfterConfigure: (() => unknown) | undefined
-
-  // in order: saves the previous autosave for recovery, tries to load the
-  // local session if session in query, or loads the default session
+// Applies the single session the loader resolved. The loader already
+// discriminated which kind of session this is; here we just dispatch on
+// sessionSource.type. Any failure (a resolved error, or a thrown snapshot)
+// falls back to the default session with a user-facing notification.
+function initSession(
+  rootModel: WebRootModel,
+  pluginManager: PluginManager,
+  model: PluginManagerSource,
+) {
+  const { sessionSource, sessionName, defaultSessionViewInit } = model
   try {
-    if (sessionError) {
-      // eslint-disable-next-line @typescript-eslint/only-throw-error
-      throw sessionError
-    } else if (sessionSnapshot) {
-      rootModel.setSession(sessionSnapshot)
-    } else if (hubSpec) {
-      initAfterConfigure = () =>
-        // @ts-expect-error
-        loadHubSpec({ ...hubSpec, sessionName }, pluginManager)
-    } else if (sessionSpec) {
-      initAfterConfigure = () =>
-        // @ts-expect-error
-        loadSessionSpec({ ...sessionSpec, sessionName }, pluginManager)
+    if (sessionSource?.type === 'error') {
+      throw sessionSource.error
+    } else if (sessionSource?.type === 'snapshot') {
+      rootModel.setSession(sessionSource.snapshot)
+    } else if (sessionSource?.type === 'hub') {
+      // @ts-expect-error hubSpec is dynamic JSON (Record<string,unknown>); the
+      // required shape is validated at runtime inside loadHubSpec
+      void loadHubSpec({ ...sessionSource.hubSpec, sessionName }, pluginManager)
+    } else if (sessionSource?.type === 'spec') {
+      void loadSessionSpec(
+        // @ts-expect-error spec is dynamic JSON (Record<string,unknown>); the
+        // required shape is validated at runtime inside loadSessionSpec
+        { ...sessionSource.spec, sessionName },
+        pluginManager,
+      )
     } else {
       rootModel.setDefaultSession()
+      if (defaultSessionViewInit) {
+        applyDefaultSessionViewInit(rootModel.session, defaultSessionViewInit)
+      }
       if (sessionName) {
         rootModel.renameCurrentSession(sessionName)
       }
@@ -115,15 +126,9 @@ export function createPluginManager(
     rootModel.setDefaultSession()
     rootModel.session?.notifyError(
       `${formatSessionError(e)}. If you received this URL from another user, request that they send you a session generated with the "Share" button instead of copying and pasting their URL`,
-      model.sessionError,
-      model.sessionSnapshot,
+      e,
+      sessionSource?.type === 'snapshot' ? sessionSource.snapshot : undefined,
     )
     console.error(e)
   }
-
-  doAnalytics(rootModel, model.initialTimestamp, model.sessionQuery)
-  pluginManager.setRootModel(rootModel)
-  pluginManager.configure()
-  initAfterConfigure?.()
-  return pluginManager
 }

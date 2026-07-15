@@ -1,67 +1,73 @@
 ---
 id: formatdetails
 title: FormatDetails
+sidebar_label: Root -> FormatDetails
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/FormatDetails.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/FormatDetails.md)
-
-## Docs
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/FormatDetails.ts).
 
 generally exists on the tracks in the config.json or as a 'session' config as
 configuration.formatDetails
 
-### FormatDetails - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                                                                   | Type     | Description                                                                                                                                             |
+| -------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [configuration.formatDetails.feature](#slot-configurationformatdetailsfeature)         | `frozen` | adds extra fields to the feature details                                                                                                                |
+| [configuration.formatDetails.subfeatures](#slot-configurationformatdetailssubfeatures) | `frozen` | adds extra fields to the subfeatures of a feature                                                                                                       |
+| [configuration.formatDetails.depth](#slot-configurationformatdetailsdepth)             | `number` | depth to iterate the formatDetails->subfeatures callback on subfeatures (used for example to only apply the callback to the first layer of subfeatures) |
+| [configuration.formatDetails.maxDepth](#slot-configurationformatdetailsmaxdepth)       | `number` | hide subfeatures greater than a certain depth                                                                                                           |
+
+<details>
+<summary>FormatDetails - Slots</summary>
 
 #### slot: configuration.formatDetails.feature
 
+adds extra fields to the feature details
+
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
+
 ```js
-feature: {
-      type: 'frozen',
-      description: 'adds extra fields to the feature details',
-      defaultValue: {},
-      contextVariable: ['feature'],
-    }
+{
+  type: 'frozen',
+  description: 'adds extra fields to the feature details',
+  defaultValue: {},
+  contextVariable: ['feature'],
+}
 ```
 
 #### slot: configuration.formatDetails.subfeatures
 
+adds extra fields to the subfeatures of a feature
+
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
+
 ```js
-subfeatures: {
-      type: 'frozen',
-      description: 'adds extra fields to the subfeatures of a feature',
-      defaultValue: {},
-      contextVariable: ['feature'],
-    }
+{
+  type: 'frozen',
+  description: 'adds extra fields to the subfeatures of a feature',
+  defaultValue: {},
+  contextVariable: ['feature'],
+}
 ```
 
 #### slot: configuration.formatDetails.depth
 
-```js
-depth: {
-      type: 'number',
-      defaultValue: 2,
-      description:
-        'depth to iterate the formatDetails->subfeatures callback on subfeatures (used for example to only apply the callback to the first layer of subfeatures)',
-    }
-```
+depth to iterate the formatDetails->subfeatures callback on subfeatures (used
+for example to only apply the callback to the first layer of subfeatures)
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `2`
 
 #### slot: configuration.formatDetails.maxDepth
 
-```js
-maxDepth: {
-      type: 'number',
-      defaultValue: 10000,
-      description: 'hide subfeatures greater than a certain depth',
-    }
-```
+hide subfeatures greater than a certain depth
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`10000`
+
+</details>

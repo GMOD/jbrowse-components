@@ -1,15 +1,11 @@
-import fs from 'fs'
-import { parseArgs } from 'util'
+import fs from 'node:fs'
+import { parseArgs } from 'node:util'
 
-import decompress from 'decompress'
-
-import fetch from '../cliFetch.ts'
 import {
-  fetchGithubVersions,
-  getBranch,
-  getLatest,
-  getTag,
+  downloadRelease,
+  extractZip,
   printHelp,
+  printVersions,
 } from '../utils.ts'
 
 const fsPromises = fs.promises
@@ -88,20 +84,17 @@ export async function run(args: string[]) {
     return
   }
 
-  const argsPath = positionals[0]!
-  if (!argsPath && !runFlags.listVersions) {
-    console.error(`Missing 1 required arg:
-    localPath  Location where JBrowse 2 will be installed
-    See more help with --help`)
-    return
-  }
   const { force, url, listVersions, tag, branch, nightly } = runFlags
   if (listVersions) {
-    const versions = (await fetchGithubVersions()).map(
-      version => version.tag_name,
+    await printVersions()
+    return
+  }
+
+  const argsPath = positionals[0]
+  if (!argsPath) {
+    throw new Error(
+      'Missing 1 required arg:\nlocalPath  Location where JBrowse 2 will be installed\nSee more help with --help',
     )
-    console.log(`All JBrowse versions:\n${versions.join('\n')}`)
-    process.exit(0)
   }
 
   // mkdir will do nothing if dir exists
@@ -111,31 +104,13 @@ export async function run(args: string[]) {
     await checkPath(argsPath)
   }
 
-  const locationUrl =
-    url ||
-    (nightly ? await getBranch('main') : '') ||
-    (branch ? await getBranch(branch) : '') ||
-    (tag ? await getTag(tag) : await getLatest())
-
-  console.log(`Fetching ${locationUrl}...`)
-  const response = await fetch(locationUrl)
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} fetching ${locationUrl}: ${response.statusText}`,
-    )
-  }
-
-  const type = response.headers.get('content-type')
-  if (
-    url &&
-    type !== 'application/zip' &&
-    type !== 'application/octet-stream'
-  ) {
-    throw new Error(
-      'The URL provided does not seem to be a JBrowse installation URL',
-    )
-  }
-  await decompress(Buffer.from(await response.arrayBuffer()), argsPath)
+  const { locationUrl, archive } = await downloadRelease({
+    url,
+    nightly,
+    branch,
+    tag,
+  })
+  await extractZip(archive, argsPath)
 
   console.log(`Unpacked ${locationUrl} at ${argsPath}`)
 }

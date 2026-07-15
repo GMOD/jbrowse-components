@@ -2,13 +2,14 @@ import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, doesIntersect2, revcom } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import type { SequenceSearchAdapterConfig } from './configSchema.ts'
 import type {
   BaseOptions,
   BaseSequenceAdapter,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
+export default class SequenceSearchAdapter extends BaseFeatureDataAdapter<SequenceSearchAdapterConfig> {
   public async configure() {
     const adapter = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))
     if (!adapter) {
@@ -38,10 +39,14 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
           },
           opts,
         )) ?? ''
-      const search = this.getConf('search') as string
-      const searchForward = this.getConf('searchForward') as boolean
-      const searchReverse = this.getConf('searchReverse') as boolean
-      const caseInsensitive = this.getConf('caseInsensitive') as boolean
+      // getSequence clamps to the contig end, so the fetched sequence can be
+      // shorter than queryEnd-queryStart; reverse-strand coordinates must be
+      // anchored on the actual end, not the requested queryEnd
+      const seqEnd = queryStart + residues.length
+      const search = this.getConf('search')
+      const searchForward = this.getConf('searchForward')
+      const searchReverse = this.getConf('searchReverse')
+      const caseInsensitive = this.getConf('caseInsensitive')
       const re = new RegExp(search, `g${caseInsensitive ? 'i' : ''}`)
 
       if (search) {
@@ -67,8 +72,8 @@ export default class SequenceSearchAdapter extends BaseFeatureDataAdapter {
         if (searchReverse) {
           const matches = revcom(residues).matchAll(re)
           for (const match of matches) {
-            const e = queryEnd - match.index
-            const s = queryEnd - match.index - match[0].length
+            const e = seqEnd - match.index
+            const s = seqEnd - match.index - match[0].length
             if (doesIntersect2(s, e, query.start, query.end)) {
               observer.next(
                 new SimpleFeature({

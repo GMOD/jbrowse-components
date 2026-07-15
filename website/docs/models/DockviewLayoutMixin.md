@@ -1,176 +1,252 @@
 ---
 id: dockviewlayoutmixin
 title: DockviewLayoutMixin
+sidebar_label: Mixin -> DockviewLayoutMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/DockviewLayout/index.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/app-core/src/DockviewLayout/index.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/DockviewLayoutMixin.md)
-
-## Docs
+## Overview
 
 Session mixin that persists dockview layout state. Each dockview panel can
 contain multiple views stacked vertically.
 
-### DockviewLayoutMixin - Properties
+## Members
+
+| Member                                                     | Kind       | Defined by          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------------- | ---------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [dockviewLayout](#property-dockviewlayout)                 | Properties | DockviewLayoutMixin | Serialized dockview layout state                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [panelViewAssignments](#property-panelviewassignments)     | Properties | DockviewLayoutMixin | Maps panel IDs to arrays of view IDs (for stacking views within a panel)                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [activePanelId](#property-activepanelid)                   | Properties | DockviewLayoutMixin | The currently active panel ID in dockview                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [init](#property-init)                                     | Properties | DockviewLayoutMixin | The initial nested layout to build dockview from (simple viewIds/ direction/size form, vs. the verbose `dockviewLayout` dockview emits). Set from URL params (spec layout) OR carried in a loaded session snapshot (e.g. the `encoded-` session param), then consumed once when the dockview container mounts — `createInitialPanels` reads it, `applyInitLayout` builds the panels, and it is cleared to undefined (stripped from snapshots) so it never re-applies on a later remount. |
+| [pendingMove](#volatile-pendingmove)                       | Volatiles  | DockviewLayoutMixin |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [getViewIdsForPanel](#getter-getviewidsforpanel)           | Getters    | DockviewLayoutMixin | Get view IDs for a specific panel                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [getPanelContainingView](#getter-getpanelcontainingview)   | Getters    | DockviewLayoutMixin | Find the panel containing a view, returning the panel ID, that panel's view-ID list, and the view's index within it (or undefined if unassigned)                                                                                                                                                                                                                                                                                                                                         |
+| [setDockviewLayout](#action-setdockviewlayout)             | Actions    | DockviewLayoutMixin | Save the current dockview layout                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [setActivePanelId](#action-setactivepanelid)               | Actions    | DockviewLayoutMixin | Set the active panel ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [setInit](#action-setinit)                                 | Actions    | DockviewLayoutMixin | Set the initial layout configuration (from URL params)                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [setPendingMove](#action-setpendingmove)                   | Actions    | DockviewLayoutMixin | Queue a view move to be applied when the dockview container mounts                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| [assignViewToPanel](#action-assignviewtopanel)             | Actions    | DockviewLayoutMixin | Assign a view to a panel (adds to the panel's view stack)                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [removeViewFromPanel](#action-removeviewfrompanel)         | Actions    | DockviewLayoutMixin | Remove a view from its panel                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [removePanel](#action-removepanel)                         | Actions    | DockviewLayoutMixin | Remove a panel and all its view assignments                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [moveViewUpInPanel](#action-moveviewupinpanel)             | Actions    | DockviewLayoutMixin | Move a view up within its panel's view stack                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| [moveViewDownInPanel](#action-moveviewdowninpanel)         | Actions    | DockviewLayoutMixin | Move a view down within its panel's view stack                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [moveViewToTopInPanel](#action-moveviewtotopinpanel)       | Actions    | DockviewLayoutMixin | Move a view to the top of its panel's view stack                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [moveViewToBottomInPanel](#action-moveviewtobottominpanel) | Actions    | DockviewLayoutMixin | Move a view to the bottom of its panel's view stack                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+
+<details>
+<summary>DockviewLayoutMixin - Properties</summary>
 
 #### property: dockviewLayout
 
 Serialized dockview layout state
 
-```js
+```ts
 // type signature
-IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>
+type dockviewLayout = IOptionalIType<
+  IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>,
+  [undefined]
+>
 // code
-dockviewLayout: types.maybe(types.frozen<SerializedDockview>())
+dockviewLayout: types.stripDefault(
+  types.maybe(types.frozen<SerializedDockview>()),
+  undefined,
+)
 ```
 
 #### property: panelViewAssignments
 
 Maps panel IDs to arrays of view IDs (for stacking views within a panel)
 
-```js
+```ts
 // type signature
-IOptionalIType<IMapType<IArrayType<ISimpleType<string>>>, [undefined]>
+type panelViewAssignments = IOptionalIType<
+  IMapType<IArrayType<ISimpleType<string>>>,
+  [undefined]
+>
 // code
-panelViewAssignments: types.optional(
-        types.map(types.array(types.string)),
-        {},
-      )
-```
-
-#### property: init
-
-Initial layout configuration from URL params. Processed once then cleared.
-
-```js
-// type signature
-IType<DockviewLayoutNode | undefined, DockviewLayoutNode | undefined, DockviewLayoutNode | undefined>
-// code
-init: types.frozen<DockviewLayoutNode | undefined>()
+panelViewAssignments: types.stripDefault(
+  types.map(types.array(types.string)),
+  {},
+)
 ```
 
 #### property: activePanelId
 
 The currently active panel ID in dockview
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type activePanelId = IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
 // code
-activePanelId: types.maybe(types.string)
+activePanelId: types.stripDefault(types.maybe(types.string), undefined)
 ```
 
-### DockviewLayoutMixin - Getters
+#### property: init
+
+The initial nested layout to build dockview from (simple viewIds/ direction/size
+form, vs. the verbose `dockviewLayout` dockview emits). Set from URL params
+(spec layout) OR carried in a loaded session snapshot (e.g. the `encoded-`
+session param), then consumed once when the dockview container mounts —
+`createInitialPanels` reads it, `applyInitLayout` builds the panels, and it is
+cleared to undefined (stripped from snapshots) so it never re-applies on a later
+remount.
+
+```ts
+// type signature
+type init = IOptionalIType<
+  IMaybe<IType<DockviewLayoutNode, DockviewLayoutNode, DockviewLayoutNode>>,
+  [undefined]
+>
+// code
+init: types.stripDefault(
+  types.maybe(types.frozen<DockviewLayoutNode>()),
+  undefined,
+)
+```
+
+</details>
+
+<details>
+<summary>DockviewLayoutMixin - Volatiles</summary>
+
+#### volatile: pendingMove
+
+```ts
+// type signature
+type pendingMove = undefined
+// code
+pendingMove: undefined
+```
+
+</details>
+
+<details>
+<summary>DockviewLayoutMixin - Getters</summary>
 
 #### getter: getViewIdsForPanel
 
 Get view IDs for a specific panel
 
-```js
-// type
-(panelId: string) => never[] | (IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>)
+```ts
+type getViewIdsForPanel = (
+  panelId: string,
+) =>
+  | never[]
+  | (IMSTArray<ISimpleType<string>> &
+      IStateTreeNode<IArrayType<ISimpleType<string>>>)
 ```
 
-### DockviewLayoutMixin - Actions
+#### getter: getPanelContainingView
+
+Find the panel containing a view, returning the panel ID, that panel's view-ID
+list, and the view's index within it (or undefined if unassigned)
+
+```ts
+type getPanelContainingView = (viewId: string) =>
+  | {
+      panelId: string
+      viewIds: IMSTArray<ISimpleType<string>> &
+        IStateTreeNode<IArrayType<ISimpleType<string>>>
+      idx: number
+    }
+  | undefined
+```
+
+</details>
+
+<details>
+<summary>DockviewLayoutMixin - Actions</summary>
 
 #### action: setDockviewLayout
 
 Save the current dockview layout
 
-```js
-// type signature
-setDockviewLayout: (layout: SerializedDockview | undefined) => void
+```ts
+type setDockviewLayout = (layout: SerializedDockview | undefined) => void
 ```
 
 #### action: setActivePanelId
 
 Set the active panel ID
 
-```js
-// type signature
-setActivePanelId: (panelId: string | undefined) => void
+```ts
+type setActivePanelId = (panelId: string | undefined) => void
 ```
 
 #### action: setInit
 
 Set the initial layout configuration (from URL params)
 
-```js
-// type signature
-setInit: (init: DockviewLayoutNode | undefined) => void
+```ts
+type setInit = (init: DockviewLayoutNode | undefined) => void
+```
+
+#### action: setPendingMove
+
+Queue a view move to be applied when the dockview container mounts
+
+```ts
+type setPendingMove = (pendingMove: PendingMove | undefined) => void
 ```
 
 #### action: assignViewToPanel
 
 Assign a view to a panel (adds to the panel's view stack)
 
-```js
-// type signature
-assignViewToPanel: (panelId: string, viewId: string) => void
+```ts
+type assignViewToPanel = (panelId: string, viewId: string) => void
 ```
 
 #### action: removeViewFromPanel
 
 Remove a view from its panel
 
-```js
-// type signature
-removeViewFromPanel: (viewId: string) => void
+```ts
+type removeViewFromPanel = (viewId: string) => void
 ```
 
 #### action: removePanel
 
 Remove a panel and all its view assignments
 
-```js
-// type signature
-removePanel: (panelId: string) => void
+```ts
+type removePanel = (panelId: string) => void
 ```
 
 #### action: moveViewUpInPanel
 
 Move a view up within its panel's view stack
 
-```js
-// type signature
-moveViewUpInPanel: (viewId: string) => void
+```ts
+type moveViewUpInPanel = (viewId: string) => void
 ```
 
 #### action: moveViewDownInPanel
 
 Move a view down within its panel's view stack
 
-```js
-// type signature
-moveViewDownInPanel: (viewId: string) => void
+```ts
+type moveViewDownInPanel = (viewId: string) => void
 ```
 
 #### action: moveViewToTopInPanel
 
 Move a view to the top of its panel's view stack
 
-```js
-// type signature
-moveViewToTopInPanel: (viewId: string) => void
+```ts
+type moveViewToTopInPanel = (viewId: string) => void
 ```
 
 #### action: moveViewToBottomInPanel
 
 Move a view to the bottom of its panel's view stack
 
-```js
-// type signature
-moveViewToBottomInPanel: (viewId: string) => void
+```ts
+type moveViewToBottomInPanel = (viewId: string) => void
 ```
+
+</details>

@@ -1,3 +1,5 @@
+import { lazy } from 'react'
+
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
@@ -15,6 +17,7 @@ import {
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import type { Block } from '../../ChordRenderer/types.ts'
 import type {
   CircularViewModel,
   ExportSvgOptions,
@@ -24,10 +27,36 @@ import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ThemeOptions } from '@mui/material'
 
+const ErrorMessageStackTraceDialog = lazy(
+  () => import('@jbrowse/core/ui/ErrorMessageStackTraceDialog'),
+)
+
 /**
  * #stateModel ChordVariantDisplay
- * extends
- * - [BaseDisplay](../basedisplay)
+ *
+ * #example
+ * The circular-view display for a `VariantTrack` of structural variants;
+ * translocations are drawn as chords across the circle. `bezierRadiusRatio`
+ * controls how far the chords bow toward the center:
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'sv',
+ *   name: 'Structural variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/sv.vcf.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'ChordVariantDisplay',
+ *       displayId: 'sv-ChordVariantDisplay',
+ *       bezierRadiusRatio: 0.1,
+ *     },
+ *   ],
+ * }
+ * ```
  */
 const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
   return types
@@ -42,7 +71,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         /**
          * #property
          */
-        bezierRadiusRatio: 0.1,
+        bezierRadiusRatio: types.stripDefault(types.number, 0.1),
         /**
          * #property
          */
@@ -53,7 +82,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #volatile
        */
-      features: undefined as Map<string, Feature> | undefined,
+      features: undefined as Feature[] | undefined,
       /**
        * #volatile
        */
@@ -63,34 +92,58 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
       /**
        * #getter
        */
+      get view() {
+        return getContainingView(self) as CircularViewModel
+      },
+      /**
+       * #getter
+       */
       get ready() {
         return self.features !== undefined
       },
 
       /**
        * #getter
+       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
+       * Chord displays are non-rectangular (radial), so they keep a bespoke
+       * `<DisplayError>` error UI instead of `SvgChrome`, but still expose
+       * `svgReady` + await it via the shared `awaitSvgReady` — no inlined
+       * `when()`. No `regionTooLarge` state.
        */
-      get blockDefinitions() {
-        const view = getContainingView(self) as CircularViewModel
-        const origSlices = view.staticSlices
-        if (!self.refNameMap) {
-          return origSlices
-        }
+      get svgReady() {
+        return this.ready || self.error !== undefined
+      },
 
-        const slices = structuredClone(origSlices)
+      /**
+       * #getter
+       */
+      get radiusPx() {
+        return this.view.radiusPx
+      },
 
-        for (const slice of slices) {
-          const regions = slice.region.elided
-            ? slice.region.regions
-            : [slice.region]
+      /**
+       * #getter
+       * how far chords bow toward the center
+       */
+      get bezierRadius() {
+        return this.radiusPx * self.bezierRadiusRatio
+      },
+
+      /**
+       * #getter
+       */
+      get blocksForRefs(): Record<string, Block> {
+        const result: Record<string, Block> = {}
+        for (const block of this.view.staticSlices) {
+          const regions = block.region.elided
+            ? block.region.regions
+            : [block.region]
           for (const region of regions) {
-            const renamed = self.refNameMap[region.refName]
-            if (renamed && region.refName !== renamed) {
-              region.refName = renamed
-            }
+            const refName = self.refNameMap?.[region.refName] ?? region.refName
+            result[refName] = block
           }
         }
-        return slices
+        return result
       },
 
       /**
@@ -117,7 +170,17 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
         /**
          * #action
          */
-        setFeatures(features: Map<string, Feature>) {
+        openErrorDialog() {
+          getSession(self).queueDialog(onClose => [
+            ErrorMessageStackTraceDialog,
+            { onClose, error: self.error },
+          ])
+        },
+
+        /**
+         * #action
+         */
+        setFeatures(features: Feature[] | undefined) {
           self.features = features
           self.error = undefined
         },
@@ -139,41 +202,39 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
           addDisposer(
             self,
             autorun(async () => {
-              const view = getContainingView(self) as CircularViewModel
-              if (!view.displayedRegions.length) {
-                return
-              }
+              const { view } = self
+              if (view.displayedRegions.length) {
+                const sessionId = getRpcSessionId(self)
+                const adapterConfig = structuredClone(self.adapterConfig)
+                const regions = structuredClone(view.displayedRegions)
+                const { rpcManager } = getSession(view)
 
-              const sessionId = getRpcSessionId(self)
-              const adapterConfig = structuredClone(self.adapterConfig)
-              const regions = structuredClone(view.displayedRegions)
-              const { rpcManager } = getSession(view)
-
-              if (renderStopToken) {
-                stopStopToken(renderStopToken)
-              }
-              const stopToken = createStopToken()
-              renderStopToken = stopToken
-
-              self.setFeatures(new Map())
-
-              try {
-                const feats = await rpcManager.call(
-                  sessionId,
-                  'CoreGetFeatures',
-                  { adapterConfig, regions, stopToken },
-                )
-                if (isAlive(self) && renderStopToken === stopToken) {
-                  self.setFeatures(new Map(feats.map(f => [f.id(), f])))
+                if (renderStopToken) {
+                  stopStopToken(renderStopToken)
                 }
-              } catch (e) {
-                if (
-                  !isAbortException(e) &&
-                  isAlive(self) &&
-                  renderStopToken === stopToken
-                ) {
-                  console.error(e)
-                  self.setError(e)
+                const stopToken = createStopToken()
+                renderStopToken = stopToken
+
+                self.setFeatures(undefined)
+
+                try {
+                  const feats = await rpcManager.call(
+                    sessionId,
+                    'CoreGetFeatures',
+                    { adapterConfig, regions, stopToken },
+                  )
+                  if (isAlive(self) && renderStopToken === stopToken) {
+                    self.setFeatures(feats)
+                  }
+                } catch (e) {
+                  if (
+                    !isAbortException(e) &&
+                    isAlive(self) &&
+                    renderStopToken === stopToken
+                  ) {
+                    console.error(e)
+                    self.setError(e)
+                  }
                 }
               }
             }),
@@ -200,15 +261,15 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
                     assemblyNames[0],
                     { stopToken, sessionId },
                   )
-                if (
-                  isAlive(self) &&
-                  refNameStopToken === stopToken &&
-                  refNameMap
-                ) {
+                if (isAlive(self) && refNameStopToken === stopToken) {
                   self.setRefNameMap(refNameMap)
                 }
               } catch (e) {
-                if (!isAbortException(e) && isAlive(self)) {
+                if (
+                  !isAbortException(e) &&
+                  isAlive(self) &&
+                  refNameStopToken === stopToken
+                ) {
                   console.error(e)
                   self.setError(e)
                 }

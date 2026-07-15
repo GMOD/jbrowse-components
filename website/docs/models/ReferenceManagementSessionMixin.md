@@ -1,41 +1,59 @@
 ---
 id: referencemanagementsessionmixin
 title: ReferenceManagementSessionMixin
+sidebar_label: Mixin -> ReferenceManagementSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/ReferenceManagement.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+## Members
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/ReferenceManagement.ts)
+| Member                                               | Kind    | Defined by                      | Description                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------- | ------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [getReferringMultiple](#method-getreferringmultiple) | Methods | ReferenceManagementSessionMixin | Walk the tree once and map each requested trackId to the nodes holding a `types.reference` that resolves to it (a view's track entry, a config editor widget). Track configs are matched by trackId, not identity, so a frozen base and its hydrated MST node compare equal. |
+| [getReferring](#method-getreferring)                 | Methods | ReferenceManagementSessionMixin | The nodes currently referring to `trackId` (see getReferringMultiple).                                                                                                                                                                                                       |
+| [dereferenceTrack](#action-dereferencetrack)         | Actions | ReferenceManagementSessionMixin | Remove `trackId` from every view referring to it and close any config editor widget open on it. Runs immediately: the walk that produced `referring` has finished, so mutating those views here is safe.                                                                     |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ReferenceManagementSessionMixin.md)
+<details>
+<summary>ReferenceManagementSessionMixin - Methods</summary>
 
-## Docs
+#### method: getReferringMultiple
 
-### ReferenceManagementSessionMixin - Methods
+Walk the tree once and map each requested trackId to the nodes holding a
+`types.reference` that resolves to it (a view's track entry, a config editor
+widget). Track configs are matched by trackId, not identity, so a frozen base
+and its hydrated MST node compare equal.
+
+```ts
+type getReferringMultiple = (trackIds: string[]) => Map<string, ReferringNode[]>
+```
 
 #### method: getReferring
 
-See if any MST nodes currently have a types.reference to this object.
+The nodes currently referring to `trackId` (see getReferringMultiple).
 
-```js
-// type signature
-getReferring: (object: IAnyStateTreeNode) => ReferringNode[]
+```ts
+type getReferring = (trackId: string) => ReferringNode[]
 ```
 
-### ReferenceManagementSessionMixin - Actions
+</details>
 
-#### action: removeReferring
+<details>
+<summary>ReferenceManagementSessionMixin - Actions</summary>
 
-```js
-// type signature
-removeReferring: (referring: ReferringNode[], track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<...> | ({ ...; } & ... 2 more ... & IStateTreeNode<...>); } & IStateTreeNode<...>, callbacks: (() => void)[], dereferenceTypeCount: Record<...>) => void
+#### action: dereferenceTrack
+
+Remove `trackId` from every view referring to it and close any config editor
+widget open on it. Runs immediately: the walk that produced `referring` has
+finished, so mutating those views here is safe.
+
+```ts
+type dereferenceTrack = (trackId: string, referring: ReferringNode[]) => void
 ```
+
+</details>

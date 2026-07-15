@@ -1,0 +1,40 @@
+---
+import { Code } from 'astro:components'
+
+import { examples } from '../examples.ts'
+import Example from '../examples/HumanDemo.tsx'
+import code from '../examples/HumanDemo.tsx?raw'
+import Shell from '../layouts/Shell.astro'
+import Gallery from '../layouts/Gallery.astro'
+import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
+---
+
+<Shell
+  title="Examples"
+  componentLabel={componentLabel}
+  examples={examples}
+  mainMaxWidth={mainMaxWidth}
+>
+  <h1>JBrowse React App</h1>
+  <p class="intro">
+    <code>@jbrowse/react-app2</code> embeds the full multi-view JBrowse 2 app —
+    menu bar, view manager, drawer widgets, and every view type — in a React
+    component. The live demo below is a real-world hg38 session at the <em>SHH</em>
+    locus; browse the pattern-by-pattern examples in the sidebar for specific
+    features. If you only need a single track view, the lighter{' '}
+    <a href="https://jbrowse.org/storybook/lgv/"
+      ><code>@jbrowse/react-linear-genome-view2</code></a
+    > component is a better fit.
+  </p>
+
+  <h2>Live demo</h2>
+  <div class:list={['demo', { fill: demoFillHeight }]}>
+    <Example client:only="react" />
+  </div>
+  <details class="source">
+    <summary>View source</summary>
+    <Code code={code} lang="tsx" />
+  </details>
+
+  <Gallery examples={examples} />
+</Shell>

@@ -4,17 +4,15 @@ import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg.tsx'
 
-import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter'
+export interface TooLargeMessageModel {
+  regionTooLargeReason: string
+  forceLoad: () => void
+}
 
 const TooLargeMessage = observer(function TooLargeMessage({
   model,
 }: {
-  model: {
-    regionTooLargeReason: string
-    featureDensityStats?: FeatureDensityStats
-    setFeatureDensityStatsLimit: (s?: FeatureDensityStats) => void
-    reload: () => void
-  }
+  model: TooLargeMessageModel
 }) {
   const { regionTooLargeReason } = model
   return (
@@ -24,8 +22,7 @@ const TooLargeMessage = observer(function TooLargeMessage({
         <Button
           onClick={() => {
             if (isAlive(model)) {
-              model.setFeatureDensityStatsLimit(model.featureDensityStats)
-              model.reload()
+              model.forceLoad()
             }
           }}
         >

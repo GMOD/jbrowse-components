@@ -1,78 +1,60 @@
 ---
 id: hierarchicalconfigschema
 title: HierarchicalConfigSchema
+sidebar_label: Root -> HierarchicalConfigSchema
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/HierarchicalConfig.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/HierarchicalConfigSchema.md)
-
-## Docs
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/RootModel/HierarchicalConfig.ts).
 
 generally exists on the config.json or root config as configuration.hierarchical
 
-### HierarchicalConfigSchema - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                                                                                                                | Type          | Description                                             |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------- |
+| [configuration.hierarchical.sort.trackNames](#slot-configurationhierarchicalsorttracknames)                                         | `boolean`     |                                                         |
+| [configuration.hierarchical.sort.categories](#slot-configurationhierarchicalsortcategories)                                         | `boolean`     |                                                         |
+| [configuration.hierarchical.defaultFolderCategories](#slot-configurationhierarchicaldefaultfoldercategories)                        | `stringArray` | list of category names to display as folders by default |
+| [configuration.hierarchical.defaultCollapsed.categoryNames](#slot-configurationhierarchicaldefaultcollapsedcategorynames)           | `stringArray` |                                                         |
+| [configuration.hierarchical.defaultCollapsed.topLevelCategories](#slot-configurationhierarchicaldefaultcollapsedtoplevelcategories) | `boolean`     |                                                         |
+| [configuration.hierarchical.defaultCollapsed.subCategories](#slot-configurationhierarchicaldefaultcollapsedsubcategories)           | `boolean`     |                                                         |
+
+<details>
+<summary>HierarchicalConfigSchema - Slots</summary>
 
 #### slot: configuration.hierarchical.sort.trackNames
 
-```js
-trackNames: {
-        type: 'boolean',
-        defaultValue: false,
-      }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: configuration.hierarchical.sort.categories
 
-```js
-categories: {
-        type: 'boolean',
-        defaultValue: false,
-      }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: configuration.hierarchical.defaultFolderCategories
 
-```js
-defaultFolderCategories: {
-      type: 'stringArray',
-      description: 'list of category names to display as folders by default',
-      defaultValue: [],
-    }
-```
+list of category names to display as folders by default
+
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: configuration.hierarchical.defaultCollapsed.categoryNames
 
-```js
-categoryNames: {
-        type: 'stringArray',
-        defaultValue: [],
-      }
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
 
-```js
-topLevelCategories: {
-        type: 'boolean',
-        defaultValue: false,
-      }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
 
 #### slot: configuration.hierarchical.defaultCollapsed.subCategories
 
-```js
-subCategories: {
-        type: 'boolean',
-        defaultValue: false,
-      }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
+
+</details>

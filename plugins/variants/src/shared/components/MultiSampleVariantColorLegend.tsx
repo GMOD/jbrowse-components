@@ -1,0 +1,118 @@
+import { stripAlpha } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import RectBg from './RectBg.tsx'
+
+import type { Source } from '../types.ts'
+
+const COLOR_BOX_WIDTH = 15
+
+const LegendItem = function ({
+  source,
+  idx,
+  rowHeight,
+}: {
+  source: Source
+  idx: number
+  rowHeight: number
+}) {
+  const { color } = source
+  return color ? (
+    <RectBg
+      y={idx * rowHeight}
+      x={0}
+      width={COLOR_BOX_WIDTH + 0.5}
+      height={rowHeight + 0.5}
+      color={color}
+    />
+  ) : null
+}
+
+const LegendItemText = function ({
+  source,
+  idx,
+  rowHeight,
+  fill,
+}: {
+  source: Source
+  idx: number
+  rowHeight: number
+  fill: string
+}) {
+  const { color, name, label } = source
+  const svgFontSize = Math.min(rowHeight, 12)
+  return (
+    <text
+      y={(idx + 0.5) * rowHeight}
+      x={color ? COLOR_BOX_WIDTH + 2 : 0}
+      fontSize={svgFontSize}
+      dominantBaseline="central"
+      fill={fill}
+    >
+      {label ?? name}
+    </text>
+  )
+}
+
+const MultiSampleVariantColorLegend = observer(
+  function MultiSampleVariantColorLegend({
+    model,
+    labelWidth,
+    startIdx,
+    endIdx,
+  }: {
+    model: {
+      canDisplayLabels: boolean
+      effectiveRowHeight: number
+      sources?: Source[]
+    }
+    labelWidth: number
+    startIdx: number
+    endIdx: number
+  }) {
+    const { canDisplayLabels, effectiveRowHeight: rowHeight, sources } = model
+    const theme = useTheme()
+
+    const hasColors = sources?.some(s => s.color) ?? false
+    const legendWidth = labelWidth + (hasColors ? COLOR_BOX_WIDTH + 5 : 0)
+
+    const fill = stripAlpha(theme.palette.text.primary)
+
+    const visibleSources = sources?.slice(startIdx, endIdx)
+
+    return visibleSources ? (
+      <>
+        {canDisplayLabels ? (
+          <RectBg
+            y={startIdx * rowHeight}
+            x={0}
+            width={legendWidth}
+            height={(endIdx - startIdx + 0.25) * rowHeight}
+          />
+        ) : null}
+        {visibleSources.map((source, i) => (
+          <LegendItem
+            key={`${source.name}-${startIdx + i}`}
+            source={source}
+            idx={startIdx + i}
+            rowHeight={rowHeight}
+          />
+        ))}
+        {canDisplayLabels
+          ? visibleSources.map((source, i) => (
+              <LegendItemText
+                key={`${source.name}-text-${startIdx + i}`}
+                source={source}
+                idx={startIdx + i}
+                rowHeight={rowHeight}
+                fill={fill}
+              />
+            ))
+          : null}
+      </>
+    ) : null
+  },
+)
+
+export default MultiSampleVariantColorLegend

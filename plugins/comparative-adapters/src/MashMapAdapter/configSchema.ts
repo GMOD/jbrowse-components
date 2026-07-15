@@ -2,8 +2,20 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config MashMapAdapter
+ * #trackType SyntenyTrack
+ * used to load MashMap `.out` alignment files (query and target assembly
+ * required)
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'MashMapAdapter',
+ *   uri: 'https://example.com/aln.out',
+ *   queryAssembly: 'hg19',
+ *   targetAssembly: 'hg38',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

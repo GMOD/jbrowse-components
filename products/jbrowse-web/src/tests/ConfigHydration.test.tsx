@@ -1,0 +1,197 @@
+import { readConfObject } from '@jbrowse/core/configuration'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { waitFor } from '@testing-library/react'
+import { autorun } from 'mobx'
+
+import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
+import { getPluginManager } from './util.tsx'
+
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+jest.mock('../makeWorkerInstance', () => () => {})
+
+utilizeFetchMockForTest(volvoxGetFile)
+
+async function setupView(trackIds: string[]) {
+  const { rootModel } = getPluginManager()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: {
+      assembly: 'volvox',
+      loc: 'ctgA:1..1000',
+      tracks: trackIds,
+    },
+  }) as LinearGenomeViewModel
+  view.setWidth(800)
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+      expect(view.tracks.length).toBe(trackIds.length)
+    },
+    { timeout: 30000 },
+  )
+  return { rootModel, session, view }
+}
+
+// This is the regression test for eager hydration: accessing getTrackById must
+// NOT create MST models for all frozen tracks. If hydrateTrack-style eager
+// initialization were re-introduced in the trackId index, this test would fail
+// because the entry would be an MST node instead of a plain frozen object.
+test('session.getTrackById does not eagerly hydrate frozen tracks', () => {
+  const { rootModel } = getPluginManager()
+  const session = rootModel.session!
+  const conf = session.getTrackById('volvox_gc')
+  expect(isStateTreeNode(conf)).toBe(false)
+  expect(conf?.trackId).toBe('volvox_gc')
+})
+
+test('track.configuration returns the same MST instance across reads', async () => {
+  const { view } = await setupView(['volvox_gc'])
+  const track = view.tracks[0]!
+  const a = track.configuration
+  const b = track.configuration
+  expect(a).toBe(b)
+  expect(readConfObject(a, 'name')).toBe('GCContent')
+}, 40000)
+
+test('display.configuration returns the same MST instance across reads', async () => {
+  const { view } = await setupView(['volvox_gc'])
+  const display = view.tracks[0]!.displays[0]!
+  const a = display.configuration
+  const b = display.configuration
+  expect(a).toBe(b)
+  expect(a).toBeDefined()
+}, 40000)
+
+test('edits to a frozen track propagate through track.configuration', async () => {
+  const { rootModel, view } = await setupView(['volvox_gc'])
+  const track = view.tracks[0]!
+  const before = track.configuration
+  expect(readConfObject(before, 'name')).toBe('GCContent')
+
+  rootModel.jbrowse.updateTrackConf({
+    type: 'GCContentTrack',
+    trackId: 'volvox_gc',
+    assemblyNames: ['volvox'],
+    name: 'GCContent (renamed)',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: {
+        uri: 'volvox.2bit',
+        locationType: 'UriLocation',
+      },
+    },
+  })
+
+  const after = track.configuration
+  expect(after).not.toBe(before)
+  expect(readConfObject(after, 'name')).toBe('GCContent (renamed)')
+}, 40000)
+
+test('getConf is not re-evaluated when unrelated observable state changes', async () => {
+  const { view } = await setupView(['volvox_gc'])
+  const track = view.tracks[0]!
+
+  let reads = 0
+  const dispose = autorun(() => {
+    readConfObject(track.configuration, 'name')
+    reads++
+  })
+  const initial = reads
+
+  view.setWidth(1000)
+  view.setWidth(1200)
+  track.setMinimized(true)
+  track.setMinimized(false)
+
+  expect(reads).toBe(initial)
+  dispose()
+}, 40000)
+
+test('autorun fires exactly once when the track config is edited', async () => {
+  const { rootModel, view } = await setupView(['volvox_gc'])
+  const track = view.tracks[0]!
+
+  const names: string[] = []
+  const dispose = autorun(() => {
+    names.push(readConfObject(track.configuration, 'name') as string)
+  })
+  expect(names).toEqual(['GCContent'])
+
+  rootModel.jbrowse.updateTrackConf({
+    type: 'GCContentTrack',
+    trackId: 'volvox_gc',
+    assemblyNames: ['volvox'],
+    name: 'GCContent v2',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: {
+        uri: 'volvox.2bit',
+        locationType: 'UriLocation',
+      },
+    },
+  })
+
+  expect(names).toEqual(['GCContent', 'GCContent v2'])
+  dispose()
+}, 40000)
+
+test('unrelated tracks keep identity across edits to a sibling', async () => {
+  const { rootModel, view } = await setupView(['volvox_gc', 'volvox_sv_test'])
+  const [gc, sv] = view.tracks
+  const svBefore = sv!.configuration
+
+  rootModel.jbrowse.updateTrackConf({
+    type: 'GCContentTrack',
+    trackId: 'volvox_gc',
+    assemblyNames: ['volvox'],
+    name: 'GCContent v3',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: {
+        uri: 'volvox.2bit',
+        locationType: 'UriLocation',
+      },
+    },
+  })
+
+  const svAfter = sv!.configuration
+  expect(svAfter).toBe(svBefore)
+  expect(readConfObject(gc!.configuration, 'name')).toBe('GCContent v3')
+}, 40000)
+
+// Regression: editing one track must not re-render sibling tracks. Every
+// display resolves its config through TrackConfigurationReference, which reads
+// session.getTrackById; when that was a wholesale-recomputed object, one track's
+// edit invalidated every consumer. getTrackById is now a per-id computed
+// so an autorun reading only a sibling's config does not re-fire.
+test('editing one track does not re-fire an autorun reading only a sibling', async () => {
+  const { rootModel, view } = await setupView(['volvox_gc', 'volvox_sv_test'])
+  const sv = view.tracks.find(
+    t => t.configuration.trackId === 'volvox_sv_test',
+  )!
+
+  let reads = 0
+  const dispose = autorun(() => {
+    readConfObject(sv.configuration, 'name')
+    reads++
+  })
+  const initial = reads
+
+  rootModel.jbrowse.updateTrackConf({
+    type: 'GCContentTrack',
+    trackId: 'volvox_gc',
+    assemblyNames: ['volvox'],
+    name: 'GCContent v4',
+    adapter: {
+      type: 'TwoBitAdapter',
+      twoBitLocation: {
+        uri: 'volvox.2bit',
+        locationType: 'UriLocation',
+      },
+    },
+  })
+
+  expect(reads).toBe(initial)
+  dispose()
+}, 40000)

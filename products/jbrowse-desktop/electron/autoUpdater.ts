@@ -1,16 +1,33 @@
 import { dialog } from 'electron'
 
+import { logError } from './util.ts'
+
 import type { AppUpdater } from 'electron-updater'
 
-function sendStatusToWindow(
-  mainWindow: Electron.BrowserWindow | null,
-  text: string,
-) {
-  // eslint-disable-next-line no-console
-  console.log(text)
-  if (mainWindow) {
-    mainWindow.webContents.send('message', text)
-  }
+// Distinguishes a user-triggered check from the background startup check so
+// update-not-available/error only shows a dialog when the user asked for it.
+let manualCheckActive = false
+
+const NETWORK_ERROR_PATTERNS = [
+  'ERR_INTERNET_DISCONNECTED',
+  'ERR_NETWORK',
+  'ERR_NAME_NOT_RESOLVED',
+  'ENOTFOUND',
+  'EAI_AGAIN',
+  'ETIMEDOUT',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'net::',
+]
+
+function isNetworkError(error: Error) {
+  const text = `${error.message} ${error.stack ?? ''}`
+  return NETWORK_ERROR_PATTERNS.some(pattern => text.includes(pattern))
+}
+
+export function checkForUpdatesManually(autoUpdater: AppUpdater) {
+  manualCheckActive = true
+  autoUpdater.checkForUpdates().catch(logError)
 }
 
 export function setupAutoUpdater(
@@ -19,16 +36,45 @@ export function setupAutoUpdater(
 ) {
   autoUpdater.autoDownload = false
 
-  autoUpdater.on('error', (error: Error) => {
-    sendStatusToWindow(getMainWindow(), `Error in auto-updater: ${error}`)
-    if (process.env.CI) {
-      console.error('Auto-updater error (CI mode, skipping dialog):', error)
-      return
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for update...')
+    getMainWindow()?.webContents.send('message', 'Checking for update...')
+  })
+
+  autoUpdater.on('error', async (error: Error) => {
+    // A background startup check that fails (e.g. when offline) must stay
+    // silent — only surface an error the user explicitly asked for, and show a
+    // friendly message rather than a raw stack trace for connectivity issues.
+    const wasManual = manualCheckActive
+    manualCheckActive = false
+    console.error('Auto-updater error:', error)
+    if (wasManual && !process.env.CI) {
+      await dialog.showMessageBox({
+        type: 'info',
+        title: 'Unable to check for updates',
+        message: isNetworkError(error)
+          ? 'Could not check for updates. Please check your internet connection and try again.'
+          : `Could not check for updates: ${error.message}`,
+        buttons: ['OK'],
+      })
     }
-    dialog.showErrorBox('Update Error', error.stack ?? error.toString())
+  })
+
+  autoUpdater.on('update-not-available', async () => {
+    const wasManual = manualCheckActive
+    manualCheckActive = false
+    if (wasManual && !process.env.CI) {
+      await dialog.showMessageBox({
+        type: 'info',
+        title: 'Up to date',
+        message: 'You are on the latest version.',
+        buttons: ['OK'],
+      })
+    }
   })
 
   autoUpdater.on('update-available', async () => {
+    manualCheckActive = false
     if (process.env.CI) {
       console.log('Update available (CI mode, skipping dialog)')
       return
@@ -42,14 +88,8 @@ export function setupAutoUpdater(
     })
 
     if (result.response === 0) {
-      autoUpdater.downloadUpdate().catch((e: unknown) => {
-        console.error(e)
-      })
+      autoUpdater.downloadUpdate().catch(logError)
     }
-  })
-
-  autoUpdater.on('checking-for-update', () => {
-    sendStatusToWindow(getMainWindow(), 'Checking for update...')
   })
 
   autoUpdater.on('update-downloaded', async () => {

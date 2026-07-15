@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   assembleLocString,
-  getEnv,
   getSession,
   parseLocString,
 } from '@jbrowse/core/util'
@@ -15,13 +14,14 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { navToOption } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../../index.ts'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
-export default function SearchResultsTable({
+const SearchResultsTable = observer(function SearchResultsTable({
   searchResults,
   assemblyName: optAssemblyName,
   model,
@@ -33,7 +33,6 @@ export default function SearchResultsTable({
   handleClose: () => void
 }) {
   const session = getSession(model)
-  const { pluginManager } = getEnv(session)
   const { assemblyManager } = session
   const assemblyName =
     optAssemblyName || model.displayedRegions[0]!.assemblyName
@@ -42,43 +41,13 @@ export default function SearchResultsTable({
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)
   }
-  if (!assembly.regions) {
-    throw new Error(`assembly ${assemblyName} regions not loaded`)
-  }
-
-  const tracksById = session.getTracksById()
 
   function getTrackName(trackId: string | undefined) {
-    const conf = trackId !== undefined ? tracksById[trackId] : undefined
+    const conf =
+      trackId !== undefined ? session.getTrackById(trackId) : undefined
     return conf ? (readConfObject(conf, 'name') as string) : ''
   }
 
-  async function handleClick(result: BaseResult) {
-    if (result.hasLocation()) {
-      await navToOption({
-        option: result,
-        model,
-        assemblyName,
-      })
-    } else {
-      // label is used if it is a refName, it has no location
-      const location = result.getLabel()
-      const newRegion = assembly?.regions?.find(
-        region => location === region.refName,
-      )
-      if (newRegion) {
-        model.setDisplayedRegions([newRegion])
-        // we use showAllRegions after setDisplayedRegions to make the entire
-        // region visible, xref #1703
-        model.showAllRegions()
-      }
-      await pluginManager.evaluateAsyncExtensionPoint(
-        'LinearGenomeView-searchResultSelected',
-        undefined,
-        { session, result, model, assemblyName },
-      )
-    }
-  }
   return (
     <TableContainer component={Paper}>
       <Table>
@@ -125,7 +94,11 @@ export default function SearchResultsTable({
                   <Button
                     onClick={async () => {
                       try {
-                        await handleClick(result)
+                        await navToOption({
+                          option: result,
+                          model,
+                          assemblyName,
+                        })
                       } catch (e) {
                         console.error(e)
                         session.notifyError(`${e}`, e)
@@ -145,4 +118,6 @@ export default function SearchResultsTable({
       </Table>
     </TableContainer>
   )
-}
+})
+
+export default SearchResultsTable

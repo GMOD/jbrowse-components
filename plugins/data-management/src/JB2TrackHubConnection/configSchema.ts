@@ -4,7 +4,6 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 /**
  * #config JB2TrackHubConnection
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const JB2TrackHubConnection = ConfigurationSchema(
   'JB2TrackHubConnection',
@@ -15,7 +14,7 @@ const JB2TrackHubConnection = ConfigurationSchema(
     configJsonLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http://mysite.com/path/to/config.json',
+        uri: 'https://mysite.com/path/to/config.json',
         locationType: 'UriLocation',
       },
       description:
@@ -36,6 +35,20 @@ const JB2TrackHubConnection = ConfigurationSchema(
      * #baseConfiguration
      */
     baseConfiguration: baseConnectionConfig,
+    /**
+     * #preProcessSnapshot
+     *
+     *
+     * preprocessor to allow minimal config, where `uri` points at the jb2
+     * config.json:
+     *
+     * ```json
+     * {
+     *   "type": "JB2TrackHubConnection",
+     *   "uri": "https://mysite.com/path/to/config.json"
+     * }
+     * ```
+     */
     preProcessSnapshot: snap => {
       return snap.uri
         ? {

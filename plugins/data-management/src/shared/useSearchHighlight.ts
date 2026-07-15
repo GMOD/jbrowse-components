@@ -1,15 +1,20 @@
 import { type RefObject, useLayoutEffect } from 'react'
 
-const registeredHighlights = new Set<string>()
+import { alpha, useTheme } from '@mui/material'
 
-function ensureHighlightStyle(name: string) {
-  if (registeredHighlights.has(name) || typeof document === 'undefined') {
+const styleElements = new Map<string, HTMLStyleElement>()
+
+function setHighlightStyle(name: string, color: string) {
+  if (typeof document === 'undefined') {
     return
   }
-  registeredHighlights.add(name)
-  const style = document.createElement('style')
-  style.textContent = `::highlight(${name}) { background-color: yellow; color: black; }`
-  document.head.append(style)
+  let el = styleElements.get(name)
+  if (!el) {
+    el = document.createElement('style')
+    document.head.append(el)
+    styleElements.set(name, el)
+  }
+  el.textContent = `::highlight(${name}) { background-color: ${color}; }`
 }
 
 function getTextNodes(root: Element): Text[] {
@@ -28,12 +33,15 @@ export function useSearchHighlight(
   query: string,
   highlightName: string,
 ) {
+  const theme = useTheme()
+  const color = alpha(theme.palette.textHighlight.main, 0.45)
+
   useLayoutEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (typeof CSS === 'undefined' || !CSS.highlights) {
       return
     }
-    ensureHighlightStyle(highlightName)
+    setHighlightStyle(highlightName, color)
     const container = containerRef.current
     if (container && query.trim()) {
       const queryLower = query.toLowerCase().trim()
@@ -62,5 +70,5 @@ export function useSearchHighlight(
     return () => {
       CSS.highlights.delete(highlightName)
     }
-  }, [containerRef, query, highlightName])
+  }, [containerRef, query, highlightName, color])
 }

@@ -1,16 +1,11 @@
-import {
-  getFillProps,
-  getStrokeProps,
-  getTickDisplayStr,
-} from '@jbrowse/core/util'
-import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
+import { stripAlpha } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getBlockLabelKeysToHide } from './util.ts'
+import { AXIS_LABEL_FONT, tickLabel, truncateRefName } from './util.ts'
 
+import type { Tick } from './util.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(() => ({
@@ -27,6 +22,23 @@ const useStyles = makeStyles()(() => ({
     userSelect: 'none',
   },
 }))
+
+// Tick lines are 4px (minor) or 6px (major) long in the cross-axis direction.
+function tickLen(tick: Tick) {
+  return tick.type === 'major' ? 6 : 4
+}
+
+// hue for axis text (fill) and tick lines (stroke); both are the primary text
+// color, shared by the horizontal and vertical axes.
+function useAxisColors() {
+  const theme = useTheme()
+  const color = stripAlpha(theme.palette.text.primary)
+  return {
+    fill: { fill: color },
+    stroke: { stroke: color },
+  }
+}
+
 export const HorizontalAxis = observer(function HorizontalAxis({
   model,
 }: {
@@ -46,97 +58,79 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewWidth, borderX, borderY, hview, htextRotation, hticks } = model
+  const { viewWidth, borderY, hview } = model
+  // Horizontal-axis labels are drawn vertically (rotated -90° about their anchor).
+  const rotate = -90
   const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
-  const dblocks = dynamicBlocks.contentBlocks
-  const hide = getBlockLabelKeysToHide(dblocks, viewWidth, offsetPx)
-  const theme = useTheme()
-  const hviewSnap = {
-    ...getSnapshot(hview),
-    width,
-    staticBlocks: hview.staticBlocks,
-  }
-
-  const ticks = hticks
-    .map(
-      tick =>
-        [
-          tick,
-          bpToPx({
-            refName: tick.refName,
-            coord: tick.base,
-            self: hviewSnap,
-          })?.offsetPx,
-        ] as const,
-    )
-    .filter(f => f[1] !== undefined)
-    .map(f => [f[0], f[1]! - offsetPx] as const)
+  const blocks = dynamicBlocks.contentBlocks
+  const hide = model.hblockLabelKeysToHide
+  const ticks = model.hTickPositions
+  const { fill, stroke } = useAxisColors()
 
   return (
     <>
-      {dblocks
-        .filter(region => !hide.has(region.key))
-        .map(region => {
-          const xoff = Math.floor(region.offsetPx - hview.offsetPx)
+      {blocks
+        .filter(b => !hide.has(b.key))
+        .map(b => {
+          const xoff = Math.floor(b.offsetPx - offsetPx)
           return (
             <text
-              transform={`rotate(${htextRotation},${xoff},0)`}
-              key={region.key}
+              transform={`rotate(${rotate},${xoff},0)`}
+              key={b.key}
               x={xoff}
               y={1}
-              fontSize={11}
+              fontSize={AXIS_LABEL_FONT}
               dominantBaseline="hanging"
               textAnchor="end"
-              {...getFillProps(theme.palette.text.primary)}
+              {...fill}
             >
-              {region.refName}
+              <title>{b.refName}</title>
+              {truncateRefName(b.refName)}
             </text>
           )
         })}
-      {ticks.map(([tick, x], idx) =>
-        x > 0 && x < width ? (
-          <line
-            key={`line-${tick.refName}-${tick.base}-${idx}`}
-            x1={x}
-            x2={x}
-            y1={0}
-            y2={tick.type === 'major' ? 6 : 4}
-            strokeWidth={1}
-            {...getStrokeProps(theme.palette.text.primary)}
-          />
-        ) : null,
-      )}
-      {ticks
-        .filter(t => t[0].type === 'major')
-        .map(([tick, x], idx) =>
-          x > 10 && x < width ? (
+      {ticks.map(({ tick, alongPx: x }, idx) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
+        <g key={`${tick.refName}-${tick.base}-${idx}`}>
+          {x > 0 && x < width ? (
+            <line
+              x1={x}
+              x2={x}
+              y1={0}
+              y2={tickLen(tick)}
+              strokeWidth={1}
+              {...stroke}
+            />
+          ) : null}
+          {tick.type === 'major' && x > 10 && x < width ? (
             <text
               x={x - 7}
               y={0}
-              transform={`rotate(${htextRotation},${x},0)`}
-              key={`text-${tick.refName}-${tick.base}-${idx}`}
-              fontSize={11}
+              transform={`rotate(${rotate},${x},0)`}
+              fontSize={AXIS_LABEL_FONT}
               dominantBaseline="middle"
               textAnchor="end"
-              {...getFillProps(theme.palette.text.primary)}
+              {...fill}
             >
-              {getTickDisplayStr(tick.base + 1, bpPerPx)}
+              {tickLabel(tick, bpPerPx)}
             </text>
-          ) : null,
-        )}
+          ) : null}
+        </g>
+      ))}
       <text
         y={borderY - 12}
-        x={(viewWidth - borderX) / 2}
+        x={viewWidth / 2}
         textAnchor="middle"
         fontSize={11}
         dominantBaseline="hanging"
-        {...getFillProps(theme.palette.text.primary)}
+        {...fill}
       >
         {hview.assemblyNames.join(',')}
       </text>
     </>
   )
 })
+
 export const VerticalAxis = observer(function VerticalAxis({
   model,
 }: {
@@ -156,88 +150,73 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewHeight, borderX, borderY, vview, vtextRotation, vticks } = model
-  const { offsetPx, width, dynamicBlocks, bpPerPx } = vview
-  const dblocks = dynamicBlocks.contentBlocks
-  const hide = getBlockLabelKeysToHide(dblocks, viewHeight, offsetPx)
-  const theme = useTheme()
-  const vviewSnap = {
-    ...getSnapshot(vview),
-    width,
-    staticBlocks: vview.staticBlocks,
-  }
-  const ticks = vticks
-    .map(
-      tick =>
-        [
-          tick,
-          bpToPx({
-            refName: tick.refName,
-            coord: tick.base,
-            self: vviewSnap,
-          })?.offsetPx,
-        ] as const,
-    )
-    .filter(f => f[1] !== undefined)
-    .map(f => [f[0], f[1]! - offsetPx] as const)
+  const { viewHeight, borderX, vview } = model
+  const { offsetPx, dynamicBlocks, bpPerPx } = vview
+  const blocks = dynamicBlocks.contentBlocks
+  const hide = model.vblockLabelKeysToHide
+  const ticks = model.vTickPositions
+  const { fill, stroke } = useAxisColors()
 
+  // Vertical axis is flipped: block offsetPx grows upward visually, so we map
+  // alongPx (downward-natural) to viewHeight - alongPx.
   return (
     <>
-      {dblocks
-        .filter(region => !hide.has(region.key))
-        .map(region => {
-          const yoff = Math.floor(viewHeight - region.offsetPx + offsetPx)
+      {blocks
+        .filter(b => !hide.has(b.key))
+        .map(b => {
+          const yoff = Math.floor(viewHeight - b.offsetPx + offsetPx)
           return (
             <text
-              transform={`rotate(${vtextRotation},${borderX},${region.offsetPx})`}
-              key={region.key}
+              key={b.key}
               x={borderX}
               y={yoff}
-              fontSize={11}
+              fontSize={AXIS_LABEL_FONT}
               textAnchor="end"
-              {...getFillProps(theme.palette.text.primary)}
+              {...fill}
             >
-              {region.refName}
+              <title>{b.refName}</title>
+              {truncateRefName(b.refName)}
             </text>
           )
         })}
-      {ticks.map(([tick, y], idx) =>
-        y > 0 && y < viewHeight ? (
-          <line
-            key={`line-${tick.refName}-${tick.base}-${idx}`}
-            y1={viewHeight - y}
-            y2={viewHeight - y}
-            x1={borderX}
-            x2={borderX - (tick.type === 'major' ? 6 : 4)}
-            strokeWidth={1}
-            {...getStrokeProps(theme.palette.text.primary)}
-          />
-        ) : null,
-      )}
-      {ticks
-        .filter(t => t[0].type === 'major')
-        .map(([tick, y], idx) =>
-          y > 10 && y < viewHeight ? (
-            <text
-              y={viewHeight - y - 3}
-              x={borderX - 7}
-              key={`text-${tick.refName}-${tick.base}-${idx}`}
-              textAnchor="end"
-              dominantBaseline="hanging"
-              fontSize={11}
-              {...getFillProps(theme.palette.text.primary)}
-            >
-              {getTickDisplayStr(tick.base + 1, bpPerPx)}
-            </text>
-          ) : null,
-        )}
+      {ticks.map(({ tick, alongPx }, idx) => {
+        const y = viewHeight - alongPx
+        const len = tickLen(tick)
+        return (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
+          <g key={`${tick.refName}-${tick.base}-${idx}`}>
+            {alongPx > 0 && alongPx < viewHeight ? (
+              <line
+                y1={y}
+                y2={y}
+                x1={borderX}
+                x2={borderX - len}
+                strokeWidth={1}
+                {...stroke}
+              />
+            ) : null}
+            {tick.type === 'major' && alongPx > 10 && alongPx < viewHeight ? (
+              <text
+                y={y - 3}
+                x={borderX - 7}
+                textAnchor="end"
+                dominantBaseline="hanging"
+                fontSize={AXIS_LABEL_FONT}
+                {...fill}
+              >
+                {tickLabel(tick, bpPerPx)}
+              </text>
+            ) : null}
+          </g>
+        )
+      })}
       <text
-        y={(viewHeight - borderY) / 2}
+        y={viewHeight / 2}
         x={12}
-        transform={`rotate(-90,12,${(viewHeight - borderY) / 2})`}
+        transform={`rotate(-90,12,${viewHeight / 2})`}
         textAnchor="middle"
         fontSize={11}
-        {...getFillProps(theme.palette.text.primary)}
+        {...fill}
       >
         {vview.assemblyNames.join(',')}
       </text>

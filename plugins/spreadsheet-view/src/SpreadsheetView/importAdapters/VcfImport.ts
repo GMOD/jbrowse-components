@@ -41,7 +41,6 @@ export function parseVcfBuffer(buffer: Uint8Array) {
           vcfParser.samples.map((s, idx) => [s, rest[idx]]),
         ),
       },
-      // a simplefeatureserializd
       feature: new VcfFeature({
         parser: vcfParser,
         variant: vcfParser.parseLine(line),
@@ -49,16 +48,25 @@ export function parseVcfBuffer(buffer: Uint8Array) {
       }).toJSON(),
     })
   }
+  // SVTYPE is the field that distinguishes deletions/duplications/inversions/
+  // breakends, so for structural-variant VCFs surface it right after ID. This
+  // keeps it visible ahead of the REF/ALT columns, which for SVs hold multi-kb
+  // insertion/deletion sequences that otherwise widen those columns enough to
+  // push SVTYPE (and the rest of the INFO fields) off-screen.
+  const svType = 'INFO.SVTYPE'
+  const hasSvType = keys.has(svType)
+  const infoColumns = [...keys].filter(k => k !== svType)
   return {
     columns: [
       'CHROM',
       'POS',
       'ID',
+      ...(hasSvType ? [svType] : []),
       'REF',
       'ALT',
       'QUAL',
       'FILTER',
-      ...keys,
+      ...infoColumns,
       'FORMAT',
       ...vcfParser.samples,
     ].map(c => ({ name: c })),

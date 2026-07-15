@@ -83,3 +83,38 @@ test('<JBrowseLinearGenomeView /> renders successfully', async () => {
     { timeout },
   )
 }, 40000)
+
+test('top-level location + highlight navigate via init', async () => {
+  const state = createViewState({
+    assembly,
+    tracks: [],
+    location: 'ctgA:1-40',
+    highlight: ['ctgA:5-10'],
+  })
+  const { getByPlaceholderText } = render(
+    <JBrowseLinearGenomeView viewState={state} />,
+  )
+  const getInputValue = () =>
+    (getByPlaceholderText('Search for location') as HTMLInputElement).value
+  await waitFor(
+    () => {
+      expect(getInputValue()).toBe('ctgA:1..40')
+    },
+    { timeout },
+  )
+  // init consumes highlight and backfills assemblyName, then clears itself
+  await waitFor(
+    () => {
+      expect(state.session.view.init).toBeUndefined()
+    },
+    { timeout },
+  )
+  expect(state.session.view.highlight).toEqual([
+    expect.objectContaining({
+      refName: 'ctgA',
+      start: 4,
+      end: 10,
+      assemblyName: 'volvox',
+    }),
+  ])
+}, 40000)

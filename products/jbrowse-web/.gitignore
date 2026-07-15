@@ -15,3 +15,5 @@ yarn-debug.log*
 yarn-error.log*
 coverage/
 *.diff-visual.png
+browser-tests/bundle-size-by-version.svg
+browser-tests/bundle-size-by-version.json

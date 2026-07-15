@@ -1,19 +1,20 @@
-import { Suspense, useRef, useState } from 'react'
+import { useRef } from 'react'
 
-import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import SequenceBody from '../SequenceBody.tsx'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
-import { Dialog, ErrorBanner, LoadingEllipses } from '../../../ui/index.ts'
-import { getSession } from '../../../util/index.ts'
+import { Dialog } from '../../../ui/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
-import { useFeatureSequence } from '../../../util/useFeatureSequence.ts'
-import SequencePanel from '../SequencePanel.tsx'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
-import type { BaseFeatureWidgetModel } from '../../stateModelFactory.ts'
-import type { SequenceFeatureDetailsModel } from '../model.ts'
+import type { ErrorState, SeqState } from '../../util.tsx'
+import type {
+  SequenceDisplayMode,
+  SequenceFeatureDetailsModel,
+} from '../model.ts'
 
 const useStyles = makeStyles()({
   dialogContent: {
@@ -23,30 +24,27 @@ const useStyles = makeStyles()({
 
 const SequenceDialog = observer(function SequenceDialog({
   handleClose,
-  model,
   sequenceFeatureDetails,
   feature,
+  mode,
+  setMode,
+  sequence,
+  error,
+  assemblyGeneticCodeId,
+  onForceLoad,
 }: {
   handleClose: () => void
   feature: SimpleFeatureSerialized
-  model: BaseFeatureWidgetModel
   sequenceFeatureDetails: SequenceFeatureDetailsModel
+  mode: SequenceDisplayMode
+  setMode: (mode: SequenceDisplayMode) => void
+  sequence: SeqState | ErrorState | undefined
+  error: unknown
+  assemblyGeneticCodeId?: number
+  onForceLoad: () => void
 }) {
-  const { upDownBp } = sequenceFeatureDetails
   const { classes } = useStyles()
   const seqPanelRef = useRef<HTMLDivElement>(null)
-  const [forceLoad, setForceLoad] = useState(false)
-  const session = getSession(model)
-  const assemblyName = model.view?.assemblyNames?.[0]
-  const { sequence, error } = useFeatureSequence({
-    assemblyName,
-    session,
-    start: feature.start,
-    end: feature.end,
-    refName: feature.refName,
-    upDownBp,
-    forceLoad,
-  })
 
   return (
     <Dialog
@@ -59,47 +57,28 @@ const SequenceDialog = observer(function SequenceDialog({
     >
       <DialogContent className={classes.dialogContent}>
         <div>
-          <SequenceTypeSelector model={sequenceFeatureDetails} />
+          <SequenceTypeSelector
+            model={sequenceFeatureDetails}
+            feature={feature}
+            mode={mode}
+            setMode={setMode}
+          />
           <SequenceFeatureMenu
             ref={seqPanelRef}
             model={sequenceFeatureDetails}
+            mode={mode}
           />
         </div>
-
-        <div>
-          {feature.type === 'gene' ? (
-            <Typography>
-              Note: inspect subfeature sequences for protein/CDS computations
-            </Typography>
-          ) : null}
-          {error ? (
-            <ErrorBanner error={error} />
-          ) : !sequence ? (
-            <LoadingEllipses />
-          ) : 'error' in sequence ? (
-            <>
-              <Typography color="error">{sequence.error}</Typography>
-              <Button
-                variant="contained"
-                color="inherit"
-                onClick={() => {
-                  setForceLoad(true)
-                }}
-              >
-                Force load
-              </Button>
-            </>
-          ) : (
-            <Suspense fallback={<LoadingEllipses />}>
-              <SequencePanel
-                ref={seqPanelRef}
-                feature={feature}
-                sequence={sequence}
-                model={sequenceFeatureDetails}
-              />
-            </Suspense>
-          )}
-        </div>
+        <SequenceBody
+          error={error}
+          sequence={sequence}
+          feature={feature}
+          seqPanelRef={seqPanelRef}
+          model={sequenceFeatureDetails}
+          mode={mode}
+          assemblyGeneticCodeId={assemblyGeneticCodeId}
+          onForceLoad={onForceLoad}
+        />
       </DialogContent>
 
       <DialogActions>

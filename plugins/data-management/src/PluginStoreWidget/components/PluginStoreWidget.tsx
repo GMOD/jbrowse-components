@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { vendoredPluginNames } from '@jbrowse/core/PluginLoader'
+import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
@@ -89,7 +90,9 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
         fullWidth
         label="Filter plugins"
         value={filterText}
-        onChange={model.setFilterText}
+        onChange={text => {
+          model.setFilterText(text)
+        }}
       />
       <Accordion defaultExpanded>
         <AccordionSummary
@@ -98,7 +101,11 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
           <Typography variant="h5">Installed plugins</Typography>
         </AccordionSummary>
         <div className={classes.m}>
-          <InstalledPluginsList pluginManager={pluginManager} model={model} />
+          <InstalledPluginsList
+            pluginManager={pluginManager}
+            model={model}
+            storePlugins={plugins}
+          />
         </div>
       </Accordion>
       <Accordion defaultExpanded>
@@ -108,15 +115,24 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
           <Typography variant="h5">Available plugins</Typography>
         </AccordionSummary>
         {error ? (
-          <Typography color="error">{`${error}`}</Typography>
+          <ErrorMessage error={error} />
         ) : plugins ? (
           plugins
-            .filter(
-              plugin =>
-                // If plugin only has cjsUrl, don't display outside desktop
-                !(isElectron && plugin.cjsUrl) &&
-                plugin.name.toLowerCase().includes(filterText.toLowerCase()),
-            )
+            .filter(plugin => {
+              // a plugin with only a cjsUrl (no web build) can't load on web,
+              // so hide it unless we're on desktop
+              const hasWebBuild = Boolean(
+                plugin.esmUrl || plugin.url || plugin.umdUrl,
+              )
+              // plugins since vendored into core (e.g. MafViewer) are dropped at
+              // load, so installing one does nothing — hide it from the store
+              const vendored = vendoredPluginNames.has(plugin.name)
+              return (
+                !vendored &&
+                (isElectron || hasWebBuild) &&
+                plugin.name.toLowerCase().includes(filterText.toLowerCase())
+              )
+            })
             .map(plugin => (
               <PluginCard key={plugin.name} plugin={plugin} model={model} />
             ))

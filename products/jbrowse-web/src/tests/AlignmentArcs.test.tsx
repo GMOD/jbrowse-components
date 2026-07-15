@@ -13,7 +13,6 @@ const testArc = (loc: string, track: string) =>
     loc,
     track,
     displayMode: 'arc',
-    canvasId: 'arc-canvas',
     timeout: timeout - 5000,
   })
 
@@ -34,6 +33,14 @@ test(
 )
 
 test(
+  'long-read arc display, full view',
+  async () => {
+    await testArc('ctgA:1..46,392', 'volvox-simple-inv.bam')
+  },
+  timeout,
+)
+
+test(
   'long-read arc display, out of view pairing',
   async () => {
     await testArc('ctgA:478..6,191', 'volvox-long-reads-sv-cram')
@@ -45,6 +52,19 @@ test(
   'short-read arc display, out of view pairing',
   async () => {
     await testArc('ctgA:478..6,191', 'volvox_sv_cram')
+  },
+  timeout,
+)
+
+test(
+  'cloud mode draws flat |tlen| lines over coverage',
+  async () => {
+    await testLinkedReadsDisplay({
+      loc: 'ctgA:1-50000',
+      track: 'volvox_sv_cram',
+      displayMode: 'cloud',
+      timeout: timeout - 5000,
+    })
   },
   timeout,
 )

@@ -1,84 +1,23 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
-import { getRoot, types } from '@jbrowse/mobx-state-tree'
-
 import { HTTPBasicLoginForm } from './HTTPBasicLoginForm.tsx'
-import { getResponseError } from '../util.ts'
+import { tokenEntryModelFactory } from '../tokenEntryModelFactory.ts'
 
 import type { HTTPBasicInternetAccountConfigModel } from './configSchema.ts'
-import type { UriLocation } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel HTTPBasicInternetAccount
+ * Internet account that authenticates requests with an HTTP Basic
+ * username/password the user enters through a dialog, optionally validated with
+ * a HEAD request. See [TokenEntryInternetAccount](../tokenentryinternetaccount)
+ * for the shared behavior.
  */
-const stateModelFactory = (
-  configSchema: HTTPBasicInternetAccountConfigModel,
-) => {
-  return InternetAccount.named('HTTPBasicInternetAccount')
-    .props({
-      /**
-       * #property
-       */
-      type: types.literal('HTTPBasicInternetAccount'),
-      /**
-       * #property
-       */
-      configuration: ConfigurationReference(configSchema),
-    })
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get validateWithHEAD(): boolean {
-        return getConf(self, 'validateWithHEAD')
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      getTokenFromUser(
-        resolve: (token: string) => void,
-        reject: (error: Error) => void,
-      ) {
-        const { session } = getRoot<any>(self)
-        session.queueDialog((doneCallback: () => void) => [
-          HTTPBasicLoginForm,
-          {
-            internetAccountId: self.internetAccountId,
-            handleClose: (token: string) => {
-              if (token) {
-                resolve(token)
-              } else {
-                reject(new Error('User cancelled entry'))
-              }
-              doneCallback()
-            },
-          },
-        ])
-      },
-      /**
-       * #action
-       */
-      async validateToken(token: string, location: UriLocation) {
-        if (!self.validateWithHEAD) {
-          return token
-        }
-        const newInit = self.addAuthHeaderToInit({ method: 'HEAD' }, token)
-        const response = await fetch(location.uri, newInit)
-        if (!response.ok) {
-          throw new Error(
-            await getResponseError({
-              response,
-              reason: 'Error validating token',
-            }),
-          )
-        }
-        return token
-      },
-    }))
-}
+const stateModelFactory = (configSchema: HTTPBasicInternetAccountConfigModel) =>
+  tokenEntryModelFactory(
+    'HTTPBasicInternetAccount',
+    'HTTPBasicInternetAccount',
+    configSchema,
+    HTTPBasicLoginForm,
+  )
 
 export default stateModelFactory
 export type HTTPBasicStateModel = ReturnType<typeof stateModelFactory>

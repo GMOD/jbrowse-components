@@ -1,92 +1,120 @@
 import { getSession, stripAlpha } from '@jbrowse/core/util'
-import Base1DView from '@jbrowse/core/util/Base1DViewModel'
+import {
+  createOverviewLayout,
+  getContentBlocksPxSpan,
+} from '@jbrowse/core/util/Base1DUtils'
+import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { useTheme } from '@mui/material'
 
 import SVGRuler from './SVGRuler.tsx'
 import SVGScalebar from './SVGScalebar.tsx'
+import { getHeaderLayout } from './util.ts'
 import Cytobands from '../components/Cytobands.tsx'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
+import { getCytobands } from '../components/util.ts'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+
+// "you are here" cytoband overview rendered above the ruler. Self-contained so
+// the overview-layout work only runs when cytobands are actually shown.
+function CytobandOverview({
+  model,
+  assembly,
+  y,
+}: {
+  model: LinearGenomeViewModel
+  assembly: Assembly | undefined
+  y: number
+}) {
+  const { width, displayedRegions, minimumBlockWidth } = model
+  const overview = createOverviewLayout({
+    displayedRegions,
+    width,
+    minimumBlockWidth,
+  })
+  const block = calculateDynamicBlocks(overview).contentBlocks[0]
+  const span = getContentBlocksPxSpan(
+    overview,
+    model.dynamicBlocks.contentBlocks,
+  )
+  return block && span ? (
+    <g transform={`translate(0 ${y})`}>
+      <Cytobands
+        overview={overview}
+        cytobands={getCytobands(assembly, block.refName)}
+        block={block}
+      />
+      <rect
+        stroke="red"
+        fill="rgb(255,0,0)"
+        fillOpacity={0.1}
+        width={Math.max(span.rightPx - span.leftPx, 0.5)}
+        height={HEADER_OVERVIEW_HEIGHT - 1}
+        x={span.leftPx}
+        y={0.5}
+      />
+      <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
+        <OverviewScalebarPolygon overview={overview} model={model} />
+      </g>
+    </g>
+  ) : null
+}
 
 export default function SVGHeader({
   model,
   fontSize,
-  cytobandHeight,
   rulerHeight,
 }: {
   model: LinearGenomeViewModel
   rulerHeight: number
   fontSize: number
-  cytobandHeight: number
 }) {
-  const { width, assemblyNames, showCytobands, displayedRegions } = model
+  const { assemblyNames, effectiveShowCytobands } = model
   const { assemblyManager } = getSession(model)
-  const assemblyName = assemblyNames.length > 1 ? '' : assemblyNames[0]!
-  const assembly = assemblyManager.get(assemblyName)
+  // cytobands need a single unambiguous assembly, but the header label names
+  // every assembly in the view
+  const cytobandAssemblyName =
+    assemblyNames.length === 1 ? assemblyNames[0] : undefined
+  const assembly = cytobandAssemblyName
+    ? assemblyManager.get(cytobandAssemblyName)
+    : undefined
   const theme = useTheme()
-  const c = stripAlpha(theme.palette.text.primary)
-  const overview = Base1DView.create({
-    displayedRegions: JSON.parse(JSON.stringify(displayedRegions)),
-    interRegionPaddingWidth: 0,
-    minimumBlockWidth: model.minimumBlockWidth,
-  })
+  const fill = stripAlpha(theme.palette.text.primary)
   const visibleRegions = model.dynamicBlocks.contentBlocks
   if (!visibleRegions.length) {
     return null
   }
 
-  overview.setVolatileWidth(width)
-  overview.showAllRegions()
-  const block = overview.dynamicBlocks.contentBlocks[0]!
-  const first = visibleRegions.at(0)!
-  const last = visibleRegions.at(-1)!
-  const firstOverviewPx =
-    overview.bpToPx({
-      ...first,
-      coord: first.reversed ? first.end : first.start,
-    }) ?? 0
-
-  const lastOverviewPx =
-    overview.bpToPx({
-      ...last,
-      coord: last.reversed ? last.start : last.end,
-    }) ?? 0
-  const y = +showCytobands * cytobandHeight
+  const { cytobandTop, scalebarLineY, rulerTop } = getHeaderLayout({
+    fontSize,
+    showCytobands: effectiveShowCytobands,
+    rulerHeight,
+  })
   return (
     <g id="header">
-      <text x={0} y={0} dominantBaseline="hanging" fontSize={fontSize} fill={c}>
-        {assemblyName}
-      </text>
-
-      {showCytobands ? (
-        <g transform={`translate(0 ${rulerHeight})`}>
-          <Cytobands overview={overview} assembly={assembly} block={block} />
-          <rect
-            stroke="red"
-            fill="rgb(255,0,0)"
-            fillOpacity={0.1}
-            width={Math.max(lastOverviewPx - firstOverviewPx, 0.5)}
-            height={HEADER_OVERVIEW_HEIGHT - 1}
-            x={firstOverviewPx}
-            y={0.5}
-          />
-          <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
-            <OverviewScalebarPolygon
-              overview={overview}
-              model={model}
-              useOffset={false}
-            />
-          </g>
-        </g>
+      {assemblyNames.length ? (
+        <text
+          x={0}
+          y={0}
+          dominantBaseline="hanging"
+          fontSize={fontSize}
+          fill={fill}
+        >
+          {assemblyNames.join(', ')}
+        </text>
       ) : null}
 
-      <g transform={`translate(0 ${fontSize + y})`}>
+      {effectiveShowCytobands ? (
+        <CytobandOverview model={model} assembly={assembly} y={cytobandTop} />
+      ) : null}
+
+      <g transform={`translate(0 ${scalebarLineY})`}>
         <SVGScalebar model={model} fontSize={fontSize} />
       </g>
-      <g transform={`translate(0 ${rulerHeight + y})`}>
-        <SVGRuler model={model} fontSize={fontSize} />
+      <g transform={`translate(0 ${rulerTop})`}>
+        <SVGRuler model={model} fontSize={fontSize} rulerHeight={rulerHeight} />
       </g>
     </g>
   )

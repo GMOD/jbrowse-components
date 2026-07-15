@@ -61,7 +61,6 @@ const RecombinationTrack = observer(function RecombinationTrack({
   for (let i = 0; i < recombination.values.length; i++) {
     const value = recombination.values[i]!
     let x: number
-    // eslint-disable-next-line unicorn/prefer-ternary
     if (useGenomicPositions && regionStart !== undefined && bpPerPx) {
       // positions[i] is already the midpoint between SNP i and SNP i+1
       x = (recombination.positions[i]! - regionStart) / bpPerPx

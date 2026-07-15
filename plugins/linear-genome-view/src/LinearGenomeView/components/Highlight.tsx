@@ -1,16 +1,21 @@
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { colord } from '@jbrowse/core/util/colord'
+import { getSession } from '@jbrowse/core/util'
 import CloseIcon from '@mui/icons-material/Close'
-import LinkIcon from '@mui/icons-material/Link'
-import { Box, Tooltip, Typography, useTheme } from '@mui/material'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import HighlightBand from './HighlightBand.tsx'
+import HighlightChip from './HighlightChip.tsx'
+import { getHighlightColor } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 import type { HighlightType } from '../types.ts'
 
 type LGV = LinearGenomeViewModel
+
+// A band narrower than the link-icon chip clips it into a smudge, so below this
+// width the chip is dropped (the band itself still draws).
+const CHIP_MIN_WIDTH = 24
 
 const Highlight = observer(function Highlight({
   model,
@@ -21,41 +26,39 @@ const Highlight = observer(function Highlight({
 }) {
   const theme = useTheme()
   const coords = model.getHighlightCoords(highlight)
-
-  // user-supplied color is used as-is so explicit alpha is preserved; fall
-  // back to the theme color with a standard alpha
-  const bandColor = highlight.color
-    ? colord(highlight.color)
-    : colord(theme.palette.highlight.main).alpha(0.35)
+  const bandColor = getHighlightColor(highlight, theme)
+  const label = model.labelsVisible ? highlight.label : undefined
 
   return coords ? (
-    <HighlightBand coords={coords} background={bandColor.toRgbString()}>
-      <CascadingMenuButton
-        menuItems={[
-          {
-            label: 'Dismiss highlight',
-            icon: CloseIcon,
-            onClick: () => {
-              model.removeHighlight(highlight)
+    <HighlightBand
+      coords={coords}
+      background={bandColor.toRgbString()}
+      label={label}
+    >
+      {model.showHighlightChips && coords.width >= CHIP_MIN_WIDTH ? (
+        <HighlightChip
+          color={bandColor}
+          label={label}
+          tooltip={highlight.label ?? 'Highlighted region'}
+          menuItems={[
+            {
+              label: 'Dismiss highlight',
+              icon: CloseIcon,
+              onClick: () => {
+                model.removeHighlight(highlight)
+              },
             },
-          },
-          ...model.highlightMenuItems(highlight),
-        ]}
-      >
-        <Tooltip title={highlight.label ?? 'Highlighted region'} arrow>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <LinkIcon
-              fontSize="small"
-              sx={{ color: bandColor.alpha(0.8).toRgbString() }}
-            />
-            {highlight.label && model.labelsVisible ? (
-              <Typography variant="caption" noWrap>
-                {highlight.label}
-              </Typography>
-            ) : null}
-          </Box>
-        </Tooltip>
-      </CascadingMenuButton>
+            {
+              label: 'Turn off highlights',
+              icon: VisibilityOffIcon,
+              onClick: () => {
+                getSession(model).setHighlightsVisible(false)
+              },
+            },
+            ...model.highlightMenuItems(highlight),
+          ]}
+        />
+      ) : null}
     </HighlightBand>
   ) : null
 })

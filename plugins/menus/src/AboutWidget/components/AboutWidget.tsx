@@ -1,8 +1,6 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { ExternalLink } from '@jbrowse/core/ui'
-import {
-  availableRenderers,
-  preferredRenderer,
-} from '@jbrowse/core/ui/getGraphicsCapabilities'
+import { preferredRenderer } from '@jbrowse/core/ui/getGraphicsCapabilities'
 import { useGraphicsCapabilities } from '@jbrowse/core/ui/useGraphicsCapabilities'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -41,14 +39,22 @@ const AboutWidget = observer(function AboutWidget({
   model: IAnyStateTreeNode
 }) {
   const { classes } = useStyles()
-  const { version } = getSession(model)
+  const session = getSession(model)
+  const { version, gitCommit } = session
   const { pluginManager } = getEnv(model)
   const { plugins } = pluginManager as PluginManager
   const graphicsCapabilities = useGraphicsCapabilities()
+  const { mainConfiguration, defaultDriverName } = session.rpcManager
+  const defaultRpcDriver =
+    (readConfObject(mainConfiguration, 'defaultDriver') as string) ||
+    defaultDriverName
   const corePlugins = new Set(
     plugins
       .filter(p => pluginManager.pluginMetadata[p.name]?.isCore)
       .map(p => p.name),
+  )
+  const externalPlugins = plugins.filter(
+    plugin => !corePlugins.has(plugin.name),
   )
 
   return (
@@ -59,8 +65,13 @@ const AboutWidget = observer(function AboutWidget({
       <Typography variant="h6" align="center" className={classes.subtitle}>
         {version}
       </Typography>
+      {gitCommit ? (
+        <Typography variant="body2" align="center">
+          Commit: {gitCommit}
+        </Typography>
+      ) : null}
       <Typography align="center">
-        JBrowse is a <ExternalLink href="http://gmod.org/">GMOD</ExternalLink>{' '}
+        JBrowse is a <ExternalLink href="https://gmod.org/">GMOD</ExternalLink>{' '}
         project
       </Typography>
       <br />
@@ -69,38 +80,38 @@ const AboutWidget = observer(function AboutWidget({
       </Typography>
 
       <div className={classes.accordions}>
-        {graphicsCapabilities ? (
-          <Accordion defaultExpanded>
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon className={classes.icon} />}
-            >
-              <Typography>
-                Graphics:{' '}
-                <strong>{preferredRenderer(graphicsCapabilities)}</strong>
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <ul>
-                <li>
-                  Available:{' '}
-                  {availableRenderers(graphicsCapabilities).join(', ')}
-                </li>
-              </ul>
-            </AccordionDetails>
-          </Accordion>
-        ) : null}
+        <Accordion defaultExpanded>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon className={classes.icon} />}
+          >
+            <Typography>Browser settings</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ul>
+              {graphicsCapabilities ? (
+                <li>Graphics: {preferredRenderer(graphicsCapabilities)}</li>
+              ) : null}
+              <li>
+                Rendering:{' '}
+                {defaultRpcDriver === 'WebWorkerRpcDriver'
+                  ? 'off main thread'
+                  : 'on main thread'}
+              </li>
+            </ul>
+          </AccordionDetails>
+        </Accordion>
 
         <Accordion defaultExpanded>
           <AccordionSummary
             expandIcon={<ExpandMoreIcon className={classes.icon} />}
           >
-            <Typography>External plugins loaded</Typography>
+            <Typography>Plugins loaded</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <ul>
-              {plugins
-                .filter(plugin => !corePlugins.has(plugin.name))
-                .map(plugin => {
+            <Typography>External plugins</Typography>
+            {externalPlugins.length ? (
+              <ul>
+                {externalPlugins.map(plugin => {
                   const { url, name, version = '' } = plugin
                   const text = `${name} ${version || ''}`
                   return (
@@ -113,17 +124,11 @@ const AboutWidget = observer(function AboutWidget({
                     </li>
                   )
                 })}
-            </ul>
-          </AccordionDetails>
-        </Accordion>
-
-        <Accordion defaultExpanded>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon className={classes.icon} />}
-          >
-            <Typography>Core plugins loaded</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
+              </ul>
+            ) : (
+              <Typography>No external plugins loaded</Typography>
+            )}
+            <Typography>Core plugins</Typography>
             <ul>
               {plugins
                 .filter(plugin => corePlugins.has(plugin.name))

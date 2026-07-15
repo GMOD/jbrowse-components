@@ -12,9 +12,12 @@ const MCScanAddTrackComponent = lazy(
 export default function MCScanAddTrackComponentF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-addTrackComponent',
-    // @ts-expect-error
-    (comp, { model }: { trackAdapterType: string }) => {
-      return mcscanTypes.includes(model.trackAdapterType)
+    (
+      comp: unknown,
+      { model }: { model?: { trackAdapterType?: string } },
+    ): unknown => {
+      const t = model?.trackAdapterType
+      return t !== undefined && mcscanTypes.includes(t)
         ? MCScanAddTrackComponent
         : comp
     },

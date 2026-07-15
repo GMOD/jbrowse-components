@@ -4,7 +4,7 @@ import { autorun } from 'mobx'
 import { getConf } from '../configuration/index.ts'
 import { getSession } from '../util/index.ts'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model.ts'
-import { formatSubfeatures } from './util.tsx'
+import { formatSubfeatures, nullReplacer } from './util.tsx'
 import { ElementId } from '../util/types/mst.ts'
 
 import type PluginManager from '../PluginManager.ts'
@@ -35,17 +35,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      featureData: types.frozen<MaybeSerializedFeat>(),
+      featureData: types.optional(
+        types.frozen<MaybeSerializedFeat>(),
+        undefined,
+      ),
 
       /**
        * #property
        */
-      formattedFields: types.frozen(),
-
-      /**
-       * #property
-       */
-      unformattedFeatureData: types.frozen<MaybeSerializedFeat>(),
+      unformattedFeatureData: types.optional(
+        types.frozen<MaybeSerializedFeat>(),
+        undefined,
+      ),
 
       /**
        * #property
@@ -84,14 +85,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      descriptions: types.frozen<Record<string, unknown> | undefined>(),
+      descriptions: types.optional(
+        types.frozen<Record<string, unknown> | undefined>(),
+        undefined,
+      ),
     })
-    .volatile(() => ({
+    .volatile<{ error: unknown }>(() => ({
       /**
        * #volatile
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      error: undefined as unknown,
+
+      error: undefined,
     }))
 
     .actions(self => ({
@@ -148,11 +152,11 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   const feature = structuredClone(unformattedFeatureData)
 
                   const combine = (
-                    arg2: string,
+                    scope: string,
                     feature: Record<string, unknown>,
                   ) => ({
-                    ...getConf(session, ['formatDetails', arg2], { feature }),
-                    ...getConf(track, ['formatDetails', arg2], { feature }),
+                    ...getConf(session, ['formatDetails', scope], { feature }),
+                    ...getConf(track, ['formatDetails', scope], { feature }),
                   })
 
                   if (track) {
@@ -168,7 +172,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
                   }
 
                   self.setFormattedData(feature)
-                  self.sequenceFeatureDetails.setFeature(feature)
                 }
               } catch (e) {
                 console.error(e)
@@ -180,13 +183,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
-    .preProcessSnapshot(snap => {
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       // old snapshots used `featureData`, new ones use `finalizedFeatureData`;
       // accept both for backwards compat
-      const { featureData, finalizedFeatureData, ...rest } =
-        snap as typeof snap & {
-          finalizedFeatureData?: MaybeSerializedFeat
-        }
+      const { featureData, finalizedFeatureData, ...rest } = (snap ?? {}) as {
+        featureData?: MaybeSerializedFeat
+        finalizedFeatureData?: MaybeSerializedFeat
+      } & Record<string, unknown>
       return {
         unformattedFeatureData: featureData,
         featureData: finalizedFeatureData,
@@ -194,26 +197,15 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .postProcessSnapshot(snap => {
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { unformattedFeatureData, featureData, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
-
-      const s2 = JSON.stringify(featureData, (_, v) =>
-        v === undefined ? null : v,
-      )
+      const { unformattedFeatureData, featureData, ...rest } = snap
 
       // JSON.stringify can return empty if too large
-
+      const s2 = JSON.stringify(featureData, nullReplacer)
       const featureTooLargeToBeSerialized = !s2 || s2.length > 2_000_000
 
-      // The concept of using `finalizedFeatureData` is to avoid running
-      // formatter twice if loading from snapshot
+      // `finalizedFeatureData` is persisted (rather than `featureData`) so
+      // loading from snapshot doesn't re-run the formatter callbacks
       return {
-        // We replace undefined with null to help with allowing fields to be
-        // hidden, setting null is not allowed by jexl so we set it to
-        // undefined to hide, but JSON only allows serializing null
         finalizedFeatureData: featureTooLargeToBeSerialized
           ? undefined
           : JSON.parse(s2),

@@ -4,6 +4,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+/**
+ * #stateModel VariantFeatureWidget
+ * Feature-details widget for a VCF variant, extending the base feature widget
+ * with variant-specific fields such as genotypes and INFO.
+ */
 export function stateModelFactory(pluginManager: PluginManager) {
   const baseModel = baseModelFactory(pluginManager)
   return types.compose(

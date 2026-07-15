@@ -1,27 +1,105 @@
 ---
-id: creating_display
-title: Creating custom display types
-description: Control how a track renders in a given view type
+title: Custom track and display types
+description:
+  Define track types (high-level identity) and display types (how a track
+  renders in a given view)
 guide_category: Creating pluggable elements
 ---
 
-Display types tell JBrowse how to "display" a given track in a particular view.
-A track might "display" itself completely different depending on whether it is
-in a dotplot or in a linear genome view. The "display" types may not actually do
-the drawing of the track data: that is often done by the renderer. The display
-will call the renderer though.
+A **track** owns the high-level identity (an ID, a name, a default set of
+displays), while **display types** do the work of showing that track inside a
+particular view, and **renderers** turn features into pixels.
 
-Here are some reasons you might want a custom display type:
+```
+Track  ─owns→  Display(s)  ─call→  Renderer
+```
 
-- Drawing custom things over the rendered content (e.g. drawing the Y-scale bar
-  in the wiggle track)
-- Implementing custom track menu items (e.g. Show soft clipping in the
-  alignments track)
-- Adding custom widgets (e.g. custom `VariantFeatureWidget` in variant track)
-- You want to bundle your renderer and adapter as a specific thing that is
-  automatically initialized rather than the `BasicTrack` (which combines any
-  adapter and renderer)
+Tracks are deliberately thin. For example:
 
-For a practical walkthrough of building a plugin that includes a display type,
-see the [simple plugin tutorial](/docs/developer_guides/simple_plugin) and the
-[no-build plugin tutorial](/docs/developer_guides/no_build_plugin).
+- `AlignmentsTrack` owns `LinearAlignmentsDisplay`, which internally combines a
+  pileup row and an SNP-coverage row, both ways of looking at BAM/CRAM data
+  inside a `LinearGenomeView`.
+- `VariantTrack` owns `LinearVariantDisplay` (registered against
+  `LinearGenomeView`) and `ChordVariantDisplay` (registered against
+  `CircularView` by the `circular-view` plugin). The track is the same; the
+  displays are different because the views are different.
+- `SyntenyTrack` owns `DotplotDisplay` and `LinearSyntenyDisplay`, letting the
+  same underlying PIF/PAF data render in either a `DotplotView` or a
+  `LinearSyntenyView`.
+
+This factoring means: **if you're adding a new way to visualize data in an
+existing view, you almost always want a display type, not a track type.** Add a
+track type only when you need a new conceptual track category, a custom config
+schema for that category, or behavior shared across multiple displays.
+
+## Registering a track type
+
+Track types are registered with `pluginManager.addTrackType(...)` and reuse the
+base track config schema. The
+[pluggable elements](/docs/developer_guides/pluggable_elements) reference lists
+the full set of slots. Useful in-tree references:
+
+- `plugins/alignments/src/AlignmentsTrack` - multi-display track
+- `plugins/variants/src/VariantTrack` - track shared across view types
+- `plugins/hic/src/HicTrack` - track with a single dedicated display
+
+## When to add a custom display type
+
+- Drawing chrome over the rendered content (e.g. the Y-scale axis in wiggle
+  tracks, soft-clip indicators in alignments)
+- Adding track-menu items that toggle display-only state (e.g. "Show soft
+  clipping", "Modifications")
+- Wiring a [custom widget](/docs/developer_guides/creating_widget) into feature
+  clicks (e.g. `VariantFeatureWidget`)
+- Bundling a specific adapter + renderer pair so users get the right combination
+  by default, instead of relying on the generic `FeatureTrack` /
+  `LinearBasicDisplay`
+
+The display owns view-specific state, menu items, and overlays; the
+[renderer](/docs/developer_guides/renderer_architecture) it invokes does the
+per-feature drawing. Which foundation mixin a display composes
+(`MultiRegionDisplayMixin` for per-region data, `GlobalDataDisplayMixin` for a
+single whole-view dataset like a heatmap) is spelled out in the
+[architecture spec's display-stacks table](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks).
+
+## Pairing displays with tracks and views
+
+A display registers itself as compatible with one view type. For example
+`LinearVariantDisplay` is registered against `LinearGenomeView`, while
+`ChordVariantDisplay` is registered against `CircularView`. Both belong to the
+same `VariantTrack`.
+
+## Walkthroughs
+
+- [plugin templates](/docs/developer_guides/simple_plugin) - full scaffold and
+  build setup
+- [no-build plugin tutorial](/docs/developer_guides/no_build_plugin) - same idea
+  without a bundler
+
+In-tree references:
+
+- `plugins/wiggle/src/LinearWiggleDisplay` - adds a Y-scale overlay on top of
+  the rendered content
+- `plugins/alignments/src/LinearAlignmentsDisplay` - rich display with many
+  toggleable menu items and a custom feature widget
+- `plugins/variants/src/LinearVariantDisplay` and
+  `plugins/circular-view/src/ChordVariantDisplay` - two displays for one track
+  type, in different view types
+
+## See also
+
+- [Architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md)
+  - the canonical spec behind this page
+- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+  - for large or dense datasets
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) - how a display
+  fetches its data via the autorun chain
+- [Adding SVG export to a display](/docs/developer_guides/svg_export)
+- [Renderer architecture](/docs/developer_guides/renderer_architecture)
+- [Creating custom adapters](/docs/developer_guides/creating_adapter) - a track
+  combines an adapter with its displays
+- [Configuration schema](/docs/developer_guides/configuration_schema) - define a
+  custom config schema for a track category
+- [Creating custom widgets](/docs/developer_guides/creating_widget)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
+  all element types, including tracks and displays

@@ -1,16 +1,14 @@
-import path from 'path'
-import { Readable } from 'stream'
+import path from 'node:path'
+import { Readable } from 'node:stream'
 
 import {
   generateMeta,
   guessAdapterFromFileName,
-  indexGff3,
-  indexVcf,
+  indexFiles,
 } from '@jbrowse/text-indexing-core'
 import { Presets, SingleBar } from 'cli-progress'
 import { ixIxxStream } from 'ixixx'
 
-import { getAdapterLocation, getLoc } from './adapter-utils.ts'
 import { supported } from '../../types/common.ts'
 
 import type { Track } from '@jbrowse/text-indexing-core'
@@ -48,83 +46,6 @@ export async function runIxIxx({
   }
 }
 
-export async function* indexFiles({
-  trackConfigs,
-  attributes,
-  outLocation,
-  quiet,
-  typesToExclude,
-}: {
-  trackConfigs: Track[]
-  attributes: string[]
-  outLocation: string
-  quiet: boolean
-  typesToExclude: string[]
-}) {
-  for (const config of trackConfigs) {
-    const { adapter, textSearching, trackId } = config
-    const { type } = adapter ?? {}
-    const {
-      indexingFeatureTypesToExclude = typesToExclude,
-      indexingAttributes = attributes,
-    } = textSearching ?? {}
-
-    const loc = getAdapterLocation(adapter)
-    if (!loc) {
-      continue
-    }
-
-    const progressBar = new SingleBar(
-      {
-        format: `{bar} ${trackId} {percentage}% | ETA: {eta}s`,
-        etaBuffer: 2000,
-      },
-      Presets.shades_classic,
-    )
-
-    if (type === 'Gff3TabixAdapter' || type === 'Gff3Adapter') {
-      yield* indexGff3({
-        config,
-        attributesToIndex: indexingAttributes,
-        inLocation: getLoc(loc),
-        outDir: outLocation,
-        featureTypesToExclude: indexingFeatureTypesToExclude,
-        onStart: totalBytes => {
-          if (!quiet) {
-            progressBar.start(totalBytes, 0)
-          }
-        },
-        onUpdate: receivedBytes => {
-          if (!quiet) {
-            progressBar.update(receivedBytes)
-          }
-        },
-      })
-    } else if (type === 'VcfTabixAdapter' || type === 'VcfAdapter') {
-      yield* indexVcf({
-        config,
-        attributesToIndex: indexingAttributes,
-        inLocation: getLoc(loc),
-        outDir: outLocation,
-        onStart: totalBytes => {
-          if (!quiet) {
-            progressBar.start(totalBytes, 0)
-          }
-        },
-        onUpdate: receivedBytes => {
-          if (!quiet) {
-            progressBar.update(receivedBytes)
-          }
-        },
-      })
-    }
-
-    if (!quiet) {
-      progressBar.stop()
-    }
-  }
-}
-
 export async function indexDriver({
   trackConfigs,
   attributes,
@@ -146,11 +67,33 @@ export async function indexDriver({
 }): Promise<void> {
   const readStream = Readable.from(
     indexFiles({
-      trackConfigs,
-      attributes,
-      outLocation,
-      quiet,
-      typesToExclude,
+      tracks: trackConfigs,
+      attributesToIndex: attributes,
+      outDir: outLocation,
+      featureTypesToExclude: typesToExclude,
+      makeProgress: quiet
+        ? undefined
+        : trackId => {
+            const progressBar = new SingleBar(
+              {
+                // eslint-disable-next-line unicorn/no-incorrect-template-string-interpolation -- {bar}/{percentage}/{eta} are cli-progress format tokens, not JS interpolation
+                format: `{bar} ${trackId} {percentage}% | ETA: {eta}s`,
+                etaBuffer: 2000,
+              },
+              Presets.shades_classic,
+            )
+            return {
+              onStart: totalBytes => {
+                progressBar.start(totalBytes, 0)
+              },
+              onUpdate: receivedBytes => {
+                progressBar.update(receivedBytes)
+              },
+              onDone: () => {
+                progressBar.stop()
+              },
+            }
+          },
     }),
   )
 
@@ -176,13 +119,19 @@ export function prepareFileTrackConfigs(
   files: string[],
   fileIds?: string[],
 ): Track[] {
-  return files
-    .map((file, i) => {
-      const config = guessAdapterFromFileName(file)
-      if (fileIds?.[i]) {
-        config.trackId = fileIds[i]!
-      }
-      return config
-    })
-    .filter(fileConfig => supported(fileConfig.adapter?.type))
+  return files.map((file, i) => {
+    const config = guessAdapterFromFileName(file)
+    if (fileIds?.[i]) {
+      config.trackId = fileIds[i]!
+    }
+    // throw rather than silently filtering: a user who named the file with
+    // --file should be told it can't be indexed (e.g. GTF) instead of getting
+    // a misleading "successfully created index" with no output
+    if (!supported(config.adapter?.type)) {
+      throw new Error(
+        `Cannot text-index ${file}: adapter type ${config.adapter?.type} is not indexable (only GFF3 and VCF are supported)`,
+      )
+    }
+    return config
+  })
 }

@@ -8,6 +8,8 @@ import {
   parse,
 } from './color-bits/index.ts'
 
+import type { Color } from './color-bits/index.ts'
+
 export {
   alpha,
   blend,
@@ -35,19 +37,28 @@ export type { Color } from './color-bits/index.ts'
 // rest of the render.
 const INVALID_COLOR = newColor(255, 0, 255, 255)
 
-export function parseCssColor(color: string | undefined | null) {
-  if (typeof color !== 'string' || color.length === 0) {
-    return INVALID_COLOR
-  }
+// Resolve a CSS color string to a Color: honors named colors and `transparent`,
+// and returns `fallback` on malformed-but-nonempty input. `parse` throws on
+// e.g. a bare BED `itemRgb` "255,0,0" or an empty "rgb()"; callers pass a
+// fallback so one bad per-feature color can't crash a whole render/RPC.
+export function parseCssColorOr(color: string, fallback: Color): Color {
   const str = color.trim().toLowerCase()
   if (str === 'transparent') {
     return newColor(0, 0, 0, 0)
   }
-  const hex = namedColorToHex(str)
-  if (hex) {
-    return parse(hex)
+  try {
+    const hex = namedColorToHex(str)
+    return parse(hex ? hex : str)
+  } catch {
+    return fallback
   }
-  return parse(str)
+}
+
+export function parseCssColor(color: string | undefined | null) {
+  if (typeof color !== 'string' || color.length === 0) {
+    return INVALID_COLOR
+  }
+  return parseCssColorOr(color, INVALID_COLOR)
 }
 
 export function cssColorToNormalizedRgb(
@@ -81,9 +92,16 @@ export function cssColorToABGR(color: string) {
   return packAbgr(getRed(c), getGreen(c), getBlue(c), getAlpha(c))
 }
 
+// Replace the alpha byte of an ABGR-packed u32, keeping its RGB. RGB already
+// occupies the low 24 bits (b<<16 | g<<8 | r), so this is a mask + or — no
+// per-channel unpack/repack. >>> 0 keeps the result unsigned (see packAbgr).
+export function withAbgrAlpha(c: number, a: number) {
+  return ((c & 0x00ffffff) | (a << 24)) >>> 0
+}
+
 // Pack a 0..1 normalized RGB triple into an ABGR u32 (opaque alpha). Inverse
 // of cssColorToNormalizedRgb at the GPU write boundary — the shader side
-// unpacks with unpackRGBA() (see packages/core/src/gpu/shaders/colorPack.slang).
+// unpacks with unpackRGBA() (see packages/render-core/src/shaders/colorPack.slang).
 export function normalizedRgbToABGR(r: number, g: number, b: number) {
   return packAbgr(
     Math.round(r * 255),

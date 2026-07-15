@@ -1,17 +1,19 @@
 import { lazy } from 'react'
 
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
+import { comparer, reaction } from 'mobx'
 
 import { stringifyBED } from './saveTrackFileTypes/bed.ts'
 import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
 import { stringifyGFF3 } from './saveTrackFileTypes/gff3.ts'
 import { ConfigurationReference, getConf } from '../../configuration/index.ts'
-import { adapterConfigCacheKey } from '../../data_adapters/util.ts'
+import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
 import { getContainingView, getEnv, getSession } from '../../util/index.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
 
+import type { DisplayModel } from './BaseDisplayModel.tsx'
 import type PluginManager from '../../PluginManager.ts'
 import type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
 import type {
@@ -19,7 +21,11 @@ import type {
   AnyConfigurationSchemaType,
 } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
-import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  IType,
+  Instance,
+} from '@jbrowse/mobx-state-tree'
 
 const SaveTrackDataDlg = lazy(() => import('./components/SaveTrackData.tsx'))
 
@@ -31,7 +37,7 @@ interface DisplayConf {
 export function getCompatibleDisplays(self: IAnyStateTreeNode) {
   const { pluginManager } = getEnv(self)
   const view = getContainingView(self)
-  const viewType = pluginManager.getViewType(view.type)!
+  const viewType = pluginManager.getViewType(view.type)
   const compatTypes = new Set(viewType.displayTypes.map(d => d.name))
   const displays = self.configuration.displays as AnyConfigurationModel[]
   return displays.filter(d => compatTypes.has(d.type))
@@ -75,15 +81,27 @@ export function createBaseTrackModel(
       /**
        * #property
        */
-      minimized: false,
+      minimized: types.stripDefault(types.boolean, false),
       /**
        * #property
        */
-      pinned: false,
+      pinned: types.stripDefault(types.boolean, false),
       /**
        * #property
+       * The runtime plugin union (`pluggableMstType`) is typed only as
+       * `IAnyType`, erasing the element to `any`. Assert the concrete
+       * `DisplayModel` instance every registered display satisfies so reads
+       * (`activeDisplay`, `trackMenuItems`) are checked;
+       * create/snapshot stay `unknown` since the union's snapshot shape is
+       * genuinely dynamic (`replaceDisplay` writes a partial snapshot).
        */
-      displays: types.array(pm.pluggableMstType('display', 'stateModel')),
+      displays: types.array(
+        pm.pluggableMstType('display', 'stateModel') as unknown as IType<
+          unknown,
+          unknown,
+          DisplayModel
+        >,
+      ),
     })
     .views(self => ({
       /**
@@ -104,7 +122,7 @@ export function createBaseTrackModel(
        * #getter
        */
       get name() {
-        return getConf(self, 'name')
+        return (getConf(self, 'name') as string) || this.trackId
       },
       /**
        * #getter
@@ -122,16 +140,10 @@ export function createBaseTrackModel(
 
       /**
        * #getter
+       * a shown track always has at least one display
        */
       get activeDisplay() {
-        return self.displays[0]
-      },
-
-      /**
-       * #getter
-       */
-      get viewMenuActions(): MenuItem[] {
-        return self.displays.flatMap(d => d.viewMenuActions)
+        return self.displays[0]!
       },
 
       /**
@@ -139,11 +151,12 @@ export function createBaseTrackModel(
        */
       get canConfigure() {
         const session = getSession(self)
-        const { sessionTracks, adminMode } = session
+        const { sessionTracks, trackConfigDeltas, adminMode } = session
         return (
           isSessionModelWithConfigEditing(session) &&
-          (adminMode === true ||
-            !!sessionTracks?.find(t => t.trackId === this.trackId))
+          (adminMode ||
+            !!sessionTracks?.find(t => t.trackId === this.trackId) ||
+            this.trackId in (trackConfigDeltas ?? {}))
         )
       },
     }))
@@ -156,11 +169,7 @@ export function createBaseTrackModel(
         if (!adapterConfig) {
           throw new Error(`no adapter configuration provided for ${self.type}`)
         }
-        const adapterType = pm.getAdapterType(adapterConfig.type)
-        if (!adapterType) {
-          throw new Error(`unknown adapter type ${adapterConfig.type}`)
-        }
-        return adapterType
+        return pm.getAdapterType(adapterConfig.type)
       },
     }))
     .actions(self => ({
@@ -195,14 +204,60 @@ export function createBaseTrackModel(
         }
         const displays = self.configuration.displays as DisplayConf[]
         const displayConf = getDisplayConf(displays, newDisplayId)
-        const displayType = pm.getDisplayType(displayConf.type)
-        if (!displayType) {
-          throw new Error(`unknown display type ${displayConf.type}`)
-        }
-        self.displays.splice(idx, 1, {
+        self.displays[idx] = {
           ...initialSnapshot,
           type: displayConf.type,
           configuration: newDisplayId,
+        }
+      },
+
+      /**
+       * #action
+       * Persist any config-schema mutation (quick track-menu edits calling
+       * `setSlot` directly, or the full Settings dialog) back to the session,
+       * debounced, mirroring ConfigurationEditorWidget's own save. Both savers
+       * intentionally coexist — this one covers direct setSlot edits on a shown
+       * track, the widget covers an unshown track edited from the selector (no
+       * BaseTrackModel). When both fire they compute an identical delta, deduped
+       * in updateTrackConfiguration; don't drop one to "simplify". `reaction`
+       * (not `autorun`) on purpose: `self.configuration` is defined
+       * immediately on attach, unlike ConfigurationEditorWidget's `target`
+       * (which starts undefined), so an autorun's guaranteed first run would
+       * otherwise schedule a spurious flush for every track ever shown, even
+       * completely untouched ones — `reaction` only fires on an actual change.
+       *
+       * `equals: comparer.structural` is load-bearing, not an optimization:
+       * `self.configuration` is a re-resolving reference, and persisting a save
+       * swaps the resolved node identity (admin `updateTrackConf` replaces the
+       * frozen `jbrowse.tracks` entry, rehydrating a brand-new MST node; the
+       * non-admin path reconciles in place but still churns once). Referential
+       * comparison would treat every such swap as a fresh change and re-fire the
+       * save, which for the admin/desktop path (new node every write) is an
+       * unbounded debounced loop. Structural comparison settles once the content
+       * stops changing.
+       */
+      afterAttach() {
+        let timeout: ReturnType<typeof setTimeout> | undefined
+        addDisposer(
+          self,
+          reaction(
+            () => getSnapshot(self.configuration),
+            snapshot => {
+              clearTimeout(timeout)
+              timeout = setTimeout(() => {
+                const session = getSession(self)
+                if (isSessionModelWithConfigEditing(session)) {
+                  session.updateTrackConfiguration(
+                    snapshot as { trackId: string; [key: string]: unknown },
+                  )
+                }
+              }, 400)
+            },
+            { equals: comparer.structural },
+          ),
+        )
+        addDisposer(self, () => {
+          clearTimeout(timeout)
         })
       },
     }))
@@ -234,31 +289,38 @@ export function createBaseTrackModel(
     }))
     .views(self => ({
       /**
+       * #getter
+       * the "Save track data" menu entry. Kept separate from trackMenuItems so
+       * consumers (e.g. the LGV track-label menu) can place it alongside the
+       * session's Settings/Copy/Delete track actions without fishing it back out
+       * of the general list
+       */
+      get saveTrackDataMenuItem(): MenuItem {
+        return {
+          label: 'Save track data',
+          icon: Save,
+          priority: 998,
+          onClick: () => {
+            getSession(self).queueDialog(handleClose => [
+              SaveTrackDataDlg,
+              {
+                model: self,
+                handleClose,
+              },
+            ])
+          },
+        }
+      },
+      /**
        * #method
        */
       trackMenuItems(): MenuItem[] {
-        const menuItems = self.displays.flatMap(
-          d => d.trackMenuItems() as MenuItem[],
-        )
-        const shownId = self.activeDisplay?.configuration.displayId
+        const menuItems = self.displays.flatMap(d => d.trackMenuItems())
+        const shownId = self.activeDisplay.configuration.displayId
         const compatDisp = getCompatibleDisplays(self)
 
         return [
           ...menuItems,
-          {
-            label: 'Save track data',
-            icon: Save,
-            priority: 998,
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                SaveTrackDataDlg,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          },
           ...(compatDisp.length > 1 && shownId
             ? [
                 {
@@ -266,7 +328,7 @@ export function createBaseTrackModel(
                   label: 'Display types',
                   priority: -1000,
                   subMenu: compatDisp.map(d => {
-                    const displayType = pm.getDisplayType(d.type)!
+                    const displayType = pm.getDisplayType(d.type)
                     return {
                       type: 'radio' as const,
                       label: displayType.displayName,
@@ -277,7 +339,9 @@ export function createBaseTrackModel(
                           self.replaceDisplay(
                             shownId,
                             d.displayId,
-                            self.displays[0].getPortableSettings?.() ?? {},
+                            self.activeDisplay.getPortableSettings?.(
+                              d.displayId,
+                            ) ?? {},
                           )
                         }
                       },
@@ -289,18 +353,6 @@ export function createBaseTrackModel(
         ]
       },
     }))
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { minimized, pinned, ...rest } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(minimized ? { minimized } : {}),
-        ...(pinned ? { pinned } : {}),
-      } as typeof snap
-    })
 }
 
 export type BaseTrackStateModel = ReturnType<typeof createBaseTrackModel>

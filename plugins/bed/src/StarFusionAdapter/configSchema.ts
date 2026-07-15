@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
@@ -15,8 +17,17 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config StarFusionAdapter
+ * #trackType VariantTrack
+ * used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'StarFusionAdapter',
+ *   uri: 'https://example.com/star-fusion.fusion_predictions.tsv',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const StarFusionAdapter = ConfigurationSchema(
   'StarFusionAdapter',
@@ -46,5 +57,7 @@ const StarFusionAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type StarFusionAdapterConfig = Instance<typeof StarFusionAdapter>
 
 export default StarFusionAdapter

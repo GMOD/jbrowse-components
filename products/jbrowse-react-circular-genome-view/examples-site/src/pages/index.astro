@@ -1,0 +1,21 @@
+---
+import { examples } from '../examples.ts'
+import Shell from '../layouts/Shell.astro'
+import Gallery from '../layouts/Gallery.astro'
+import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
+---
+
+<Shell
+  title="Examples"
+  componentLabel={componentLabel}
+  examples={examples}
+  mainMaxWidth={mainMaxWidth}
+>
+  <h1>JBrowse Circular Genome View</h1>
+  <p class="intro">
+    Live examples of the <code>@jbrowse/react-circular-genome-view2</code> React
+    component. Each page renders the component and shows its full source. Browse
+    by category in the sidebar.
+  </p>
+  <Gallery examples={examples} />
+</Shell>

@@ -1,23 +1,45 @@
-import { useState } from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useLocalStorage } from '@jbrowse/core/util'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import SearchIcon from '@mui/icons-material/Search'
-import { FormGroup } from '@mui/material'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
+import { Divider, ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
-import MinLengthSlider from './MinLengthSlider.tsx'
-import OpacitySlider from './OpacitySlider.tsx'
+import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
+import SyntenyWarnings from './SyntenyWarnings.tsx'
+import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 
 const useStyles = makeStyles()({
+  headerBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    minHeight: 48,
+  },
   inline: {
     display: 'inline-flex',
+  },
+  vertical: {
+    flexDirection: 'column' as const,
+  },
+  searchBoxContainer: {
+    display: 'flex',
+    // scroll rather than clip when many rows' search boxes exceed the bar width
+    overflowX: 'auto',
+    minWidth: 0,
+    gap: 12,
+  },
+  scrollZoomButton: {
+    height: 44,
+    border: 'none',
+    textTransform: 'none',
   },
 })
 
@@ -27,41 +49,64 @@ const Header = observer(function Header({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { views, levels, showDynamicControls } = model
-  const [showSearchBoxes, setShowSearchBoxes] = useState(views.length <= 3)
-  const [sideBySide, setSideBySide] = useState(views.length <= 3)
+  const { views } = model
+  // Persist search-box visibility/orientation per regime (few vs many genomes)
+  // rather than one global key, so the "compact default" heuristic isn't
+  // permanently overridden by a choice made in a differently-sized view.
+  const compact = views.length <= 3
+  const regime = compact ? 'compact' : 'large'
+  const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
+    `lcv-showSearchBoxes-${regime}`,
+    compact,
+  )
+  const [sideBySide, setSideBySide] = useLocalStorage(
+    `lcv-sideBySide-${regime}`,
+    compact,
+  )
 
-  // Check if we have any displays to show sliders
-  const hasDisplays = levels[0]?.tracks[0]?.displays[0]
+  const syntenyModel = asSyntenyModel(model)
+
+  // Track selectors for each synteny level (between adjacent rows) and each
+  // individual genome row. Shown flat for a two-genome view, grouped into
+  // submenus once there are more rows.
+  const syntenySelectors = views.slice(0, -1).map((_, idx) => ({
+    label: `Row ${idx + 1} → ${idx + 2} (${views[idx]!.assemblyNames.join(',')} → ${views[idx + 1]!.assemblyNames.join(',')})`,
+    onClick: () => {
+      model.activateTrackSelector(idx)
+    },
+  }))
+  const rowSelectors = views.map((view, idx) => ({
+    label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
+    onClick: () => {
+      view.activateTrackSelector()
+    },
+  }))
 
   return (
-    <FormGroup row>
+    <div className={classes.headerBar}>
       <CascadingMenuButton
-        menuItems={[
-          {
-            label: 'Synteny track selectors',
-            type: 'subMenu',
-            subMenu: views.slice(0, -1).map((_, idx) => ({
-              label: `Row ${idx + 1}->${idx + 2} (${views[idx]!.assemblyNames.join(',')}->${views[idx + 1]!.assemblyNames.join(',')})`,
-              onClick: () => {
-                model.activateTrackSelector(idx)
-              },
-            })),
-          },
-
-          {
-            label: 'Row track selectors',
-            type: 'subMenu',
-            subMenu: views.map((view, idx) => ({
-              label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
-              onClick: () => view.activateTrackSelector(),
-            })),
-          },
-        ]}
+        tooltip="Open track selectors"
+        menuItems={() =>
+          views.length === 2
+            ? [...syntenySelectors, ...rowSelectors]
+            : [
+                {
+                  label: 'Synteny track selectors',
+                  type: 'subMenu',
+                  subMenu: syntenySelectors,
+                },
+                {
+                  label: 'Row track selectors',
+                  type: 'subMenu',
+                  subMenu: rowSelectors,
+                },
+              ]
+        }
       >
         <TrackSelectorIcon />
       </CascadingMenuButton>
       <CascadingMenuButton
+        tooltip="View options"
         menuItems={() => [
           {
             label: 'Row view menus',
@@ -72,57 +117,83 @@ const Header = observer(function Header({
             })),
           },
           ...model.headerMenuItems(),
+          {
+            label: 'Show...',
+            icon: VisibilityIcon,
+            subMenu: [
+              ...model.showMenuItems(),
+              {
+                label: 'Show search boxes',
+                type: 'checkbox' as const,
+                checked: showSearchBoxes,
+                onClick: () => {
+                  setShowSearchBoxes(!showSearchBoxes)
+                },
+              },
+              {
+                label: 'Search box orientation',
+                subMenu: [
+                  {
+                    label: 'Side-by-side',
+                    type: 'radio' as const,
+                    checked: sideBySide,
+                    onClick: () => {
+                      setSideBySide(true)
+                    },
+                  },
+                  {
+                    label: 'Vertical',
+                    type: 'radio' as const,
+                    checked: !sideBySide,
+                    onClick: () => {
+                      setSideBySide(false)
+                    },
+                  },
+                ],
+              },
+            ],
+          },
         ]}
       >
         <MoreVertIcon />
       </CascadingMenuButton>
-      <CascadingMenuButton
-        menuItems={[
-          {
-            label: 'Show search boxes',
-            type: 'checkbox',
-            checked: showSearchBoxes,
-            onClick: () => {
-              setShowSearchBoxes(!showSearchBoxes)
-            },
-          },
-          {
-            label: 'Orientation - Side-by-side',
-            type: 'radio',
-            checked: sideBySide,
-            onClick: () => {
-              setSideBySide(!sideBySide)
-            },
-          },
-          {
-            label: 'Orientation - Vertical',
-            type: 'radio',
-            checked: !sideBySide,
-            onClick: () => {
-              setSideBySide(!sideBySide)
-            },
-          },
-        ]}
-      >
-        <SearchIcon />
-      </CascadingMenuButton>
+      <Tooltip title="Scroll wheel zooms instead of scrolls">
+        <ToggleButton
+          value="scrollZoom"
+          selected={model.scrollZoom}
+          onChange={() => {
+            model.setScrollZoom(!model.scrollZoom)
+          }}
+          className={classes.scrollZoomButton}
+          size="small"
+        >
+          <ZoomInMapIcon />
+        </ToggleButton>
+      </Tooltip>
 
-      {hasDisplays && showDynamicControls ? (
+      {syntenyModel ? (
         <>
-          <ColorBySelector model={model} />
-          <OpacitySlider model={model} />
-          <MinLengthSlider model={model} />
+          <Divider orientation="vertical" flexItem />
+          <ColorBySelector model={syntenyModel} />
+          <SyntenySettingsPopover model={syntenyModel} />
         </>
       ) : null}
 
       {showSearchBoxes ? (
-        <span className={sideBySide ? classes.inline : undefined}>
+        <span
+          className={cx(
+            classes.searchBoxContainer,
+            sideBySide ? classes.inline : classes.vertical,
+          )}
+        >
           {views.map(view => (
             <HeaderSearchBoxes key={view.id} view={view} />
           ))}
         </span>
       ) : null}
-    </FormGroup>
+
+      <SyntenyWarnings model={model} />
+    </div>
   )
 })
 export default Header

@@ -12,11 +12,7 @@ export default function BigWigAdapterF(pluginManager: PluginManager) {
         displayName: 'BigWig adapter',
         normalizeSnapshot,
         configSchema,
-        adapterCapabilities: [
-          'hasResolution',
-          'hasLocalStats',
-          'hasGlobalStats',
-        ],
+        adapterCapabilities: ['hasResolution'],
         getAdapterClass: () =>
           import('./BigWigAdapter.ts').then(r => r.default),
       }),

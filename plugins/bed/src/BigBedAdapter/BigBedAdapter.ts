@@ -15,12 +15,13 @@ import { firstValueFrom, toArray } from 'rxjs'
 import { featureData } from '../util.ts'
 
 import type { FeatureData } from '../util.ts'
+import type { BigBedAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Observer } from 'rxjs'
 
-export default class BigBedAdapter extends BaseFeatureDataAdapter {
+export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterConfig> {
   private cachedP?: Promise<{
     bigbed: BigBed
     header: Awaited<ReturnType<BigBed['getHeader']>>
@@ -56,6 +57,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
     return Object.keys(header.refsByName)
   }
 
+  // Compressed download-size estimate straight from the bbi R-tree index (block
+  // byte lengths, no data blocks read), so a display can byte-gate an over-large
+  // BigBed fetch before it starts. Overrides the base no-estimate default, which
+  // left BigBed tracks ungated.
+  public async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    const { bigbed } = await this.configure(opts)
+    return bigbed.getRegionByteSizeMulti(regions, opts)
+  }
+
   // allow using BigBedAdapter for aliases with chromAlias.bb file from UCSC
   public async getRefNameAliases(opts?: BaseOptions) {
     const { header } = await this.configure(opts)
@@ -78,25 +88,29 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
       .map(r => r.toJSON())
       .map(r => ({
         refName: r.ucsc,
-        aliases: [r.ncbi, r.refseq, r.genbank],
+        // chromAlias.bb columns are sparse: a chrom may lack an ncbi/refseq/
+        // genbank name, returned as empty strings that are not valid refNames
+        aliases: [r.ncbi, r.refseq, r.genbank].filter(
+          (alias): alias is string => !!alias,
+        ),
         override: true,
       }))
   }
 
   public async getData() {
     const refNames = await this.getRefNames()
-    const features = []
-    for (const refName of refNames) {
-      const f = await firstValueFrom(
-        this.getFeatures({
-          assemblyName: 'unknown',
-          refName,
-          start: 0,
-          end: Number.MAX_SAFE_INTEGER,
-        }).pipe(toArray()),
-      )
-      features.push(f)
-    }
+    const features = await Promise.all(
+      refNames.map(refName =>
+        firstValueFrom(
+          this.getFeatures({
+            assemblyName: 'unknown',
+            refName,
+            start: 0,
+            end: Number.MAX_SAFE_INTEGER,
+          }).pipe(toArray()),
+        ),
+      ),
+    )
     return features.flat()
   }
 
@@ -152,16 +166,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
 
     await updateStatus('Processing features', statusCallback, async () => {
       const parentAggregation: Record<string, FeatureData[]> = {}
+      const singletons: FeatureData[] = []
       let minAggStart = Infinity
       let maxAggEnd = -Infinity
 
       for (const feat of feats) {
-        const splitLine = [
-          query.refName,
-          `${feat.start}`,
-          `${feat.end}`,
-          ...(feat.rest?.split('\t') ?? []),
-        ]
+        // empty chrom/start/end placeholders keep `rest` columns aligned to the
+        // autoSql schema (which begins at chrom); featureData reads back the
+        // numeric start/end/refName passed below, so positions 0-2 are unused
+        const splitLine = ['', '', '', ...(feat.rest?.split('\t') ?? [])]
         const f = featureData({
           scoreColumn,
           splitLine,
@@ -185,26 +198,14 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
             maxAggEnd = f.end
           }
         } else {
-          if (
-            doesIntersect2(
-              f.start,
-              f.end,
-              originalQuery.start,
-              originalQuery.end,
-            )
-          ) {
-            observer.next(
-              new SimpleFeature({
-                id: `${this.id}-${feat.uniqueId}`,
-                data: f,
-              }),
-            )
-          }
+          singletons.push(f)
         }
       }
 
       if (allowRedispatch && maxAggEnd > -Infinity) {
         if (maxAggEnd > query.end || minAggStart < query.start) {
+          // redispatch re-fetches a superset region, so emitting singletons
+          // here too would double-emit them; defer emission to the recursion
           await this.getFeaturesHelper({
             query: {
               ...query,
@@ -222,39 +223,53 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         }
       }
 
-      for (const [name, subfeatures] of Object.entries(parentAggregation)) {
-        const groupStart = min(subfeatures.map(f => f.start))
-        const groupEnd = max(subfeatures.map(f => f.end))
+      for (const f of singletons) {
         if (
-          doesIntersect2(
-            groupStart,
-            groupEnd,
-            originalQuery.start,
-            originalQuery.end,
-          )
+          doesIntersect2(f.start, f.end, originalQuery.start, originalQuery.end)
         ) {
-          const subs = subfeatures.sort((a, b) =>
-            a.uniqueId.localeCompare(b.uniqueId),
+          observer.next(
+            new SimpleFeature({
+              id: `${this.id}-${f.uniqueId}`,
+              data: f,
+            }),
           )
-          const sortedByStart = [...subs].sort((a, b) => a.start - b.start)
-          const hasOverlaps = sortedByStart.some(
-            (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
-          )
-          const strand = subs.find(f => f.strand !== 0)?.strand ?? 1
-          // overlapping subs → one gene parent; non-overlapping → one parent per sub
-          // (handles bacterial GFF where two genes share a name but are distinct loci)
-          const groups = hasOverlaps ? [subs] : subs.map(sub => [sub])
-          for (const group of groups) {
+        }
+      }
+
+      for (const [name, subfeatures] of Object.entries(parentAggregation)) {
+        const subs = subfeatures.sort((a, b) =>
+          a.uniqueId.localeCompare(b.uniqueId),
+        )
+        const sortedByStart = [...subs].sort((a, b) => a.start - b.start)
+        const hasOverlaps = sortedByStart.some(
+          (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
+        )
+        // overlapping subs → one gene parent; non-overlapping → one parent per sub
+        // (handles bacterial GFF where two genes share a name but are distinct loci)
+        const groups = hasOverlaps ? [subs] : subs.map(sub => [sub])
+        for (const group of groups) {
+          // gate on each parent's own extent: a distant non-overlapping locus
+          // sharing this name must not ride in on a sibling that intersects
+          const groupStart = min(group.map(f => f.start))
+          const groupEnd = max(group.map(f => f.end))
+          if (
+            doesIntersect2(
+              groupStart,
+              groupEnd,
+              originalQuery.start,
+              originalQuery.end,
+            )
+          ) {
             observer.next(
               new SimpleFeature({
                 id: `${this.id}-${group[0]!.uniqueId}-parent`,
                 data: {
                   type: 'gene',
                   subfeatures: group,
-                  strand,
+                  strand: group.find(f => f.strand !== 0)?.strand ?? 1,
                   name,
-                  start: min(group.map(f => f.start)),
-                  end: max(group.map(f => f.end)),
+                  start: groupStart,
+                  end: groupEnd,
                   refName: query.refName,
                 },
               }),
@@ -263,8 +278,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
         }
       }
     })
-
-    observer.complete()
   }
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
@@ -275,6 +288,9 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter {
           observer,
           allowRedispatch: true,
         })
+        // complete once here, not in the helper: a redispatch recurses into the
+        // helper, so completing there would fire complete() twice
+        observer.complete()
       } catch (e) {
         observer.error(e)
       }

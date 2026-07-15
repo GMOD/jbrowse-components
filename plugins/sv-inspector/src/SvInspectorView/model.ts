@@ -24,12 +24,24 @@ interface SvInspectorViewInit {
  * - [SpreadsheetView](../spreadsheetview)
  * - [CircularView](../circularview)
  *
- * extends
- * - [BaseViewModel](../baseviewmodel)
+ * #example
+ * Hand-authored under `defaultSession.views`. The `init` shorthand loads a
+ * structural-variant file into the spreadsheet and mirrors the rows as arcs in
+ * the paired circular view; `assembly` resolves coordinates for both:
+ * ```js
+ * {
+ *   type: 'SvInspectorView',
+ *   init: {
+ *     assembly: 'hg38',
+ *     uri: 'https://example.com/sv.vcf.gz',
+ *     fileType: 'VCF',
+ *   },
+ * }
+ * ```
  */
 function SvInspectorViewF(pluginManager: PluginManager) {
-  const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')!
-  const CircularViewType = pluginManager.getViewType('CircularView')!
+  const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
+  const CircularViewType = pluginManager.getViewType('CircularView')
 
   const SpreadsheetModel =
     SpreadsheetViewType.stateModel as SpreadsheetViewStateModel
@@ -38,7 +50,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
   const minHeight = 400
   const defaultHeight = 550
   const headerHeight = 52
-  const circularViewOptionsBarHeight = 52
+  const borderWidth = 1
   return types
     .compose(
       'SvInspectorView',
@@ -56,11 +68,14 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(types.number, defaultHeight),
+        height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
          */
-        onlyDisplayRelevantRegionsInCircularView: false,
+        onlyDisplayRelevantRegionsInCircularView: types.stripDefault(
+          types.boolean,
+          false,
+        ),
         /**
          * #property
          */
@@ -104,7 +119,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      circularViewOptionsBarHeight,
+      circularViewOptionsBarHeight: 52,
     }))
     .views(self => ({
       /**
@@ -148,13 +163,13 @@ function SvInspectorViewF(pluginManager: PluginManager) {
       get featureRefNames() {
         return [
           ...new Set(
-            [
-              ...this.features.map(r => r.refName),
-              // @ts-expect-error
-              ...this.features.flatMap(r => r.INFO?.CHR2),
-              // @ts-expect-error
-              ...this.features.flatMap(r => r.mate?.refName),
-            ].filter(f => !!f),
+            this.features
+              .flatMap(f => [
+                f.refName,
+                (f.INFO as { CHR2?: string } | undefined)?.CHR2,
+                (f.mate as { refName?: string } | undefined)?.refName,
+              ])
+              .filter((f): f is string => !!f),
           ),
         ]
       },
@@ -175,24 +190,31 @@ function SvInspectorViewF(pluginManager: PluginManager) {
         const asm = this.currentAssembly
         return new Set(
           asm?.initialized
-            ? this.featureRefNames.map(r => asm.getCanonicalRefName(r) || r)
+            ? this.featureRefNames.map(r => asm.getCanonicalRefName2(r))
             : [],
         )
       },
       /**
        * #getter
        */
+      get variantTrackId() {
+        return `sv-inspector-variant-track-${self.id}`
+      },
+      /**
+       * #getter
+       */
       get featuresCircularTrackConfiguration() {
+        const trackId = this.variantTrackId
         return {
           type: 'VariantTrack',
-          trackId: `sv-inspector-variant-track-${self.id}`,
+          trackId,
           name: 'features from tabular data',
           adapter: this.featuresAdapterConfigSnapshot,
-          assemblyNames: [this.assemblyName],
+          assemblyNames: [this.assemblyName!],
           displays: [
             {
               type: 'ChordVariantDisplay',
-              displayId: `sv-inspector-variant-track-chord-display-${self.id}`,
+              displayId: `${trackId}-chord-display`,
               onChordClick:
                 'jexl:defaultOnChordClick(feature, track, pluginManager)',
               renderer: {
@@ -278,7 +300,6 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const borderWidth = 1
               if (self.showCircularView) {
                 const spreadsheetWidth = Math.round(self.width * 0.66)
                 const circularViewWidth = self.width - spreadsheetWidth
@@ -298,7 +319,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
             () => {
               self.spreadsheetView.setHeight(self.height - headerHeight)
               self.circularView.setHeight(
-                self.height - headerHeight - circularViewOptionsBarHeight,
+                self.height - headerHeight - self.circularViewOptionsBarHeight,
               )
             },
             {
@@ -346,20 +367,19 @@ function SvInspectorViewF(pluginManager: PluginManager) {
           self,
           autorun(
             () => {
-              const {
-                featuresCircularTrackConfiguration: generatedTrackConf,
-                assemblyName,
-                circularView,
-                id,
-              } = self
+              const { assemblyName, circularView, variantTrackId } = self
               // hideTrack reads circularView.tracks internally; avoid tracking
               // that dependency to prevent re-triggering on our own track changes
               untracked(() => {
-                circularView.hideTrack(`sv-inspector-variant-track-${id}`)
+                circularView.hideTrack(variantTrackId)
               })
               if (assemblyName) {
-                // @ts-expect-error
-                circularView.addTrackConf(generatedTrackConf, { assemblyName })
+                circularView.addTrackConf(
+                  self.featuresCircularTrackConfiguration,
+                  {
+                    assemblyName,
+                  },
+                )
               }
             },
             { name: 'SvInspectorView track configuration binding' },
@@ -369,7 +389,7 @@ function SvInspectorViewF(pluginManager: PluginManager) {
     }))
     .postProcessSnapshot(snap => {
       // xref https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { init, circularView, ...rest } = snap as Omit<typeof snap, symbol>
+      const { init, circularView, ...rest } = snap
       return rest
     })
 }

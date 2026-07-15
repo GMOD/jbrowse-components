@@ -34,28 +34,31 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       drawerPosition: types.optional(
         types.string,
-        () => localStorageGetItem('drawerPosition') || 'right',
+        () => localStorageGetItem('drawerPosition') ?? 'right',
       ),
       /**
        * #property
        */
-      drawerWidth: types.optional(
+      drawerWidth: types.stripDefault(
         types.refinement(types.integer, width => width >= minDrawerWidth),
         384,
       ),
       /**
        * #property
        */
-      widgets: types.map(widgetStateModelType),
+      widgets: types.stripDefault(types.map(widgetStateModelType), {}),
       /**
        * #property
        */
-      activeWidgets: types.map(types.safeReference(widgetStateModelType)),
+      activeWidgets: types.stripDefault(
+        types.map(types.safeReference(widgetStateModelType)),
+        {},
+      ),
 
       /**
        * #property
        */
-      minimized: types.optional(types.boolean, false),
+      minimized: types.stripDefault(types.boolean, false),
     })
     .views(self => ({
       /**
@@ -94,8 +97,12 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
           distance *= -1
         }
         const oldDrawerWidth = self.drawerWidth
-        const newDrawerWidth = this.updateDrawerWidth(oldDrawerWidth - distance)
-        return oldDrawerWidth - newDrawerWidth
+        const max = window.innerWidth - minMainWidth
+        self.drawerWidth = Math.min(
+          Math.max(oldDrawerWidth - distance, minDrawerWidth),
+          max,
+        )
+        return oldDrawerWidth - self.drawerWidth
       },
 
       /**
@@ -107,17 +114,12 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         initialState = {},
         conf?: unknown,
       ) {
-        const typeDefinition = pluginManager.getElementType('widget', typeName)
-        if (!typeDefinition) {
-          throw new Error(`unknown widget type ${typeName}`)
-        }
-        const data = {
+        self.widgets.set(id, {
           ...initialState,
           id,
           type: typeName,
-          configuration: conf || { type: typeName },
-        }
-        self.widgets.set(id, data)
+          configuration: conf ?? { type: typeName },
+        })
         return self.widgets.get(id)
       },
 
@@ -166,6 +168,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       editConfiguration(
         configuration: AnyConfigurationModel | { trackId: string },
+        opts?: { expandedDisplayId?: string },
       ) {
         let targetConfig: AnyConfigurationModel
 
@@ -192,6 +195,7 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         )
         // Set target via action since it's now volatile
         editor.setTarget(targetConfig)
+        editor.setExpandedDisplayId(opts?.expandedDisplayId)
         this.showWidget(editor)
       },
 
@@ -208,29 +212,16 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
+      // drawerPosition is a personal per-browser layout preference, not shared
+      // view state: destructure it out so it never lands in the snapshot. It
+      // stays localStorage-backed, so each browser keeps its own value.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const {
-        drawerPosition,
-        drawerWidth,
-        widgets,
-        activeWidgets,
-        minimized,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
+      const { drawerPosition, ...rest } = snap
       return {
         ...rest,
-        ...(drawerPosition !== 'right' ? { drawerPosition } : {}),
-        ...(drawerWidth !== 384 ? { drawerWidth } : {}),
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(Object.keys(widgets ?? {}).length ? { widgets } : {}),
-        // mst types wrong, nullish needed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        ...(Object.keys(activeWidgets ?? {}).length ? { activeWidgets } : {}),
-        ...(minimized ? { minimized } : {}),
       } as typeof snap
     })
 }

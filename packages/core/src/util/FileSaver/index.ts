@@ -1,3 +1,6 @@
+// Minimal `saveAs`. The name/API derive from FileSaver.js by Eli Grey
+// (https://github.com/eligrey/FileSaver.js, MIT), but this is reimplemented as
+// the modern anchor-download path only, dropping the legacy browser fallbacks.
 export function saveAs(blob: Blob | string, name?: string) {
   const filename = name || (blob instanceof File ? blob.name : '') || 'download'
   const a = document.createElement('a')

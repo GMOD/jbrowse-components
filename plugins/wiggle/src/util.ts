@@ -1,163 +1,237 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { getScale } from '@jbrowse/wiggle-core'
-
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
-import type { ScaleOpts, YScaleTicks } from '@jbrowse/wiggle-core'
-
 export {
-  YSCALEBAR_LABEL_OFFSET,
+  computeAutoscaleDomain,
+  domainFromStats,
+  getEffectiveScores,
   getNiceDomain,
   getOrigin,
   getScale,
+  makeScoreNormalizer,
+  toP,
 } from '@jbrowse/wiggle-core'
-export type { ScaleOpts } from '@jbrowse/wiggle-core'
+export type {
+  Dataset,
+  FeatureArrays,
+  ScaleOpts,
+  ScoreStats,
+  SourceInfo,
+  WiggleDataResult,
+  WiggleFeatureArrays,
+  WiggleSourceData,
+} from '@jbrowse/wiggle-core'
+
+import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
+
+export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
+
+// Single source of truth for rendering types: [value, menu label]. The config
+// enumeration derives its valid values from these, and the track menu derives
+// its radio items — so the two can't drift.
+export const WIGGLE_RENDERINGS = [
+  ['xyplot', 'XY plot'],
+  ['density', 'Density'],
+  ['line', 'Line (step)'],
+  ['linecenter', 'Line (interpolated)'],
+  ['scatter', 'Scatter'],
+] as const
+
+// Multi-wiggle plot types grouped by layout for the nested "Plot type" menu:
+// the group header carries the layout qualifier so each plot-type label can
+// drop it. Overlapping intentionally omits density — overlapping filled
+// densities are unreadable.
+export const MULTI_WIGGLE_RENDERING_GROUPS = [
+  [
+    'Multi-row',
+    [
+      ['multirowxy', 'XY plot'],
+      ['multirowdensity', 'Density'],
+      ['multirowline', 'Line (step)'],
+      ['multirowlinecenter', 'Line (interpolated)'],
+      ['multirowscatter', 'Scatter'],
+    ],
+  ],
+  [
+    'Overlapping',
+    [
+      ['multixyplot', 'XY plot'],
+      ['multiline', 'Line (step)'],
+      ['multilinecenter', 'Line (interpolated)'],
+      ['multiscatter', 'Scatter'],
+    ],
+  ],
+] as const
+
+export const WIGGLE_RENDERING_TYPES = WIGGLE_RENDERINGS.map(([value]) => value)
+
+export const MULTI_WIGGLE_RENDERING_TYPES =
+  MULTI_WIGGLE_RENDERING_GROUPS.flatMap(([, options]) =>
+    options.map(([value]) => value),
+  )
 
 // Default color used by wiggle config schema
-export const WIGGLE_COLOR_DEFAULT = '#f0f'
-
-export function getColorCallback(
-  config: AnyConfigurationModel,
-  opts?: { defaultColor?: string },
-) {
-  const colorIsCallback = config.color?.isCallback
-
-  if (colorIsCallback) {
-    return (feature: Feature) => readConfObject(config, 'color', { feature })
-  }
-  const color = readConfObject(config, 'color')
-  const colorIsDefault = color === WIGGLE_COLOR_DEFAULT
-  if (!colorIsDefault) {
-    return () => color
-  }
-  if (opts?.defaultColor) {
-    return () => opts.defaultColor!
-  }
-  // Bicolor pivot logic
-  const pivotValue = readConfObject(config, 'bicolorPivotValue')
-  const negColor = readConfObject(config, 'negColor')
-  const posColor = readConfObject(config, 'posColor')
-  return (_feature: Feature, score: number) =>
-    score < pivotValue ? negColor : posColor
-}
+export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
 
 // There was confusion about whether source or name was required, and effort to
 // remove one or the other was thwarted. Adapters like BigWigAdapter, even in
 // the BigWigAdapter configSchema.ts, use a 'source' field though, while the
-// word 'name' still allowed in the config too. To solve, we made name===source
+// word 'name' still allowed in the config too. To solve, we made name===source.
 export interface Source {
   baseUri?: string
   name: string
   source: string
   color?: string
+  // Tint for this source's row-label box in the sidebar (multirow modes). Kept
+  // independent of `color` so density tracks can be color-coded by identity
+  // without changing the score→color ramp.
+  labelColor?: string
   group?: string
 }
 
-export function toP(s = 0) {
-  return +s.toPrecision(6)
+export interface EditableSource extends Source, SourceInfo {}
+
+// One score entry shown in a wiggle tooltip. `source`/`color` are populated
+// only for multi-wiggle (single-wiggle has no per-source identity). The summary
+// variant carries min/max together so consumers narrow on `summary` alone.
+export type WiggleTooltipRow = {
+  source?: string
+  color?: string
+  score: number
+} & (
+  { summary?: false } | { summary: true; minScore: number; maxScore: number }
+)
+
+// Feature(s) hovered under the mouse, shared by single- and multi-wiggle.
+// `start`/`end` is the feature interval for single-wiggle and multi-wiggle row
+// mode; in overlay mode it collapses to the cursor bp, since sources with
+// differing bin widths share no single interval. `rows` holds one entry for
+// single/row mode and one-per-source in overlay mode.
+export interface WiggleFeatureUnderMouse {
+  refName: string
+  start: number
+  end: number
+  rows: WiggleTooltipRow[]
 }
 
-export function serializeWiggleFeature(f: {
-  get: (key: string) => unknown
-  id: () => string
-}) {
+// Single-source synthetic name for LinearWiggleDisplay's worker output. Multi
+// uses real source names; single just needs a stable label so it fits the
+// shared { sources: [...] } shape.
+export const SINGLE_WIGGLE_SOURCE_NAME = 'default'
+
+// Raw per-feature typed arrays returned by adapters' fast path. Display-side
+// concerns (bicolor pos/neg split) happen in processFeaturesFromArrays at the
+// executor, not here — keeps adapters out of UI policy decisions.
+export interface RawFeatureArrays {
+  starts: Int32Array
+  ends: Int32Array
+  scores: Float32Array
+  minScores: Float32Array | undefined
+  maxScores: Float32Array | undefined
+  count: number
+}
+
+export function processFeaturesFromArrays(
+  raw: RawFeatureArrays,
+  bicolorPivot: number,
+  useBicolor = true,
+): WiggleFeatureArrays {
+  const { starts, ends, scores, minScores, maxScores, count } = raw
+  const featurePositions = new Uint32Array(count * 2)
+  const featureScores = new Float32Array(count)
+  const featureMinScores = new Float32Array(count)
+  const featureMaxScores = new Float32Array(count)
+  const posFeaturePositionsBuf = new Uint32Array(count * 2)
+  const posFeatureScoresBuf = new Float32Array(count)
+  const negFeaturePositionsBuf = new Uint32Array(count * 2)
+  const negFeatureScoresBuf = new Float32Array(count)
+  let posCount = 0
+  let negCount = 0
+  let hasSummaryScores = false
+
+  for (let i = 0; i < count; i++) {
+    const score = scores[i]!
+    const startPos = starts[i]! | 0
+    const endPos = ends[i]! | 0
+    featurePositions[i * 2] = startPos
+    featurePositions[i * 2 + 1] = endPos
+    featureScores[i] = score
+    const minScore = minScores ? (minScores[i] ?? score) : score
+    const maxScore = maxScores ? (maxScores[i] ?? score) : score
+    featureMinScores[i] = minScore
+    featureMaxScores[i] = maxScore
+    if (minScore !== score || maxScore !== score) {
+      hasSummaryScores = true
+    }
+
+    if (!useBicolor || score >= bicolorPivot) {
+      posFeaturePositionsBuf[posCount * 2] = startPos
+      posFeaturePositionsBuf[posCount * 2 + 1] = endPos
+      posFeatureScoresBuf[posCount] = score
+      posCount++
+    } else {
+      negFeaturePositionsBuf[negCount * 2] = startPos
+      negFeaturePositionsBuf[negCount * 2 + 1] = endPos
+      negFeatureScoresBuf[negCount] = score
+      negCount++
+    }
+  }
+
   return {
-    uniqueId: f.id(),
-    start: f.get('start'),
-    end: f.get('end'),
-    score: f.get('score'),
-    source: f.get('source'),
-    refName: f.get('refName'),
-    maxScore: f.get('maxScore'),
-    minScore: f.get('minScore'),
-    summary: f.get('summary'),
+    featurePositions,
+    featureScores,
+    featureMinScores,
+    featureMaxScores,
+    numFeatures: count,
+    hasSummaryScores,
+    posFeaturePositions: posFeaturePositionsBuf.subarray(0, posCount * 2),
+    posFeatureScores: posFeatureScoresBuf.subarray(0, posCount),
+    posNumFeatures: posCount,
+    negFeaturePositions: negFeaturePositionsBuf.subarray(0, negCount * 2),
+    negFeatureScores: negFeatureScoresBuf.subarray(0, negCount),
+    negNumFeatures: negCount,
   }
 }
 
-export function round(value: number) {
-  return Math.round(value * 1e5) / 1e5
+export function featuresToRaw(
+  features: { get: (key: string) => unknown }[],
+): RawFeatureArrays {
+  const n = features.length
+  const starts = new Int32Array(n)
+  const ends = new Int32Array(n)
+  const scores = new Float32Array(n)
+  const minScores = new Float32Array(n)
+  const maxScores = new Float32Array(n)
+
+  for (const [i, feature] of features.entries()) {
+    starts[i] = feature.get('start') as number
+    ends[i] = feature.get('end') as number
+    const score = (feature.get('score') as number | undefined) ?? 0
+    scores[i] = score
+    const summary = feature.get('summary')
+    minScores[i] = summary
+      ? ((feature.get('minScore') as number | undefined) ?? score)
+      : score
+    maxScores[i] = summary
+      ? ((feature.get('maxScore') as number | undefined) ?? score)
+      : score
+  }
+
+  return { starts, ends, scores, minScores, maxScores, count: n }
 }
 
-export const WIGGLE_FUDGE_FACTOR = 0.3
-export const WIGGLE_CLIP_HEIGHT = 2
+// Widen each Canvas2D bar slightly past its true pixel span so adjacent
+// histogram bars overlap by a fraction of a pixel instead of leaving thin
+// anti-aliased gaps between them. The GPU shader intentionally does NOT apply
+// this — it relies on its own min-clip-width floor (minClipW in wiggle.slang),
+// so the two backends differ by sub-pixel amounts by design.
+export const WIGGLE_FUDGE_FACTOR = 0.8
 
-export function drawCrosshatches(
-  ctx: CanvasRenderingContext2D,
-  ticks: YScaleTicks | undefined,
-  width: number,
-  toY: (v: number) => number,
-) {
-  ctx.lineWidth = 1
-  ctx.strokeStyle = 'rgba(200,200,200,0.5)'
-  for (const { value } of ticks?.items ?? []) {
-    ctx.beginPath()
-    ctx.moveTo(0, Math.round(toY(value)))
-    ctx.lineTo(width, Math.round(toY(value)))
-    ctx.stroke()
+export const WIGGLE_MIN_PX = 1.5
+
+export function formatScore(n: number) {
+  if (n === 0) {
+    return '0'
   }
-}
-
-export interface ScaleValues {
-  niceMin: number
-  niceMax: number
-  height: number
-  linearRatio: number
-  log2: number
-  logMin: number
-  logRatio: number
-  isLog: boolean
-}
-
-export function getScaleValues(
-  scaleOpts: ScaleOpts,
-  height: number,
-): ScaleValues {
-  const scale = getScale({ ...scaleOpts, range: [0, height] })
-  const domain = scale.domain() as [number, number]
-  const niceMin = domain[0]
-  const niceMax = domain[1]
-  const domainSpan = niceMax - niceMin
-  const isLog = scaleOpts.scaleType === 'log'
-
-  const linearRatio = domainSpan !== 0 ? height / domainSpan : 0
-  const log2 = Math.log(2)
-  const logMin = Math.log(niceMin) / log2
-  const logMax = Math.log(niceMax) / log2
-  const logSpan = logMax - logMin
-  const logRatio = logSpan !== 0 ? height / logSpan : 0
-
-  return {
-    niceMin,
-    niceMax,
-    height,
-    linearRatio,
-    log2,
-    logMin,
-    logRatio,
-    isLog,
+  if (Math.abs(n) >= 100) {
+    return n.toFixed(0)
   }
-}
-
-// avoid drawing negative width features for SVG exports
-export function fillRectCtx(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  ctx: CanvasRenderingContext2D,
-  color?: string,
-) {
-  if (width < 0) {
-    x += width
-    width = -width
-  }
-  if (height < 0) {
-    y += height
-    height = -height
-  }
-
-  if (color) {
-    ctx.fillStyle = color
-  }
-  ctx.fillRect(x, y, width, height)
+  return n.toPrecision(3).replace(/\.?0+$/, '')
 }

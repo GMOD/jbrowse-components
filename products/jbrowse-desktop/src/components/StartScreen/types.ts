@@ -4,6 +4,7 @@ export interface RecentSessionData {
   path: string
   name: string
   updated?: number
+  isAutosave?: boolean
 }
 
 export interface InternetAccount {
@@ -19,6 +20,7 @@ export interface JBrowseConfig {
   tracks: { trackId: string }[]
   plugins?: PluginDefinition[]
   defaultSession?: Record<string, unknown>
+  configuration?: Record<string, unknown>
 }
 
 export type LaunchCallback = (

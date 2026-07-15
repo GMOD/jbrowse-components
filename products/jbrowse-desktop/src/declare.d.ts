@@ -1,4 +1,3 @@
-declare module 'hic-straw'
 declare module '@fontsource/roboto'
 declare module 'dockview-react/dist/styles/dockview.css'
 

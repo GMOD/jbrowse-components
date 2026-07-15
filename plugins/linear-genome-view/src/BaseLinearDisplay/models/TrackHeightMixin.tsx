@@ -1,13 +1,20 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import { MIN_DISPLAY_HEIGHT } from './const.ts'
 
-const minDisplayHeight = 20
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
  * #stateModel TrackHeightMixin
  * #category display
+ *
+ * The display height is stored directly on the `height` config slot (drag-resize
+ * writes it via `setSlot`), so it survives a track being unticked and reticked —
+ * the config node outlives the ephemeral display instance. Displays with an
+ * auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`)
+ * and override the `height` getter to fall back to their computed content
+ * height when unset.
  */
 export default function TrackHeightMixin<
   TConf extends { configuration: AnyConfigurationModel } = {
@@ -15,18 +22,7 @@ export default function TrackHeightMixin<
   },
 >() {
   return types
-    .model({
-      /**
-       * #property
-       */
-      heightPreConfig: types.maybe(
-        types.refinement(
-          'displayHeight',
-          types.number,
-          n => n >= minDisplayHeight,
-        ),
-      ),
-    })
+    .model({})
     .volatile(() => ({
       /**
        * #volatile
@@ -35,10 +31,7 @@ export default function TrackHeightMixin<
     }))
     .views(self => ({
       get height() {
-        return (
-          self.heightPreConfig ??
-          (getConf(self as unknown as TConf, 'height') as number)
-        )
+        return getConf(self as unknown as TConf, 'height') as number
       },
     }))
     .actions(self => ({
@@ -52,15 +45,17 @@ export default function TrackHeightMixin<
        * #action
        */
       setHeight(displayHeight: number) {
-        self.heightPreConfig = Math.max(displayHeight, minDisplayHeight)
-        return self.height
+        const height = Math.max(displayHeight, MIN_DISPLAY_HEIGHT)
+        ;(self as unknown as TConf).configuration.setSlot('height', height)
+        return height
       },
       /**
        * #action
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
+        const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
+        ;(self as unknown as TConf).configuration.setSlot('height', newHeight)
         return newHeight - oldHeight
       },
     }))

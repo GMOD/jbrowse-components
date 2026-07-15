@@ -1,43 +1,40 @@
+import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
+
+import HatchCircle from './HatchCircle.tsx'
+
+function truncate(str: string, max: number) {
+  return str.length > max ? `${str.slice(0, max)}…` : str
+}
 
 const DisplayError = observer(function DisplayError({
   model,
   radius,
+  onClick,
 }: {
   model: { error: unknown }
   radius: number
+  onClick?: () => void
 }) {
-  const { error } = model
+  const theme = useTheme()
+  const text = truncate(String(model.error), 80)
   return (
-    <g>
-      <defs>
-        <pattern
-          id="diagonalHatch"
-          width="10"
-          height="10"
-          patternTransform="rotate(45 0 0)"
-          patternUnits="userSpaceOnUse"
-        >
-          <line
-            x1="0"
-            y1="0"
-            x2="0"
-            y2="10"
-            style={{ stroke: 'rgba(255,0,0,0.5)', strokeWidth: 10 }}
-          />
-        </pattern>
-      </defs>
-      <circle cx="0" cy="0" r={radius} fill="#ffb4b4" />
-      <circle cx="0" cy="0" r={radius} fill="url(#diagonalHatch)" />
-      <text
-        x="0"
-        y="0"
-        transform="rotate(90 0 0)"
-        dominantBaseline="middle"
-        textAnchor="middle"
-      >
-        {String(error)}
-      </text>
+    <g
+      style={onClick ? { cursor: 'pointer' } : undefined}
+      onClick={
+        onClick
+          ? () => {
+              onClick()
+            }
+          : undefined
+      }
+    >
+      <HatchCircle
+        radius={radius}
+        fill={theme.palette.error.light}
+        hatchColor={theme.palette.error.main}
+        text={onClick ? `${text} (click for details)` : text}
+      />
     </g>
   )
 })

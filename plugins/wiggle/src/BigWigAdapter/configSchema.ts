@@ -1,10 +1,20 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BigWigAdapter
- * used to load BigWig or BigBed quantitative signal files
+ * #trackType QuantitativeTrack
+ * used to load BigWig quantitative signal files
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'BigWigAdapter',
+ *   uri: 'https://example.com/coverage.bw',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -39,7 +49,8 @@ const BigWigAdapter = ConfigurationSchema(
     source: {
       type: 'string',
       defaultValue: '',
-      description: 'Used for multiwiggle',
+      description:
+        'Label added to all features; used as the subtrack/row name when this adapter is a subadapter of a multi-wiggle track',
     },
 
     /**
@@ -49,7 +60,8 @@ const BigWigAdapter = ConfigurationSchema(
       type: 'number',
       defaultValue: 1,
       description:
-        'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
+        'Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points)',
+      advanced: true,
     },
   },
   {
@@ -70,5 +82,7 @@ const BigWigAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type BigWigAdapterConfig = Instance<typeof BigWigAdapter>
 
 export default BigWigAdapter

@@ -1,16 +1,14 @@
 ---
-id: customizing_feature_colors
-title: Customizing feature colors with callbacks and plugins
+title: Customizing feature colors
 description: Per-feature color callbacks using jexl or plugin code
 guide_category: Callbacks and customization
 ---
 
-If you have a color callback that has a lot of logic in it, then using jexl to
-express all that logic may be hard. Instead, you can make a small plugin which
-adds a function to the jexl language, and call that function in your jexl
-callback.
+If a color callback has too much logic to express cleanly in
+[jexl](/docs/config_guides/jexl), add a function to the jexl language with a
+small plugin and call it from your jexl callback.
 
-For example, create a file named "myplugin.js" (see also Footnote 1)
+For example, create a file named `myplugin.js`:
 
 ```js
 export default class MyPlugin {
@@ -32,7 +30,7 @@ export default class MyPlugin {
 }
 ```
 
-Put `myplugin.js` in the same folder as your config file and reference it:
+Put `myplugin.js` in the same directory as your config file and reference it:
 
 ```json
 {
@@ -49,37 +47,50 @@ Put `myplugin.js` in the same folder as your config file and reference it:
       "name": "my track",
       "assemblyNames": ["hg19"],
       "adapter": {
-        "type": "Gff3TabixAdapter",
+        "type": "Gff3Adapter",
         "gffLocation": {
           "uri": "volvox.filtered.gff"
         }
       },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "mytrack-LinearBasicDisplay",
-          "renderer": {
-            "type": "SvgFeatureRenderer",
-            "color1": "jexl:colorFeature(feature)"
-          }
-        }
-      ]
+      "displayDefaults": { "color": "jexl:colorFeature(feature)" }
     }
   ]
 }
 ```
 
-The feature is a `SimpleFeature` — use `feature.get('start')`,
-`feature.get('refName')`, `feature.get('other_attribute')`, etc.
+The `color` is set with the `displayDefaults` shorthand and works as a plain CSS
+color (`"displayDefaults": { "color": "green" }`) or, as here, a `jexl:`
+expression evaluated per feature. See
+[configuring displays](/docs/config_guides/tracks/#configuring-displays) for the
+shorthand and the per-display array form.
+
+The feature is a `SimpleFeature`. In jexl color callbacks, read attributes as
+plain properties, e.g. `feature.start`, `feature.refName`,
+`feature.other_attribute`. In JavaScript plugin code (as above), the
+`SimpleFeature` API is `feature.get('start')`.
 
 See the [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
 a full walkthrough.
 
-:::note
+Named BED columns such as `itemRgb` or `thickStart` (e.g.
+`jexl:feature.itemRgb`) are only guaranteed for BED12, bigBed, or any track
+configured with an `autoSql` or `columnNames`. For plaintext BED files with
+fewer columns (BED7–BED11), JBrowse can't safely assume what each extra column
+means, so columns past `name`/`score`/`strand` are exposed generically as
+`field6`, `field7`, `field8`, …, so `feature.itemRgb` returns `undefined` there.
+To reference columns by stable name, add `columnNames` (or a full `autoSql`) to
+the adapter config.
 
 `myplugin.js` doesn't need the jbrowse-plugin-template if it's self-contained
 and has no external imports. If it does import other modules, use the template.
 For embedded components, see the
-[storybook example](https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page).
+[inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
 
-:::
+## See also
+
+- [Using jexl callbacks](/docs/config_guides/jexl), the jexl expression syntax
+  and the full catalog of built-in functions (including the color helpers)
+- [Customizing feature details](/docs/config_guides/customizing_feature_details),
+  the same plugin-function pattern applied to the feature-details panel
+- [No-build plugin tutorial](/docs/developer_guides/no_build_plugin), a full
+  walkthrough of the single-file plugin used above

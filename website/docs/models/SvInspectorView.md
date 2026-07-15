@@ -1,77 +1,143 @@
 ---
 id: svinspectorview
 title: SvInspectorView
+sidebar_label: View -> SvInspectorView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`sv-inspector` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/model.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
+Hand-authored under `defaultSession.views`. The `init` shorthand loads a
+structural-variant file into the spreadsheet and mirrors the rows as arcs in the
+paired circular view; `assembly` resolves coordinates for both:
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/SvInspectorView/model.ts)
+```js
+{
+  type: 'SvInspectorView',
+  init: {
+    assembly: 'hg38',
+    uri: 'https://example.com/sv.vcf.gz',
+    fileType: 'VCF',
+  },
+}
+```
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SvInspectorView.md)
-
-## Docs
+## Overview
 
 does not extend, but is a combination of a
 
 - [SpreadsheetView](../spreadsheetview)
 - [CircularView](../circularview)
 
-extends
+## Members
 
-- [BaseViewModel](../baseviewmodel)
+| Member                                                                                             | Kind       | Defined by                        | Description                                                                                           |
+| -------------------------------------------------------------------------------------------------- | ---------- | --------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                                                                 | Properties | SvInspectorView                   |                                                                                                       |
+| [type](#property-type)                                                                             | Properties | SvInspectorView                   |                                                                                                       |
+| [height](#property-height)                                                                         | Properties | SvInspectorView                   |                                                                                                       |
+| [onlyDisplayRelevantRegionsInCircularView](#property-onlydisplayrelevantregionsincircularview)     | Properties | SvInspectorView                   |                                                                                                       |
+| [spreadsheetView](#property-spreadsheetview)                                                       | Properties | SvInspectorView                   |                                                                                                       |
+| [circularView](#property-circularview)                                                             | Properties | SvInspectorView                   |                                                                                                       |
+| [init](#property-init)                                                                             | Properties | SvInspectorView                   | used for initializing the view from a session snapshot                                                |
+| [width](#volatile-width)                                                                           | Volatiles  | SvInspectorView                   |                                                                                                       |
+| [SpreadsheetViewReactComponent](#volatile-spreadsheetviewreactcomponent)                           | Volatiles  | SvInspectorView                   |                                                                                                       |
+| [CircularViewReactComponent](#volatile-circularviewreactcomponent)                                 | Volatiles  | SvInspectorView                   |                                                                                                       |
+| [circularViewOptionsBarHeight](#volatile-circularviewoptionsbarheight)                             | Volatiles  | SvInspectorView                   |                                                                                                       |
+| [assemblyName](#getter-assemblyname)                                                               | Getters    | SvInspectorView                   |                                                                                                       |
+| [showCircularView](#getter-showcircularview)                                                       | Getters    | SvInspectorView                   |                                                                                                       |
+| [features](#getter-features)                                                                       | Getters    | SvInspectorView                   |                                                                                                       |
+| [featuresAdapterConfigSnapshot](#getter-featuresadapterconfigsnapshot)                             | Getters    | SvInspectorView                   |                                                                                                       |
+| [featureRefNames](#getter-featurerefnames)                                                         | Getters    | SvInspectorView                   |                                                                                                       |
+| [currentAssembly](#getter-currentassembly)                                                         | Getters    | SvInspectorView                   |                                                                                                       |
+| [canonicalFeatureRefNameSet](#getter-canonicalfeaturerefnameset)                                   | Getters    | SvInspectorView                   |                                                                                                       |
+| [variantTrackId](#getter-varianttrackid)                                                           | Getters    | SvInspectorView                   |                                                                                                       |
+| [featuresCircularTrackConfiguration](#getter-featurescirculartrackconfiguration)                   | Getters    | SvInspectorView                   |                                                                                                       |
+| [menuItems](#method-menuitems)                                                                     | Methods    | SvInspectorView                   |                                                                                                       |
+| [setWidth](#action-setwidth)                                                                       | Actions    | SvInspectorView                   |                                                                                                       |
+| [setHeight](#action-setheight)                                                                     | Actions    | SvInspectorView                   |                                                                                                       |
+| [setOnlyDisplayRelevantRegionsInCircularView](#action-setonlydisplayrelevantregionsincircularview) | Actions    | SvInspectorView                   |                                                                                                       |
+| [setInit](#action-setinit)                                                                         | Actions    | SvInspectorView                   |                                                                                                       |
+| [resizeHeight](#action-resizeheight)                                                               | Actions    | SvInspectorView                   |                                                                                                       |
+| [displayName](#property-displayname)                                                               | Properties | [BaseViewModel](../baseviewmodel) | displayName is displayed in the header of the view, or assembly names being used if none is specified |
+| [minimized](#property-minimized)                                                                   | Properties | [BaseViewModel](../baseviewmodel) |                                                                                                       |
+| [setDisplayName](#action-setdisplayname)                                                           | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                       |
+| [setMinimized](#action-setminimized)                                                               | Actions    | [BaseViewModel](../baseviewmodel) |                                                                                                       |
 
-### SvInspectorView - Properties
+<details>
+<summary>SvInspectorView - Properties</summary>
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```ts
+// type signature
+type init = IType<
+  SvInspectorViewInit | undefined,
+  SvInspectorViewInit | undefined,
+  SvInspectorViewInit | undefined
+>
+// code
+init: types.frozen<SvInspectorViewInit | undefined>()
+```
+
+</details>
+
+<details>
+<summary>SvInspectorView - Properties (other undocumented members)</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"SvInspectorView">
+type type = ISimpleType<'SvInspectorView'>
 // code
 type: types.literal('SvInspectorView')
 ```
 
 #### property: height
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type height = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-height: types.optional(types.number, defaultHeight)
+height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: onlyDisplayRelevantRegionsInCircularView
 
-```js
+```ts
 // type signature
-false
+type onlyDisplayRelevantRegionsInCircularView = IOptionalIType<
+  ISimpleType<boolean>,
+  [undefined]
+>
 // code
-onlyDisplayRelevantRegionsInCircularView: false
+onlyDisplayRelevantRegionsInCircularView: types.stripDefault(
+  types.boolean,
+  false,
+)
 ```
 
 #### property: spreadsheetView
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 6 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
+type spreadsheetView = IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
@@ -83,9 +149,9 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
 
 #### property: circularView
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IType<boolean | undefined, boolean, boolean>; } & { ...; }, { ...; } & ... 7 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
+type circularView = IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
 // code
 circularView: types.optional(CircularModel, () =>
           CircularModel.create({
@@ -97,117 +163,207 @@ circularView: types.optional(CircularModel, () =>
         )
 ```
 
-#### property: init
+</details>
 
-used for initializing the view from a session snapshot
+<details>
+<summary>SvInspectorView - Volatiles</summary>
 
-```js
+#### volatile: width
+
+```ts
 // type signature
-IType<SvInspectorViewInit | undefined, SvInspectorViewInit | undefined, SvInspectorViewInit | undefined>
+type width = number
 // code
-init: types.frozen<SvInspectorViewInit | undefined>()
+width: 800
 ```
 
-### SvInspectorView - Getters
+#### volatile: SpreadsheetViewReactComponent
+
+```ts
+// type signature
+type SpreadsheetViewReactComponent = ViewComponentType
+// code
+SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent
+```
+
+#### volatile: CircularViewReactComponent
+
+```ts
+// type signature
+type CircularViewReactComponent = ViewComponentType
+// code
+CircularViewReactComponent: CircularViewType.ReactComponent
+```
+
+#### volatile: circularViewOptionsBarHeight
+
+```ts
+// type signature
+type circularViewOptionsBarHeight = number
+// code
+circularViewOptionsBarHeight: 52
+```
+
+</details>
+
+<details>
+<summary>SvInspectorView - Getters</summary>
 
 #### getter: assemblyName
 
-```js
-// type
-string | undefined
+```ts
+type assemblyName = string | undefined
 ```
 
 #### getter: showCircularView
 
-```js
-// type
-boolean
+```ts
+type showCircularView = boolean
 ```
 
 #### getter: features
 
-```js
-// type
-SimpleFeatureSerialized[]
+```ts
+type features = SimpleFeatureSerialized[]
 ```
 
 #### getter: featuresAdapterConfigSnapshot
 
-```js
-// type
-{ type: string; features: SimpleFeatureSerialized[]; }
+```ts
+type featuresAdapterConfigSnapshot = {
+  type: string
+  features: SimpleFeatureSerialized[]
+}
 ```
 
 #### getter: featureRefNames
 
-```js
-// type
-any[]
+```ts
+type featureRefNames = string[]
 ```
 
 #### getter: currentAssembly
 
-```js
-// type
-({ configuration: any; } & NonEmptyObject & { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; refNameAliases: RefNameAliases | undefined; canonicalToSeqAdapterRefNames: Record<...> | undefined; cytobands: Feature[] | undefined; lowerCaseRefNameAliases: RefNameAliases ...
+```ts
+type currentAssembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 7 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: canonicalFeatureRefNameSet
 
-```js
-// type
-Set<any>
+```ts
+type canonicalFeatureRefNameSet = Set<string>
+```
+
+#### getter: variantTrackId
+
+```ts
+type variantTrackId = string
 ```
 
 #### getter: featuresCircularTrackConfiguration
 
-```js
-// type
-{ type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: (string | undefined)[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }
+```ts
+type featuresCircularTrackConfiguration = { type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }
 ```
 
-### SvInspectorView - Methods
+</details>
+
+<details>
+<summary>SvInspectorView - Methods</summary>
 
 #### method: menuItems
 
-```js
-// type signature
-menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+```ts
+type menuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  onClick: () => void
+}[]
 ```
 
-### SvInspectorView - Actions
+</details>
+
+<details>
+<summary>SvInspectorView - Actions</summary>
 
 #### action: setWidth
 
-```js
-// type signature
-setWidth: (newWidth: number) => void
+```ts
+type setWidth = (newWidth: number) => void
 ```
 
 #### action: setHeight
 
-```js
-// type signature
-setHeight: (newHeight: number) => number
+```ts
+type setHeight = (newHeight: number) => number
 ```
 
 #### action: setOnlyDisplayRelevantRegionsInCircularView
 
-```js
-// type signature
-setOnlyDisplayRelevantRegionsInCircularView: (val: boolean) => void
+```ts
+type setOnlyDisplayRelevantRegionsInCircularView = (val: boolean) => void
 ```
 
 #### action: setInit
 
-```js
-// type signature
-setInit: (init?: SvInspectorViewInit | undefined) => void
+```ts
+type setInit = (init?: SvInspectorViewInit | undefined) => void
 ```
 
 #### action: resizeHeight
 
-```js
-// type signature
-resizeHeight: (distance: number) => number
+```ts
+type resizeHeight = (distance: number) => number
 ```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from BaseViewModel</summary>
+
+[BaseViewModel →](../baseviewmodel)
+
+**Properties**
+
+#### property: displayName
+
+displayName is displayed in the header of the view, or assembly names being used
+if none is specified
+
+```ts
+// type signature
+type displayName = IMaybe<ISimpleType<string>>
+// code
+displayName: types.maybe(types.string)
+```
+
+#### property: minimized
+
+```ts
+// type signature
+type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+minimized: types.stripDefault(types.boolean, false)
+```
+
+**Actions**
+
+#### action: setDisplayName
+
+```ts
+type setDisplayName = (name: string) => void
+```
+
+#### action: setMinimized
+
+```ts
+type setMinimized = (flag: boolean) => void
+```
+
+</details>

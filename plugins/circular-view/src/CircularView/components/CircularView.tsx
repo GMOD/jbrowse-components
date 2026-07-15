@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import Controls from './Controls.tsx'
@@ -10,13 +10,35 @@ import Ruler from './Ruler.tsx'
 
 import type { CircularViewModel } from '../model.ts'
 
-const dragHandleHeight = 3
-
 const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
     marginBottom: theme.spacing(1),
     overflow: 'hidden',
+  },
+  panWrapper: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+  },
+  circularSvg: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    userSelect: 'none',
+  },
+  idle: {
+    cursor: 'grab',
+    transition: 'transform 0.5s',
+  },
+  dragging: {
+    cursor: 'grabbing',
+    transition: 'none',
+  },
+  resizeHandle: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
   },
 }))
 
@@ -49,17 +71,14 @@ const CircularView = observer(function CircularView({
 }: {
   model: CircularViewModel
 }) {
-  const { showLoading, showView, showImportForm, loadingMessage } = model
-
-  if (showLoading) {
-    return <LoadingEllipses variant="h6" message={loadingMessage} />
-  } else if (showImportForm) {
-    return <ImportForm model={model} />
-  } else if (showView) {
-    return <CircularViewLoaded model={model} />
-  } else {
-    return null
-  }
+  const { showLoading, showView, showImportForm } = model
+  return showLoading ? (
+    <LoadingEllipses variant="h6" message="Loading" />
+  ) : showImportForm ? (
+    <ImportForm model={model} />
+  ) : showView ? (
+    <CircularViewLoaded model={model} />
+  ) : null
 })
 
 const CircularViewLoaded = observer(function CircularViewLoaded({
@@ -94,7 +113,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       const [cx, cy] = model.centerXY
       const dx = event.clientX - rect.left - cx - model.panX
       const dy = event.clientY - rect.top - cy - model.panY
-      const distFromCenter = Math.sqrt(dx * dx + dy * dy)
+      const distFromCenter = Math.hypot(dx, dy)
       if (distFromCenter > model.radiusPx + model.paddingPx) {
         return
       }
@@ -132,19 +151,18 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (!isDragging) {
-      return
+    if (isDragging) {
+      const angle = angleFromCenter(event.clientX, event.clientY)
+      let delta = angle - lastAngleRef.current
+      // wrap delta to [-π, π] to handle the ±π boundary crossing
+      if (delta > Math.PI) {
+        delta -= 2 * Math.PI
+      } else if (delta < -Math.PI) {
+        delta += 2 * Math.PI
+      }
+      model.rotate(delta)
+      lastAngleRef.current = angle
     }
-    const angle = angleFromCenter(event.clientX, event.clientY)
-    let delta = angle - lastAngleRef.current
-    // wrap delta to [-π, π] to handle the ±π boundary crossing
-    if (delta > Math.PI) {
-      delta -= 2 * Math.PI
-    } else if (delta < -Math.PI) {
-      delta += 2 * Math.PI
-    }
-    model.rotate(delta)
-    lastAngleRef.current = angle
   }
 
   const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -160,23 +178,17 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       data-testid={id}
     >
       <div
-        style={{
-          transform: `translate(${panX}px,${panY}px)`,
-          position: 'absolute',
-          left: 0,
-          top: 0,
-        }}
+        className={classes.panWrapper}
+        style={{ transform: `translate(${panX}px,${panY}px)` }}
       >
         <svg
+          className={cx(
+            classes.circularSvg,
+            isDragging ? classes.dragging : classes.idle,
+          )}
           style={{
             transform: `rotate(${offsetRadians}rad)`,
-            transition: isDragging ? 'none' : 'transform 0.5s',
             transformOrigin: centerXY.map(x => `${x}px`).join(' '),
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            cursor: isDragging ? 'grabbing' : 'grab',
-            userSelect: 'none',
           }}
           width={figureSize}
           height={figureSize}
@@ -192,16 +204,9 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       <Controls model={model} />
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle
+          bar
           onDrag={distance => model.resizeHeight(distance)}
-          style={{
-            height: dragHandleHeight,
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            background: '#ccc',
-            boxSizing: 'border-box',
-            borderTop: '1px solid #fafafa',
-          }}
+          className={classes.resizeHandle}
         />
       )}
     </div>

@@ -6,7 +6,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config OAuthInternetAccount
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const OAuthConfigSchema = ConfigurationSchema(
   'OAuthInternetAccount',

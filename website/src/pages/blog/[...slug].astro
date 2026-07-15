@@ -1,8 +1,10 @@
 ---
 import { getCollection } from 'astro:content'
-import { baseUrl } from '../../lib/base-url'
-import { blogPath } from '../../lib/blog-path'
+
+import NewsletterSignup from '../../components/NewsletterSignup.tsx'
 import BlogLayout from '../../layouts/BlogLayout.astro'
+import { baseUrl } from '../../lib/base-url.ts'
+import { blogPath } from '../../lib/blog-path.ts'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
 
@@ -16,11 +18,11 @@ export async function getStaticPaths() {
       post,
       prev:
         i > 0
-          ? { slug: blogPath(posts[i - 1]), title: posts[i - 1].data.title }
+          ? { slug: blogPath(posts[i - 1]!), title: posts[i - 1]!.data.title }
           : null,
       next:
         i < posts.length - 1
-          ? { slug: blogPath(posts[i + 1]), title: posts[i + 1].data.title }
+          ? { slug: blogPath(posts[i + 1]!), title: posts[i + 1]!.data.title }
           : null,
     },
   }))
@@ -31,7 +33,11 @@ const { slug } = Astro.params
 const { html } = await renderMarkdown(post.body ?? '')
 ---
 
-<BlogLayout title={post.data.title} currentSlug={slug}>
+<BlogLayout
+  title={post.data.title}
+  currentSlug={slug}
+  description={post.data.description}
+>
   <article class="post">
     <header>
       <h1>{post.data.title}</h1>
@@ -73,10 +79,14 @@ const { html } = await renderMarkdown(post.body ?? '')
         }
       </div>
     </header>
-    <div class="content" data-pagefind-body>
+    <div class:list={['content', blog.prose]} data-pagefind-body>
       <Fragment set:html={html} />
     </div>
     <footer>
+      <div class="newsletter-cta">
+        <p class="newsletter-label">Get notified about new JBrowse releases</p>
+        <NewsletterSignup client:load />
+      </div>
       <div class="post-nav">
         <div class="post-nav-prev">
           {
@@ -152,40 +162,21 @@ const { html } = await renderMarkdown(post.body ?? '')
     font-weight: 500;
     margin: 1.5rem 0 0.5rem;
   }
-  .content :global(img) {
-    max-width: 100%;
-    height: auto;
-    border-radius: 4px;
-    margin: 1rem 0;
-    display: block;
-  }
-  .content :global(pre) {
-    background: var(--color-surface);
-    padding: 1rem;
-    border-radius: 4px;
-    overflow-x: auto;
-    font-size: 0.9rem;
-  }
-  .content :global(code) {
-    background: var(--color-surface);
-    padding: 2px 5px;
-    border-radius: 3px;
-    font-size: 0.9em;
-  }
-  .content :global(pre code) {
-    background: none;
-    padding: 0;
-  }
-  .content :global(blockquote) {
-    border-left: 4px solid var(--color-accent);
-    margin: 1rem 0;
-    padding: 0.5rem 1rem;
-    color: var(--color-text-muted);
-  }
   footer {
     margin-top: 3rem;
     padding-top: 1rem;
     border-top: 1px solid var(--color-border);
+  }
+  .newsletter-cta {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+  }
+  .newsletter-label {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    color: var(--color-text-muted);
   }
   .post-nav {
     display: flex;

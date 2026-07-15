@@ -1,41 +1,23 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
-import { configure } from 'mobx'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import {
+  grapePeachGetFile,
+  utilizeFetchMockForTest,
+} from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
-
-// Suppress mobx reaction errors during test teardown
-configure({ disableErrorBoundaries: true })
-
-const getFile = (url: string) => {
-  // Handle relative URLs from the grape_peach_synteny config
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  // If the URL doesn't start with test_data, assume it's relative to grape_peach_synteny
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/grape_peach_synteny/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
-
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-})
+utilizeFetchMockForTest(grapePeachGetFile)
 
 async function createSyntenyViewWithInit(init: {
   views: { loc?: string; assembly: string; tracks?: string[] }[]
@@ -130,6 +112,37 @@ test('LinearSyntenyView showImportForm is false when init is set', async () => {
     },
     { timeout: 30000 },
   )
+}, 40000)
+
+// Regression: a snapshot taken before views materialize must keep init, so a
+// reload/restore (e.g. autosave firing mid-load) can rebuild the view instead
+// of stranding on the import form. Once views exist, init is redundant and
+// stripped.
+test('snapshot keeps init while views empty, strips it once materialized', async () => {
+  const { view } = await createSyntenyViewWithInit({
+    views: [
+      { loc: 'Pp01:1..1000', assembly: 'peach' },
+      { loc: 'chr1:1..1000', assembly: 'grape' },
+    ],
+    tracks: [['subset']],
+  })
+
+  // mid-load: views not built yet, snapshot must still carry init
+  expect(view.views.length).toBe(0)
+  const before: { init?: unknown } = getSnapshot(view)
+  expect(before.init).toBeDefined()
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  // materialized: views present, init dropped from the snapshot
+  expect(view.views.length).toBe(2)
+  const after: { init?: unknown } = getSnapshot(view)
+  expect(after.init).toBeUndefined()
 }, 40000)
 
 test('LinearSyntenyView showImportForm is true when no init and no views', () => {

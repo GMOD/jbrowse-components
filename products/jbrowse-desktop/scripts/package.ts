@@ -48,22 +48,14 @@ function parseArgs() {
 }
 
 function printBanner(platforms: string[]) {
-  const macStatus = process.env.APPLE_ID
-    ? '✓ Enabled'
-    : '✗ Disabled (set APPLE_ID)'
-  const winStatus = process.env.WINDOWS_SIGN_CREDENTIAL_ID
-    ? '✓ Enabled'
-    : '✗ Disabled (set WINDOWS_SIGN_*)'
-
-  console.log(`
-╔══════════════════════════════════════════════════════╗
-║  JBrowse Desktop Packager v${VERSION.padEnd(27)}║
-║  Platforms: ${platforms.join(', ').padEnd(42)}║
-║                                                      ║
-║  Code Signing:                                       ║
-║    macOS: ${macStatus.padEnd(44)}║
-║    Windows: ${winStatus.padEnd(42)}║
-╚══════════════════════════════════════════════════════╝`)
+  const macSign = process.env.APPLE_ID ? 'enabled' : 'disabled (set APPLE_ID)'
+  const winSign = process.env.WINDOWS_SIGN_CREDENTIAL_ID
+    ? 'enabled'
+    : 'disabled (set WINDOWS_SIGN_*)'
+  console.log(`JBrowse Desktop Packager v${VERSION}`)
+  console.log(`Platforms: ${platforms.join(', ')}`)
+  console.log(`macOS signing: ${macSign}`)
+  console.log(`Windows signing: ${winSign}`)
 }
 
 function printResults() {

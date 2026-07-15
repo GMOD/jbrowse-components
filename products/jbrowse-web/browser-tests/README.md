@@ -34,6 +34,17 @@ node browser-tests/runner.ts
 node browser-tests/runner.ts --headed
 node browser-tests/runner.ts --headed --slow-mo=100
 node browser-tests/runner.ts --update-snapshots
+
+# Run specific suites (comma-separated or multiple flags; auto-enables remote):
+node browser-tests/runner.ts --filter=grape,hs1
+node browser-tests/runner.ts --filter=grape --filter=hs1
+
+# Filter to a specific test within suites:
+node browser-tests/runner.ts --filter=synteny --test="chr7"
+
+# Include suites that require remote data (S3/UCSC):
+node browser-tests/runner.ts --include-remote
+# (not needed when --filter is given — remote is auto-enabled)
 ```
 
 ## How It Works
@@ -60,39 +71,100 @@ against the stored snapshot.
 Use `--update-snapshots` or `-u` to update snapshots when intentional visual
 changes are made.
 
+## Reviewing Snapshots
+
+After a run, review the committed snapshots in a browser UI (mirrors the
+website's `review-screenshots-web`):
+
+```bash
+pnpm review-snapshots-web      # http://localhost:3336
+```
+
+Two views:
+
+- **Basic pass** — every snapshot one card; approve/deny whether the rendering
+  is correct. Verdicts persist to `snapshot-review.json` (gitignored, local
+  coordination only). Filter by name, review status, or kind
+  (targeted/full-page/svg).
+
+  Approvals are **sticky**: each verdict stores a hash of the image it was made
+  against, so an approved snapshot only resurfaces (as "changed since review")
+  when its pixels actually change — and re-validates automatically if an image
+  is changed and then reverted to the approved bytes. The default "Needs review"
+  filter hides approved-and-unchanged snapshots so you never re-litigate them.
+
+- **Backends** — the same snapshot rendered by `canvas2d`, `webgl`, and `webgpu`
+  side by side, with the pairwise drift % and a visual diff per pair. The
+  "Drifting" filter surfaces snapshots whose backends disagree by ≥5% (the same
+  similar/different split `compare-backends.ts` uses).
+
+`compare-backends.ts` is the headless equivalent — it prints per-pair drift and
+writes diff PNGs to `__snapshots__/backend-diffs/`:
+
+```bash
+pnpm test:browser:compare
+```
+
 ## Adding Tests
 
-Tests are defined in `runner.ts` using test suites:
+Each file in `suites/` exports a `TestSuite` (or an array of them); the runner
+auto-discovers them. Mark a suite/test `requiresRemote` (S3/UCSC data) or
+`requiresAuth` to gate it.
+
+Most tests just open a LinearGenomeView at a location with some tracks and
+snapshot the rendered canvas. Use the `lgvSnapshotTest` factory for that — one
+declaration per test:
 
 ```typescript
-const testSuites: TestSuite[] = [
-  {
-    name: 'My Test Suite',
-    tests: [
-      {
-        name: 'my test name',
-        fn: async page => {
-          await page.goto(`${baseUrl}/?config=test_data/volvox/config.json`)
-          const element = await findByTestId(page, 'my-element')
-          await element.click()
-          await findByText(page, 'Expected text')
-        },
-      },
-    ],
-  },
-]
+import { lgvSnapshotTest } from '../suiteHelpers.ts'
+
+const suite: TestSuite = {
+  name: 'My Tracks',
+  tests: [
+    lgvSnapshotTest({
+      name: 'BED track renders',
+      snapshot: 'my-bed', // -> targeted_my-bed.png + fullpage_my-bed.png
+      loc: 'ctgA:1-50000',
+      tracks: ['bed_genes'],
+      // doneTestId: 'pileup-display-done',  // for alignments/wiggle displays
+    }),
+  ],
+}
 ```
+
+For interaction or non-LGV views, write the `fn` by hand using the helpers
+below. Reserve hand-written tests for what jsdom (the jest unit suite) can't do:
+real GPU/shader output, devicePixelRatio, WebGL context loss, and the web-worker
+RPC boundary — see `suites/gpu-quirks.ts`.
 
 ## Available Helpers
 
-- `findByTestId(page, testId, timeout)` - Find element by `data-testid`
-  attribute
-- `findByText(page, text, timeout)` - Find element containing text (string or
-  RegExp)
-- `delay(ms)` - Wait for specified milliseconds
-- `waitForLoadingToComplete(page, timeout)` - Wait for loading overlays to
-  disappear
-- `capturePageSnapshot(page, name)` - Capture and compare full page screenshot
+`helpers.ts`:
+
+- `navigateWithSessionSpec(page, spec, config?)` / `navigateToApp(page, ...)` -
+  load the app at a session spec / config
+- `navigateToUrl(page, query)` - low-level goto for a raw `?<query>` string
+  (share links, custom session params); uses the backend-aware wait so it
+  doesn't stall the webgpu backend. Prefer the two above when they fit.
+- `zoomOut(page, times?)` - click the zoom-out button N times, then wait for the
+  re-fetch to settle
+- `findByTestId(page, testId, timeout)` / `findByText(page, text, timeout)`
+- `waitForDataLoaded(page)` / `waitForLoadingToComplete(page)` - wait on the
+  `loading-overlay` test-id (data fetched). For canvas _paint_, wait on the
+  per-display `*-done` test-id (`canvasDrawn`).
+- `assertCanvasHasContent(page, selector, opts?)` - fail if a canvas is blank
+- `delay(ms)`
+
+`snapshot.ts`:
+
+- `dualSnapshot(page, name, selector)` - targeted canvas + full-page snapshot.
+  The targeted capture is gated on the canvas being non-blank (`assertContent`,
+  default on) so a shader that draws nothing fails instead of silently passing.
+- `canvasSnapshot` / `pageSnapshot` - the individual halves
+
+`canvasContent.ts` / `pngDiff.ts` - blank-canvas detection and the shared
+PNG-decode + pixelmatch diff used by snapshots, cross-backend comparison, and
+the worker/main-thread consistency check.
 
 ## Auth Test Servers
 

@@ -1,16 +1,12 @@
 ---
-id: no_build_plugin
 title: Writing a no-build plugin
-toplevel: true
 description:
   Plugin without a build step, useful for jexl callbacks and simple
   modifications
 guide_category: Getting started
 ---
 
-This guide covers creating a no-build plugin for JBrowse 2.
-
-## Pre-requisites
+## Prerequisites
 
 - you can run an instance of JBrowse 2 on the web, see
   [any of our quickstart guides](/docs/quickstart_web) for details
@@ -25,7 +21,7 @@ A "regular" JBrowse plugin uses the
 
 In contrast, "no-build" plugins have no build step and can be hand edited. This
 can be useful for adding
-[extra jexl config callbacks for making extra config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
+[extra jexl config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
 
 ## Writing a "no-build" plugin
 
@@ -36,7 +32,7 @@ callbacks. Create `myplugin.js`:
 
 `myplugin.js`
 
-```typescript
+```js
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
@@ -74,12 +70,11 @@ Put `myplugin.js` alongside your config file and reference it in `config.json`:
 ### Example use case: Adding a global menu item
 
 Another example of a no-build plugin is to add menu items or minor extension
-points. Here, we're going to add a menu item using the `configure` method in the
-plugin class.
+points. This example adds a menu item via the plugin's `configure` method:
 
 `myplugin.js`
 
-```typescript
+```js
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
@@ -106,11 +101,14 @@ export default class MyPlugin {
 
 ### Importing with jbrequire
 
-Since no-build plugins have no build step, use `jbrequire` to access packages
-exported by JBrowse core. See the
-[full list](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts).
+Since no-build plugins have no build step, use `jbrequire` to access the shared
+libraries JBrowse re-exports (React, MobX, MST, MUI, and `@jbrowse/core` APIs).
+See
+[Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+for the full story on what's available and why, and the
+[canonical list](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts).
 
-```typescript
+```js
 const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 ```
 
@@ -118,7 +116,7 @@ const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 
 `esmplugin.js`
 
-```typescript
+```js
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
@@ -149,10 +147,10 @@ export default class MyPlugin {
       const content = React.createElement(
         'p',
         null,
-        'Diesh, Colin, et al. "JBrowse 2: A modular genome browser with views of synteny and structural variation." bioRxiv. 2022.',
+        'Diesh, Colin, et al. "JBrowse 2: a modular genome browser with views of synteny and structural variation." Genome Biology 24, 74 (2023).',
       )
 
-      return React.createElement('div', null, [header, content])
+      return React.createElement('div', null, header, content)
     }
 
     pluginManager.addWidgetType(() => {
@@ -223,13 +221,13 @@ includes a build step, bundler, and type checking.
 ## Note: UMD vs ESM module syntax
 
 This guide uses ESM modules (exporting a plain class), which all modern browsers
-support. For legacy browser compatibility you can also use UMD modules — see
+support. For legacy browser compatibility you can also use UMD modules. See
 [this example](https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127),
 which defines a specific global variable rather than exporting a class.
 
 ## Note: Plugins in embedded React components
 
-This no-build guide targets jbrowse-web, which loads plugins via `plugins.json`.
+This no-build guide targets jbrowse-web, which loads plugins via `config.json`.
 If you are using an embedded component (`@jbrowse/react-app2` or
 `@jbrowse/react-linear-genome-view2`) the approach is different: define your
 plugin as a class and pass it in the `plugins` array to `createViewState`:
@@ -249,5 +247,20 @@ const state = createViewState({ config, plugins: [MyPlugin] })
 ```
 
 See the
-[Using Plugins](https://jbrowse.org/storybook/app/main/?path=/docs/using-plugins--docs)
-story in the `@jbrowse/react-app2` storybook for a live example.
+[With external plugin](https://jbrowse.org/storybook/app/with-external-plugin/)
+example in the `@jbrowse/react-app2` examples site for a live example.
+
+## See also
+
+- [Writing a plugin](/docs/developer_guides/simple_plugin) - the build-step
+  alternative, needed for JSX, TypeScript, or bundled dependencies
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - the full
+  list of element types a no-build plugin can also register
+- [Top-level menu items](/docs/developer_guides/menus) - a fuller worked example
+  of the menu registration used above
+- [Custom widgets](/docs/developer_guides/creating_widget) - the `WidgetType`
+  API used in the citation-widget example
+- [Dependencies and re-exports](/docs/developer_guides/imports_and_reexports) -
+  what `jbrequire` can and can't load in a no-build plugin
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) -
+  a common motivation for writing a no-build plugin's jexl callback

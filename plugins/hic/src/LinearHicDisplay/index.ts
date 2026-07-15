@@ -9,7 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function LinearHicDisplayF(pluginManager: PluginManager) {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaFactory(pluginManager)
+    const configSchema = configSchemaFactory()
     return new DisplayType({
       name: 'LinearHicDisplay',
       displayName: 'Hi-C contact matrix display',

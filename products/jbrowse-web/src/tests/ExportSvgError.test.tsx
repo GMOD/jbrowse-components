@@ -8,9 +8,7 @@ import {
   mockConsole,
   setup,
 } from './util.tsx'
-
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
+import './svgExportMocks.ts'
 
 // @ts-expect-error
 global.indexedDB = {}

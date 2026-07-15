@@ -14,7 +14,7 @@ export function normalizeRegion(region: Region): Region {
  */
 export function expandRegion(region: Region, bpExpansion: number): Region {
   return {
-    ...(region as Omit<typeof region, symbol>),
+    ...region,
     start: Math.floor(Math.max(region.start - bpExpansion, 0)),
     end: Math.ceil(region.end + bpExpansion),
   }

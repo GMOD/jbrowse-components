@@ -1,0 +1,41 @@
+{
+  "assemblies": [
+    {
+      "name": "peach",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "peach-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": { "localPath": "peach.chrom.sizes" }
+        }
+      }
+    },
+    {
+      "name": "grape",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "grape-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": { "localPath": "grape.chrom.sizes" }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "peach_grape_minimap2",
+      "name": "peach vs grape (minimap2)",
+      "assemblyNames": ["peach", "grape"],
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz"
+        },
+        "assemblyNames": ["peach", "grape"]
+      }
+    }
+  ]
+}

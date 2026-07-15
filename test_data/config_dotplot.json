@@ -86,7 +86,6 @@
         "assemblyNames": ["grape", "peach"]
       }
     },
-
     {
       "trackId": "grape_peach_nucmer",
       "type": "SyntenyTrack",
@@ -101,7 +100,6 @@
         "assemblyNames": ["peach", "grape"]
       }
     },
-
     {
       "trackId": "grape_peach_paf",
       "type": "SyntenyTrack",
@@ -148,7 +146,6 @@
         "assemblyNames": ["peach", "grape"]
       }
     },
-
     {
       "type": "FeatureTrack",
       "trackId": "grape_genes",
@@ -216,5 +213,8 @@
         "displayName": "Grape vs Peach dotplot"
       }
     ]
+  },
+  "configuration": {
+    "disableAnalytics": true
   }
 }

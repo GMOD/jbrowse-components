@@ -2,12 +2,12 @@ import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import { autorun } from 'mobx'
+import { reaction } from 'mobx'
 
 import ImportWizard from './ImportWizard.ts'
 import Spreadsheet from './SpreadsheetModel.tsx'
 
-import type { SpreadsheetModel } from './SpreadsheetModel.tsx'
+import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export interface SpreadsheetViewInit {
@@ -22,8 +22,22 @@ const defaultHeight = 440
 /**
  * #stateModel SpreadsheetView
  * #category view
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. The `init` shorthand loads a
+ * tabular file (VCF/BED/CSV/etc) straight into the grid, skipping the import
+ * form; `assembly` is used to resolve genomic coordinates in the rows:
+ * ```js
+ * {
+ *   type: 'SpreadsheetView',
+ *   init: {
+ *     assembly: 'hg38',
+ *     uri: 'https://example.com/variants.vcf.gz',
+ *     fileType: 'VCF',
+ *   },
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function stateModelFactory() {
   const ImportWizardModel = ImportWizard()
@@ -39,19 +53,19 @@ export default function stateModelFactory() {
           /**
            * #property
            */
-          offsetPx: 0,
+          offsetPx: types.stripDefault(types.number, 0),
           /**
            * #property
            */
-          height: types.optional(types.number, defaultHeight),
+          height: types.stripDefault(types.number, defaultHeight),
           /**
            * #property
            */
-          hideVerticalResizeHandle: false,
+          hideVerticalResizeHandle: types.stripDefault(types.boolean, false),
           /**
            * #property
            */
-          hideFilterControls: false,
+          hideFilterControls: types.stripDefault(types.boolean, false),
 
           /**
            * #property
@@ -106,24 +120,44 @@ export default function stateModelFactory() {
            */
           resizeHeight(distance: number) {
             const oldHeight = self.height
-            const newHeight = this.setHeight(self.height + distance)
-            return newHeight - oldHeight
+            self.height = Math.max(self.height + distance, minHeight)
+            return self.height - oldHeight
           },
           /**
            * #action
            */
           resizeWidth(distance: number) {
             const oldWidth = self.width
-            const newWidth = this.setWidth(self.width + distance)
-            return newWidth - oldWidth
+            self.width = self.width + distance
+            return self.width - oldWidth
           },
 
           /**
            * #action
-           * load a new spreadsheet and set our mode to display it
+           * load a new spreadsheet and set our mode to display it. When the
+           * incoming data has the same columns as what's shown (i.e. a
+           * session-cached URI being re-fetched on reload), carry over the
+           * user's column-visibility and SV-type filter — a fresh parse only
+           * supplies columns/rowSet, so a plain replace would reset them. The
+           * column match keeps this from leaking view state across different
+           * files.
            */
-          displaySpreadsheet(spreadsheet?: SpreadsheetModel) {
-            self.spreadsheet = cast(spreadsheet)
+          displaySpreadsheet(spreadsheet?: SpreadsheetSnapshot) {
+            const prev = self.spreadsheet
+            const sameColumns =
+              !!prev &&
+              !!spreadsheet &&
+              JSON.stringify(prev.columns) ===
+                JSON.stringify(spreadsheet.columns)
+            self.spreadsheet = cast(
+              sameColumns
+                ? {
+                    ...spreadsheet,
+                    visibleColumns: prev.visibleColumns,
+                    svTypeFilter: prev.svTypeFilter,
+                  }
+                : spreadsheet,
+            )
           },
 
           /**
@@ -134,35 +168,87 @@ export default function stateModelFactory() {
           },
         }))
         .actions(self => ({
+          /**
+           * #action
+           * the single load funnel: fetch+parse via the import wizard, then
+           * display the result. Every entry point (declarative init, cached
+           * reload, the import form's Open button) routes through here so the
+           * view stays the sole owner of displaySpreadsheet
+           */
+          async loadSpreadsheet(assemblyName: string) {
+            const session = getSession(self)
+            try {
+              const data = await self.importWizard.import(assemblyName)
+              if (data) {
+                self.displaySpreadsheet(data)
+              }
+            } catch (e) {
+              console.error(e)
+              session.notifyError(`${e}`, e)
+            }
+          },
+        }))
+        .actions(self => ({
+          /**
+           * #action
+           * apply a declarative init (from addView / sv-inspector): point the
+           * import wizard at the file and load it
+           */
+          async applyInit(init: SpreadsheetViewInit) {
+            self.importWizard.setSelectedAssemblyName(init.assembly)
+            const fileLocation = {
+              uri: init.uri,
+              locationType: 'UriLocation' as const,
+            }
+            self.importWizard.setFileSource(fileLocation)
+            // persist the location synchronously (fileSource is volatile) so a
+            // snapshot taken before the async load finishes can still reload the
+            // file instead of dropping to the import form. init is cleared
+            // synchronously by the reaction, so the cache is the only
+            // reconstruction source.
+            self.importWizard.setCachedFileHandle(fileLocation)
+            if (init.fileType) {
+              self.importWizard.setFileType(init.fileType)
+            }
+            await self.loadSpreadsheet(init.assembly)
+          },
+        }))
+        .actions(self => ({
           afterAttach() {
+            const hadInit = !!self.init
             addDisposer(
               self,
-              autorun(
-                async function spreadsheetViewInitAutorun() {
-                  const { init, width } = self
-                  if (width && init) {
-                    const session = getSession(self)
-                    try {
-                      self.importWizard.setSelectedAssemblyName(init.assembly)
-                      self.importWizard.setFileSource({
-                        uri: init.uri,
-                        locationType: 'UriLocation',
-                      })
-                      if (init.fileType) {
-                        self.importWizard.setFileType(init.fileType)
-                      }
-                      await self.importWizard.import(init.assembly)
-                    } catch (e) {
-                      console.error(e)
-                      session.notifyError(`${e}`, e)
-                    } finally {
-                      self.setInit(undefined)
-                    }
+              // Trigger on `init` ONLY. A reaction tracks just its data fn, so
+              // the async apply can read width/etc without making them
+              // dependencies — width churn (sv-inspector resizes, dockview /
+              // StrictMode settling) can no longer retrigger the load. `init`
+              // is cleared synchronously up front so the same request can't be
+              // applied twice; a later setInit supersedes. Re-entrancy is
+              // excluded by the dependency graph rather than a guard flag.
+              reaction(
+                () => self.init,
+                init => {
+                  if (init) {
+                    self.setInit(undefined)
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    self.applyInit(init)
                   }
                 },
-                { name: 'SpreadsheetViewInit' },
+                { fireImmediately: true, name: 'SpreadsheetViewInit' },
               ),
             )
+            // reload a session-cached URI (init and a cached file are mutually
+            // exclusive — fresh addView vs reloaded session — but guard anyway)
+            const { importWizard } = self
+            if (
+              !hadInit &&
+              importWizard.cachedFileLocation &&
+              importWizard.selectedAssemblyName
+            ) {
+              importWizard.setFileSource(importWizard.cachedFileLocation)
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
+              self.loadSpreadsheet(importWizard.selectedAssemblyName)
+            }
           },
         }))
         .views(self => ({
@@ -183,21 +269,14 @@ export default function stateModelFactory() {
         })),
     )
     .postProcessSnapshot(snap => {
-      // xref for Omit https://github.com/mobxjs/mobx-state-tree/issues/1524
-      const { init, importWizard, spreadsheet, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+      const { init, importWizard, spreadsheet, ...rest } = snap
       if (!spreadsheet) {
         return { ...rest, importWizard }
       }
-      const { rowSet, ...spreadsheetRest } = spreadsheet as Omit<
-        typeof spreadsheet,
-        symbol
-      >
+      const { rowSet, ...spreadsheetRest } = spreadsheet
       // omit rows when a URI is cached (re-fetched on load) or too large for localStorage
       const omitRows =
-        importWizard.cachedFileLocation ??
+        !!importWizard.cachedFileLocation ||
         (rowSet !== undefined && JSON.stringify(rowSet).length > 1_000_000)
       return {
         ...rest,

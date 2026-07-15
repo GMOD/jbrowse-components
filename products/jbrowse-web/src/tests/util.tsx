@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
@@ -18,8 +18,10 @@ import JBrowse from './TestingJBrowse.tsx'
 import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
 
+import type { WebSessionModel } from '../sessionModel/index.ts'
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { RenderResult } from '@testing-library/react'
 
 type LGV = LinearGenomeViewModel
 
@@ -49,6 +51,10 @@ export function getPluginManager(
     { pluginManager },
   )
 
+  // web defaults to WebWorkerRpcDriver, but web workers don't run under jest
+  // (makeWorkerInstance is mocked to a no-op), so force the main-thread driver
+  rootModel.rpcManager.defaultDriverName = 'MainThreadRpcDriver'
+
   rootModel.setDefaultSession()
   pluginManager.setRootModel(rootModel)
   pluginManager.configure()
@@ -59,12 +65,25 @@ export function setup() {
   expect.extend({ toMatchImageSnapshot })
 }
 
-export function canvasToBuffer(canvas: HTMLCanvasElement) {
-  // eslint-disable-next-line no-restricted-globals
-  return Buffer.from(
-    canvas.toDataURL().replace(/^data:image\/\w+;base64,/, ''),
-    'base64',
-  )
+function canvasToBuffer(canvas: HTMLCanvasElement) {
+  const { width, height } = canvas
+  const src = canvas.getContext('2d')!.getImageData(0, 0, width, height)
+  const flat = createCanvas(width, height)
+  const flatCtx = flat.getContext('2d')
+  flatCtx.fillStyle = '#ffffff'
+  flatCtx.fillRect(0, 0, width, height)
+  const dst = flatCtx.getImageData(0, 0, width, height)
+  const s = src.data
+  const d = dst.data
+  for (let i = 0; i < s.length; i += 4) {
+    const a = s[i + 3]! / 255
+    d[i] = Math.round(s[i]! * a + 255 * (1 - a))
+    d[i + 1] = Math.round(s[i + 1]! * a + 255 * (1 - a))
+    d[i + 2] = Math.round(s[i + 2]! * a + 255 * (1 - a))
+    d[i + 3] = 255
+  }
+  flatCtx.putImageData(dst, 0, 0)
+  return flat.toBuffer()
 }
 
 export function expectCanvasMatch(
@@ -77,16 +96,28 @@ export function expectCanvasMatch(
   })
 }
 
-export const hts = (str: string) => `htsTrackEntry-Tracks,${str}`
-// Convert old block key format {asm}ref:start..end-idx → asm:ref:start0:end:idx
-const convertBlockKey = (str: string) =>
-  str.replace(
-    /\{(\w+)\}(\w+):(\d+)\.\.(\d+)-(\d+)/,
-    (_, asm, ref, s, e, i) => `${asm}:${ref}:${Number(s) - 1}:${e}:${i}`,
-  )
-export const pc = (str: string) =>
-  `prerendered_canvas_${convertBlockKey(str)}_done`
-export const pv = (str: string) => pc(`{volvox}ctgA:${str}`)
+export const hts = (str: string) => `htsTrackLabel-Tracks,${str}`
+
+export function findCanvasIn(container: HTMLElement) {
+  const canvas = container.querySelector('canvas')
+  if (!canvas) {
+    throw new Error('No canvas found in container')
+  }
+  return canvas
+}
+
+/** Wait for a display to finish rendering and return its canvas element. */
+export async function waitForRenderedCanvas(
+  findAllByTestId: (
+    matcher: RegExp,
+    options?: object,
+    waitOptions?: object,
+  ) => Promise<HTMLElement[]>,
+  timeout = 20000,
+) {
+  const displays = await findAllByTestId(/^display-.*-done$/, {}, { timeout })
+  return findCanvasIn(displays[0]!)
+}
 
 export async function createView(args?: any, adminMode?: boolean) {
   const ret = createViewNoWait(args, adminMode)
@@ -116,6 +147,21 @@ export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   return { view, rootModel, session, ...rest }
 }
 
+/**
+ * Build an unrendered root model with its web session + first LGV, for pure
+ * model-logic tests that don't need a React render. Typed via the real
+ * WebSessionModel/LGV so callers don't hand-roll ad-hoc cast interfaces.
+ */
+export function getTestSession(
+  args?: Record<string, unknown>,
+  adminMode?: boolean,
+) {
+  const { rootModel } = getPluginManager(args, adminMode)
+  const session = rootModel.session! as WebSessionModel
+  const view = session.views[0] as LGV
+  return { rootModel, session, view }
+}
+
 export function doBeforeEach(
   cb = (str: string) =>
     require.resolve(
@@ -125,14 +171,12 @@ export function doBeforeEach(
   clearCache()
   clearAdapterCache()
 
-  // @ts-expect-error
-  fetch.resetMocks()
-  // @ts-expect-error
-  fetch.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
+  fetchMock.resetMocks()
+  fetchMock.mockResponse(generateReadBuffer(url => new LocalFile(cb(url))))
 }
 interface Results2 extends Results {
   autocomplete: HTMLElement
-  input: HTMLElement
+  input: HTMLInputElement
   getInputValue: () => string
 }
 export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
@@ -140,7 +184,6 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
   const { view, findByTestId, getByPlaceholderText, findByPlaceholderText } =
     args
 
-  // clear view takes us to the import form
   view.clearView()
 
   const autocomplete = await findByTestId(
@@ -154,8 +197,6 @@ export async function doSetupForImportForm(val?: unknown): Promise<Results2> {
     { timeout: 10000 },
   )) as HTMLInputElement
 
-  // this will be the input that is obtained after opening the LGV from the
-  // import form
   const getInputValue = () =>
     (getByPlaceholderText('Search for location') as HTMLInputElement).value
 
@@ -186,11 +227,28 @@ export function mockFile404(
   str: string,
   readBuffer: (request: Request) => Promise<Response>,
 ) {
-  // @ts-expect-error
-  fetch.mockResponse(async request => {
+  fetchMock.mockResponse(async request => {
     const matches = request.url.includes(str)
     return matches ? { status: 404 } : readBuffer(request)
   })
+}
+
+// SVG ids must be unique within a document — a duplicate id makes
+// <clipPath>/<use> references resolve to the first match only, silently
+// breaking clipping for every later element sharing that id.
+function assertNoDuplicateSvgIds(svg: string) {
+  const ids = [...svg.matchAll(/\bid="([^"]+)"/g)]
+    .map(m => m[1])
+    .filter((id): id is string => id !== undefined)
+  const seen = new Set<string>()
+  const duplicates = new Set<string>()
+  for (const id of ids) {
+    if (seen.has(id)) {
+      duplicates.add(id)
+    }
+    seen.add(id)
+  }
+  expect([...duplicates]).toEqual([])
 }
 
 export async function exportAndVerifySvg({
@@ -199,22 +257,24 @@ export async function exportAndVerifySvg({
   filename,
   delay,
   findAllByText,
-}: {
-  findByTestId: any
-  findByText: any
+  beforeSubmit,
+}: Pick<RenderResult, 'findByTestId' | 'findByText'> & {
   filename: string
   delay?: { timeout: number }
-  findAllByText?: any
+  findAllByText?: RenderResult['findAllByText']
+  beforeSubmit?: () => Promise<void>
 }) {
-  const actualDelay = delay || { timeout: 40000 }
+  const actualDelay = delay ?? { timeout: 40000 }
   const opts = [{}, actualDelay]
   fireEvent.click(await findByTestId('view_menu_icon', ...opts))
 
   if (findAllByText) {
-    fireEvent.click((await findAllByText('Export SVG'))[0])
+    fireEvent.click((await findAllByText('Export SVG'))[0]!)
   } else {
     fireEvent.click(await findByText('Export SVG', ...opts))
   }
+
+  await beforeSubmit?.()
 
   fireEvent.click(await findByText('Submit', ...opts))
 
@@ -223,41 +283,48 @@ export async function exportAndVerifySvg({
   }, actualDelay)
 
   // @ts-expect-error
+
   const svg = saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
+  assertNoDuplicateSvgIds(svg)
   expect(svg).toMatchSnapshot()
   return svg
 }
 
+const volvoxReadBuffer = generateReadBuffer(
+  url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+)
+
 export async function testFileReload(config: {
   failingFile: string
-  readBuffer: any
+  readBuffer?: (request: Request) => Promise<Response>
   trackId: string
   viewLocation: [number, number]
   expectedCanvas: string | RegExp
   timeout?: number
 }) {
-  const delay = { timeout: config.timeout || 30000 }
+  const readBuffer = config.readBuffer ?? volvoxReadBuffer
+  const delay = { timeout: config.timeout ?? 30000 }
   const opts = [{}, delay]
 
   await mockConsole(async () => {
-    mockFile404(config.failingFile, config.readBuffer)
+    mockFile404(config.failingFile, readBuffer)
     const { view, findByTestId, findAllByTestId, findAllByText } =
       await createView()
     view.setNewView(config.viewLocation[0], config.viewLocation[1])
     fireEvent.click(await findByTestId(hts(config.trackId), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
 
-    // @ts-expect-error
-    fetch.mockResponse(config.readBuffer)
+    fetchMock.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 
-    const canvas =
+    const displayEl =
       typeof config.expectedCanvas === 'string'
         ? await findByTestId(config.expectedCanvas, ...opts)
         : (await findAllByTestId(config.expectedCanvas, ...opts))[0]!
+    const canvas = displayEl.querySelector('canvas') ?? displayEl
     expectCanvasMatch(canvas)
   })
 }
@@ -273,7 +340,7 @@ export async function openSpreadsheetView({
   fileUrl: string
   timeout?: number
 }) {
-  const delay = { timeout: timeout || 50000 }
+  const delay = { timeout: timeout ?? 50000 }
   const opts = [{}, delay]
   const { session } = await createView()
 
@@ -302,7 +369,7 @@ export async function openViewWithFileInput({
   fileUrl: string
   timeout?: number
 }) {
-  const delay = { timeout: timeout || 40000 }
+  const delay = { timeout: timeout ?? 40000 }
   const result = await createView()
   const { findByTestId, getByTestId, findByText } = result
 

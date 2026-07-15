@@ -1,4 +1,4 @@
-import { assembleLocString, parseLocString } from '@jbrowse/core/util'
+import { assembleLocString } from '@jbrowse/core/util'
 import { onPatch } from '@jbrowse/mobx-state-tree'
 
 import createModel from './createModel/index.ts'
@@ -8,7 +8,9 @@ import type {
   createSessionModel,
 } from './createModel/index.ts'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
+import type { ParsedLocString } from '@jbrowse/core/util'
 import type { IJsonPatch, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
 
 type SessionSnapshot = SnapshotIn<ReturnType<typeof createSessionModel>>
 type ConfigSnapshot = SnapshotIn<ReturnType<typeof createConfigModel>>
@@ -17,27 +19,27 @@ type Tracks = ConfigSnapshot['tracks']
 type InternetAccounts = ConfigSnapshot['internetAccounts']
 type AggregateTextSearchAdapters = ConfigSnapshot['aggregateTextSearchAdapters']
 
-interface Location {
-  refName: string
-  start?: number
-  end?: number
-  assemblyName?: string
-}
-
-interface ViewStateOptions {
+// engine-construction inputs shared by the imperative createViewState and the
+// declarative <LinearGenomeView> component
+export interface CreateViewStateBaseOptions {
   assembly: Assembly
   tracks: Tracks
   internetAccounts?: InternetAccounts
   aggregateTextSearchAdapters?: AggregateTextSearchAdapters
   configuration?: Record<string, unknown>
   plugins?: PluginConstructor[]
-  location?: string | Location
-  highlight?: string[]
-  defaultSession?: SessionSnapshot
   disableAddTracks?: boolean
   onChange?: (patch: IJsonPatch, reversePatch: IJsonPatch) => void
   makeWorkerInstance?: () => Worker
   drawerViewHeight?: string
+}
+
+// the imperative API adds three ways to express initial state; the managed
+// <LinearGenomeView> component expresses the same through a single `init` blob
+export interface ViewStateOptions extends CreateViewStateBaseOptions {
+  location?: string | ParsedLocString
+  highlight?: (string | HighlightType)[]
+  defaultSession?: SessionSnapshot
 }
 
 export default function createViewState(opts: ViewStateOptions) {
@@ -69,7 +71,7 @@ export default function createViewState(opts: ViewStateOptions) {
       disableAddTracks,
       drawerViewHeight,
       session: defaultSession ?? {
-        name: 'this session',
+        name: `New session ${new Date().toLocaleString()}`,
         view: {
           id: 'linearGenomeView',
           type: 'LinearGenomeView',
@@ -78,53 +80,25 @@ export default function createViewState(opts: ViewStateOptions) {
     },
     { pluginManager },
   )
-  for (const account of stateTree.config.internetAccounts) {
-    const internetAccountType = pluginManager.getInternetAccountType(
-      account.type,
-    )
-    if (!internetAccountType) {
-      throw new Error(`unknown internet account type ${account.type}`)
-    }
-    stateTree.addInternetAccount({
-      type: account.type,
-      configuration: account,
-    })
-  }
   pluginManager.setRootModel(stateTree)
   pluginManager.configure()
-  if (location) {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
-      const { session } = stateTree
-      const { isValidRefName } = session.assemblyManager
-
-      try {
-        await session.view.navToLocString(
-          typeof location === 'string' ? location : assembleLocString(location),
-          assembly.name,
-        )
-        if (highlight) {
-          for (const h of highlight) {
-            if (h) {
-              const p = parseLocString(h, refName =>
-                isValidRefName(refName, assembly.name),
-              )
-              const { start, end } = p
-              if (start !== undefined && end !== undefined) {
-                session.view.addToHighlights({
-                  ...p,
-                  start,
-                  end,
-                  assemblyName: assembly.name,
-                })
-              }
-            }
-          }
-        }
-      } catch (e) {
-        session.notifyError(`${e}`, e)
-      }
-    })()
+  if (location || highlight) {
+    // route through the declarative `init` field so the navigation + highlight
+    // flow goes through the same path as URL/session-spec launches, instead of
+    // reimplementing navToLocString/addToHighlights here. init also drives the
+    // loading-state machine, so the view shows a spinner (not the import form)
+    // while the assembly loads. a highlight-only call (no location) still routes
+    // here; the init autorun skips auto-navigation when a defaultSession already
+    // has displayed regions, so highlights apply without clobbering navigation
+    stateTree.session.view.setInit({
+      assembly: assembly.name,
+      loc: location
+        ? typeof location === 'string'
+          ? location
+          : assembleLocString(location)
+        : undefined,
+      highlight,
+    })
   }
   if (onChange) {
     onPatch(stateTree, onChange)

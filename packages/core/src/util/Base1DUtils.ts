@@ -1,3 +1,5 @@
+import type { ContentBlock } from './blockTypes.ts'
+
 export interface BpOffset {
   refName?: string
   index: number
@@ -16,79 +18,41 @@ interface RegionSnap {
 
 interface MoveSnap {
   displayedRegions: { start: number; end: number }[]
-  bpPerPx: number
   width: number
-  minimumBlockWidth: number
-  interRegionPaddingWidth: number
 }
 
-interface ViewLayout {
+// Plain-object form of a Base1DView — what `bpToPx`/`pxToBp` need to do their
+// work. Use this when you want a stateless projection of displayed regions to
+// pixels without instantiating an MST model (e.g. the LGV "overview" header).
+export interface ViewLayout {
   displayedRegions: RegionSnap[]
   bpPerPx: number
   offsetPx: number
   width: number
   minimumBlockWidth: number
-  interRegionPaddingWidth: number
 }
 
-// total bp from the start of displayedRegions through regionIndex + regionOffset,
-// counting inter-region padding as bp
+// total bp from the start of displayedRegions through regionIndex + regionOffset
 function cumulativeBp(
-  self: MoveSnap,
+  displayedRegions: { start: number; end: number }[],
   regionIndex: number,
   regionOffset: number,
-  bpPerPx: number,
 ) {
-  const { displayedRegions, minimumBlockWidth, interRegionPaddingWidth } = self
-  const paddingBp = interRegionPaddingWidth * bpPerPx
   let bpSoFar = regionOffset
   for (let i = 0; i < regionIndex; i++) {
     const r = displayedRegions[i]!
-    const len = r.end - r.start
-    bpSoFar += len
-    if (len / bpPerPx >= minimumBlockWidth && i < displayedRegions.length - 1) {
-      bpSoFar += paddingBp
-    }
+    bpSoFar += r.end - r.start
   }
   return bpSoFar
 }
 
-function lengthBetween(
-  displayedRegions: { start: number; end: number }[],
-  start: BpOffset,
-  end: BpOffset,
-) {
-  if (start.index === end.index) {
-    return end.offset - start.offset
-  } else {
-    const s = displayedRegions[start.index]!
-    let bpSoFar = s.end - s.start - start.offset
-    for (let i = start.index + 1; i < end.index; i++) {
-      const r = displayedRegions[i]!
-      bpSoFar += r.end - r.start
-    }
-    bpSoFar += end.offset
-    return bpSoFar
-  }
-}
-
 function computeTargetBpPerPx(self: MoveSnap, start: BpOffset, end: BpOffset) {
-  const {
-    width,
-    interRegionPaddingWidth,
-    displayedRegions,
-    bpPerPx,
-    minimumBlockWidth,
-  } = self
-  const len = lengthBetween(displayedRegions, start, end)
-  let numBlocksWideEnough = 0
-  for (let i = start.index; i < end.index; i++) {
-    const r = displayedRegions[i]!
-    if ((r.end - r.start) / bpPerPx >= minimumBlockWidth) {
-      numBlocksWideEnough++
-    }
-  }
-  return len / (width - interRegionPaddingWidth * numBlocksWideEnough)
+  const { displayedRegions, width } = self
+  return (
+    (cumulativeBp(displayedRegions, end.index, end.offset) -
+      cumulativeBp(displayedRegions, start.index, start.offset)) /
+    width
+  )
 }
 
 function computeScrollPos(
@@ -98,7 +62,7 @@ function computeScrollPos(
   extraBp: number,
 ) {
   return Math.round(
-    (cumulativeBp(self, start.index, start.offset, bpPerPx) - extraBp) /
+    (cumulativeBp(self.displayedRegions, start.index, start.offset) - extraBp) /
       bpPerPx,
   )
 }
@@ -111,16 +75,15 @@ export function moveTo(
   start?: BpOffset,
   end?: BpOffset,
 ) {
-  if (!start || !end) {
-    return
+  if (start && end) {
+    const targetBpPerPx = computeTargetBpPerPx(self, start, end)
+    const newBpPerPx = self.zoomTo(targetBpPerPx)
+    const extraBp =
+      targetBpPerPx < newBpPerPx
+        ? ((newBpPerPx - targetBpPerPx) * self.width) / 2
+        : 0
+    self.scrollTo(computeScrollPos(self, start, newBpPerPx, extraBp))
   }
-  const targetBpPerPx = computeTargetBpPerPx(self, start, end)
-  const newBpPerPx = self.zoomTo(targetBpPerPx)
-  const extraBp =
-    targetBpPerPx < newBpPerPx
-      ? ((newBpPerPx - targetBpPerPx) * self.width) / 2
-      : 0
-  self.scrollTo(computeScrollPos(self, start, newBpPerPx, extraBp))
 }
 
 /**
@@ -137,90 +100,74 @@ export function computeMoveToLayout(
   return { bpPerPx, offsetPx: computeScrollPos(self, start, bpPerPx, 0) }
 }
 
-// 1-based display coord: floor(within-region bp) + 1. Use for showing a
-// genomic position to a user, not for arithmetic — round-tripping through
-// bpToPx loses up to 1 bp because bpToPx accepts 0-based BED-style coords.
-// For arithmetic, use pxToBp's `offset` field with offsetBpToPx instead.
-function regionCoord(r: RegionSnap, bp: number) {
-  return Math.floor(r.reversed ? r.end - bp : r.start + bp) + 1
+// 0-based interbase base under the cursor: floor(within-region bp). This is the
+// BED-style coordinate that bpToPx consumes, so it round-trips cleanly. Use it
+// for arithmetic (feature start/end, codon math); use `coord` only for display.
+function regionBase0(r: RegionSnap, bp: number) {
+  return Math.floor(r.reversed ? r.end - bp : r.start + bp)
 }
 
-// `coord` is 1-based for display; `offset` is the raw 0-based float bp within
-// the region — pair with offsetBpToPx for round-trip arithmetic.
-// manual return type since getSnapshot hard to infer here
-export function pxToBp(
-  self: ViewLayout,
-  px: number,
-): {
+// 1-based display coord: regionBase0 + 1. Use for showing a genomic position to
+// a user, not for arithmetic — round-tripping through bpToPx loses up to 1 bp
+// because bpToPx accepts 0-based BED-style coords. For arithmetic use `coord0`
+// (0-based) or pair `offset` with offsetBpToPx.
+function regionCoord(r: RegionSnap, bp: number) {
+  return regionBase0(r, bp) + 1
+}
+
+// `coord` is 1-based for display; `coord0` is the 0-based (BED/interbase) base
+// under the cursor — the value bpToPx consumes, so it round-trips. `offset` is
+// the raw 0-based float bp within the region — pair with offsetBpToPx.
+export interface PxToBpResult extends RegionSnap {
   coord: number
+  coord0: number
   index: number
-  refName: string
   oob: boolean
-  assemblyName: string
   offset: number
-  start: number
-  end: number
-  reversed?: boolean
-} {
-  const {
-    bpPerPx,
-    offsetPx,
-    displayedRegions,
-    interRegionPaddingWidth,
-    minimumBlockWidth,
-  } = self
+}
+
+function pxToBpResult(
+  r: RegionSnap,
+  offset: number,
+  index: number,
+  oob: boolean,
+): PxToBpResult {
+  return {
+    ...r,
+    oob,
+    offset,
+    index,
+    coord: regionCoord(r, offset),
+    coord0: regionBase0(r, offset),
+  }
+}
+
+export function pxToBp(self: ViewLayout, px: number): PxToBpResult {
+  const { bpPerPx, offsetPx, displayedRegions } = self
+  const first = displayedRegions[0]
+  if (!first) {
+    throw new Error('pxToBp called with empty displayedRegions')
+  }
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
-    const r = displayedRegions[0]!
-    return { ...r, oob: true, coord: regionCoord(r, bp), offset: bp, index: 0 }
+    return pxToBpResult(first, bp, 0, true)
   }
 
-  const paddingBp = interRegionPaddingWidth * bpPerPx
   let bpSoFar = 0
 
-  for (let i = 0, l = displayedRegions.length; i < l; i++) {
+  for (let i = 0; i < displayedRegions.length; i++) {
     const r = displayedRegions[i]!
     const len = r.end - r.start
     const offset = bp - bpSoFar
     if (offset >= 0 && offset < len) {
-      return {
-        ...r,
-        oob: false,
-        offset,
-        coord: regionCoord(r, offset),
-        index: i,
-      }
+      return pxToBpResult(r, offset, i, false)
     }
-    if (len / bpPerPx >= minimumBlockWidth && i < l - 1) {
-      const paddingStart = bpSoFar + len
-      if (bp >= paddingStart && bp < paddingStart + paddingBp) {
-        const nextR = displayedRegions[i + 1]!
-        return {
-          ...nextR,
-          oob: false,
-          offset: 0,
-          coord: regionCoord(nextR, 0),
-          index: i + 1,
-        }
-      }
-      bpSoFar += len + paddingBp
-    } else {
-      bpSoFar += len
-    }
+    bpSoFar += len
   }
 
-  const r = displayedRegions.at(-1)
-  if (!r) {
-    throw new Error('pxToBp called with empty displayedRegions')
-  }
-  const offset = bp - bpSoFar + r.end - r.start
-  return {
-    ...r,
-    oob: true,
-    offset,
-    coord: regionCoord(r, offset),
-    index: displayedRegions.length - 1,
-  }
+  const last = displayedRegions.at(-1)!
+  const offset = bp - bpSoFar + last.end - last.start
+  return pxToBpResult(last, offset, displayedRegions.length - 1, true)
 }
 
 // Precise within-region float-bp-offset → track-px (unrounded). Use when the
@@ -234,7 +181,8 @@ export function offsetBpToPx(
   regionOffsetBp: number,
 ): number {
   return (
-    cumulativeBp(self, regionIndex, regionOffsetBp, self.bpPerPx) / self.bpPerPx
+    cumulativeBp(self.displayedRegions, regionIndex, regionOffsetBp) /
+    self.bpPerPx
   )
 }
 
@@ -253,8 +201,9 @@ export function bpToPx({
   self: ViewLayout
 }) {
   const { bpPerPx, displayedRegions } = self
+  let bpSoFar = 0
 
-  for (let i = 0, l = displayedRegions.length; i < l; i++) {
+  for (let i = 0; i < displayedRegions.length; i++) {
     const r = displayedRegions[i]!
     if (
       refName === r.refName &&
@@ -265,11 +214,89 @@ export function bpToPx({
       const regionOffset = r.reversed ? r.end - coord : coord - r.start
       return {
         index: i,
-        offsetPx: Math.round(
-          cumulativeBp(self, i, regionOffset, bpPerPx) / bpPerPx,
-        ),
+        offsetPx: Math.round((bpSoFar + regionOffset) / bpPerPx),
       }
     }
+    bpSoFar += r.end - r.start
   }
   return undefined
+}
+
+// Convenience wrapper around bpToPx that matches the shape used by
+// Base1DView's .bpToPx() view method — returns just the offsetPx.
+export function layoutBpToPx(
+  layout: ViewLayout,
+  args: { refName: string; coord: number; displayedRegionIndex?: number },
+) {
+  return bpToPx({ ...args, self: layout })?.offsetPx
+}
+
+// Map a region's start/end onto `layout` and return the pixel position+width to
+// render a highlight band. `minWidth` floors the band so it stays visible when
+// zoomed out far enough that it would otherwise collapse to a sub-pixel sliver.
+// Math.min/Math.abs make the result independent of whether the displayed region
+// is reversed.
+export function getLayoutHighlightCoords(
+  layout: ViewLayout,
+  region: { refName: string; start: number; end: number },
+  minWidth = 3,
+) {
+  const s = layoutBpToPx(layout, {
+    refName: region.refName,
+    coord: region.start,
+  })
+  const e = layoutBpToPx(layout, { refName: region.refName, coord: region.end })
+  return s !== undefined && e !== undefined
+    ? {
+        width: Math.max(Math.abs(e - s), minWidth),
+        left: Math.min(s, e) - layout.offsetPx,
+      }
+    : undefined
+}
+
+// Plain-object overview projection (the "show all displayed regions in `width`
+// pixels" layout). Replaces the pattern of creating a temporary Base1DView
+// MST model just to call bpToPx/pxToBp/calculateDynamicBlocks on it.
+export function createOverviewLayout({
+  displayedRegions,
+  width,
+  minimumBlockWidth = 0,
+}: {
+  displayedRegions: RegionSnap[]
+  width: number
+  minimumBlockWidth?: number
+}): ViewLayout {
+  const totalBp = displayedRegions.reduce((acc, r) => acc + r.end - r.start, 0)
+  return {
+    displayedRegions,
+    width,
+    minimumBlockWidth,
+    bpPerPx: width > 0 ? totalBp / width : 0,
+    offsetPx: 0,
+  }
+}
+
+// Leading and trailing pixel positions of the visible content blocks projected
+// onto `layout` — used to render the overview's "you are here" rectangle and
+// polygon.
+export function getContentBlocksPxSpan(
+  layout: ViewLayout,
+  contentBlocks: ContentBlock[],
+) {
+  const first = contentBlocks.at(0)
+  const last = contentBlocks.at(-1)
+  if (!first || !last) {
+    return undefined
+  }
+  const leftPx = layoutBpToPx(layout, {
+    refName: first.refName,
+    coord: first.reversed ? first.end : first.start,
+  })
+  const rightPx = layoutBpToPx(layout, {
+    refName: last.refName,
+    coord: last.reversed ? last.start : last.end,
+  })
+  return leftPx !== undefined && rightPx !== undefined
+    ? { leftPx, rightPx }
+    : undefined
 }

@@ -1,58 +1,51 @@
 import rehypeRaw from 'rehype-raw'
 import rehypeSlug from 'rehype-slug'
 import rehypeStringify from 'rehype-stringify'
+import remarkGfm from 'remark-gfm'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import { unified } from 'unified'
-import { visit } from 'unist-util-visit'
 
+import { ensureAutogenIndex } from './autogen-links.ts'
 import { baseUrl } from './base-url.ts'
-import { getText } from './hast-utils.ts'
 import rehypeAdmonitions from './rehype-admonitions.ts'
+import rehypeBaseUrls from './rehype-base-urls.ts'
+import rehypeCollectToc, { type TocItem } from './rehype-collect-toc.ts'
 import rehypeHeadingLinks from './rehype-heading-links.ts'
+import rehypeShiki from './rehype-shiki.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
+import remarkAutolinkTypes from './remark-autolink-types.ts'
+import remarkCustomHeadingId from './remark-custom-heading-id.ts'
+import remarkDocList from './remark-doc-list.ts'
 import remarkFigure from './remark-figure.ts'
-
-import type { MarkdownHeading } from 'astro'
-import type { Root, RootContent } from 'hast'
-
-const headingRe = /^h[1-6]$/
-
-function extractHeadings(tree: Root): MarkdownHeading[] {
-  const headings: MarkdownHeading[] = []
-  visit(tree, 'element', node => {
-    if (!headingRe.test(node.tagName)) {
-      return
-    }
-    const slug = node.properties?.id as string | undefined
-    if (slug) {
-      headings.push({
-        depth: parseInt(node.tagName[1]),
-        slug,
-        text: getText(node as RootContent),
-      })
-    }
-  })
-  return headings
-}
+import remarkRelatedGuides from './remark-related-guides.ts'
+import remarkSpecExample from './remark-spec-example.ts'
 
 const processor = unified()
   .use(remarkParse)
+  .use(remarkGfm)
+  .use(remarkCustomHeadingId)
   .use(remarkFigure, { base: baseUrl })
+  .use(remarkDocList)
+  .use(remarkSpecExample)
+  .use(remarkAutolinkTypes)
+  .use(remarkRelatedGuides)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
+  .use(rehypeShiki)
   .use(rehypeAdmonitions)
   .use(rehypeTrailingSlash)
+  .use(rehypeBaseUrls, { base: baseUrl })
   .use(rehypeSlug)
+  .use(rehypeCollectToc)
   .use(rehypeHeadingLinks)
   .use(rehypeStringify, { allowDangerousHtml: true })
 
 export async function renderMarkdown(
   body: string,
-): Promise<{ html: string; headings: MarkdownHeading[] }> {
-  const tree = processor.parse(body)
-  const hast = await processor.run(tree)
-  const headings = extractHeadings(hast as Root)
-  const html = processor.stringify(hast as Root) as string
-  return { html, headings }
+  id = '',
+): Promise<{ html: string; toc: TocItem[] }> {
+  await ensureAutogenIndex()
+  const file = await processor.process({ value: body, data: { id } })
+  return { html: String(file), toc: (file.data.toc as TocItem[] | undefined) ?? [] }
 }

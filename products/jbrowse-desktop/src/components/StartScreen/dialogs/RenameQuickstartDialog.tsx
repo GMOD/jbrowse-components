@@ -1,10 +1,13 @@
 import { useState } from 'react'
 
 import { ConfirmDialog, ErrorMessage } from '@jbrowse/core/ui'
-import { DialogContentText, Input } from '@mui/material'
+import { DialogContentText, TextField } from '@mui/material'
+
+import { useIpcAction } from './useIpcAction.ts'
+
 const { ipcRenderer } = window.require('electron')
 
-const RenameQuickstartDialog = ({
+export default function RenameQuickstartDialog({
   quickstartNames,
   quickstartToRename,
   onClose,
@@ -12,50 +15,48 @@ const RenameQuickstartDialog = ({
   quickstartNames: string[]
   quickstartToRename: string
   onClose: () => void
-}) => {
-  const [newQuickstartName, setNewQuickstartName] = useState(quickstartToRename)
-  const [error, setError] = useState<unknown>()
+}) {
+  const [newName, setNewName] = useState(quickstartToRename)
+  // exclude the current name: the dialog opens with newName === the name being
+  // renamed, which is (by definition) already in the list, so an unqualified
+  // includes() flags a spurious conflict the moment the dialog opens
+  const nameConflict =
+    newName !== quickstartToRename && quickstartNames.includes(newName)
+  const { error, onSubmit } = useIpcAction(async () => {
+    if (nameConflict) {
+      throw new Error('A quickstart with this name already exists')
+    }
+    await ipcRenderer.invoke('renameQuickstart', quickstartToRename, newName)
+  }, onClose)
 
   return (
     <ConfirmDialog
       open
+      maxWidth="xs"
+      fullWidth
       title="Rename quickstart"
+      onSubmit={onSubmit}
       onCancel={onClose}
-      onSubmit={async () => {
-        try {
-          if (quickstartNames.includes(newQuickstartName)) {
-            throw new Error('quickstart with this name already exists')
-          }
-          await ipcRenderer.invoke(
-            'renameQuickstart',
-            quickstartToRename,
-            newQuickstartName,
-          )
-          onClose()
-        } catch (e) {
-          console.error(e)
-          setError(e)
-        }
-      }}
     >
       <DialogContentText>
         Please enter a new name for the quickstart:
       </DialogContentText>
-      {quickstartNames.includes(newQuickstartName) ? (
+      {nameConflict ? (
         <DialogContentText color="error">
-          There is already a quickstart named &quot;{newQuickstartName}&quot;
+          There is already a quickstart named &quot;{newName}&quot;
         </DialogContentText>
       ) : null}
-      <Input
+      <TextField
         autoFocus
-        value={newQuickstartName}
+        fullWidth
+        variant="outlined"
+        margin="dense"
+        value={newName}
         onChange={event => {
-          setNewQuickstartName(event.target.value)
+          setNewName(event.target.value)
         }}
       />
       {error ? <ErrorMessage error={error} /> : null}
     </ConfirmDialog>
   )
 }
-
-export default RenameQuickstartDialog

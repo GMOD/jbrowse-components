@@ -1,5 +1,5 @@
+import { formatRelativeTime } from '@jbrowse/core/util'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
-import { formatDistanceToNow } from 'date-fns'
 
 import type { SvgIconComponent } from '@mui/icons-material'
 
@@ -7,7 +7,6 @@ import type { SessionMetadata } from '@jbrowse/web-core'
 
 interface SessionMenuActions {
   activate: (id: string) => Promise<void>
-  notifyError: (msg: string, e: unknown) => void
   showMore: () => void
 }
 
@@ -23,9 +22,7 @@ function sessionLabel(
   currentSessionId: string | undefined,
 ) {
   const suffix =
-    r.id === currentSessionId
-      ? 'current'
-      : formatDistanceToNow(r.createdAt, { addSuffix: true })
+    r.id === currentSessionId ? 'current' : formatRelativeTime(r.createdAt)
   return `${r.name} (${suffix})`
 }
 
@@ -40,14 +37,8 @@ function sessionItem(
     disabled: r.id === currentSessionId,
     icon,
     onClick: () => {
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      ;(async () => {
-        try {
-          await actions.activate(r.id)
-        } catch (e) {
-          actions.notifyError(`${e}`, e)
-        }
-      })()
+      // activate handles its own errors (console.error + notifyError)
+      void actions.activate(r.id)
     },
   }
 }

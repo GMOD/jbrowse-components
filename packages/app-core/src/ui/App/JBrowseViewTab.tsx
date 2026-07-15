@@ -4,10 +4,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputBase, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { useDockview } from './DockviewContext.tsx'
 import JBrowseTabMenu from './JBrowseTabMenu.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
-import type { DockviewSessionType } from './types.ts'
+import type { DockviewSessionType, JBrowseViewPanelParams } from './types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { IDockviewPanelHeaderProps } from 'dockview-react'
 
@@ -18,6 +19,9 @@ const useStyles = makeStyles()(theme => ({
     height: '100%',
     padding: '0 4px',
     gap: 4,
+    '&:hover .jbrowse-tab-menu': {
+      visibility: 'visible',
+    },
   },
   tabTitle: {
     display: 'flex',
@@ -48,11 +52,6 @@ function stopEvent(e: React.MouseEvent | React.PointerEvent) {
   e.preventDefault()
 }
 
-export interface JBrowseViewPanelParams {
-  panelId: string
-  session?: DockviewSessionType
-}
-
 function getTabDisplayName(
   views: AbstractViewModel[],
   session: DockviewSessionType,
@@ -64,9 +63,7 @@ function getTabDisplayName(
     const view = views[0]!
     return (
       view.displayName ||
-      // @ts-expect-error
       view.assemblyNames
-        // @ts-expect-error
         ?.map(r => session.assemblyManager.getDisplayName(r))
         .join(',') ||
       'View'
@@ -76,28 +73,31 @@ function getTabDisplayName(
 }
 
 const JBrowseViewTab = observer(function JBrowseViewTab({
-  params,
   api,
 }: IDockviewPanelHeaderProps<JBrowseViewPanelParams>) {
-  const { panelId, session } = params
+  // Panel identity is the dockview panel id, not params — so layouts persisted
+  // before params carried the panelId (blanked to {}) still restore correctly.
+  const panelId = api.id
+  const { session } = useDockview()
   const { classes } = useStyles()
   const [isEditing, setIsEditing] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
   const [editValue, setEditValue] = useState('')
 
+  // session is always provided by TiledViewsContainer's DockviewContext; the
+  // guard only satisfies the optional default-context type.
   if (!session) {
-    return (
-      <div className={classes.tabContainer}>
-        <span className={classes.tabTitleText}>Loading...</span>
-      </div>
-    )
+    return null
   }
 
   const views = getViewsForPanel(panelId, session)
-  const displayValue = getTabDisplayName(views, session)
+  // dockview restores an unset title as the panel id (state.title ?? this.id),
+  // so a title equal to the panelId means "not renamed" — derive from the views.
+  // Only a real, user-set title (via api.setTitle) differs from the panelId.
+  const hasCustomTitle = !!api.title && api.title !== panelId
+  const title = hasCustomTitle ? api.title : getTabDisplayName(views, session)
 
   const handleStartEdit = () => {
-    setEditValue(api.title || displayValue)
+    setEditValue(title)
     setIsEditing(true)
   }
 
@@ -117,15 +117,7 @@ const JBrowseViewTab = observer(function JBrowseViewTab({
   }
 
   return (
-    <div
-      className={classes.tabContainer}
-      onMouseEnter={() => {
-        setIsHovered(true)
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false)
-      }}
-    >
+    <div className={classes.tabContainer}>
       <div className={classes.tabTitle}>
         {isEditing ? (
           <InputBase
@@ -149,10 +141,9 @@ const JBrowseViewTab = observer(function JBrowseViewTab({
               variant="body2"
               onDoubleClick={handleStartEdit}
             >
-              {api.title || displayValue}
+              {title}
             </Typography>
             <JBrowseTabMenu
-              isHovered={isHovered}
               onRename={handleStartEdit}
               onClose={() => {
                 api.close()

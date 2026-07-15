@@ -25,6 +25,14 @@ function getWorkspaces() {
   ).map(e => e.path)
 }
 
+export const babelOptions = {
+  plugins: ['babel-plugin-react-compiler'],
+  presets: [
+    ['@babel/preset-react', { runtime: 'automatic' }],
+    '@babel/preset-typescript',
+  ],
+}
+
 export default function webpackBuilder(): webpack.Configuration {
   const isEnvDevelopment = process.env.NODE_ENV === 'development'
   const isEnvProduction = process.env.NODE_ENV === 'production'
@@ -44,7 +52,15 @@ export default function webpackBuilder(): webpack.Configuration {
     stats: 'errors-warnings',
     mode: isEnvProduction ? 'production' : 'development',
     bail: isEnvProduction,
-    cache: { type: 'memory' },
+    // filesystem cache persists across dev-server restarts so cold starts
+    // after the first are fast; production builds (often a fresh CI checkout)
+    // gain nothing from it, so keep them in memory
+    cache: isEnvDevelopment
+      ? {
+          type: 'filesystem',
+          buildDependencies: { config: [import.meta.filename] },
+        }
+      : { type: 'memory' },
     devtool: isEnvProduction
       ? shouldUseSourceMap
         ? 'source-map'
@@ -63,12 +79,18 @@ export default function webpackBuilder(): webpack.Configuration {
       assetModuleFilename: 'static/media/[name].[hash][ext]',
     },
     resolve: {
-      conditionNames: ['mui-modern', '...'],
       extensions: moduleFileExtensions.map(ext => `.${ext}`),
     },
     module: {
       strictExportPresence: true,
       rules: [
+        {
+          // MUI v9 and other ESM deps ship .mjs files with extensionless
+          // subpath imports (e.g. react-transition-group/TransitionGroupContext);
+          // webpack 5 treats .mjs as fully specified and rejects them otherwise
+          test: /\.m?js$/,
+          resolve: { fullySpecified: false },
+        },
         ...(shouldUseSourceMap && isEnvProduction
           ? [
               {
@@ -82,15 +104,13 @@ export default function webpackBuilder(): webpack.Configuration {
           oneOf: [
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              include: [appSrc, getWorkspaces()],
+              // getWorkspaces() includes the monorepo root, so node_modules
+              // sits under an included path; exclude it so only our own
+              // untranspiled workspace source runs through babel.
+              include: [appSrc, ...getWorkspaces()],
+              exclude: /node_modules/,
               loader: 'babel-loader',
-              options: {
-                plugins: ['babel-plugin-react-compiler'],
-                presets: [
-                  ['@babel/preset-react', { runtime: 'automatic' }],
-                  '@babel/preset-typescript',
-                ],
-              },
+              options: babelOptions,
             },
             {
               test: /\.css$/,
@@ -119,6 +139,9 @@ export default function webpackBuilder(): webpack.Configuration {
       ],
     },
     plugins: [
+      // @jbrowse/mobx-state-tree reads process.env.ENABLE_TYPE_CHECK at runtime
+      // to run full type-checking; substitute "true" so validation stays on in
+      // production bundles (where NODE_ENV would otherwise disable dev checks)
       new webpack.DefinePlugin({
         'process.env.ENABLE_TYPE_CHECK': '"true"',
       }),

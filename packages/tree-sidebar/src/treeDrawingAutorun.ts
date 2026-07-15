@@ -1,11 +1,18 @@
 import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { autorun } from 'mobx'
 
-import { links } from './hierarchy.ts'
+import { TREE_STROKE, links, treeLinkSegments } from './hierarchy.ts'
+import { treeContentHeight } from './treeSidebarGeometry.ts'
 
 import type { TreeDrawingModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// `getPreparedCanvas2D` (render-core) owns the backing-store size + dpr scaling
+// + clear: sizing and drawing happen in the same reaction so a later
+// React-driven resize can't wipe freshly drawn content, and the returned
+// context is dpr-scaled so we draw in CSS pixels without blurring on Retina.
 
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
   addDisposer(
@@ -17,44 +24,32 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
         // touch totalHeight so MobX tracks it as a dependency (row height changes)
         void self.totalHeight
-        const {
-          treeCanvas,
-          hierarchy,
-          treeAreaWidth,
-          height,
-          scrollTop = 0,
-        } = self
+        const { treeCanvas, hierarchy, treeAreaWidth, scrollTop = 0 } = self
 
         if (!treeCanvas || !hierarchy) {
           return
         }
 
-        const ctx = treeCanvas.getContext('2d')
+        const contentHeight = treeContentHeight(self)
+        const ctx = getPreparedCanvas2D(
+          treeCanvas,
+          treeAreaWidth,
+          contentHeight,
+        )
         if (!ctx) {
           return
         }
 
-        ctx.resetTransform()
-        ctx.scale(2, 2)
-        ctx.clearRect(0, 0, treeAreaWidth, height)
-
         ctx.translate(0, -scrollTop)
-        ctx.strokeStyle = '#0008'
+        ctx.strokeStyle = TREE_STROKE
         ctx.lineWidth = 1
 
         ctx.beginPath()
-        for (const link of links(hierarchy)) {
-          const { source, target } = link
-          const sy = source.x
-          const ty = target.x
-          const tx = target.y
-          const sx = source.y
-
-          ctx.moveTo(sx, sy)
-          ctx.lineTo(sx, ty)
-
-          ctx.moveTo(sx, ty)
-          ctx.lineTo(tx, ty)
+        for (const { source, target } of links(hierarchy)) {
+          for (const [[x0, y0], [x1, y1]] of treeLinkSegments(source, target)) {
+            ctx.moveTo(x0, y0)
+            ctx.lineTo(x1, y1)
+          }
         }
         ctx.stroke()
       },
@@ -76,16 +71,10 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           hierarchy,
           rowHeight,
           hoveredTreeNode,
-          height,
           scrollTop = 0,
           sources,
         } = self
         if (!mouseoverCanvas) {
-          return
-        }
-
-        const ctx = mouseoverCanvas.getContext('2d')
-        if (!ctx) {
           return
         }
 
@@ -94,8 +83,15 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           return
         }
         const viewWidth = view.width
-
-        ctx.clearRect(0, 0, viewWidth, height)
+        const contentHeight = treeContentHeight(self)
+        const ctx = getPreparedCanvas2D(
+          mouseoverCanvas,
+          viewWidth,
+          contentHeight,
+        )
+        if (!ctx) {
+          return
+        }
 
         if (hierarchy && hoveredTreeNode && sources) {
           ctx.save()

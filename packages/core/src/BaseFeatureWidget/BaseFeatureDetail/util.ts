@@ -5,6 +5,18 @@ export function isEmpty(obj: Record<string, unknown>) {
   return Object.keys(obj).length === 0
 }
 
+// The view the details panel renders: raw feature fields with the
+// formatDetails-callback output (`__jbrowsefmt`) merged on top, so a callback
+// value overrides the raw one. A field the callback sets to null/undefined then
+// drops out of the panel's `!= null` filters — this is how callbacks hide
+// fields. `__jbrowsefmt` itself is in Attributes' globalOmit, so it never
+// renders.
+export function applyFeatureFormatting<
+  T extends { __jbrowsefmt?: Record<string, unknown> },
+>(feature: T) {
+  return { ...feature, ...feature.__jbrowsefmt }
+}
+
 export function generateTitle(name: unknown, id: unknown, type: unknown) {
   const label = name || id
   return [label ? ellipses(`${label}`) : '', type ? `${type}` : '']

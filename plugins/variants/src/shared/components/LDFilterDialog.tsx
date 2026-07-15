@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { NumberTextField } from '@jbrowse/core/ui'
 import Dialog from '@jbrowse/core/ui/Dialog'
 import {
   Alert,
@@ -9,25 +10,27 @@ import {
   DialogContent,
   FormControlLabel,
   Switch,
-  TextField,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import type { FilterStats } from '../../VariantRPC/getLDMatrix.ts'
 
-export default function LDFilterDialog({
+interface LDFilterModel {
+  minorAlleleFrequencyFilter: number
+  hweFilterThreshold: number
+  callRateFilter: number
+  filterStats?: FilterStats
+  setMafFilter: (arg: number) => void
+  setHweFilter: (arg: number) => void
+  setCallRateFilter: (arg: number) => void
+}
+
+export default observer(function LDFilterDialog({
   model,
   handleClose,
 }: {
-  model: {
-    minorAlleleFrequencyFilter: number
-    hweFilterThreshold: number
-    callRateFilter: number
-    filterStats?: FilterStats
-    setMafFilter: (arg: number) => void
-    setHweFilter: (arg: number) => void
-    setCallRateFilter: (arg: number) => void
-  }
+  model: LDFilterModel
   handleClose: () => void
 }) {
   const {
@@ -36,68 +39,29 @@ export default function LDFilterDialog({
     callRateFilter,
     filterStats,
   } = model
-  const [maf, setMaf] = useState(`${minorAlleleFrequencyFilter}`)
+  const [maf, setMaf] = useState<number | undefined>(minorAlleleFrequencyFilter)
   const [hweEnabled, setHweEnabled] = useState(hweFilterThreshold > 0)
-  const [hweThreshold, setHweThreshold] = useState(
-    hweFilterThreshold > 0 ? `${hweFilterThreshold}` : '0.001',
+  const [hweThreshold, setHweThreshold] = useState<number | undefined>(
+    hweFilterThreshold > 0 ? hweFilterThreshold : 0.001,
   )
   const [callRateEnabled, setCallRateEnabled] = useState(callRateFilter > 0)
-  const [callRate, setCallRate] = useState(
-    callRateFilter > 0 ? `${callRateFilter}` : '0.95',
+  const [callRate, setCallRate] = useState<number | undefined>(
+    callRateFilter > 0 ? callRateFilter : 0.95,
   )
-  const [mafError, setMafError] = useState<string>()
-  const [hweError, setHweError] = useState<string>()
-  const [callRateError, setCallRateError] = useState<string>()
-
-  const validateMaf = (val: string) => {
-    const num = Number.parseFloat(val)
-    if (Number.isNaN(num)) {
-      setMafError('Please enter a valid number')
-      return false
-    }
-    if (num < 0 || num > 0.5) {
-      setMafError('MAF must be between 0 and 0.5')
-      return false
-    }
-    setMafError(undefined)
-    return true
-  }
-
-  const validateHwe = (val: string) => {
-    const num = Number.parseFloat(val)
-    if (Number.isNaN(num)) {
-      setHweError('Please enter a valid number')
-      return false
-    }
-    if (num <= 0 || num > 1) {
-      setHweError('P-value must be between 0 and 1')
-      return false
-    }
-    setHweError(undefined)
-    return true
-  }
-
-  const validateCallRate = (val: string) => {
-    const num = Number.parseFloat(val)
-    if (Number.isNaN(num)) {
-      setCallRateError('Please enter a valid number')
-      return false
-    }
-    if (num < 0 || num > 1) {
-      setCallRateError('Call rate must be between 0 and 1')
-      return false
-    }
-    setCallRateError(undefined)
-    return true
-  }
 
   const hasError =
-    !!mafError ||
-    (hweEnabled && !!hweError) ||
-    (callRateEnabled && !!callRateError)
+    maf === undefined ||
+    (hweEnabled && hweThreshold === undefined) ||
+    (callRateEnabled && callRate === undefined)
 
   return (
-    <Dialog open onClose={handleClose} title="LD Filter Settings">
+    <Dialog
+      open
+      onClose={() => {
+        handleClose()
+      }}
+      title="LD Filter Settings"
+    >
       <DialogContent style={{ width: 500 }}>
         {filterStats ? (
           <Alert severity="info" style={{ marginBottom: 16 }}>
@@ -134,18 +98,15 @@ export default function LDFilterDialog({
         <Typography variant="body2" color="text.secondary" component="p">
           Exclude variants with minor allele frequency below this threshold.
         </Typography>
-        <TextField
-          value={maf}
+        <NumberTextField
+          defaultValue={minorAlleleFrequencyFilter}
+          min={0}
+          max={0.5}
           fullWidth
           size="small"
           label="MAF threshold (0-0.5)"
-          error={!!mafError}
-          helperText={mafError}
-          onChange={event => {
-            const val = event.target.value
-            setMaf(val)
-            validateMaf(val)
-          }}
+          errorText="MAF must be between 0 and 0.5"
+          onValueChange={setMaf}
           style={{ marginBottom: 24 }}
         />
 
@@ -169,21 +130,16 @@ export default function LDFilterDialog({
           label="Enable HWE filter"
         />
         {hweEnabled ? (
-          <TextField
-            value={hweThreshold}
+          <NumberTextField
+            defaultValue={hweThreshold}
+            min={Number.MIN_VALUE}
+            max={1}
             fullWidth
             size="small"
             label="P-value threshold"
-            error={!!hweError}
-            helperText={
-              hweError ||
-              'Variants with HWE p-value below this threshold are excluded (default: 0.001)'
-            }
-            onChange={event => {
-              const val = event.target.value
-              setHweThreshold(val)
-              validateHwe(val)
-            }}
+            helperText="Variants with HWE p-value below this threshold are excluded (default: 0.001)"
+            errorText="P-value must be between 0 (exclusive) and 1"
+            onValueChange={setHweThreshold}
             style={{ marginTop: 8, marginBottom: 24 }}
           />
         ) : (
@@ -209,55 +165,41 @@ export default function LDFilterDialog({
           label="Enable call rate filter"
         />
         {callRateEnabled ? (
-          <TextField
-            value={callRate}
+          <NumberTextField
+            defaultValue={callRate}
+            min={0}
+            max={1}
             fullWidth
             size="small"
             label="Minimum call rate (0-1)"
-            error={!!callRateError}
-            helperText={
-              callRateError ||
-              'Variants with call rate below this threshold are excluded (default: 0.95 = 95%)'
-            }
-            onChange={event => {
-              const val = event.target.value
-              setCallRate(val)
-              validateCallRate(val)
-            }}
+            helperText="Variants with call rate below this threshold are excluded (default: 0.95 = 95%)"
+            errorText="Call rate must be between 0 and 1"
+            onValueChange={setCallRate}
             style={{ marginTop: 8 }}
           />
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="primary">
+        <Button
+          variant="contained"
+          onClick={() => {
+            handleClose()
+          }}
+          color="primary"
+        >
           Cancel
         </Button>
         <Button
           onClick={() => {
-            const mafVal = Number.parseFloat(maf)
-            if (!Number.isNaN(mafVal) && mafVal >= 0 && mafVal <= 0.5) {
-              model.setMafFilter(mafVal)
+            if (maf !== undefined) {
+              model.setMafFilter(maf)
             }
-            if (hweEnabled) {
-              const hweVal = Number.parseFloat(hweThreshold)
-              if (!Number.isNaN(hweVal) && hweVal > 0 && hweVal <= 1) {
-                model.setHweFilter(hweVal)
-              }
-            } else {
-              model.setHweFilter(0) // Disable HWE filter
-            }
-            if (callRateEnabled) {
-              const callRateVal = Number.parseFloat(callRate)
-              if (
-                !Number.isNaN(callRateVal) &&
-                callRateVal >= 0 &&
-                callRateVal <= 1
-              ) {
-                model.setCallRateFilter(callRateVal)
-              }
-            } else {
-              model.setCallRateFilter(0) // Disable call rate filter
-            }
+            model.setHweFilter(
+              hweEnabled && hweThreshold !== undefined ? hweThreshold : 0,
+            )
+            model.setCallRateFilter(
+              callRateEnabled && callRate !== undefined ? callRate : 0,
+            )
             handleClose()
           }}
           color="primary"
@@ -269,4 +211,4 @@ export default function LDFilterDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})

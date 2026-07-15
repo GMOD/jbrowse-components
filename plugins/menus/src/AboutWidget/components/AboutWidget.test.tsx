@@ -8,12 +8,20 @@ import AboutWidget from './AboutWidget.tsx'
 
 describe('<AboutWidget />', () => {
   it('renders', () => {
+    const rpcConfig = ConfigurationSchema('NullRpc', {
+      defaultDriver: {
+        type: 'string',
+        defaultValue: 'MainThreadRpcDriver',
+      },
+    }).create({})
     const session = types
       .model({
         configuration: ConfigurationSchema('Null', {}),
-        rpcManager: types.frozen({}),
         widgetModel: types.model({ type: types.literal('AboutWidget') }),
       })
+      .volatile(() => ({
+        rpcManager: { mainConfiguration: rpcConfig },
+      }))
       .create(
         { widgetModel: { type: 'AboutWidget' } },
         {
@@ -23,7 +31,7 @@ describe('<AboutWidget />', () => {
               {
                 name: 'HelloPlugin',
                 version: '1.0.0',
-                url: 'http://google.com',
+                url: 'https://google.com',
               },
             ],
           },

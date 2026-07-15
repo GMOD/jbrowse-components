@@ -25,7 +25,7 @@ export function shorten(str: string, term: string, w = 15) {
   if (str.length < 40) {
     return str
   }
-  const tidx = str.toLowerCase().indexOf(term)
+  const tidx = str.toLowerCase().indexOf(term.toLowerCase())
   if (tidx === -1) {
     return `${str.slice(0, 40).trim()}...`
   }
@@ -54,10 +54,10 @@ export default class TrixTextSearchAdapter
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
 
     if (!ixFilePath) {
-      throw new Error('must provide out.ix')
+      throw new Error('TrixTextSearchAdapter requires an ixFilePath')
     }
     if (!ixxFilePath) {
-      throw new Error('must provide out.ixx')
+      throw new Error('TrixTextSearchAdapter requires an ixxFilePath')
     }
     this.trixJs = new Trix(
       openLocation(ixxFilePath, pluginManager),
@@ -68,32 +68,34 @@ export default class TrixTextSearchAdapter
 
   /**
    * Returns list of results
-   * @param args - search options/arguments include: search query
-   * limit of results to return, searchType...prefix | full | exact", etc.
+   * @param args - search options/arguments include: search query,
+   * searchType (prefix | full | exact), etc.
    */
   async searchIndex(args: BaseTextSearchArgs) {
     const query = args.queryString.toLowerCase()
-    const strs = query.split(' ')
+    const words = query.split(' ')
     const results = await this.trixJs.search(query)
     const formatted = results
-      // if multi-word search try to filter out relevant items
-      .filter(([, data]) => {
-        const lower = decodeURIComponentNoThrow(data).toLowerCase()
-        return strs.every(r => lower.includes(r))
-      })
       .map(([term, data]) => {
-        const decoded = (JSON.parse(data.replaceAll('|', ',')) as string[]).map(
-          decodeURIComponentNoThrow,
-        )
-        const [loc, trackId, ...rest] = decoded
-
-        const labelField = rest.find(elt => !!elt) ?? ''
+        // record is ["loc"|"trackId"|"attr1"|...] with commas pre-encoded as
+        // pipes; swap them back to parse it as a JSON array, then URI-decode
+        const [loc, trackId, ...attrs] = (
+          JSON.parse(data.replaceAll('|', ',')) as string[]
+        ).map(decodeURIComponentNoThrow)
+        return { term, loc, trackId, attrs }
+      })
+      // multi-word search: keep only entries whose attributes contain every word
+      .filter(({ attrs }) => {
+        const lower = attrs.join(' ').toLowerCase()
+        return words.every(w => lower.includes(w))
+      })
+      .map(({ term, loc, trackId, attrs }) => {
         const termLower = term.toLowerCase()
-        const contextIdx = rest.findIndex(f =>
+        const labelField = attrs.find(Boolean) ?? ''
+        const contextField = attrs.find(f =>
           f.toLowerCase().includes(termLower),
         )
-        const context =
-          contextIdx !== -1 ? shorten(rest[contextIdx]!, term) : undefined
+        const context = contextField ? shorten(contextField, term) : undefined
         const label = shorten(labelField, term)
 
         const displayString =
@@ -101,19 +103,25 @@ export default class TrixTextSearchAdapter
             ? label
             : `${label} (${context})`
 
-        return new BaseResult({
-          locString: loc,
-          label: labelField,
-          displayString,
-          matchedObject: decoded,
-          trackId,
-        })
+        // exact match succeeds when any indexed attribute (name, id,
+        // description, ...) equals the query, so e.g. searching an ID works
+        const exact = attrs.some(a => a.toLowerCase() === query)
+
+        return {
+          exact,
+          result: new BaseResult({
+            locString: loc,
+            label,
+            displayString,
+            trackId,
+          }),
+        }
       })
 
-    return args.searchType === 'exact'
-      ? formatted.filter(
-          r => r.getLabel().toLowerCase() === args.queryString.toLowerCase(),
-        )
-      : formatted
+    const matches =
+      args.searchType === 'exact'
+        ? formatted.filter(({ exact }) => exact)
+        : formatted
+    return matches.map(({ result }) => result)
   }
 }

@@ -2,8 +2,10 @@ import Plugin from '@jbrowse/core/Plugin'
 
 import BgzipFastaAdapterF from './BgzipFastaAdapter/index.ts'
 import ChromSizesAdapterF from './ChromSizesAdapter/index.ts'
+import CrisprGuideAdapterF from './CrisprGuideAdapter/index.ts'
 import IndexedFastaAdapterF from './IndexedFastaAdapter/index.ts'
 import LinearReferenceSequenceDisplayF from './LinearReferenceSequenceDisplay/index.ts'
+import MotifListAdapterF from './MotifListAdapter/index.ts'
 import ReferenceSequenceTrackF from './ReferenceSequenceTrack/index.ts'
 import SequenceSearchAdapterF from './SequenceSearchAdapter/index.ts'
 import TwoBitAdapterF from './TwoBitAdapter/index.ts'
@@ -22,6 +24,8 @@ export default class SequencePlugin extends Plugin {
     IndexedFastaAdapterF(pluginManager)
     UnindexedFastaAdapterF(pluginManager)
     SequenceSearchAdapterF(pluginManager)
+    CrisprGuideAdapterF(pluginManager)
+    MotifListAdapterF(pluginManager)
     ReferenceSequenceTrackF(pluginManager)
     LinearReferenceSequenceDisplayF(pluginManager)
     createExtensionPoints(pluginManager)

@@ -47,36 +47,109 @@ function findSubtree<T extends ClusterNodeData>(
   return found
 }
 
-/**
- * Wrap a pre-parsed Newick-shaped tree in a HierarchyNode and (optionally)
- * descend into the deepest subtree whose leaves exactly match
- * `subtreeFilter`. Use when you already hold the parsed tree (e.g. an MST
- * volatile); use `parseClusterTree(string, filter)` to accept a Newick
- * string directly.
- *
- * Children are NOT re-sorted — hclust already produces the leaf order that
- * matches the layout/sources array. Re-sorting would shift leaf positions
- * and break row-highlight alignment.
- */
-export function clusterTree<T extends ClusterNodeData>(
-  data: T,
-  subtreeFilter?: string[],
-) {
-  let root = hierarchy<T>(data, d => d.children as T[] | undefined)
+// Parse a Newick string and build a hierarchy, without applying a filter.
+// Kept separate from applySubtreeFilter so MST can cache them independently —
+// changing the subtree filter re-runs only the traversal, not the parser.
+export function buildTree(newick: string): HierarchyNode<ClusterNodeData> {
+  const data = parseNewick(newick)
+  const root = hierarchy<ClusterNodeData>(data, d => d.children)
   sum(root, d => (d.children ? 0 : 1))
-
-  if (subtreeFilter?.length) {
-    const filterSet = new Set(subtreeFilter)
-    const subtree = findSubtree(root, filterSet)
-    if (subtree) {
-      root = subtree
-    }
-  }
   return root
 }
 
+// Prune a Newick-shaped tree down to just the leaves in `keep`, preserving the
+// topology among them. Internal nodes left with a single child are collapsed
+// into that child (their branch length added on) so the result has no spurious
+// unary nodes. Returns undefined if no kept leaf is below `node`.
+//
+// Unlike `findSubtree` (which only matches a single monophyletic clade), this
+// works for any leaf set — e.g. a scattered hand-picked species selection — so
+// the rendered dendrogram always matches the visible rows rather than falling
+// back to the full tree.
+export function pruneNewickToLeaves(
+  node: ClusterNodeData,
+  keep: Set<string>,
+): ClusterNodeData | undefined {
+  if (node.children?.length) {
+    const children = node.children
+      .map(c => pruneNewickToLeaves(c, keep))
+      .filter((c): c is ClusterNodeData => c !== undefined)
+    if (children.length === 0) {
+      return undefined
+    }
+    if (children.length === 1) {
+      const child = children[0]!
+      return { ...child, length: (child.length ?? 0) + (node.length ?? 0) }
+    }
+    return { ...node, children }
+  }
+  return node.name !== undefined && keep.has(node.name) ? node : undefined
+}
+
+// Narrow a tree to the active subtree filter. A filter that names exactly one
+// clade's leaves descends into that clade (the monophyletic case, e.g. clicking
+// an internal node); any other leaf set is pruned to those leaves with the
+// topology preserved. Returns the original root when no filter is given or no
+// kept leaf remains.
+export function applySubtreeFilter(
+  root: HierarchyNode<ClusterNodeData>,
+  subtreeFilter: string[] | undefined,
+): HierarchyNode<ClusterNodeData> {
+  if (!subtreeFilter?.length) {
+    return root
+  }
+  const filterSet = new Set(subtreeFilter)
+  const monophyletic = findSubtree(root, filterSet)
+  if (monophyletic) {
+    return monophyletic
+  }
+  const pruned = pruneNewickToLeaves(root.data, filterSet)
+  if (!pruned) {
+    return root
+  }
+  const filtered = hierarchy<ClusterNodeData>(pruned, d => d.children)
+  sum(filtered, d => (d.children ? 0 : 1))
+  return filtered
+}
+
 export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
-  return clusterTree(parseNewick(newick), subtreeFilter)
+  return applySubtreeFilter(buildTree(newick), subtreeFilter)
+}
+
+// Parse pasted R hclust output (a sequence of 1-based row indices, one per
+// line, with possible blank/whitespace lines) into a numeric array. Callers map
+// these 1-based indices into their source list.
+export function parseClusterOrder(paste: string): number[] {
+  return paste
+    .split('\n')
+    .map(t => t.trim())
+    .filter(f => !!f)
+    .map(r => +r)
+}
+
+// Reconcile a persisted `layout` (user reorder/relabel/override) against the
+// rows currently discovered in the data: keep layout order, drop layout rows no
+// longer present, append newly-discovered rows in discovered order. Layout
+// fields win on merge (they are the user's overrides). Empty layout returns the
+// discovered array by reference, so callers can short-circuit on identity.
+// Shared by every multi-row display's `sources`/`editableSources` getter so the
+// membership rules can't drift. Layout entries are partial overrides keyed by
+// `name`, so the discovered row supplies every field a layout entry omits.
+export function reconcileLayout<D extends { name: string }>(
+  discovered: D[],
+  layout: (Partial<D> & { name: string })[],
+): D[] {
+  if (!layout.length) {
+    return discovered
+  }
+  const byName = new Map(discovered.map(s => [s.name, s]))
+  const laidOut = layout.flatMap(s => {
+    const info = byName.get(s.name)
+    return info ? [{ ...info, ...s }] : []
+  })
+  const inLayout = new Set(layout.map(s => s.name))
+  const appended = discovered.filter(s => !inLayout.has(s.name))
+  return [...laidOut, ...appended]
 }
 
 export function buildClusteredLayout<S extends { name: string }>(

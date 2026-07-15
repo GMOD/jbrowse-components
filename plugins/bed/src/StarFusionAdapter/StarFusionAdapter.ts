@@ -1,15 +1,16 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  IntervalTree,
-  SimpleFeature,
-  fetchAndMaybeUnzip,
-} from '@jbrowse/core/util'
+import { SimpleFeature, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import {
+  buildPairedIntervalTree,
+  intervalTreeFeatures,
+} from '../adapterUtil.ts'
+
+import type { StarFusionAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, IntervalTree, Region } from '@jbrowse/core/util'
 
 function parseBreakpoint(str: string) {
   const [refName, pos, strandStr] = str.split(':')
@@ -21,7 +22,7 @@ function parseBreakpoint(str: string) {
   }
 }
 
-export default class StarFusionAdapter extends BaseFeatureDataAdapter {
+export default class StarFusionAdapter extends BaseFeatureDataAdapter<StarFusionAdapterConfig> {
   protected fileData?: Promise<{
     columnNames: string[]
     feats1: Record<string, string[]>
@@ -56,10 +57,12 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter {
           rightIdx = columnNames.indexOf('RightBreakpoint')
         } else if (leftIdx >= 0 && rightIdx >= 0) {
           const cols = line.split('\t')
-          const leftRef = cols[leftIdx]!.split(':')[0]!
-          const rightRef = cols[rightIdx]!.split(':')[0]!
-          ;(feats1[leftRef] ??= []).push(line)
-          ;(feats2[rightRef] ??= []).push(line)
+          const leftRef = cols[leftIdx]?.split(':', 1)[0]
+          const rightRef = cols[rightIdx]?.split(':', 1)[0]
+          if (leftRef && rightRef) {
+            ;(feats1[leftRef] ??= []).push(line)
+            ;(feats2[rightRef] ??= []).push(line)
+          }
         }
         return true
       },
@@ -119,26 +122,14 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter {
 
   private async loadFeatureTreeP(refName: string) {
     const { columnNames, feats1, feats2 } = await this.loadData()
-    const intervalTree = new IntervalTree<Feature>()
-    for (const [i, line] of (feats1[refName] ?? []).entries()) {
-      const feat = this.featureFromLine(
-        line,
-        columnNames,
-        `${this.id}-${refName}-${i}-r1`,
-        false,
-      )
-      intervalTree.insert([feat.get('start'), feat.get('end')], feat)
-    }
-    for (const [i, line] of (feats2[refName] ?? []).entries()) {
-      const feat = this.featureFromLine(
-        line,
-        columnNames,
-        `${this.id}-${refName}-${i}-r2`,
-        true,
-      )
-      intervalTree.insert([feat.get('start'), feat.get('end')], feat)
-    }
-    return intervalTree
+    return buildPairedIntervalTree(
+      feats1,
+      feats2,
+      refName,
+      this.id,
+      (line, uniqueId, flip) =>
+        this.featureFromLine(line, columnNames, uniqueId, flip),
+    )
   }
 
   private async loadFeatureTree(refName: string) {
@@ -152,13 +143,8 @@ export default class StarFusionAdapter extends BaseFeatureDataAdapter {
   }
 
   public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
-      const { start, end, refName } = query
-      const intervalTree = await this.loadFeatureTree(refName)
-      for (const f of intervalTree?.search([start, end]) ?? []) {
-        observer.next(f)
-      }
-      observer.complete()
-    }, opts.stopToken)
+    return intervalTreeFeatures(query, opts, refName =>
+      this.loadFeatureTree(refName),
+    )
   }
 }

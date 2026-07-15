@@ -1,6 +1,5 @@
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
-import type { IndelEntry } from './labelConstants.ts'
 import type { ScoreStats, YScaleTicks } from '@jbrowse/wiggle-core'
 
 export function niceStep(maxDepth: number) {
@@ -21,6 +20,20 @@ export function niceStep(maxDepth: number) {
   return niceFrac * pow
 }
 
+// Maps a depth value to its 0..1 height fraction. The branch is chosen once so
+// the returned mapper is total: the log case pre-resolves logMax === 0 (maxDepth
+// of 1) to a constant 0 rather than dividing by zero. Mirrors normalizeDepth's
+// `logMax <= 0` guard in the shaders.
+function makeDepthFraction(maxDepth: number, scaleType: string) {
+  if (scaleType === 'log') {
+    const logMax = Math.log2(Math.max(1, maxDepth))
+    return logMax <= 0
+      ? () => 0
+      : (value: number) => Math.log2(Math.max(1, value)) / logMax
+  }
+  return (value: number) => value / maxDepth
+}
+
 export function computeCoverageTicks(
   maxDepth: number,
   coverageHeight: number,
@@ -34,12 +47,8 @@ export function computeCoverageTicks(
   }
 
   const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
-  const logMax = Math.log2(Math.max(1, maxDepth))
-  const yOf =
-    scaleType === 'log'
-      ? (value: number) =>
-          yBottom - (Math.log2(Math.max(1, value)) / logMax) * effectiveHeight
-      : (value: number) => yBottom - (value / maxDepth) * effectiveHeight
+  const fractionOf = makeDepthFraction(maxDepth, scaleType)
+  const yOf = (value: number) => yBottom - fractionOf(value) * effectiveHeight
 
   const ticks: YScaleTicks['items'] = []
   if (scaleType === 'log') {
@@ -55,7 +64,10 @@ export function computeCoverageTicks(
   } else if (coverageHeight < 70) {
     ticks.push({ value: 0, y: yOf(0) }, { value: maxDepth, y: yOf(maxDepth) })
   } else {
-    const step = niceStep(maxDepth)
+    // Depth is integer-valued, so floor the nice step to 1: for maxDepth < 3
+    // niceStep returns 0.5, which would emit meaningless fractional depth labels
+    // (0, 0.5, 1).
+    const step = Math.max(1, niceStep(maxDepth))
     const stepCount = Math.floor(maxDepth / step)
     for (let i = 0; i <= stepCount; i++) {
       ticks.push({ value: i * step, y: yOf(i * step) })
@@ -68,47 +80,109 @@ export function computeCoverageTicks(
 export interface CoverageRegion {
   coverageDepths: Float32Array
   coverageStartPos: number
+  // Coarse per-bin partial stats (downsampleStatsBins). Present only when the
+  // per-bp array exceeded the bin cap (whole-chromosome scale); when absent the
+  // reducer scans coverageDepths per-bp for exact visible-edge clipping.
+  coverageStatsBinSize?: number
+  coverageStatsMins?: Float32Array
+  coverageStatsMaxs?: Float32Array
+  coverageStatsSums?: Float64Array
+  coverageStatsSumSqs?: Float64Array
 }
 
-export function computeVisibleMaxDepth<
-  B extends { start: number; end: number },
->(
-  visibleBlocks: B[],
-  getCoverageForBlock: (block: B) => CoverageRegion | undefined,
-) {
-  let maxDepth = 0
-  for (const block of visibleBlocks) {
-    const cov = getCoverageForBlock(block)
-    if (!cov) {
-      continue
-    }
-    const startBin = Math.max(0, Math.floor(block.start - cov.coverageStartPos))
-    const endBin = Math.min(
-      cov.coverageDepths.length,
-      Math.ceil(block.end - cov.coverageStartPos),
-    )
-    for (let i = startBin; i < endBin; i++) {
-      const d = cov.coverageDepths[i]!
-      if (d > maxDepth) {
-        maxDepth = d
+interface StatsAcc {
+  min: number
+  max: number
+  sum: number
+  sumSq: number
+  count: number
+}
+
+// Reads the coarse stats sidecar off a region, or undefined when it carries
+// none — below the bin cap (binSize 1, empty arrays) or a per-bp-only source
+// like MAF. The four arrays are emitted as a unit (downsampleStatsBins) and so
+// only ever exist together; checking them together here is what lets the
+// reducer read them with no non-null assertions.
+function readStatsSidecar(cov: CoverageRegion): CoverageStatsBins | undefined {
+  const {
+    coverageStatsBinSize,
+    coverageStatsMins,
+    coverageStatsMaxs,
+    coverageStatsSums,
+    coverageStatsSumSqs,
+  } = cov
+  return coverageStatsBinSize !== undefined &&
+    coverageStatsBinSize > 1 &&
+    coverageStatsMins &&
+    coverageStatsMaxs &&
+    coverageStatsSums &&
+    coverageStatsSumSqs
+    ? {
+        binSize: coverageStatsBinSize,
+        mins: coverageStatsMins,
+        maxs: coverageStatsMaxs,
+        sums: coverageStatsSums,
+        sumSqs: coverageStatsSumSqs,
       }
-    }
-  }
-  return maxDepth
+    : undefined
 }
 
-export function getGlobalMaxCoverageDepth<K, D>(
-  dataMap: ReadonlyMap<K, D>,
-  getMaxDepth: (data: D) => number,
+// Fold one block's visible [start,end) into the running accumulator. Large
+// regions carry coarse binned stats (downsampleStatsBins) and reduce over whole
+// bins — O(bins) instead of O(bp), which is what kills the per-bp pan/zoom scan.
+// Bin-granular clipping over-includes at most one partial bin per visible edge,
+// negligible at the zoom where binning engages (binSize << visible span). Small
+// regions scan per-bp for exact clipping (byte-identical to the pre-binning
+// path).
+function accumulateBlockStats(
+  acc: StatsAcc,
+  cov: CoverageRegion,
+  blockStart: number,
+  blockEnd: number,
 ) {
-  let max = 0
-  for (const data of dataMap.values()) {
-    const d = getMaxDepth(data)
-    if (d > max) {
-      max = d
+  const { coverageStartPos } = cov
+  const n = cov.coverageDepths.length
+  const sidecar = readStatsSidecar(cov)
+  if (sidecar) {
+    const { binSize, mins, maxs, sums, sumSqs } = sidecar
+    const startBin = Math.max(
+      0,
+      Math.floor((blockStart - coverageStartPos) / binSize),
+    )
+    const endBin = Math.min(
+      maxs.length,
+      Math.ceil((blockEnd - coverageStartPos) / binSize),
+    )
+    for (let b = startBin; b < endBin; b++) {
+      if (mins[b]! < acc.min) {
+        acc.min = mins[b]!
+      }
+      if (maxs[b]! > acc.max) {
+        acc.max = maxs[b]!
+      }
+      acc.sum += sums[b]!
+      acc.sumSq += sumSqs[b]!
+      // bp this bin covers: binSize, except the ragged last bin (clamped to n).
+      // Added per bin, beside its own sum, so count spans exactly the bp summed
+      // — it only feeds mean/stdDev (localsd autoscale).
+      acc.count += Math.min((b + 1) * binSize, n) - b * binSize
+    }
+  } else {
+    const startIdx = Math.max(0, Math.floor(blockStart - coverageStartPos))
+    const endIdx = Math.min(n, Math.ceil(blockEnd - coverageStartPos))
+    for (let i = startIdx; i < endIdx; i++) {
+      const d = cov.coverageDepths[i]!
+      if (d < acc.min) {
+        acc.min = d
+      }
+      if (d > acc.max) {
+        acc.max = d
+      }
+      acc.sum += d
+      acc.sumSq += d * d
+      acc.count++
     }
   }
-  return max
 }
 
 export function computeVisibleCoverageStats<
@@ -117,75 +191,30 @@ export function computeVisibleCoverageStats<
   visibleBlocks: B[],
   getCoverageForBlock: (block: B) => CoverageRegion | undefined,
 ): ScoreStats | undefined {
-  let min = Infinity
-  let max = -Infinity
-  let sum = 0
-  let sumSq = 0
-  let count = 0
+  const acc: StatsAcc = {
+    min: Infinity,
+    max: -Infinity,
+    sum: 0,
+    sumSq: 0,
+    count: 0,
+  }
   for (const block of visibleBlocks) {
     const cov = getCoverageForBlock(block)
-    if (!cov) {
-      continue
-    }
-    const startBin = Math.max(0, Math.floor(block.start - cov.coverageStartPos))
-    const endBin = Math.min(
-      cov.coverageDepths.length,
-      Math.ceil(block.end - cov.coverageStartPos),
-    )
-    for (let i = startBin; i < endBin; i++) {
-      const d = cov.coverageDepths[i]!
-      if (d < min) {
-        min = d
-      }
-      if (d > max) {
-        max = d
-      }
-      sum += d
-      sumSq += d * d
-      count++
+    if (cov) {
+      accumulateBlockStats(acc, cov, block.start, block.end)
     }
   }
-  if (count === 0 || !Number.isFinite(max)) {
+  if (acc.count === 0 || !Number.isFinite(acc.max)) {
     return undefined
   }
-  const mean = sum / count
-  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
-  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
-}
-
-export function computeGlobalCoverageStats<K, D>(
-  dataMap: ReadonlyMap<K, D>,
-  getCoverage: (data: D) => CoverageRegion | undefined,
-): ScoreStats | undefined {
-  let min = Infinity
-  let max = -Infinity
-  let sum = 0
-  let sumSq = 0
-  let count = 0
-  for (const data of dataMap.values()) {
-    const cov = getCoverage(data)
-    if (!cov) {
-      continue
-    }
-    for (let i = 0, l = cov.coverageDepths.length; i < l; i++) {
-      const d = cov.coverageDepths[i]!
-      if (d < min) {
-        min = d
-      }
-      if (d > max) {
-        max = d
-      }
-      sum += d
-      sumSq += d * d
-      count++
-    }
+  const mean = acc.sum / acc.count
+  const stdDev = Math.sqrt(Math.max(0, acc.sumSq / acc.count - mean * mean))
+  return {
+    scoreMin: acc.min,
+    scoreMax: acc.max,
+    scoreMean: mean,
+    scoreStdDev: stdDev,
   }
-  if (count === 0 || !Number.isFinite(max)) {
-    return undefined
-  }
-  const mean = sum / count
-  const stdDev = Math.sqrt(Math.max(0, sumSq / count - mean * mean))
-  return { scoreMin: min, scoreMax: max, scoreMean: mean, scoreStdDev: stdDev }
 }
 
 export interface DownsampledBins {
@@ -274,9 +303,112 @@ export function downsampleMinMax(
   }
 }
 
+// Reduce a per-bp depth array to at most `maxBins` DENSE bins, each holding the
+// MAX depth over its bp span (peak-preserving, like a wiggle bar at low zoom).
+// Returns the input verbatim with binSize 1 when it already fits, so the
+// zoomed-in path is byte-identical to per-bp. Unlike `downsampleMinMax` (sparse,
+// skips empty bins, carries min+max) this stays dense and index-addressable —
+// bin b covers [startPos + b*binSize, startPos + (b+1)*binSize) — which is what
+// the single `binSize` GPU uniform and any bin = floor((pos-start)/binSize)
+// lookup need. Bin-by-bin (not a per-bp divide) to stay a tight typed-array loop.
+export function downsampleDenseMax(depths: Float32Array, maxBins: number) {
+  const n = depths.length
+  if (n <= maxBins) {
+    return { depths, binSize: 1 }
+  }
+  const binSize = Math.ceil(n / maxBins)
+  const numBins = Math.ceil(n / binSize)
+  const out = new Float32Array(numBins)
+  for (let b = 0; b < numBins; b++) {
+    const from = b * binSize
+    const to = Math.min(from + binSize, n)
+    let hi = 0
+    for (let i = from; i < to; i++) {
+      const d = depths[i]!
+      if (d > hi) {
+        hi = d
+      }
+    }
+    out[b] = hi
+  }
+  return { depths: out, binSize }
+}
+
+export interface CoverageStatsBins {
+  binSize: number
+  // Per-bin partial stats over the per-bp depths. `count` isn't stored: bin b
+  // holds binSize bp except the last (a ragged tail), which the reducer derives
+  // from the per-bp array length it already holds. sums/sumSqs are Float64 —
+  // the per-bp path accumulates in JS numbers (f64) too, so this matches its
+  // precision.
+  mins: Float32Array
+  maxs: Float32Array
+  sums: Float64Array
+  sumSqs: Float64Array
+}
+
+// Coarse per-bin partial stats (min/max/sum/sumSq) over per-bp depths, so the
+// main thread's visible-range autoscale reduce is O(bins) not O(bp). At
+// whole-chromosome scale the per-bp array is tens of millions of entries and a
+// full scan on every coarse-block change (~500ms during pan) is the coverage
+// band's pan/zoom jank. Returns empty arrays (binSize 1) when the per-bp array
+// already fits `maxBins`: the main thread then scans per-bp for exact
+// visible-edge clipping — cheap at that zoom, and byte-identical to the old
+// path. Mirrors downsampleDenseMax's shape (same cap, same binSize formula) so
+// the stats bins and the GPU depth bars align bin-for-bin.
+export function downsampleStatsBins(
+  depths: Float32Array,
+  maxBins: number,
+): CoverageStatsBins {
+  const n = depths.length
+  if (n <= maxBins) {
+    return {
+      binSize: 1,
+      mins: new Float32Array(0),
+      maxs: new Float32Array(0),
+      sums: new Float64Array(0),
+      sumSqs: new Float64Array(0),
+    }
+  }
+  const binSize = Math.ceil(n / maxBins)
+  const numBins = Math.ceil(n / binSize)
+  const mins = new Float32Array(numBins)
+  const maxs = new Float32Array(numBins)
+  const sums = new Float64Array(numBins)
+  const sumSqs = new Float64Array(numBins)
+  for (let b = 0; b < numBins; b++) {
+    const from = b * binSize
+    const to = Math.min(from + binSize, n)
+    let lo = Infinity
+    let hi = 0
+    let sum = 0
+    let sumSq = 0
+    for (let i = from; i < to; i++) {
+      const d = depths[i]!
+      if (d < lo) {
+        lo = d
+      }
+      if (d > hi) {
+        hi = d
+      }
+      sum += d
+      sumSq += d * d
+    }
+    mins[b] = lo === Infinity ? 0 : lo
+    maxs[b] = hi
+    sums[b] = sum
+    sumSqs[b] = sumSq
+  }
+  return { binSize, mins, maxs, sums, sumSqs }
+}
+
 export interface CoverageTooltipBin {
   position: number
   depth: number
+  // Total depth split by read strand. Undefined for callers that don't sweep
+  // per-strand coverage (e.g. MAF).
+  fwdDepth?: number
+  revDepth?: number
   interbaseDepth: number
   snps: Record<string, { count: number; fwd: number; rev: number }>
   deletions?: {
@@ -296,17 +428,14 @@ export interface CoverageTooltipBin {
       topSeqCount?: number
     }
   >
-  modifications?: Record<
-    string,
-    {
-      count: number
-      fwd: number
-      rev: number
-      probabilityTotal: number
-      color: string
-      name: string
-    }
-  >
+  modifications?: {
+    count: number
+    fwd: number
+    rev: number
+    probabilityTotal: number
+    color: string
+    name: string
+  }[]
 }
 
 export interface MismatchArrays {
@@ -318,6 +447,22 @@ export interface MismatchArrays {
 export interface CoverageArrays {
   coverageDepths: Float32Array
   coverageStartPos: number
+}
+
+// Interbase events (insertions/softclips/hardclips) sit at a base *boundary*,
+// not inside a cell, so their depth basis is the deeper of the two flanking
+// bins — at a coverage cliff one side can be ~0 and would give a misleading
+// proportion. Single source for the indicator, shader-fade and tooltip paths.
+export function interbaseDepthAt(
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+  position: number,
+) {
+  const idx = position - coverageStartPos
+  const left = idx - 1 >= 0 ? (coverageDepths[idx - 1] ?? 0) : 0
+  const right =
+    idx >= 0 && idx < coverageDepths.length ? (coverageDepths[idx] ?? 0) : 0
+  return Math.max(left, right)
 }
 
 export function countSnpsAtPosition(
@@ -342,23 +487,107 @@ export function countSnpsAtPosition(
   return snps
 }
 
+// Genomic position of the first event in [binStart, binEnd) that is
+// "significant" — at least `threshold` fraction of the local coverage depth at
+// that position. When a pixel spans many bp (zoomed out), an exact-position
+// lookup misses the event sitting elsewhere in the bin; callers scan the pixel's
+// bp range with this and tooltip the significant position instead. Single pass +
+// a small Map keyed by uint32 position. Returns undefined if nothing qualifies.
+export function findSignificantInBin(
+  positions: Uint32Array,
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+  binStart: number,
+  binEnd: number,
+  threshold: number,
+) {
+  const hitsByPos = new Map<number, number>()
+  for (const pos of positions) {
+    if (pos >= binStart && pos < binEnd) {
+      hitsByPos.set(pos, (hitsByPos.get(pos) ?? 0) + 1)
+    }
+  }
+  let best = -1
+  for (const [pos, n] of hitsByPos) {
+    const binIdx = Math.floor(pos - coverageStartPos)
+    const depth = coverageDepths[binIdx]
+    if (depth && n / depth > threshold && (best < 0 || pos < best)) {
+      best = pos
+    }
+  }
+  return best < 0 ? undefined : best
+}
+
+// Flat per-event interbase arrays (one entry per insertion), parallel to
+// `MismatchArrays`. Only insertion-type events are modeled — the callers that
+// pass these (e.g. MAF) emit no soft/hard clips.
+export interface InterbaseArrays {
+  interbasePositions: Uint32Array
+  interbaseLengths: Uint32Array
+}
+
+// Aggregate insertion-type interbase events anchored at `position` into the
+// tooltip bin's `interbase.insertion` summary (count + length range/avg).
+function countInterbaseAtPosition(
+  position: number,
+  { interbasePositions, interbaseLengths }: InterbaseArrays,
+) {
+  let count = 0
+  let minLen = Infinity
+  let maxLen = 0
+  let lenSum = 0
+  for (let i = 0; i < interbasePositions.length; i++) {
+    if (interbasePositions[i] === position) {
+      const len = interbaseLengths[i]!
+      count++
+      lenSum += len
+      if (len < minLen) {
+        minLen = len
+      }
+      if (len > maxLen) {
+        maxLen = len
+      }
+    }
+  }
+  const interbase: CoverageTooltipBin['interbase'] = {}
+  if (count > 0) {
+    interbase.insertion = { count, minLen, maxLen, avgLen: lenSum / count }
+  }
+  return interbase
+}
+
 export function buildCoverageTooltipBin(
   position: number,
   coverage: CoverageArrays,
   mismatches: MismatchArrays,
+  interbaseArrays?: InterbaseArrays,
+  // Interbase events are anchored at a base *boundary*, not inside a cell, so
+  // callers pass the nearest boundary (`round(gposFrac)`) here while `position`
+  // stays the containing cell (`floor`) used for depth/SNP. Defaults to
+  // `position` for callers that don't distinguish.
+  interbasePosition = position,
 ): CoverageTooltipBin | undefined {
   const binIdx = Math.floor(position - coverage.coverageStartPos)
   const depth = coverage.coverageDepths[binIdx] ?? 0
-  if (depth === 0) {
+  const interbase = interbaseArrays
+    ? countInterbaseAtPosition(interbasePosition, interbaseArrays)
+    : {}
+  const hasInterbase = interbase.insertion !== undefined
+  if (depth === 0 && !hasInterbase) {
     return undefined
   }
-  const snps = countSnpsAtPosition(position, mismatches)
   return {
     position,
     depth,
-    interbaseDepth: 0,
-    snps,
-    interbase: {},
+    interbaseDepth: hasInterbase
+      ? interbaseDepthAt(
+          coverage.coverageDepths,
+          coverage.coverageStartPos,
+          position,
+        )
+      : 0,
+    snps: depth > 0 ? countSnpsAtPosition(position, mismatches) : {},
+    interbase,
   }
 }
 
@@ -383,12 +612,20 @@ export interface SNPCoverageResult {
 
 /**
  * Compute SNP coverage segments for rendering colored bars in coverage area.
- * Groups mismatches by position, counts A/C/G/T per position, and creates
- * stacked segments expressed as fractions of THIS position's coverage bar.
+ * Groups mismatches by position, counts A/C/G/T (and N/other as one grey
+ * bucket) per position, and creates stacked segments expressed as fractions of
+ * THIS position's coverage bar. colorType: 1=A 2=C 3=G 4=T 5=N.
+ *
+ * Consumes the flat `mismatchPositions`/`mismatchBases` arrays directly (same
+ * arrays the frequency pass reads) rather than an object array, so callers
+ * don't hold a second `{position, base}[]` representation of the same
+ * mismatches. A position left of the coverage window resolves to zero depth via
+ * `depthAt` and emits no segment (the loops below gate on `depth > 0`), so
+ * out-of-window mismatches drop out without an explicit filter.
  */
 export function computeSNPCoverage(
-  mismatches: MismatchEntry[],
-  regionStart: number,
+  mismatchPositions: Uint32Array,
+  mismatchBases: Uint8Array,
   coverage: { depths: Float32Array; maxDepth: number; startPos: number },
 ): SNPCoverageResult {
   const {
@@ -396,7 +633,7 @@ export function computeSNPCoverage(
     maxDepth,
     startPos: coverageStartPos,
   } = coverage
-  if (mismatches.length === 0 || maxDepth === 0) {
+  if (mismatchPositions.length === 0 || maxDepth === 0) {
     return {
       positions: new Uint32Array(0),
       yOffsets: new Float32Array(0),
@@ -407,173 +644,145 @@ export function computeSNPCoverage(
     }
   }
 
+  // Coverage depth at a position is the bar denominator; a position at zero
+  // depth can't host SNPs so it emits no segment. Depends only on the position,
+  // so it is resolved once when the entry is created and cached on `depth`.
+  function depthAt(position: number) {
+    const idx = position - coverageStartPos
+    return idx >= 0 && idx < coverageDepths.length
+      ? (coverageDepths[idx] ?? 0)
+      : 0
+  }
+
   const snpByPosition = new Map<
     number,
-    { position: number; a: number; c: number; g: number; t: number }
+    {
+      position: number
+      depth: number
+      a: number
+      c: number
+      g: number
+      t: number
+      n: number
+    }
   >()
-  for (const mm of mismatches) {
-    let entry = snpByPosition.get(mm.position)
+  for (let i = 0; i < mismatchPositions.length; i++) {
+    const position = mismatchPositions[i]!
+    let entry = snpByPosition.get(position)
     if (!entry) {
-      entry = { position: mm.position, a: 0, c: 0, g: 0, t: 0 }
-      snpByPosition.set(mm.position, entry)
+      entry = {
+        position,
+        depth: depthAt(position),
+        a: 0,
+        c: 0,
+        g: 0,
+        t: 0,
+        n: 0,
+      }
+      snpByPosition.set(position, entry)
     }
-    if (mm.base === 65) {
-      entry.a++
-    } else if (mm.base === 67) {
-      entry.c++
-    } else if (mm.base === 71) {
-      entry.g++
-    } else if (mm.base === 84) {
-      entry.t++
+    // N and other non-A/C/G/T bases (IUPAC ambiguity codes) all accumulate
+    // into entry.n, drawn as one grey segment (colorType 5) on the bar.
+    switch (mismatchBases[i]) {
+      case 65:
+        entry.a++
+        break
+      case 67:
+        entry.c++
+        break
+      case 71:
+        entry.g++
+        break
+      case 84:
+        entry.t++
+        break
+      default:
+        entry.n++
     }
   }
 
-  const segments: {
-    position: number
-    yOffset: number
-    height: number
-    colorType: number
-    relDepth: number
-  }[] = []
-
+  // Pre-size the output typed arrays by counting emitted segments first, then
+  // fill by index — no intermediate segment-object array or filter pass (per the
+  // package's no-per-iteration-allocation rule for the coverage compute paths).
+  let count = 0
   for (const entry of snpByPosition.values()) {
-    const total = entry.a + entry.c + entry.g + entry.t
-    if (total === 0) {
-      continue
-    }
-    // totalDepth at this position determines bar height; SNP fractions are
-    // counts / totalDepth so they fill the visible part of the bar correctly.
-    // Skip positions outside coverage or with zero depth — there can't be
-    // SNPs without reads, so this is a data-inconsistency guard.
-    const idx = entry.position - coverageStartPos
-    const totalDepth =
-      idx >= 0 && idx < coverageDepths.length ? (coverageDepths[idx] ?? 0) : 0
-    if (totalDepth === 0) {
-      continue
-    }
-    const relDepth = totalDepth / maxDepth
-    let yOffset = 0
-    if (entry.a > 0) {
-      const h = entry.a / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height: h,
-        colorType: 1,
-        relDepth,
-      })
-      yOffset += h
-    }
-    if (entry.c > 0) {
-      const h = entry.c / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height: h,
-        colorType: 2,
-        relDepth,
-      })
-      yOffset += h
-    }
-    if (entry.g > 0) {
-      const h = entry.g / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height: h,
-        colorType: 3,
-        relDepth,
-      })
-      yOffset += h
-    }
-    if (entry.t > 0) {
-      const h = entry.t / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height: h,
-        colorType: 4,
-        relDepth,
-      })
+    if (entry.depth > 0) {
+      count +=
+        (entry.a > 0 ? 1 : 0) +
+        (entry.c > 0 ? 1 : 0) +
+        (entry.g > 0 ? 1 : 0) +
+        (entry.t > 0 ? 1 : 0) +
+        (entry.n > 0 ? 1 : 0)
     }
   }
 
-  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
-  const positions = new Uint32Array(filteredSegments.length)
-  const yOffsets = new Float32Array(filteredSegments.length)
-  const heights = new Float32Array(filteredSegments.length)
-  const colorTypes = new Uint8Array(filteredSegments.length)
-  const relDepths = new Float32Array(filteredSegments.length)
+  const positions = new Uint32Array(count)
+  const yOffsets = new Float32Array(count)
+  const heights = new Float32Array(count)
+  const colorTypes = new Uint8Array(count)
+  const relDepths = new Float32Array(count)
 
-  for (const [i, seg] of filteredSegments.entries()) {
-    positions[i] = seg.position
-    yOffsets[i] = seg.yOffset
-    heights[i] = seg.height
-    colorTypes[i] = seg.colorType
-    relDepths[i] = seg.relDepth
-  }
-
-  return {
-    positions,
-    yOffsets,
-    heights,
-    colorTypes,
-    relDepths,
-    count: filteredSegments.length,
-  }
-}
-
-export interface InsertionIndicatorResult {
-  positions: Uint32Array
-  count: number
-}
-
-/**
- * Compute insertion indicator positions from CS tag indel events.
- * Only insertions produce indicators — deletions already show as reduced
- * depth in the coverage area. Creates an indicator when the insertion count
- * at a position exceeds `threshold` fraction of the local coverage depth.
- */
-export function computeInsertionIndicators(
-  indels: IndelEntry[],
-  coverageDepths: Float32Array,
-  coverageStartPos: number,
-  threshold = 0.15,
-): InsertionIndicatorResult {
-  if (indels.length === 0) {
-    return { positions: new Uint32Array(0), count: 0 }
-  }
-
-  const insertionCountByPos = new Map<number, number>()
-  for (const indel of indels) {
-    if (indel.type === 1) {
-      insertionCountByPos.set(
-        indel.position,
-        (insertionCountByPos.get(indel.position) ?? 0) + 1,
-      )
+  let idx = 0
+  for (const entry of snpByPosition.values()) {
+    const totalDepth = entry.depth
+    if (totalDepth > 0) {
+      const relDepth = totalDepth / maxDepth
+      // colorType 1=A 2=C 3=G 4=T 5=N, stacked bottom-to-top by accumulating
+      // yOffset. Unrolled (not a [a,c,g,t] loop) to avoid a per-position array.
+      let yOffset = 0
+      if (entry.a > 0) {
+        const height = entry.a / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 1
+        relDepths[idx] = relDepth
+        idx++
+        yOffset += height
+      }
+      if (entry.c > 0) {
+        const height = entry.c / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 2
+        relDepths[idx] = relDepth
+        idx++
+        yOffset += height
+      }
+      if (entry.g > 0) {
+        const height = entry.g / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 3
+        relDepths[idx] = relDepth
+        idx++
+        yOffset += height
+      }
+      if (entry.t > 0) {
+        const height = entry.t / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 4
+        relDepths[idx] = relDepth
+        idx++
+        yOffset += height
+      }
+      if (entry.n > 0) {
+        const height = entry.n / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 5
+        relDepths[idx] = relDepth
+        idx++
+      }
     }
   }
 
-  const resultPositions: number[] = []
-  for (const [pos, count] of insertionCountByPos) {
-    const depthIdx = pos - coverageStartPos
-    const localDepth =
-      depthIdx >= 0 && depthIdx < coverageDepths.length
-        ? coverageDepths[depthIdx]!
-        : 0
-    if (localDepth >= 1 && count / localDepth >= threshold) {
-      resultPositions.push(pos)
-    }
-  }
-
-  resultPositions.sort((a, b) => a - b)
-
-  const positions = new Uint32Array(resultPositions.length)
-  for (let i = 0; i < resultPositions.length; i++) {
-    positions[i] = resultPositions[i]!
-  }
-
-  return { positions, count: resultPositions.length }
+  return { positions, yOffsets, heights, colorTypes, relDepths, count }
 }
 
 export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'

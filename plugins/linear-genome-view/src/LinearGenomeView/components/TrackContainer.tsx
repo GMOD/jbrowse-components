@@ -1,15 +1,18 @@
+import { useState } from 'react'
+
 import { ErrorBanner, ResizeHandle } from '@jbrowse/core/ui'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines.tsx'
-import TrackLabelContainer from './TrackLabelContainer.tsx'
+import PaddingBlocks from './PaddingBlocks.tsx'
+import TrackLabel from './TrackLabel.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
-import { shouldSwapTracks } from './util.ts'
+import { TrackOverlayContext } from '../TrackOverlayContext.ts'
 
+import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -24,9 +27,28 @@ const useStyles = makeStyles()({
     background: 'none',
   },
   resizeHandle: {
-    height: 4,
-    boxSizing: 'border-box',
     position: 'relative',
+    height: 4,
+  },
+  trackLabelOffset: {
+    position: 'relative',
+    display: 'inline-block',
+  },
+  trackLabelOverlap: {
+    position: 'absolute',
+  },
+  // Portal target for display-provided floating chrome (e.g. the multi-wiggle
+  // legend). Rendered after PaddingBlocks so it paints above the inter-region
+  // masks; shares their box so a `top:0` overlay lands at the same origin. Below
+  // TrackLabel (zIndex 200); pointer-events pass through to the canvas.
+  trackOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+    zIndex: 100,
   },
 })
 
@@ -40,41 +62,48 @@ const TrackContainer = observer(function TrackContainer({
   track: BaseTrackModel
 }) {
   const { classes } = useStyles()
-  const display = track.displays[0]
-  const { draggingTrackId, showTrackOutlines } = model
+  // an LGV track always holds at least one linear display (activeDisplay =
+  // displays[0]); narrow to the linear shape for prefersOffset/resizeHeight
+  const display = track.activeDisplay as LinearDisplayModel
+  const { showTrackOutlines } = model
+  // element state (not a ref) so consumers re-render once the portal target
+  // mounts and the context value flips from null to the node
+  const [overlayEl, setOverlayEl] = useState<HTMLDivElement | null>(null)
+  const trackLabelStyle =
+    model.effectiveTrackLabels !== 'overlapping' || display.prefersOffset
+      ? classes.trackLabelOffset
+      : classes.trackLabelOverlap
+
   return (
     <Paper
       className={cx(classes.root, track.pinned ? null : classes.unpinnedTrack)}
       variant={showTrackOutlines ? 'outlined' : undefined}
       elevation={showTrackOutlines ? undefined : 0}
       onDragOver={event => {
-        if (
-          isAlive(display) &&
-          draggingTrackId !== undefined &&
-          draggingTrackId !== display.id
-        ) {
-          const draggingIdx = model.tracks.findIndex(
-            t => t.id === draggingTrackId,
-          )
-          const targetIdx = model.tracks.findIndex(t => t.id === track.id)
-          const movingDown = targetIdx > draggingIdx
-          const currentY = event.clientY
-
-          if (shouldSwapTracks(model.lastTrackDragY, currentY, movingDown)) {
-            model.setLastTrackDragY(currentY)
-            model.moveTrack(draggingTrackId, track.id)
-          }
-        }
+        model.onTrackDragOver(track.id, event.clientY)
       }}
     >
-      {/* offset 1px since for left track border */}
-      {track.pinned ? <Gridlines model={model} offset={1} /> : null}
-      <TrackLabelContainer track={track} view={model} />
+      {/* offset cancels the Paper's 1px left border (present iff outlines on) */}
+      {track.pinned ? (
+        <Gridlines model={model} offset={showTrackOutlines ? 1 : 0} />
+      ) : null}
+      {model.effectiveTrackLabels !== 'hidden' ? (
+        <TrackLabel track={track} className={trackLabelStyle} />
+      ) : null}
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
-        <TrackRenderingContainer model={model} track={track} />
+        <TrackOverlayContext value={overlayEl}>
+          <TrackRenderingContainer model={model} track={track} />
+        </TrackOverlayContext>
       </ErrorBoundary>
+      {/* mirrors the rendering container's left offset (both sit inside the
+          Paper's 1px border, present iff outlines on), so the separator masks
+          the track content at the same x the data is drawn */}
+      <PaddingBlocks model={model} offset={showTrackOutlines ? 1 : 0} />
+      {/* mounted after PaddingBlocks so display chrome portaled here paints
+          above the inter-region masks (see TrackOverlayContext) */}
+      <div ref={setOverlayEl} className={classes.trackOverlay} />
       <ResizeHandle
-        onDrag={display.resizeHeight}
+        onDrag={distance => display.resizeHeight(distance)}
         className={classes.resizeHandle}
       />
     </Paper>

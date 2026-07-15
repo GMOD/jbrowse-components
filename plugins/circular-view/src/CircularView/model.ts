@@ -1,7 +1,6 @@
 import { lazy } from 'react'
 import type { FC, ReactNode } from 'react'
 
-import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -15,19 +14,20 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
 import { calculateStaticSlices } from './slices.ts'
-import { viewportVisibleSection } from './viewportVisibleRegion.ts'
 
 import type { SliceRegion } from './slices.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+const twoPi = 2 * Math.PI
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -42,12 +42,24 @@ export interface ExportSvgOptions {
   filename?: string
   Wrapper?: FC<{ children: ReactNode }>
   themeName?: string
+  fontFamily?: string
 }
 
 /**
  * #stateModel CircularView
- * extends
- * - [BaseViewModel](../baseviewmodel)
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. The `init` shorthand takes a
+ * single `assembly` and the structural-variant `tracks` to draw as arcs:
+ * ```js
+ * {
+ *   type: 'CircularView',
+ *   init: {
+ *     assembly: 'hg38',
+ *     tracks: ['my-sv-vcf'],
+ *   },
+ * }
+ * ```
  */
 function stateModelFactory(pluginManager: PluginManager) {
   const minHeight = 40
@@ -67,17 +79,27 @@ function stateModelFactory(pluginManager: PluginManager) {
       types.model({
         /**
          * #property
+         * this is a string instead of the const literal 'CircularView' to
+         * reduce some typescripting strictness, but you should pass the string
+         * 'CircularView' to the model explicitly
          */
-        type: types.literal('CircularView'),
+        type: types.literal('CircularView') as unknown as string,
         /**
          * #property
          * similar to offsetPx in linear genome view
          */
-        offsetRadians: defaultOffsetRadians,
+        offsetRadians: types.stripDefault(types.number, defaultOffsetRadians),
         /**
          * #property
          */
-        bpPerPx: defaultBpPerPx,
+        bpPerPx: types.stripDefault(types.number, defaultBpPerPx),
+        /**
+         * #property
+         * whether the view keeps re-fitting to its container on resize.
+         * Cleared once the user manually zooms/pans so their view (persisted
+         * via bpPerPx/offsetRadians) is preserved across resizes and reloads.
+         */
+        autoFit: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
@@ -88,48 +110,57 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        hideVerticalResizeHandle: false,
+        hideVerticalResizeHandle: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        hideTrackSelectorButton: false,
+        hideTrackSelectorButton: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        disableImportForm: false,
+        disableImportForm: types.stripDefault(types.boolean, false),
 
         /**
          * #property
          */
-        height: types.optional(types.number, defaultHeight),
+        height: types.stripDefault(types.number, defaultHeight),
         /*
          * #property
          */
-        displayedRegions: types.optional(types.frozen<Region[]>(), []),
+        displayedRegions: types.stripDefault(types.frozen<Region[]>(), []),
         /**
          * #property
          */
-        minimumRadiusPx: defaultMinimumRadiusPx,
+        minimumRadiusPx: types.stripDefault(
+          types.number,
+          defaultMinimumRadiusPx,
+        ),
         /**
          * #property
          */
-        spacingPx: defaultSpacingPx,
+        spacingPx: types.stripDefault(types.number, defaultSpacingPx),
         /**
          * #property
          */
-        paddingPx: defaultPaddingPx,
+        paddingPx: types.stripDefault(types.number, defaultPaddingPx),
         /**
          * #property
          */
-        minVisibleWidth: defaultMinVisibleWidth,
+        minVisibleWidth: types.stripDefault(
+          types.number,
+          defaultMinVisibleWidth,
+        ),
         /**
          * #property
          */
-        minimumBlockWidth: defaultMinimumBlockWidth,
+        minimumBlockWidth: types.stripDefault(
+          types.number,
+          defaultMinimumBlockWidth,
+        ),
         /**
          * #property
          */
-        trackSelectorType: 'hierarchical',
+        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
          * used for initializing the view from a session snapshot
@@ -161,17 +192,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        */
-      get visibleSection() {
-        const { width, height } = self
-        return viewportVisibleSection(
-          [0, width, 0, height],
-          this.centerXY,
-          this.radiusPx,
-        )
-      },
-      /**
-       * #getter
-       */
       get circumferencePx() {
         return this.elidedRegions.reduce(
           (sum, r) => sum + r.widthBp / self.bpPerPx + self.spacingPx,
@@ -182,19 +202,13 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get radiusPx() {
-        return this.circumferencePx / (2 * Math.PI)
+        return this.circumferencePx / twoPi
       },
       /**
        * #getter
        */
       get bpPerRadian() {
         return self.bpPerPx * this.radiusPx
-      },
-      /**
-       * #getter
-       */
-      get pxPerRadian() {
-        return this.radiusPx
       },
       /**
        * #getter
@@ -222,7 +236,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get maxBpPerPx() {
-        const minCircumferencePx = 2 * Math.PI * self.minimumRadiusPx
+        const minCircumferencePx = twoPi * self.minimumRadiusPx
         return this.totalBp / minCircumferencePx
       },
       /**
@@ -230,7 +244,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       get minBpPerPx() {
         // min depends on window dimensions, clamp between old min(0.01) and max
-        const maxCircumferencePx = 2 * Math.PI * this.maximumRadiusPx
+        const maxCircumferencePx = twoPi * this.maximumRadiusPx
         return clamp(
           this.totalBp / maxCircumferencePx,
           0.0000000001,
@@ -285,10 +299,13 @@ function stateModelFactory(pluginManager: PluginManager) {
           }
         }
 
-        // remove any single-region elisions
+        // a single-region elision isn't worth collapsing: promote it back to a
+        // normal region. Drop the elided `regions` wrapper so its Slice key
+        // (assembleLocString) matches a natively-visible region of the same
+        // coords instead of diverging to JSON.stringify(regions).
         return visible.map(v =>
           v.elided && v.regions.length === 1
-            ? { ...v, ...v.regions[0]!, elided: false as const }
+            ? { ...v.regions[0]!, widthBp: v.widthBp, elided: false as const }
             : v,
         )
       },
@@ -341,21 +358,14 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (self.init) {
           const { assemblyManager } = getSession(self)
           const asm = assemblyManager.get(self.init.assembly)
-          if (asm?.error) {
-            return asm.error
-          }
           if (!asm) {
             return `Assembly ${self.init.assembly} not found`
           }
+          if (asm.error) {
+            return asm.error
+          }
         }
         return undefined
-      },
-
-      /**
-       * #getter
-       */
-      get loadingMessage() {
-        return this.showLoading ? 'Loading' : undefined
       },
 
       /**
@@ -378,11 +388,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * Whether the view is fully initialized and ready to display
        */
       get showView() {
-        return (
-          !!self.displayedRegions.length &&
-          !!this.figureSize &&
-          this.initialized
-        )
+        return !!self.displayedRegions.length && this.initialized
       },
 
       /**
@@ -414,39 +420,28 @@ function stateModelFactory(pluginManager: PluginManager) {
         }
         const r = Math.min(self.width, self.height) / 2 - self.paddingPx
         this.setBpPerPx(
-          self.totalBp / (2 * Math.PI * Math.max(r, self.minimumRadiusPx)),
+          self.totalBp / (twoPi * Math.max(r, self.minimumRadiusPx)),
         )
         self.panX = 0
         self.panY = 0
       },
-      setWidth(newWidth: number) {
-        self.volatileWidth = Math.max(newWidth, minWidth)
-        this.fitToWindow()
-        return self.volatileWidth
+      setWidth(newWidth: number): number {
+        const clamped = Math.max(newWidth, minWidth)
+        self.volatileWidth = clamped
+        if (self.autoFit) {
+          this.fitToWindow()
+        }
+        return clamped
       },
       /**
        * #action
        */
       setHeight(newHeight: number) {
         self.height = Math.max(newHeight, minHeight)
-        this.fitToWindow()
+        if (self.autoFit) {
+          this.fitToWindow()
+        }
         return self.height
-      },
-      /**
-       * #action
-       */
-      resizeHeight(distance: number) {
-        const oldHeight = self.height
-        const newHeight = this.setHeight(self.height + distance)
-        return newHeight - oldHeight
-      },
-      /**
-       * #action
-       */
-      resizeWidth(distance: number) {
-        const oldWidth = self.width
-        const newWidth = this.setWidth(self.width + distance)
-        return newWidth - oldWidth
       },
       /**
        * #action
@@ -471,8 +466,19 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * reset rotation, pan, and zoom back to the default fit-to-window view
+       */
+      resetView() {
+        self.offsetRadians = defaultOffsetRadians
+        self.autoFit = true
+        this.fitToWindow()
+      },
+
+      /**
+       * #action
        */
       zoomInButton() {
+        self.autoFit = false
         this.setBpPerPx(self.bpPerPx / 1.4)
       },
 
@@ -480,6 +486,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       zoomOutButton() {
+        self.autoFit = false
         this.setBpPerPx(self.bpPerPx * 1.4)
       },
 
@@ -496,6 +503,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * genome position at that angle visually fixed under the cursor
        */
       zoomToPoint(newBpPerPx: number, cursorAngle: number) {
+        self.autoFit = false
         const oldRadius = self.radiusPx
         self.bpPerPx = clamp(newBpPerPx, self.minBpPerPx, self.maxBpPerPx)
         const dr = oldRadius - self.radiusPx
@@ -508,6 +516,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setDisplayedRegions(regions: Region[]) {
         self.displayedRegions = cast(regions)
+        self.autoFit = true
         this.fitToWindow()
       },
 
@@ -532,7 +541,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleTrack(trackId: string) {
-        toggleTrackGeneric(self, trackId)
+        return toggleTrackGeneric(self, trackId)
       },
 
       /**
@@ -553,42 +562,33 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       showTrack(trackId: string, initialSnapshot = {}) {
-        showTrackGeneric(self, trackId, initialSnapshot)
+        return showTrackGeneric(self, trackId, initialSnapshot)
       },
 
       /**
        * #action
        */
-      addTrackConf(configuration: AnyConfigurationModel, initialSnapshot = {}) {
-        const { type } = configuration
-        const name = readConfObject(configuration, 'name')
-        const trackType = pluginManager.getTrackType(type)
-        if (!trackType) {
-          throw new Error(`unknown track type ${type}`)
-        }
-        const viewType = pluginManager.getViewType(self.type)!
-        const supportedDisplays = new Set(
-          viewType.displayTypes.map(d => d.name),
-        )
-        const displayConf = configuration.displays.find(
-          (d: AnyConfigurationModel) => supportedDisplays.has(d.type),
-        )
-        self.tracks.push(
-          trackType.stateModel.create({
-            ...initialSnapshot,
-            name,
-            type,
+      addTrackConf(
+        configuration: Record<string, unknown>,
+        initialSnapshot = {},
+      ) {
+        const { trackId } = configuration
+        if (typeof trackId === 'string') {
+          return showTrackGeneric(
+            self,
+            trackId,
+            initialSnapshot,
+            {},
             configuration,
-            displays: [{ type: displayConf.type, configuration: displayConf }],
-          }),
-        )
+          )
+        }
       },
 
       /**
        * #action
        */
       hideTrack(trackId: string) {
-        hideTrackGeneric(self, trackId)
+        return hideTrackGeneric(self, trackId)
       },
 
       /**
@@ -609,45 +609,28 @@ function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGCircularView.tsx')
         const html = await renderToSvg(self as CircularViewModel, opts)
-        const { saveAs } = await import('@jbrowse/core/util')
-
-        if (opts.format === 'png') {
-          const img = new Image()
-          const svgBlob = new Blob([html], { type: 'image/svg+xml' })
-          const url = URL.createObjectURL(svgBlob)
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => {
-              const canvas = document.createElement('canvas')
-              canvas.width = img.width
-              canvas.height = img.height
-              const ctx = canvas.getContext('2d')!
-              ctx.drawImage(img, 0, 0)
-              URL.revokeObjectURL(url)
-              canvas.toBlob(blob => {
-                if (blob) {
-                  saveAs(blob, opts.filename || 'image.png')
-                  resolve()
-                } else {
-                  reject(
-                    new Error(
-                      `Failed to create PNG. The image may be too large (${img.width}x${img.height}). Try reducing the view size or use SVG format.`,
-                    ),
-                  )
-                }
-              }, 'image/png')
-            }
-            img.onerror = () => {
-              URL.revokeObjectURL(url)
-              reject(new Error('Failed to load SVG for PNG conversion'))
-            }
-            img.src = url
-          })
-        } else {
-          saveAs(
-            new Blob([html], { type: 'image/svg+xml' }),
-            opts.filename || 'image.svg',
-          )
+        const { saveSvgAsImage } = await import('@jbrowse/core/util')
+        await saveSvgAsImage(html, opts)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        return self.setHeight(oldHeight + distance) - oldHeight
+      },
+      /**
+       * #action
+       */
+      resizeWidth(distance: number) {
+        const oldWidth = self.volatileWidth
+        if (oldWidth === undefined) {
+          return 0
         }
+        self.setWidth(oldWidth + distance)
+        return self.width - oldWidth
       },
     }))
     .actions(self => ({
@@ -698,6 +681,13 @@ function stateModelFactory(pluginManager: PluginManager) {
             icon: FolderOpenIcon,
           },
           {
+            label: 'Reset view',
+            onClick: () => {
+              self.resetView()
+            },
+            icon: CenterFocusStrongIcon,
+          },
+          {
             label: 'Export SVG',
             icon: PhotoCameraIcon,
             onClick: () => {
@@ -719,45 +709,18 @@ function stateModelFactory(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
-      const {
-        init,
-        offsetRadians,
-        bpPerPx,
-        hideVerticalResizeHandle,
-        hideTrackSelectorButton,
-        disableImportForm,
-        height,
-        displayedRegions,
-        minimumRadiusPx,
-        spacingPx,
-        paddingPx,
-        minVisibleWidth,
-        minimumBlockWidth,
-        trackSelectorType,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(offsetRadians !== defaultOffsetRadians ? { offsetRadians } : {}),
-        ...(bpPerPx !== defaultBpPerPx ? { bpPerPx } : {}),
-        ...(hideVerticalResizeHandle ? { hideVerticalResizeHandle } : {}),
-        ...(hideTrackSelectorButton ? { hideTrackSelectorButton } : {}),
-        ...(disableImportForm ? { disableImportForm } : {}),
-        ...(height !== defaultHeight ? { height } : {}),
-        ...(displayedRegions.length ? { displayedRegions } : {}),
-        ...(minimumRadiusPx !== defaultMinimumRadiusPx
-          ? { minimumRadiusPx }
-          : {}),
-        ...(spacingPx !== defaultSpacingPx ? { spacingPx } : {}),
-        ...(paddingPx !== defaultPaddingPx ? { paddingPx } : {}),
-        ...(minVisibleWidth !== defaultMinVisibleWidth
-          ? { minVisibleWidth }
-          : {}),
-        ...(minimumBlockWidth !== defaultMinimumBlockWidth
-          ? { minimumBlockWidth }
-          : {}),
-        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-      } as typeof snap
+      // init is transient: redundant once displayedRegions exist, so strip it
+      // then. While displayedRegions is still empty, init is the only thing that
+      // can rebuild the view -> keep it so a reload/restore resumes instead of
+      // dropping to the import form. displayedRegions is stripDefault, so it's
+      // absent (not []) when empty — the optional chain is runtime-necessary
+      // despite the non-nullish type.
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (snap.displayedRegions?.length) {
+        const { init, ...rest } = snap
+        return rest as typeof snap
+      }
+      return snap
     })
 }
 

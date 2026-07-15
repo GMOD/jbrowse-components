@@ -1,57 +1,54 @@
 ---
 id: jbrowse1textsearchadapter
 title: JBrowse1TextSearchAdapter
+sidebar_label: Adapter -> JBrowse1TextSearchAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`legacy-jbrowse` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1TextSearchAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/JBrowse1TextSearchAdapter.md)
-
-## Docs
+## Overview
 
 note: metadata about tracks and assemblies covered by text search adapter
 
 ### JBrowse1TextSearchAdapter - Identifier
 
-#### slot: explicitIdentifier
+Every JBrowse1TextSearchAdapter has a unique `textSearchAdapterId`, a required
+top-level field that identifies it (not one of the config slots below).
 
-### JBrowse1TextSearchAdapter - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                           | Type           | Description                                             |
+| ---------------------------------------------- | -------------- | ------------------------------------------------------- |
+| [namesIndexLocation](#slot-namesindexlocation) | `fileLocation` | the location of the JBrowse1 names index data directory |
+| [tracks](#slot-tracks)                         | `stringArray`  | List of tracks covered by text search adapter           |
+| [assemblyNames](#slot-assemblynames)           | `stringArray`  | List of assemblies covered by text search adapter       |
+
+<details>
+<summary>JBrowse1TextSearchAdapter - Slots</summary>
 
 #### slot: namesIndexLocation
 
-```js
-namesIndexLocation: {
-      type: 'fileLocation',
-      defaultValue: { uri: '/volvox/names', locationType: 'UriLocation' },
-      description: 'the location of the JBrowse1 names index data directory',
-    }
-```
+the location of the JBrowse1 names index data directory
+
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/volvox/names', locationType: 'UriLocation' }`
 
 #### slot: tracks
 
-```js
-tracks: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of tracks covered by text search adapter',
-    }
-```
+List of tracks covered by text search adapter
+
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: assemblyNames
 
-```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'List of assemblies covered by text search adapter',
-    }
-```
+List of assemblies covered by text search adapter
+
+**Type:** `stringArray` · **Default:** `[]`
+
+</details>

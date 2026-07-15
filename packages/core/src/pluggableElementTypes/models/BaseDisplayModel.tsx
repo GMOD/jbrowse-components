@@ -1,18 +1,19 @@
 import type React from 'react'
 
-import { getParent, hasParent, types } from '@jbrowse/mobx-state-tree'
+import { getParent, hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
-import { getEffectiveTrackConfig } from '../../util/getConfigOverrides.ts'
 import {
   getContainingTrack,
-  getContainingView,
   getEnv,
+  statusFraction,
+  statusMessageText,
 } from '../../util/index.ts'
-import { getParentRenderProps } from '../../util/tracks.ts'
 import { ElementId } from '../../util/types/mst.ts'
 
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
+import type { RpcStatus } from '../../util/progress.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -34,59 +35,45 @@ function stateModelFactory() {
        * #property
        */
       rpcDriverName: types.maybe(types.string),
+      /**
+       * #property
+       * true for a display that arrived inside a session received from someone
+       * else (a share link, an encoded/json session, a `spec-` URL). Such a
+       * display resolves its `promotable` config slots from its own config
+       * only, never from this browser's promoted display-type defaults (see
+       * `configuration/promotableDefaults.ts`) — the received session is a
+       * record of what the sender saw, and a local preference silently
+       * repainting it would make it a lie. A track opened *afterwards* in that
+       * same session is a fresh track of this user's, so it never gets the flag
+       * and picks up their defaults normally. Cleared by `resetSlotsToInherit`
+       * when the user deliberately makes the display follow a default.
+       */
+      ignorePromotedDefaults: types.stripDefault(types.boolean, false),
     })
     .volatile(() => ({
-      rendererTypeName: '',
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       statusMessage: undefined as string | undefined,
+      /**
+       * #volatile
+       * determinate progress fraction [0,1] for the current status, or
+       * undefined when the in-flight phase is indeterminate. Set alongside
+       * `statusMessage` by `setStatusMessage`; a display that never shows a
+       * bar simply leaves it undefined.
+       */
+      statusProgress: undefined as number | undefined,
     }))
     .views(self => ({
       /**
        * #getter
        */
-      get RenderingComponent(): React.FC<{
-        model: typeof self
-        onHorizontalScroll?: () => void
-        blockState?: Record<string, unknown>
-      }> {
-        const { pluginManager } = getEnv(self)
-        return pluginManager.getDisplayType(self.type)!
-          .ReactComponent as React.FC<{
-          model: typeof self
-          onHorizontalScroll?: () => void
-          blockState?: Record<string, unknown>
-        }>
-      },
-
-      /**
-       * #getter
-       */
-      get DisplayBlurb(): React.FC<{ model: typeof self }> | null {
-        return null
-      },
-
-      /**
-       * #getter
-       */
-      get adapterConfig() {
-        return getConf(this.parentTrack, 'adapter')
-      },
-
-      /**
-       * #getter
-       */
       get parentTrack() {
+        if (!hasParent(self)) {
+          console.warn(
+            `[BaseDisplayModel] parentTrack accessed with no parent: alive=${isAlive(self)} type=${self.type}`,
+          )
+        }
         return getContainingTrack(self)
-      },
-
-      /**
-       * #getter
-       * Returns true if the parent track is minimized. Used to skip
-       * expensive operations like autoruns when track is not visible.
-       */
-      get isMinimized() {
-        return this.parentTrack.minimized
       },
 
       /**
@@ -109,6 +96,47 @@ function stateModelFactory() {
         }
         return undefined
       },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get RenderingComponent(): React.FC<{
+        model: typeof self
+        onHorizontalScroll?: (distance: number) => void
+        blockState?: Record<string, unknown>
+      }> {
+        const { pluginManager } = getEnv(self)
+        return pluginManager.getDisplayType(self.type)
+          .ReactComponent as React.FC<{
+          model: typeof self
+          onHorizontalScroll?: (distance: number) => void
+          blockState?: Record<string, unknown>
+        }>
+      },
+
+      /**
+       * #getter
+       */
+      get DisplayBlurb(): React.FC<{ model: typeof self }> | null {
+        return null
+      },
+
+      /**
+       * #getter
+       */
+      get adapterConfig() {
+        return getConf(self.parentTrack, 'adapter')
+      },
+
+      /**
+       * #getter
+       * Returns true if the parent track is minimized. Used to skip
+       * expensive operations like autoruns when track is not visible.
+       */
+      get isMinimized() {
+        return self.parentTrack.minimized
+      },
 
       /**
        * #getter
@@ -121,34 +149,13 @@ function stateModelFactory() {
         if (self.rpcDriverName) {
           return self.rpcDriverName
         }
-        if (this.parentDisplay?.effectiveRpcDriverName) {
-          return this.parentDisplay.effectiveRpcDriverName
+        if (self.parentDisplay?.effectiveRpcDriverName) {
+          return self.parentDisplay.effectiveRpcDriverName
         }
-        return getConf(this.parentTrack, 'rpcDriverName')
-      },
-
-      /**
-       * #getter
-       */
-      get effectiveTrackConfig() {
-        const track = getContainingTrack(self)
-        return getEffectiveTrackConfig(track.configuration, self)
+        return getConf(self.parentTrack, 'rpcDriverName')
       },
     }))
     .views(self => ({
-      /**
-       * #method
-       * the react props that are passed to the Renderer when data
-       * is rendered in this display. these are serialized and sent to the
-       * worker for server-side rendering
-       */
-      renderProps() {
-        return {
-          ...getParentRenderProps(self),
-          notReady: self.isMinimized || getContainingView(self).minimized,
-          rpcDriverName: self.effectiveRpcDriverName,
-        }
-      },
       /**
        * #method
        * props passed to the renderer's React "Rendering" component.
@@ -159,18 +166,6 @@ function stateModelFactory() {
         return {
           displayModel: self,
         }
-      },
-
-      /**
-       * #getter
-       * the pluggable element type object for this display's renderer
-       */
-      get rendererType() {
-        if (!self.rendererTypeName) {
-          return undefined
-        }
-        const { pluginManager } = getEnv(self)
-        return pluginManager.getRendererType(self.rendererTypeName)!
       },
 
       /**
@@ -189,12 +184,6 @@ function stateModelFactory() {
       },
 
       /**
-       * #getter
-       */
-      get viewMenuActions(): MenuItem[] {
-        return []
-      },
-      /**
        * #method
        * @param region -
        * @returns falsy if the region is fine to try rendering. Otherwise,
@@ -205,18 +194,23 @@ function stateModelFactory() {
       regionCannotBeRendered(/* region */) {
         return null
       },
-
-      get effectiveTrackConfig() {
-        const track = getContainingTrack(self)
-        return getEffectiveTrackConfig(track.configuration, self)
-      },
     }))
     .actions(self => ({
       /**
        * #action
+       * see the `ignorePromotedDefaults` property
        */
-      setStatusMessage(arg?: string) {
-        self.statusMessage = arg
+      setIgnorePromotedDefaults(flag: boolean) {
+        self.ignorePromotedDefaults = flag
+      },
+      /**
+       * #action
+       */
+      setStatusMessage(status?: RpcStatus) {
+        // derive the indeterminate label and the determinate fraction from the
+        // one status transport; displays with no bar just ignore statusProgress
+        self.statusMessage = statusMessageText(status)
+        self.statusProgress = statusFraction(status)
       },
       /**
        * #action
@@ -241,3 +235,19 @@ function stateModelFactory() {
 export const BaseDisplay = stateModelFactory()
 export type BaseDisplayStateModel = typeof BaseDisplay
 export type BaseDisplayModel = Instance<BaseDisplayStateModel>
+
+/**
+ * The shape every display instance held in a track's `displays` array
+ * satisfies: the composed `BaseDisplay` state model (RenderingComponent,
+ * DisplayBlurb, trackMenuItems, ...) plus the `configuration`
+ * reference every display gains at instantiation. `getPortableSettings` is
+ * optional — only display types that support switching type via the track menu
+ * implement it. This is the concrete element type behind
+ * `BaseTrackModel.displays`, which the runtime plugin union erases to `any`.
+ */
+export interface DisplayModel extends BaseDisplayModel {
+  configuration: AnyConfigurationModel & { displayId: string }
+  getPortableSettings?: (
+    newDisplayId?: string,
+  ) => Record<string, unknown> | undefined
+}

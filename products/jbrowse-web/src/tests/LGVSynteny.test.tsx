@@ -6,6 +6,7 @@ import {
   createView,
   doBeforeEach,
   expectCanvasMatch,
+  findCanvasIn,
   hts,
   mockConsoleWarn,
   setup,
@@ -27,15 +28,15 @@ const opts = [{}, delay]
 test('nav to synteny from right click', async () => {
   await mockConsoleWarn(async () => {
     const user = userEvent.setup()
-    const { session, view, findByTestId, findByText, findAllByTestId } =
-      await createView()
+    const { session, view, findByTestId, findByText } = await createView()
 
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
-    const track = await findAllByTestId('pileup-overlay-strand', ...opts)
-    fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 5 })
-    fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 5 })
+    const display = await findByTestId('pileup-display-done', ...opts)
+    const canvas = findCanvasIn(display)
+    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
+    fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(await findByText('Launch synteny view for this position'))
     fireEvent.click(await findByText('Submit'))
     await waitFor(() => {
@@ -43,23 +44,22 @@ test('nav to synteny from right click', async () => {
       expect(v?.initialized).toBe(true)
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,222..34,670')
     }, delay)
-    await new Promise(res => setTimeout(res, 1000))
-    expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
+    expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
   })
 }, 60000)
 
 test('nav to synteny from feature details', async () => {
   await mockConsoleWarn(async () => {
     const user = userEvent.setup()
-    const { session, view, findByTestId, findByText, findAllByTestId } =
-      await createView()
+    const { session, view, findByTestId, findByText } = await createView()
 
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await findByTestId(hts('volvox_ins.paf'), ...opts))
 
-    const track = await findAllByTestId('pileup-overlay-strand', ...opts)
-    fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 5 })
-    fireEvent.click(track[0]!, { clientX: 200, clientY: 5 })
+    const display = await findByTestId('pileup-display-done', ...opts)
+    const canvas = findCanvasIn(display)
+    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
+    fireEvent.click(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(
       await findByText('Launch new linear synteny view on this feature'),
     )
@@ -69,16 +69,14 @@ test('nav to synteny from feature details', async () => {
       expect(v?.initialized).toBe(true)
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:1..50,001')
     }, delay)
-    await new Promise(res => setTimeout(res, 1000))
-    expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
+    expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
   })
 }, 60000)
 
 test('nav to synteny from right click, with launch connection plugin', async () => {
   await mockConsoleWarn(async () => {
     const user = userEvent.setup()
-    const { session, view, findByTestId, findByText, findAllByTestId } =
-      await createView()
+    const { session, view, findByTestId, findByText } = await createView()
 
     getEnv(session).pluginManager.addToExtensionPoint(
       'Core-handleUnrecognizedAssembly',
@@ -107,9 +105,10 @@ test('nav to synteny from right click, with launch connection plugin', async () 
     await view.navToLocString('ctgA:30,222..33,669')
     await user.click(await findByTestId(hts('volvox_del2.paf'), ...opts))
 
-    const track = await findAllByTestId('pileup-overlay-strand', ...opts)
-    fireEvent.mouseMove(track[0]!, { clientX: 200, clientY: 5 })
-    fireEvent.contextMenu(track[0]!, { clientX: 200, clientY: 5 })
+    const display = await findByTestId('pileup-display-done', ...opts)
+    const canvas = findCanvasIn(display)
+    fireEvent.mouseMove(canvas, { clientX: 200, clientY: 3 })
+    fireEvent.contextMenu(canvas, { clientX: 200, clientY: 3 })
     fireEvent.click(await findByText('Launch synteny view for this position'))
     fireEvent.click(await findByText('Submit'))
     await waitFor(() => {
@@ -118,7 +117,6 @@ test('nav to synteny from right click, with launch connection plugin', async () 
       expect(v?.views[0]?.coarseVisibleLocStrings).toBe('ctgA:29,222..34,670')
       expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,499..29,810')
     }, delay)
-    await new Promise(res => setTimeout(res, 1000))
-    expectCanvasMatch(await findByTestId('synteny_canvas', ...opts))
+    expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
   })
 }, 60000)

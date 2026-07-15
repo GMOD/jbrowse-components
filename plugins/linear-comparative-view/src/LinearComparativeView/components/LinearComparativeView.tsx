@@ -1,9 +1,9 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Header from './Header.tsx'
 import LinearComparativeRenderArea from './LinearComparativeRenderArea.tsx'
-import Rubberband from './Rubberband.tsx'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 
@@ -35,7 +35,7 @@ const LinearComparativeView = observer(function LinearComparativeView({
   return (
     <div className={classes.rubberbandContainer}>
       <Header model={model} />
-      <Rubberband
+      <MultiLevelRubberband
         model={model}
         ControlComponent={<div className={classes.rubberbandDiv} />}
       />

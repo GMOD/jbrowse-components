@@ -1,72 +1,47 @@
 import { getSession, notEmpty } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import OverviewHighlightBand from './OverviewHighlightBand.tsx'
+import { getHighlightColor, highlightKey } from './util.ts'
+
 import type { LinearGenomeViewModel } from '../model.ts'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 
 type LGV = LinearGenomeViewModel
 
-const useStyles = makeStyles()(theme => ({
-  highlight: {
-    height: '100%',
-    position: 'absolute',
-    left: 0,
-    background: colord(theme.palette.highlight.main).alpha(0.35).toRgbString(),
-    borderLeft: `1px solid ${theme.palette.highlight.main}`,
-    borderRight: `1px solid ${theme.palette.highlight.main}`,
-  },
-}))
-
 const OverviewHighlight = observer(function OverviewHighlight({
   model,
-  overview,
 }: {
   model: LGV
-  overview: Base1DViewModel
 }) {
-  const { classes } = useStyles()
-  const { highlight, cytobandOffset } = model
+  const theme = useTheme()
+  const themed = colord(theme.palette.highlight.main)
 
-  const session = getSession(model) as SessionWithWidgets
-  const { assemblyManager } = session
-  return highlight
-    .map(r => {
-      const asm = r.assemblyName
-        ? assemblyManager.get(r.assemblyName)
-        : undefined
-      const refName = asm?.getCanonicalRefName(r.refName) ?? r.refName
-      const s = overview.bpToPx({
-        ...r,
-        refName,
-        coord: r.start,
-      })
-      const e = overview.bpToPx({
-        ...r,
-        refName,
-        coord: r.end,
-      })
-      return s !== undefined && e !== undefined
-        ? {
-            width: Math.abs(e - s),
-            left: s + cytobandOffset,
-          }
-        : undefined
-    })
-    .filter(notEmpty)
-    .map(({ left, width }, idx) => (
-      <div
-        /* biome-ignore lint/suspicious/noArrayIndexKey: */
-        key={`${left}_${width}_${idx}`}
-        className={classes.highlight}
-        style={{
-          width,
-          transform: `translateX(${left}px)`,
-        }}
-      />
-    ))
+  // gate on highlightsVisible to match the main-view band, scalebar band, and
+  // SVG export — otherwise "Turn off highlights" leaves the overview bands up
+  return getSession(model).highlightsVisible
+    ? model.highlight
+        .map(highlight => {
+          const coords = model.getOverviewHighlightCoords(highlight)
+          return coords ? { coords, highlight } : undefined
+        })
+        .filter(notEmpty)
+        .map(({ coords, highlight }, idx) => {
+          const bandColor = getHighlightColor(highlight, theme)
+          return (
+            <OverviewHighlightBand
+              // region fields keep the key stable across pan/zoom (unlike pixel
+              // coords); idx disambiguates duplicate highlights on the region
+              key={highlightKey(highlight, idx)}
+              coords={coords}
+              background={bandColor.toRgbString()}
+              borderColor={(highlight.color ? bandColor : themed).toRgbString()}
+              tooltip={highlight.label}
+            />
+          )
+        })
+    : null
 })
 
 export default OverviewHighlight

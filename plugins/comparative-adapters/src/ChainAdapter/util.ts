@@ -23,8 +23,6 @@
  * SOFTWARE.
  */
 
-import { getProgressDisplayStr } from '@jbrowse/core/util'
-
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 function generateRecord(
@@ -169,9 +167,11 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
     }
 
     if (blockStart - lastReported > 500_000) {
-      statusCallback(
-        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
-      )
+      statusCallback({
+        message: 'Loading',
+        current: blockStart,
+        total: buffer.length,
+      })
       lastReported = blockStart
     }
     blockStart = lineEnd + 1

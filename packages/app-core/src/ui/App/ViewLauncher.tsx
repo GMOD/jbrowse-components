@@ -12,14 +12,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
-
-type AppSession = SessionWithDrawerWidgets & {
-  snackbarMessages: SnackbarMessage[]
-  renameCurrentSession: (arg: string) => void
-  popSnackbarMessage: () => unknown
-}
 
 const useStyles = makeStyles()(theme => ({
   selectPaper: {
@@ -33,12 +26,14 @@ const useStyles = makeStyles()(theme => ({
 const ViewLauncher = observer(function ViewLauncher({
   session,
 }: {
-  session: AppSession
+  session: SessionWithDrawerWidgets
 }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(session)
-  const viewTypes = pluginManager.getViewElements()
-  const [value, setValue] = useState(viewTypes[0]?.name || '')
+  const viewTypes = pluginManager
+    .getViewElements()
+    .filter(({ viewMetadata }) => !viewMetadata.hiddenFromGUI)
+  const [value, setValue] = useState(viewTypes[0]?.name ?? '')
   return (
     <Paper className={classes.selectPaper}>
       <Typography>Select a view to launch</Typography>
@@ -49,18 +44,18 @@ const ViewLauncher = observer(function ViewLauncher({
             setValue(event.target.value)
           }}
         >
-          {viewTypes
-            .filter(({ viewMetadata }) => !viewMetadata.hiddenFromGUI)
-            .map(({ displayName, name }) => (
-              <MenuItem key={name} value={name}>
-                {displayName}
-              </MenuItem>
-            ))}
+          {viewTypes.map(({ displayName, name }) => (
+            <MenuItem key={name} value={name}>
+              {displayName}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
       <FormControl className={classes.m2}>
         <Button
-          onClick={() => session.addView(value, {})}
+          onClick={() => {
+            session.addView(value, {})
+          }}
           variant="contained"
           color="primary"
         >

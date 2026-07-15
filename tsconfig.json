@@ -3,7 +3,9 @@
     "target": "esnext",
     "verbatimModuleSyntax": true,
     "lib": ["dom", "dom.iterable", "esnext"],
+    "rootDir": "./",
     "outDir": "dist",
+    "noEmit": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "noUncheckedIndexedAccess": true,
@@ -23,6 +25,8 @@
     "typeRoots": ["./node_modules/@types", "."]
   },
   "exclude": [
+    "infrastructure/",
+    "aws/",
     "**/build/",
     "**/docs/",
     "**/dist/",
@@ -30,6 +34,7 @@
     "**/config/jest/",
     "**/embedded_demos/",
     "**/component_tests/",
+    "**/examples-site/",
     "**/website",
     "products/jbrowse-desktop/test",
     "products/jbrowse-desktop/electron"

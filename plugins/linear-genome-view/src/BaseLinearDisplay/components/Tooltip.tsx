@@ -1,4 +1,4 @@
-import { forwardRef, isValidElement, useMemo } from 'react'
+import { isValidElement } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import { SanitizedHTML } from '@jbrowse/core/ui'
@@ -8,54 +8,44 @@ import { observer } from 'mobx-react'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
-interface Props {
-  message: React.ReactNode | string
-}
-const TooltipContents = forwardRef<HTMLDivElement, Props>(
-  function TooltipContents2({ message }, ref) {
-    return (
-      <div ref={ref}>
-        {isValidElement(message) ? (
-          message
-        ) : message ? (
-          <SanitizedHTML html={String(message)} />
-        ) : null}
-      </div>
-    )
-  },
-)
-
 type Coord = [number, number]
+
+interface TooltipModel {
+  featureUnderMouse: Feature | undefined
+  configuration: AnyConfigurationModel
+}
+
+function getTooltipContents(model: TooltipModel) {
+  const { featureUnderMouse } = model
+  return featureUnderMouse
+    ? getConf(model, 'mouseover', { feature: featureUnderMouse })
+    : undefined
+}
+
+function TooltipContents({ message }: { message: React.ReactNode }) {
+  return (
+    <div>
+      {isValidElement(message) ? (
+        message
+      ) : message ? (
+        <SanitizedHTML html={String(message)} />
+      ) : null}
+    </div>
+  )
+}
 
 const Tooltip = observer(function Tooltip({
   model,
   clientMouseCoord,
 }: {
-  model: {
-    featureUnderMouse: Feature | undefined
-    featureIdUnderMouse: string | undefined
-    mouseoverExtraInformation: string | undefined
-    configuration: AnyConfigurationModel
-  }
+  model: TooltipModel
   clientMouseCoord: Coord
 }) {
-  const { featureUnderMouse, featureIdUnderMouse, mouseoverExtraInformation } =
-    model
+  const contents = getTooltipContents(model)
   const x = clientMouseCoord[0] + 15
   const y = clientMouseCoord[1]
 
-  const contents = useMemo(
-    () =>
-      featureUnderMouse && mouseoverExtraInformation
-        ? getConf(model, 'mouseover', {
-            feature: featureUnderMouse,
-            mouseoverExtraInformation,
-          })
-        : undefined,
-    [featureUnderMouse, model, mouseoverExtraInformation],
-  )
-
-  return featureIdUnderMouse && contents ? (
+  return contents ? (
     <BaseTooltip clientPoint={{ x, y }}>
       <TooltipContents message={contents} />
     </BaseTooltip>

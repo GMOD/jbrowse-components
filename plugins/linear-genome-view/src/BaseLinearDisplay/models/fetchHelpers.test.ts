@@ -2,12 +2,16 @@ import { checkByteEstimate } from './fetchHelpers.ts'
 
 import type { ByteEstimateConfig } from './fetchHelpers.ts'
 
+// checkByteEstimate is now just the estimate RPC + the force-load-floor
+// short-circuit; the too-large *verdict* (resolveByteLimit precedence,
+// evaluateRegionTooLarge) is derived from the returned stats by
+// RegionTooLargeMixin and unit-tested in featureDensityUtils.test.ts, so this
+// only covers the RPC gating/plumbing.
 function makeConfig(
   overrides: Partial<ByteEstimateConfig> = {},
 ): ByteEstimateConfig {
   return {
     adapterConfig: { type: 'BamAdapter' },
-    fetchSizeLimit: 1_000_000,
     visibleBp: 50_000,
     ...overrides,
   }
@@ -25,242 +29,85 @@ const regions = [
 ]
 
 describe('checkByteEstimate', () => {
-  it('skips check when visibleBp < AUTO_FORCE_LOAD_BP (20kbp)', async () => {
+  it('skips the RPC below AUTO_FORCE_LOAD_BP (20kbp), returning undefined', async () => {
     const rpc = makeRpcManager({ bytes: 999_999_999 })
-    const config = makeConfig({ visibleBp: 10_000 })
 
     const result = await checkByteEstimate(
       rpc,
       'session1',
       regions,
-      config,
+      makeConfig({ visibleBp: 19_999 }),
       notStale,
     )
 
-    expect(result).toBeNull()
+    expect(result).toBeUndefined()
     expect(rpc.call).not.toHaveBeenCalled()
   })
 
-  it('returns tooLarge when bytes exceed display fetchSizeLimit', async () => {
-    const rpc = makeRpcManager({ bytes: 2_000_000 })
-    const config = makeConfig({ fetchSizeLimit: 1_000_000 })
+  it('runs the RPC at exactly the threshold (visibleBp < 20,000 is false)', async () => {
+    const rpc = makeRpcManager({ bytes: 999_999 })
 
     const result = await checkByteEstimate(
       rpc,
       'session1',
       regions,
-      config,
+      makeConfig({ visibleBp: 20_000 }),
       notStale,
     )
 
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(true)
-    expect(result!.reason).toContain('too much data')
+    expect(result).toEqual({ bytes: 999_999 })
+    expect(rpc.call).toHaveBeenCalled()
   })
 
-  it('uses adapter fetchSizeLimit when available and higher', async () => {
-    // Adapter returns fetchSizeLimit=5MB, display config has 1MB.
-    // Bytes are 3MB — should NOT be too large because adapter says 5MB is OK.
-    const rpc = makeRpcManager({ bytes: 3_000_000, fetchSizeLimit: 5_000_000 })
-    const config = makeConfig({ fetchSizeLimit: 1_000_000 })
+  it('returns the adapter stats verbatim above the threshold', async () => {
+    const stats = { bytes: 10_000_000, fetchSizeLimit: 5_000_000 }
+    const rpc = makeRpcManager(stats)
 
     const result = await checkByteEstimate(
       rpc,
       'session1',
       regions,
-      config,
+      makeConfig(),
       notStale,
     )
 
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(false)
+    expect(result).toEqual(stats)
   })
 
-  it('returns tooLarge when bytes exceed adapter fetchSizeLimit', async () => {
-    // Adapter returns fetchSizeLimit=5MB, bytes are 6MB — too large.
-    const rpc = makeRpcManager({ bytes: 6_000_000, fetchSizeLimit: 5_000_000 })
-    const config = makeConfig({ fetchSizeLimit: 1_000_000 })
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      notStale,
-    )
-
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(true)
-  })
-
-  it('uses display limit when adapter does not return fetchSizeLimit', async () => {
-    // No fetchSizeLimit in stats — falls back to display config's 1MB.
-    const rpc = makeRpcManager({ bytes: 1_500_000 })
-    const config = makeConfig({ fetchSizeLimit: 1_000_000 })
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      notStale,
-    )
-
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(true)
-  })
-
-  it('returns not tooLarge when bytes are within limit', async () => {
+  it('returns undefined when the context becomes stale during the RPC', async () => {
     const rpc = makeRpcManager({ bytes: 500_000 })
-    const config = makeConfig({ fetchSizeLimit: 1_000_000 })
 
     const result = await checkByteEstimate(
       rpc,
       'session1',
       regions,
-      config,
-      notStale,
+      makeConfig(),
+      { isStale: () => true },
     )
 
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(false)
+    expect(result).toBeUndefined()
   })
 
-  it('returns null when context becomes stale during RPC call', async () => {
-    const rpc = makeRpcManager({ bytes: 500_000 })
-    const config = makeConfig()
-    const staleCtx = { isStale: () => true }
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      staleCtx,
-    )
-
-    expect(result).toBeNull()
-  })
-
-  it('not tooLarge when stats have no bytes field', async () => {
-    const rpc = makeRpcManager({ featureDensity: 0.5 })
-    const config = makeConfig()
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      notStale,
-    )
-
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(false)
-  })
-
-  it('adapter fetchSizeLimit takes precedence over display limit', async () => {
-    // When adapter returns its own fetchSizeLimit, it takes precedence over the
-    // display config's fetchSizeLimit (replicates FeatureDensityMixin fallback chain).
-    // adapter limit = 5MB, display limit = 10MB, bytes = 7MB → too large (7MB > 5MB)
-    const rpc = makeRpcManager({ bytes: 7_000_000, fetchSizeLimit: 5_000_000 })
-    const config = makeConfig({ fetchSizeLimit: 10_000_000 })
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      notStale,
-    )
-
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(true)
-  })
-
-  it('passes correct regions and adapterConfig to RPC', async () => {
+  it('passes the regions and adapterConfig through to the RPC', async () => {
     const rpc = makeRpcManager({ bytes: 100 })
     const adapterConfig = { type: 'CramAdapter', uri: 'test.cram' }
-    const config = makeConfig({ adapterConfig })
     const testRegions = [
       { refName: 'chr1', start: 100, end: 200, assemblyName: 'hg38' },
       { refName: 'chr2', start: 0, end: 500, assemblyName: 'hg38' },
     ]
 
-    await checkByteEstimate(rpc, 'session-abc', testRegions, config, notStale)
+    await checkByteEstimate(
+      rpc,
+      'session-abc',
+      testRegions,
+      makeConfig({ adapterConfig }),
+      notStale,
+    )
 
     expect(rpc.call).toHaveBeenCalledWith(
       'session-abc',
       'CoreGetFeatureDensityStats',
       { regions: testRegions, adapterConfig },
     )
-  })
-
-  it('returns stats in the result for force-load flow', async () => {
-    const stats = { bytes: 10_000_000, fetchSizeLimit: 5_000_000 }
-    const rpc = makeRpcManager(stats)
-    const config = makeConfig({ fetchSizeLimit: 1_000_000 })
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      notStale,
-    )
-
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(true)
-    expect(result!.stats).toEqual(stats)
-  })
-
-  it('handles visibleBp exactly at threshold boundary', async () => {
-    const rpc = makeRpcManager({ bytes: 999_999 })
-    // AUTO_FORCE_LOAD_BP is 20,000
-    const config = makeConfig({ visibleBp: 20_000 })
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      notStale,
-    )
-
-    // At exactly 20,000, visibleBp < 20,000 is false, so the check runs
-    expect(result).not.toBeNull()
-    expect(rpc.call).toHaveBeenCalled()
-  })
-
-  it('skips check at visibleBp just below threshold', async () => {
-    const rpc = makeRpcManager({ bytes: 999_999 })
-    const config = makeConfig({ visibleBp: 19_999 })
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      notStale,
-    )
-
-    expect(result).toBeNull()
-    expect(rpc.call).not.toHaveBeenCalled()
-  })
-
-  it('handles adapter fetchSizeLimit of 0 as no limit', async () => {
-    // fetchSizeLimit=0 is falsy, so should fall back to display config
-    const rpc = makeRpcManager({ bytes: 500_000, fetchSizeLimit: 0 })
-    const config = makeConfig({ fetchSizeLimit: 1_000_000 })
-
-    const result = await checkByteEstimate(
-      rpc,
-      'session1',
-      regions,
-      config,
-      notStale,
-    )
-
-    expect(result).not.toBeNull()
-    expect(result!.tooLarge).toBe(false)
   })
 })

@@ -1,4 +1,5 @@
 # Generated files
+**/.astro
 **/coverage/
 **/umd
 **/dist/
@@ -15,14 +16,17 @@
 # JSON files we don't want to format
 **/*nclist*/**/*.json
 **/ensembl_genes/**/*.json
-**/storybook-static/*
 
 /.nx/workspace-data
 plugins/variants/src/d3-hierarchy2
 plugins/wiggle/src/d3-hierarchy2
 benchmarks/*
 pnpm-lock.yaml
-
+NEXT_STEPS.md
+COMPLETED.md
+IDEAS.md
+agent-docs
+*.generated.ts
 website/docs/developer_guide.md
 website/docs/config_guide.md
 website/docs/user_guide.md

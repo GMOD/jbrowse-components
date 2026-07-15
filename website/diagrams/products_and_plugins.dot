@@ -1,0 +1,47 @@
+digraph products_and_plugins {
+  rankdir=LR
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="Products and plugins"
+  compound=true
+  nodesep=0.25
+  ranksep=1.6
+
+  node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
+  edge [fontname="Helvetica", fontsize=11, color="#555555"]
+
+  // ── Product ──────────────────────────────────────────────────────
+  product [
+    label="Product\n(e.g. jbrowse-web,\njbrowse-desktop)\n\nPluginManager\nloads plugins\nat runtime"
+    shape=box
+    fillcolor="#e3f2fd"
+    width=2.4
+    height=2.2
+  ]
+
+  // ── A plugin and the pluggable elements it encapsulates ──────────
+  // No edges between the elements, so in rankdir=LR they stack as a
+  // single vertical column inside the plugin cluster.
+  subgraph cluster_plugin {
+    label="Plugin (encapsulates pluggable elements)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=14
+    style=filled
+    fillcolor="#f5f5f5"
+    color="#bdbdbd"
+
+    views    [label="Views\nLinearGenomeView, DotplotView ...", fillcolor="#e8f5e9"]
+    tracks   [label="Tracks\nAlignmentsTrack, VariantTrack ...", fillcolor="#fff8e1"]
+    displays [label="Display types\nLinearPileupDisplay, LinearVariantDisplay ...", fillcolor="#ede7f6"]
+    adapters [label="Adapters\nBamAdapter, VcfTabixAdapter ...", fillcolor="#fce4ec"]
+    autoruns [label="MST autoruns / reactions\n(e.g. add context menus,\nextend other parts of the app)", fillcolor="#e0f7fa"]
+  }
+
+  // The whole plugin plugs into the product at runtime; one clean edge
+  product -> views [
+    lhead=cluster_plugin
+    label="register pluggable\nelements at runtime"
+  ]
+}

@@ -1,19 +1,22 @@
-import { LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
+import { useRenderingBackend } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import {
+  ColorByLegend,
+  DiagonalizeLoadingScreen,
+  coerceColorBy,
+} from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
+import DisplayStatusOverlays from './DisplayStatusOverlays.tsx'
 import DotplotTooltips from './DotplotTooltips.tsx'
 import Header from './Header.tsx'
 import ImportForm from './ImportForm/index.tsx'
 import MouseInteractionLayer from './MouseInteractionLayer.tsx'
 import SelectionContextMenu from './SelectionContextMenu.tsx'
-import { useCtrlKeyTracking } from './hooks/useCtrlKeyTracking.ts'
-import { useCursorMode } from './hooks/useCursorMode.ts'
-import { useMouseCoordinates } from './hooks/useMouseCoordinates.ts'
-import { useMouseMoveHandler } from './hooks/useMouseMoveHandler.ts'
-import { useMouseUpHandler } from './hooks/useMouseUpHandler.ts'
-import { useWheelHandler } from './hooks/useWheelHandler.ts'
+import { useDotplotInteraction } from './useDotplotInteraction.ts'
+import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -27,7 +30,6 @@ const useStyles = makeStyles()(theme => ({
     marginBottom: theme.spacing(1),
     overflow: 'hidden',
   },
-
   container: {
     display: 'grid',
     padding: 5,
@@ -36,50 +38,42 @@ const useStyles = makeStyles()(theme => ({
   overlay: {
     pointerEvents: 'none',
     overflow: 'hidden',
-    display: 'flex',
-    width: '100%',
+    position: 'relative',
     gridRow: '1/2',
     gridColumn: '2/2',
-    zIndex: 100, // needs to be below controls
-    '& path': {
-      cursor: 'crosshair',
-      fill: 'none',
-    },
+    zIndex: 100,
   },
-
   content: {
     position: 'relative',
     gridColumn: '2/2',
     gridRow: '1/2',
   },
-
-  resizeHandle: {
-    height: 4,
-    background: '#ccc',
-    boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
-  },
 }))
 
-const RenderedComponent = observer(function RenderedComponent({
+const DotplotCanvas = observer(function DotplotCanvas({
   model,
 }: {
   model: DotplotViewModel
 }) {
-  const { classes } = useStyles()
+  const { viewWidth, viewHeight } = model
+  const { canvasRef, error: gpuError } = useRenderingBackend(
+    createDotplotRenderer,
+    model,
+  )
   return (
-    <div className={classes.overlay}>
-      {model.tracks.map(track => {
-        const [display] = track.displays
-        const { RenderingComponent } = display
-        return RenderingComponent ? (
-          <RenderingComponent
-            key={track.configuration.trackId}
-            model={display}
-          />
-        ) : null
-      })}
-    </div>
+    <>
+      <canvas
+        ref={canvasRef}
+        data-testid={
+          model.settled ? 'dotplot_webgl_canvas_done' : 'dotplot_webgl_canvas'
+        }
+        style={{
+          width: viewWidth,
+          height: viewHeight,
+        }}
+      />
+      {gpuError ? <ErrorBanner error={gpuError} /> : null}
+    </>
   )
 })
 
@@ -89,143 +83,72 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
   model: DotplotViewModel
 }) {
   const { classes } = useStyles()
-  const { hview, vview, wheelMode, cursorMode } = model
-
-  // Mouse coordinate tracking
-  const {
-    mousecurrClient,
-    mousedownClient,
-    mouseupClient,
-    mouseOvered,
-    setMouseCurrClient,
-    setMouseDownClient,
-    setMouseUpClient,
-    setMouseOvered,
-    ref,
-    root,
-    rootRect,
-    mousedown,
-    mousecurr,
-    mouseup,
-    mouserect,
-    mouserectClient,
-    xdistance,
-    ydistance,
-  } = useMouseCoordinates()
-
-  // Cursor mode and validation
-  const {
-    ctrlKeyDown,
-    validPan,
-    validSelect,
-    setCtrlKeyWasUsed,
-    setCtrlKeyDown,
-  } = useCursorMode(cursorMode)
-
-  // Event handlers
-  useWheelHandler(ref, wheelMode, hview, vview, mousecurr, rootRect.height)
-  useMouseMoveHandler(
-    mousecurrClient,
-    mousedownClient,
-    mouseupClient,
-    validPan,
-    hview,
-    vview,
-    setMouseCurrClient,
-  )
-  useCtrlKeyTracking(setCtrlKeyDown)
-  useMouseUpHandler(
-    mousedown,
-    mouseup,
-    xdistance,
-    ydistance,
-    validSelect,
-    setMouseUpClient,
-    setMouseDownClient,
-  )
-
+  const interaction = useDotplotInteraction(model)
+  const colorBy = coerceColorBy(model.dotplotDisplays[0]?.colorBy)
   return (
     <div>
-      <Header
-        model={model}
-        selection={
-          !validSelect || !(mousedown && mouserect)
-            ? undefined
-            : {
-                width: Math.abs(xdistance),
-                height: Math.abs(ydistance),
-              }
-        }
-      />
+      <Header model={model} selection={interaction.selection} />
       <div
-        ref={root}
         className={classes.root}
         onMouseLeave={() => {
-          setMouseOvered(false)
+          interaction.setMouseOvered(false)
         }}
         onMouseEnter={() => {
-          setMouseOvered(true)
+          interaction.setMouseOvered(true)
         }}
       >
+        {model.showColorLegend ? (
+          <ColorByLegend
+            colorBy={colorBy}
+            pointBased
+            onClose={() => {
+              model.setShowColorLegend(false)
+            }}
+          />
+        ) : null}
         <div className={classes.container}>
           <VerticalAxis model={model} />
           <HorizontalAxis model={model} />
-          <div ref={ref} className={classes.content}>
-            <DotplotTooltips
-              model={model}
-              mouseOvered={mouseOvered}
-              validSelect={validSelect}
-              mouserect={mouserect}
-              mouserectClient={mouserectClient}
-              xdistance={xdistance}
-              mousedown={mousedown}
-              mousedownClient={mousedownClient}
-              ydistance={ydistance}
-            />
-            <MouseInteractionLayer
-              model={model}
-              ctrlKeyDown={ctrlKeyDown}
-              cursorMode={cursorMode}
-              validSelect={validSelect}
-              mousedown={mousedown}
-              mouserect={mouserect}
-              xdistance={xdistance}
-              ydistance={ydistance}
-              setMouseDownClient={setMouseDownClient}
-              setMouseCurrClient={setMouseCurrClient}
-              setCtrlKeyWasUsed={setCtrlKeyWasUsed}
-            />
+          <div ref={interaction.refCallback} className={classes.content}>
+            <DotplotTooltips model={model} interaction={interaction} />
+            <MouseInteractionLayer model={model} interaction={interaction} />
             <div className={classes.spacer} />
           </div>
-          <RenderedComponent model={model} />
-          <SelectionContextMenu
-            model={model}
-            mouseup={mouseup}
-            mouseupClient={mouseupClient}
-            mousedown={mousedown}
-            setMouseUpClient={setMouseUpClient}
-            setMouseDownClient={setMouseDownClient}
-            setMouseOvered={setMouseOvered}
-          />
+          <div className={classes.overlay}>
+            <DotplotCanvas model={model} />
+            <DisplayStatusOverlays model={model} />
+          </div>
+          <SelectionContextMenu model={model} interaction={interaction} />
         </div>
-        <ResizeHandle
-          onDrag={n => model.setHeight(model.height + n)}
-          className={classes.resizeHandle}
-        />
+        <ResizeHandle bar onDrag={n => model.setHeight(model.height + n)} />
       </div>
     </div>
   )
 })
+
 const DotplotView = observer(function DotplotView({
   model,
 }: {
   model: DotplotViewModel
 }) {
-  const { initialized, showLoading, error, loadingMessage } = model
-
-  if (showLoading) {
+  const {
+    showLoading,
+    awaitingAutoDiagonalize,
+    showImportForm,
+    loadingMessage,
+  } = model
+  if (awaitingAutoDiagonalize) {
+    return (
+      <DiagonalizeLoadingScreen
+        status={model.diagonalizeStatus}
+        onCancel={() => {
+          model.cancelAutoDiagonalize()
+        }}
+      />
+    )
+  } else if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
-  } else if (!initialized || error) {
+  } else if (showImportForm) {
     return <ImportForm model={model} />
   } else {
     return <DotplotViewInternal model={model} />

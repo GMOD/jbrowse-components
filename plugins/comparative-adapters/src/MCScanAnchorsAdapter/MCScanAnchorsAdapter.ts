@@ -1,28 +1,20 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, doesIntersect2, updateStatus } from '@jbrowse/core/util'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { getBlockRefNames, makeBlockFeatures } from '../mcscanUtil.ts'
 import { parseBed, readFile } from '../util.ts'
 
+import type { MCScanAnchorsAdapterConfig } from './configSchema.ts'
+import type { BlockRow } from '../mcscanUtil.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-interface BareFeature {
-  strand: number
-  refName: string
-  start: number
-  end: number
-  score: number
-  name: string
-}
-
-type Row = [BareFeature, BareFeature, number, number]
-
-export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
+export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter<MCScanAnchorsAdapterConfig> {
   private setupP?: Promise<{
     assemblyNames: string[]
-    feats: Row[]
+    feats: BlockRow[]
   }>
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -55,12 +47,12 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
       .filter(f => !!f && f !== '###')
       .map((line, index) => {
         const [name1, name2, score] = line.split('\t')
-        const r1 = bed1Map.get(name1)
-        const r2 = bed2Map.get(name2)
+        const r1 = bed1Map.get(name1!)
+        const r2 = bed2Map.get(name2!)
         if (!r1 || !r2) {
           throw new Error(`feature not found, ${name1} ${name2} ${r1} ${r2}`)
         }
-        return [r1, r2, +score!, index] as Row
+        return { a: r1, b: r2, rowNum: index, score: +score! }
       })
 
     return {
@@ -77,57 +69,16 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter {
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    const r1 = opts.assemblyName
     const { feats, assemblyNames } = await this.setup(opts)
-
-    const idx = r1 === undefined ? -1 : assemblyNames.indexOf(r1)
-    if (idx !== -1) {
-      const set = new Set<string>()
-      for (const feat of feats) {
-        set.add(idx === 0 ? feat[0].refName : feat[1].refName)
-      }
-      return [...set]
-    }
-    return []
+    return getBlockRefNames(assemblyNames, feats, opts.assemblyName)
   }
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { assemblyNames, feats } = await this.setup(opts)
-
-      // The index of the assembly name in the region list corresponds to
-      // the adapter in the subadapters list
-      const index = assemblyNames.indexOf(region.assemblyName)
-      if (index !== -1) {
-        const flip = index === 0
-        for (const f of feats) {
-          const [r1, r2, score, rowNum] = f
-          const [f1, f2] = !flip ? [r2, r1] : [r1, r2]
-          if (
-            f1.refName === region.refName &&
-            doesIntersect2(region.start, region.end, f1.start, f1.end)
-          ) {
-            observer.next(
-              new SimpleFeature({
-                ...f1,
-                uniqueId: `${index}-${rowNum}`,
-                syntenyId: rowNum,
-
-                // note: strand would be -1 if the two features are on opposite
-                // strands, indicating inverted alignment
-                strand: f1.strand * f2.strand,
-                assemblyName: assemblyNames[+!flip],
-                score,
-                mate: {
-                  ...f2,
-                  assemblyName: assemblyNames[+flip],
-                },
-              }),
-            )
-          }
-        }
+      for (const feat of makeBlockFeatures(assemblyNames, feats, region)) {
+        observer.next(feat)
       }
-
       observer.complete()
     })
   }

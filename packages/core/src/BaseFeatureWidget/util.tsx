@@ -1,5 +1,4 @@
 import type { SerializedFeat } from './types.tsx'
-import type { SimpleFeatureSerialized } from '../util/index.ts'
 
 export interface Feat {
   start: number
@@ -26,13 +25,6 @@ export interface ErrorState {
   error: string
 }
 
-export function stitch(
-  subfeats: { start: number; end: number }[],
-  sequence: string,
-) {
-  return subfeats.map(sub => sequence.slice(sub.start, sub.end)).join('')
-}
-
 // filter items if they have the same "ID" or location
 function getItemId(feat: Feat) {
   return `${feat.start}-${feat.end}`
@@ -43,16 +35,6 @@ export function filterSuccessiveElementsWithSameStartAndEndCoord(list: Feat[]) {
   return list.filter(
     (item, pos, ary) => !pos || getItemId(item) !== getItemId(ary[pos - 1]!),
   )
-}
-
-export function revlist(list: Feat[], seqlen: number) {
-  return list
-    .map(sub => ({
-      ...sub,
-      start: seqlen - sub.end,
-      end: seqlen - sub.start,
-    }))
-    .sort((a, b) => a.start - b.start)
 }
 
 export function calculateUTRs(cds: Feat[], exons: Feat[]) {
@@ -113,27 +95,10 @@ export function calculateUTRs2(cds: Feat[], parentFeat: Feat) {
 
   const firstCds = cds.at(0)!
   const lastCds = cds.at(-1)!
-  const fivePrimeUTRs = [
-    {
-      start: parentFeat.start,
-      end: firstCds.start,
-    },
-  ].map(elt => ({
-    ...elt,
-    type: 'five_prime_UTR',
-  }))
-
-  const threePrimeUTRs = [
-    {
-      start: lastCds.end,
-      end: parentFeat.end,
-    },
-  ].map(elt => ({
-    ...elt,
-    type: 'three_prime_UTR',
-  }))
-
-  return [...fivePrimeUTRs, ...threePrimeUTRs]
+  return [
+    { start: parentFeat.start, end: firstCds.start, type: 'five_prime_UTR' },
+    { start: lastCds.end, end: parentFeat.end, type: 'three_prime_UTR' },
+  ]
 }
 
 export function ellipses(slug: string) {
@@ -144,9 +109,12 @@ export function getStrandStr(strand: number | undefined) {
   return strand === -1 ? '(-)' : strand === 1 ? '(+)' : ''
 }
 
-export function replaceUndefinedWithNull(obj: SimpleFeatureSerialized) {
-  return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)))
-}
+// JSON only serializes null, not undefined; feature fields are hidden by a
+// formatDetails callback returning undefined (jexl can't produce null), so when
+// persisting we round-trip undefined to null to keep the field hidden after
+// reload (detail components filter with `!= null`). see config guide.
+export const nullReplacer = (_: string, v: unknown) =>
+  v === undefined ? null : v
 
 export function formatSubfeatures(
   obj: SerializedFeat,

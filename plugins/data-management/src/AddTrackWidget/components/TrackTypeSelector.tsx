@@ -23,14 +23,6 @@ const TrackTypeSelector = observer(function TrackTypeSelector({
       onChange={event => {
         model.setTrackType(event.target.value)
       }}
-      slotProps={{
-        select: {
-          SelectDisplayProps: {
-            // @ts-expect-error
-            'data-testid': 'trackTypeSelect',
-          },
-        },
-      }}
     >
       {trackTypes.map(({ name, displayName }) => (
         <MenuItem key={name} value={name}>

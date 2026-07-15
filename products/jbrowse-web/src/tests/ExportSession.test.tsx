@@ -8,9 +8,7 @@ jest.mock('@jbrowse/core/util/nanoid', () => ({
 }))
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
-
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
+import './svgExportMocks.ts'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({
   ...jest.requireActual('@jbrowse/core/util/FileSaver'),

@@ -1,0 +1,113 @@
+import { isIndexFile, pairLocations } from './pairLocations.ts'
+
+import type { FileLocation } from '@jbrowse/core/util/types'
+
+function uri(s: string): FileLocation {
+  return { uri: s, locationType: 'UriLocation' }
+}
+
+function names(pairs: ReturnType<typeof pairLocations>) {
+  return pairs.map(p => ({
+    file: 'uri' in p.file ? p.file.uri : '',
+    index: p.index && 'uri' in p.index ? p.index.uri : undefined,
+  }))
+}
+
+test('pairs bam with its .bam.bai', () => {
+  const pairs = pairLocations([uri('/data/a.bam'), uri('/data/a.bam.bai')])
+  expect(names(pairs)).toEqual([
+    { file: '/data/a.bam', index: '/data/a.bam.bai' },
+  ])
+})
+
+test('pairs bam with short-form .bai', () => {
+  const pairs = pairLocations([uri('/data/a.bam'), uri('/data/a.bai')])
+  expect(names(pairs)).toEqual([{ file: '/data/a.bam', index: '/data/a.bai' }])
+})
+
+test('pairs bgzipped vcf with .tbi', () => {
+  const pairs = pairLocations([uri('/x/v.vcf.gz'), uri('/x/v.vcf.gz.tbi')])
+  expect(names(pairs)).toEqual([
+    { file: '/x/v.vcf.gz', index: '/x/v.vcf.gz.tbi' },
+  ])
+})
+
+test('bigwig has no index', () => {
+  const pairs = pairLocations([uri('/x/cov.bw')])
+  expect(names(pairs)).toEqual([{ file: '/x/cov.bw', index: undefined }])
+})
+
+test('drops an orphan index with no matching data file', () => {
+  const pairs = pairLocations([uri('/x/orphan.tbi')])
+  expect(pairs).toEqual([])
+})
+
+test('keeps multiple data files distinct and does not reuse one index', () => {
+  const pairs = pairLocations([
+    uri('/x/a.bam'),
+    uri('/x/b.bam'),
+    uri('/x/a.bam.bai'),
+  ])
+  expect(names(pairs)).toEqual([
+    { file: '/x/a.bam', index: '/x/a.bam.bai' },
+    { file: '/x/b.bam', index: undefined },
+  ])
+})
+
+test('matching is case-insensitive', () => {
+  const pairs = pairLocations([uri('/x/A.BAM'), uri('/x/A.BAM.BAI')])
+  expect(names(pairs)).toEqual([{ file: '/x/A.BAM', index: '/x/A.BAM.BAI' }])
+})
+
+test('collapses a data file repeated under the same location', () => {
+  const pairs = pairLocations([
+    uri('/x/a.bam'),
+    uri('/x/a.bam'),
+    uri('/x/a.bam.bai'),
+  ])
+  expect(names(pairs)).toEqual([{ file: '/x/a.bam', index: '/x/a.bam.bai' }])
+})
+
+test('isIndexFile recognizes index suffixes regardless of case', () => {
+  expect(isIndexFile(uri('/x/a.bam.bai'))).toBe(true)
+  expect(isIndexFile(uri('/x/a.VCF.GZ.TBI'))).toBe(true)
+  expect(isIndexFile(uri('/x/cov.bw'))).toBe(false)
+  expect(isIndexFile(uri('/x/a.bam'))).toBe(false)
+})
+
+test('keeps same-named data files from different directories distinct', () => {
+  const pairs = pairLocations([uri('/x/a.bam'), uri('/y/a.bam')])
+  expect(names(pairs)).toEqual([
+    { file: '/x/a.bam', index: undefined },
+    { file: '/y/a.bam', index: undefined },
+  ])
+})
+
+test('pairs same-named data files in different directories with their own index', () => {
+  const pairs = pairLocations([
+    uri('/x/a.bam'),
+    uri('/x/a.bam.bai'),
+    uri('/y/a.bam'),
+    uri('/y/a.bam.bai'),
+  ])
+  expect(names(pairs)).toEqual([
+    { file: '/x/a.bam', index: '/x/a.bam.bai' },
+    { file: '/y/a.bam', index: '/y/a.bam.bai' },
+  ])
+})
+
+test('long-form index (.bam.bai) takes priority over short-form (.bai) when both are present', () => {
+  // Verifies the Map algorithm always prefers the case-1 match (dataName+suffix)
+  // over the case-2 match (stripExt(dataName)+suffix), regardless of list order.
+  const pairs = pairLocations([
+    uri('/x/a.bam'),
+    uri('/x/a.bai'),
+    uri('/x/a.bam.bai'),
+  ])
+  expect(names(pairs)).toEqual([{ file: '/x/a.bam', index: '/x/a.bam.bai' }])
+})
+
+test('short-form index (.bai) is still matched when no long-form is present', () => {
+  const pairs = pairLocations([uri('/x/a.bam'), uri('/x/a.bai')])
+  expect(names(pairs)).toEqual([{ file: '/x/a.bam', index: '/x/a.bai' }])
+})

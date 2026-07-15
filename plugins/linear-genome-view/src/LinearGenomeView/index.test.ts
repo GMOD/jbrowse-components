@@ -1,24 +1,45 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  ConfigurationSchema,
+} from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 import {
+  BaseDisplay,
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
-import { types } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
-import { stateModelFactory } from './index.ts'
-import { BaseLinearDisplayComponent } from '../index.ts'
+import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
+import { stateModelFactory } from './index.ts'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
-import { stateModelFactory as LinearBasicDisplayStateModelFactory } from '../LinearBareDisplay/index.ts'
+import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
+import { BaseLinearDisplayComponent } from '../index.ts'
 
 import type { LinearGenomeViewModel } from './index.ts'
+import type { InitState } from './types.ts'
+import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
 type LGV = LinearGenomeViewModel
+
+// Minimal display state model used as a generic fixture in these LGV unit
+// tests (replaces the removed LinearBareDisplay). Composes the surviving
+// BaseDisplay + TrackHeightMixin so `type` and `height` behave normally.
+function stubDisplayStateModel(configSchema: AnyConfigurationSchemaType) {
+  return types.compose(
+    'LinearBareDisplay',
+    types.compose(BaseDisplay, TrackHeightMixin()),
+    types.model({
+      type: types.literal('LinearBareDisplay'),
+      configuration: ConfigurationReference(configSchema),
+    }),
+  )
+}
 
 // use initializer function to avoid having console.warn jest.fn in a global
 function initialize() {
@@ -45,13 +66,13 @@ function initialize() {
   stubManager.addDisplayType(() => {
     const configSchema = ConfigurationSchema(
       'LinearBareDisplay',
-      {},
-      { explicitlyTyped: true },
+      { height: { type: 'number', defaultValue: 100 } },
+      { explicitIdentifier: 'displayId', explicitlyTyped: true },
     )
     return new DisplayType({
       name: 'LinearBareDisplay',
       configSchema,
-      stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+      stateModel: stubDisplayStateModel(configSchema),
       trackType: 'BasicTrack',
       viewType: 'LinearGenomeView',
       ReactComponent: BaseLinearDisplayComponent,
@@ -76,6 +97,9 @@ function initialize() {
         }
         return refName
       },
+    }))
+    .actions(() => ({
+      async load() {},
     }))
 
   const AssemblyManager = types
@@ -109,7 +133,13 @@ function initialize() {
       name: 'testSession',
       rpcManager: 'rpcManagerExists',
       view: types.maybe(LinearGenomeModel),
+      // a view held by the session but absent from `views`, so isTopLevelView
+      // is false for it (mimics an lgv nested inside another view)
+      nestedView: types.maybe(LinearGenomeModel),
       configuration: types.map(types.string),
+      // presence of `widgets` is what isSessionModelWithWidgets keys off, so
+      // activateTrackSelector (used by init.tracklist) works in the stub
+      widgets: types.map(types.frozen<{ type: string; id: string }>()),
       assemblyManager: types.optional(AssemblyManager, {
         assemblies: {
           volvox: {
@@ -120,12 +150,13 @@ function initialize() {
         },
       }),
     })
-    .views(() => ({
-      getTracksById() {
-        return {}
+    .views(self => ({
+      // isTopLevelView keys off session.views membership; only `view` counts
+      get views() {
+        return self.view ? [self.view] : []
       },
-      get tracksById() {
-        return this.getTracksById()
+      getTrackById(_id: string) {
+        return undefined
       },
     }))
     .actions(self => ({
@@ -133,9 +164,20 @@ function initialize() {
         self.view = view
         return view
       },
+      setNestedView(view: LGV) {
+        self.nestedView = view
+        return view
+      },
       notifyError(message: string, _error?: unknown) {
         console.error(message)
       },
+      addWidget(typeName: string, id: string) {
+        const widget = { type: typeName, id }
+        self.widgets.set(id, widget)
+        return widget
+      },
+      showWidget() {},
+      hideWidget() {},
     }))
 
   return { Session, LinearGenomeModel, Assembly }
@@ -312,6 +354,76 @@ test('can instantiate a model that lets you navigate', () => {
   expect(model.pxToBp(100).offset).toEqual(1000)
 })
 
+test('maxBpPerPx never drops below minBpPerPx for tiny regions', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'test-tiny-region',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  // 10bp region: totalBp / (width * 0.9) = 10 / 720 ≈ 0.0139, below the
+  // MIN_BP_PER_PX floor of 0.02, so without the floor the zoom slider bounds
+  // and zoomTo clamp range would invert.
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10, refName: 'ctgA' },
+  ])
+  expect(model.maxBpPerPx).toBeGreaterThanOrEqual(model.minBpPerPx)
+  expect(model.maxBpPerPx).toBe(model.minBpPerPx)
+})
+
+test.each([
+  ['empty', ''],
+  ['whitespace', '   '],
+])(
+  'navToLocString(%s) does not blank a populated view',
+  async (_name, input) => {
+    const { Session, LinearGenomeModel } = initialize()
+    const session = Session.create({ configuration: {} })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        id: `no-blank-${_name}`,
+        type: 'LinearGenomeView',
+        tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+      }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+    ])
+    const before = model.displayedRegions.length
+
+    await model.navToLocString(input)
+
+    expect(model.displayedRegions.length).toBe(before)
+    expect(model.displayedRegions[0]!.refName).toBe('ctgA')
+  },
+)
+
+test('navToLocations([]) is a no-op and does not blank the view', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'no-blank-empty-locations',
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
+  ])
+
+  await model.navToLocations([])
+
+  expect(model.displayedRegions.length).toBe(1)
+  expect(model.displayedRegions[0]!.refName).toBe('ctgA')
+})
+
 test('can instantiate a model that has multiple displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({
@@ -329,15 +441,14 @@ test('can instantiate a model that has multiple displayed regions', () => {
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
-  // 2 regions = 1 padding (2px), maxBpPerPx accounts for this
-  expect(model.maxBpPerPx).toBeCloseTo(27.855)
+  expect(model.maxBpPerPx).toBeCloseTo(27.778)
   model.setNewView(0.02, 0)
 
   expect(model.offsetPx).toEqual(0)
   model.moveTo({ index: 0, offset: 100 }, { index: 0, offset: 200 })
   expect(model.offsetPx).toEqual(800)
   model.moveTo({ index: 0, offset: 9950 }, { index: 1, offset: 50 })
-  expect(model.offsetPx).toEqual(79401)
+  expect(model.offsetPx).toEqual(79600)
 })
 
 test('can instantiate a model that tests navTo/moveTo', async () => {
@@ -358,8 +469,7 @@ test('can instantiate a model that tests navTo/moveTo', async () => {
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgA' },
     { assemblyName: 'volvox', start: 0, end: 10000, refName: 'ctgB' },
   ])
-  // 2 regions = 1 padding (2px), maxBpPerPx accounts for this
-  expect(model.maxBpPerPx).toBeCloseTo(27.855)
+  expect(model.maxBpPerPx).toBeCloseTo(27.778)
 
   model.navTo({ refName: 'ctgA', start: 0, end: 100 })
   expect(model.offsetPx).toBe(0)
@@ -427,23 +537,50 @@ test('can navToMultiple', () => {
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgB', start: 0, end: 5000 },
   ])
-  expect(model.offsetPx).toBe(399)
-  expect(model.bpPerPx).toBeCloseTo(12.531)
+  expect(model.offsetPx).toBe(400)
+  expect(model.bpPerPx).toBeCloseTo(12.5)
 
   model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgB', start: 0, end: 10000 },
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
-  expect(model.offsetPx).toBe(199)
-  expect(model.bpPerPx).toBeCloseTo(25.125)
+  expect(model.offsetPx).toBe(200)
+  expect(model.bpPerPx).toBeCloseTo(25)
 
   model.navToMultiple([
     { refName: 'ctgA', start: 5000, end: 10000 },
     { refName: 'ctgC', start: 0, end: 5000 },
   ])
-  expect(model.offsetPx).toBe(199)
-  expect(model.bpPerPx).toBeCloseTo(25.12562)
+  expect(model.offsetPx).toBe(200)
+  expect(model.bpPerPx).toBeCloseTo(25)
+})
+
+// when a refName appears twice with different bounds and the navigated
+// location omits start/end, the default coords must come from the same
+// (first) occurrence that the index resolution picks, else navigation lands
+// on the wrong sub-interval
+test('navTo with omitted coords on a duplicated refName', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testNavToDuplicateRefName',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(width)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgC', start: 2000, end: 8000 },
+  ])
+
+  // shows the full first ctgC (0-10000), not 0-8000 borrowed from the second
+  model.navTo({ refName: 'ctgC' })
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toBeCloseTo(12.5)
 })
 
 describe('Zoom to selected displayed regions', () => {
@@ -495,7 +632,7 @@ describe('Zoom to selected displayed regions', () => {
     )
 
     expect(model.offsetPx).toEqual(0)
-    expect(model.bpPerPx).toBeCloseTo(31.408)
+    expect(model.bpPerPx).toBeCloseTo(31.251)
   })
 
   it('can select over one refSeq', () => {
@@ -551,9 +688,7 @@ describe('Zoom to selected displayed regions', () => {
   it('can select over two regions in the same reference sequence', () => {
     model.setWidth(800)
     model.showAllRegions()
-    // 3 regions = 2 paddings (4px), maxBpPerPx accounts for this
-    expect(model.bpPerPx).toBeCloseTo(39.106)
-    // totalBp = 28000 / 1000 = 28 as maxBpPerPx
+    expect(model.bpPerPx).toBeCloseTo(38.889)
     model.moveTo(
       {
         start: 5000,
@@ -570,10 +705,8 @@ describe('Zoom to selected displayed regions', () => {
         refName: 'ctgB',
       },
     )
-    // 22000 / 792 (width - interRegionPadding) = 27.78
-    expect(model.bpPerPx).toBeCloseTo(27.78, 0)
-    // offset 5000 / bpPerPx (because that is the starting) = 180.5
-    expect(model.offsetPx).toBe(181)
+    expect(model.bpPerPx).toBeCloseTo(27.5)
+    expect(model.offsetPx).toBe(182)
   })
 
   it('can navigate to overlapping regions with a region between', () => {
@@ -585,8 +718,7 @@ describe('Zoom to selected displayed regions', () => {
     model.setWidth(800)
     model.showAllRegions()
     // totalBp 15000 + 3000 + 35000 = 53000
-    // 3 regions = 2 paddings (4px), maxBpPerPx accounts for this
-    expect(model.bpPerPx).toBeCloseTo(74.022)
+    expect(model.bpPerPx).toBeCloseTo(73.611)
     model.moveTo(
       {
         start: 5000,
@@ -605,9 +737,8 @@ describe('Zoom to selected displayed regions', () => {
         refName: 'ctgA',
       },
     )
-    expect(model.offsetPx).toBe(346)
-    // 5000 + 3000 + 15000 / 792
-    expect(model.bpPerPx).toBeCloseTo(29.04, 0)
+    expect(model.offsetPx).toBe(348)
+    expect(model.bpPerPx).toBeCloseTo(28.75)
     expect(model.bpPerPx).toBeLessThan(53)
   })
 })
@@ -652,13 +783,8 @@ test('can instantiate a model that >2 regions', () => {
     { refName: 'ctgB', index: 1, offset: 0, start: 0, end: 10000 },
     { refName: 'ctgC', index: 2, offset: 0, start: 0, end: 10000 },
   )
-  expect(model.offsetPx).toEqual(
-    10000 / model.bpPerPx + model.interRegionPaddingWidth,
-  )
-  // 3 regions = 2 paddings, displayedRegionsTotalPx includes padding
-  expect(model.displayedRegionsTotalPx).toBeCloseTo(
-    30000 / model.bpPerPx + 2 * model.interRegionPaddingWidth,
-  )
+  expect(model.offsetPx).toEqual(10000 / model.bpPerPx)
+  expect(model.displayedRegionsTotalPx).toBeCloseTo(30000 / model.bpPerPx)
   model.showAllRegions()
   expect(model.offsetPx).toEqual(-40)
 
@@ -669,7 +795,7 @@ test('can instantiate a model that >2 regions', () => {
 
   expect(model.bpToPx({ refName: 'ctgB', coord: 100 })).toEqual({
     index: 1,
-    offsetPx: Math.round(10100 / model.bpPerPx) + model.interRegionPaddingWidth,
+    offsetPx: Math.round(10100 / model.bpPerPx),
   })
 })
 
@@ -744,7 +870,7 @@ test('can perform pxToBp on human genome things with elided blocks (zoomed in)',
   model.setNewView(6359.273152497633, 503862)
   expect(model.pxToBp(0).refName).toBe('Y')
   expect(model.pxToBp(400).refName).toBe('Y')
-  expect(model.pxToBp(800).refName).toBe('Y')
+  expect(model.pxToBp(800).refName).toBe('Y_KI270740v1_random')
 })
 
 // determined objectively from looking at http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-TUJdqKI2c9&password=01tan
@@ -770,15 +896,13 @@ test('can perform pxToBp on human genome things with elided blocks (zoomed out)'
   // chr1 to the left
   expect(model.pxToBp(0).refName).toBe('1')
   expect(model.pxToBp(0).oob).toBeTruthy()
-  // chr10 in the middle, tests a specific coord but should just be probably
-  // somewhat around here
-  expect(model.pxToBp(800).coord).toBe(111057351)
-  expect(model.pxToBp(800).refName).toBe('10')
+  // chr11 in the middle
+  expect(model.pxToBp(800).coord).toBe(35027079)
+  expect(model.pxToBp(800).refName).toBe('11')
 
-  // chrX after an elided block, this tests a specific coord but should just be
-  // probably somewhat around here (padding changes shift coordinates)
-  expect(model.pxToBp(1228).coord).toBe(80093439)
-  expect(model.pxToBp(1228).refName).toBe('X')
+  // past end of genome without inter-region padding
+  expect(model.pxToBp(1228).refName).toBe('Y_KI270740v1_random')
+  expect(model.pxToBp(1228).oob).toBeTruthy()
 
   // chrY_random at the end
   expect(model.pxToBp(1500).refName).toBe('Y_KI270740v1_random')
@@ -980,12 +1104,12 @@ describe('get sequence for selected displayed regions', () => {
       model.rightOffset,
     )
     expect(overlapping.length).toEqual(3)
-    expect(overlapping[0]!.start).toEqual(200)
+    expect(overlapping[0]!.start).toEqual(199)
     expect(overlapping[0]!.end).toEqual(500)
     expect(overlapping[1]!.start).toEqual(0)
     expect(overlapping[1]!.end).toEqual(3000)
     expect(overlapping[2]!.start).toEqual(0)
-    expect(overlapping[2]!.end).toEqual(101)
+    expect(overlapping[2]!.end).toEqual(100)
   })
 
   it('can select over two regions in diff reference sequence', () => {
@@ -1080,6 +1204,9 @@ test('navToLocString with human assembly', async () => {
       getCanonicalRefName(refName: string) {
         return refName.replace('chr', '')
       },
+    }))
+    .actions(() => ({
+      async load() {},
     }))
   const AssemblyManager = types
     .model({
@@ -1189,6 +1316,42 @@ test('space separated locstring', async () => {
   })
 })
 
+test('unresolved gene name reports a clean no-results error', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
+
+  await expect(model.navToLocString('nonexistentgene')).rejects.toThrow(
+    /No results found for "nonexistentgene"/,
+  )
+})
+
+test('unknown-ref coordinate query keeps the specific ref error', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
+
+  await expect(model.navToLocString('badref:100-200')).rejects.toThrow(
+    /unknown reference sequence/,
+  )
+})
+
 test('showLoading is true when displayedRegions are set but not yet initialized', () => {
   const { Session, LinearGenomeModel } = initialize()
   const model = Session.create({
@@ -1241,7 +1404,7 @@ test('showLoading is true when init is set and becomes false after initializatio
   expect(console.error).not.toHaveBeenCalled()
 })
 
-test('showAllRegions accounts for inter-region padding when centering', () => {
+test('showAllRegions centers correctly with multiple regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   const session = Session.create({ configuration: {} })
   const model = session.setView(
@@ -1258,13 +1421,9 @@ test('showAllRegions accounts for inter-region padding when centering', () => {
   model.setWidth(900)
   model.showAllRegions()
 
-  // Total BP = 3000
-  // With 3 regions, there are 2 inter-region paddings = 4px
-  // bpPerPx = 3000 / (900 * 0.9 - 4) = 3000 / 806 = 3.722
-  // totalContentPx = 3000 / 3.722 + 4 = 806 + 4 = 810
-  // centerPx = 405, offsetPx = 405 - 450 = -45
-
-  expect(model.bpPerPx).toBeCloseTo(3.722, 2)
+  // Total BP = 3000, bpPerPx = 3000 / (900 * 0.9) = 3000 / 810 = 3.704
+  // totalContentPx = 3000 / 3.704 = 810, centerPx = 405, offsetPx = 405 - 450 = -45
+  expect(model.bpPerPx).toBeCloseTo(3.704, 2)
   expect(model.offsetPx).toBe(-45)
 })
 
@@ -1290,120 +1449,6 @@ test('showAllRegions with single region has no padding adjustment', () => {
 
   expect(model.bpPerPx).toBeCloseTo(1.2346, 3)
   expect(model.offsetPx).toBe(-45)
-})
-
-describe('getNonElidedRegionCount and getInterRegionPaddingPx', () => {
-  test('counts all regions as non-elided when they are large enough', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 2000 },
-          { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 3000 },
-        ],
-      }),
-    )
-    model.setWidth(800)
-
-    // At bpPerPx = 1, all regions are >= minimumBlockWidth (3px)
-    expect(model.getNonElidedRegionCount(1)).toBe(3)
-    expect(model.getInterRegionPaddingPx(1)).toBe(4) // 2 paddings * 2px
-  })
-
-  test('excludes small regions that would be elided', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 5 }, // tiny
-          { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 1000 },
-        ],
-      }),
-    )
-    model.setWidth(800)
-
-    // At bpPerPx = 10, ctgB (5bp) = 0.5px < minimumBlockWidth (3px), so elided
-    expect(model.getNonElidedRegionCount(10)).toBe(2)
-    expect(model.getInterRegionPaddingPx(10)).toBe(2) // 1 padding * 2px
-  })
-
-  test('returns 0 padding when all regions are elided', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10 },
-        ],
-      }),
-    )
-    model.setWidth(800)
-
-    // At bpPerPx = 100, both 10bp regions = 0.1px < minimumBlockWidth (3px)
-    expect(model.getNonElidedRegionCount(100)).toBe(0)
-    expect(model.getInterRegionPaddingPx(100)).toBe(0)
-  })
-
-  test('handles edge case of bpPerPx = 0', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: [
-          { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
-          { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 2000 },
-        ],
-      }),
-    )
-    model.setWidth(800)
-
-    // bpPerPx = 0 should return all regions (avoid division by zero)
-    expect(model.getNonElidedRegionCount(0)).toBe(2)
-  })
-})
-
-describe('maxBpPerPx accounts for elided regions', () => {
-  test('maxBpPerPx does not over-account for padding with many small regions', () => {
-    const { Session, LinearGenomeModel } = initialize()
-    const session = Session.create({ configuration: {} })
-
-    // Create many small regions that will be elided at max zoom out
-    const regions = []
-    for (let i = 0; i < 100; i++) {
-      regions.push({
-        assemblyName: 'volvox',
-        refName: `ctg${i}`,
-        start: 0,
-        end: 100, // 100bp each
-      })
-    }
-
-    const model = session.setView(
-      LinearGenomeModel.create({
-        type: 'LinearGenomeView',
-        displayedRegions: regions,
-      }),
-    )
-    model.setWidth(800)
-
-    // Total BP = 10000
-    // At naive maxBpPerPx = 10000 / (800 * 0.9) = 13.89
-    // Each 100bp region = 100 / 13.89 = 7.2px > minimumBlockWidth (3px)
-    // So all 100 regions are non-elided, 99 paddings = 198px
-    // Adjusted maxBpPerPx = 10000 / (720 - 198) = 10000 / 522 = 19.16
-
-    expect(model.maxBpPerPx).toBeGreaterThan(13.89) // Should be higher due to padding
-    expect(model.maxBpPerPx).toBeLessThan(100) // But not unreasonably high
-  })
 })
 
 describe('TrackInit with display configuration', () => {
@@ -1446,13 +1491,13 @@ describe('TrackInit with display configuration', () => {
     stubManager.addDisplayType(() => {
       const configSchema = ConfigurationSchema(
         'LinearBareDisplay',
-        {},
-        { explicitlyTyped: true },
+        { height: { type: 'number', defaultValue: 100 } },
+        { explicitIdentifier: 'displayId', explicitlyTyped: true },
       )
       return new DisplayType({
         name: 'LinearBareDisplay',
         configSchema,
-        stateModel: LinearBasicDisplayStateModelFactory(configSchema),
+        stateModel: stubDisplayStateModel(configSchema),
         trackType: 'BasicTrack',
         viewType: 'LinearGenomeView',
         ReactComponent: BaseLinearDisplayComponent,
@@ -1506,7 +1551,6 @@ describe('TrackInit with display configuration', () => {
         assemblyManager: types.optional(AssemblyManager, {
           assemblies: {
             volvox: {
-              // @ts-expect-error
               regions: volvoxDisplayedRegions,
             },
           },
@@ -1518,11 +1562,8 @@ describe('TrackInit with display configuration', () => {
         },
       }))
       .views(() => ({
-        getTracksById() {
-          return trackConfigs
-        },
-        get tracksById() {
-          return this.getTracksById()
+        getTrackById(id: string) {
+          return trackConfigs[id]
         },
       }))
       .actions(self => ({
@@ -1690,13 +1731,10 @@ describe('highlights', () => {
     expect(model.highlight.length).toBe(0)
   })
 
-  test('visibility and label toggles default to true and can be flipped', () => {
+  test('label toggle defaults to true and can be flipped', () => {
     const model = setupHighlightModel()
-    expect(model.highlightsVisible).toBe(true)
     expect(model.labelsVisible).toBe(true)
-    model.setHighlightsVisible(false)
     model.setLabelsVisible(false)
-    expect(model.highlightsVisible).toBe(false)
     expect(model.labelsVisible).toBe(false)
   })
 
@@ -1764,5 +1802,329 @@ describe('highlights', () => {
         assemblyName: 'volvox',
       }),
     ).toBeUndefined()
+  })
+})
+
+describe('onTrackDragOver reorders tracks', () => {
+  function setup() {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: 'dragOver',
+        type: 'LinearGenomeView',
+        tracks: [
+          { name: 'a', type: 'BasicTrack' },
+          { name: 'b', type: 'BasicTrack' },
+          { name: 'c', type: 'BasicTrack' },
+        ],
+      }),
+    )
+    const [a, b, c] = model.tracks.map(t => t.id)
+    return { model, a: a!, b: b!, c: c! }
+  }
+
+  test('drag down places the track after the target', () => {
+    const { model, a, b, c } = setup()
+    model.setDraggingTrackId(a)
+    model.onTrackDragOver(c, 100)
+    expect(model.tracks.map(t => t.id)).toEqual([b, c, a])
+  })
+
+  test('drag up places the track before the target', () => {
+    const { model, a, b, c } = setup()
+    model.setDraggingTrackId(c)
+    model.onTrackDragOver(b, 100)
+    expect(model.tracks.map(t => t.id)).toEqual([a, c, b])
+  })
+
+  test('does not reorder until cursor moves past the jitter threshold', () => {
+    const { model, a, b, c } = setup()
+    model.setDraggingTrackId(a)
+    model.onTrackDragOver(b, 100)
+    expect(model.tracks.map(t => t.id)).toEqual([b, a, c])
+
+    // small move back up over b is below the threshold, so no swap
+    model.onTrackDragOver(b, 90)
+    expect(model.tracks.map(t => t.id)).toEqual([b, a, c])
+  })
+
+  test('ignores dragover when no track is being dragged', () => {
+    const { model, a, b, c } = setup()
+    model.onTrackDragOver(b, 100)
+    expect(model.tracks.map(t => t.id)).toEqual([a, b, c])
+  })
+})
+
+describe('move actions respect pinned/unpinned sections', () => {
+  function setup() {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: 'moveSections',
+        type: 'LinearGenomeView',
+        tracks: [
+          { name: 'a', type: 'BasicTrack' },
+          { name: 'b', type: 'BasicTrack' },
+          { name: 'c', type: 'BasicTrack' },
+        ],
+      }),
+    )
+    const [a, b, c] = model.tracks.map(t => t.id)
+    return { model, a: a!, b: b!, c: c! }
+  }
+
+  // pinning the *middle* track leaves the array as [a(unpinned), b(pinned),
+  // c(unpinned)] -- the two unpinned tracks straddle a pinned track, so
+  // array-adjacency swaps would cross the section boundary
+  test('move up crosses the pinned track without a silent no-op', () => {
+    const { model, a, c } = setup()
+    model.tracks[1]!.setPinned(true)
+    // c is below a in the unpinned section; moving it up must land it above a,
+    // not silently swap with the pinned track b sitting between them
+    model.moveTrackUp(c)
+    expect(model.unpinnedTracks.map(t => t.id)).toEqual([c, a])
+  })
+
+  test('move down crosses the pinned track without a silent no-op', () => {
+    const { model, a, c } = setup()
+    model.tracks[1]!.setPinned(true)
+    model.moveTrackDown(a)
+    expect(model.unpinnedTracks.map(t => t.id)).toEqual([c, a])
+  })
+
+  test('move to top/bottom stay within the unpinned section', () => {
+    const { model, a, b, c } = setup()
+    model.tracks[1]!.setPinned(true)
+    model.moveTrackToTop(c)
+    expect(model.unpinnedTracks.map(t => t.id)).toEqual([c, a])
+    model.moveTrackToBottom(c)
+    expect(model.unpinnedTracks.map(t => t.id)).toEqual([a, c])
+    // pinned track b never leaves the pinned section
+    expect(model.pinnedTracks.map(t => t.id)).toEqual([b])
+  })
+})
+
+describe('getTrackOrderSubMenu gates items by track count and view level', () => {
+  function makeView(trackCount: number, nested = false) {
+    const { Session, LinearGenomeModel } = initialize()
+    const view = LinearGenomeModel.create({
+      id: nested ? 'nested' : 'topLevel',
+      type: 'LinearGenomeView',
+      tracks: Array.from({ length: trackCount }, (_, i) => ({
+        name: `t${i}`,
+        type: 'BasicTrack',
+      })),
+    })
+    const session = Session.create({ configuration: {} })
+    return nested ? session.setNestedView(view) : session.setView(view)
+  }
+
+  function labels(view: LGV) {
+    return getTrackOrderSubMenu({ view, track: view.tracks[0]! }).map(m =>
+      'label' in m ? m.label : undefined,
+    )
+  }
+
+  test('single top-level track offers pin only, no moves', () => {
+    expect(labels(makeView(1))).toEqual(['Pin track'])
+  })
+
+  test('two tracks add up/down but not the to-top/to-bottom jumps', () => {
+    expect(labels(makeView(2))).toEqual([
+      'Pin track',
+      'Move track up',
+      'Move track down',
+    ])
+  })
+
+  test('three+ tracks add the to-top and to-bottom jumps', () => {
+    expect(labels(makeView(3))).toEqual([
+      'Pin track',
+      'Move track to top',
+      'Move track up',
+      'Move track down',
+      'Move track to bottom',
+    ])
+  })
+
+  test('pin item reflects the pinned state', () => {
+    const view = makeView(1)
+    view.tracks[0]!.setPinned(true)
+    expect(labels(view)).toEqual(['Unpin track'])
+  })
+
+  test('single nested (non-top-level) track yields an empty submenu', () => {
+    // regression: this used to render an empty "Track order" parent entry
+    expect(labels(makeView(1, true))).toEqual([])
+  })
+})
+
+describe('declarative init: highlight, nav, unknown keys', () => {
+  function makeModel(init: InitState) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        init,
+      }),
+    )
+    model.setWidth(800)
+    return model
+  }
+
+  test('init.highlight loc-string is parsed onto the highlight list', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: ['ctgA:100-200'],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    const h = model.highlight[0]!
+    expect(h.refName).toBe('ctgA')
+    expect(h.assemblyName).toBe('volvox')
+    expect(h.start).toBeLessThan(h.end)
+  })
+
+  test('init.highlight JSON form carries color/label and assembly fallback', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: [
+        '{"refName":"ctgA","start":100,"end":200,"color":"#123456","label":"my region"}',
+      ],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    const h = model.highlight[0]!
+    expect(h.start).toBe(100)
+    expect(h.end).toBe(200)
+    expect(h.color).toBe('#123456')
+    expect(h.label).toBe('my region')
+    // assemblyName omitted in the JSON, so it falls back to init.assembly
+    expect(h.assemblyName).toBe('volvox')
+  })
+
+  test('init.highlight JSON form keeps an explicit assemblyName', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: [
+        '{"refName":"ctgA","start":1,"end":2,"assemblyName":"volvox2"}',
+      ],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    expect(model.highlight[0]!.assemblyName).toBe('volvox2')
+  })
+
+  test('init.highlight accepts a HighlightType object directly', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      highlight: [
+        { refName: 'ctgA', start: 100, end: 200, label: 'a label with spaces' },
+      ],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    const h = model.highlight[0]!
+    expect(h.start).toBe(100)
+    expect(h.end).toBe(200)
+    expect(h.label).toBe('a label with spaces')
+    // assemblyName omitted on the object, so it falls back to init.assembly
+    expect(h.assemblyName).toBe('volvox')
+  })
+
+  test('init.highlight without loc applies the highlight', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      highlight: ['ctgA:100-200'],
+    })
+    await waitFor(() => {
+      expect(model.highlight.length).toBe(1)
+    })
+    // no loc => showAllRegionsInAssembly ran (nothing was displayed yet)
+    expect(model.hasDisplayedRegions).toBe(true)
+    expect(model.highlight[0]!.refName).toBe('ctgA')
+  })
+
+  // regression: with init.tracklist the autorun reads raw volatileWidth and
+  // awaits a width settle, so a width change while init is mid-apply re-triggers
+  // it before `init` is cleared. addToHighlights pushes, so a re-entrant pass
+  // duplicated the highlight (the double highlights seen under React StrictMode's
+  // double mount, which churns volatileWidth). Without tracklist this doesn't
+  // reproduce: the autorun's only width dependency is the `initialized`
+  // computed, which doesn't re-notify while its boolean value stays true.
+  test('init.highlight is applied once when width churns mid-init', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      tracklist: true,
+      highlight: ['ctgA:100-200'],
+    })
+    // makeModel already setWidth(800), kicking off the async init autorun which
+    // is now suspended on the tracklist width-settle await. Churn volatileWidth
+    // in the same tick to re-trigger the autorun while init is still set.
+    model.setWidth(801)
+    model.setWidth(802)
+    model.setWidth(803)
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
+    expect(model.highlight.length).toBe(1)
+  })
+
+  test('init.nav false hides the header', async () => {
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      nav: false,
+    })
+    await waitFor(() => {
+      expect(model.hideHeader).toBe(true)
+    })
+  })
+
+  test('showCenterLine restores from an input snapshot but is stripped from getSnapshot', async () => {
+    // showCenterLine is a direct view prop, not an init key — MST restores it
+    // natively from the view snapshot (LaunchView forwards it as a sibling of
+    // init, never inside it). It's purely a localStorage-backed preference
+    // though, so postProcessSnapshot strips it back out of session saves.
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        showCenterLine: true,
+        init: { assembly: 'volvox', loc: 'ctgA:1-1000' },
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.showCenterLine).toBe(true)
+    })
+    expect(getSnapshot(model)).not.toHaveProperty('showCenterLine')
+  })
+
+  test('unknown init key warns instead of silently dropping', async () => {
+    // deliberately typo'd key (tracksList vs tracks) to exercise the diagnostic
+    const model = makeModel({
+      assembly: 'volvox',
+      loc: 'ctgA:1-1000',
+      tracksList: [],
+    } as InitState)
+    await waitFor(() => {
+      expect(console.warn).toHaveBeenCalledWith(
+        expect.stringContaining('tracksList'),
+      )
+    })
+    // init is still consumed/cleared despite the unknown key
+    await waitFor(() => {
+      expect(model.init).toBeUndefined()
+    })
   })
 })

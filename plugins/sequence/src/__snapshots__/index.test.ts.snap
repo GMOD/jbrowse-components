@@ -1,5 +1,13 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`plugin in a stock JBrowse 1`] = `{}`;
+exports[`plugin in a stock JBrowse 1`] = `
+{
+  "type": "TwoBitAdapter",
+}
+`;
 
-exports[`plugin in a stock JBrowse 2`] = `{}`;
+exports[`plugin in a stock JBrowse 2`] = `
+{
+  "type": "IndexedFastaAdapter",
+}
+`;

@@ -1,52 +1,65 @@
 ---
 id: jbrowse1connection
 title: JBrowse1Connection
+sidebar_label: Connection -> JBrowse1Connection
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`legacy-jbrowse` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Related links
 
-## Links
+- **State model:** [runtime API](../../models/jbrowse1connection)
+- **Base config:** [BaseConnection](../baseconnection)
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts)
+## Config slots
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/JBrowse1Connection.md)
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
-## Docs
+| Slot                                     | Type           | Description                                                                                         |
+| ---------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------- |
+| [dataDirLocation](#slot-datadirlocation) | `fileLocation` | the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/ |
+| [assemblyNames](#slot-assemblynames)     | `stringArray`  | name of the assembly the connection belongs to, should be a single entry                            |
 
-### JBrowse1Connection - Slots
+<details>
+<summary>JBrowse1Connection - Slots</summary>
 
 #### slot: dataDirLocation
 
-```js
-dataDirLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: 'http:
-        locationType: 'UriLocation',
-      },
-      description:
-        'the location of the JBrowse 1 data directory, often something like http:
-    }
-```
+the location of the JBrowse 1 data directory, often something like
+https://mysite.com/jbrowse/data/
+
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:**
+`{ uri: 'https://mysite.com/jbrowse/data/', locationType: 'UriLocation' }`
 
 #### slot: assemblyNames
 
-```js
-assemblyNames: {
-      description:
-        'name of the assembly the connection belongs to, should be a single entry',
-      type: 'stringArray',
-      defaultValue: [],
-    }
-```
+name of the assembly the connection belongs to, should be a single entry
 
-### JBrowse1Connection - Derives from
+**Type:** `stringArray` · **Default:** `[]`
 
-```js
-baseConfiguration: baseConnectionConfig
-```
+</details>
+
+## Inherited config slots
+
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained. A slot redeclared by a more specific config is
+shown once, at its most specific definition.
+
+<details>
+<summary>Inherited from BaseConnection</summary>
+
+[BaseConnection config →](../baseconnection)
+
+#### slot: name
+
+a unique name for this connection
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'nameOfConnection'`
+
+</details>

@@ -29,7 +29,7 @@ const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const trackId = conf.trackId as string
+  const trackId = conf.trackId
 
   return (
     <CascadingMenuButton
@@ -49,31 +49,28 @@ const TrackSelectorTrackMenu = observer(function TrackSelectorTrackMenu({
                 onClick: () => {
                   model.removeFromFavorites(trackId)
                 },
-                icon: StarIcon,
+                icon: FilledStarIcon,
               }
             : {
                 label: 'Add to favorites',
                 onClick: () => {
                   model.addToFavorites(trackId)
                 },
-                icon: FilledStarIcon,
+                icon: StarIcon,
               },
-          {
-            label: 'Add to selection',
-            onClick: () => {
-              model.addToSelection([conf])
-            },
-          },
-          ...(model.isSelected(conf)
-            ? [
-                {
-                  label: 'Remove from selection',
-                  onClick: () => {
-                    model.removeFromSelection([conf])
-                  },
+          model.isSelected(conf)
+            ? {
+                label: 'Remove from selection',
+                onClick: () => {
+                  model.removeFromSelection([conf])
                 },
-              ]
-            : []),
+              }
+            : {
+                label: 'Add to selection',
+                onClick: () => {
+                  model.addToSelection([conf])
+                },
+              },
         ]
       }}
     >

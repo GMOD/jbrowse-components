@@ -1,31 +1,36 @@
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-export default function LaunchCircularViewF(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'LaunchView-CircularView',
-    // @ts-expect-error
-    async ({
-      session,
-      assembly,
-      tracks = [],
-    }: {
-      session: AbstractSessionModel
-      assembly?: string
-      tracks?: string[]
-    }) => {
-      if (!assembly) {
-        throw new Error(
-          'No assembly provided when launching circular genome view',
-        )
-      }
+export interface LaunchCircularViewArgs {
+  session: AbstractSessionModel
+  assembly?: string
+  tracks?: string[]
+}
 
-      session.addView('CircularView', {
-        init: {
-          assembly,
-          tracks,
-        },
-      })
-    },
-  )
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LaunchView-CircularView': {
+      args: LaunchCircularViewArgs
+      result: LaunchCircularViewArgs
+    }
+  }
+}
+
+export default function LaunchCircularViewF(pluginManager: PluginManager) {
+  /** #extensionPoint LaunchView-CircularView | async | Programmatically launch a circular view */
+  pluginManager.addToExtensionPoint('LaunchView-CircularView', args => {
+    const { session, assembly, tracks = [] } = args
+    if (!assembly) {
+      throw new Error(
+        'No assembly provided when launching circular genome view',
+      )
+    }
+    session.addView('CircularView', {
+      init: {
+        assembly,
+        tracks,
+      },
+    })
+    return args
+  })
 }

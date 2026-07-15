@@ -6,53 +6,59 @@ import {
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { Cable, DNA } from '@jbrowse/core/ui/Icons'
-import { types } from '@jbrowse/mobx-state-tree'
+import { DNA } from '@jbrowse/core/ui/Icons'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { AssemblyManager } from '@jbrowse/plugin-data-management'
 import {
   BaseRootModelFactory,
   InternetAccountsRootModelMixin,
+  openConnectionMenuItem,
+  openTrackMenuItem,
+  pluginStoreMenuItem,
+  preferencesMenuItem,
+  redoMenuItem,
+  undoMenuItem,
+  workspacesMenuItem,
 } from '@jbrowse/product-core'
 import AppsIcon from '@mui/icons-material/Apps'
-import ExtensionIcon from '@mui/icons-material/Extension'
+import DescriptionIcon from '@mui/icons-material/Description'
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
-import RedoIcon from '@mui/icons-material/Redo'
+import PublicIcon from '@mui/icons-material/Public'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
-import SettingsIcon from '@mui/icons-material/Settings'
-import SpaceDashboardIcon from '@mui/icons-material/SpaceDashboard'
-import StorageIcon from '@mui/icons-material/Storage'
-import UndoIcon from '@mui/icons-material/Undo'
+import { autorun } from 'mobx'
 
-import { DesktopSessionManagementMixin, getSaveSession } from './Sessions.ts'
 import packageJSON from '../../package.json' with { type: 'json' }
 import OpenSequenceDialog from '../components/OpenSequenceDialog.tsx'
 import jobsModelFactory from '../indexJobsModel.ts'
 import JBrowseDesktop from '../jbrowseModel.ts'
 import makeWorkerInstance from '../makeWorkerInstance.ts'
 
+import type { AppRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  AbstractSessionModel,
-  SessionWithWidgets,
-} from '@jbrowse/core/util'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
-import type { BaseSession } from '@jbrowse/product-core'
+import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 
 // lazies
 const PreferencesDialog = lazy(
-  () => import('../components/PreferencesDialog.tsx'),
+  () => import('@jbrowse/product-core/src/ui/PreferencesDialog'),
+)
+const ExportToWebDialog = lazy(
+  () => import('../components/ExportToWebDialog.tsx'),
 )
 
 const { ipcRenderer } = window.require('electron')
 
-export interface Menu {
-  label: string
-  menuItems: MenuItem[]
+function getSaveSession(model: BaseRootModel) {
+  const snap = getSnapshot(model.jbrowse)
+  return {
+    ...(snap as Record<string, unknown>),
+    defaultSession: model.session ? getSnapshot(model.session) : {},
+  }
 }
 
 type SessionModelFactory = (args: {
@@ -63,12 +69,6 @@ type SessionModelFactory = (args: {
 /**
  * #stateModel JBrowseDesktopRootModel
  * #category root
- * composed of
- * - [BaseRootModel](../baserootmodel)
- * - [InternetAccountsMixin](../internetaccountsmixin)
- * - [DesktopSessionManagementMixin](../desktopsessionmanagementmixin)
- * - [HistoryManagementMixin](../historymanagementmixin)
- * - [RootAppMenuMixin](../rootappmenumixin)
  *
  * note: many properties of the root model are available through the session,
  * and we generally prefer using the session model (via e.g. getSession) over
@@ -88,278 +88,290 @@ export default function rootModelFactory({
   })
   const jbrowseModelType = JBrowseDesktop(pluginManager, assemblyConfigSchema)
   const JobsManager = jobsModelFactory(pluginManager)
-  return types
-    .compose(
-      'JBrowseDesktopRootModel',
-      BaseRootModelFactory({
-        pluginManager,
-        jbrowseModelType,
-        sessionModelType,
-        assemblyConfigSchema,
-      }),
-      InternetAccountsRootModelMixin(pluginManager),
-      DesktopSessionManagementMixin(pluginManager),
-      HistoryManagementMixin(),
-      RootAppMenuMixin(),
-    )
-    .props({
-      /**
-       * #property
-       */
-      jobsManager: types.optional(JobsManager, {}),
-    })
-    .volatile(self => ({
-      version: packageJSON.version,
-      adminMode: true,
-      rpcManager: new RpcManager(
-        pluginManager,
-        self.jbrowse.configuration.rpc,
-        {
-          WebWorkerRpcDriver: { makeWorkerInstance },
-          MainThreadRpcDriver: {},
+  return (
+    types
+      .compose(
+        'JBrowseDesktopRootModel',
+        BaseRootModelFactory({
+          pluginManager,
+          jbrowseModelType,
+          sessionModelType,
+          assemblyConfigSchema,
+        }),
+        InternetAccountsRootModelMixin(pluginManager),
+        HistoryManagementMixin(),
+        RootAppMenuMixin(),
+      )
+      .props({
+        /**
+         * #property
+         */
+        jobsManager: types.optional(JobsManager, {}),
+      })
+      .volatile(self => ({
+        version: packageJSON.version,
+        adminMode: true,
+        rpcManager: new RpcManager(
+          pluginManager,
+          self.jbrowse.configuration.rpc,
+          { makeWorkerInstance, defaultDriverName: 'WebWorkerRpcDriver' },
+        ),
+        openNewSessionCallback: async (_path: string) => {
+          console.error('openNewSessionCallback unimplemented')
         },
-      ),
-      openNewSessionCallback: async (_path: string) => {
-        console.error('openNewSessionCallback unimplemented')
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
-        self.openNewSessionCallback = cb
-      },
-      /**
-       * #action
-       */
-      async setPluginsUpdated() {
-        const root = self as DesktopRootModel
-        if (root.session) {
-          await root.saveSession(getSaveSession(root))
-        }
-        await root.openNewSessionCallback(root.sessionPath)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       */
-      menus() {
-        return processMutableMenuActions(
-          [
-            {
-              label: 'File',
-              menuItems: [
-                {
-                  label: 'Open session...',
-                  icon: OpenIcon,
-                  onClick: async () => {
-                    try {
-                      const path = await ipcRenderer.invoke('promptOpenFile')
-                      if (path) {
-                        await self.openNewSessionCallback(path)
-                      }
-                    } catch (e) {
-                      console.error(e)
-                      self.session?.notifyError(`${e}`, e)
-                    }
-                  },
-                },
-                {
-                  label: 'Save session as...',
-                  icon: SaveAsIcon,
-                  onClick: async () => {
-                    try {
-                      const filePath = await ipcRenderer.invoke(
-                        'promptSessionSaveAs',
-                      )
-                      if (filePath) {
-                        self.setSessionPath(filePath)
-                        await self.saveSession(getSaveSession(self))
-                      }
-                    } catch (e) {
-                      console.error(e)
-                      self.session?.notifyError(`${e}`, e)
-                    }
-                  },
-                },
-                {
-                  type: 'divider',
-                },
-                {
-                  label: 'Open assembly...',
-                  icon: DNA,
-                  onClick: () => {
-                    if (self.session) {
-                      const session = self.session as BaseSession
-                      session.queueDialog(doneCallback => [
-                        OpenSequenceDialog,
-                        {
-                          model: self,
-                          onClose: (confs?: AnyConfigurationModel[]) => {
-                            try {
-                              if (confs) {
-                                for (const conf of confs) {
-                                  self.jbrowse.addAssemblyConf(conf)
+        returnToStartScreenCallback: () => {
+          console.error('returnToStartScreenCallback unimplemented')
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         */
+        setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
+          self.openNewSessionCallback = cb
+        },
+        /**
+         * #action
+         * Wired by the Loader to tear down this plugin manager and show the
+         * start screen (the Loader owns plugin-manager lifecycle).
+         */
+        setReturnToStartScreenCallback(cb: () => void) {
+          self.returnToStartScreenCallback = cb
+        },
+        /**
+         * #action
+         */
+        async saveSession(val: unknown) {
+          if (self.sessionPath) {
+            await ipcRenderer.invoke('saveSession', self.sessionPath, val)
+          }
+        },
+      }))
+      // separate actions block so saveSession (defined above) is visible on
+      // `self` with its real type, rather than casting self to the composed model
+      .actions(self => ({
+        /**
+         * #action
+         * Persist the session, then rebuild the plugin manager from disk so the
+         * changed plugin set takes effect (Loader wires openNewSessionCallback to
+         * reload from the session path).
+         */
+        async setPluginsUpdated() {
+          // openNewSessionCallback reloads from sessionPath; with no path there
+          // is nothing to reload from (loadSession('') would throw)
+          if (self.sessionPath) {
+            if (self.session) {
+              await self.saveSession(getSaveSession(self))
+            }
+            await self.openNewSessionCallback(self.sessionPath)
+          }
+        },
+        afterCreate() {
+          addDisposer(
+            self,
+            autorun(
+              async () => {
+                // capture the session up front so a save failure reports to the
+                // same session even if it changed during the awaited save
+                const { session } = self
+                if (session) {
+                  try {
+                    await self.saveSession(getSaveSession(self))
+                  } catch (e) {
+                    console.error(e)
+                    session.notifyError(`${e}`, e)
+                  }
+                }
+              },
+              { delay: 1000 },
+            ),
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         */
+        menus() {
+          return processMutableMenuActions(
+            [
+              {
+                label: 'File',
+                menuItems: [
+                  {
+                    label: 'Open genome...',
+                    icon: DNA,
+                    onClick: () => {
+                      if (self.session) {
+                        const session = self.session as BaseSession
+                        session.queueDialog(doneCallback => [
+                          OpenSequenceDialog,
+                          {
+                            model: self,
+                            onClose: (confs?: AnyConfigurationModel[]) => {
+                              try {
+                                if (confs) {
+                                  for (const conf of confs) {
+                                    self.jbrowse.addAssemblyConf(conf)
+                                  }
                                 }
+                              } catch (e) {
+                                console.error(e)
+                                self.session?.notifyError(`${e}`, e)
                               }
-                            } catch (e) {
-                              console.error(e)
-                              self.session?.notifyError(`${e}`, e)
-                            }
-                            doneCallback()
+                              doneCallback()
+                            },
                           },
-                        },
-                      ])
-                    }
-                  },
-                },
-                {
-                  label: 'Open track...',
-                  icon: StorageIcon,
-
-                  onClick: (session: SessionWithWidgets) => {
-                    const firstView = session.views[0]
-                    if (!firstView) {
-                      session.notify('Please open a view to add a track first')
-                    } else {
-                      const widget = session.addWidget(
-                        'AddTrackWidget',
-                        'addTrackWidget',
-                        { view: firstView.id },
-                      )
-                      session.showWidget(widget)
-                      if (session.views.length > 1) {
-                        session.notify(
-                          'This will add a track to the first view. Note: if you want to open a track in a specific view open the track selector for that view and use the add track (plus icon) in the bottom right',
-                        )
+                        ])
                       }
-                    }
+                    },
                   },
-                },
-                {
-                  label: 'Open connection...',
-                  icon: Cable,
-                  onClick: () => {
-                    if (self.session) {
-                      const widget = self.session.addWidget(
-                        'AddConnectionWidget',
-                        'addConnectionWidget',
-                      )
-                      self.session.showWidget(widget)
-                    }
+                  openTrackMenuItem(),
+                  {
+                    type: 'divider',
                   },
-                },
-                {
-                  type: 'divider',
-                },
-                {
-                  label: 'Return to start screen',
-                  icon: AppsIcon,
-                  onClick: () => {
-                    self.setSession(undefined)
-                  },
-                },
-                {
-                  label: 'Exit',
-                  icon: MeetingRoomIcon,
-                  onClick: async () => {
-                    await ipcRenderer.invoke('quit')
-                  },
-                },
-              ],
-            },
-            {
-              label: 'Add',
-              menuItems: [],
-            },
-            {
-              label: 'Tools',
-              menuItems: [
-                {
-                  label: 'Undo',
-                  icon: UndoIcon,
-                  onClick: () => {
-                    if (self.history.canUndo) {
-                      self.history.undo()
-                    }
-                  },
-                },
-                {
-                  label: 'Redo',
-                  icon: RedoIcon,
-                  onClick: () => {
-                    if (self.history.canRedo) {
-                      self.history.redo()
-                    }
-                  },
-                },
-                { type: 'divider' },
-                {
-                  label: 'Plugin store',
-                  icon: ExtensionIcon,
-                  onClick: () => {
-                    if (self.session) {
-                      const widget = self.session.addWidget(
-                        'PluginStoreWidget',
-                        'pluginStoreWidget',
-                      )
-                      self.session.showWidget(widget)
-                    }
-                  },
-                },
-                {
-                  label: 'Preferences',
-                  icon: SettingsIcon,
-                  onClick: () => {
-                    if (self.session) {
-                      const session = self.session as BaseSession
-                      session.queueDialog(handleClose => [
-                        PreferencesDialog,
-                        {
-                          session: self.session,
-                          pluginManager,
-                          handleClose,
+                  {
+                    label: 'Session',
+                    icon: DescriptionIcon,
+                    subMenu: [
+                      {
+                        label: 'Open config.json or .jbrowse file...',
+                        icon: OpenIcon,
+                        onClick: async () => {
+                          try {
+                            const path =
+                              await ipcRenderer.invoke('promptOpenFile')
+                            if (path) {
+                              await self.openNewSessionCallback(path)
+                            }
+                          } catch (e) {
+                            console.error(e)
+                            self.session?.notifyError(`${e}`, e)
+                          }
                         },
-                      ])
-                    }
-                  },
-                },
-                {
-                  label: 'Open assembly manager',
-                  icon: DNA,
-                  onClick: () => {
-                    ;(self.session as AbstractSessionModel).queueDialog(
-                      handleClose => [
-                        AssemblyManager,
-                        {
-                          session: self.session,
-                          onClose: handleClose,
+                      },
+                      {
+                        label: 'Save session as...',
+                        icon: SaveAsIcon,
+                        onClick: async () => {
+                          try {
+                            const filePath = await ipcRenderer.invoke(
+                              'promptSessionSaveAs',
+                            )
+                            if (filePath) {
+                              self.setSessionPath(filePath)
+                              await self.saveSession(getSaveSession(self))
+                            }
+                          } catch (e) {
+                            console.error(e)
+                            self.session?.notifyError(`${e}`, e)
+                          }
                         },
-                      ],
-                    )
+                      },
+                      {
+                        label: 'Export session to web...',
+                        icon: PublicIcon,
+                        onClick: () => {
+                          const session = self.session as
+                            BaseSession | undefined
+                          if (session) {
+                            session.queueDialog(doneCallback => [
+                              ExportToWebDialog,
+                              {
+                                snapshot: getSaveSession(self),
+                                shareURL: readConfObject(
+                                  self.jbrowse.configuration,
+                                  'shareURL',
+                                ),
+                                session,
+                                handleClose: () => {
+                                  doneCallback()
+                                },
+                              },
+                            ])
+                          }
+                        },
+                      },
+                    ],
                   },
-                },
-                {
-                  label: 'Use workspaces',
-                  icon: SpaceDashboardIcon,
-                  type: 'checkbox',
-                  checked: self.session?.useWorkspaces ?? false,
-                  helpText:
-                    'Workspaces allow you to organize views into tabs and tiles. You can drag views between tabs or split them side-by-side.',
-                  onClick: () => {
-                    self.session?.setUseWorkspaces(!self.session.useWorkspaces)
+                  openConnectionMenuItem(),
+                  {
+                    type: 'divider',
                   },
-                },
-              ],
-            },
-          ] as Menu[],
-          self.mutableMenuActions,
-        )
-      },
-    }))
+                  {
+                    label: 'Return to start screen',
+                    icon: AppsIcon,
+                    onClick: async () => {
+                      // flush a final save so edits still inside the autosave
+                      // debounce window aren't lost, then let the Loader tear
+                      // down this plugin manager (workers + autosave) rather
+                      // than leaving it orphaned behind the start screen
+                      const session = self.session as BaseSession | undefined
+                      if (session) {
+                        try {
+                          await self.saveSession(getSaveSession(self))
+                        } catch (e) {
+                          console.error(e)
+                          session.notifyError(`${e}`, e)
+                        }
+                      }
+                      self.returnToStartScreenCallback()
+                    },
+                  },
+                  {
+                    label: 'Exit',
+                    icon: MeetingRoomIcon,
+                    onClick: async () => {
+                      await ipcRenderer.invoke('quit')
+                    },
+                  },
+                ],
+              },
+              {
+                label: 'Add',
+                menuItems: [],
+              },
+              {
+                label: 'Tools',
+                menuItems: [
+                  undoMenuItem(self.history),
+                  redoMenuItem(self.history),
+                  { type: 'divider' },
+                  pluginStoreMenuItem(),
+                  preferencesMenuItem(pluginManager, PreferencesDialog),
+                  {
+                    label: 'Open assembly manager',
+                    icon: DNA,
+                    onClick: () => {
+                      ;(self.session as BaseSession).queueDialog(
+                        handleClose => [
+                          AssemblyManager,
+                          {
+                            session: self.session,
+                            onClose: handleClose,
+                          },
+                        ],
+                      )
+                    },
+                  },
+                  workspacesMenuItem(self.session),
+                ],
+              },
+            ],
+            self.mutableMenuActions,
+          )
+        },
+      }))
+  )
 }
 
 export type DesktopRootModelType = ReturnType<typeof rootModelFactory>
 export type DesktopRootModel = Instance<DesktopRootModelType>
+
+// Verify DesktopRootModel satisfies AppRootModel at compile time. If this
+// errors, the root model is missing something the app session layer
+// (AppSessionMixin) delegates to via self.root.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _checkDesktopRootModel(m: DesktopRootModel): AppRootModel {
+  return m
+}

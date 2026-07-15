@@ -1,48 +1,63 @@
 ---
 id: desktopsessiontrackmenumixin
 title: DesktopSessionTrackMenuMixin
+sidebar_label: Mixin -> DesktopSessionTrackMenuMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/TrackMenu.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+## Members
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-desktop/src/sessionModel/TrackMenu.ts)
+| Member                                                     | Kind    | Defined by                                                  | Description                                                               |
+| ---------------------------------------------------------- | ------- | ----------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [getTrackActions](#method-gettrackactions)                 | Methods | DesktopSessionTrackMenuMixin                                | raw track actions (Settings, Copy, Delete, Index) without submenu wrapper |
+| [getTrackListMenuItems](#method-gettracklistmenuitems)     | Methods | [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin) | flattened menu items for use in hierarchical track selector               |
+| [getTrackActionMenuItems](#method-gettrackactionmenuitems) | Methods | [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin) | track menu with About + "Track actions" submenu for the in-view label     |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/DesktopSessionTrackMenuMixin.md)
-
-## Docs
-
-### DesktopSessionTrackMenuMixin - Methods
+<details>
+<summary>DesktopSessionTrackMenuMixin - Methods</summary>
 
 #### method: getTrackActions
 
 raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
 
-```js
-// type signature
-getTrackActions: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
+```ts
+type getTrackActions = (trackConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
 ```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from TrackMenuItemsSessionMixin</summary>
+
+[TrackMenuItemsSessionMixin →](../trackmenuitemssessionmixin)
+
+**Methods**
 
 #### method: getTrackListMenuItems
 
 flattened menu items for use in hierarchical track selector
 
-```js
-// type signature
-getTrackListMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, view?: { ...; } | undefined) => MenuItem[]
+```ts
+type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
 
-```js
-// type signature
-getTrackActionMenuItems: (trackConfig: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>, extraTrackActions?: MenuItem[] | undefined, effectiveConfig?: Record<.....
+track menu with About + "Track actions" submenu for the in-view label
+
+```ts
+type getTrackActionMenuItems = ({ config, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; view?: TrackActionView | undefined; }) => MenuItem[]
 ```
+
+</details>

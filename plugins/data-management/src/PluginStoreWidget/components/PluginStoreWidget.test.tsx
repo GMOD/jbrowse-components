@@ -1,17 +1,18 @@
 import { DialogQueue } from '@jbrowse/app-core'
+import Plugin from '@jbrowse/core/Plugin'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getParent, getRoot, getSnapshot } from '@jbrowse/mobx-state-tree'
-// @ts-expect-error
-import { createTestSession } from '@jbrowse/web/src/rootModel/index.js'
+import { createTestSession } from '@jbrowse/web/testUtils'
 import { ThemeProvider } from '@mui/material'
 import { render, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
+import { SWRConfig } from 'swr'
 
 import PluginStoreWidget from './PluginStoreWidget.tsx'
 
 import type { PluginStoreModel } from '../model.ts'
 
-jest.mock('@jbrowse/web/src/makeWorkerInstance', () => () => {})
+jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 const plugins = {
   plugins: [
@@ -70,8 +71,71 @@ test('Installs a session plugin', async () => {
   await waitFor(() => {
     expect(reloadPluginManagerMock).toHaveBeenCalled()
   })
+  // installs the resolved, installable definition (name + url) rather than the
+  // full store metadata entry
+  expect(getSnapshot(session.sessionPlugins)[0]).toEqual({
+    name: plugins.plugins[0]!.name,
+    url: plugins.plugins[0]!.url,
+  })
+})
+
+test('removeSessionPlugin removes a plugin that carries a cjsUrl', () => {
+  const { session } = setup()
+  const plugin = {
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+    cjsUrl: 'https://example.com/msaview.cjs.js',
+  }
+  session.addSessionPlugin(plugin)
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(1)
+
+  // mirrors what InstalledPlugin passes: pluginManager metadata carries only
+  // the resolved url, not the cjsUrl, so removal must match on url alone
+  session.removeSessionPlugin({ name: plugin.name, url: plugin.url })
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
+})
+
+test('uninstalls a session plugin through the full UI flow', async () => {
+  const user = userEvent.setup()
+  // a store-style definition carrying both a web (url) and desktop (cjsUrl)
+  // build, loaded into the plugin manager so it appears as installed
+  const definition = {
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+    cjsUrl: 'https://example.com/msaview.cjs.js',
+  }
+  class MsaViewPlugin extends Plugin {
+    name = 'MsaView'
+    version = '1.0.0'
+  }
+  const session = createTestSession({
+    sessionSnapshot: { sessionPlugins: [definition] },
+    runtimePlugins: [{ plugin: new MsaViewPlugin(), definition }],
+  })
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  // the debounced autosave reloads the plugin manager after removal; give it a
+  // no-op so it doesn't hit the default "unimplemented" handler post-teardown
   // @ts-expect-error
-  expect(getSnapshot(session.sessionPlugins)[0]).toEqual(plugins.plugins[0])
+  getRoot(session).setReloadPluginManagerCallback(() => {})
+
+  const { findByText, findByTestId } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <DialogQueue session={session} />
+      <PluginStoreWidget model={model} />
+    </ThemeProvider>,
+  )
+
+  // the loaded session plugin shows an uninstall button
+  expect(getSnapshot(session.sessionPlugins)).toHaveLength(1)
+  await user.click(await findByTestId('removePlugin-MsaView'))
+  await user.click(await findByText('Remove'))
+
+  await waitFor(() => {
+    expect(getSnapshot(session.sessionPlugins)).toHaveLength(0)
+  })
 })
 
 test('plugin store admin - adds a custom plugin correctly', async () => {
@@ -99,18 +163,114 @@ test('plugin store admin - adds a custom plugin correctly', async () => {
   ])
 }, 20000)
 
+test('offers an update when the store name differs from the plugin class name', async () => {
+  const user = userEvent.setup()
+  // installed at v1; the runtime plugin registers under its Plugin *class* name
+  // ("FooRuntimePlugin"), which is not the store name ("Foo", the UMD global).
+  // The store entry must still be matched — by packageName in the pinned url —
+  // so the update is offered despite the name divergence.
+  const definition = {
+    name: 'Foo',
+    url: 'https://jbrowse.org/plugins/jbrowse-plugin-foo/1.0.0/dist/jbrowse-plugin-foo.umd.production.min.js',
+  }
+  class FooRuntimePlugin extends Plugin {
+    name = 'FooRuntimePlugin'
+    version = '1.0.0'
+  }
+  const store = {
+    plugins: [
+      {
+        name: 'Foo',
+        packageName: 'jbrowse-plugin-foo',
+        authors: [],
+        description: 'foo',
+        location: 'https://example.com',
+        license: 'MIT',
+        url: 'https://jbrowse.org/plugins/jbrowse-plugin-foo/2.0.0/dist/jbrowse-plugin-foo.umd.production.min.js',
+        integrity: 'sha384-new',
+        versions: [
+          {
+            pluginVersion: '2.0.0',
+            jbrowseRange: '*',
+            url: 'https://jbrowse.org/plugins/jbrowse-plugin-foo/2.0.0/dist/jbrowse-plugin-foo.umd.production.min.js',
+            integrity: 'sha384-new',
+          },
+        ],
+      },
+    ],
+  }
+  jest
+    .spyOn(global, 'fetch')
+    .mockImplementation(async () => new Response(JSON.stringify(store)))
+
+  const session = createTestSession({
+    adminMode: true,
+    jbrowseConfig: { plugins: [definition] },
+    runtimePlugins: [{ plugin: new FooRuntimePlugin(), definition }],
+  })
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  // @ts-expect-error
+  getRoot(session).setReloadPluginManagerCallback(() => {})
+
+  // isolated SWR cache so the store fetch hits this test's mock rather than the
+  // list cached by an earlier test under the shared constant key
+  const { findByTestId } = render(
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <DialogQueue session={session} />
+        <PluginStoreWidget model={model} />
+      </ThemeProvider>
+    </SWRConfig>,
+  )
+  // the update button keys off the runtime class name; it only renders when the
+  // store entry was matched despite the store-name/class-name divergence
+  await user.click(await findByTestId('updatePlugin-FooRuntimePlugin'))
+  // the installed definition is swapped to the newer pinned url, and keeps the
+  // store's UMD-global name ("Foo") — not the runtime class name — so it loads
+  expect(getSnapshot(getParent(session)).jbrowse.plugins).toEqual([
+    {
+      name: 'Foo',
+      url: 'https://jbrowse.org/plugins/jbrowse-plugin-foo/2.0.0/dist/jbrowse-plugin-foo.umd.production.min.js',
+      integrity: 'sha384-new',
+    },
+  ])
+})
+
 test('plugin store admin - removes a custom plugin correctly', async () => {
-  const { user, session, model, reloadPluginManagerMock } = setup({}, true)
-  session.jbrowse.addPlugin(plugins.plugins[0])
+  const user = userEvent.setup()
+  const definition = {
+    name: 'MsaView',
+    url: 'https://example.com/msaview.umd.js',
+  }
+  class MsaViewPlugin extends Plugin {
+    name = 'MsaView'
+    version = '1.0.0'
+  }
+  const session = createTestSession({
+    adminMode: true,
+    jbrowseConfig: { plugins: [definition] },
+    runtimePlugins: [{ plugin: new MsaViewPlugin(), definition }],
+  })
+  const model = session.addWidget(
+    'PluginStoreWidget',
+    'pluginStoreWidget',
+  ) as PluginStoreModel
+  // @ts-expect-error
+  getRoot(session).setReloadPluginManagerCallback(() => {})
+
   const { findByText, findByTestId } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <DialogQueue session={session} />
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
-  await user.click(await findByTestId('removePlugin-CanvasPlugin'))
+  expect(session.jbrowse.plugins).toHaveLength(1)
+  await user.click(await findByTestId('removePlugin-MsaView'))
   await user.click(await findByText('Remove'))
   await waitFor(() => {
-    expect(reloadPluginManagerMock).toHaveBeenCalled()
+    expect(session.jbrowse.plugins).toHaveLength(0)
   })
 })

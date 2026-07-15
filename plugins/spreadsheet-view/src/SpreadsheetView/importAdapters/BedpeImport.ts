@@ -1,80 +1,68 @@
 import { isNumber } from './isNumber.ts'
 import {
   bufferToLines,
-  parseExtraColNames,
+  computeBedColumns,
   parseExtraCols,
   parseStrand,
 } from './util.ts'
 
+const coreColumns = [
+  'refName',
+  'start',
+  'end',
+  'mateRefName',
+  'mateStart',
+  'mateEnd',
+  'name',
+  'score',
+  'strand',
+  'mateStrand',
+]
+
 export function parseBedPEBuffer(buffer: Uint8Array) {
-  const lines = bufferToLines(buffer)
-  const rest = lines.filter(
-    line =>
-      !(
-        line.startsWith('#') ||
-        line.startsWith('browser') ||
-        line.startsWith('track')
-      ),
+  const { rest, extraNames, columns } = computeBedColumns(
+    bufferToLines(buffer),
+    coreColumns,
   )
-  const lastHeaderLine = lines.findLast(line => line.startsWith('#'))
-
-  const coreColumns = [
-    'refName',
-    'start',
-    'end',
-    'mateRefName',
-    'mateStart',
-    'mateEnd',
-    'name',
-    'score',
-    'strand',
-    'mateStrand',
-  ]
-  const numExtraColumns = Math.max(
-    0,
-    (rest[0]?.split('\t').length ?? 0) - coreColumns.length,
-  )
-  const extraNames = parseExtraColNames(
-    lastHeaderLine,
-    coreColumns.length,
-    numExtraColumns,
-  )
-  const colNames = [...coreColumns, ...extraNames]
-
   return {
-    columns: colNames.map(c => ({ name: c })),
+    columns,
     rowSet: {
       rows: rest.map((line, idx) => {
         const cols = line.split('\t')
         const extra = parseExtraCols(cols, extraNames, coreColumns.length)
+        const score = isNumber(cols[7]) ? +cols[7] : cols[7]
+        const start = +cols[1]!
+        const end = +cols[2]!
+        const mateStart = +cols[4]!
+        const mateEnd = +cols[5]!
         return {
           cellData: {
             refName: cols[0],
-            start: cols[1],
-            end: cols[2],
+            start,
+            end,
             mateRefName: cols[3],
-            mateStart: cols[4],
-            mateEnd: cols[5],
+            mateStart,
+            mateEnd,
             name: cols[6],
-            score: isNumber(cols[7]) ? +cols[7] : cols[7],
+            score,
             strand: cols[8],
             mateStrand: cols[9],
             ...extra,
           },
           feature: {
             uniqueId: `bedpe-${idx}`,
-            refName: cols[0],
-            start: +cols[1]!,
-            end: +cols[2]!,
+            refName: cols[0]!,
+            start,
+            end,
             strand: parseStrand(cols[8]),
             mate: {
               refName: cols[3],
-              start: +cols[4]!,
-              end: +cols[5]!,
+              start: mateStart,
+              end: mateEnd,
               strand: parseStrand(cols[9]),
             },
             name: cols[6],
-            score: cols[7],
+            score,
             ...extra,
           },
         }

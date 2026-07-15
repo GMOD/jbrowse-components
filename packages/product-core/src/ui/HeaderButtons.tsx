@@ -1,8 +1,6 @@
-import { useState } from 'react'
-
+import { CopyToClipboardButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
-import copy from 'copy-to-clipboard'
 
 import { removeAttr } from './util.ts'
 
@@ -18,7 +16,6 @@ interface HeaderButtonsProps {
 }
 
 function HeaderButtons({ conf, setShowRefNames }: HeaderButtonsProps) {
-  const [copied, setCopied] = useState(false)
   const { classes } = useStyles()
 
   return (
@@ -32,19 +29,18 @@ function HeaderButtons({ conf, setShowRefNames }: HeaderButtonsProps) {
       >
         Show ref names
       </Button>
-      <Button
+      <CopyToClipboardButton
         variant="contained"
-        onClick={async () => {
-          const snap = removeAttr(JSON.parse(JSON.stringify(conf)), 'baseUri')
-          await copy(JSON.stringify(snap, null, 2))
-          setCopied(true)
-          setTimeout(() => {
-            setCopied(false)
-          }, 1000)
-        }}
+        value={() =>
+          JSON.stringify(
+            removeAttr(JSON.parse(JSON.stringify(conf)), 'baseUri'),
+            null,
+            2,
+          )
+        }
       >
-        {copied ? 'Copied to clipboard!' : 'Copy config'}
-      </Button>
+        Copy config
+      </CopyToClipboardButton>
     </span>
   )
 }

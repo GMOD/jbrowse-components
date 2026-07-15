@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import fetch from '../../cliFetch.ts'
 import { dataDir, readConf, runCommand, runInTmpDir } from '../../testUtil.ts'
@@ -25,7 +25,7 @@ function getPort(output: string) {
 }
 
 function getAdminKey(output: string) {
-  const keyMatch = /Admin key: ([a-zA-Z0-9]{10,12})/.exec(output)
+  const keyMatch = /Admin key: ([a-zA-Z0-9]{10,})/.exec(output)
   const key = keyMatch?.[1]
   if (!key) {
     throw new Error(`Admin key not found in "${output}"`)
@@ -69,9 +69,7 @@ test('does not overwrite an existing config', async () => {
 test('uses port 9090 if not specified', async () => {
   await runInTmpDir(async () => {
     const { stdout } = await runCommand(['admin-server'])
-    expect(stdout).toMatch(
-      /http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,12}/,
-    )
+    expect(stdout).toMatch(/http:\/\/localhost:9090\?adminKey=[a-zA-Z0-9]{10,}/)
     await killExpress({ stdout })
   })
 })

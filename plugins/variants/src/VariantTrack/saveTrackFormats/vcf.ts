@@ -1,7 +1,7 @@
 import type { Feature } from '@jbrowse/core/util'
 
 function generateINFO(feature: Feature) {
-  const info = feature.get('INFO')
+  const info = feature.get('INFO') as Record<string, unknown> | undefined
   if (!info) {
     return '.'
   }
@@ -24,10 +24,10 @@ export function stringifyVCF({ features }: { features: Feature[] }) {
       const chrom = feature.get('refName') || '.'
       const pos = feature.get('start') + 1
       const id = feature.get('name') || '.'
-      const ref = feature.get('REF') || '.'
-      const alt = feature.get('ALT')?.join(',') || '.'
-      const qual = feature.get('QUAL') || '.'
-      const filter = feature.get('FILTER') || '.'
+      const ref = (feature.get('REF') as string | undefined) || '.'
+      const alt = (feature.get('ALT') as string[] | undefined)?.join(',') || '.'
+      const qual = (feature.get('QUAL') as number | undefined) ?? '.'
+      const filter = (feature.get('FILTER') as string | undefined) || '.'
       return `${chrom}\t${pos}\t${id}\t${ref}\t${alt}\t${qual}\t${filter}\t${generateINFO(feature)}`
     })
     .join('\n')

@@ -1,14 +1,9 @@
+// eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
 
 import * as mst from '@jbrowse/mobx-state-tree'
 import { alpha, createTheme, useTheme } from '@mui/material'
-import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
-import {
-  useGridApiContext,
-  useGridApiRef,
-  useGridRootProps,
-} from '@mui/x-data-grid'
 import * as mobx from 'mobx'
 import * as mxreact from 'mobx-react'
 import * as ReactJSXRuntime from 'react/jsx-runtime'
@@ -19,6 +14,7 @@ import Plugin from '../Plugin.ts'
 import { BaseFeatureDetail } from './BaseFeatureDetails.tsx'
 import { DataGridEntries } from './MuiDataGridReExports.ts'
 import { Entries } from './MuiReExports.ts'
+import { MUIStyles } from './MuiStylesReExports.ts'
 import { lazyMap } from './lazify.tsx'
 import reExportsList from './list.ts'
 import * as Configuration from '../configuration/index.ts'
@@ -30,11 +26,7 @@ import ViewType from '../pluggableElementTypes/ViewType.ts'
 import WidgetType from '../pluggableElementTypes/WidgetType.ts'
 import * as pluggableElementTypes from '../pluggableElementTypes/index.ts'
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models/index.ts'
-import * as BoxRendererType from '../pluggableElementTypes/renderers/BoxRendererType.ts'
-import CircularChordRendererType from '../pluggableElementTypes/renderers/CircularChordRendererType.tsx'
-import * as FeatureRendererType from '../pluggableElementTypes/renderers/FeatureRendererType.ts'
 import * as RendererType from '../pluggableElementTypes/renderers/RendererType.tsx'
-import * as ServerSideRendererType from '../pluggableElementTypes/renderers/ServerSideRendererType.ts'
 import * as coreUi from '../ui/index.ts'
 import * as coreTheme from '../ui/theme.ts'
 import Base1DView from '../util/Base1DViewModel.ts'
@@ -55,6 +47,9 @@ function makeLegacyMakeStyles() {
   }
 }
 
+const tssReact = { cx, keyframes, makeStyles }
+const legacyMakeStyles = makeLegacyMakeStyles()
+
 const libs = {
   mobx,
   '@jbrowse/mobx-state-tree': mst,
@@ -64,32 +59,27 @@ const libs = {
   'react-dom': ReactDom,
   'react-dom/client': ReactDomClient,
   'mobx-react': mxreact,
+  // Only lazy component entries are re-exported. The grid *hooks*
+  // (useGridApiContext/useGridApiRef/useGridRootProps) are intentionally left
+  // out: statically importing them here pulled the entire ~1.2 MB
+  // @mui/x-data-grid package into the eager first-paint graph, defeating the
+  // lazy import('@mui/x-data-grid') in MuiDataGridReExports. First-party code
+  // that needs the hooks imports them directly from '@mui/x-data-grid'.
   '@mui/x-data-grid': {
-    useGridApiContext,
-    useGridApiRef,
-    useGridRootProps,
     ...lazyMap(DataGridEntries),
   },
 
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
-  'tss-react': {
-    cx,
-    keyframes,
-    makeStyles,
-  },
-  'tss-react/mui': {
-    cx,
-    keyframes,
-    makeStyles,
-  },
+  'tss-react': tssReact,
+  'tss-react/mui': tssReact,
 
   '@material-ui/core': {
     ...lazyMap(Entries),
     useTheme,
     alpha,
 
-    makeStyles: makeLegacyMakeStyles(),
+    makeStyles: legacyMakeStyles,
   },
   '@mui/material': {
     ...lazyMap(Entries),
@@ -102,11 +92,11 @@ const libs = {
 
   '@mui/material/styles': {
     ...MUIStyles,
-    makeStyles: makeLegacyMakeStyles(),
+    makeStyles: legacyMakeStyles,
   },
   '@material-ui/core/styles': {
     ...MUIStyles,
-    makeStyles: makeLegacyMakeStyles(),
+    makeStyles: legacyMakeStyles,
   },
 
   // these are core in @mui/material, but used to be in @material-ui/lab
@@ -142,14 +132,6 @@ const libs = {
   '@jbrowse/core/pluggableElementTypes/TrackType': TrackType,
   '@jbrowse/core/pluggableElementTypes/WidgetType': WidgetType,
   '@jbrowse/core/pluggableElementTypes/models': pluggableElementTypeModels,
-  '@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType':
-    ServerSideRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType':
-    CircularChordRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType':
-    BoxRendererType,
-  '@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType':
-    FeatureRendererType,
 
   '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
   '@jbrowse/core/data_adapters/BaseAdapter': BaseAdapterExports,

@@ -1,6 +1,5 @@
 import { Suspense, lazy, useState } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import {
   getContainingView,
   getSession,
@@ -8,118 +7,109 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { makeFeaturePair, makeSummary } from './util.ts'
+import { makeSummary } from './util.ts'
 
-import type { LinearArcDisplayModel } from '../model.ts'
+import type { LinearPairedArcDisplayModel } from '../model.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
-import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ArcTooltip = lazy(() => import('../../ArcTooltip.tsx'))
 
 type LGV = LinearGenomeViewModel
+type ArcStyle = NonNullable<LinearPairedArcDisplayModel['arcStyles']>[number]
 
 const Arc = observer(function Arc({
   model,
-  feature,
-  alt,
+  style,
   assembly,
   view,
+  lineWidth,
+  exportSVG,
 }: {
-  feature: Feature
-  alt?: string
-  model: LinearArcDisplayModel
+  model: LinearPairedArcDisplayModel
+  style: ArcStyle
   assembly: Assembly
-  view: LinearGenomeViewModel
+  view: LGV
+  lineWidth: number
+  exportSVG?: boolean
 }) {
   const [mouseOvered, setMouseOvered] = useState(false)
-  const { height } = model
-  const { k1, k2 } = makeFeaturePair(feature, alt)
-  const c = getConf(model, 'color', { feature, alt })
+  const { feature, alt, color, k1, k2 } = style
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
   const ra2 = assembly.getCanonicalRefName(k2.refName) || k2.refName
   const r1 = view.bpToPx({ refName: ra1, coord: k1.start })?.offsetPx
   const r2 = view.bpToPx({ refName: ra2, coord: k2.start })?.offsetPx
 
-  if (r1 !== undefined && r2 !== undefined) {
-    const left = r1 - view.offsetPx
-    const right = r2 - view.offsetPx
-    const absrad = Math.abs((right - left) / 2)
-    const destY = Math.min(height, absrad)
-    const col = mouseOvered ? 'black' : c
-    const events = {
-      onMouseOut: () => {
-        setMouseOvered(false)
-      },
-      onMouseOver: () => {
-        setMouseOvered(true)
-      },
-      onClick: () => {
-        model.selectFeature(feature)
-      },
-    }
-
-    return absrad > 1 ? (
-      <>
-        <path
-          d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
-          {...getStrokeProps(col)}
-          strokeWidth={3}
-          {...events}
-          fill="none"
-          pointerEvents="stroke"
-        />
-        {k1.mateDirection ? (
-          <line
-            {...getStrokeProps(col)}
-            strokeWidth={3}
-            {...events}
-            x1={left}
-            x2={left + k1.mateDirection * 20}
-            y1={1.5}
-            y2={1.5}
-          />
-        ) : null}
-        {k2.mateDirection ? (
-          <line
-            {...getStrokeProps(col)}
-            strokeWidth={3}
-            {...events}
-            x1={right}
-            x2={right + k2.mateDirection * 20}
-            y1={1.5}
-            y2={1.5}
-          />
-        ) : null}
-        {mouseOvered ? (
-          <Suspense fallback={null}>
-            <ArcTooltip contents={makeSummary(feature, alt)} />
-          </Suspense>
-        ) : null}
-      </>
-    ) : null
+  if (r1 === undefined || r2 === undefined) {
+    return null
   }
-  return null
-})
 
-const Wrapper = observer(function Wrapper({
-  model,
-  exportSVG,
-  children,
-}: {
-  model: LinearArcDisplayModel
-  exportSVG?: boolean
-  children: React.ReactNode
-}) {
-  const { height } = model
-  const view = getContainingView(model) as LGV
-  const width = view.totalWidthPx
-  return exportSVG ? (
-    children
-  ) : (
-    <svg width={width} height={height}>
-      {children}
-    </svg>
+  const left = r1 - view.offsetPx
+  const right = r2 - view.offsetPx
+  const absrad = Math.abs((right - left) / 2)
+  if (absrad <= 1) {
+    return null
+  }
+  // mate-direction ticks extend 20px past each endpoint
+  if (
+    !exportSVG &&
+    (Math.max(left, right) < -20 || Math.min(left, right) > view.width + 20)
+  ) {
+    return null
+  }
+
+  const destY = Math.min(model.height, absrad)
+  const col = mouseOvered ? 'black' : color
+  const events = {
+    onMouseOut: () => {
+      setMouseOvered(false)
+    },
+    onMouseOver: () => {
+      setMouseOvered(true)
+    },
+    onClick: () => {
+      model.selectFeature(feature)
+    },
+  }
+
+  return (
+    <>
+      <path
+        d={`M ${left} 0 C ${left} ${destY}, ${right} ${destY}, ${right} 0`}
+        {...getStrokeProps(col)}
+        strokeWidth={lineWidth}
+        {...events}
+        fill="none"
+        pointerEvents="stroke"
+      />
+      {k1.mateDirection ? (
+        <line
+          {...getStrokeProps(col)}
+          strokeWidth={lineWidth}
+          {...events}
+          x1={left}
+          x2={left + k1.mateDirection * 20}
+          y1={1.5}
+          y2={1.5}
+        />
+      ) : null}
+      {k2.mateDirection ? (
+        <line
+          {...getStrokeProps(col)}
+          strokeWidth={lineWidth}
+          {...events}
+          x1={right}
+          x2={right + k2.mateDirection * 20}
+          y1={1.5}
+          y2={1.5}
+        />
+      ) : null}
+      {mouseOvered ? (
+        <Suspense fallback={null}>
+          <ArcTooltip contents={makeSummary(feature, alt)} />
+        </Suspense>
+      ) : null}
+    </>
   )
 })
 
@@ -127,42 +117,37 @@ const Arcs = observer(function Arcs({
   model,
   exportSVG,
 }: {
-  model: LinearArcDisplayModel
+  model: LinearPairedArcDisplayModel
   exportSVG?: boolean
 }) {
   const view = getContainingView(model) as LGV
-  const session = getSession(model)
-  const { assemblyManager } = session
-  const { features } = model
+  const { assemblyManager } = getSession(model)
+  const { arcStyles, height, lineWidth } = model
   const assembly = assemblyManager.get(view.assemblyNames[0]!)
 
-  return assembly ? (
-    <Wrapper model={model} exportSVG={exportSVG}>
-      {features?.map(f => {
-        const alts = f.get('ALT') as string[] | undefined
-        return (
-          alts?.map(a => (
-            <Arc
-              key={`${f.id()}-${a}`}
-              feature={f}
-              alt={a}
-              view={view}
-              model={model}
-              assembly={assembly}
-            />
-          )) ?? (
-            <Arc
-              key={f.id()}
-              feature={f}
-              view={view}
-              model={model}
-              assembly={assembly}
-            />
-          )
-        )
-      })}
-    </Wrapper>
-  ) : null
+  if (!assembly) {
+    return null
+  }
+
+  const arcs = arcStyles?.map(style => (
+    <Arc
+      key={`${style.feature.id()}-${style.alt ?? ''}`}
+      model={model}
+      style={style}
+      view={view}
+      assembly={assembly}
+      lineWidth={lineWidth}
+      exportSVG={exportSVG}
+    />
+  ))
+
+  return exportSVG ? (
+    <>{arcs}</>
+  ) : (
+    <svg width={view.totalWidthPx} height={height}>
+      {arcs}
+    </svg>
+  )
 })
 
 export default Arcs

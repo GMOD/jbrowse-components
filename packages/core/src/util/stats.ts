@@ -122,11 +122,17 @@ export async function scoresToStats(
   } = await firstValueFrom(
     feats.pipe(
       reduce((acc, f) => {
-        const s = f.get('score')
+        const s = f.get('score') ?? 0
         const summary = f.get('summary')
         const { scoreMax, scoreMin } = acc
-        acc.scoreMax = Math.max(scoreMax, summary ? f.get('maxScore') : s)
-        acc.scoreMin = Math.min(scoreMin, summary ? f.get('minScore') : s)
+        acc.scoreMax = Math.max(
+          scoreMax,
+          summary ? ((f.get('maxScore') as number | undefined) ?? s) : s,
+        )
+        acc.scoreMin = Math.min(
+          scoreMin,
+          summary ? ((f.get('minScore') as number | undefined) ?? s) : s,
+        )
         acc.scoreMeanMin = Math.min(acc.scoreMeanMin, s)
         acc.scoreMeanMax = Math.max(acc.scoreMeanMax, s)
         acc.scoreSum += s

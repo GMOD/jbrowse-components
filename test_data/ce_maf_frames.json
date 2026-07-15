@@ -1,0 +1,55 @@
+{
+  "assemblies": [
+    {
+      "name": "ce11",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "ce11-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/ce11.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/ce11.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/ce11/bigZips/ce11.chromAlias.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "MafTrack",
+      "trackId": "ce11.26way",
+      "name": "UCSC 26-way multiple alignment",
+      "assemblyNames": ["ce11"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "nhLocation": {
+          "uri": "ce11.26way.nh",
+          "locationType": "UriLocation"
+        },
+        "bedGzLocation": {
+          "uri": "ce11.26way.chrI_subset.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "ce11.26way.chrI_subset.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "annotationAdapter": {
+          "type": "BigBedAdapter",
+          "bigBedLocation": {
+            "uri": "ce11.26way.chrI_subset.frames.bb",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ]
+}

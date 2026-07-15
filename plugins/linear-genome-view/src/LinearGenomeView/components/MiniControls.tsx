@@ -1,4 +1,5 @@
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
@@ -31,21 +32,24 @@ const MiniControls = observer(function MiniControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const {
-    id,
-    bpPerPx,
-    maxBpPerPx,
-    minBpPerPx,
-    hideHeader,
-    scalebarOnly,
-    effectiveBpPerPx,
-  } = model
+  const { id, bpPerPx, maxBpPerPx, minBpPerPx, hideHeader, scalebarOnly } =
+    model
   const { focusedViewId } = getSession(model)
   return (
     <Paper className={classes.background}>
       <Paper
         className={focusedViewId === id ? classes.focusedBackground : undefined}
       >
+        <Tooltip title="Open track selector">
+          <IconButton
+            size="small"
+            onClick={() => {
+              model.activateTrackSelector()
+            }}
+          >
+            <TrackSelectorIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
         <CascadingMenuButton menuItems={() => model.menuItems()}>
           <MoreVertIcon fontSize="small" />
         </CascadingMenuButton>
@@ -67,19 +71,19 @@ const MiniControls = observer(function MiniControls({
           <>
             <IconButton
               data-testid="zoom_out"
+              disabled={bpPerPx >= maxBpPerPx - 0.0001}
               onClick={() => {
                 model.zoom(bpPerPx * 2)
               }}
-              disabled={effectiveBpPerPx >= maxBpPerPx - 0.0001}
             >
               <ZoomOut fontSize="small" />
             </IconButton>
             <IconButton
               data-testid="zoom_in"
+              disabled={bpPerPx <= minBpPerPx + 0.0001}
               onClick={() => {
                 model.zoom(bpPerPx / 2)
               }}
-              disabled={effectiveBpPerPx <= minBpPerPx + 0.0001}
             >
               <ZoomIn fontSize="small" />
             </IconButton>

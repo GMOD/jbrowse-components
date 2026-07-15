@@ -1,5 +1,5 @@
 import { saveAs } from '@jbrowse/core/util'
-import { fireEvent, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import { createView, doBeforeEach, setup } from './util.tsx'
@@ -57,6 +57,7 @@ test('Create a bookmark using the click and drag rubberband', async () => {
 test('Create a bookmark using the hotkey to bookmark the current region', async () => {
   const { session, findByTestId } = await createView()
 
+  // focus the view to allow the hotkey to work (it has a focus guard)
   const user = userEvent.setup()
   await user.click(await findByTestId('tracksContainer', ...opts))
 
@@ -76,6 +77,7 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
 test('Create a bookmark using the menu button to bookmark the current region', async () => {
   const { session, findByTestId, findByText } = await createView()
 
+  // focus the view to allow the hotkey to work (it has a focus guard)
   const user = userEvent.setup()
   await user.click(await findByTestId('tracksContainer', ...opts))
   fireEvent.click(await findByTestId('view_menu_icon'))
@@ -104,8 +106,10 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
   })
 
   fireEvent.click(await findByText('ctgA:201..240', {}, delay))
+  // navToBookmark grows the region by 0.2 for context, so a 40bp bookmark
+  // (ctgA:201..240) lands zoomed out by 8bp on each side
   await waitFor(() => {
-    expect(view.visibleLocStrings).toBe('ctgA:201..240')
+    expect(view.visibleLocStrings).toBe('ctgA:193..248')
   })
 }, 40000)
 
@@ -124,6 +128,10 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
     refName: 'ctgA',
     assemblyName: 'volvox',
   })
+
+  // focus the view to allow the hotkey to work (it has a focus guard)
+  const user = userEvent.setup()
+  await user.click(await findByTestId('tracksContainer', ...opts))
 
   document.dispatchEvent(
     new KeyboardEvent('keydown', {
@@ -163,8 +171,7 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
 }, 60000)
 
 test('Toggle highlight visibility across all views', async () => {
-  const { session, findByText, findByTestId, findAllByTestId } =
-    await createView()
+  const { session, findByText, findByTestId } = await createView()
 
   session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -191,51 +198,22 @@ test('Toggle highlight visibility across all views', async () => {
     assemblyName: 'volvox',
   })
 
-  const highlight = (await findAllByTestId('BookmarkIcon'))[0]
-  const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
-
-  expect(highlight).toBeDefined()
-  expect(highlight2).toBeDefined()
-
-  fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
-  await user.click(await findByText('Settings'))
-  await user.click(await findByTestId('toggle_highlight_all_switch'))
-  await user.click(await findByText('Close'))
-
-  // expect(highlight3).toBeUndefined()
-  // expect(highlight4).toBeUndefined()
-}, 60000)
-
-test('Toggle highlight label visibility across all views', async () => {
-  const { session, findByText, findByTestId } = await createView()
-
-  const user = userEvent.setup()
-
-  await user.click(await findByText('Tools'))
-  await user.click(await findByText('Bookmarks/highlights'))
-
-  // @ts-expect-error
-  const bookmarkWidget = session.widgets.get('GridBookmark')
-  bookmarkWidget.addBookmark({
-    start: 200,
-    end: 240,
-    refName: 'ctgA',
-    assemblyName: 'volvox',
-  })
-
-  // const highlight = (await findAllByTestId('BookmarkIcon'))[0]
-  // const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
-
-  // expect(highlight).toBeDefined()
-  // expect(highlight2).toBeDefined()
+  // the bookmark renders a highlight band in each open view (both on volvox)
+  await waitFor(() => {
+    expect(screen.getAllByTestId('highlight-band').length).toBeGreaterThan(0)
+  }, delay)
 
   fireEvent.click(await findByTestId('grid_bookmark_menu', ...opts))
   await user.click(await findByText('Settings'))
-  await user.click(await findByTestId('toggle_highlight_label_all_switch'))
+  await user.click(
+    (await findByTestId('toggle_highlight_all_switch')).querySelector('input')!,
+  )
   await user.click(await findByText('Close'))
 
-  // expect(highlight).toBeUndefined()
-  // expect(highlight2).toBeUndefined()
+  // one session-wide flag hides the bands in every view
+  await waitFor(() => {
+    expect(screen.queryAllByTestId('highlight-band').length).toBe(0)
+  }, delay)
 }, 60000)
 
 test('Downloads a BED file correctly', async () => {

@@ -11,7 +11,9 @@ const BooleanEditor = observer(function BooleanEditor({
 }: {
   slot: {
     name: string
-    value: boolean
+    // maybeBoolean slots start undefined (the promotable "inherit" state); the
+    // checkbox coerces to a concrete boolean so it stays controlled
+    value: boolean | undefined
     set: (arg: boolean) => void
     description: string
   }
@@ -22,7 +24,7 @@ const BooleanEditor = observer(function BooleanEditor({
         label={slot.name}
         control={
           <Checkbox
-            checked={slot.value}
+            checked={!!slot.value}
             onChange={evt => {
               slot.set(evt.target.checked)
             }}

@@ -1,11 +1,26 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config BamAdapter
+ * #trackType AlignmentsTrack
  * used to configure BAM adapter
+ *
+ * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
+ * automatically supplies it from the enclosing assembly's sequence track.
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.bai` index. For a `.csi` index or a
+ * differently-named index, set `index` explicitly with the full slot form:
+ * ```js
+ * {
+ *   type: 'BamAdapter',
+ *   uri: 'https://example.com/sample.bam',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -67,6 +82,7 @@ const configSchema = ConfigurationSchema(
       description:
         'size to fetch in bytes over which to display a warning to the user that too much data will be fetched',
       defaultValue: 5_000_000,
+      advanced: true,
     },
   },
   {
@@ -88,4 +104,5 @@ const configSchema = ConfigurationSchema(
   },
 )
 
+export type BamAdapterConfig = Instance<typeof configSchema>
 export default configSchema

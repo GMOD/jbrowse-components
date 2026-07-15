@@ -3,6 +3,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Checkbox, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import OverrideBadge from './OverrideBadge.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 import { isUnsupported } from '../../util.ts'
 
@@ -23,19 +24,22 @@ const useStyles = makeStyles()(theme => ({
   selected: {
     background: '#cccc',
   },
+  label: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+  },
 }))
 
 // Separate observer so only this checkbox re-renders when a track is toggled
 const TrackCheckbox = observer(function TrackCheckbox({
   model,
   trackId,
-  id,
   disabled,
   className,
 }: {
   model: HierarchicalTrackSelectorModel
   trackId: string
-  id: string
   disabled: boolean
   className: string
 }) {
@@ -44,15 +48,11 @@ const TrackCheckbox = observer(function TrackCheckbox({
       className={className}
       checked={model.shownTrackIds.has(trackId)}
       onChange={() => {
-        model.view.toggleTrack(trackId)
+        if (model.view.toggleTrack(trackId)) {
+          model.addToRecentlyUsed(trackId)
+        }
       }}
       disabled={disabled}
-      slotProps={{
-        input: {
-          // @ts-expect-error
-          'data-testid': `htsTrackEntry-${id}`,
-        },
-      }}
     />
   )
 })
@@ -63,26 +63,30 @@ const TrackLabelText = observer(function TrackLabelText({
   conf,
   id,
   name,
+  trackId,
   selectedClass,
 }: {
   model: HierarchicalTrackSelectorModel
   conf: AnyConfigurationModel
   id: string
   name: string
+  trackId: string
   selectedClass: string
 }) {
+  const { classes } = useStyles()
   const selected = model.selectionSet.has(conf)
   return (
     <div
       data-testid={`htsTrackLabel-${id}`}
-      className={selected ? selectedClass : undefined}
+      className={`${classes.label} ${selected ? selectedClass : ''}`}
     >
       <SanitizedHTML html={name} />
+      <OverrideBadge model={model} trackId={trackId} name={name} />
     </div>
   )
 })
 
-function TrackLabel({
+const TrackLabel = observer(function TrackLabel({
   model,
   item,
 }: {
@@ -112,7 +116,6 @@ function TrackLabel({
           <TrackCheckbox
             model={model}
             trackId={trackId}
-            id={id}
             disabled={isUnsupported(name)}
             className={classes.compactCheckbox}
           />
@@ -123,6 +126,7 @@ function TrackLabel({
             conf={conf}
             id={id}
             name={name}
+            trackId={trackId}
             selectedClass={classes.selected}
           />
         }
@@ -130,6 +134,6 @@ function TrackLabel({
       <TrackSelectorTrackMenu model={model} id={id} conf={conf} />
     </>
   )
-}
+})
 
 export default TrackLabel

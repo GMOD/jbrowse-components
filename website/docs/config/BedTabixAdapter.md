@@ -1,107 +1,98 @@
 ---
 id: bedtabixadapter
 title: BedTabixAdapter
+sidebar_label: Adapter -> BedTabixAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedTabixAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
+The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a `.csi`
+index instead:
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedTabixAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedTabixAdapter.md)
-
-## Docs
-
-### BedTabixAdapter - Pre-processor / simplified config
-
-preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
-
-```json
+```js
 {
-  "type": "BedTabixAdapter",
-  "uri": "yourfile.bed.gz"
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    uri: 'https://example.com/features.bed.gz',
+  },
 }
 ```
 
-### BedTabixAdapter - Slots
+_See the **Config slots** section below for all available configuration fields._
+
+## Related links
+
+- **Track:** [FeatureTrack](../featuretrack)
+- **Display:** [LinearArcDisplay](../lineararcdisplay)
+- **Display:** [LinearBasicDisplay](../linearbasicdisplay)
+- **Display:** [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                               | Type                    | Description                                                                           |
+| -------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------- |
+| [bedGzLocation](#slot-bedgzlocation)               | `fileLocation`          |                                                                                       |
+| [index.indexType](#slot-indexindextype)            | `stringEnum` (TBI, CSI) |                                                                                       |
+| [index.location](#slot-indexlocation)              | `fileLocation`          |                                                                                       |
+| [columnNames](#slot-columnnames)                   | `stringArray`           | List of column names                                                                  |
+| [scoreColumn](#slot-scorecolumn)                   | `string`                | The column to use as a "score" attribute                                              |
+| [autoSql](#slot-autosql)                           | `string`                | The autoSql definition for the data fields in the file                                |
+| [disableGeneHeuristic](#slot-disablegeneheuristic) | `boolean`               | Disable the heuristic that auto-detects BED12 features as gene/transcript structures. |
+
+<details>
+<summary>BedTabixAdapter - Slots</summary>
 
 #### slot: bedGzLocation
 
-```js
-bedGzLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bed.gz',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bed.gz', locationType: 'UriLocation' }`
 
 #### slot: index.indexType
 
-```js
-indexType: {
-        model: types.enumeration('IndexType', ['TBI', 'CSI']),
-        type: 'stringEnum',
-        defaultValue: 'TBI',
-      }
-```
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`TBI`, `CSI`) · **Default:** `'TBI'`
 
 #### slot: index.location
 
-```js
-location: {
-        type: 'fileLocation',
-        defaultValue: {
-          uri: '/path/to/my.bed.gz.tbi',
-          locationType: 'UriLocation',
-        },
-      }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bed.gz.tbi', locationType: 'UriLocation' }`
 
 #### slot: columnNames
 
-```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
-```
+List of column names
+
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: scoreColumn
 
-```js
-scoreColumn: {
-      type: 'string',
-      description: 'The column to use as a "score" attribute',
-      defaultValue: '',
-    }
-```
+The column to use as a "score" attribute
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: autoSql
 
-```js
-autoSql: {
-      type: 'string',
-      description: 'The autoSql definition for the data fields in the file',
-      defaultValue: '',
-    }
-```
+The autoSql definition for the data fields in the file
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: disableGeneHeuristic
 
-```js
-disableGeneHeuristic: {
-      type: 'boolean',
-      description:
-        'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
-      defaultValue: false,
-    }
-```
+Disable the heuristic that auto-detects BED12 features as gene/transcript
+structures. Useful for files that have BED12-like structure but are not genes
+(e.g. tandem duplications)
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
+
+</details>

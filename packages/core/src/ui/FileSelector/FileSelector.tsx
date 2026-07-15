@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
-import { Box, FormGroup, FormHelperText, InputLabel } from '@mui/material'
+import { Box, FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LocationInput from './LocationInput.tsx'
@@ -33,8 +33,8 @@ const FileSelector = observer(function FileSelector({
 
   const {
     accountMap,
-    shownAccountIds,
-    hiddenAccountIds,
+    shownAccounts,
+    hiddenAccounts,
     recentlyUsed,
     setRecentlyUsed,
   } = useInternetAccounts(rootModel)
@@ -48,17 +48,6 @@ const FileSelector = observer(function FileSelector({
     [setLocation, selectedAccount],
   )
 
-  // Sync account ID to location when account selection changes
-  useEffect(() => {
-    if (
-      selectedAccount &&
-      isUriLocation(location) &&
-      location.internetAccountId !== selectedAccount.internetAccountId
-    ) {
-      handleLocationChange(location)
-    }
-  }, [location, selectedAccount, handleLocationChange])
-
   const handleSourceTypeChange = useCallback(
     (newValue: string | null) => {
       if (newValue) {
@@ -66,12 +55,16 @@ const FileSelector = observer(function FileSelector({
           ...new Set([newValue, ...recentlyUsed].filter(notEmpty)),
         ])
         setSourceType(newValue)
-        if (isUriLocation(location)) {
-          handleLocationChange(location)
+        // stamp the newly-selected account onto an existing URL; read it from
+        // accountMap[newValue] rather than the closed-over selectedAccount,
+        // which still reflects the pre-change source type
+        const account = accountMap[newValue]
+        if (account && isUriLocation(location)) {
+          setLocation(addAccountToLocation(location, account))
         }
       }
     },
-    [location, recentlyUsed, setRecentlyUsed, handleLocationChange],
+    [location, recentlyUsed, setRecentlyUsed, accountMap, setLocation],
   )
 
   return (
@@ -79,33 +72,30 @@ const FileSelector = observer(function FileSelector({
       <Box sx={{ display: 'flex' }}>
         <InputLabel shrink>{name}</InputLabel>
       </Box>
-      <FormGroup>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: inline ? 'row' : 'column',
-            gap: 0.5,
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: inline ? 'row' : 'column',
+          gap: 0.5,
+        }}
+      >
+        <SourceTypeSelector
+          value={sourceType}
+          shownAccounts={shownAccounts}
+          hiddenAccounts={hiddenAccounts}
+          onChange={(_event, newValue) => {
+            handleSourceTypeChange(newValue)
           }}
-        >
-          <SourceTypeSelector
-            value={sourceType}
-            shownAccountIds={shownAccountIds}
-            hiddenAccountIds={hiddenAccountIds}
-            accountMap={accountMap}
-            onChange={(_event, newValue) => {
-              handleSourceTypeChange(newValue)
-            }}
-            onHiddenAccountSelect={handleSourceTypeChange}
-          />
-          <LocationInput
-            toggleButtonValue={sourceType}
-            selectedAccount={selectedAccount}
-            location={location}
-            inline={inline}
-            setLocation={handleLocationChange}
-          />
-        </Box>
-      </FormGroup>
+          onHiddenAccountSelect={handleSourceTypeChange}
+        />
+        <LocationInput
+          toggleButtonValue={sourceType}
+          selectedAccount={selectedAccount}
+          location={location}
+          inline={inline}
+          setLocation={handleLocationChange}
+        />
+      </Box>
       <FormHelperText>{description}</FormHelperText>
     </>
   )

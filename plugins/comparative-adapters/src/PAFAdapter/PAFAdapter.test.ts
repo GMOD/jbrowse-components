@@ -12,6 +12,7 @@ function makeRecord(
   tname: string,
   mappingQual: number | undefined,
   blockLen: number,
+  numMatches?: number,
 ): PAFRecord {
   return {
     qname,
@@ -21,41 +22,20 @@ function makeRecord(
     tstart: 0,
     tend: blockLen,
     strand: 1,
-    extra: { mappingQual, blockLen },
+    extra: { mappingQual, blockLen, numMatches },
   }
 }
 
-test('getWeightedMeans treats MAPQ 255 as missing, not as quality 255', () => {
+test('getWeightedMeans computes a true length-weighted mean identity per pair', () => {
+  // Two alignments in the same pair: 90% identity over 1000bp and 50% over
+  // 1000bp → length-weighted mean = (0.9*1000 + 0.5*1000)/2000 = 0.7.
   const records = [
-    makeRecord('q1', 't1', 255, 1000),
-    makeRecord('q1', 't1', 60, 1000),
+    makeRecord('q1', 't1', 60, 1000, 900),
+    makeRecord('q1', 't1', 60, 1000, 500),
   ]
   getWeightedMeans(records)
-  // If 255 were used as-is the mean would be (255+60)/2 = 157.5, so min=max=157.5, meanScore=0.5.
-  // With the fix, 255 → 1, so mean = (1+60)/2 = 30.5, still min=max=30.5, meanScore=0.5.
-  // The key assertion is that the record with MAPQ 255 doesn't skew the result toward 255.
-  expect(records[0]!.extra.meanScore).toBe(0.5)
-  expect(records[1]!.extra.meanScore).toBe(0.5)
-})
-
-test('getWeightedMeans returns 0.5 when all pairs have identical quality', () => {
-  const records = [
-    makeRecord('q1', 't1', 60, 1000),
-    makeRecord('q2', 't2', 60, 500),
-  ]
-  getWeightedMeans(records)
-  expect(records[0]!.extra.meanScore).toBe(0.5)
-  expect(records[1]!.extra.meanScore).toBe(0.5)
-})
-
-test('getWeightedMeans normalizes scores correctly across different quality pairs', () => {
-  const records = [
-    makeRecord('q1', 't1', 60, 1000),
-    makeRecord('q2', 't2', 20, 1000),
-  ]
-  getWeightedMeans(records)
-  expect(records[0]!.extra.meanScore).toBe(1)
-  expect(records[1]!.extra.meanScore).toBe(0)
+  expect(records[0]!.extra.meanIdentity).toBeCloseTo(0.7)
+  expect(records[1]!.extra.meanIdentity).toBeCloseTo(0.7)
 })
 
 function makeAdapter() {
@@ -93,6 +73,24 @@ test('adapter can fetch features from peach_grape.paf', async () => {
   expect(fa2.length).toBe(5)
   expect(fa1[0]!.get('refName')).toBe('Pp01')
   expect(fa2[0]!.get('refName')).toBe('chr1')
+})
+
+test('getFeatures returns nothing for an unknown assembly even when its refName collides with a target name', async () => {
+  const adapter = makeAdapter()
+  // 'chr1' is a grape (target) refName; an unknown assembly must not borrow
+  // target-side features just because the refName happens to match.
+  // the adapter console.warns when it can't find the assembly, which is
+  // expected here since 'unknown' is intentionally not one of its assemblies
+  const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const features = adapter.getFeatures({
+    refName: 'chr1',
+    start: 0,
+    end: 200000,
+    assemblyName: 'unknown',
+  })
+  const fa = await firstValueFrom(features.pipe(toArray()))
+  expect(fa.length).toBe(0)
+  consoleWarn.mockRestore()
 })
 
 test('getRefNames returns query ref names for query assembly', async () => {

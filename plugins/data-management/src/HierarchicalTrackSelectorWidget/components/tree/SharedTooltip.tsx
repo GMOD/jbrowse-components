@@ -1,13 +1,17 @@
 import { type RefObject, useEffect, useState } from 'react'
 
+import { getSession } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function SharedTooltip({
+import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+
+const SharedTooltip = observer(function SharedTooltip({
   containerRef,
-  placement,
+  model,
 }: {
   containerRef: RefObject<HTMLDivElement | null>
-  placement: 'left' | 'right'
+  model: HierarchicalTrackSelectorModel
 }) {
   const [state, setState] = useState<{
     anchorEl: HTMLElement
@@ -47,6 +51,9 @@ export default function SharedTooltip({
     }
   }, [containerRef])
 
+  const placement =
+    getSession(model).drawerPosition === 'left' ? 'right' : 'left'
+
   if (!state?.text) {
     return null
   }
@@ -65,4 +72,6 @@ export default function SharedTooltip({
       <span />
     </Tooltip>
   )
-}
+})
+
+export default SharedTooltip

@@ -9,7 +9,6 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #stateModel BaseViewModel
  * #category view
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const BaseViewModel = types
   .model('BaseView', {
@@ -28,14 +27,14 @@ const BaseViewModel = types
     /**
      * #property
      */
-    minimized: false,
+    minimized: types.stripDefault(types.boolean, false),
   })
   .volatile(() => ({
     width: 800,
   }))
   .views(() => ({
     /**
-     * #getter
+     * #method
      */
     menuItems(): MenuItem[] {
       return []
@@ -71,23 +70,15 @@ const BaseViewModel = types
       self.minimized = flag
     },
   }))
-  .postProcessSnapshot(snap => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!snap) {
-      return snap
-    }
-    const { minimized, ...rest } = snap as Omit<typeof snap, symbol>
-    return {
-      ...rest,
-      ...(minimized ? { minimized } : {}),
-    } as typeof snap
-  })
 
 export default BaseViewModel
 
 // the base view does not have type but any derived type needs to add type, so
 // just add it here
-export type IBaseViewModel = Instance<typeof BaseViewModel> & { type: string }
+export type IBaseViewModel = Instance<typeof BaseViewModel> & {
+  type: string
+  assemblyNames?: string[]
+}
 
 export const BaseViewModelWithDisplayedRegions = BaseViewModel.props({
   displayedRegions: types.array(Region),

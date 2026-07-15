@@ -1,16 +1,17 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip, getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { getParent, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 
+import type { SpreadsheetSnapshot } from './SpreadsheetModel.tsx'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const IMPORT_SIZE_LIMIT = 100_000_000
 
-const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion'] as const
+export const fileTypes = ['VCF', 'BED', 'BEDPE', 'STAR-Fusion'] as const
 const fileTypeParsers = {
   VCF: () =>
     import('./importAdapters/VcfImport.ts').then(r => r.parseVcfBuffer),
@@ -74,7 +75,6 @@ export function detectFileType(
  * #stateModel SpreadsheetImportWizard
  * #category view
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function stateModelFactory() {
   return types
@@ -82,15 +82,7 @@ export default function stateModelFactory() {
       /**
        * #property
        */
-      fileType: types.optional(types.enumeration(fileTypes), 'VCF'),
-      /**
-       * #property
-       */
-      hasColumnNameLine: true,
-      /**
-       * #property
-       */
-      columnNameLineNumber: 1,
+      fileType: types.stripDefault(types.enumeration(fileTypes), 'VCF'),
       /**
        * #property
        */
@@ -103,10 +95,6 @@ export default function stateModelFactory() {
       cachedFileLocation: types.frozen<FileLocation | undefined>(),
     })
     .volatile(() => ({
-      /**
-       * #volatile
-       */
-      fileTypes,
       /**
        * #volatile
        */
@@ -144,24 +132,6 @@ export default function stateModelFactory() {
       },
 
       /**
-       * #getter
-       */
-      get requiresUnzip() {
-        const name = this.fileName
-        return typeof name === 'string' && name.endsWith('gz')
-      },
-
-      /**
-       * #method
-       */
-      isValidRefName(refName: string, assemblyName?: string) {
-        const { assemblyManager } = getSession(self)
-        return !assemblyName
-          ? false
-          : assemblyManager.isValidRefName(refName, assemblyName)
-      },
-
-      /**
        * #method
        */
       tracksForAssembly(selectedAssembly: string) {
@@ -187,8 +157,8 @@ export default function stateModelFactory() {
             if (!fileType) {
               return []
             }
-            const adapterType = pluginManager.getAdapterType(adapterTypeName)
-            const { locationKey, normalizeSnapshot } = adapterType ?? {}
+            const { locationKey, normalizeSnapshot } =
+              pluginManager.getAdapterType(adapterTypeName)
             if (!locationKey) {
               return []
             }
@@ -238,15 +208,6 @@ export default function stateModelFactory() {
       /**
        * #action
        */
-      setColumnNameLineNumber(newnumber: number) {
-        if (newnumber > 0) {
-          self.columnNameLineNumber = newnumber
-        }
-      },
-
-      /**
-       * #action
-       */
       setFileType(typeName: string) {
         const valid = fileTypes.find(t => t === typeName)
         if (valid) {
@@ -278,15 +239,29 @@ export default function stateModelFactory() {
     .actions(self => ({
       /**
        * #action
-       * fetch and parse the file, make a new Spreadsheet model for it, then set
-       * the parent to display it
+       * point the source/type at the first usable track for an assembly (or
+       * clear if none), used to seed the "open from track" flow
        */
-      async import(assemblyName: string) {
+      selectDefaultTrack(assembly: string) {
+        const first = self.tracksForAssembly(assembly)[0]
+        self.setFileSource(first?.loc)
+        if (first) {
+          self.setFileType(first.type)
+        }
+      },
+      /**
+       * #action
+       * fetch and parse the file, returning a spreadsheet snapshot for the
+       * owning view to display (the view owns displaySpreadsheet; this stays a
+       * pure fetch/parse with no reach into the parent)
+       */
+      async import(
+        assemblyName: string,
+      ): Promise<SpreadsheetSnapshot | undefined> {
+        let result: SpreadsheetSnapshot | undefined
         if (self.fileSource) {
           self.selectedAssemblyName = assemblyName
           const typeParser = await fileTypeParsers[self.fileType]()
-
-          const { fetchAndMaybeUnzip } = await import('@jbrowse/core/util')
           const { pluginManager } = getEnv(self)
           const filehandle = openLocation(self.fileSource, pluginManager)
           self.setLoading(true)
@@ -309,12 +284,10 @@ export default function stateModelFactory() {
                 self.setCachedFileHandle(self.fileSource)
               }
               const data = await fetchAndMaybeUnzip(filehandle)
-              getParent<{ displaySpreadsheet(d: object): void }>(
-                self,
-              ).displaySpreadsheet({
+              result = {
                 ...typeParser(data),
                 assemblyName,
-              })
+              }
             }
           } catch (e) {
             console.error(e)
@@ -323,24 +296,7 @@ export default function stateModelFactory() {
             self.setLoading(false)
           }
         }
-      },
-    }))
-    .actions(self => ({
-      afterAttach() {
-        // just a one-time thing on load
-
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            if (self.cachedFileLocation && self.selectedAssemblyName) {
-              self.setFileSource(self.cachedFileLocation)
-              await self.import(self.selectedAssemblyName)
-            }
-          } catch (e) {
-            console.error(e)
-            getSession(self).notifyError(`${e}`, e)
-          }
-        })()
+        return result
       },
     }))
 }

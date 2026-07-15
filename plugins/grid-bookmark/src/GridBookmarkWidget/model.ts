@@ -1,23 +1,32 @@
 import {
   getSession,
-  localStorageGetItem,
+  localStorageGetJSON,
   localStorageSetItem,
 } from '@jbrowse/core/util'
 import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { bookmarkKey } from './utils.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
-import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// alpha applied to highlight colors so they overlay the view rather than
+// obscure it; shared by the default highlight and the color-picker presets
+export const HIGHLIGHT_ALPHA = 0.2
+
+export const DEFAULT_HIGHLIGHT = `rgba(247, 129, 192, ${HIGHLIGHT_ALPHA})`
 
 const LabeledRegionModel = types
   .compose(
     RegionModel,
     types.model('Label', {
       label: types.optional(types.string, ''),
-      highlight: types.optional(types.string, 'rgba(247, 129, 192, 0.35)'),
+      highlight: types.optional(types.string, DEFAULT_HIGHLIGHT),
     }),
   )
   .actions(self => ({
@@ -29,14 +38,28 @@ const LabeledRegionModel = types
     },
   }))
 
-const SharedBookmarksModel = types.model('SharedBookmarksModel', {
-  sharedBookmarks: types.maybe(types.array(LabeledRegionModel)),
-})
-
-export interface IExtendedLGV extends LinearGenomeViewModel {
-  bookmarkHighlightsVisible: boolean
-  setBookmarkHighlightsVisible: (arg: boolean) => void
+interface ViewWithAssemblies {
+  assemblyNames?: string[]
+  views?: ViewWithAssemblies[]
 }
+
+// recurse the view/subview tree applying fn; mst walk() over the whole session
+// blows the stack ('too much recursion') so we only descend through .views
+function forEachView(
+  views: ViewWithAssemblies[],
+  fn: (view: ViewWithAssemblies) => void,
+) {
+  for (const view of views) {
+    fn(view)
+    if (view.views) {
+      forEachView(view.views, fn)
+    }
+  }
+}
+
+export type IExtendedLGV = LinearGenomeViewModel
+
+export type IExtendedDotplotView = DotplotViewModel
 
 export interface ILabeledRegionModel extends SnapshotIn<
   typeof LabeledRegionModel
@@ -60,7 +83,7 @@ export interface IExtendedLabeledRegionModel extends ILabeledRegionModel {
 
 const localStorageKeyF = () =>
   typeof window !== 'undefined'
-    ? `bookmarks-${[window.location.host + window.location.pathname].join('-')}`
+    ? `bookmarks-${window.location.host}${window.location.pathname}`
     : 'empty'
 
 /**
@@ -79,10 +102,11 @@ export default function f(_pluginManager: PluginManager) {
       type: types.literal('GridBookmarkWidget'),
       /**
        * #property
-       * removed by postProcessSnapshot, only loaded from localStorage
+       * loaded from localStorage when not present in snapshot; sharedBookmarks
+       * from a shared URL are merged in via preProcessSnapshot
        */
       bookmarks: types.optional(types.array(LabeledRegionModel), () =>
-        JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
+        localStorageGetJSON(localStorageKeyF(), []),
       ),
     })
     .volatile(() => ({
@@ -90,10 +114,6 @@ export default function f(_pluginManager: PluginManager) {
        * #volatile
        */
       selectedBookmarks: [] as IExtendedLabeledRegionModel[],
-      /**
-       * #volatile
-       */
-      selectedAssembliesPre: undefined as string[] | undefined,
       /**
        * #volatile
        * which grid tab is visible: bookmarks or highlights
@@ -120,81 +140,36 @@ export default function f(_pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * assemblies currently displayed in any open view; the grids only show
+       * bookmarks/highlights belonging to these
        */
-      get areBookmarksHighlightedOnAllOpenViews() {
-        const { views } = getSession(self)
-        return views.every(v =>
-          'bookmarkHighlightsVisible' in v ? v.bookmarkHighlightsVisible : true,
-        )
-      },
-      /**
-       * #getter
-       */
-      get areBookmarksHighlightLabelsOnAllOpenViews() {
-        const { views } = getSession(self)
-        return views.every(v => ('labelsVisible' in v ? v.labelsVisible : true))
+      get assembliesInViews() {
+        const names = new Set<string>()
+        forEachView(getSession(self).views, view => {
+          for (const name of view.assemblyNames ?? []) {
+            names.add(name)
+          }
+        })
+        return names
       },
     }))
     .views(self => ({
       /**
        * #getter
+       * bookmarks belonging to an assembly currently open in a view
        */
-      get bookmarksWithValidAssemblies() {
+      get visibleBookmarks() {
         return self.bookmarks.filter(e =>
-          self.validAssemblies.has(e.assemblyName),
+          self.assembliesInViews.has(e.assemblyName),
         )
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get sharedBookmarksModel() {
-        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
-        // reference to same object in the same state tree, will otherwise error
-        // when performing share
-        return SharedBookmarksModel.create({
-          sharedBookmarks: JSON.parse(JSON.stringify(self.selectedBookmarks)),
-        })
-      },
-      /**
-       * #getter
-       */
-      get allBookmarksModel() {
-        // requires cloning bookmarks with JSON.stringify/parse to avoid duplicate
-        // reference to same object in the same state tree, will otherwise error
-        // when performing share
-        return SharedBookmarksModel.create({
-          sharedBookmarks: JSON.parse(
-            JSON.stringify(self.bookmarksWithValidAssemblies),
-          ),
-        })
       },
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setSelectedAssemblies(assemblies?: string[]) {
-        self.selectedAssembliesPre = assemblies
-      },
-      /**
-       * #action
-       */
-      setGridView(arg: 'bookmarks' | 'highlights') {
+      setGridView(arg: 'bookmarks' | 'highlights' | 'both') {
         self.gridView = arg
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get selectedAssemblies() {
-        return (
-          self.selectedAssembliesPre?.filter(f =>
-            self.validAssemblies.has(f),
-          ) ?? [...self.validAssemblies]
-        )
       },
     }))
     .actions(self => ({
@@ -209,12 +184,6 @@ export default function f(_pluginManager: PluginManager) {
        */
       addBookmark(region: Region) {
         self.bookmarks.push(region)
-      },
-      /**
-       * #action
-       */
-      removeBookmark(index: number) {
-        self.bookmarks.splice(index, 1)
       },
       /**
        * #action
@@ -251,49 +220,21 @@ export default function f(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      setBookmarkedRegions(regions: IMSTArray<typeof LabeledRegionModel>) {
+      setBookmarkedRegions(regions: SnapshotIn<typeof LabeledRegionModel>[]) {
         self.bookmarks = cast(regions)
-      },
-      /**
-       * #action
-       */
-      setBookmarkHighlightsVisible(arg: boolean) {
-        const { views } = getSession(self)
-        // hacky, but mst walk() on session leads to 'too much recursion'
-        for (const view of views) {
-          // @ts-expect-error
-          view.setBookmarkHighlightsVisible?.(arg)
-          // @ts-expect-error
-          view.views?.map(view => {
-            view.setBookmarkHighlightsVisible?.(arg)
-          })
-        }
-      },
-      /**
-       * #action
-       */
-      setBookmarkLabelsVisible(arg: boolean) {
-        const { views } = getSession(self)
-        // hacky, but mst walk() on session leads to 'too much recursion'
-        for (const view of views) {
-          // @ts-expect-error
-          view.setBookmarkLabelsVisible?.(arg)
-          // @ts-expect-error
-          view.views?.map(view => {
-            view.setBookmarkHighlightsVisible?.(arg)
-          })
-        }
       },
     }))
     .actions(self => ({
       /**
        * #action
        */
-      clearAllBookmarks() {
+      // keeps bookmarks from unknown assemblies (they have no valid home to
+      // navigate to, but discarding them silently would lose user data)
+      clearBookmarksForLoadedAssemblies() {
         self.setBookmarkedRegions(
           self.bookmarks.filter(
             bookmark => !self.validAssemblies.has(bookmark.assemblyName),
-          ) as IMSTArray<typeof LabeledRegionModel>,
+          ),
         )
       },
       /**
@@ -306,6 +247,9 @@ export default function f(_pluginManager: PluginManager) {
         self.selectedBookmarks = []
       },
 
+      /**
+       * #action
+       */
       removeBookmarkObject(arg: Instance<typeof LabeledRegionModel>) {
         self.bookmarks.remove(arg)
       },
@@ -315,8 +259,12 @@ export default function f(_pluginManager: PluginManager) {
         const key = localStorageKeyF()
         function handler(e: StorageEvent) {
           if (e.key === key) {
-            const localStorage = JSON.parse(localStorageGetItem(key) || '[]')
-            self.setBookmarkedRegions(localStorage)
+            self.setBookmarkedRegions(
+              localStorageGetJSON<SnapshotIn<typeof LabeledRegionModel>[]>(
+                key,
+                [],
+              ),
+            )
           }
         }
         window.addEventListener('storage', handler)
@@ -334,9 +282,30 @@ export default function f(_pluginManager: PluginManager) {
         )
       },
     }))
+    .preProcessSnapshot(snap => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!snap || typeof snap !== 'object') {
+        return snap
+      }
+      const s = snap as Record<string, unknown>
+      if (!s.sharedBookmarks) {
+        return snap
+      }
+      const { sharedBookmarks, ...rest } = s
+      const local = localStorageGetJSON<
+        SnapshotIn<typeof LabeledRegionModel>[]
+      >(localStorageKeyF(), [])
+      const shared = sharedBookmarks as SnapshotIn<typeof LabeledRegionModel>[]
+      const seen = new Set(local.map(bookmarkKey))
+      const merged = [
+        ...local,
+        ...shared.filter(b => !seen.has(bookmarkKey(b))),
+      ]
+      return { ...rest, bookmarks: merged } as unknown as typeof snap
+    })
     .postProcessSnapshot(snap => {
-      const { bookmarks: _, ...rest } = snap as Omit<typeof snap, symbol>
-      return rest
+      const { bookmarks, ...rest } = snap
+      return bookmarks.length ? { ...rest, sharedBookmarks: bookmarks } : rest
     })
 }
 

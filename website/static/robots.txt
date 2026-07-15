@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jbrowse.org/jb2/sitemap.xml

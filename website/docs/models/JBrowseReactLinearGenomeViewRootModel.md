@@ -1,125 +1,44 @@
 ---
 id: jbrowsereactlineargenomeviewrootmodel
 title: JBrowseReactLinearGenomeViewRootModel
+sidebar_label: Root -> JBrowseReactLinearGenomeViewRootModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createModel.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+Composes the shared with a LinearGenomeView session plus the LGV-only
+`disableAddTracks`/`drawerViewHeight` props.
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-react-linear-genome-view/src/createModel/createModel.ts)
+## Members
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/JBrowseReactLinearGenomeViewRootModel.md)
+| Member                                         | Kind       | Defined by                            | Description |
+| ---------------------------------------------- | ---------- | ------------------------------------- | ----------- |
+| [disableAddTracks](#property-disableaddtracks) | Properties | JBrowseReactLinearGenomeViewRootModel |             |
+| [drawerViewHeight](#property-drawerviewheight) | Properties | JBrowseReactLinearGenomeViewRootModel |             |
 
-## Docs
-
-### JBrowseReactLinearGenomeViewRootModel - Properties
-
-#### property: config
-
-```js
-// type signature
-IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; }; drivers: IOptionalIType<IMapType<ITypeUnion<ModelCreationType<ExtractCFromProps<Record<string, any>>> | undefined, ModelSnapshotType<...>, ({} & ... 1 more...
-// code
-config: createConfigModel(pluginManager, assemblyConfig)
-```
-
-#### property: session
-
-```js
-// type signature
-IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; } & { ...; } & { ...; } & { ...; } & { ...; }, { ...; } & ... 21 more ... & { ...; }, _NotCustomized, { ...; } & ... 4 more ... & _NotCustomized>
-// code
-session: Session
-```
-
-#### property: assemblyManager
-
-```js
-// type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; volatileRegions: BasicRegion[] | undefined; ... 4 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 5 more ... & { ...; }, _NotCus...
-// code
-assemblyManager: types.optional(AssemblyManager, {})
-```
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Properties</summary>
 
 #### property: disableAddTracks
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type disableAddTracks = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-disableAddTracks: types.optional(types.boolean, false)
+disableAddTracks: types.stripDefault(types.boolean, false)
 ```
 
 #### property: drawerViewHeight
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type drawerViewHeight = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
-drawerViewHeight: types.optional(types.string, '100vh')
+drawerViewHeight: types.stripDefault(types.string, '100vh')
 ```
 
-#### property: internetAccounts
-
-```js
-// type signature
-IArrayType<IAnyType>
-// code
-internetAccounts: types.array(
-        pluginManager.pluggableMstType('internet account', 'stateModel'),
-      )
-```
-
-### JBrowseReactLinearGenomeViewRootModel - Getters
-
-#### getter: jbrowse
-
-```js
-// type
-{ configuration: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & { ...; } & IStateTreeNode<...>); } & IStateTreeNode<...>; ... 5 more ...; plugins: any; } & NonEmptyObject & { ...; } & IStateTreeNode<...>
-```
-
-### JBrowseReactLinearGenomeViewRootModel - Actions
-
-#### action: setSession
-
-```js
-// type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IType<number | undefined, number, number>; focusedViewId: IMaybe<...>; } & { ...; } & { ...; } & { ...; } & { ...; }>>) => void
-```
-
-#### action: renameCurrentSession
-
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => void
-```
-
-#### action: setError
-
-```js
-// type signature
-setError: (error: unknown) => void
-```
-
-#### action: addInternetAccount
-
-```js
-// type signature
-addInternetAccount: (acct: any) => void
-```
-
-#### action: findAppropriateInternetAccount
-
-```js
-// type signature
-findAppropriateInternetAccount: (location: UriLocation) => any
-```
+</details>

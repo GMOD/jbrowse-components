@@ -1,0 +1,152 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "P6R5xbRqRr",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_refseq_hg38",
+      "name": "NCBI RefSeq genes",
+      "assemblyNames": ["hg38"],
+      "category": ["Genes"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/ncbi_refseq/genomic.sorted.gff.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "encode_gm12878_loops",
+      "name": "Hi-C loops \u2014 HiCCUPS (ENCFF560LOS)",
+      "assemblyNames": ["hg38"],
+      "category": ["ENCODE GM12878 (Rao/ENCODE4)"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "bedpeLocation": {
+          "uri": "https://jbrowse.org/demos/hic/ENCFF560LOS.bedpe.gz",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearPairedArcDisplay",
+          "displayId": "encode_gm12878_loops-LinearPairedArcDisplay",
+          "lineWidth": 1
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "encode_gm12878_re2g",
+      "name": "Enhancer\u2013gene predictions \u2014 EPIraction (ENCFF266FGY)",
+      "assemblyNames": ["hg38"],
+      "category": ["ENCODE GM12878 (Rao/ENCODE4)"],
+      "adapter": {
+        "type": "BedpeAdapter",
+        "bedpeLocation": {
+          "uri": "https://jbrowse.org/demos/hic/ENCFF266FGY.bedpe.gz",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearPairedArcDisplay",
+          "displayId": "encode_gm12878_re2g-LinearPairedArcDisplay",
+          "color": "jexl:get(feature,'score')>=500?'#8b1a1a':'rgba(0,0,0,0)'",
+          "lineWidth": 1
+        }
+      ]
+    },
+    {
+      "type": "HicTrack",
+      "trackId": "encode_gm12878_hic",
+      "name": "Intact Hi-C contact matrix (ENCFF484NFB)",
+      "assemblyNames": ["hg38"],
+      "category": ["ENCODE GM12878 (Rao/ENCODE4)"],
+      "adapter": {
+        "type": "HicAdapter",
+        "hicLocation": {
+          "uri": "https://encode-public.s3.amazonaws.com/2025/08/26/a288ee45-d729-4cda-9a21-aec93c2bd353/ENCFF484NFB.hic",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearHicDisplay",
+          "displayId": "encode_gm12878_hic-LinearHicDisplay",
+          "height": 480,
+          "useLogScale": true,
+          "useColorPercentile": true,
+          "resolutionBias": 3,
+          "showResolutionControls": false
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "ENCODE GM12878 Hi-C loops as arcs",
+    "views": [
+      {
+        "id": "encode_hic_lgv",
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "hg38",
+          "loc": "chr3:121,600,000-123,600,000",
+          "highlight": [
+            {
+              "assemblyName": "hg38",
+              "refName": "chr3",
+              "start": 122550000,
+              "end": 122575000,
+              "color": "rgba(30,132,132,0.13)",
+              "label": "PARP9/DTX3L"
+            },
+            {
+              "assemblyName": "hg38",
+              "refName": "chr3",
+              "start": 122675000,
+              "end": 122700000,
+              "color": "rgba(30,132,132,0.13)",
+              "label": "PARP14"
+            }
+          ],
+          "tracks": [
+            {
+              "trackId": "ncbi_refseq_hg38",
+              "displaySnapshot": {
+                "type": "LinearBasicDisplay",
+                "showOnlyGenes": true,
+                "showDescriptions": false
+              }
+            },
+            "encode_gm12878_loops",
+            "encode_gm12878_hic"
+          ]
+        }
+      }
+    ]
+  }
+}

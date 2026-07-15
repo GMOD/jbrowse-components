@@ -1,4 +1,8 @@
-import { computeRenderTransform } from './renderTransform.ts'
+import {
+  computeRenderTransform,
+  computeTriangleYScalar,
+  viewportMatchesLastDrawn,
+} from './renderTransform.ts'
 
 describe('computeRenderTransform', () => {
   test('fresh (no stale info) → identity scale, viewOffsetX = -viewOffsetPx clamped to 0 when scrolled into genome', () => {
@@ -74,5 +78,95 @@ describe('computeRenderTransform', () => {
       viewBpPerPx: 100,
     })
     expect(r.viewOffsetX).toBe(50)
+  })
+})
+
+describe('viewportMatchesLastDrawn', () => {
+  test('fresh: last-drawn viewport equals current → true', () => {
+    expect(
+      viewportMatchesLastDrawn({
+        lastDrawnOffsetPx: 500,
+        lastDrawnBpPerPx: 100,
+        viewOffsetPx: 500,
+        viewBpPerPx: 100,
+      }),
+    ).toBe(true)
+  })
+
+  test('stale pan: offsetPx differs (the export-during-refetch gap) → false', () => {
+    expect(
+      viewportMatchesLastDrawn({
+        lastDrawnOffsetPx: 500,
+        lastDrawnBpPerPx: 100,
+        viewOffsetPx: 450,
+        viewBpPerPx: 100,
+      }),
+    ).toBe(false)
+  })
+
+  test('stale zoom: bpPerPx differs → false', () => {
+    expect(
+      viewportMatchesLastDrawn({
+        lastDrawnOffsetPx: 500,
+        lastDrawnBpPerPx: 100,
+        viewOffsetPx: 500,
+        viewBpPerPx: 50,
+      }),
+    ).toBe(false)
+  })
+
+  test('never drawn: undefined last-drawn → false (not fresh)', () => {
+    expect(
+      viewportMatchesLastDrawn({
+        lastDrawnOffsetPx: undefined,
+        lastDrawnBpPerPx: undefined,
+        viewOffsetPx: 500,
+        viewBpPerPx: 100,
+      }),
+    ).toBe(false)
+  })
+})
+
+describe('computeTriangleYScalar', () => {
+  test('fitToHeight off → identity regardless of dimensions', () => {
+    expect(
+      computeTriangleYScalar({
+        fitToHeight: false,
+        displayHeight: 100,
+        triangleWidth: 800,
+      }),
+    ).toBe(1)
+  })
+
+  test('squash: display shorter than natural apex', () => {
+    // natural apex = 800/2 = 400, squash into 100 → 0.25
+    expect(
+      computeTriangleYScalar({
+        fitToHeight: true,
+        displayHeight: 100,
+        triangleWidth: 800,
+      }),
+    ).toBe(0.25)
+  })
+
+  test('stretch: display taller than natural apex', () => {
+    // natural apex = 400, stretch into 600 → 1.5
+    expect(
+      computeTriangleYScalar({
+        fitToHeight: true,
+        displayHeight: 600,
+        triangleWidth: 800,
+      }),
+    ).toBe(1.5)
+  })
+
+  test('zero-width triangle → identity, never divides by zero', () => {
+    expect(
+      computeTriangleYScalar({
+        fitToHeight: true,
+        displayHeight: 300,
+        triangleWidth: 0,
+      }),
+    ).toBe(1)
   })
 })

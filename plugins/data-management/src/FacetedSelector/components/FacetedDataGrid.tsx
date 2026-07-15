@@ -1,63 +1,23 @@
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { useRef } from 'react'
 
-import { notEmpty } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import Checkbox from '@mui/material/Checkbox'
-import { alpha, darken, lighten } from '@mui/material/styles'
-import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
+import FacetedTableHead from './FacetedTableHead.tsx'
+import FacetedTableRow from './FacetedTableRow.tsx'
+import {
+  CHECKBOX_WIDTH,
+  DEFAULT_COL_WIDTH,
+  ROW_HEIGHT,
+  useFacetedTableStyles,
+} from './facetedTableStyles.ts'
+import { useColumnResize } from './useColumnResize.ts'
+import { useVirtualRows } from './useVirtualRows.ts'
 import { useSearchHighlight } from '../../shared/useSearchHighlight.ts'
+import { getRowSelectionState } from '../facetedSelection.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-function useVirtualRows(
-  parentRef: React.RefObject<HTMLDivElement | null>,
-  count: number,
-  rowHeight: number,
-  overscan = 20,
-) {
-  const [scrollState, setScrollState] = useState({
-    scrollTop: 0,
-    clientHeight: 0,
-  })
-
-  useEffect(() => {
-    const el = parentRef.current
-    if (!el) {
-      return
-    }
-    setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
-    const onScroll = () => {
-      setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
-    }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      el.removeEventListener('scroll', onScroll)
-    }
-  }, [parentRef])
-
-  const { scrollTop, clientHeight } = scrollState
-  const totalSize = count * rowHeight
-  const startIdx = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan)
-  const endIdx = Math.min(
-    count,
-    Math.ceil((scrollTop + clientHeight) / rowHeight) + overscan,
-  )
-
-  const items = []
-  for (let i = startIdx; i < endIdx; i++) {
-    items.push({ index: i, start: i * rowHeight })
-  }
-
-  return { items, totalSize }
-}
-
-const ROW_HEIGHT = 25
-const HEADER_HEIGHT = 35
-const CHECKBOX_WIDTH = 48
 
 export interface FacetedColumn {
   id: string
@@ -65,112 +25,14 @@ export interface FacetedColumn {
   cell: (row: FacetedRow) => React.ReactNode
 }
 
-const useStyles = makeStyles()(theme => {
-  const borderColor =
-    theme.palette.mode === 'light'
-      ? lighten(alpha(theme.palette.divider, 1), 0.88)
-      : darken(alpha(theme.palette.divider, 1), 0.68)
-  const border = `1px solid ${borderColor}`
-  return {
-    root: {
-      height: '100%',
-      width: '100%',
-      overflow: 'auto',
-      border,
-      borderRadius: theme.shape.borderRadius,
-      background: theme.palette.background.paper,
-      fontFamily: theme.typography.fontFamily,
-      fontSize: theme.typography.body2.fontSize,
-      lineHeight: theme.typography.body2.lineHeight,
-      color: theme.palette.text.primary,
-    },
-    table: {
-      minWidth: '100%',
-      borderCollapse: 'collapse',
-      tableLayout: 'fixed',
-    },
-    thead: {
-      position: 'sticky',
-      top: 0,
-      zIndex: 1,
-      background: theme.palette.background.paper,
-    },
-    checkboxCell: {
-      padding: 0,
-      textAlign: 'center',
-      verticalAlign: 'middle',
-      lineHeight: 0,
-      borderBottom: border,
-      boxSizing: 'border-box',
-    },
-    headerCell: {
-      height: HEADER_HEIGHT,
-      position: 'relative',
-      textAlign: 'left',
-      fontWeight: theme.typography.fontWeightMedium,
-      padding: '0 10px',
-      borderBottom: border,
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      userSelect: 'none',
-      lineHeight: `${HEADER_HEIGHT}px`,
-      verticalAlign: 'middle',
-      boxSizing: 'border-box',
-    },
-    bodyRow: {
-      '&:hover': {
-        background: theme.palette.action.hover,
-      },
-    },
-    selectedRow: {
-      background: alpha(
-        theme.palette.primary.main,
-        theme.palette.action.selectedOpacity,
-      ),
-      '&:hover': {
-        background: alpha(
-          theme.palette.primary.main,
-          theme.palette.action.selectedOpacity +
-            theme.palette.action.hoverOpacity,
-        ),
-      },
-    },
-    bodyCell: {
-      height: ROW_HEIGHT,
-      padding: '0 10px',
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-      borderBottom: border,
-      lineHeight: `${ROW_HEIGHT - 1}px`,
-      boxSizing: 'border-box',
-    },
-    resizeHandle: {
-      position: 'absolute',
-      right: 0,
-      top: '25%',
-      height: '50%',
-      width: 10,
-      display: 'flex',
-      justifyContent: 'center',
-      cursor: 'col-resize',
-    },
-    resizeLine: {
-      width: 1,
-      height: '100%',
-      background: borderColor,
-    },
-    fillerCell: {
-      borderBottom: border,
-      padding: 0,
-    },
-  }
-})
-
-const checkboxSx = {
-  padding: 0,
-  '& .MuiSvgIcon-root': { fontSize: '1.15rem' },
+// Empty <tr> used to offset the virtualized window from the top/bottom of the
+// scroll area. Renders nothing when there's no gap to fill.
+function SpacerRow({ height }: { height: number }) {
+  return height > 0 ? (
+    <tr style={{ height }}>
+      <td />
+    </tr>
+  ) : null
 }
 
 const FacetedDataGrid = observer(function FacetedDataGrid({
@@ -186,114 +48,33 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   shownTrackIds: Set<string>
   selection: AnyConfigurationModel[]
 }) {
-  const { classes } = useStyles()
-  const { view } = model
-  const { useShoppingCart, filteredRows, visible, filterText, initialWidths } =
-    faceted
-
-  const [, startTransition] = useTransition()
-
-  const selectedIds = useShoppingCart
-    ? new Set(selection.map(s => `${s.trackId}`))
-    : shownTrackIds
+  const { classes } = useFacetedTableStyles()
+  const {
+    useShoppingCart,
+    sortedRows,
+    sortField,
+    sortAscending,
+    visible,
+    filterText,
+    initialWidths,
+  } = faceted
 
   const visibleColumns = columns.filter(col => visible[col.id] !== false)
-
-  const [overrides, setOverrides] = useState<Record<string, number>>({})
-  const colWidths = { ...initialWidths, ...overrides }
-
-  const onResizeStart = (colId: string, e: React.MouseEvent) => {
-    e.preventDefault()
-    const startX = e.clientX
-    const startWidth = colWidths[colId] ?? 100
-
-    const onMouseMove = (ev: MouseEvent) => {
-      const newWidth = Math.max(50, startWidth + ev.clientX - startX)
-      setOverrides(prev => ({ ...prev, [colId]: newWidth }))
-    }
-
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-
-  const allSelected =
-    filteredRows.length > 0 &&
-    filteredRows.every(row => selectedIds.has(row.id))
-
-  const someSelected =
-    !allSelected && filteredRows.some(row => selectedIds.has(row.id))
-
-  const handleSelectAll = () => {
-    startTransition(() => {
-      if (!useShoppingCart) {
-        transaction(() => {
-          if (allSelected) {
-            for (const row of filteredRows) {
-              if (selectedIds.has(row.id)) {
-                view.hideTrack(row.id)
-              }
-            }
-          } else {
-            for (const row of filteredRows) {
-              if (!selectedIds.has(row.id)) {
-                view.showTrack(row.id)
-                model.addToRecentlyUsed(row.id)
-              }
-            }
-          }
-        })
-      } else {
-        if (allSelected) {
-          const filteredIdSet = new Set(filteredRows.map(r => r.id))
-          model.setSelection(
-            selection.filter(s => !filteredIdSet.has(`${s.trackId}`)),
-          )
-        } else {
-          const currentIds = new Set(selection.map(s => `${s.trackId}`))
-          const toAdd = filteredRows
-            .filter(r => !currentIds.has(r.id))
-            .map(r => model.allTrackConfigurationMap.get(r.id))
-            .filter(notEmpty)
-          model.setSelection([...selection, ...toAdd])
-        }
-      }
+  const { colWidths, onResizeStart } = useColumnResize(initialWidths)
+  const { selectedIds, allSelected, someSelected, toggleAll, toggleRow } =
+    getRowSelectionState({
+      model,
+      useShoppingCart,
+      shownTrackIds,
+      selection,
+      filteredRows: sortedRows,
     })
-  }
-
-  const handleRowToggle = (rowId: string) => {
-    startTransition(() => {
-      if (!useShoppingCart) {
-        if (selectedIds.has(rowId)) {
-          view.hideTrack(rowId)
-        } else {
-          view.showTrack(rowId)
-          model.addToRecentlyUsed(rowId)
-        }
-      } else {
-        if (selectedIds.has(rowId)) {
-          model.setSelection(selection.filter(s => `${s.trackId}` !== rowId))
-        } else {
-          const conf = model.allTrackConfigurationMap.get(rowId)
-          if (conf) {
-            model.setSelection([...selection, conf])
-          }
-        }
-      }
-    })
-  }
-
-  const lastColId = visibleColumns.at(-1)?.id
 
   const parentRef = useRef<HTMLDivElement>(null)
   useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
-  const { items: virtualItems, totalSize } = useVirtualRows(
+  const { items, leadingGap, trailingGap } = useVirtualRows(
     parentRef,
-    filteredRows.length,
+    sortedRows.length,
     ROW_HEIGHT,
   )
 
@@ -303,83 +84,48 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
         <colgroup>
           <col style={{ width: CHECKBOX_WIDTH }} />
           {visibleColumns.map(col => (
-            <col key={col.id} style={{ width: colWidths[col.id] ?? 100 }} />
+            <col
+              key={col.id}
+              style={{ width: colWidths[col.id] ?? DEFAULT_COL_WIDTH }}
+            />
           ))}
           <col />
         </colgroup>
-        <thead className={classes.thead}>
-          <tr>
-            <th className={classes.checkboxCell}>
-              <Checkbox
-                size="small"
-                checked={allSelected}
-                indeterminate={someSelected}
-                onChange={handleSelectAll}
-                sx={checkboxSx}
-              />
-            </th>
-            {visibleColumns.map(col => (
-              <th key={col.id} className={classes.headerCell}>
-                {col.header}
-                {col.id !== lastColId ? (
-                  <div
-                    className={classes.resizeHandle}
-                    onMouseDown={e => {
-                      onResizeStart(col.id, e)
-                    }}
-                  >
-                    <div className={classes.resizeLine} />
-                  </div>
-                ) : null}
-              </th>
-            ))}
-            <th className={classes.fillerCell} />
-          </tr>
-        </thead>
+        <FacetedTableHead
+          columns={visibleColumns}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          onSelectAll={toggleAll}
+          onResizeStart={onResizeStart}
+          sortField={sortField}
+          sortAscending={sortAscending}
+          onSort={field => {
+            faceted.setSort(field, sortField === field ? !sortAscending : true)
+          }}
+        />
         <tbody>
-          {virtualItems.length > 0 ? (
-            <tr style={{ height: virtualItems[0]!.start }}>
-              <td />
-            </tr>
-          ) : null}
-          {virtualItems.map(virtualRow => {
-            const row = filteredRows[virtualRow.index]!
-            const isSelected = selectedIds.has(row.id)
+          <SpacerRow height={leadingGap} />
+          {items.map(virtualRow => {
+            const row = sortedRows[virtualRow.index]!
             return (
-              <tr
+              <FacetedTableRow
                 key={row.id}
-                className={
-                  isSelected
-                    ? `${classes.bodyRow} ${classes.selectedRow}`
-                    : classes.bodyRow
-                }
-              >
-                <td className={classes.checkboxCell}>
-                  <Checkbox
-                    size="small"
-                    checked={isSelected}
-                    onChange={() => {
-                      handleRowToggle(row.id)
-                    }}
-                    sx={checkboxSx}
-                  />
-                </td>
-                {visibleColumns.map(col => (
-                  <td key={col.id} className={classes.bodyCell}>
-                    {col.cell(row)}
-                  </td>
-                ))}
-                <td className={classes.fillerCell} />
-              </tr>
+                row={row}
+                columns={visibleColumns}
+                selected={selectedIds.has(row.id)}
+                onToggle={toggleRow}
+              />
             )
           })}
-          {virtualItems.length > 0 ? (
-            <tr
-              style={{
-                height: totalSize - virtualItems.at(-1)!.start - ROW_HEIGHT,
-              }}
-            >
-              <td />
+          <SpacerRow height={trailingGap} />
+          {sortedRows.length === 0 ? (
+            <tr>
+              <td
+                colSpan={visibleColumns.length + 2}
+                className={classes.emptyCell}
+              >
+                No tracks match the current search and filters
+              </td>
             </tr>
           ) : null}
         </tbody>

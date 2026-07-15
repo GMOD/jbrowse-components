@@ -1,6 +1,9 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 /**
+ * #stateModel StaleViewportRescaleMixin
+ * #category display
+ *
  * Records the viewport state (`offsetPx`, `bpPerPx`) at which the canvas
  * was last fully drawn. Consumers (HiC, LD — single-global-RPC-result
  * displays) build a `renderTransform` getter on top of these fields to
@@ -17,10 +20,21 @@ export default function StaleViewportRescaleMixin() {
   return types
     .model('StaleViewportRescaleMixin', {})
     .volatile(() => ({
+      /**
+       * #volatile
+       * offsetPx of the viewport when the canvas was last fully drawn
+       */
       lastDrawnOffsetPx: undefined as number | undefined,
+      /**
+       * #volatile
+       * bpPerPx of the viewport when the canvas was last fully drawn
+       */
       lastDrawnBpPerPx: undefined as number | undefined,
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
       setLastDrawnViewport(offsetPx: number, bpPerPx: number) {
         self.lastDrawnOffsetPx = offsetPx
         self.lastDrawnBpPerPx = bpPerPx

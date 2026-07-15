@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { ctxDir, readConf, runCommand, runInTmpDir } from '../testUtil.ts'
 
@@ -197,6 +197,34 @@ test('adds bam+bai track with load inPlace', async () => {
   })
 })
 
+test('adds cram track with load inPlace', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
+      'add-track',
+      '/testing/in/place.cram',
+      '--load',
+      'inPlace',
+    ])
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('adds cram track with indexFile for crai', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await runCommand([
+      'add-track',
+      '/testing/in/place.cram',
+      '--load',
+      'inPlace',
+      '--indexFile',
+      '/something/else/random.crai',
+    ])
+    expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
 test('adds bam track with indexFile for bai', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
@@ -279,6 +307,33 @@ test('adds bam track with all the custom fields', async () => {
     ])
 
     expect(readConf(ctx).tracks).toMatchSnapshot()
+  })
+})
+
+test('--color, --height, and --displayDefaults merge into displayDefaults', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
+      'add-track',
+      simpleGff,
+      '--load',
+      'copy',
+      '--color',
+      'jexl:feature.strand==1?"blue":"red"',
+      '--height',
+      '200',
+      '--displayDefaults',
+      '{"mouseover":"jexl:feature.name","color":"green"}',
+    ])
+
+    // typed --color wins over the color in --displayDefaults, --height parses to
+    // a number, and the unrelated mouseover is preserved
+    expect(readConf(ctx).tracks[0].displayDefaults).toEqual({
+      mouseover: 'jexl:feature.name',
+      color: 'jexl:feature.strand==1?"blue":"red"',
+      height: 200,
+    })
   })
 })
 
@@ -659,5 +714,75 @@ test('can override adapter type with --adapterType BedAdapter', async () => {
     const track = readConf(ctx).tracks[0]
     expect(track.adapter.type).toBe('BedAdapter')
     expect(track.adapter.bedLocation).toBeDefined()
+    // BedAdapter is a single-file adapter, so the .tbi that the .bed.gz
+    // extension would normally imply must not be copied (would be an orphan,
+    // and a hard error if it did not exist alongside the data file)
+    expect(exists(ctxDir(ctx, 'volvox.bed.gz'))).toBeTruthy()
+    expect(exists(ctxDir(ctx, 'volvox.bed.gz.tbi'))).toBeFalsy()
+  })
+})
+
+test('all-vs-all synteny adapter type gets SyntenyTrack and threaded assemblyNames', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      simplePaf,
+      '--load',
+      'copy',
+      '--adapterType',
+      'AllVsAllPAFAdapter',
+      '--assemblyNames',
+      'grape,peach,cacao',
+    ])
+    if (error) {
+      throw error
+    }
+    const track = readConf(ctx).tracks[0]
+    expect(track.type).toBe('SyntenyTrack')
+    expect(track.adapter.type).toBe('AllVsAllPAFAdapter')
+    expect(track.adapter.assemblyNames).toEqual(['grape', 'peach', 'cacao'])
+    // the unknown adapterType reuses the .paf extension's pafLocation layout
+    // rather than dropping the file, so the track is actually loadable
+    expect(track.adapter.pafLocation).toBeDefined()
+    expect(exists(ctxDir(ctx, 'volvox_inv_indels.paf'))).toBeTruthy()
+  })
+})
+
+test('warns (does not throw) when an assemblyName is not in the config', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--assemblyNames',
+      'notARealAssembly',
+    ])
+    expect(error).toBeUndefined()
+    expect(readConf(ctx).tracks).toHaveLength(1)
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('notARealAssembly'),
+    )
+    warnSpy.mockRestore()
+  })
+})
+
+test('does not warn when the assemblyName matches the config', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    await runCommand([
+      'add-track',
+      simpleBam,
+      '--load',
+      'copy',
+      '--assemblyNames',
+      'testAssembly',
+    ])
+    expect(warnSpy).not.toHaveBeenCalled()
+    warnSpy.mockRestore()
   })
 })

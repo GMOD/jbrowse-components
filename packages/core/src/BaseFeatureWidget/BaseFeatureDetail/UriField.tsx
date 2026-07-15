@@ -1,13 +1,4 @@
-import BasicValue from './BasicValue.tsx'
-import FieldName from './FieldName.tsx'
-import { makeStyles } from '../../util/tss-react/index.ts'
-
-const useStyles = makeStyles()({
-  field: {
-    display: 'flex',
-    flexWrap: 'wrap',
-  },
-})
+import SimpleField from './SimpleField.tsx'
 
 export default function UriField({
   value,
@@ -18,7 +9,6 @@ export default function UriField({
   name: string
   prefix: string[]
 }) {
-  const { classes } = useStyles()
   const { uri, baseUri = '' } = value
   let href: string
   try {
@@ -26,10 +16,5 @@ export default function UriField({
   } catch (e) {
     href = uri
   }
-  return (
-    <div className={classes.field}>
-      <FieldName prefix={prefix} name={name} />
-      <BasicValue value={href} />
-    </div>
-  )
+  return <SimpleField name={name} prefix={prefix} value={href} />
 }

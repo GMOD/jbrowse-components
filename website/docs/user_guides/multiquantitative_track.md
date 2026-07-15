@@ -1,79 +1,72 @@
 ---
-id: multiquantitative_track
-title: Multi-quantitative tracks
+title: Multi-quantitative track
 description: Multiple signal tracks displayed together
 guide_category: Track types
 ---
 
-JBrowse can show "Multi-quantitative tracks" which is a single track composed of
-multiple quantitative signals, which have their Y-scalebar synchronized.
+A multi-quantitative track combines several quantitative signals (typically
+BigWig files) into one track with a shared Y axis. The track menu's
+renderer-type submenu offers two families of rendering mode:
 
-There are 5 rendering modes for the multi-quantitative tracks.
+- Multi-row modes (`Multi-row XY plot`, `Multi-row density`, `Multi-row line`,
+  `Multi-row scatter`) draw one plot per subtrack, stacked
+- Overlapping modes (`Overlapping XY plot`, `Overlapping lines`,
+  `Overlapping scatter`) draw all subtracks together
 
-- xyplot
-- multirowxyplot
-- multiline
-- multirowline
-- multidensity
+<Figure caption="The track menu lists the available renderer types." src="/img/multiwig/multi_renderer_types.png" />
 
-You can interactively change these settings through the track menu.
+In the multi-row modes the subtracks keep their configured colors. In the
+overlapping modes the subtracks are auto-assigned colors from the palette. You
+can edit colors and ordering from the track menu.
 
-<Figure caption="Track menu for the multi-quantitative tracks showing different renderer types." src="/img/multiwig/multi_renderer_types.png" />
+An outlier on one subtrack can blow out the shared Y axis. The "Local ± 3σ"
+autoscale type clips to three standard deviations of the visible data, which
+usually gives a more readable view. You can also pin the min and max from the
+track menu.
 
-With the "multi-row" settings (multirowxyplot, multirowline, multidensity) the
-track colors are not modified. For the overlapping (xyplot, multiline), the
-tracks will be autoassigned a color from the palette. You can manually customize
-the subtrack colors from the track menu as well.
+## Adding a multi-quantitative track
 
-<Figure caption="The color/arrangement editor for multi-quantitative tracks lets you change individual subtrack colors, or their ordering in the row based layouts." src="/img/multiwig/multi_colorselect.png" />
+Three ways to create one:
 
-Oftentimes, one of the outliers on one of the subtracks may affect the
-Y-scalebar too much, so it is often helpful to use the "Autoscale type → Local
-+/- 3SD" setting (3 standard deviations are displayed). Manually configuring the
-min or max scores is available via the track menu also.
+- The "Add a track" form lets you paste a list of BigWig URLs, or open multiple
+  BigWig files from your machine
+- The track selector lets you multi-select existing tracks and combine them into
+  a multi-quantitative track
+- Hand-edit the config, described in the
+  [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
+  guide
 
-### Adding multi-quantitative tracks via the UI
-
-There are several ways to create multi-quantitative tracks from scratch.
-
-1. Using the add track panel to open up a list of URLs for bigwig files, or from
-   several local tracks from your machine
-2. Using the track selector to add multiple tracks to your current selection,
-   and then creating a multi-wiggle track from the tracks in your selection
-3. Hardcoding the multiwiggle track in your config file (see
-   [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
-   for more info)
-
-<Figure caption="Using the add track widget, you can use the select dropdown to access alternative 'add track workflows' including the multi-wiggle add track workflow. In the multiwiggle add track workflow, you can paste a list of bigWig file URLs, or open up multiple bigwig files from your computer." src="/img/multiwig/addtrack.png" />
-<Figure caption="Using the track selector, you can add multiple tracks to your current selection. You can use the '...' dropdown menu to add a single track or a whole category of tracks to your selection. Then, the 'shopping cart' icon in the header of the add track widget lets you create a multi-wiggle track from your selection." src="/img/multiwig/trackselector.png" />
+<Figure caption="The 'Add a track' form's workflow selector (red callout) lets you reach the multi-quantitative workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
+<Figure caption="In the track selector, the '...' menu adds individual tracks or whole categories to your selection. The cart icon in the 'Add a track' form then turns the selection into a multi-quantitative track." src="/img/multiwig/trackselector.png" />
 
 ## Loading bedMethyl as a multi-quantitative track
 
 [modkit](https://github.com/nanoporetech/modkit) pileup produces a
-[bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file — a
+[bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) file, a
 tab-separated BED format where each row reports the methylation fraction at a
-single CpG position for one modification type (e.g. 5mC or 5hmC). Because the
-format is a BED file it can be loaded with `BedTabixAdapter`, and because each
-modification type produces its own score column the file maps naturally to a
-`MultiQuantitativeTrack`.
+single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
+`BedTabixAdapter` and naturally maps to `MultiQuantitativeTrack`, with one
+subtrack per modification type. For the per-read view of the same modified-base
+calls, see
+[Color by base modifications](/docs/user_guides/alignments_track#modifications-and-methylation)
+on the alignments track.
 
 ### Generating the file
 
 ```bash
-modkit pileup sample.bam output.bed --ref reference.fa --preset traditional
-bgzip output.bed
-tabix -p bed output.bed.gz
+modkit pileup sample.bam output.bedmethyl --ref reference.fa --preset traditional
+bgzip output.bedmethyl
+tabix -p bed output.bedmethyl.gz
 ```
 
-The `--preset traditional` flag produces 5mC calls (5hmC is combined into the
-5mC fraction). Omit it for separate 5mC and 5hmC rows.
+`--preset traditional` produces 5mC calls (5hmC is combined into the 5mC
+fraction). Omit it for separate 5mC and 5hmC rows.
 
 ### Add-track UI
 
-In the add-track dialog (`File → Open track...`), paste the URL to your
-`.bedmethyl.gz` file. JBrowse detects the `.bedmethyl.gz` extension and
-automatically selects **BedTabixAdapter** and **MultiQuantitativeTrack** — no
-manual selection needed.
+In the "Add a track" form, paste the URL to your `.bedmethyl.gz` file. JBrowse
+detects the `.bedmethyl.gz` extension and selects `BedTabixAdapter` and
+`MultiQuantitativeTrack` automatically.
 
 ### Config example
 
@@ -86,22 +79,65 @@ manual selection needed.
   "adapter": {
     "type": "BedTabixAdapter",
     "bedGzLocation": {
-      "uri": "https://yourhost/sample_modkit.bed.gz"
+      "uri": "https://yourhost/sample_modkit.bedmethyl.gz"
     },
     "index": {
       "location": {
-        "uri": "https://yourhost/sample_modkit.bed.gz.tbi"
+        "uri": "https://yourhost/sample_modkit.bedmethyl.gz.tbi"
       }
     }
   }
 }
 ```
 
-JBrowse reads the `score` column (column 11 in bedMethyl, the methylation
-fraction 0–1) and the `name` column (column 4, the modification code such as `m`
-for 5mC or `h` for 5hmC) as the subtrack source label.
+JBrowse reads the `score` column (column 11 in bedMethyl, the percent
+methylation 0–100) and uses the `name` column (column 4, the modification code
+such as `m` for 5mC or `h` for 5hmC) as the subtrack source label.
 
 The COLO829 tumor modkit bedMethyl file is included in the
 [demo config](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json)
 as the track **"COLO829_tumor.ht_modkit.bed (as MultiQuantitativeTrack)"** under
 the Methylation category (assembly hg38, chr21).
+
+## Clustering rows by score
+
+Subtracks can be reordered by signal similarity using hierarchical clustering.
+From the track menu, select **Cluster rows by score**. A dialog opens with two
+modes:
+
+- Auto mode runs hierarchical clustering (hclust via JavaScript) directly in the
+  browser, sampling signal values at each pixel across the visible region.
+- Manual mode downloads an R script that builds the score matrix and runs
+  `hclust`. Run the script in R, then paste the resulting row ordering back into
+  the dialog and click **Apply clustering**.
+
+After clustering, the rows are reordered so that subtracks with similar signal
+profiles sit together.
+
+<Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
+
+The "Show tree" toggle in the track menu displays a dendrogram sidebar alongside
+the reordered rows. With the tree shown, click any internal node to collapse the
+view to that clade, and click it again to clear the subtree filter. Clustering
+uses only the signal in the currently visible region, so navigate to a region of
+interest before running it.
+
+### Encoding a clustering result in a session URL
+
+A clustering result can be embedded directly in a session snapshot, useful for
+sharing a pre-computed clustering via URL. Set `layout`, `clusterTree`,
+`treeAreaWidth`, and `subtreeFilter` in the display's `displaySnapshot` (see
+[URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)).
+The [MultiLinearWiggleDisplay config](/docs/config/multilinearwiggledisplay) has
+the display's full config reference.
+
+## See also
+
+- [Quantitative track](/docs/user_guides/quantitative_track) for single-signal
+  BigWig/BedGraph display
+- [Methylation tutorial](/docs/tutorials/methylation) for loading modkit
+  bedMethyl as signal
+- [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
+  for config-file options
+- [Gallery: coverage, copy number, and epigenomics](/gallery/#quantitative) for
+  live CNV tumor/normal and clustered copy-number examples to open and explore

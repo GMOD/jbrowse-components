@@ -1,19 +1,22 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { isURL } from '../../types/common.ts'
-import { debug, readInlineOrFileJson, readJsonFile } from '../../utils.ts'
+import {
+  debug,
+  ignoreNotFound,
+  parseCommaSeparatedString,
+  readInlineOrFileJson,
+  readJsonFile,
+} from '../../utils.ts'
 import { mapLocationForFiles } from '../add-track-utils/track-config.ts'
+import { validateLoadAndLocation } from '../add-track-utils/validators.ts'
 import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 
 import type { Assembly, Config, Sequence } from '../../base.ts'
 
 export type SequenceType =
-  | 'indexedFasta'
-  | 'bgzipFasta'
-  | 'twoBit'
-  | 'chromSizes'
-  | 'custom'
+  'indexedFasta' | 'bgzipFasta' | 'twoBit' | 'chromSizes' | 'custom'
 
 const sequenceTypes = new Set<SequenceType>([
   'indexedFasta',
@@ -25,6 +28,15 @@ const sequenceTypes = new Set<SequenceType>([
 
 export function isSequenceType(t: string | undefined): t is SequenceType {
   return sequenceTypes.has(t as SequenceType)
+}
+
+// parseArgs does not enforce the `choices` declared on --type, so an
+// unrecognized value would otherwise be silently dropped and the type guessed
+// from the file extension, masking a user typo
+export function validateSequenceType(type?: string): void {
+  if (type !== undefined && !isSequenceType(type)) {
+    throw new Error(`--type must be one of: ${[...sequenceTypes].join(', ')}`)
+  }
 }
 
 interface AssemblyFlags {
@@ -50,22 +62,23 @@ export function isValidJSON(string: string) {
   }
 }
 
+// recognized FASTA extensions, shared by sequence-type guessing and basename
+// stripping so the list lives in one place
+const fastaExts = 'fa|fna|fasta|mfa'
+const fastaRegex = new RegExp(`\\.(${fastaExts})$`, 'i')
+const bgzipFastaRegex = new RegExp(`\\.(${fastaExts})\\.gz$`, 'i')
+const fastaExtRegex = new RegExp(`\\.(${fastaExts})(\\.gz)?$`, 'i')
+
+function basenameWithoutFastaExt(p: string) {
+  return path.basename(p).replace(fastaExtRegex, '')
+}
+
 export function guessSequenceType(sequence: string) {
   const s = sequence.toLowerCase()
-  if (
-    s.endsWith('.fa') ||
-    s.endsWith('.fna') ||
-    s.endsWith('.fasta') ||
-    s.endsWith('.mfa')
-  ) {
+  if (fastaRegex.test(s)) {
     return 'indexedFasta'
   }
-  if (
-    s.endsWith('.fa.gz') ||
-    s.endsWith('.fna.gz') ||
-    s.endsWith('.fasta.gz') ||
-    s.endsWith('.mfa.gz')
-  ) {
+  if (bgzipFastaRegex.test(s)) {
     return 'bgzipFasta'
   }
   if (s.endsWith('.2bit')) {
@@ -85,6 +98,73 @@ export function guessSequenceType(sequence: string) {
   )
 }
 
+// a sidecar file sits next to the sequence at `${sequence}${suffix}`, unless
+// the matching --faiLocation/--gziLocation flag overrides its path
+interface SeqSidecar {
+  field: 'faiLocation' | 'gziLocation'
+  suffix: string
+}
+
+// declarative layout for each non-custom sequence type: the adapter type + its
+// primary location field, any sidecar index files, and how the default assembly
+// name is derived from the sequence filename. Keeping the adapter and its files
+// in one spec means they cannot drift.
+interface SeqSpec {
+  adapterType: string
+  locField: string
+  sidecars: SeqSidecar[]
+  defaultName: (p: string) => string
+}
+
+const seqSpecs: Record<Exclude<SequenceType, 'custom'>, SeqSpec> = {
+  indexedFasta: {
+    adapterType: 'IndexedFastaAdapter',
+    locField: 'fastaLocation',
+    sidecars: [{ field: 'faiLocation', suffix: '.fai' }],
+    defaultName: basenameWithoutFastaExt,
+  },
+  bgzipFasta: {
+    adapterType: 'BgzipFastaAdapter',
+    locField: 'fastaLocation',
+    sidecars: [
+      { field: 'faiLocation', suffix: '.fai' },
+      { field: 'gziLocation', suffix: '.gzi' },
+    ],
+    defaultName: basenameWithoutFastaExt,
+  },
+  twoBit: {
+    adapterType: 'TwoBitAdapter',
+    locField: 'twoBitLocation',
+    sidecars: [],
+    defaultName: p => path.basename(p, '.2bit'),
+  },
+  chromSizes: {
+    adapterType: 'ChromSizesAdapter',
+    locField: 'chromSizesLocation',
+    sidecars: [],
+    defaultName: p => path.basename(p, '.chrom.sizes'),
+  },
+}
+
+async function customSequenceAdapter(argsSequence: string, name?: string) {
+  const adapter = await readInlineOrFileJson<Sequence['adapter']>(argsSequence)
+  debug(`Custom adapter: ${JSON.stringify(adapter)}`)
+  if (!name) {
+    if (isValidJSON(argsSequence)) {
+      throw new Error(
+        'Must provide --name when using custom inline JSON sequence',
+      )
+    }
+    name = path.basename(argsSequence, '.json')
+  }
+  if (!adapter.type) {
+    throw new Error(
+      `No "type" specified in sequence adapter "${JSON.stringify(adapter)}"`,
+    )
+  }
+  return { adapter, name }
+}
+
 export async function getAssembly({
   runFlags,
   argsSequence,
@@ -92,173 +172,62 @@ export async function getAssembly({
   runFlags: AssemblyFlags
   argsSequence: string
 }): Promise<{ assembly: Assembly; filesToLoad: string[] }> {
-  if (!isURL(argsSequence) && !runFlags.load) {
-    throw new Error(
-      'Please specify the loading operation for this file with --load copy|symlink|move|inPlace',
+  validateLoadAndLocation(argsSequence, runFlags.load)
+
+  const type = runFlags.type ?? guessSequenceType(argsSequence)
+  debug(
+    runFlags.type ? `Type is: ${type}` : `No type specified, guessed: ${type}`,
+  )
+
+  const uri = (p: string) =>
+    ({
+      uri: mapLocationForFiles(p, runFlags.load),
+      locationType: 'UriLocation',
+    }) as const
+
+  if (type === 'custom') {
+    const { adapter, name } = await customSequenceAdapter(
+      argsSequence,
+      runFlags.name,
     )
-  } else if (isURL(argsSequence) && runFlags.load) {
-    throw new Error(
-      'URL detected with --load flag. Please rerun the function without the --load flag',
-    )
-  }
-
-  let { name } = runFlags
-  let { type } = runFlags
-  if (type) {
-    debug(`Type is: ${type}`)
-  } else {
-    type = guessSequenceType(argsSequence)
-    debug(`No type specified, guessing type: ${type}`)
-  }
-  if (name) {
-    debug(`Name is: ${name}`)
-  }
-
-  const { load, faiLocation, gziLocation } = runFlags
-  const mapLoc = (p: string) => mapLocationForFiles(p, load)
-  let sequence: Sequence
-  let filesToLoad: string[] = []
-
-  switch (type) {
-    case 'indexedFasta': {
-      const faiLoc = faiLocation || `${argsSequence}.fai`
-      debug(`FASTA: ${argsSequence}, index: ${faiLoc}`)
-      if (!name) {
-        name = path.basename(
-          argsSequence,
-          argsSequence.endsWith('.fasta') ? '.fasta' : '.fa',
-        )
-        debug(`Guessing name: ${name}`)
-      }
-      sequence = {
-        type: 'ReferenceSequenceTrack',
-        trackId: `${name}-ReferenceSequenceTrack`,
-        adapter: {
-          type: 'IndexedFastaAdapter',
-          fastaLocation: {
-            uri: mapLoc(argsSequence),
-            locationType: 'UriLocation',
-          },
-          faiLocation: { uri: mapLoc(faiLoc), locationType: 'UriLocation' },
-        },
-      }
-      if (load) {
-        filesToLoad = [argsSequence, faiLoc]
-      }
-      break
-    }
-    case 'bgzipFasta': {
-      const faiLoc = faiLocation || `${argsSequence}.fai`
-      const gziLoc = gziLocation || `${argsSequence}.gzi`
-      debug(`bgzipFASTA: ${argsSequence}, fai: ${faiLoc}, gzi: ${gziLoc}`)
-      if (!name) {
-        name = path.basename(
-          argsSequence,
-          argsSequence.endsWith('.fasta.gz') ? '.fasta.gz' : '.fa.gz',
-        )
-        debug(`Guessing name: ${name}`)
-      }
-      sequence = {
-        type: 'ReferenceSequenceTrack',
-        trackId: `${name}-ReferenceSequenceTrack`,
-        adapter: {
-          type: 'BgzipFastaAdapter',
-          fastaLocation: {
-            uri: mapLoc(argsSequence),
-            locationType: 'UriLocation',
-          },
-          faiLocation: { uri: mapLoc(faiLoc), locationType: 'UriLocation' },
-          gziLocation: { uri: mapLoc(gziLoc), locationType: 'UriLocation' },
-        },
-      }
-      if (load) {
-        filesToLoad = [argsSequence, faiLoc, gziLoc]
-      }
-      break
-    }
-    case 'twoBit': {
-      debug(`2bit: ${argsSequence}`)
-      if (!name) {
-        name = path.basename(argsSequence, '.2bit')
-        debug(`Guessing name: ${name}`)
-      }
-      sequence = {
-        type: 'ReferenceSequenceTrack',
-        trackId: `${name}-ReferenceSequenceTrack`,
-        adapter: {
-          type: 'TwoBitAdapter',
-          twoBitLocation: {
-            uri: mapLoc(argsSequence),
-            locationType: 'UriLocation',
-          },
-        },
-      }
-      if (load) {
-        filesToLoad = [argsSequence]
-      }
-      break
-    }
-    case 'chromSizes': {
-      debug(`chrom.sizes: ${argsSequence}`)
-      if (!name) {
-        name = path.basename(argsSequence, '.chrom.sizes')
-        debug(`Guessing name: ${name}`)
-      }
-      sequence = {
-        type: 'ReferenceSequenceTrack',
-        trackId: `${name}-ReferenceSequenceTrack`,
-        adapter: {
-          type: 'ChromSizesAdapter',
-          chromSizesLocation: {
-            uri: mapLoc(argsSequence),
-            locationType: 'UriLocation',
-          },
-        },
-      }
-      if (load) {
-        filesToLoad = [argsSequence]
-      }
-      break
-    }
-    case 'custom': {
-      const adapter = await readInlineOrFileJson<{ type: string }>(argsSequence)
-      debug(`Custom adapter: ${JSON.stringify(adapter)}`)
-      if (!name) {
-        if (isValidJSON(argsSequence)) {
-          throw new Error(
-            'Must provide --name when using custom inline JSON sequence',
-          )
-        } else {
-          name = path.basename(argsSequence, '.json')
-        }
-        debug(`Guessing name: ${name}`)
-      }
-      if (!('type' in adapter)) {
-        throw new Error(
-          `No "type" specified in sequence adapter "${JSON.stringify(
-            adapter,
-          )}"`,
-        )
-      }
-      sequence = {
-        type: 'ReferenceSequenceTrack',
-        trackId: `${name}-ReferenceSequenceTrack`,
-        adapter,
-      }
-      break
+    return {
+      assembly: { name, sequence: makeSequence(name, adapter) },
+      filesToLoad: [],
     }
   }
 
-  return { assembly: { name, sequence }, filesToLoad }
+  const spec = seqSpecs[type]
+  const sidecars = spec.sidecars.map(s => ({
+    field: s.field,
+    path: runFlags[s.field] ?? `${argsSequence}${s.suffix}`,
+  }))
+  const name = runFlags.name || spec.defaultName(argsSequence)
+  const adapter = {
+    type: spec.adapterType,
+    [spec.locField]: uri(argsSequence),
+    ...Object.fromEntries(sidecars.map(s => [s.field, uri(s.path)])),
+  }
+  return {
+    assembly: { name, sequence: makeSequence(name, adapter) },
+    filesToLoad: [argsSequence, ...sidecars.map(s => s.path)],
+  }
+}
+
+function makeSequence(name: string, adapter: Sequence['adapter']): Sequence {
+  return {
+    type: 'ReferenceSequenceTrack',
+    trackId: `${name}-ReferenceSequenceTrack`,
+    adapter,
+  }
 }
 
 export async function resolveTargetPath(output: string): Promise<string> {
-  const stat = await fs.promises.stat(output).catch(() => null)
+  const stat = await ignoreNotFound(fs.promises.stat(output))
   if (!stat) {
     const dir = output.endsWith('.json') ? path.dirname(output) : output
     await fs.promises.mkdir(dir, { recursive: true })
   }
-  const finalStat = stat ?? (await fs.promises.stat(output).catch(() => null))
+  const finalStat = stat ?? (await ignoreNotFound(fs.promises.stat(output)))
   return finalStat?.isDirectory() ? path.join(output, 'config.json') : output
 }
 
@@ -286,17 +255,31 @@ async function resolveRefNameAliasAdapter(runFlags: AssemblyFlags) {
 export async function enhanceAssembly(
   assembly: Assembly,
   runFlags: AssemblyFlags,
-): Promise<Assembly> {
+): Promise<{ assembly: Assembly; filesToLoad: string[] }> {
+  const { refNameAliases, refNameAliasesType } = runFlags
+
+  // a non-custom refNameAliases points at a local aliases file whose location
+  // is rewritten to a bare basename by mapLocationForFiles, so the file itself
+  // must be loaded into the config dir alongside the sequence. Custom aliases
+  // are embedded inline (no file), and URLs are referenced in place.
+  const filesToLoad =
+    refNameAliases && refNameAliasesType !== 'custom' && !isURL(refNameAliases)
+      ? [refNameAliases]
+      : []
+
   return {
-    ...assembly,
-    ...(runFlags.alias?.length && { aliases: runFlags.alias }),
-    ...(runFlags.refNameColors && {
-      refNameColors: runFlags.refNameColors.split(',').map(c => c.trim()),
-    }),
-    ...(runFlags.displayName && { displayName: runFlags.displayName }),
-    ...(runFlags.refNameAliases && {
-      refNameAliases: { adapter: await resolveRefNameAliasAdapter(runFlags) },
-    }),
+    assembly: {
+      ...assembly,
+      ...(runFlags.alias?.length && { aliases: runFlags.alias }),
+      ...(runFlags.refNameColors && {
+        refNameColors: parseCommaSeparatedString(runFlags.refNameColors),
+      }),
+      ...(runFlags.displayName && { displayName: runFlags.displayName }),
+      ...(refNameAliases && {
+        refNameAliases: { adapter: await resolveRefNameAliasAdapter(runFlags) },
+      }),
+    },
+    filesToLoad,
   }
 }
 

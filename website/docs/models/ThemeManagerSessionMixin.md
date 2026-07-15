@@ -1,55 +1,102 @@
 ---
 id: thememanagersessionmixin
 title: ThemeManagerSessionMixin
+sidebar_label: Mixin -> ThemeManagerSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+## Members
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Themes.ts)
+| Member                                                 | Kind      | Defined by               | Description                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------ | --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [sessionThemeName](#volatile-sessionthemename)         | Volatiles | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
+| [themeName](#getter-themename)                         | Getters   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
+| [themeOptions](#getter-themeoptions)                   | Getters   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
+| [theme](#getter-theme)                                 | Getters   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
+| [allThemes](#method-allthemes)                         | Methods   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
+| [getActiveThemeOptions](#method-getactivethemeoptions) | Methods   | ThemeManagerSessionMixin | Raw `ThemeOptions` for the active theme, or a named override (used by the SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme), this is the plain options object every view's SVG export threads into each display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside React context. |
+| [setThemeName](#action-setthemename)                   | Actions   | ThemeManagerSessionMixin |                                                                                                                                                                                                                                                                                                                                      |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ThemeManagerSessionMixin.md)
+<details>
+<summary>ThemeManagerSessionMixin - Volatiles</summary>
 
-## Docs
+#### volatile: sessionThemeName
 
-### ThemeManagerSessionMixin - Getters
+```ts
+// type signature
+type sessionThemeName = string
+// code
+sessionThemeName: localStorageGetItem('themeName') ?? 'default'
+```
+
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Getters</summary>
 
 #### getter: themeName
 
-```js
-// type
-string
+```ts
+type themeName = string
+```
+
+#### getter: themeOptions
+
+```ts
+type themeOptions = SerializableThemeArgs
 ```
 
 #### getter: theme
 
-```js
-// type
-Theme
+```ts
+type theme = Theme
 ```
 
-### ThemeManagerSessionMixin - Methods
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Methods</summary>
+
+#### method: getActiveThemeOptions
+
+Raw `ThemeOptions` for the active theme, or a named override (used by the
+SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme),
+this is the plain options object every view's SVG export threads into each
+display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside
+React context.
+
+```ts
+type getActiveThemeOptions = (
+  name?: string | undefined,
+) => ThemeOptions & { name?: string | undefined }
+```
+
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Methods (other undocumented members)</summary>
 
 #### method: allThemes
 
-```js
-// type signature
-allThemes: () => ThemeMap
+```ts
+type allThemes = () => ThemeMap
 ```
 
-### ThemeManagerSessionMixin - Actions
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Actions</summary>
 
 #### action: setThemeName
 
-```js
-// type signature
-setThemeName: (name: string) => void
+```ts
+type setThemeName = (name: string) => void
 ```
+
+</details>

@@ -216,6 +216,7 @@ exports[`adds track and connection configs to an assembly 1`] = `
   "name": "assembly1",
   "sequence": {
     "adapter": {
+      "adapterId": "sequenceConfigAdapterId",
       "features": [
         {
           "end": 10,
@@ -253,14 +254,14 @@ exports[`adds track and connection configs to an assembly 2`] = `
 exports[`adds track and connection configs to an assembly 3`] = `
 {
   "connectionId": "connectionId0",
-  "dataDirLocation": {
-    "internetAccountId": undefined,
-    "internetAccountPreAuthorization": undefined,
-    "locationType": "UriLocation",
-    "uri": "http://mysite.com/jbrowse/data/",
-  },
   "type": "JBrowse1Connection",
 }
 `;
 
-exports[`creates with defaults 1`] = `{}`;
+exports[`creates with defaults 1`] = `
+{
+  "rpc": {
+    "defaultDriver": "MainThreadRpcDriver",
+  },
+}
+`;

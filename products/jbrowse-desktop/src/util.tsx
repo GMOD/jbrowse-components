@@ -1,6 +1,6 @@
-import fsPromises from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import fsPromises from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 
 import sanitize from 'sanitize-filename'
 

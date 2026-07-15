@@ -1,5 +1,20 @@
+import type TrackHeightMixin from './models/TrackHeightMixin.tsx'
 import type { ExportSvgOptions } from '../LinearGenomeView/types.ts'
+import type { DisplayModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'
+
+/**
+ * A display shown in a linear-genome-view track: the core `DisplayModel` plus
+ * the `height`/`resizeHeight` from `TrackHeightMixin` that every linear display
+ * composes. `prefersOffset` is an optional per-display convention. LGV track
+ * containers legitimately narrow `track.activeDisplay` to this — the plugin
+ * union on `BaseTrackModel.displays` can't express it statically.
+ */
+export type LinearDisplayModel = DisplayModel &
+  Instance<ReturnType<typeof TrackHeightMixin>> & {
+    prefersOffset?: boolean
+  }
 
 export interface Layout {
   minX: number
@@ -9,51 +24,7 @@ export interface Layout {
   name: string
 }
 
-export interface FloatingLabelData {
-  text: string
-  relativeY: number
-  color: string
-  textWidth: number
-  isOverlay?: boolean
-  parentFeatureId?: string
-  subfeatureId?: string
-  tooltip?: string
-}
-
-/**
- * Metadata attached to layout rectangles for floating label rendering.
- * Used by both parent features and subfeatures.
- */
-export interface LayoutFeatureMetadata {
-  refName: string
-  floatingLabels?: FloatingLabelData[]
-  totalFeatureHeight?: number
-  featureWidth?: number
-  actualTopPx?: number
-  /** Actual feature start in bp (not layout start which includes padding) */
-  featureStartBp?: number
-  /** Actual feature end in bp (not layout end which includes padding) */
-  featureEndBp?: number
-}
-
-/**
- * Creates metadata for floating label rendering on subfeatures.
- */
-export function createSubfeatureLabelMetadata(args: {
-  refName: string
-  floatingLabels: FloatingLabelData[]
-  totalFeatureHeight: number
-  featureWidth: number
-  actualTopPx: number
-  featureStartBp: number
-  featureEndBp: number
-}): LayoutFeatureMetadata {
-  return { ...args }
-}
-
-export type LayoutRecord =
-  | [number, number, number, number]
-  | [number, number, number, number, LayoutFeatureMetadata]
+export type LayoutRecord = [number, number, number, number]
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {
   overrideHeight?: number

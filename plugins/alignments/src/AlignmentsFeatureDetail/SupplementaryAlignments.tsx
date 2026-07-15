@@ -1,5 +1,6 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { hasBreakpointSplitView } from '@jbrowse/sv-core'
+import { observer } from 'mobx-react'
 
 import LaunchBreakpointSplitViewPanel from './LaunchSupplementaryAlignmentBreakpointSplitViewPanel.tsx'
 import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrings.tsx'
@@ -7,7 +8,7 @@ import SupplementaryAlignmentsLocStrings from './SupplementaryAlignmentsLocStrin
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
 
-export default function SupplementaryAlignments({
+const SupplementaryAlignments = observer(function SupplementaryAlignments({
   model,
   tag,
   feature,
@@ -24,4 +25,6 @@ export default function SupplementaryAlignments({
       ) : null}
     </BaseCard>
   )
-}
+})
+
+export default SupplementaryAlignments

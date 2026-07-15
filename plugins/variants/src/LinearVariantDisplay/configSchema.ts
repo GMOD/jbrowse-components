@@ -1,5 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { linearFeatureDisplayConfigSchemaFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearCanvasBaseDisplayConfigSchemaFactory } from '@jbrowse/plugin-canvas'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -7,10 +7,42 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config LinearVariantDisplay
  *
- * Extends LinearFeatureDisplay (not LinearBasicDisplay) since variants
- * don't need gene glyph display options.
+ * Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
+ *
+ * #example
+ * Minimal `VariantTrack` config. See the
+ * [variant track guide](/docs/config_guides/variant_track) for all options:
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'variants',
+ *   name: 'Variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/variants.vcf.gz',
+ *   },
+ * }
+ * ```
+ *
+ * #example
+ * Taller track. The `displayDefaults` object shorthand is equivalent to
+ * `displays: [{ type: 'LinearVariantDisplay', displayId: '...', ... }]` — see
+ * [configuring displays](/docs/config_guides/tracks#configuring-displays):
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'variants',
+ *   name: 'Variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/variants.vcf.gz',
+ *   },
+ *   displayDefaults: { height: 200 },
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export default function configSchemaF(pluginManager: PluginManager) {
   return ConfigurationSchema(
@@ -20,7 +52,8 @@ export default function configSchemaF(pluginManager: PluginManager) {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: linearFeatureDisplayConfigSchemaFactory(pluginManager),
+      baseConfiguration:
+        linearCanvasBaseDisplayConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,
     },
   )

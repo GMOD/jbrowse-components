@@ -1,12 +1,13 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config GCContentAdapter
  * #category adapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const GCContentAdapterF = (_pluginManager: PluginManager) => {
   return ConfigurationSchema(
@@ -25,6 +26,7 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       windowSize: {
         type: 'number',
         defaultValue: 100,
+        advanced: true,
       },
       /**
        * #slot
@@ -32,10 +34,23 @@ const GCContentAdapterF = (_pluginManager: PluginManager) => {
       windowDelta: {
         type: 'number',
         defaultValue: 100,
+        advanced: true,
+      },
+      /**
+       * #slot
+       */
+      gcMode: {
+        type: 'stringEnum',
+        model: types.enumeration('gcMode', ['content', 'skew']),
+        defaultValue: 'content',
+        description: 'calculate GC content fraction or GC skew (G-C)/(G+C)',
       },
     },
     { explicitlyTyped: true },
   )
 }
 
+export type GCContentAdapterConfig = Instance<
+  ReturnType<typeof GCContentAdapterF>
+>
 export default GCContentAdapterF

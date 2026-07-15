@@ -1,40 +1,79 @@
+import { Suspense } from 'react'
+import type { ComponentType, ReactNode } from 'react'
+
+import { PluggableComponent } from '@jbrowse/core/ui'
+import { getEnv } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import DotplotGridWrapper from './DotplotGridWrapper.tsx'
+import DotplotGrid from './DotplotGrid.tsx'
 
+import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
-import type { Coord } from '../types.ts'
 
-interface MouseInteractionLayerProps {
-  model: DotplotViewModel
-  ctrlKeyDown: boolean
-  cursorMode: string
-  validSelect: boolean
-  mousedown: Coord
-  mouserect: Coord
-  xdistance: number
-  ydistance: number
-  setMouseDownClient: (coord: Coord) => void
-  setMouseCurrClient: (coord: Coord) => void
-  setCtrlKeyWasUsed: (wasUsed: boolean) => void
+const useStyles = makeStyles()(theme => ({
+  grid: {
+    background: theme.palette.divider,
+  },
+  htmlOverlay: {
+    position: 'absolute',
+    inset: 0,
+    pointerEvents: 'none',
+    overflow: 'hidden',
+  },
+}))
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'DotplotView-OverlaySVGComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: DotplotViewModel }
+    }
+    'DotplotView-OverlayHTMLComponent': {
+      args: ComponentType<{ model: DotplotViewModel }>
+      result: ComponentType<{ model: DotplotViewModel }>
+      props: { model: DotplotViewModel }
+    }
+  }
+}
+
+function NoHTMLOverlay(_props: { model: DotplotViewModel }) {
+  return null
 }
 
 const MouseInteractionLayer = observer(function MouseInteractionLayer({
   model,
-  ctrlKeyDown,
-  cursorMode,
-  validSelect,
-  mousedown,
-  mouserect,
-  xdistance,
-  ydistance,
-  setMouseDownClient,
-  setMouseCurrClient,
-  setCtrlKeyWasUsed,
-}: MouseInteractionLayerProps) {
+  interaction,
+}: {
+  model: DotplotViewModel
+  interaction: DotplotInteraction
+}) {
+  const {
+    ctrlKeyDown,
+    validSelect,
+    mousedown,
+    mouserect,
+    xdistance,
+    ydistance,
+    setMouseDownClient,
+    setMouseCurrClient,
+    setCtrlKeyWasUsed,
+  } = interaction
+  const { classes } = useStyles()
+  const { pluginManager } = getEnv(model)
+  const svgOverlays = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint DotplotView-OverlaySVGComponent | sync | Add an SVG overlay component to the dotplot view */
+    'DotplotView-OverlaySVGComponent',
+    [],
+    { model },
+  )
   return (
     <div
-      style={{ cursor: ctrlKeyDown ? 'pointer' : cursorMode }}
+      style={{
+        cursor: ctrlKeyDown ? 'pointer' : model.cursorMode,
+        position: 'relative',
+      }}
       onMouseDown={event => {
         if (event.button === 0) {
           const { clientX, clientY } = event
@@ -44,17 +83,34 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
         }
       }}
     >
-      <DotplotGridWrapper model={model}>
-        {validSelect && mousedown && mouserect ? (
-          <rect
-            fill="rgba(255,0,0,0.3)"
-            x={Math.min(mouserect[0], mousedown[0])}
-            y={Math.min(mouserect[1], mousedown[1])}
-            width={Math.abs(xdistance)}
-            height={Math.abs(ydistance)}
+      <svg
+        width={model.viewWidth}
+        height={model.viewHeight}
+        className={classes.grid}
+      >
+        <DotplotGrid model={model}>
+          {validSelect && mousedown && mouserect ? (
+            <rect
+              fill="rgba(255,0,0,0.3)"
+              x={Math.min(mouserect[0], mousedown[0])}
+              y={Math.min(mouserect[1], mousedown[1])}
+              width={Math.abs(xdistance)}
+              height={Math.abs(ydistance)}
+            />
+          ) : null}
+          {svgOverlays}
+        </DotplotGrid>
+      </svg>
+      <div className={classes.htmlOverlay}>
+        <Suspense fallback={null}>
+          <PluggableComponent
+            pluginManager={pluginManager}
+            name="DotplotView-OverlayHTMLComponent"
+            component={NoHTMLOverlay}
+            props={{ model }}
           />
-        ) : null}
-      </DotplotGridWrapper>
+        </Suspense>
+      </div>
     </div>
   )
 })

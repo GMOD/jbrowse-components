@@ -4,7 +4,6 @@ import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models
 /**
  * #config JBrowse1Connection
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const JBrowse1Connection = ConfigurationSchema(
   'JBrowse1Connection',
@@ -15,11 +14,11 @@ const JBrowse1Connection = ConfigurationSchema(
     dataDirLocation: {
       type: 'fileLocation',
       defaultValue: {
-        uri: 'http://mysite.com/jbrowse/data/',
+        uri: 'https://mysite.com/jbrowse/data/',
         locationType: 'UriLocation',
       },
       description:
-        'the location of the JBrowse 1 data directory, often something like http://mysite.com/jbrowse/data/',
+        'the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/',
     },
     /**
      * #slot

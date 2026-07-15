@@ -1,45 +1,44 @@
 ---
 id: baseconnection
 title: BaseConnection
+sidebar_label: Connection -> BaseConnection
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseConnectionConfig.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseConnectionConfig.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BaseConnection.md)
-
-## Docs
+## Overview
 
 ### BaseConnection - Identifier
 
-#### slot: explicitIdentifier
+Every BaseConnection has a unique `connectionId`, a required top-level field
+that identifies it (not one of the config slots below).
 
-### BaseConnection - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                 | Type          | Description                                             |
+| ------------------------------------ | ------------- | ------------------------------------------------------- |
+| [name](#slot-name)                   | `string`      | a unique name for this connection                       |
+| [assemblyNames](#slot-assemblynames) | `stringArray` | optional list of names of assemblies in this connection |
+
+<details>
+<summary>BaseConnection - Slots</summary>
 
 #### slot: name
 
-```js
-name: {
-      type: 'string',
-      defaultValue: 'nameOfConnection',
-      description: 'a unique name for this connection',
-    }
-```
+a unique name for this connection
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'nameOfConnection'`
 
 #### slot: assemblyNames
 
-```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description: 'optional list of names of assemblies in this connection',
-    }
-```
+optional list of names of assemblies in this connection
+
+**Type:** `stringArray` · **Default:** `[]`
+
+</details>

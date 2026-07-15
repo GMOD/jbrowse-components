@@ -6,14 +6,16 @@ import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   bp: {
     display: 'flex',
     alignItems: 'center',
-    marginLeft: 7, // matches LGV HeaderRegionWidth gap (HeaderForm marginRight: 7)
+    color: theme.palette.text.secondary,
   },
   searchBox: {
     display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
   },
 }))
 

@@ -1,0 +1,82 @@
+---
+import DocsSidebarNav from '../components/DocsSidebarNav.astro'
+import SidebarLayout from '../layouts/SidebarLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
+import { gallerySections, guidedDemos, itemHref } from '../lib/gallery.ts'
+import page from '../styles/page.module.css'
+---
+
+<SidebarLayout
+  title="JBrowse 2 Demos"
+  description="Live, in-browser JBrowse 2 demos covering structural variants, synteny, methylation, multi-sample variants, and more."
+  toggleLabel="Explore"
+  navLabel="Site navigation"
+>
+  <DocsSidebarNav slot="nav" currentSlug="demos" />
+  <div class="showcase-main">
+    <div class={page.content}>
+      <h1>JBrowse 2 demos</h1>
+      <p>
+        Live sessions you can open and try in the app. The{' '}
+        <a href={`${baseUrl}/gallery/`}>gallery page</a> shows many of these with
+        screenshots and descriptions. Everything here on the web can also be done
+        in JBrowse desktop.
+      </p>
+
+      {
+        gallerySections.map(s => (
+          <section>
+            <h2 id={s.id}>{s.title}</h2>
+            <ul>
+              {s.items.map(item => (
+                <li>
+                  <a href={itemHref(item, baseUrl)}>{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+
+      <section>
+        <h2 id="guided">Conference and other guided demos</h2>
+        <ul>
+          {
+            guidedDemos.map(d => (
+              <li>
+                <a href={d.href} target="_blank" rel="noopener">
+                  {d.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </div>
+  </div>
+</SidebarLayout>
+
+<style>
+  .showcase-main {
+    flex: 1;
+    min-width: 0;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 1rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+  }
+  h2 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin: 2rem 0 0.5rem;
+    scroll-margin-top: 5rem;
+  }
+  ul {
+    margin: 0.25rem 0;
+    padding-left: 1.25rem;
+    line-height: 1.8;
+  }
+</style>

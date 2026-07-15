@@ -4,10 +4,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 
 import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
-import AllGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
+import AvailableGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
+import { newSessionName } from '../sessionName.ts'
 
-import type { AssemblyConf } from '../../util.ts'
 import type { Fav, JBrowseConfig, LaunchCallback } from '../types.ts'
+import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
 
 const useStyles = makeStyles()({
   button: {
@@ -62,7 +63,7 @@ export default function OpenSequencePanel({
                 tracks: [],
                 internetAccounts: [],
                 defaultSession: {
-                  name: `New Session ${new Date().toLocaleString('en-US')}`,
+                  name: newSessionName(),
                 },
               })
             }
@@ -72,7 +73,7 @@ export default function OpenSequencePanel({
       ) : null}
 
       {showAll ? (
-        <AllGenomesDialog
+        <AvailableGenomesDialog
           favorites={favorites}
           setFavorites={setFavorites}
           launch={launch}

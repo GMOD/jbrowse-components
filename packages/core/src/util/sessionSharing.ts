@@ -1,14 +1,16 @@
 import { aesDecrypt, aesEncrypt } from './crypto.ts'
 
+function bytesToBinaryString(bytes: Uint8Array) {
+  return Array.from(bytes, b => String.fromCharCode(b)).join('')
+}
+
 // from https://stackoverflow.com/questions/1349404/
 // crypto.getRandomValues is available in non-secure contexts per MDN,
 // unlike crypto.subtle which requires HTTPS.
 function generateUID(length: number) {
   return window
     .btoa(
-      [...crypto.getRandomValues(new Uint8Array(length * 2))]
-        .map(b => String.fromCharCode(b))
-        .join(''),
+      bytesToBinaryString(crypto.getRandomValues(new Uint8Array(length * 2))),
     )
     .replaceAll(/[+/]/g, '')
     .slice(0, length)
@@ -50,9 +52,8 @@ export async function fromUrlSafeB64(b64: string) {
   const originalB64 = b64PadSuffix(
     b64.replaceAll('-', '+').replaceAll('_', '/'),
   )
-  const { toByteArray } = await import('base64-js')
   const { inflate } = await import('pako-esm2')
-  const bytes = toByteArray(originalB64)
+  const bytes = Uint8Array.from(atob(originalB64), c => c.charCodeAt(0))
   const inflated = inflate(bytes, undefined)
   return new TextDecoder('utf8').decode(inflated)
 }
@@ -64,13 +65,11 @@ export async function fromUrlSafeB64(b64: string) {
 export async function toUrlSafeB64(str: string) {
   const bytes = new TextEncoder().encode(str)
   const { deflate } = await import('pako-esm2')
-  const { fromByteArray } = await import('base64-js')
   const deflated = deflate(bytes, undefined)
-  const encoded = fromByteArray(deflated)
+  const encoded = btoa(bytesToBinaryString(deflated))
   const pos = encoded.indexOf('=')
-  return pos > 0
-    ? encoded.slice(0, pos).replaceAll('+', '-').replaceAll('/', '_')
-    : encoded.replaceAll('+', '-').replaceAll('/', '_')
+  const unpadded = pos > 0 ? encoded.slice(0, pos) : encoded
+  return unpadded.replaceAll('+', '-').replaceAll('/', '_')
 }
 
 /**
@@ -99,8 +98,47 @@ export async function shareSessionToDynamo(
   if (!response.ok) {
     throw new Error(getErrorMsg(await response.text()))
   }
-  const json = await response.json()
+  const json = (await response.json()) as { sessionId: string }
   return { json, encryptedSession, password }
+}
+
+export type SessionShareMode = 'short' | 'long' | 'json'
+
+export interface EncodedSessionParam {
+  // the `?session=` query value the web SessionLoader decodes
+  sessionParam: string
+  // present only for a short link
+  password?: string
+  // pretty-printed session, present only for json mode (shown in the dialog)
+  plaintext?: string
+}
+
+// Encodes a session snapshot into the `?session=` value jbrowse-web decodes:
+// `share-<id>` (uploaded + encrypted), `encoded-<b64>` (compressed inline), or
+// `json-<json>` (plaintext inline). Single source of these prefixes, shared by
+// jbrowse-web's ShareDialog and jbrowse-desktop's ExportToWebDialog so the two
+// producers can't drift from the decoder.
+export async function encodeSessionParam(
+  mode: SessionShareMode,
+  session: unknown,
+  options: { shareURL: string; referer: string },
+): Promise<EncodedSessionParam> {
+  if (mode === 'short') {
+    const { json, password } = await shareSessionToDynamo(
+      session,
+      options.shareURL,
+      options.referer,
+    )
+    return { sessionParam: `share-${json.sessionId}`, password }
+  } else if (mode === 'json') {
+    return {
+      sessionParam: `json-${JSON.stringify({ session })}`,
+      plaintext: JSON.stringify({ session }, null, 2),
+    }
+  } else {
+    const encoded = await toUrlSafeB64(JSON.stringify(session))
+    return { sessionParam: `encoded-${encoded}` }
+  }
 }
 
 export async function readSessionFromDynamo(

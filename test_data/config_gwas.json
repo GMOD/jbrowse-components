@@ -1,0 +1,229 @@
+{
+  "defaultSession": {
+    "name": "SLE GWAS LocusZoom demo",
+    "views": [
+      {
+        "id": "sle_lz_view",
+        "type": "LinearGenomeView",
+        "bpPerPx": 408,
+        "offsetPx": 470073,
+        "displayedRegions": [
+          {
+            "refName": "2",
+            "start": 0,
+            "end": 243199373,
+            "assemblyName": "hg19"
+          }
+        ],
+        "tracks": [
+          {
+            "id": "sle_lz_track",
+            "type": "GWASTrack",
+            "configuration": "sle_gwas_ld",
+            "displays": [
+              {
+                "id": "sle_lz_display",
+                "type": "LinearManhattanDisplay",
+                "configuration": "sle_gwas_ld-LinearManhattanDisplay",
+                "height": 250
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "assemblies": [
+    {
+      "name": "hg19",
+      "aliases": ["GRCh37"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "Pd8Wh30ei9R",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.fai"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz.gzi"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/hg19_aliases.txt"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "GWASTrack",
+      "trackId": "gwas_track",
+      "name": "GWAS",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz.tbi"
+          }
+        }
+      }
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "gwas_track_custom_color",
+      "name": "GWAS (custom color)",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "gwas_display_custom_color",
+          "type": "LinearManhattanDisplay",
+          "color": "green"
+        }
+      ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "gwas_track_custom_color_callback",
+      "name": "GWAS (per-feature jexl color)",
+      "category": ["Annotation"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/gwas/summary_stats.txt.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "gwas_display_custom_color_callback_display",
+          "type": "LinearManhattanDisplay",
+          "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
+        }
+      ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "sle_gwas_ld",
+      "name": "SLE GWAS (LocusZoom-style, LD colored)",
+      "category": ["GWAS"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "gwas/SLE_gwas.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "gwas/SLE_gwas.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        },
+        "ldAdapter": {
+          "type": "PlinkLDAdapter",
+          "ldLocation": {
+            "uri": "gwas/SLE.ld",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "sle_gwas_ld-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay",
+          "colorBy": "ld"
+        }
+      ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "giant_bmi_locuszoom",
+      "name": "GIANT BMI (LocusZoom demo data, genome-wide; toggle LD + zoom FTO chr16:53.8Mb)",
+      "category": ["GWAS"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/gwas/gwas_giant-bmi_meta_women-only.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gwas/gwas_giant-bmi_meta_women-only.gz.tbi"
+          }
+        },
+        "ldAdapter": {
+          "type": "PlinkLDTabixAdapter",
+          "ldLocation": {
+            "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz"
+          },
+          "index": {
+            "indexType": "TBI",
+            "location": {
+              "uri": "https://jbrowse.org/demos/gwas/plink.ld.tab.gz.tbi"
+            }
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "giant_bmi_locuszoom-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_gff_hg19",
+      "name": "NCBI RefSeq genes (hg19)",
+      "category": ["Genes"],
+      "assemblyNames": ["hg19"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
+          }
+        }
+      }
+    }
+  ]
+}

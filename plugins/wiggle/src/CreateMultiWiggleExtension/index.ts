@@ -3,68 +3,65 @@ import { lazy } from 'react'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
 
+import { addMultiWiggleTrack } from '../MultiWiggleAddTrackWorkflow/util.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { HierarchicalTrackSelectorModel } from '@jbrowse/plugin-data-management'
 
-// lazies
 const ConfirmDialog = lazy(() => import('./ConfirmDialog.tsx'))
+
+interface MakeTrackArg {
+  name: string
+  tracks: AnyConfigurationModel[]
+}
 
 function makeTrack({
   model,
   arg,
 }: {
   model: HierarchicalTrackSelectorModel
-  arg: {
-    name: string
-  }
+  arg: MakeTrackArg
 }) {
-  const tracks = model.selection
-  const trackIds = tracks.map(c => readConfObject(c, 'name'))
-  const subadapters = tracks
-    .map(c => readConfObject(c, 'adapter'))
-    .map((c, idx) => ({ ...c, source: trackIds[idx] }))
-  const now = Date.now()
-  const trackId = `multitrack-${now}-sessionTrack`
-
+  const { name, tracks } = arg
   const session = getSession(model)
   if (isSessionWithAddTracks(session)) {
-    session.addTrackConf({
-      type: 'MultiQuantitativeTrack',
-      trackId,
-      name: arg.name,
+    addMultiWiggleTrack({
+      session,
+      view: model.view,
+      name,
       assemblyNames: [
         ...new Set(tracks.flatMap(c => readConfObject(c, 'assemblyNames'))),
       ],
       adapter: {
-        type: 'MultiWiggleAdapter',
-        subadapters,
+        subadapters: tracks.map(c => ({
+          ...readConfObject(c, 'adapter'),
+          source: readConfObject(c, 'name'),
+        })),
       },
     })
-    model.view.showTrack(trackId)
   }
 }
 
 export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
   pm.addToExtensionPoint(
     'TrackSelector-multiTrackMenuItems',
-    (items: unknown[], props: Record<string, unknown>) => {
+    (items, props) => {
       const { session } = props
       return [
         ...items,
         ...(isSessionWithAddTracks(session)
           ? [
               {
-                label: 'Create multi-wiggle track',
+                label: 'Create multi-wiggle track...',
                 onClick: (model: HierarchicalTrackSelectorModel) => {
-                  const tracks = model.selection
-
                   getSession(model).queueDialog(handleClose => [
                     ConfirmDialog,
                     {
-                      tracks,
-                      onClose: (arg: boolean, arg1?: { name: string }) => {
-                        if (arg && arg1) {
-                          makeTrack({ model, arg: arg1 })
+                      tracks: model.selection,
+                      onClose: (result?: MakeTrackArg) => {
+                        if (result) {
+                          makeTrack({ model, arg: result })
                         }
                         handleClose()
                       },

@@ -1,8 +1,10 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
+import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
 import {
   type Track,
   createTextSearchConf,
@@ -11,13 +13,39 @@ import {
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
 
+import type { DesktopRootModel } from './rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
+import type { AssertExtends } from '@jbrowse/product-core'
 
 const { ipcRenderer } = window.require('electron')
+
+// The jobs manager lives at rootModel.jobsManager, so its MST parent is the root
+// model; this is the slice it reaches for. One typed contract in place of the
+// per-getter getParent<{...}> shapes, mirroring the react session models'
+// SessionModelParent.
+interface JobsManagerParent {
+  jbrowse: {
+    rpcManager: RpcManager
+    tracks: Track[]
+    aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
+  }
+  session: SessionWithDrawerWidgets
+  textSearchManager: { clearCache: () => void }
+}
+
+// Compile-time guard: the real root model must actually provide everything
+// JobsManagerParent claims. getParent<JobsManagerParent> is an unchecked
+// assertion, so without this the shadow could silently drift from the root
+// (e.g. a renamed rpcManager) and only surface at runtime. If this errors, the
+// shadow above claims something rootModel no longer provides.
+export type _JobsManagerParentCheck = AssertExtends<
+  DesktopRootModel,
+  JobsManagerParent
+>
 
 interface TrackTextIndexing {
   attributes: string[]
@@ -31,14 +59,28 @@ interface TrackTextIndexing {
 
 interface JobsEntry {
   name: string
-  cancelCallback?: () => void
-  progressPct?: number
   statusMessage?: string
 }
 export interface TextJobsEntry extends JobsEntry {
   indexingParams: TrackTextIndexing
 }
 
+function formatBytes(bytes: number) {
+  const units = ['bytes', 'kB', 'MB', 'GB']
+  let n = bytes
+  let i = 0
+  while (n >= 1000 && i < units.length - 1) {
+    n /= 1000
+    i++
+  }
+  return `${i === 0 ? n : n.toFixed(1)} ${units[i]}`
+}
+
+/**
+ * #stateModel JobsManager
+ * Desktop text-indexing job queue: tracks the running job with its progress and
+ * status message, plus the list of queued indexing jobs.
+ */
 export default function jobsModelFactory(_pluginManager: PluginManager) {
   return types
     .model('JobsManager', {})
@@ -54,51 +96,48 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      progressPct: 0,
+      jobName: '',
       /**
        * #volatile
+       * stop token for the currently running RPC indexing job, used to cancel
        */
-      jobName: '',
+      stopToken: undefined as StopToken | undefined,
+      /**
+       * #volatile
+       * set when the user cancels, so the catch block reports a cancellation
+       * rather than an error
+       */
+      aborted: false,
       /**
        * #volatile
        */
       jobsQueue: observable.array<TextJobsEntry>([]),
-      /**
-       * #volatile
-       */
-      finishedJobs: observable.array<TextJobsEntry>([]),
     }))
     .views(self => ({
       /**
        * #getter
        */
       get rpcManager() {
-        return getParent<{ jbrowse: { rpcManager: RpcManager } }>(self).jbrowse
-          .rpcManager
+        return getParent<JobsManagerParent>(self).jbrowse.rpcManager
       },
       /**
        * #getter
        */
       get tracks() {
-        return getParent<{
-          jbrowse: { tracks: Track[] }
-        }>(self).jbrowse.tracks
+        return getParent<JobsManagerParent>(self).jbrowse.tracks
       },
       /**
        * #getter
        */
       get session() {
-        return getParent<{ session: SessionWithDrawerWidgets }>(self).session
+        return getParent<JobsManagerParent>(self).session
       },
       /**
        * #getter
        */
       get aggregateTextSearchAdapters() {
-        return getParent<{
-          jbrowse: {
-            aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
-          }
-        }>(self).jbrowse.aggregateTextSearchAdapters
+        return getParent<JobsManagerParent>(self).jbrowse
+          .aggregateTextSearchAdapters
       },
     }))
     .actions(self => ({
@@ -106,11 +145,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #method
        */
       getJobStatusWidget() {
-        const { session } = self
-        const { widgets } = session
-        let jobStatusWidget = widgets.get('JobsList')
-        jobStatusWidget ??= session.addWidget('JobsListWidget', 'JobsList')
-        return jobStatusWidget as JobsListModel
+        return getOrCreateJobsListWidget(self.session)
       },
     }))
     .actions(self => ({
@@ -129,15 +164,37 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      setProgressPct(arg: string) {
-        const progress = +arg
-        if (Number.isNaN(progress)) {
+      setStopToken(token?: StopToken) {
+        self.stopToken = token
+      },
+      /**
+       * #action
+       * cancel the currently running indexing job; the RPC throws 'aborted',
+       * handled in runIndexingJob's catch
+       */
+      abortJob() {
+        self.aborted = true
+        stopStopToken(self.stopToken)
+      },
+      /**
+       * #action
+       */
+      reportStatus(arg: string) {
+        // the worker reports byte progress as "received/total"; anything else
+        // is already a human-readable status message. show the raw byte counts
+        // rather than a percentage: the percentage only covers the read phase
+        // and would sit at 100% during the (often long) ixIxx generation
+        const slash = arg.indexOf('/')
+        if (slash === -1) {
           this.setStatusMessage(arg)
         } else {
-          if (progress === 100) {
-            this.setStatusMessage('Generating ixIxx files.')
-          }
-          self.progressPct = progress
+          const received = +arg.slice(0, slash)
+          const total = +arg.slice(slash + 1)
+          this.setStatusMessage(
+            total > 0
+              ? `Indexed ${formatBytes(received)} / ${formatBytes(total)}`
+              : `Indexed ${formatBytes(received)}`,
+          )
         }
         this.setWidgetStatus()
       },
@@ -146,9 +203,13 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #action
        */
       setWidgetStatus() {
-        const jobStatusWidget = self.getJobStatusWidget()
-        jobStatusWidget.updateJobStatusMessage(self.jobName, self.statusMessage)
-        jobStatusWidget.updateJobProgressPct(self.jobName, self.progressPct)
+        if (isSessionModelWithWidgets(self.session)) {
+          const jobStatusWidget = self.getJobStatusWidget()
+          jobStatusWidget.updateJobStatusMessage(
+            self.jobName,
+            self.statusMessage,
+          )
+        }
       },
 
       /**
@@ -161,30 +222,13 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      addFinishedJob(entry: TextJobsEntry) {
-        self.finishedJobs.push(entry)
-      },
-      /**
-       * #action
-       */
       queueJob(props: TextJobsEntry) {
         const { session } = self
         if (isSessionModelWithWidgets(session)) {
           const jobStatusWidget = self.getJobStatusWidget()
           session.showWidget(jobStatusWidget)
-          const {
-            name,
-            statusMessage = '',
-            progressPct = 0,
-            cancelCallback,
-          } = props
-          jobStatusWidget.addQueuedJob({
-            name,
-            statusMessage,
-            progressPct,
-            cancelCallback: cancelCallback ?? (() => {}),
-            setStatusMessage: () => {},
-          })
+          const { name, statusMessage = '' } = props
+          jobStatusWidget.addQueuedJob({ name, statusMessage })
         }
         self.jobsQueue.push(props)
       },
@@ -206,7 +250,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
         this.setRunning(false)
         this.setStatusMessage('')
         this.setJobName('')
-        self.progressPct = 0
+        self.stopToken = undefined
+        self.aborted = false
       },
       /**
        * #action
@@ -221,12 +266,18 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           indexType,
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
-        const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          c => structuredClone(toJS(c)),
-        )
+        const stopToken = createStopToken()
+        this.setStopToken(stopToken)
         try {
           this.setRunning(true)
           this.setJobName(entry.name)
+          // resolve configs inside the try: a since-deleted track makes
+          // findTrackConfigsToIndex throw, and doing it here dequeues the job in
+          // the catch rather than looping the autorun on the stuck queue entry
+          const trackConfigs = findTrackConfigsToIndex(
+            self.tracks,
+            trackIds,
+          ).map(c => toJS(c))
           const userData = await ipcRenderer.invoke('userData')
           const outLocation = path.join(
             userData,
@@ -241,9 +292,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             assemblies,
             indexType,
             outLocation,
-            sessionId: 'indexTracksSessionId',
+            stopToken,
             statusCallback: (message: string) => {
-              this.setProgressPct(message)
+              this.reportStatus(message)
             },
           })
           if (indexType === 'perTrack') {
@@ -255,7 +306,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 exclude,
                 outLocation,
               })
-              self.session.notify(
+              session.notify(
                 `Successfully indexed track with trackId: ${trackId} `,
                 'success',
               )
@@ -271,7 +322,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
                 outLocation,
               })
 
-              self.session.notify(
+              session.notify(
                 `Successfully indexed assembly: ${assemblyName} `,
                 'success',
               )
@@ -280,45 +331,44 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
 
           // clear the text search adapter cache so stale adapters pointing
           // at old index files are discarded
-          const rootModel = getParent<{
-            textSearchManager: { clearCache: () => void }
-          }>(self)
+          const rootModel = getParent<JobsManagerParent>(self)
           rootModel.textSearchManager.clearCache()
           // remove from the queue and add to finished/completed jobs
           const current = this.dequeueJob()
-          if (current) {
-            this.addFinishedJob(current)
-            if (isSessionModelWithWidgets(session)) {
-              const jobStatusWidget = self.getJobStatusWidget()
-              session.showWidget(jobStatusWidget)
-              const { name, statusMessage, progressPct, cancelCallback } =
-                current
-              jobStatusWidget.addFinishedJob({
-                name,
-                statusMessage: statusMessage ?? 'done',
-                progressPct: progressPct ?? 100,
-                cancelCallback: cancelCallback ?? (() => {}),
-                setStatusMessage: () => {},
-              })
-            }
+          if (current && isSessionModelWithWidgets(session)) {
+            const jobStatusWidget = self.getJobStatusWidget()
+            session.showWidget(jobStatusWidget)
+            jobStatusWidget.addFinishedJob({
+              name: current.name,
+              statusMessage: current.statusMessage ?? 'done',
+            })
           }
         } catch (e) {
-          console.error(e)
-
-          self.session.notifyError(
-            `An error occurred while indexing: ${e}`,
-            e,
-            undefined,
-            {
-              name: 'Retry',
-              onClick: () => {
-                this.queueJob(entry)
+          if (self.aborted) {
+            session.notify(`Cancelled indexing job: ${entry.name}`, 'info')
+          } else {
+            console.error(e)
+            session.notifyError(
+              `An error occurred while indexing: ${e}`,
+              e,
+              undefined,
+              {
+                name: 'Retry',
+                onClick: () => {
+                  // re-queue a plain snapshot; `entry` was detached from the
+                  // observable queue by dequeueJob below
+                  this.queueJob(toJS(entry))
+                },
               },
-            },
-          )
-          // remove job from queue but since it was not successful
-          // do not add to finished list
-          this.dequeueJob()
+            )
+          }
+          const failed = this.dequeueJob()
+          if (failed && isSessionModelWithWidgets(session)) {
+            self.getJobStatusWidget().addAbortedJob({
+              name: failed.name,
+              statusMessage: self.aborted ? 'Cancelled' : `${e}`,
+            })
+          }
         }
         // clear
         this.clear()
@@ -334,14 +384,13 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           if (isSessionModelWithWidgets(session)) {
             const jobStatusWidget = self.getJobStatusWidget()
             session.showWidget(jobStatusWidget)
-            const { name, statusMessage, progressPct, cancelCallback } =
-              firstIndexingJob
+            const { name, statusMessage } = firstIndexingJob
             jobStatusWidget.addJob({
               name,
               statusMessage: statusMessage ?? '',
-              progressPct: progressPct ?? 0,
-              cancelCallback: cancelCallback ?? (() => {}),
-              setStatusMessage: () => {},
+              cancelCallback: () => {
+                this.abortJob()
+              },
             })
             jobStatusWidget.removeQueuedJob(name)
           }

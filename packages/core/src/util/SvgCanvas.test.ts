@@ -87,3 +87,19 @@ test('rgba fill is split into fill + fill-opacity for SVG 1.1 compat', () => {
   expect(svg).toContain('fill="rgb(0,128,0)"')
   expect(svg).not.toContain('fill-opacity="1"')
 })
+
+test('spaced rgba (MUI alpha / colord) is split too, not emitted raw', () => {
+  const ctx = new SvgCanvas()
+
+  ctx.fillStyle = 'rgba(255, 177, 29, 0.12)'
+  ctx.fillRect(0, 0, 10, 10)
+  ctx.strokeStyle = 'rgba(255, 177, 29, 0.7)'
+  ctx.strokeRect(0, 0, 10, 10)
+
+  const svg = ctx.getSerializedSvg()
+
+  expect(svg).not.toContain('rgba(')
+  expect(svg).toContain('fill="rgb(255,177,29)" fill-opacity="0.12"')
+  expect(svg).toContain('stroke="rgb(255,177,29)"')
+  expect(svg).toContain('stroke-opacity="0.7"')
+})

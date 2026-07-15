@@ -1,6 +1,5 @@
 ---
-id: hic_track
-title: Hi-C track configuration
+title: Hi-C track
 description: Contact matrix track config using the HicAdapter
 guide_category: Track types
 ---
@@ -11,49 +10,61 @@ Example Hi-C track config:
 {
   "type": "HicTrack",
   "trackId": "hic",
-  "name": "HiC Track",
+  "name": "Hi-C Track",
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "HicAdapter",
-    "hicLocation": {
-      "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
-      "locationType": "UriLocation"
+    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
+  }
+}
+```
+
+## HicAdapter config
+
+The `HicAdapter` needs only the `.hic` file location, given here with the `uri`
+shorthand. The longhand form uses a `hicLocation` slot. See the
+[HicAdapter config docs](/docs/config/hicadapter) for all options.
+
+## Color scheme
+
+Hi-C contact matrices are drawn with a built-in color ramp, selectable from the
+track menu via the
+[`colorScheme`](/docs/config/linearhicdisplay/#slot-colorscheme) slot:
+`juicebox`, `fall`, or `viridis`. Log scaling and percentile clipping are also
+slots. See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for
+the full list.
+
+## Loops and interactions as arcs
+
+BEDPE loop/interaction calls load as a `VariantTrack` with a
+`LinearPairedArcDisplay`. `color` is jexl-evaluated per feature and `lineWidth`
+sets the arc stroke width in pixels (also draggable from the track menu). This
+example draws only the high-scoring calls, in dark red, as thin arcs:
+
+```json
+{
+  "type": "VariantTrack",
+  "trackId": "hic_loops",
+  "name": "Hi-C loops",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedpeAdapter",
+    "bedpeLocation": { "uri": "https://example.com/loops.bedpe.gz" }
+  },
+  "displays": [
+    {
+      "type": "LinearPairedArcDisplay",
+      "displayId": "hic_loops-LinearPairedArcDisplay",
+      "color": "jexl:get(feature,'score')>=500?'#8b1a1a':'rgba(0,0,0,0)'",
+      "lineWidth": 1
     }
-  }
+  ]
 }
 ```
 
-#### HicAdapter config
+## See also
 
-The HicAdapter currently only requires a `hicLocation`:
-
-```json
-{
-  "type": "HicAdapter",
-  "hicLocation": {
-    "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic",
-    "locationType": "UriLocation"
-  }
-}
-```
-
-A reduced form is also accepted:
-
-```json
-{
-  "type": "HicAdapter",
-  "uri": "https://s3.amazonaws.com/igv.broadinstitute.org/data/hic/intra_nofrag_30.hic"
-}
-```
-
-#### HicRenderer config
-
-- `baseColor` - the base color of the Hi-C plot (default `#f00`). Change to e.g.
-  `#00f` for blue shading
-- `color` - a color callback that maps a contact count to a rendered color. The
-  default is `jexl:interpolate(count,scale)`, where `count` is the contact count
-  for the block, `maxScore` is the maximum count in the current view,
-  `baseColor` is the configured base color, and `scale` is a pre-built
-  interpolator from white to `baseColor` (see
-  [configSchema.ts](https://github.com/GMOD/jbrowse-components/blob/main/plugins/hic/src/HicRenderer/configSchema.ts)
-  for the current defaults)
+- [Hi-C track](/docs/user_guides/hic_track), loading and interpreting contact
+  matrices in the app
+- [LinearPairedArcDisplay config schema](/docs/config/linearpairedarcdisplay),
+  arc display slots

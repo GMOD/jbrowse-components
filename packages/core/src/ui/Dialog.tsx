@@ -1,4 +1,4 @@
-import { isValidElement } from 'react'
+import { useMemo } from 'react'
 
 import CloseIcon from '@mui/icons-material/Close'
 import {
@@ -11,7 +11,6 @@ import {
   createTheme,
   useTheme,
 } from '@mui/material'
-import { observer } from 'mobx-react'
 
 import ErrorBanner from './ErrorBanner.tsx'
 import { ErrorBoundary } from './ErrorBoundary.tsx'
@@ -28,8 +27,8 @@ const useStyles = makeStyles()(theme => ({
     color: theme.palette.grey[500],
   },
   errorBox: {
-    width: 800,
-    margin: 40,
+    maxWidth: 800,
+    margin: theme.spacing(5),
   },
 }))
 
@@ -42,30 +41,54 @@ function DialogError({ error }: { error: unknown }) {
   )
 }
 
-export interface Props extends DialogProps {
+export interface Props extends Omit<DialogProps, 'onClose'> {
   header?: React.ReactNode
   titleNode?: React.ReactNode
+  onClose?:
+    | {
+        bivarianceHack(
+          event: object,
+          reason: 'backdropClick' | 'escapeKeyDown' | 'closeButtonClick',
+        ): void
+      }['bivarianceHack']
+    | undefined
 }
 
-const Dialog = observer(function Dialog(props: Props) {
+function Dialog(props: Props) {
   const { classes } = useStyles()
-  const { titleNode, ...rest } = props
-  const { title, header, children, onClose } = rest
+  const { titleNode, header, title, ...rest } = props
+  const { children, onClose } = rest
   const theme = useTheme()
+  // content-box override xref https://github.com/GMOD/jbrowse-components/pull/3666
+  const dialogTheme = useMemo(
+    () =>
+      createTheme(theme, {
+        components: {
+          MuiInputBase: {
+            styleOverrides: {
+              input: {
+                boxSizing: 'content-box!important' as 'content-box',
+              },
+            },
+          },
+        },
+      }),
+    [theme],
+  )
 
   return (
     <MUIDialog {...rest}>
       <ScopedCssBaseline>
-        {isValidElement(header) ? (
+        {header ? (
           header
         ) : (
           <DialogTitle>
-            {titleNode || <SanitizedHTML html={title || ''} />}
+            {titleNode ?? <SanitizedHTML html={title ?? ''} />}
             {onClose ? (
               <IconButton
                 className={classes.closeButton}
                 onClick={event => {
-                  onClose(event, 'backdropClick')
+                  onClose(event, 'closeButtonClick')
                 }}
               >
                 <CloseIcon />
@@ -76,26 +99,11 @@ const Dialog = observer(function Dialog(props: Props) {
         <Divider />
 
         <ErrorBoundary FallbackComponent={DialogError}>
-          <ThemeProvider
-            theme={createTheme(theme, {
-              components: {
-                MuiInputBase: {
-                  styleOverrides: {
-                    input: {
-                      // xref https://github.com/GMOD/jbrowse-components/pull/3666
-                      boxSizing: 'content-box!important' as 'content-box',
-                    },
-                  },
-                },
-              },
-            })}
-          >
-            {children}
-          </ThemeProvider>
+          <ThemeProvider theme={dialogTheme}>{children}</ThemeProvider>
         </ErrorBoundary>
       </ScopedCssBaseline>
     </MUIDialog>
   )
-})
+}
 
 export default Dialog

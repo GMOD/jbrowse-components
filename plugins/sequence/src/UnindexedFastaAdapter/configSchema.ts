@@ -1,9 +1,21 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config UnindexedFastaAdapter
+ * #trackType ReferenceSequenceTrack
+ * loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
+ * sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'UnindexedFastaAdapter',
+ *   uri: 'https://example.com/genome.fa',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -67,4 +79,5 @@ const UnindexedFastaAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+export type UnindexedFastaAdapterConfig = Instance<typeof UnindexedFastaAdapter>
 export default UnindexedFastaAdapter

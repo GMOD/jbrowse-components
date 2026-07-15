@@ -1,19 +1,17 @@
-import { Suspense, lazy, useState } from 'react'
-
 import RefreshIcon from '@mui/icons-material/Refresh'
-import ReportIcon from '@mui/icons-material/Report'
 import { Alert, IconButton, Tooltip } from '@mui/material'
 
+import StackTraceButton from './StackTraceButton.tsx'
 import { makeStyles } from '../util/tss-react/index.ts'
-
-const ErrorMessageStackTraceDialog = lazy(
-  () => import('./ErrorMessageStackTraceDialog.tsx'),
-)
 
 const useStyles = makeStyles()({
   content: {
     wordBreak: 'break-word',
     textAlign: 'center',
+    // displays wrap their canvas in user-select:none (e.g. the canvas
+    // FeatureComponent root, inherited by DisplayChrome's error bar); re-enable
+    // selection so the error text can be copied
+    userSelect: 'text',
   },
 })
 
@@ -25,7 +23,6 @@ export default function ErrorBar({
   onRetry: () => void
 }) {
   const { classes } = useStyles()
-  const [showStack, setShowStack] = useState(false)
   const message = `${error}`
   return (
     <div
@@ -41,30 +38,17 @@ export default function ErrorBar({
         severity="error"
         action={
           <>
-            <Tooltip title="Show stack trace">
+            <StackTraceButton error={error} />
+            <Tooltip title="Retry">
               <IconButton
+                data-testid="reload_button"
                 onClick={() => {
-                  setShowStack(true)
+                  onRetry()
                 }}
               >
-                <ReportIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Retry">
-              <IconButton data-testid="reload_button" onClick={onRetry}>
                 <RefreshIcon />
               </IconButton>
             </Tooltip>
-            {showStack ? (
-              <Suspense fallback={null}>
-                <ErrorMessageStackTraceDialog
-                  error={error}
-                  onClose={() => {
-                    setShowStack(false)
-                  }}
-                />
-              </Suspense>
-            ) : null}
           </>
         }
       >

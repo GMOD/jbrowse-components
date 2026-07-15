@@ -1,7 +1,8 @@
-import { stripAlpha } from '@jbrowse/core/util'
+import { getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import { makeTicks } from '../util.ts'
+import BlockClipGroup from './BlockClipGroup.tsx'
+import { makeBlockTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -20,47 +21,34 @@ export default function SVGGridlines({
     bpPerPx,
   } = model
   const theme = useTheme()
-  const c = stripAlpha(theme.palette.divider)
+  // share the on-screen gridline colors; getStrokeProps splits the rgba alpha
+  // into strokeOpacity so the exported SVG stays renderer-safe
+  const minor = getStrokeProps(theme.palette.gridlineMinor)
+  const major = getStrokeProps(theme.palette.gridlineMajor)
 
   return (
     <>
-      {contentBlocks.map(block => {
-        const { start, end, key, reversed, offsetPx, widthPx } = block
-        const offset = offsetPx - viewOffsetPx
-        const ticks = makeTicks(start, end, bpPerPx, true, true)
-        const clipid = `gridline-clip-${key}`
-        return (
-          <g key={key}>
-            <defs>
-              <clipPath id={clipid}>
-                <rect x={0} y={0} width={widthPx} height={height} />
-              </clipPath>
-            </defs>
-            <g
-              transform={`translate(${offset} 0)`}
-              clipPath={`url(#${clipid})`}
-            >
-              {ticks.map(tick => {
-                const x =
-                  (reversed ? end - tick.base : tick.base - start) / bpPerPx
-                const isMajor = tick.type === 'major'
-                return (
-                  <line
-                    key={`gridline-${tick.base}`}
-                    x1={x}
-                    x2={x}
-                    y1={0}
-                    y2={height}
-                    strokeWidth={1}
-                    stroke={c}
-                    strokeOpacity={isMajor ? 0.3 : 0.15}
-                  />
-                )
-              })}
-            </g>
-          </g>
-        )
-      })}
+      {contentBlocks.map(block => (
+        <BlockClipGroup
+          key={block.key}
+          block={block}
+          viewOffsetPx={viewOffsetPx}
+          height={height}
+          idPrefix={`gridline-clip-${model.id}`}
+        >
+          {makeBlockTicks(block, bpPerPx).map(({ base, type, x }) => (
+            <line
+              key={`gridline-${base}`}
+              x1={x}
+              x2={x}
+              y1={0}
+              y2={height}
+              strokeWidth={1}
+              {...(type === 'major' ? major : minor)}
+            />
+          ))}
+        </BlockClipGroup>
+      ))}
     </>
   )
 }

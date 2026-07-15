@@ -1,7 +1,11 @@
 import VcfParser from '@gmod/vcf'
 
 import VcfFeature from './index.ts'
-import { getSOAndDescFromAltDefs } from './util.ts'
+import {
+  getMinimalDesc,
+  getSOTermAndDescription,
+  makeSimpleAltString,
+} from './util.ts'
 
 const defaultHeader =
   '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tSAMPLE'
@@ -47,6 +51,24 @@ test('DEL feature with END info field', () => {
   expect(f.get('description')).toEqual('<DEL>')
 })
 
+test('TRA feature with CHR2 and END info', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<TRA>\t29\tPASS\tCHR2=chr8;END=45000;SVTYPE=TRA',
+  )
+
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('description')).toEqual('<TRA> chr8:45000')
+  expect(f.get('type')).toEqual('translocation')
+})
+
+test('TRA feature without CHR2/END info', () => {
+  const f = createFeature('chr1\t100\trs123\tR\t<TRA>\t29\tPASS\tSVTYPE=TRA')
+
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('description')).toEqual('<TRA>')
+  expect(f.get('type')).toEqual('translocation')
+})
+
 test('DEL feature with SVLEN when END not available', () => {
   const f = createFeature(
     'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tSVLEN=500;SVTYPE=DEL',
@@ -54,6 +76,15 @@ test('DEL feature with SVLEN when END not available', () => {
 
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(599)
+  expect(f.get('description')).toEqual('<DEL> 500bp')
+})
+
+test('DUP feature with SVLEN shows size', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DUP>\t29\tPASS\tSVLEN=1000;SVTYPE=DUP',
+  )
+
+  expect(f.get('description')).toEqual('<DUP> 1Kbp')
 })
 
 test('INS feature with SVLEN when END not available', () => {
@@ -63,6 +94,24 @@ test('INS feature with SVLEN when END not available', () => {
 
   expect(f.get('start')).toEqual(99)
   expect(f.get('end')).toEqual(100)
+  expect(f.get('description')).toEqual('<INS> 500bp')
+})
+
+test('DEL with missing SVLEN falls back to REF length instead of NaN end', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tSVLEN=.;SVTYPE=DEL',
+  )
+
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('end')).toEqual(100)
+})
+
+test('DEL with missing END falls back to SVLEN', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tEND=.;SVLEN=500;SVTYPE=DEL',
+  )
+
+  expect(f.get('end')).toEqual(599)
 })
 
 test('multiple SVs', () => {
@@ -134,47 +183,82 @@ test('null ALT', () => {
   expect(f.toJSON()).toMatchSnapshot()
 })
 
-test('getSOAndDescFromAltDefs returns correct SO term for symbolic alleles', () => {
+test('getSOTermAndDescription returns correct SO term for symbolic alleles', () => {
   const parser = createParser()
+  const soTerm = (alt: string) => getSOTermAndDescription('N', [alt], parser)[0]
 
-  expect(getSOAndDescFromAltDefs('<DEL>', parser)).toEqual([
-    'deletion',
-    '<DEL>',
-  ])
-  expect(getSOAndDescFromAltDefs('<INS>', parser)).toEqual([
-    'insertion',
-    '<INS>',
-  ])
-  expect(getSOAndDescFromAltDefs('<DUP>', parser)).toEqual([
-    'duplication',
-    '<DUP>',
-  ])
-  expect(getSOAndDescFromAltDefs('<INV>', parser)).toEqual([
-    'inversion',
-    '<INV>',
-  ])
-  expect(getSOAndDescFromAltDefs('<CNV>', parser)).toEqual([
-    'copy_number_variation',
-    '<CNV>',
-  ])
-  expect(getSOAndDescFromAltDefs('<TRA>', parser)).toEqual([
-    'translocation',
-    '<TRA>',
-  ])
-  expect(getSOAndDescFromAltDefs('<DUP:TANDEM>', parser)).toEqual([
-    'tandem_duplication',
-    '<DUP:TANDEM>',
-  ])
-  expect(getSOAndDescFromAltDefs('<INS:ME>', parser)).toEqual([
-    'insertion',
-    '<INS:ME>',
-  ])
-  expect(getSOAndDescFromAltDefs('<UNKNOWN>', parser)).toEqual([
-    'variant',
-    '<UNKNOWN>',
-  ])
-  expect(getSOAndDescFromAltDefs('<UNKNOWN:FOO>', parser)).toEqual([
-    'variant',
-    '<UNKNOWN:FOO>',
-  ])
+  expect(soTerm('<DEL>')).toBe('deletion')
+  expect(soTerm('<INS>')).toBe('insertion')
+  expect(soTerm('<DUP>')).toBe('duplication')
+  expect(soTerm('<INV>')).toBe('inversion')
+  expect(soTerm('<CNV>')).toBe('copy_number_variation')
+  expect(soTerm('<TRA>')).toBe('translocation')
+  expect(soTerm('<DUP:TANDEM>')).toBe('tandem_duplication')
+  expect(soTerm('<INS:ME>')).toBe('insertion')
+  expect(soTerm('<UNKNOWN>')).toBe('variant')
+  expect(soTerm('<UNKNOWN:FOO>')).toBe('variant')
+})
+
+test('getSOTermAndDescription maps integer copy-number alleles', () => {
+  const parser = createParser()
+  const soTerm = (alt: string) => getSOTermAndDescription('N', [alt], parser)[0]
+
+  expect(soTerm('<CN0>')).toBe('copy_number_variation')
+  expect(soTerm('<CN3>')).toBe('copy_number_variation')
+  expect(soTerm('<CN12>')).toBe('copy_number_variation')
+})
+
+test('getMinimalDesc - SNV returns just alt', () => {
+  expect(getMinimalDesc('A', 'T')).toEqual('T')
+})
+
+test('getMinimalDesc - short indel shows bases', () => {
+  expect(getMinimalDesc('ACGT', 'A')).toEqual('ACGT -> A')
+})
+
+test('getMinimalDesc - mid-length allele under threshold still shows bases', () => {
+  expect(getMinimalDesc('ACGTACGT', 'A')).toEqual('ACGTACGT -> A')
+})
+
+test('getMinimalDesc - long indel shows bp counts per side', () => {
+  expect(getMinimalDesc('ACGTACGTACGT', 'A')).toEqual('12bp -> A')
+  expect(getMinimalDesc('ACGTACGTACGT', 'ACGTACGTACGT')).toEqual('12bp -> 12bp')
+})
+
+test('getMinimalDesc - symbolic returns alt as-is', () => {
+  expect(getMinimalDesc('A', '<DEL>')).toEqual('<DEL>')
+})
+
+test('makeSimpleAltString - phased heterozygous', () => {
+  expect(makeSimpleAltString('0|1', 'A', ['T'])).toEqual('ref(A)|T')
+})
+
+test('makeSimpleAltString - unphased ref/ref', () => {
+  expect(makeSimpleAltString('0/0', 'A', ['T'])).toEqual('ref(A)/ref(A)')
+})
+
+test('makeSimpleAltString - missing allele', () => {
+  expect(makeSimpleAltString('./1', 'A', ['T'])).toEqual('./T')
+})
+
+test('makeSimpleAltString - multi-allelic', () => {
+  expect(makeSimpleAltString('1/2', 'A', ['T', 'G'])).toEqual('T/G')
+})
+
+test('makeSimpleAltString - ref/alt under threshold consistently shown as bases', () => {
+  expect(makeSimpleAltString('0/1', 'ACGTACGT', ['T'])).toEqual(
+    'ref(ACGTACGT)/ACGTACGT -> T',
+  )
+})
+
+test('makeSimpleAltString - long ref shown as bp count on both sides', () => {
+  expect(makeSimpleAltString('0/1', 'ACGTACGTACGT', ['T'])).toEqual(
+    'ref(12bp)/12bp -> T',
+  )
+})
+
+test('makeSimpleAltString - ref 10+ chars shown as bp count', () => {
+  expect(makeSimpleAltString('0/0', 'ACGTACGTAC', [])).toEqual(
+    'ref(10bp)/ref(10bp)',
+  )
 })

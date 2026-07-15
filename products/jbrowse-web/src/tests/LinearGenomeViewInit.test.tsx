@@ -1,37 +1,24 @@
+import { getSession } from '@jbrowse/core/util'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
-import { configure } from 'mobx'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import {
+  handleRequest,
+  utilizeFetchMockForTest,
+  volvoxGetFile,
+} from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
-
-configure({ disableErrorBoundaries: true })
-
-const getFile = (url: string) => {
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/volvox/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
-
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-})
+utilizeFetchMockForTest(volvoxGetFile)
 
 async function createLinearGenomeViewWithInit(init: {
   loc?: string
@@ -50,6 +37,51 @@ async function createLinearGenomeViewWithInit(init: {
 
   return { view, session, rootModel, pluginManager }
 }
+
+test('LinearGenomeView initializes with gene name search', async () => {
+  const { view } = await createLinearGenomeViewWithInit({
+    loc: 'EDEN',
+    assembly: 'volvox',
+  })
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+      expect(view.displayedRegions.length).toBeGreaterThan(0)
+      expect(view.displayedRegions[0]!.refName).toBe('ctgA')
+    },
+    { timeout: 30000 },
+  )
+
+  expect(view.displayedRegions[0]!.start).toBeLessThan(1050)
+  expect(view.displayedRegions[0]!.end).toBeGreaterThan(9000)
+  expect(view.init).toBeUndefined()
+}, 40000)
+
+test('init.highlight (the &highlight= URL param) is parsed onto the list and governed by the session-wide flag', async () => {
+  const { view } = await createLinearGenomeViewWithInit({
+    loc: 'ctgA:1-1000',
+    assembly: 'volvox',
+    highlight: ['ctgA:100-200'],
+  })
+
+  // the URL highlight resolves onto the view's highlight list once init runs
+  await waitFor(
+    () => {
+      expect(view.highlight.length).toBe(1)
+    },
+    { timeout: 30000 },
+  )
+  expect(view.highlight[0]!.refName).toBe('ctgA')
+
+  // rendering gates on getSession(view).highlightsVisible (the same expression
+  // used by the main-view, scalebar, overview and SVG-export components), so a
+  // single session-wide flag now hides URL highlights and bookmark overlays alike
+  const session = getSession(view)
+  expect(session.highlightsVisible).toBe(true)
+  session.setHighlightsVisible(false)
+  expect(session.highlightsVisible).toBe(false)
+}, 40000)
 
 test('LinearGenomeView initializes with init property and location', async () => {
   const { view } = await createLinearGenomeViewWithInit({
@@ -186,7 +218,7 @@ test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {
     if (`${url}`.includes('jb2=true')) {
       return new Response('{}')
     }
-    return handleRequest(() => getFile(`${url}`), args)
+    return handleRequest(() => volvoxGetFile(`${url}`), args)
   })
 
   const { rootModel } = getPluginManager(config404)
@@ -209,4 +241,34 @@ test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {
   )
 
   expect(`${view.error}`).toMatch(/404|not found|failed/i)
+}, 40000)
+
+// Regression: a snapshot taken before the view materializes (e.g. autosave
+// firing while the launch autorun hasn't navigated yet) must keep init, so a
+// reload/restore rebuilds instead of stranding on the import form. Once
+// displayedRegions exist, init is redundant and stripped.
+test('snapshot keeps init while not materialized, strips it once regions load', async () => {
+  const { rootModel } = getPluginManager()
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: { loc: 'ctgA:1..1000', assembly: 'volvox' },
+  })
+
+  // no width yet -> launch autorun hasn't navigated
+  expect(view.displayedRegions.length).toBe(0)
+  const before: { init?: unknown } = getSnapshot(view)
+  expect(before.init).toBeDefined()
+
+  view.setWidth(800)
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  expect(view.displayedRegions.length).toBeGreaterThan(0)
+  const after: { init?: unknown } = getSnapshot(view)
+  expect(after.init).toBeUndefined()
 }, 40000)

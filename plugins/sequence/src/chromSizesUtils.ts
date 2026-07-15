@@ -16,11 +16,21 @@ export function parseChromSizes(data: string) {
 }
 
 export function refSizesToRegions(refSizes: Record<string, number>) {
-  return Object.keys(refSizes).map(refName => ({
+  return Object.entries(refSizes).map(([refName, end]) => ({
     refName,
     start: 0,
-    end: refSizes[refName]!,
+    end,
   }))
+}
+
+// derives the fasta + fai locations from a `uri` shorthand, shared by the
+// IndexedFasta and BgzipFasta config preprocessors (the latter adds gzi)
+export function deriveFastaLocations(snap: Record<string, unknown>) {
+  const { uri, baseUri } = snap
+  return {
+    fastaLocation: { uri, baseUri },
+    faiLocation: { uri: `${uri}.fai`, baseUri },
+  }
 }
 
 export function isPlaceholderLocation(loc: FileLocation, defaultUri: string) {

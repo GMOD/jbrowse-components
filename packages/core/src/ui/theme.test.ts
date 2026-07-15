@@ -1,4 +1,8 @@
-import { createJBrowseTheme } from './theme.ts'
+import {
+  createJBrowseTheme,
+  createJBrowseThemeFromArgs,
+  defaultThemes,
+} from './theme.ts'
 
 test('can create a default theme', () => {
   const theme = createJBrowseTheme()
@@ -78,6 +82,36 @@ test('allows modifying a prop override', () => {
   )
 })
 
+test('augments a custom base color (default theme) with light/dark/contrastText', () => {
+  const theme = createJBrowseTheme({
+    palette: { bases: { A: { main: '#123456' } } },
+  })
+  const { A, C } = theme.palette.bases
+  expect(A.main).toEqual('#123456')
+  expect(A.light).toBeTruthy()
+  expect(A.dark).toBeTruthy()
+  // contrastText recomputed from the new main, not spliced from default green
+  expect(A.contrastText).toBeTruthy()
+  // an unspecified base keeps its default augmented value
+  expect(C.contrastText).toBeTruthy()
+})
+
+test('augments a custom base color for a config-defined named theme', () => {
+  const theme = createJBrowseTheme(
+    {},
+    {
+      myTheme: {
+        name: 'My Theme',
+        palette: { bases: { A: { main: '#123456' } } },
+      },
+    },
+    'myTheme',
+  )
+  const { A } = theme.palette.bases
+  expect(A.main).toEqual('#123456')
+  expect(A.contrastText).toBeTruthy()
+})
+
 test('default theme has coverage color', () => {
   const theme = createJBrowseTheme()
   expect(theme.palette.coverage).toBeDefined()
@@ -88,4 +122,90 @@ test('dark theme has different coverage color', () => {
   const light = createJBrowseTheme()
   const dark = createJBrowseTheme({}, undefined, 'darkStock')
   expect(light.palette.coverage).not.toBe(dark.palette.coverage)
+})
+
+test('frames arrays are not duplicated for named themes', () => {
+  for (const name of [
+    'default',
+    'lightStock',
+    'lightMinimal',
+    'darkMinimal',
+    'darkStock',
+  ]) {
+    const theme = createJBrowseTheme({}, undefined, name)
+    expect(theme.palette.frames).toHaveLength(7)
+    expect(theme.palette.framesCDS).toHaveLength(7)
+  }
+})
+
+test('config-defined dark theme inherits dark-tuned color defaults', () => {
+  const light = createJBrowseTheme()
+  const customDark = createJBrowseTheme({}, undefined, 'darkStock')
+  const fromArgs = createJBrowseTheme(
+    {},
+    {
+      myDark: {
+        name: 'My Dark',
+        // opts into dark mode without spreading the built-in darkPalette
+        palette: { mode: 'dark', primary: { main: '#abcdef' } },
+      },
+    },
+    'myDark',
+  )
+  expect(fromArgs.palette.mode).toBe('dark')
+  // gridlines/coverage/hover resolve to the dark variants, not the light ones
+  expect(fromArgs.palette.coverage).toBe(customDark.palette.coverage)
+  expect(fromArgs.palette.coverage).not.toBe(light.palette.coverage)
+  expect(fromArgs.palette.gridlineMinor).toBe(customDark.palette.gridlineMinor)
+  expect(fromArgs.palette.featureHover).toBe(customDark.palette.featureHover)
+  expect(fromArgs.palette.alignmentFill.pairLR).toBe(
+    customDark.palette.alignmentFill.pairLR,
+  )
+})
+
+test('orientation alignmentFill colors present for named themes', () => {
+  const theme = createJBrowseTheme({}, undefined, 'darkStock')
+  expect(theme.palette.alignmentFill.pairLR).toBeTruthy()
+  expect(theme.palette.alignmentFill.pairRR).toBeTruthy()
+})
+
+// createJBrowseThemeFromArgs is how the RPC worker (and any consumer of the
+// serializable theme args) rebuilds the theme the session resolved on the main
+// thread. These guard that the rebuild matches the equivalent direct call.
+describe('createJBrowseThemeFromArgs', () => {
+  test('no args yields the default theme', () => {
+    expect(createJBrowseThemeFromArgs().palette.primary.main).toBe(
+      createJBrowseTheme().palette.primary.main,
+    )
+  })
+
+  test('reproduces a non-default named theme (dark)', () => {
+    const fromArgs = createJBrowseThemeFromArgs({ themeName: 'darkStock' })
+    const direct = createJBrowseTheme({}, defaultThemes, 'darkStock')
+    expect(fromArgs.palette.mode).toBe('dark')
+    expect(fromArgs.palette.coverage).toBe(direct.palette.coverage)
+    expect(fromArgs.palette.primary.main).toBe(direct.palette.primary.main)
+  })
+
+  test('applies configTheme palette overrides', () => {
+    const theme = createJBrowseThemeFromArgs({
+      configTheme: { palette: { primary: { main: '#888888' } } },
+    })
+    expect(theme.palette.primary.main).toBe('#888888')
+  })
+
+  // extraThemes is why the args ship more than configTheme: a config-defined
+  // theme selected by name can't be rebuilt from defaultThemes alone.
+  test('resolves a config-defined extra theme selected by name', () => {
+    const theme = createJBrowseThemeFromArgs({
+      themeName: 'myCustom',
+      extraThemes: {
+        myCustom: {
+          name: 'My Custom',
+          palette: { primary: { main: '#abcdef' } },
+        },
+      },
+    })
+    expect(theme.palette.primary.main).toBe('#abcdef')
+  })
 })

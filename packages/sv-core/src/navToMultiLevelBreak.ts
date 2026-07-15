@@ -1,10 +1,10 @@
-import { when } from '@jbrowse/core/util'
+import { stripTrackIds, when } from '@jbrowse/core/util'
 
 import {
-  getBreakendCoveringRegions,
+  breakpointBpPerPx,
+  getBreakendAssemblyRegions,
   makeTitle,
   splitRegionAtPosition,
-  stripIds,
 } from './util.ts'
 
 import type { BreakpointSplitView, Track } from './types.ts'
@@ -27,23 +27,19 @@ export async function navToMultiLevelBreak({
   mirror?: boolean
   tracks?: Track[]
 }) {
-  const { assemblyManager } = session
-  const assembly = await assemblyManager.waitForAssembly(assemblyName)
-  if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
-  }
-  if (!assembly.regions) {
-    throw new Error(`assembly ${assemblyName} regions not loaded`)
-  }
-
-  const { refName, pos, mateRefName, matePos } = getBreakendCoveringRegions({
+  const {
+    coverage,
+    region: r1,
+    mateRegion: r2,
+  } = await getBreakendAssemblyRegions({
     feature,
-    assembly,
+    session,
+    assemblyName,
   })
+  const { refName, pos, mateRefName, matePos } = coverage
 
   let view = session.views.find(f => f.id === stableViewId) as
-    | BreakpointSplitView
-    | undefined
+    BreakpointSplitView | undefined
   if (!view) {
     view = session.addView('BreakpointSplitView', {
       id: stableViewId,
@@ -53,24 +49,19 @@ export async function navToMultiLevelBreak({
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          tracks: stripIds(viewTracks),
+          tracks: stripTrackIds(viewTracks),
         },
         {
           type: 'LinearGenomeView',
           hideHeader: true,
-          tracks: stripIds(mirror ? [...viewTracks].reverse() : viewTracks),
+          tracks: stripTrackIds(
+            mirror === true ? [...viewTracks].reverse() : viewTracks,
+          ),
         },
       ],
     }) as unknown as BreakpointSplitView
   } else {
     view.setDisplayName(makeTitle(feature))
-  }
-  const r1 = assembly.regions.find(r => r.refName === refName)
-  const r2 = assembly.regions.find(r => r.refName === mateRefName)
-  if (!r1 || !r2) {
-    throw new Error(
-      `regions ${refName}, ${mateRefName} not found in assembly ${assemblyName}`,
-    )
   }
   await Promise.all([
     view.views[0]!.navToLocations(splitRegionAtPosition(r1, pos, assemblyName)),
@@ -80,11 +71,9 @@ export async function navToMultiLevelBreak({
   ])
   await when(() => view.views[1]!.initialized && view.views[0]!.initialized)
 
-  // Calculate bpPerPx based on windowSize to show the specified window around each breakpoint
-  // If windowSize is 0, default to bpPerPx of 10
   const lgv0 = view.views[0]!
   const lgv1 = view.views[1]!
-  const bpPerPx = windowSize > 0 ? (windowSize * 2) / lgv0.width : 10
+  const bpPerPx = breakpointBpPerPx(windowSize, lgv0.width)
 
   lgv0.zoomTo(bpPerPx)
   lgv1.zoomTo(bpPerPx)

@@ -1,18 +1,13 @@
 ---
-id: urlparams
 title: URL query parameter API
-toplevel: true
+sidebar_label: URL parameters
 ---
 
 JBrowse Web supports URL parameters for initializing a session.
 
-:::info note
-
 Embedded components like @jbrowse/react-linear-genome-view2 make no assumptions
-about URL parameters — that logic must be implemented by the consuming
+about URL parameters. That logic must be implemented by the consuming
 application.
-
-:::
 
 ## Linear genome view (simple)
 
@@ -28,11 +23,14 @@ Example
 
 `?config=test_data/volvox/config.json`
 
-A path to a JBrowse 2 config file, relative to the current folder on the disk.
-Note that this just uses client side fetch to read the file, not server side
-file reads. If ?config= is not specified, it looks for a file named config.json
-e.g. http://host/jbrowse2/config.json, which is what the @jbrowse/cli tool sets
-up by default
+A path to a JBrowse 2 config file, relative to the current folder on disk. This
+uses a client-side fetch, not a server-side file read. If `?config=` is omitted,
+JBrowse looks for `config.json` in the current folder (e.g.
+`http://host/jbrowse2/config.json`), which is what the `@jbrowse/cli` tool sets
+up by default.
+
+The special value `?config=none` skips loading a config file entirely. This is
+useful with `&hubURL=` (below), which supplies its own assemblies and tracks.
 
 ### &assembly=
 
@@ -40,9 +38,8 @@ Example
 
 `&assembly=hg19`
 
-The &assembly parameter refers to an assembly's "name" field one of the
-"assemblies" array in the config.json. This is only used for launching a single
-linear genome view.
+`&assembly=` refers to the `name` field of an entry in the `assemblies` array of
+config.json. Only used when launching a single linear genome view.
 
 ### &loc=
 
@@ -50,8 +47,8 @@ Example
 
 `&loc=chr1:6000-7000`
 
-This performs a navigation to this region on load, which can be specified using
-the syntax. This is only used for launching a single linear genome view.
+Navigates to this region on load. Accepts the formats shown below. This is only
+used for launching a single linear genome view.
 
 Example strings
 
@@ -62,12 +59,13 @@ Example strings
 &loc=GENEID // if you have used `jbrowse text-index`
 ```
 
-Note 1: Navigating via &loc=GENEID using the text-index was added in v2.9.0
+Navigating via `&loc=GENEID` requires a text index built with
+`jbrowse text-index`.
 
-Note 2: If you have a specialized use case for navigating, e.g. you need to
-combine URL navigation with defaultSession, then you might consider making a
-small plugin to do so. Here is a code listing example:
-https://gist.github.com/cmdcolin/eedfcb11f8f153ba1fb07e56dfddd3b3
+By default `&loc=` (and `&assembly=`) start a fresh session, ignoring the
+config's `defaultSession`. Add `&extendSession=true` to navigate _within_ the
+`defaultSession` instead (keeping its tracks and settings), see
+[Navigating within the default session](#navigating-within-the-default-session).
 
 ### &highlight=
 
@@ -83,14 +81,13 @@ space (URL-encoded as `%20`):
 
 `&highlight=chr1:6000-7000%20chr1:7100-7200`
 
-Note: `&assembly=` should always accompany `&highlight=` — the highlight is
-stored with the assembly name so that downstream features (e.g. bookmarking the
-highlighted region from the chip menu) can resolve it. The highlight will still
-render without an assembly in a single-assembly view if the refName matches a
-displayed region, but it is not portable across assemblies and may fail in
-actions that require a fully-qualified region. The same caveat applies when
-authoring `view.highlight` directly in a session JSON: include `assemblyName` on
-each entry.
+Note: always pass `&assembly=` alongside `&highlight=`. The highlight is stored
+with the assembly name so downstream features (e.g. bookmarking the highlighted
+region from the chip menu) can resolve it. Without an assembly, the highlight
+still renders in a single-assembly view when the refName matches a displayed
+region, but it is not portable across assemblies and may fail in actions that
+need a fully-qualified region. The same applies when authoring `view.highlight`
+directly in a session JSON: include `assemblyName` on each entry.
 
 `view.highlight` entries also accept optional `color` and `label` fields, both
 when authoring a session JSON directly and via the URL by passing a JSON object
@@ -125,7 +122,7 @@ Example
 
 `&tracklist=true`
 
-This opens the track selector by default. Default false
+Opens the track selector on load. Default: false.
 
 ### &nav=
 
@@ -133,7 +130,8 @@ Example
 
 `&nav=false`
 
-Turns off the navigation bar of the linear genome view
+Turns off the navigation bar of the linear genome view. Default true. This is
+only used for launching a single linear genome view.
 
 ### &tracks=
 
@@ -141,7 +139,7 @@ Example
 
 `&tracks=gene_track,vcf_track`
 
-This is a comma separated list of trackIds. You can see your trackId's in the
+This is a comma-separated list of trackIds. You can find your trackIds in the
 config.json. Note, you can also refer to a trackId added by &sessionTracks=
 here. This is only used for launching a single linear genome view.
 
@@ -150,8 +148,8 @@ here. This is only used for launching a single linear genome view.
 If you want to dynamically add a track to the session, you can do so with
 `&sessionTracks=`
 
-You can also use this method to add a `FromConfigAdapter` track, which let's you
-specify features in JSON format, so you can e.g. add BLAST hits via the URL bar
+You can also use this method to add a `FromConfigAdapter` track, which lets you
+specify features in JSON format, so you can e.g. add BLAST hits via the URL bar.
 
 Example
 
@@ -161,7 +159,7 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:
 
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL%20track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}])
 
-This creates a track dynamically that has a single feature at `ctgA:100-200`
+This creates a track dynamically that has a single feature at `ctgA:100-200`.
 
 The data to supply to `&sessionTracks=` is an array of track configs, and in the
 above URL, looks like this when pretty-printed
@@ -195,32 +193,63 @@ Example
 
 `&sessionName=My%20Custom%20Session`
 
-Sets the session name displayed in the header bar. This parameter works with all
-session types including:
+Sets the session name displayed in the header bar. It works with all session
+types:
 
 - Default sessions (loaded from config)
 - Session specs (`&session=spec-...`)
 - Hub sessions (`&hubURL=...`)
 
-This is useful for giving meaningful names to sessions launched via URL, rather
-than using auto-generated names with timestamps. The value should be URL-encoded
-if it contains special characters or spaces.
+Use it to give URL-launched sessions a meaningful name instead of an
+auto-generated one with a timestamp. URL-encode the value if it contains spaces
+or special characters.
+
+### &hubURL=
+
+Example
+
+`&hubURL=https://example.com/hub.txt&config=none`
+
+Intended to load one or more UCSC track hubs as a session (multiple hubs as a
+comma-separated list), typically combined with `?config=none` since the hub
+supplies its own assemblies and tracks.
+
+This parameter is experimental and may not be fully functional. Verify it works
+for your use case before relying on it.
+
+### Navigating within the default session
+
+The simple params above build a fresh session and ignore the config's
+`defaultSession`. To instead navigate a curated `defaultSession` while keeping
+its tracks and settings, add `&extendSession=true` alongside `&loc=`:
+
+```
+?loc=chr1:100000-200000&extendSession=true
+```
+
+With `&extendSession=true`, `&loc=` (and `&tracks=`, `&highlight=`, `&nav=`,
+`&tracklist=`) are applied to the **first linear genome view** of the config's
+`defaultSession` instead of replacing it. The assembly comes from that view, so
+`&assembly=` isn't needed.
+
+Note that `&sessionTracks=` (dynamically-added track configs) is not layered
+onto the default session. Use a full [session spec](#session-spec) for that.
 
 ## Session spec
 
 ### Linear genome view
 
-We can specify a "session spec" (short for specification) using JSON
+A "session spec" encodes a session as JSON in the URL. Each view object is the
+serialized form of a view's declarative `init` field; the embedded
+`@jbrowse/react-linear-genome-view2` component accepts the same shape directly
+via `defaultSession.view.init` (it does not parse URLs itself).
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]}
-```
+Under the hood, each view's `type` dispatches to a `LaunchView-<type>`
+[extension point](/docs/developer_guides/extension_points) that builds the view
+from the remaining fields. This is also how plugins add launchable view types
+(see [Plugin-provided view types](#plugin-provided-view-types)).
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type":"LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]})
-
-Expanded JSON of the contents of the URL
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -239,8 +268,79 @@ Expanded JSON of the contents of the URL
 ```
 
 The `views` array accepts multiple views opened simultaneously. Each can specify
-`loc`, `tracks`, `assembly`, and view type. Different view types accept
-different params — dotplot, for example, takes two assemblies.
+`loc`, `tracks`, `assembly`, and view type. `loc` is optional, omitting it shows
+the whole genome. Different view types accept different params: dotplot, for
+example, takes two assemblies.
+
+A `LinearGenomeView` view object accepts the same fields as the simple params
+above: `nav`, `tracklist`, `highlight`, plus `showCenterLine`, `colorByCDS`, and
+`trackLabels` (`"overlapping"`, `"offset"`, or `"hidden"`).
+
+A top-level `sessionTracks` array can dynamically register tracks into the
+session before the views open, equivalent to combining `&sessionTracks=` with a
+simple URL:
+
+```json
+{
+  "sessionTracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "my_track",
+      "name": "My track",
+      "assemblyNames": ["hg38"],
+      "adapter": { "type": "FromConfigAdapter", "features": [] }
+    }
+  ],
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "hg38",
+      "tracks": ["my_track"]
+    }
+  ]
+}
+```
+
+A top-level `sessionAssemblies` array registers assemblies into the session, the
+counterpart to `sessionTracks`. Assemblies are added _before_ the tracks and
+views, so `sessionTracks` and each view's `assembly` can reference them by name.
+This makes a spec fully self-contained, a novel assembly, its tracks, and the
+views over them, with nothing baked into the served config (pair it with
+`?config=none`):
+
+```json
+{
+  "sessionAssemblies": [
+    {
+      "name": "my_assembly",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "my_assembly_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://example.com/my_assembly.2bit"
+        }
+      }
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "my_track",
+      "name": "My track",
+      "assemblyNames": ["my_assembly"],
+      "adapter": { "type": "FromConfigAdapter", "features": [] }
+    }
+  ],
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "my_assembly",
+      "tracks": ["my_track"]
+    }
+  ]
+}
+```
 
 You can also use `&sessionName=` with session specs to set a custom session
 name:
@@ -266,7 +366,7 @@ additional configuration options:
         {
           "trackId": "my_bam_track",
           "displaySnapshot": {
-            "type": "LinearPileupDisplay",
+            "type": "LinearAlignmentsDisplay",
             "height": 300
           }
         },
@@ -284,34 +384,30 @@ Each track object supports the following properties:
 
 - `trackId` (required): The track identifier from config.json
 - `displaySnapshot` (optional): Initial display state. Can include:
-  - `type`: Override the display type (e.g., `LinearPileupDisplay`,
-    `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay`)
+  - `type`: Override the display type (e.g., `LinearBasicDisplay`,
+    `LinearArcDisplay`, `LinearAlignmentsDisplay`)
   - `height`: Display height in pixels
+  - `color`: Feature color for feature/wiggle tracks (a CSS color, or a `jexl:`
+    expression for per-feature coloring)
   - `minScore`, `maxScore`: Score range for quantitative tracks
   - Other display-specific settings
 - `trackSnapshot` (optional): Initial track state such as `pinned: true`
 
-This is useful for:
+The `displaySnapshot` fields can also be written directly on the track object as
+a shorthand:
+`{ "trackId": "my_bam_track", "type": "LinearAlignmentsDisplay", "height": 300 }`
+is equivalent to the `displaySnapshot` form above. Any key other than `trackId`
+and `trackSnapshot` is treated as a display setting. Use the explicit
+`displaySnapshot` form when you also pass `trackSnapshot`, so the two stay
+visually separated.
 
-- Opening a track with a specific display type (e.g., showing a BAM file as arcs
-  instead of pileup)
-- Setting initial display height or color scheme
-- Configuring autoscale settings for quantitative tracks
+#### Live example: alignments display settings
 
-#### Live example: LinearReadCloudDisplay
+`displaySnapshot` is not limited to overriding the display `type`. It can set
+any of the display's own settings. This opens an alignments track colored by
+pair orientation, with soft-clipped bases shown and an enlarged height:
 
-This example opens the volvox_sv_cram track with LinearReadCloudDisplay instead
-of the default pileup display:
-
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearReadCloudDisplay"}}]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"type":"LinearReadCloudDisplay"}}]}]})
-
-Expanded JSON:
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -322,7 +418,9 @@ Expanded JSON:
         {
           "trackId": "volvox_sv_cram",
           "displaySnapshot": {
-            "type": "LinearReadCloudDisplay"
+            "height": 250,
+            "showSoftClipping": true,
+            "colorBy": { "type": "pairOrientation" }
           }
         }
       ]
@@ -331,22 +429,76 @@ Expanded JSON:
 }
 ```
 
-### Circular view
+#### Live example: linked-read bezier connections
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "CircularView","tracks":["volvox_sv_test"]}]}
-```
+`showBezierConnections` draws a curved connector between the mates of each
+aberrant pair and across split-read junctions, so structural-variant signal
+stands out over the pileup. Each curve is the same horizontal-tangent shape a
+breakpoint split view draws. Coloring by pair orientation makes the abnormal
+orientations easy to pick out:
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type":"CircularView","tracks":["volvox_sv_test"]}]})
-
-Expanded
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
       "assembly": "volvox",
-      "loc": "ctgA:1-5100",
+      "loc": "ctgA:1-10000",
+      "type": "LinearGenomeView",
+      "tracks": [
+        {
+          "trackId": "volvox_sv_cram",
+          "displaySnapshot": {
+            "height": 300,
+            "showBezierConnections": true,
+            "colorBy": { "type": "pairOrientation" }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Live example: feature track color
+
+Setting a track's color is one of the most common things people want to do. For
+a feature track (genes, BED, GFF), put `color` in the `displaySnapshot`. It
+accepts a plain CSS color, or a `jexl:` expression to color per-feature. This
+opens the genes track colored green:
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "assembly": "volvox",
+      "loc": "ctgA:1-50000",
+      "type": "LinearGenomeView",
+      "tracks": [
+        {
+          "trackId": "gff3tabix_genes",
+          "displaySnapshot": {
+            "color": "green"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+To color by a feature attribute, use a jexl expression, e.g.
+`"color": "jexl:get(feature,'type')=='gene'?'blue':'gray'"`.
+
+### Circular view
+
+The circular view shows the whole genome, so it takes only `assembly` and
+`tracks`. There is no `loc`.
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "assembly": "volvox",
       "type": "CircularView",
       "tracks": ["volvox_sv_test"]
     }
@@ -358,15 +510,7 @@ Expanded
 
 Example (self-vs-self alignment):
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D)
-
-Expanded example, see that it is a self-self alignment
-
-```json
+```json live config=test_data/volvox/config_main_thread.json
 {
   "views": [
     {
@@ -385,21 +529,83 @@ Expanded example, see that it is a self-self alignment
 }
 ```
 
-Note that this dotplot session spec doesn't have the ability to navigate to
-specific regions on the assembly yet, it just navigates to a whole genome
-overview
+Each entry in the `views` array also accepts an optional `loc` to navigate that
+axis to a specific region (`views[0]` is the horizontal axis, `views[1]` the
+vertical); omit `loc` for a whole-genome overview:
+
+```json
+{
+  "views": [
+    {
+      "type": "DotplotView",
+      "views": [
+        { "assembly": "volvox", "loc": "ctgA:1-50000" },
+        { "assembly": "volvox", "loc": "ctgA:1-50000" }
+      ],
+      "tracks": ["volvox_fake_synteny"]
+    }
+  ]
+}
+```
+
+#### Dotplot view init options
+
+Like the synteny view, the dotplot spec accepts extra top-level fields applied
+on load:
+
+- `colorBy`: same color modes as the
+  [synteny view](#linear-synteny-view-init-options) (e.g. `strand`, `identity`,
+  `mappingQuality`), applied to each dotplot display.
+- `minAlignmentLength`: hide alignments shorter than this many bp.
+- `autoDiagonalize`: reorder the vertical axis to follow the horizontal axis
+  after the first render, lining up the main diagonal.
+
+```json
+{
+  "views": [
+    {
+      "type": "DotplotView",
+      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }],
+      "tracks": ["volvox_fake_synteny"],
+      "colorBy": "strand",
+      "autoDiagonalize": true
+    }
+  ]
+}
+```
+
+#### Dotplot highlights
+
+The dotplot view accepts a `highlight` array in the same way the linear genome
+view does (see [&highlight=](#highlight)). Each entry is a loc string (or a
+URL-encoded `HighlightType` JSON object with optional `color`/`label`). A region
+is drawn as a translucent **vertical** band when its assembly matches the
+horizontal axis and as a **horizontal** band when it matches the vertical axis,
+so on a self-vs-self plot it appears on both axes:
+
+```json live config=test_data/volvox/config_main_thread.json
+{
+  "views": [
+    {
+      "type": "DotplotView",
+      "views": [
+        { "assembly": "volvox", "loc": "ctgA:1-50000" },
+        { "assembly": "volvox", "loc": "ctgA:1-50000" }
+      ],
+      "tracks": ["volvox_fake_synteny"],
+      "highlight": ["ctgA:5000-15000"]
+    }
+  ]
+}
+```
+
+As with the linear genome view, include `assemblyName` when the band must be
+tied to a specific axis assembly (e.g. a non-self plot); a bare loc string
+resolves by refName against whichever axis contains it.
 
 ### Spreadsheet view
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SpreadsheetView%22,%20%22uri%22:%22test_data/volvox/volvox.filtered.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SpreadsheetView%22,%20%22uri%22:%22test_data/volvox/volvox.filtered.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D)
-
-Expanded
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -413,15 +619,7 @@ Expanded
 
 ### SV inspector
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B"views":%5B%7B"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"%7D%5D%7D
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SvInspectorView%22,%20%22uri%22:%22test_data/volvox/volvox.dup.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D)
-
-Expanded
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -435,15 +633,9 @@ Expanded
 
 ### Linear synteny view
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
-```
+A self-self alignment is allowed:
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]})
-
-Expanded, again showing a self-self alignment is allowed
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -464,17 +656,52 @@ Expanded, again showing a self-self alignment is allowed
 }
 ```
 
+#### Linear synteny view init options
+
+The synteny view spec accepts extra top-level fields that set the view's initial
+display state on load. This opens the same view colored by strand, with curved
+ribbons and stronger opacity:
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": ["volvox_fake_synteny"],
+      "colorBy": "strand",
+      "drawCurves": true,
+      "alpha": 0.8,
+      "views": [
+        { "loc": "ctgA:1-30000", "assembly": "volvox" },
+        { "loc": "ctgA:1000-31000", "assembly": "volvox" }
+      ]
+    }
+  ]
+}
+```
+
+Supported init fields:
+
+- `colorBy`: one of `default`, `strand`, `query`, `target`, `identity`,
+  `identityDiverging`, `meanQueryIdentity`, `meanQueryMappingQuality`,
+  `mappingQuality`. `query`/`target` paint ribbons by source/target chromosome,
+  useful for whole-genome views where the default grey blends ribbons into mud.
+- `drawCurves`: render ribbons as bezier curves rather than straight chords.
+  Reads better at whole-genome scale where straight crossings stack into noise.
+- `alpha`: per-feature opacity in `[0,1]` (default `0.2`, tuned for dense
+  hairballs). Raise it (~`0.4`) when `minAlignmentLength` has thinned the view.
+- `minAlignmentLength`: hide chains shorter than this many bp at the renderer,
+  cutting the genome-scale hairball down to the large syntenic blocks.
+- `autoDiagonalize`: after tracks load, reorder the bottom axis to follow the
+  top axis so the main diagonal lines up (shown behind a "Reordering
+  chromosomes…" spinner). Best for whole-genome all-vs-all views.
+- `levelHeights`: array of pixel heights, one per synteny strip (level). For a
+  multi-way view, `levelHeights[i]` is the strip between `views[i]` and
+  `views[i+1]`.
+
 ### Breakpoint split view
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]})
-
-Expanded
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -502,16 +729,10 @@ tracks.
 
 ### Linear synteny view (multi-way)
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]}
-```
+The `tracks` field is a multidimensional array. Each sub-array corresponds to
+the synteny tracks at one level of the multi-way view:
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]})
-
-Expanded (the `tracks` field is a multidimensional array — each sub-array
-corresponds to the synteny tracks at one level of the multi-way view)
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -527,34 +748,57 @@ corresponds to the synteny tracks at one level of the multi-way view)
 }
 ```
 
+### Plugin-provided view types
+
+A plugin makes its view launchable from a spec by registering a
+`LaunchView-<type>` [extension point](/docs/developer_guides/extension_points).
+Once the plugin is loaded (via the config's `plugins`, `&session=json-`
+`sessionPlugins`, or a hosted config), a session spec can launch its view by
+`type`. Their spec fields are documented by each plugin, not here:
+
+- `ProteinView` (3D structures) from `jbrowse-plugin-protein3d`. Fields such as
+  `uniprotId`, `transcriptId`, `url`, and `connectedView` are documented in the
+  plugin's
+  [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md).
+  See also the [protein structures tutorial](/docs/tutorials/protein_structure).
+- `MsaView` (multiple sequence alignments) from `jbrowse-plugin-msaview`. Fields
+  such as `msaFileLocation`, `treeFileLocation`, and `connectedViewId` are
+  documented in the plugin's
+  [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md).
+
 ### Tiled views / Workspaces
 
 You can use the `layout` parameter in a session spec to arrange multiple views
 into a tiled workspace layout. The `layout` parameter uses a nested structure
 where each node is either:
 
-- A **panel** (has `views` array) - displays views stacked vertically
-- A **container** (has `children` array) - arranges children horizontally or
+- A panel (has `views` array) displays views stacked vertically
+- A container (has `children` array) arranges children horizontally or
   vertically
 
 #### Horizontal split example
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"views":[2]}]}}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"views":[2]}]}})
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgA:5000-10000"
+      "loc": "ctgA:1-5000",
+      "tracks": ["gff3tabix_genes"]
     },
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" }
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:5000-10000",
+      "tracks": ["gff3tabix_genes"]
+    },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgB:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    }
   ],
   "layout": {
     "direction": "horizontal",
@@ -565,25 +809,29 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=s
 
 This creates a left-right split:
 
-- **Left panel** contains views 0 and 1 stacked vertically
-- **Right panel** contains view 2
+- Left panel contains views 0 and 1 stacked vertically
+- Right panel contains view 2
 
 #### Custom panel sizes
 
 You can specify the `size` property to control the proportional width/height of
 panels:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0],"size":70},{"views":[1],"size":30}]}}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0],"size":70},{"views":[1],"size":30}]}})
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" }
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgB:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    }
   ],
   "layout": {
     "direction": "horizontal",
@@ -607,34 +855,32 @@ This creates a 70/30 split with the left panel taking 70% of the width.
 
 You can create more complex layouts by nesting containers:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:5000-10000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"direction":"vertical","children":[{"views":[2]},{"views":[3]}]}]}}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:5000-10000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"direction":"vertical","children":[{"views":[2]},{"views":[3]}]}]}})
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgA:1-5000"
+      "loc": "ctgA:1-5000",
+      "tracks": ["gff3tabix_genes"]
     },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgA:5000-10000"
+      "loc": "ctgA:5000-10000",
+      "tracks": ["gff3tabix_genes"]
     },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgB:1-5000"
+      "loc": "ctgB:1-5000",
+      "tracks": ["gff3tabix_genes"]
     },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgB:5000-10000"
+      "loc": "ctgB:5000-10000",
+      "tracks": ["gff3tabix_genes"]
     }
   ],
   "layout": {
@@ -661,9 +907,8 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=s
 
 This creates:
 
-- **Left panel** with views 0 and 1 stacked
-- **Right side** split vertically into two panels (view 2 on top, view 3 on
-  bottom)
+- Left panel with views 0 and 1 stacked
+- Right side split vertically into two panels (view 2 on top, view 3 on bottom)
 
 The `layout` parameter:
 
@@ -678,11 +923,10 @@ The `layout` parameter:
 
 ### &session=json-
 
-Similar to encoded sessions, but more readable, `&session=json-` type sessions
-let you specify the input a JSON snapshot of a session. This is slightly
-different from a session spec, which has extra logic that loads the session.
-JSON sessions are literal session snapshots, like those that might come from the
-"Export session..." process
+Like encoded sessions but more readable, `&session=json-` takes a plain JSON
+snapshot of a session. Unlike a session spec (which runs extra logic to build
+the session), a JSON session is a literal snapshot, the same shape produced by
+"Export session...".
 
 Example
 
@@ -690,7 +934,7 @@ Example
 &session=json-{"session":{"id":"xSHu7qGJN","name":"test","sessionPlugins":[{"url":"https://unpkg.com/jbrowse-plugin-msaview/dist/jbrowse-plugin-msaview.umd.production.min.js"}]}}
 ```
 
-This loads a session with an extra plugin loaded
+This loads a session with an extra plugin loaded.
 
 ### &session=encoded-
 
@@ -699,7 +943,7 @@ This is similar to JSON sessions but uses a URL encoding (base64+gzip)
 Example
 
 ```
-https://jbrowse.org/code/jb2/v1.5.9/?session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6NdfjvXcCiZpq23-Dt2923u-_2DCPmsevHMn0ePT2umMEEz4GgGWx7C1AKC9EzzQv7wupbpkGfntX3HKt3-YW4OZcJCub1DRZJvgW5xEinzBuMbINtELaKeT_2bY98E0ym_PvdR8rTu7LuMUUBXH4CUeTwjdgUKeJYgZ6_MM-yLWtsGiwo5yBrwBkO3w9dx3b7I3fsuI5FTVGVGd9BdAcJCW27SYhn7QxDKqg0l7pRCIJkmM7YHIxcd2AQbwNSAYExzxQYjCsFeZDtDtlpYo5ZdU9qJQ-fTiZxxrPVYGrf-sdJroHrtQS_ZhIaFiLGZC25JlUUFmGAD0kcPzQ1O90nNQe72dU0eC716vV6rrjC8EObQLEUMElpINu0_tHn3R_yq_t6oBQjuAEegexmP0JfaSv16bpQM_4CMgh1If1WWooguQxTDHnGDpQpDyCjkVhBFTJeliiS-gBpsZ2A0CBrPV3VBt7pIuAiUgvQumZ7Wq6hVrjFKAFNxfZnrfxTKXWw2d3bjG6VN29Rlk2j5mQZaW7ssK8MFmNGin14oVUz1pr5zMQVkXiocQPL_9L6l1jVHFLQD13xsyDHihBqb9AiVPsE_d8WPEKTLuUcv2xdjK8qzLM1PdUDlqPAHH-eeL99vvNC4cFKsrFZ9QuCGmjL
+https://jbrowse.org/code/jb2/latest/?session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6NdfjvXcCiZpq23-Dt2923u-_2DCPmsevHMn0ePT2umMEEz4GgGWx7C1AKC9EzzQv7wupbpkGfntX3HKt3-YW4OZcJCub1DRZJvgW5xEinzBuMbINtELaKeT_2bY98E0ym_PvdR8rTu7LuMUUBXH4CUeTwjdgUKeJYgZ6_MM-yLWtsGiwo5yBrwBkO3w9dx3b7I3fsuI5FTVGVGd9BdAcJCW27SYhn7QxDKqg0l7pRCIJkmM7YHIxcd2AQbwNSAYExzxQYjCsFeZDtDtlpYo5ZdU9qJQ-fTiZxxrPVYGrf-sdJroHrtQS_ZhIaFiLGZC25JlUUFmGAD0kcPzQ1O90nNQe72dU0eC716vV6rrjC8EObQLEUMElpINu0_tHn3R_yq_t6oBQjuAEegexmP0JfaSv16bpQM_4CMgh1If1WWooguQxTDHnGDpQpDyCjkVhBFTJeliiS-gBpsZ2A0CBrPV3VBt7pIuAiUgvQumZ7Wq6hVrjFKAFNxfZnrfxTKXWw2d3bjG6VN29Rlk2j5mQZaW7ssK8MFmNGin14oVUz1pr5zMQVkXiocQPL_9L6l1jVHFLQD13xsyDHihBqb9AiVPsE_d8WPEKTLuUcv2xdjK8qzLM1PdUDlqPAHH-eeL99vvNC4cFKsrFZ9QuCGmjL
 ```
 
 Note that the "Share" button has a gear icon that lets you select "Long URL"
@@ -728,3 +972,14 @@ https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
 
 See
 [this FAQ entry for more info about how shared sessions work](/docs/faq/#how-does-session-sharing-with-shortened-urls-work-in-jbrowse-web)
+
+## See also
+
+- [Automating JBrowse](/docs/automating) - the shared `init` model behind every
+  launch surface
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) -
+  `createViewState`/`location` as an alternative to URL params
+- [Default session](/docs/config_guides/default_session) - baking a session spec
+  into config.json instead of a URL
+- [Extension points](/docs/developer_guides/extension_points) - how plugins
+  register `LaunchView-<type>` handlers

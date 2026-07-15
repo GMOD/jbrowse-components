@@ -96,6 +96,18 @@ test('discards regions', () => {
   expect(l.bitmap[0].intervals.length).toBe(0)
 })
 
+test('getByID returns undefined for a feature that overflowed maxHeight', () => {
+  const l = new Layout({ pitchX: 1, pitchY: 1, maxHeight: 1 })
+
+  // stack overlapping features past maxHeight; the later ones get top === null
+  l.addRect('a', 0, 100, 1)
+  l.addRect('b', 0, 100, 1)
+  const overflowed = l.addRect('c', 0, 100, 1)
+
+  expect(overflowed).toBeNull()
+  expect(l.getByID('c')).toBeUndefined()
+})
+
 // see issue #486
 test('tests that adding +/- pitchX fixes resolution causing errors', () => {
   const l = new Layout({ pitchX: 91.21851599727707, pitchY: 3 })

@@ -1,77 +1,89 @@
 ---
 id: baselineardisplay
 title: BaseLinearDisplay
+sidebar_label: Display -> BaseLinearDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`linear-genome-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/BaseLinearDisplay/models/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BaseLinearDisplay.md)
-
-## Docs
-
-`BaseLinearDisplay` is a "base" config that is extended by other configs
-including
-
-- `LinearBasicDisplay` (used for feature tracks, etc)
-- `LinearBareDisplay` (more stripped down than even the basic display, not
-  commonly used)
+Shared base config for linear displays — its slots (`height`,
+`maxFeatureScreenDensity`, `fetchSizeLimit`, `mouseover`, `jexlFilters`) are
+common to all of them. The GPU stack's `LinearCanvasBaseDisplay` config extends
+it, and third-party plugins extend it too.
 
 ### BaseLinearDisplay - Identifier
 
-#### slot: explicitIdentifier
+Every BaseLinearDisplay has a unique `displayId`, a required top-level field
+that identifies it (not one of the config slots below).
 
-### BaseLinearDisplay - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                             | Type          | Description                                                                                                                           |
+| -------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [height](#slot-height)           | `number`      | default height for the track                                                                                                          |
+| [mouseover](#slot-mouseover)     | `string`      | text to display when the cursor hovers over a feature                                                                                 |
+| [jexlFilters](#slot-jexlfilters) | `stringArray` | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config |
+
+<details>
+<summary>Advanced slots (2)</summary>
+
+| Slot                                                     | Type     | Description                                                                                                            |
+| -------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [maxFeatureScreenDensity](#slot-maxfeaturescreendensity) | `number` | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available |
+| [fetchSizeLimit](#slot-fetchsizelimit)                   | `number` | maximum data to attempt to download for a given track, used if adapter doesn't specify one                             |
+
+</details>
+
+<details>
+<summary>BaseLinearDisplay - Slots</summary>
 
 #### slot: maxFeatureScreenDensity
 
-```js
-maxFeatureScreenDensity: {
-      type: 'number',
-      description:
-        'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-      defaultValue: 0.3,
-    }
-```
+maximum features per pixel before showing a "too many features" message, used if
+byte size estimates are not available
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: fetchSizeLimit
 
-```js
-fetchSizeLimit: {
-      type: 'number',
-      defaultValue: 1_000_000,
-      description:
-        "maximum data to attempt to download for a given track, used if adapter doesn't specify one",
-    }
-```
+maximum data to attempt to download for a given track, used if adapter doesn't
+specify one
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
+`1_000_000` · _advanced_
 
 #### slot: height
 
-```js
-height: {
-      type: 'number',
-      defaultValue: 100,
-      description: 'default height for the track',
-    }
-```
+default height for the track
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
 
 #### slot: mouseover
 
+text to display when the cursor hovers over a feature
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')'`
+
 ```js
-mouseover: {
-      type: 'string',
-      description: 'text to display when the cursor hovers over a feature',
-      defaultValue: `jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')`,
-      contextVariable: ['feature', 'mouseoverExtraInformation'],
-    }
+{
+  type: 'string',
+  description: 'text to display when the cursor hovers over a feature',
+
+
+
+  defaultValue: `jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')`,
+  contextVariable: ['feature'],
+}
 ```
 
 #### slot: jexlFilters
@@ -79,11 +91,6 @@ mouseover: {
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-```js
-jexlFilters: {
-      type: 'stringArray',
-      description:
-        'default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system',
-      defaultValue: [],
-    }
-```
+**Type:** `stringArray` · **Default:** `[]`
+
+</details>

@@ -1,10 +1,17 @@
 import {
   classifyVariantFeatures,
+  findMatchingAlt,
   getBadlyPairedAlignments,
+  getClipLengthAtStartOfRead,
+  getMatchedAlignmentFeatures,
   getMatchedBreakendFeatures,
+  getMatchedPairedFeatures,
   getMatchedTranslocationFeatures,
+  hasPairedReads,
+  markHiddenSegments,
 } from './util.ts'
 
+import type { LayoutMatch } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function fakeFeature(id: string, type: string) {
@@ -507,5 +514,198 @@ describe('getBadlyPairedAlignments', () => {
       mapOf(improperly, improperlyMate, misoriented, misorientedMate),
     )
     expect(result).toHaveLength(2)
+  })
+})
+
+describe('hasPairedReads', () => {
+  const read = (id: string, flags: number) =>
+    ({
+      id: () => id,
+      get: (k: string) => (k === 'flags' ? flags : undefined),
+    }) as unknown as Feature
+
+  test('true when any read has the paired flag (0x1)', () => {
+    expect(hasPairedReads(mapOf(read('a', 0x1)))).toBe(true)
+  })
+
+  test('false when no read has the paired flag', () => {
+    expect(hasPairedReads(mapOf(read('a', 0), read('b', 0x4)))).toBe(false)
+  })
+
+  test('false for an empty map', () => {
+    expect(hasPairedReads(new Map())).toBe(false)
+  })
+})
+
+describe('getMatchedAlignmentFeatures', () => {
+  const saRead = (id: string, name: string, flags: number, sa?: string) => {
+    const fields: Record<string, unknown> = {
+      name,
+      flags,
+      tags: sa ? { SA: sa } : undefined,
+    }
+    return {
+      id: () => id,
+      get: (k: string) => fields[k],
+    } as unknown as Feature
+  }
+
+  test('groups mapped reads sharing a name that carry an SA tag', () => {
+    const r1 = saRead('r/1', 'r', 0, 'chr2,100,+,50M,0,0;')
+    const r2 = saRead('r/2', 'r', 0, 'chr1,1,+,50M,0,0;')
+    const result = getMatchedAlignmentFeatures(mapOf(r1, r2))
+    expect(result).toHaveLength(1)
+    expect(result[0]).toHaveLength(2)
+  })
+
+  test('excludes reads without an SA tag', () => {
+    const r1 = saRead('r/1', 'r', 0, undefined)
+    const r2 = saRead('r/2', 'r', 0, undefined)
+    expect(getMatchedAlignmentFeatures(mapOf(r1, r2))).toHaveLength(0)
+  })
+
+  test('excludes unmapped reads even when they carry an SA tag', () => {
+    const r1 = saRead('r/1', 'r', 0x4, 'chr2,100,+,50M,0,0;')
+    const r2 = saRead('r/2', 'r', 0x4, 'chr1,1,+,50M,0,0;')
+    expect(getMatchedAlignmentFeatures(mapOf(r1, r2))).toHaveLength(0)
+  })
+
+  test('a single read with an SA tag does not match', () => {
+    const r1 = saRead('r/1', 'r', 0, 'chr2,100,+,50M,0,0;')
+    expect(getMatchedAlignmentFeatures(mapOf(r1))).toHaveLength(0)
+  })
+})
+
+describe('getMatchedPairedFeatures', () => {
+  const paired = (id: string, type = 'paired_feature') =>
+    ({
+      id: () => id,
+      get: (k: string) => (k === 'type' ? type : undefined),
+    }) as unknown as Feature
+
+  test('groups -r1/-r2 halves sharing a base id', () => {
+    const result = getMatchedPairedFeatures(
+      mapOf(paired('sv1-r1'), paired('sv1-r2')),
+    )
+    expect(result).toHaveLength(1)
+    expect(result[0]).toHaveLength(2)
+  })
+
+  test('ignores features that are not paired_feature type', () => {
+    const result = getMatchedPairedFeatures(
+      mapOf(paired('sv1-r1', 'breakend'), paired('sv1-r2', 'breakend')),
+    )
+    expect(result).toHaveLength(0)
+  })
+
+  test('a lone half does not match', () => {
+    expect(getMatchedPairedFeatures(mapOf(paired('sv1-r1')))).toHaveLength(0)
+  })
+
+  test('ids without an -r1/-r2 suffix are skipped', () => {
+    expect(
+      getMatchedPairedFeatures(mapOf(paired('sv1'), paired('sv2'))),
+    ).toHaveLength(0)
+  })
+})
+
+describe('getClipLengthAtStartOfRead', () => {
+  const feat = (fields: Record<string, unknown>) =>
+    ({ get: (k: string) => fields[k] }) as unknown as Feature
+
+  test('prefers the adapter-provided field', () => {
+    expect(
+      getClipLengthAtStartOfRead(feat({ clipLengthAtStartOfRead: 42 })),
+    ).toBe(42)
+  })
+
+  test('derives from the CIGAR when the field is absent (forward strand)', () => {
+    expect(
+      getClipLengthAtStartOfRead(feat({ CIGAR: '100S50M', strand: 1 })),
+    ).toBe(100)
+  })
+
+  test('derives from the CIGAR when the field is absent (reverse strand)', () => {
+    // reverse strand: the read's 5' clip is the trailing CIGAR op
+    expect(
+      getClipLengthAtStartOfRead(feat({ CIGAR: '50M100S', strand: -1 })),
+    ).toBe(100)
+  })
+
+  test('falls back to 0 only when neither field nor CIGAR is available', () => {
+    expect(getClipLengthAtStartOfRead(feat({}))).toBe(0)
+  })
+})
+
+describe('markHiddenSegments', () => {
+  // A split-read segment aligned at `clip` bases into the read (forward strand),
+  // carrying an SA tag naming the read's other segments. Forward-strand clip =
+  // leading soft-clip, so CIGAR "100S50M" => clipLengthAtStartOfRead 100.
+  function seg(id: string, clip: number, sa: string): LayoutMatch {
+    const fields: Record<string, unknown> = {
+      strand: 1,
+      name: 'read',
+      tags: { SA: sa },
+    }
+    return {
+      feature: {
+        id: () => id,
+        get: (k: string) => fields[k],
+      } as unknown as Feature,
+      layout: [0, 0, 0, 0],
+      level: 0,
+      clipLengthAtStartOfRead: clip,
+    }
+  }
+
+  // read maps to three loci at read-clip 0, 100, 200; each SA names the others
+  const seg0 = 'chrX,1,+,50M150S,0,0;'
+  const seg100 = 'chrX,500,+,100S50M,0,0;'
+  const seg200 = 'chrX,900,+,200S50M,0,0;'
+
+  test('no loci when every segment of the read is visible', () => {
+    const chunk = [
+      seg('s0', 0, seg100 + seg200),
+      seg('s1', 100, seg0 + seg200),
+      seg('s2', 200, seg0 + seg100),
+    ]
+    markHiddenSegments(chunk)
+    expect(chunk[1]!.hiddenSegmentsBefore).toBeUndefined()
+    expect(chunk[2]!.hiddenSegmentsBefore).toBeUndefined()
+  })
+
+  test('names the segment spanned by a connector but absent from all views', () => {
+    // only the clip-0 and clip-200 segments are visible; the SA tag reveals a
+    // clip-100 segment (chrX 1-based 500..549) mapping to a region no view shows
+    const chunk = [seg('s0', 0, seg100 + seg200), seg('s2', 200, seg0 + seg100)]
+    markHiddenSegments(chunk)
+    expect(chunk[1]!.hiddenSegmentsBefore).toEqual(['chrX:500..549'])
+  })
+
+  test('no loci when two adjacent visible segments are truly consecutive', () => {
+    const chunk = [seg('s0', 0, seg100), seg('s1', 100, seg0)]
+    markHiddenSegments(chunk)
+    expect(chunk[1]!.hiddenSegmentsBefore).toBeUndefined()
+  })
+})
+
+describe('findMatchingAlt', () => {
+  // A at chr1:100 (0-based) points to chr2:200; B at chr2:199 = position 200
+  const A = fakeBnd('a', 'chr1', 100, 'chr2', 200)
+
+  test('finds the ALT whose MatePosition points at the other feature', () => {
+    const B = fakeBnd('b', 'chr2', 199, 'chr1', 101)
+    expect(findMatchingAlt(A, B)?.MatePosition).toBe('chr2:200')
+  })
+
+  test('returns undefined when no ALT points at the other feature', () => {
+    const other = fakeBnd('c', 'chr9', 0, 'chrX', 1)
+    expect(findMatchingAlt(A, other)).toBeUndefined()
+  })
+
+  test('returns undefined when the feature has no ALT', () => {
+    const noAlt = fakeFeature('x', 'breakend')
+    const B = fakeBnd('b', 'chr2', 199, 'chr1', 101)
+    expect(findMatchingAlt(noAlt, B)).toBeUndefined()
   })
 })

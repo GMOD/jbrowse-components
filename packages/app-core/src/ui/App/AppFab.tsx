@@ -5,15 +5,17 @@ import { observer } from 'mobx-react'
 
 import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 
+const FAB_Z_INDEX = 10000
+
 const useStyles = makeStyles()(theme => ({
   left: {
-    zIndex: 10000,
+    zIndex: FAB_Z_INDEX,
     position: 'fixed',
     bottom: theme.spacing(2),
     left: theme.spacing(2),
   },
   right: {
-    zIndex: 10000,
+    zIndex: FAB_Z_INDEX,
     position: 'fixed',
     bottom: theme.spacing(2),
     right: theme.spacing(2),

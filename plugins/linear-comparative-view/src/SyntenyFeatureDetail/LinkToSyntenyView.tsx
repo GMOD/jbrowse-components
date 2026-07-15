@@ -1,11 +1,11 @@
 import { lazy } from 'react'
 
+import { ActionLink } from '@jbrowse/core/ui'
 import {
   SimpleFeature,
   assembleLocString,
   getSession,
 } from '@jbrowse/core/util'
-import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
@@ -29,10 +29,8 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
     <ul>
       {view.type === 'LinearSyntenyView' ? (
         <li>
-          <Link
-            href="#"
-            onClick={event => {
-              event.preventDefault()
+          <ActionLink
+            onClick={() => {
               const { views } = view as LinearSyntenyViewModel
               if (level !== undefined) {
                 // level is "pre-known", and stored in the SyntenyFeatureWidget
@@ -48,38 +46,37 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
                 // example if a user clicks on a feature in a LGVSyntenyDisplay
                 // in an existing LinearSyntenyView, there is no real proper
                 // level "pre-known" to this situation
-                const f1 = feat
                 const f2 = feat.mate as SimpleFeatureSerialized
-                const r1 = f1.assemblyName as string
+                const r1 = feat.assemblyName as string
                 const r2 = f2.assemblyName as string
-                const v1 = views.find(view => view.assemblyNames[0] === r1)
-                const v2 = views.find(view => view.assemblyNames[0] === r2)
+                const v1 = views.find(v => v.assemblyNames[0] === r1)
+                const v2 = views.find(v => v.assemblyNames[0] === r2)
                 if (!v1 || !v2) {
                   getSession(model).notify(
                     [
-                      v1
-                        ? `Unable to find ${assembleLocString(f1)} in synteny view`
+                      !v1
+                        ? `Unable to find ${assembleLocString(feat)} in synteny view`
                         : '',
-                      v2
+                      !v2
                         ? `Unable to find ${assembleLocString(f2)} in synteny view`
                         : '',
-                    ].join(' ... '),
+                    ]
+                      .filter(Boolean)
+                      .join(' ... '),
                   )
                 }
-                v1?.navTo(f1, 0.2)
+                v1?.navTo(feat, 0.2)
                 v2?.navTo(f2, 0.2)
               }
             }}
           >
             Center view on this feature
-          </Link>
+          </ActionLink>
         </li>
       ) : null}
       <li>
-        <Link
-          href="#"
-          onClick={event => {
-            event.preventDefault()
+        <ActionLink
+          onClick={() => {
             const feature = new SimpleFeature(feat)
             const session = getSession(model)
             session.queueDialog(handleClose => [
@@ -94,7 +91,7 @@ const LinkToSyntenyView = observer(function LinkToSyntenyView({
           }}
         >
           Launch new linear synteny view on this feature
-        </Link>
+        </ActionLink>
       </li>
     </ul>
   )

@@ -1,6 +1,5 @@
 ---
-id: alignments_track
-title: Alignments track configuration
+title: Alignments track
 description: BAM/CRAM track config with BamAdapter and CramAdapter options
 guide_category: Track types
 ---
@@ -9,88 +8,90 @@ Example `AlignmentsTrack` config:
 
 ```json
 {
+  "type": "AlignmentsTrack",
   "trackId": "my_alignments_track",
   "name": "My Alignments",
   "assemblyNames": ["hg19"],
-  "type": "AlignmentsTrack",
   "adapter": {
     "type": "BamAdapter",
-    "bamLocation": {
-      "uri": "http://yourhost/file.bam"
-    },
-    "index": {
-      "location": {
-        "uri": "http://yourhost/file.bam.bai"
-      }
-    }
+    "uri": "https://yourhost/file.bam"
   }
 }
 ```
 
-#### BamAdapter configuration options
+## BamAdapter configuration options
 
-- `bamLocation` - a 'file location' for the BAM
-- `index` - a subconfiguration schema containing
-  - indexType: options BAI or CSI. default: BAI
-  - location: a 'file location' of the index
+The `uri` shorthand assumes the index sits next to the data file at `<uri>.bai`.
+Spell out the location slots only when the index is named differently or is a
+CSI index:
 
-Example `BamAdapter` config:
+- `bamLocation` - file location of the BAM
+- `index.location` - file location of the index
+- `index.indexType` - `BAI` (default) or `CSI`
 
 ```json
 {
   "type": "BamAdapter",
-  "bamLocation": {
-    "uri": "http://yourhost/file.bam"
-  },
+  "bamLocation": { "uri": "https://yourhost/file.bam" },
   "index": {
-    "location": {
-      "uri": "http://yourhost/file.bam.bai"
-    }
+    "indexType": "CSI",
+    "location": { "uri": "https://yourhost/file.bam.csi" }
   }
 }
 ```
 
-A reduced form is also accepted; the index is inferred as `yourfile.bam.bai`:
+See the [BamAdapter config docs](/docs/config/bamadapter) for all options.
+
+## CramAdapter configuration options
+
+The `uri` shorthand assumes the index sits next to the data file at
+`<uri>.crai`. The sequence adapter is supplied automatically from the enclosing
+assembly, so you do not need to set `sequenceAdapter` manually. Spell out the
+location slots only when the index is named differently:
+
+- `cramLocation` - file location of the CRAM
+- `craiLocation` - file location of the CRAI
 
 ```json
-{ "type": "BamAdapter", "uri": "http://yourhost/file.bam" }
+{ "type": "CramAdapter", "uri": "https://yourhost/file.cram" }
 ```
 
-#### CramAdapter configuration options
+See the [CramAdapter config docs](/docs/config/cramadapter) for all options.
 
-- `cramLocation` - a 'file location' for the CRAM
-- `craiLocation` - a 'file location' for the CRAI
-- `sequenceAdapter` - a subadapter describing the location of the reference
-  assembly (_e.g._ an
-  [IndexedFastaAdapter](/docs/config_guides/assemblies/#indexedfastaadapter))
+## Display options
 
-Example `CramAdapter` config:
+Display settings (`colorBy`, `height`, `featureHeight`, `filterBy`, and the
+coverage `autoscale`/`minScore`/`maxScore`) are slots on the
+`LinearAlignmentsDisplay`, not on the track. Reads are a solid gray until you
+pick a coloring scheme via the
+[`colorBy`](/docs/config/linearalignmentsdisplay/#slot-colorby) slot. To change
+a default, set it with the track's `displayDefaults` shorthand:
 
 ```json
 {
-  "type": "CramAdapter",
-  "cramLocation": {
-    "uri": "http://yourhost/file.cram"
-  },
-  "craiLocation": {
-    "uri": "http://yourhost/file.cram.crai"
-  },
-  "sequenceAdapter": {
-    "type": "IndexedFastaAdapter",
-    "fastaLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa",
-      "locationType": "UriLocation"
-    },
-    "faiLocation": {
-      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.fai",
-      "locationType": "UriLocation"
-    }
-  }
+  "type": "AlignmentsTrack",
+  "trackId": "my_alignments_track",
+  "name": "My Alignments",
+  "assemblyNames": ["hg19"],
+  "adapter": { "type": "BamAdapter", "uri": "https://yourhost/file.bam" },
+  "displayDefaults": { "colorBy": { "type": "pairOrientation" }, "height": 250 }
 }
 ```
 
-A reduced form is also accepted; the index is inferred as `yourfile.cram.crai`:
+The `displayDefaults` object is shorthand. JBrowse applies each setting for you,
+so you don't have to know the display's name (`LinearAlignmentsDisplay`) or
+write the array. Use the array form when you need per-display control (see the
+[track config guide](/docs/config_guides/tracks/#configuring-displays)).
 
-```json
-{ "type": "CramAdapter", "uri": "http://yourhost/file.cram" }
-```
+See the
+[LinearAlignmentsDisplay config docs](/docs/config/linearalignmentsdisplay) for
+the full list of slots. To open a track in a particular state from a link or
+embedded view instead of changing the default, see
+[applying display settings](/docs/tutorials/display_settings).
+
+## See also
+
+- [Alignments track](/docs/user_guides/alignments_track), sorting, coloring,
+  grouping, and filtering reads in the app
+- [Structural variant visualization](/docs/user_guides/sv_visualization),
+  interpreting SV signals in alignments

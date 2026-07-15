@@ -1,13 +1,15 @@
-import { useState } from 'react'
-
-import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  CopyToClipboardButton,
+  Dialog,
+  ErrorBanner,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, DialogContent } from '@mui/material'
-import copy from 'copy-to-clipboard'
+import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { readConf } from './util.ts'
+import { readConfSlot } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -52,12 +54,15 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  const [copied, setCopied] = useState(false)
   const { rpcManager } = session
-  const trackId = readConf<string>(config, 'trackId')
-  const assemblyNames = readConf<string[]>(config, 'assemblyNames')
+  const trackId = readConfSlot<string>(config, 'trackId')
+  const assemblyNames = readConfSlot<string[]>(config, 'assemblyNames')
 
-  const { data: refNames, error } = useFetch(
+  const {
+    data: refNames,
+    error,
+    isLoading,
+  } = useFetch(
     ['CoreGetRefNames', trackId, JSON.stringify(assemblyNames)],
     () =>
       Promise.all(
@@ -66,7 +71,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
             [
               assemblyName,
               await rpcManager.call(trackId, 'CoreGetRefNames', {
-                adapterConfig: readConf<Record<string, unknown>>(
+                adapterConfig: readConfSlot<Record<string, unknown>>(
                   config,
                   'adapter',
                 ),
@@ -87,22 +92,16 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
       <DialogContent className={classes.container}>
         {error ? (
           <ErrorBanner error={error} />
-        ) : refNames === undefined ? (
+        ) : isLoading || refNames === undefined ? (
           <LoadingEllipses message="Loading refNames" />
         ) : (
           <>
-            <Button
+            <CopyToClipboardButton
               variant="contained"
-              onClick={async () => {
-                await copy(formatRefNames(refNames, false))
-                setCopied(true)
-                setTimeout(() => {
-                  setCopied(false)
-                }, 1000)
-              }}
+              value={() => formatRefNames(refNames, false)}
             >
-              {copied ? 'Copied to clipboard!' : 'Copy ref names'}
-            </Button>
+              Copy ref names
+            </CopyToClipboardButton>
 
             <pre className={classes.refNames}>
               {formatRefNames(refNames, true)}

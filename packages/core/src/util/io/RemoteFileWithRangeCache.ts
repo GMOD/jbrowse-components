@@ -5,6 +5,11 @@ const CHUNK_SIZE = 256 * 1024
 const MAX_CONCURRENT = 20
 
 let cache = new Map<string, Uint8Array>()
+// File size is cached at the module level (keyed by URL), parallel to the chunk
+// cache. Per-instance state can't be used: a cache-hit serving bytes from a
+// previous instance's fetch would otherwise leave a new instance's stat() with
+// no Content-Range observation, returning a bogus size of 0.
+let sizeCache = new Map<string, number>()
 let activeCount = 0
 const queue: (() => void)[] = []
 
@@ -24,6 +29,14 @@ function putCached(key: string, buffer: Uint8Array) {
 
 export function clearCache() {
   cache = new Map<string, Uint8Array>()
+  sizeCache = new Map<string, number>()
+  // Reset concurrency state too. A leaked async fetch from a prior test that
+  // resolves after clearCache will still decrement activeCount via its
+  // .then/.catch handlers — so this can momentarily push activeCount negative,
+  // which is harmless (runNext still allows new work) and self-corrects once
+  // any leaked work has resolved.
+  activeCount = 0
+  queue.length = 0
 }
 
 function runNext() {
@@ -37,18 +50,17 @@ function runNext() {
 function limitConcurrency<T>(fn: () => Promise<T>) {
   return new Promise<T>((resolve, reject) => {
     function run() {
-      fn().then(
-        val => {
+      fn()
+        .then(val => {
           activeCount--
           resolve(val)
           runNext()
-        },
-        (err: unknown) => {
+        })
+        .catch((err: unknown) => {
           activeCount--
           reject(err instanceof Error ? err : new Error(String(err)))
           runNext()
-        },
-      )
+        })
     }
     if (activeCount < MAX_CONCURRENT) {
       activeCount++
@@ -64,16 +76,25 @@ function cacheKey(url: string, chunkIndex: number) {
 }
 
 export class RemoteFileWithRangeCache extends RemoteFile {
-  private cachedStat?: { size: number }
-
   async stat() {
-    if (!this.cachedStat) {
-      await this.getCachedRange(this.url, 0, 1)
+    let size = sizeCache.get(this.url)
+    if (size === undefined) {
+      // Bypass the chunk cache: a populated chunk would otherwise short-circuit
+      // fetchRange, leaving sizeCache empty. fetchRange always observes
+      // Content-Range and updates sizeCache directly.
+      await this.fetchRange(this.url, 0, 0)
+      size = sizeCache.get(this.url)
     }
-    // Content-Range may not be exposed (CORS) — return size 0 rather than
-    // throwing so callers degrade gracefully.
-
-    return this.cachedStat ?? { size: 0 }
+    if (size === undefined) {
+      // Content-Range header wasn't observable (commonly CORS hiding it).
+      // Throw rather than silently returning size: 0 — that lie tends to cause
+      // downstream callers to issue zero-byte reads or treat the file as empty.
+      // Callers that can degrade gracefully should wrap stat() in try/catch.
+      throw new Error(
+        `Could not determine size of ${this.url} (Content-Range header not observable; likely a CORS configuration issue)`,
+      )
+    }
+    return { size }
   }
 
   private async fetchRange(
@@ -95,12 +116,15 @@ export class RemoteFileWithRangeCache extends RemoteFile {
       const msg = `HTTP ${res.status} fetching ${url} bytes ${start}-${end}${res.status === 200 ? hint : ''}`
       throw Object.assign(new Error(msg), { status: res.status })
     }
-    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345")
-    if (!this.cachedStat) {
+    // Parse total file size from Content-Range (e.g. "bytes 0-255/12345"). Always
+    // refresh the module-level sizeCache here, so any successful range fetch —
+    // including those triggered by a leaked promise from a prior test — leaves
+    // the cache in a consistent state for future stat() callers.
+    if (!sizeCache.has(url)) {
       const contentRange = res.headers.get('content-range')
       const match = contentRange ? /\/(\d+)$/.exec(contentRange) : null
       if (match) {
-        this.cachedStat = { size: parseInt(match[1]!, 10) }
+        sizeCache.set(url, parseInt(match[1]!, 10))
       }
     }
     return new Uint8Array(await res.arrayBuffer())
@@ -130,16 +154,29 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     }
     const chunkCount = effectiveEndChunk - startChunk + 1
 
+    // Capture a strong reference to every chunk we'll assemble from into a local
+    // array. Already-cached chunks are grabbed here (before any await); missing
+    // chunks are grabbed as their fetch resolves below. Assembly then reads only
+    // from this local array — never from the module-global LRU. The LRU is
+    // capped and shared across every file, so a concurrent read's putCached
+    // could otherwise evict a chunk we depend on during the fetch await, and a
+    // later getCached would return undefined (→ TypeError). Holding the
+    // reference locally makes eviction from the Map harmless.
+    const chunks: (Uint8Array | undefined)[] = new Array(chunkCount)
+
     // Find contiguous runs of missing (uncached) chunks
     const runs: { start: number; end: number }[] = []
     for (let i = 0; i < chunkCount; i++) {
-      if (!getCached(cacheKey(url, startChunk + i))) {
+      const cached = getCached(cacheKey(url, startChunk + i))
+      if (cached === undefined) {
         const lastRun = runs[runs.length - 1]
         if (lastRun?.end === i - 1) {
           lastRun.end = i
         } else {
           runs.push({ start: i, end: i })
         }
+      } else {
+        chunks[i] = cached
       }
     }
 
@@ -154,34 +191,49 @@ export class RemoteFileWithRangeCache extends RemoteFile {
           const data = await this.fetchRange(url, rangeStart, rangeEnd, signal)
           for (let i = run.start; i <= run.end; i++) {
             const offset = (i - run.start) * CHUNK_SIZE
-            putCached(
-              cacheKey(url, startChunk + i),
-              data.subarray(offset, offset + CHUNK_SIZE),
-            )
+            const chunk = data.subarray(offset, offset + CHUNK_SIZE)
+            chunks[i] = chunk
+            putCached(cacheKey(url, startChunk + i), chunk)
           }
         }),
       ),
     )
 
-    // Assemble result from cached chunks
+    // Assemble result from the locally-held chunk references
     const offsetInFirstChunk = start - startChunk * CHUNK_SIZE
     const result = new Uint8Array(length)
     let written = 0
     for (let i = 0; i < chunkCount; i++) {
-      // Every chunk in [startChunk, effectiveEndChunk] is guaranteed cached
-      // here: either it was already present (skipped by the runs loop) or it
-      // was just fetched and putCached'd above.
-      const chunk = getCached(cacheKey(url, startChunk + i))!
-      const sourceStart = i === 0 ? offsetInFirstChunk : 0
-      const available = chunk.length - sourceStart
-      const needed = length - written
-      const copyLen = Math.min(available, needed)
-      result.set(chunk.subarray(sourceStart, sourceStart + copyLen), written)
-      written += copyLen
+      const chunk = chunks[i]
+      // Unreachable: every index is filled either as an already-cached chunk
+      // above or by the fetch of the run that covers it. Throw rather than
+      // assert so a future refactor that breaks the invariant fails loudly
+      // instead of reading undefined.length.
+      if (chunk === undefined) {
+        throw new Error(
+          `internal: chunk ${startChunk + i} missing during range assembly of ${url}`,
+        )
+      } else {
+        const sourceStart = i === 0 ? offsetInFirstChunk : 0
+        const available = chunk.length - sourceStart
+        const needed = length - written
+        const copyLen = Math.min(available, needed)
+        result.set(chunk.subarray(sourceStart, sourceStart + copyLen), written)
+        written += copyLen
+      }
     }
     return result.subarray(0, written)
   }
 
+  // NOTE: range reads return a fully-assembled in-memory Response, so
+  // generic-filehandle2's streaming `onProgress` (toBytesWithProgress) sees the
+  // whole buffer at once and reports 0→100 instantly — per-byte download
+  // progress does not flow through this layer. That's intentional: the indexed
+  // parsers (@gmod/bam, cram, tabix, bbi) self-report at block granularity from
+  // their index metadata, which is the meaningful unit and also reflects cache
+  // hits. Only whole-file readFile (no range header → super.fetch below) streams
+  // for real. Don't try to "restore" streaming progress here expecting it to
+  // surface in the loading UI.
   public async fetch(
     url: string | RequestInfo,
     init?: RequestInit,

@@ -36,14 +36,13 @@
     "generate-readme": "./generate_readme.sh > README.md"
   },
   "dependencies": {
+    "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
     "cli-progress": "^3.12.0",
     "command-exists": "^1.2.9",
     "cors": "^2.8.6",
-    "decompress": "^4.2.1",
     "express": "^5.2.1",
     "ixixx": "^3.0.9",
-    "json-parse-better-errors": "^1.0.2",
     "tmp": "^0.2.7"
   },
   "publishConfig": {

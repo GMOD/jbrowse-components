@@ -18,7 +18,6 @@ const useStyles = makeStyles()({
     zIndex: 1001,
   },
   tooltipTarget: {
-    position: 'sticky',
     left: 0,
     width: 1,
   },

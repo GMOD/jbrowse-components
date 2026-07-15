@@ -1,188 +1,206 @@
-import { parseCigar } from '@jbrowse/cigar-utils'
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { bpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { addDisposer, getSnapshot } from '@jbrowse/mobx-state-tree'
-import { autorun, reaction } from 'mobx'
-
 import {
-  drawCigarClickMap,
-  drawMouseoverClickMap,
-  drawRef,
-} from './drawSynteny.ts'
+  getContainingView,
+  getSession,
+  isAbortException,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import {
+  createStopTokenRotation,
+  detectDisplayAssembliesSwapped,
+  renameRegionsForAdapter,
+} from '@jbrowse/synteny-core'
+import { autorun, untracked } from 'mobx'
+
+import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 
-interface Pos {
-  offsetPx: number
-}
-
-interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
-}
-
-type LSV = LinearSyntenyViewModel
-
+// The stop-token rotation + staleness guard come from
+// `createStopTokenRotation` (shared with dotplot-view's fetch); only the
+// synteny-specific guards, tracked deps, RPC args, and result handling live
+// here.
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
-  addDisposer(
-    self,
-    autorun(
-      function syntenyDrawAutorun() {
-        if (self.isMinimized) {
-          return
-        }
-        const view = getContainingView(self) as LinearSyntenyViewModel
-        if (
-          !view.initialized ||
-          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
-        ) {
-          return
-        }
-
-        const ctx1 = self.mainCanvas?.getContext('2d')
-        const ctx3 = self.cigarClickMapCanvas?.getContext('2d')
-        if (!ctx1 || !ctx3) {
-          return
-        }
-
-        // Access alpha to make autorun react to alpha changes
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { alpha } = self
-        const height = self.height
-        const width = view.width
-        ctx1.clearRect(0, 0, width, height)
-
-        // Draw main canvas immediately
-        drawRef(self, ctx1)
-
-        drawCigarClickMap(self, ctx3)
-      },
-      { name: 'SyntenyDraw' },
-    ),
-  )
+  const fetch = createStopTokenRotation(self)
 
   addDisposer(
     self,
     autorun(
-      function syntenyMouseoverAutorun() {
+      async function syntenyFetchAutorun() {
         if (self.isMinimized) {
           return
         }
+        // A synteny level draws between two adjacent genome views; this display
+        // only depends on those two, not the whole stack. connectedViews is the
+        // shared gate (same one renderParams uses).
         const view = getContainingView(self) as LinearSyntenyViewModel
-        if (
-          !view.initialized ||
-          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
-        ) {
+        const connected = self.connectedViews
+        if (!connected) {
           return
         }
-        // Access reactive properties so autorun is triggered when they change
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { clickId, mouseoverId } = self
-        drawMouseoverClickMap(self)
-      },
-      { name: 'SyntenyMouseover' },
-    ),
-  )
+        const { v0, v1 } = connected
+        const connectedViews = [v0, v1]
 
-  // this attempts to reduce recalculation of feature positions drawn by the
-  // synteny view
-  //
-  // uses a reaction to say "we know the positions don't change in any relevant
-  // way unless bpPerPx changes or displayedRegions changes"
-  addDisposer(
-    self,
-    reaction(
-      () => {
-        if (self.isMinimized) {
-          return { initialized: false }
+        // Tracked deps that SHOULD trigger refetch when changed:
+        //   - displayedRegions (per view) — region set drives cumBp output
+        //   - adapterConfig and CIGAR drawing options
+        //   - fetchRegionsKey — the snapped visible window + pan buffer of both
+        //     views. Scoping the indexed fetch to this makes scroll/zoom past
+        //     the buffer refetch the newly-visible slice; sub-buffer pans keep
+        //     the same snapped window so the computed doesn't refire.
+        //   - bpPerPxBucketKey — the log2 zoom bucket of both views. Still
+        //     needed for the small-region case, where fetchRegions is clamped
+        //     to the whole (zoom-independent) region: without this, zooming out
+        //     would not refetch and the worker's stale px cull would leave
+        //     newly-visible features unemitted.
+        // Not tracked: raw `bpPerPx`, `offsetPx`, `width`.
+        // Sub-buffer scroll moves are absorbed by the worker's px buffer.
+        for (const v of connectedViews) {
+          void v.displayedRegions
         }
-        const view = getContainingView(self) as LSV
-        return {
-          bpPerPx: view.views.map(v => v.bpPerPx),
-
-          // stringifying 'deeply' accesses the displayed regions, see
-          // issue #3456
-          displayedRegions: JSON.stringify(
-            view.views.map(v => v.displayedRegions),
-          ),
-          features: self.features,
-          initialized:
-            view.initialized &&
-            view.views.every(
-              a => a.displayedRegions.length > 0 && a.initialized,
-            ),
-        }
-      },
-      ({ initialized }) => {
-        if (!initialized) {
-          return
-        }
-        const { level } = self
-        const { assemblyManager } = getSession(self)
-        const view = getContainingView(self) as LSV
-        const viewSnaps = view.views.map(view => ({
-          ...getSnapshot(view),
-          width: view.width,
-          staticBlocks: view.staticBlocks,
-          interRegionPaddingWidth: view.interRegionPaddingWidth,
-          minimumBlockWidth: view.minimumBlockWidth,
+        void self.fetchRegionsKey
+        void self.bpPerPxBucketKey
+        const adapterConfig = self.adapterConfig
+        const {
+          drawCIGAR,
+          drawCIGARMatchesOnly,
+          drawLocationMarkers,
+          lodMode,
+        } = view
+        // Snapshot the fetch-input signature now, from the same tracked inputs
+        // this fetch depends on, so the resulting data is tagged with what it
+        // was fetched for even if the view changes again mid-RPC.
+        const fetchKey = self.currentFetchKey
+        // Untracked reads: values for the worker's fetch-time cull. Reading
+        // these inside `untracked` prevents them from registering as autorun
+        // deps, so scroll/zoom changes don't refire the fetch (fetchRegionsKey/
+        // bpPerPxBucketKey above decide that); the worker still sees the
+        // *current* offsetPx/bpPerPx.
+        //
+        // Query axis (v0) drives the scoped single-axis fetch, so it alone
+        // carries the visible window + pan buffer and the cull width.
+        const rawQuery = untracked(() => ({
+          bpPerPx: v0.bpPerPx,
+          offsetPx: v0.offsetPx,
+          displayedRegions: v0.displayedRegions,
+          width: v0.width,
+          fetchRegions: syntenyFetchRegions({
+            visibleRegions: v0.visibleRegions,
+            displayedRegions: v0.displayedRegions,
+            width: v0.width,
+            bpPerPx: v0.bpPerPx,
+          }),
+        }))
+        // Target axis (v1) only supplies its cumBp index + cull geometry.
+        const rawTarget = untracked(() => ({
+          bpPerPx: v1.bpPerPx,
+          offsetPx: v1.offsetPx,
+          displayedRegions: v1.displayedRegions,
         }))
 
-        const map = [] as FeatPos[]
-        const feats = self.features || []
+        const { stopToken, isCurrent, statusCallback } = fetch.begin()
+        // Clear any prior error as the new fetch begins, so a stale banner
+        // never lingers over freshly-loaded data (mirrors dotplot setLoading).
+        self.setError(undefined)
+        self.setFetching(true)
 
-        for (const f of feats) {
-          const mate = f.get('mate')
-          let f1s = f.get('start')
-          let f1e = f.get('end')
-          const f2s = mate.start
-          const f2e = mate.end
-
-          if (f.get('strand') === -1) {
-            ;[f1e, f1s] = [f1s, f1e]
+        try {
+          const sessionId = getRpcSessionId(self)
+          // RefName reconciliation (canonical <-> adapter aliases, e.g.
+          // "1" <-> "NC_012119.1") happens here on the main thread because the
+          // RPC worker has no assemblyManager to resolve aliases.
+          // renameRegionsIfNeeded rewrites each region's refName into the
+          // synteny adapter's namespace, so the worker's getFeatures query, its
+          // cumBp index, and the feature refNames it reads back all line up.
+          const { assemblyManager } = getSession(self)
+          const renameRegions = (regions: Region[]) =>
+            renameRegionsForAdapter({
+              assemblyManager,
+              sessionId,
+              adapterConfig,
+              regions,
+            })
+          // Query axis renames both its displayed regions and its scoped fetch
+          // window; the target axis has no fetch window (single-axis fetch), so
+          // only its displayed regions are renamed.
+          const queryView = {
+            ...rawQuery,
+            displayedRegions: await renameRegions(rawQuery.displayedRegions),
+            fetchRegions: await renameRegions(rawQuery.fetchRegions),
           }
-          const a1 = assemblyManager.get(f.get('assemblyName'))
-          const a2 = assemblyManager.get(mate.assemblyName)
-          const r1 = f.get('refName')
-          const r2 = mate.refName
-          const ref1 = a1?.getCanonicalRefName(r1) || r1
-          const ref2 = a2?.getCanonicalRefName(r2) || r2
-          const v1 = viewSnaps[level]!
-          const v2 = viewSnaps[level + 1]!
-          const p11 = bpToPx({ self: v1, refName: ref1, coord: f1s })
-          const p12 = bpToPx({ self: v1, refName: ref1, coord: f1e })
-          const p21 = bpToPx({ self: v2, refName: ref2, coord: f2s })
-          const p22 = bpToPx({ self: v2, refName: ref2, coord: f2e })
-
-          if (
-            p11 === undefined ||
-            p12 === undefined ||
-            p21 === undefined ||
-            p22 === undefined
-          ) {
-            continue
+          const targetView = {
+            ...rawTarget,
+            displayedRegions: await renameRegions(rawTarget.displayedRegions),
           }
-
-          const cigar = f.get('CIGAR') as string | undefined
-          map.push({
-            p11,
-            p12,
-            p21,
-            p22,
-            f,
-            cigar: parseCigar(cigar),
-          })
+          const result = await getSession(self).rpcManager.call(
+            sessionId,
+            'SyntenyGetFeaturesAndPositions',
+            {
+              adapterConfig,
+              queryView,
+              targetView,
+              stopToken,
+              drawCIGAR,
+              drawCIGARMatchesOnly,
+              drawLocationMarkers,
+              lodMode,
+              statusCallback,
+            },
+          )
+          if (!isCurrent()) {
+            return
+          }
+          const { instanceData, ...featureData } = result
+          self.setRpcData(featureData, instanceData, fetchKey)
+        } catch (e) {
+          if (isCurrent() && !isAbortException(e)) {
+            console.error(e)
+            self.setError(e)
+          }
+        } finally {
+          // Only the current fetch clears these — a superseded fetch resolving
+          // late must not unset the flags the newer fetch just set.
+          if (isCurrent()) {
+            self.setStatusMessage(undefined)
+            self.setFetching(false)
+          }
         }
-
-        self.setFeatPositions(map)
       },
-      { fireImmediately: true },
+      { name: 'SyntenyFetch', delay: 500 },
     ),
   )
+
+  // One-shot at view load: compare the adapter's reported refNames per row
+  // against each assembly's full refNames to flag a reversed row order. Runs
+  // off the per-render fetch path so it never re-fires (or misfires) on zoom.
+  addDisposer(
+    self,
+    autorun(
+      async function syntenyAssemblySwapCheck() {
+        if (!isAlive(self)) {
+          return
+        }
+        const view = getContainingView(self) as LinearSyntenyViewModel
+        const level = self.level
+        if (!view.initialized || level + 1 >= view.views.length) {
+          return
+        }
+        const swapped = await detectDisplayAssembliesSwapped(
+          self,
+          view.views[level]!.assemblyNames[0],
+          view.views[level + 1]!.assemblyNames[0],
+        )
+        if (isAlive(self)) {
+          self.setAssembliesSwapped(swapped)
+        }
+      },
+      { name: 'SyntenyAssemblySwapCheck' },
+    ),
+  )
+
+  addDisposer(self, () => {
+    fetch.dispose()
+  })
 }

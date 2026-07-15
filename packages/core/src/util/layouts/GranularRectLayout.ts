@@ -1,3 +1,9 @@
+import {
+  findInsertionPoint,
+  insertInterval,
+  isRangeClear as isRangeClearIntervals,
+} from './intervalUtils.ts'
+
 import type {
   BaseLayout,
   RectTuple,
@@ -10,23 +16,26 @@ import type {
  * alternative algorithms and benchmark information
  */
 
-// minimum excess size of the array at which we garbage collect
+// a feature wider than this many pitch units is treated as filling its whole
+// row(s), so layout doesn't track per-pixel intervals for it (see addRectToBitmap)
 const maxFeaturePitchWidth = 20000
 
-// Optimized row class using flat interval array
-class LayoutRow<T> {
+// Optimized row class using flat interval array. Holds only interval extents
+// and feature ids, so it does not need the layout's data generic.
+class LayoutRow {
   private padding = 1
 
-  public allFilled?: Record<string, T> | string
+  // The id of the feature filling the entire row (set for very wide features)
+  public allFilled?: string
 
   // Flat array: [start1, end1, start2, end2, ...]
   // Kept sorted by start position for binary search
   private intervals: number[] = []
 
-  // Parallel array storing data for each interval
-  private data: (Record<string, T> | string)[] = []
+  // Parallel array storing the feature id for each interval
+  private data: string[] = []
 
-  setAllFilled(data: Record<string, T> | string): void {
+  setAllFilled(data: string): void {
     this.allFilled = data
   }
 
@@ -34,7 +43,7 @@ class LayoutRow<T> {
     return this.intervals
   }
 
-  getItemAt(x: number): Record<string, T> | string | undefined {
+  getItemAt(x: number): string | undefined {
     if (this.allFilled) {
       return this.allFilled
     }
@@ -78,97 +87,23 @@ class LayoutRow<T> {
   }
 
   isRangeClear(left: number, right: number): boolean {
-    if (this.allFilled) {
-      return false
-    }
-
-    const intervals = this.intervals
-    const len = intervals.length
-
-    // Empty row is always clear
-    if (len === 0) {
-      return true
-    }
-
-    // Linear scan for small arrays (better cache locality)
-    if (len < 40) {
-      for (let i = 0; i < len; i += 2) {
-        const start = intervals[i]!
-        const end = intervals[i + 1]!
-        // Intersection check: end > left && start < right
-        if (end > left && start < right) {
-          return false
-        }
-      }
-      return true
-    }
-
-    // Binary search for larger arrays
-    // Find first interval whose end > left (first potential overlap)
-    let low = 0
-    let high = len >> 1
-
-    while (low < high) {
-      const mid = (low + high) >>> 1
-      const midIdx = mid << 1
-      if (intervals[midIdx + 1]! <= left) {
-        low = mid + 1
-      } else {
-        high = mid
-      }
-    }
-
-    // Check if found interval overlaps
-    const idx = low << 1
-    if (idx >= len) {
-      return true
-    }
-
-    // If the first candidate's start is >= right, no overlap possible
-    const start = intervals[idx]!
-    if (start >= right) {
-      return true
-    }
-
-    // This interval overlaps (we know end > left from binary search, and start < right)
-    return false
+    return !this.allFilled && isRangeClearIntervals(this.intervals, left, right)
   }
 
-  addRect(rect: Rectangle<T>, data: Record<string, T> | string): void {
+  addRect(rect: { l: number; r: number }, data: string): void {
     const left = rect.l
     const right = rect.r + this.padding
     const intervals = this.intervals
     const len = intervals.length
 
-    // Hybrid insertion strategy
-    if (len < 40) {
-      // Linear insertion for small arrays
-      let idx = len
-      for (let i = 0; i < len; i += 2) {
-        if (left < intervals[i]!) {
-          idx = i
-          break
-        }
-      }
-      intervals.splice(idx, 0, left, right)
-      this.data.splice(idx >> 1, 0, data)
+    // Fast path: features usually arrive sorted, so append to the end
+    if (len === 0 || left >= intervals[len - 2]!) {
+      intervals.push(left, right)
+      this.data.push(data)
     } else {
-      // Binary search insertion for larger arrays
-      let low = 0
-      let high = len >> 1
-
-      while (low < high) {
-        const mid = (low + high) >>> 1
-        const midIdx = mid << 1
-        if (intervals[midIdx]! < left) {
-          low = mid + 1
-        } else {
-          high = mid
-        }
-      }
-
-      intervals.splice(low << 1, 0, left, right)
-      this.data.splice(low, 0, data)
+      const idx = findInsertionPoint(intervals, left)
+      insertInterval(intervals, idx, left, right)
+      this.data.splice(idx >> 1, 0, data)
     }
   }
 
@@ -181,7 +116,7 @@ class LayoutRow<T> {
     const data = this.data
     const oldLen = intervals.length
     const newIntervals: number[] = []
-    const newData: (Record<string, T> | string)[] = []
+    const newData: string[] = []
 
     for (let i = 0; i < oldLen; i += 2) {
       const start = intervals[i]!
@@ -228,7 +163,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private hardRowLimit: number
 
-  private bitmap: LayoutRow<T>[]
+  // sparse: rows are created lazily as rects land on them and first-fit scans
+  // rows beyond the highest created one, so every access must guard for undefined
+  private bitmap: (LayoutRow | undefined)[]
 
   private rectangles: Map<string, Rectangle<T>>
 
@@ -236,39 +173,28 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private maxHeight: number
 
-  private displayMode: string
-
   private pTotalHeight: number
 
   /**
    * pitchX - layout grid pitch in the X direction
    * pitchY - layout grid pitch in the Y direction
-   * maxHeight - maximum layout height, default Infinity (no max)
+   * maxHeight - maximum layout height in pixels, default 10000
    */
   constructor({
     pitchX = 10,
     pitchY = 10,
     maxHeight = 10000,
     hardRowLimit = 10000,
-    displayMode = 'normal',
   }: {
     pitchX?: number
     pitchY?: number
     maxHeight?: number
-    displayMode?: string
     hardRowLimit?: number
   } = {}) {
     this.pitchX = pitchX
     this.pitchY = pitchY
     this.hardRowLimit = hardRowLimit
     this.maxHeightReached = false
-    this.displayMode = displayMode
-
-    // reduce the pitchY to try and pack the features tighter
-    if (this.displayMode === 'compact') {
-      this.pitchY = Math.round(this.pitchY / 4) || 1
-      this.pitchX = Math.round(this.pitchX / 4) || 1
-    }
 
     this.bitmap = []
     this.rectangles = new Map()
@@ -279,9 +205,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   /**
    * @returns top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
-   * @param startingRow - Optional hint (in pixels) for where to start searching for free space.
-   *  Use when you know features overlap (e.g., sorted reads at the same position).
-   *  The hint is only used as a starting point; collision detection still verifies.
    */
   addRect(
     id: string,
@@ -290,7 +213,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     height: number,
     data?: T,
     serializableData?: T,
-    startingRow?: number,
   ): number | null {
     const pitchX = this.pitchX
     const pitchY = this.pitchY
@@ -336,104 +258,98 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     // Features starting at maxHeight or beyond are filtered out, but features
     // that start below maxHeight and extend past it are allowed
     const maxTop = this.maxHeight
-    // Use startingRow hint if provided (in pixels), convert to pitch rows
-    let top =
-      startingRow !== undefined
-        ? Math.min(Math.floor(startingRow / pitchY), maxTop)
-        : 0
+    let top = 0
 
-    if (this.displayMode !== 'collapse') {
-      // OPTIMIZATION: Inline collision checking for hot path
-      // Eliminates function call overhead which is critical at 100k+ features
-      const bitmap = this.bitmap
+    // OPTIMIZATION: Inline collision checking for hot path
+    // Eliminates function call overhead which is critical at 100k+ features
+    const bitmap = this.bitmap
 
-      outer: for (; top <= maxTop; top += 1) {
-        // Check all rows that this rectangle would occupy
-        const maxY = top + pHeight
-        for (let y = top; y < maxY; y += 1) {
-          const row = bitmap[y]
+    outer: for (; top <= maxTop; top += 1) {
+      // Check all rows that this rectangle would occupy
+      const maxY = top + pHeight
+      for (let y = top; y < maxY; y += 1) {
+        const row = bitmap[y]
 
-          // Fast path: no row created yet
-          if (!row) {
-            continue
-          }
+        // Fast path: no row created yet
+        if (!row) {
+          continue
+        }
 
-          // Fast path: row is all filled
-          if (row.allFilled) {
-            continue outer
-          }
+        // Fast path: row is all filled
+        if (row.allFilled) {
+          continue outer
+        }
 
-          // Fully inlined isRangeClear for maximum performance
-          const intervals = row.getIntervals()
-          const len = intervals.length
+        // Fully inlined isRangeClear for maximum performance
+        const intervals = row.getIntervals()
+        const len = intervals.length
 
-          if (len > 0) {
-            if (len < 40) {
-              // Linear scan for small arrays
-              for (let i = 0; i < len; i += 2) {
-                const start = intervals[i]!
-                const end = intervals[i + 1]!
-                if (end > pLeft && start < pRight) {
-                  continue outer
-                }
+        if (len > 0) {
+          if (len < 40) {
+            // Linear scan for small arrays
+            for (let i = 0; i < len; i += 2) {
+              const start = intervals[i]!
+              const end = intervals[i + 1]!
+              if (end > pLeft && start < pRight) {
+                continue outer
               }
-            } else {
-              // Binary search for larger arrays
-              let low = 0
-              let high = len >> 1
+            }
+          } else {
+            // Binary search for larger arrays
+            let low = 0
+            let high = len >> 1
 
-              while (low < high) {
-                const mid = (low + high) >>> 1
-                const midIdx = mid << 1
-                if (intervals[midIdx + 1]! <= pLeft) {
-                  low = mid + 1
-                } else {
-                  high = mid
-                }
+            while (low < high) {
+              const mid = (low + high) >>> 1
+              const midIdx = mid << 1
+              if (intervals[midIdx + 1]! <= pLeft) {
+                low = mid + 1
+              } else {
+                high = mid
               }
+            }
 
-              const idx = low << 1
-              if (idx < len) {
-                const start = intervals[idx]!
-                if (start < pRight) {
-                  continue outer
-                }
+            const idx = low << 1
+            if (idx < len) {
+              const start = intervals[idx]!
+              if (start < pRight) {
+                continue outer
               }
             }
           }
         }
-
-        // No collision found in any row
-        break
       }
 
-      if (top > maxTop) {
-        rectangle.top = null
-        this.rectangles.set(id, rectangle)
-        this.maxHeightReached = true
-        return null
-      }
+      // No collision found in any row
+      break
+    }
+
+    if (top > maxTop) {
+      rectangle.top = null
+      this.rectangles.set(id, rectangle)
+      this.maxHeightReached = true
+      return null
     }
 
     rectangle.top = top
     this.addRectToBitmap(rectangle)
     this.rectangles.set(id, rectangle)
-    this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
+    this.pTotalHeight = Math.max(this.pTotalHeight, top + pHeight)
     return top * pitchY
   }
 
-  collides(rect: Rectangle<T>, top: number) {
-    const { bitmap } = this
-
-    const maxY = top + rect.h
-    for (let y = top; y < maxY; y += 1) {
-      const row = bitmap[y]
-      if (row !== undefined && !row.isRangeClear(rect.l, rect.r)) {
-        return true
+  private getOrCreateRow(y: number): LayoutRow {
+    let row = this.bitmap[y]
+    if (!row) {
+      if (y > this.hardRowLimit) {
+        throw new Error(
+          `layout hard limit (${this.hardRowLimit * this.pitchY}px) exceeded, aborting layout`,
+        )
       }
+      row = new LayoutRow()
+      this.bitmap[y] = row
     }
-
-    return false
+    return row
   }
 
   addRectToBitmap(rect: Rectangle<T>) {
@@ -443,41 +359,18 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     const data = rect.id
     const yEnd = rect.top + rect.h
-    const bitmap = this.bitmap
-    const hardRowLimit = this.hardRowLimit
-    const pitchY = this.pitchY
 
-    if (rect.r - rect.l > maxFeaturePitchWidth) {
-      // the rect is very big in relation to the view size, just pretend, for
-      // the purposes of layout, that it extends infinitely.  this will cause
-      // weird layout if a user scrolls manually for a very, very long time
-      // along the genome at the same zoom level.  but most users will not do
-      // that.  hopefully.
-      for (let y = rect.top; y < yEnd; y += 1) {
-        let row = bitmap[y]
-        if (!row) {
-          if (y > hardRowLimit) {
-            throw new Error(
-              `layout hard limit (${hardRowLimit * pitchY}px) exceeded, aborting layout`,
-            )
-          }
-          row = new LayoutRow()
-          bitmap[y] = row
-        }
+    // A rect very big in relation to the view size just pretends, for the
+    // purposes of layout, that it extends infinitely. This causes weird layout
+    // if a user scrolls manually for a very, very long time along the genome at
+    // the same zoom level, but most users will not do that. hopefully.
+    const fillsRow = rect.r - rect.l > maxFeaturePitchWidth
+
+    for (let y = rect.top; y < yEnd; y += 1) {
+      const row = this.getOrCreateRow(y)
+      if (fillsRow) {
         row.setAllFilled(data)
-      }
-    } else {
-      for (let y = rect.top; y < yEnd; y += 1) {
-        let row = bitmap[y]
-        if (!row) {
-          if (y > hardRowLimit) {
-            throw new Error(
-              `layout hard limit (${hardRowLimit * pitchY}px) exceeded, aborting layout`,
-            )
-          }
-          row = new LayoutRow()
-          bitmap[y] = row
-        }
+      } else {
         row.addRect(rect, data)
       }
     }
@@ -491,13 +384,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const pLeft = Math.trunc(left / this.pitchX)
     const pRight = Math.trunc(right / this.pitchX)
     const { bitmap } = this
+    // bitmap can be sparse: rows are created lazily, so guard for undefined
     for (const row of bitmap) {
-      row.discardRange(pLeft, pRight)
+      if (row) {
+        row.discardRange(pLeft, pRight)
+      }
     }
-  }
-
-  hasSeen(id: string) {
-    return this.rectangles.has(id)
   }
 
   getByCoord(x: number, y: number) {
@@ -512,8 +404,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getByID(id: string) {
     const r = this.rectangles.get(id)
-    if (r) {
-      const t = r.top! * this.pitchY
+    // top === null means the feature overflowed maxHeight and was never placed
+    if (r && r.top !== null) {
+      const t = r.top * this.pitchY
       return [
         r.l * this.pitchX,
         t,
@@ -529,24 +422,13 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     return this.rectangles.get(id)?.data
   }
 
-  getSerializableDataByID(id: string) {
-    return this.rectangles.get(id)?.serializableData
-  }
-
-  cleanup() {}
-
   getTotalHeight() {
     return this.pTotalHeight * this.pitchY
-  }
-
-  get totalHeight() {
-    return this.getTotalHeight()
   }
 
   getRectangles(): Map<string, RectTuple> {
     const pitchX = this.pitchX
     const pitchY = this.pitchY
-    // @ts-expect-error
     return new Map(
       [...this.rectangles.entries()].map(([id, rect]) => {
         const { l, r, originalHeight, top, serializableData } = rect
@@ -576,7 +458,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         const y2 = r * pitchX
         // add +/- pitchX to avoid resolution causing errors
         if (x2 >= y1 - pitchX && y2 + pitchX >= x1) {
-          // @ts-expect-error
           regionRectangles[id] = [y1, t, y2, b, rect.serializableData]
         }
       }

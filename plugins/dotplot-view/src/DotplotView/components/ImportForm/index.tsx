@@ -1,20 +1,14 @@
 import { useState } from 'react'
 
-import { AssemblySelector, ErrorMessage } from '@jbrowse/core/ui'
-import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  Container,
-  FormControl,
-  Grid,
-  Paper,
-  Typography,
-} from '@mui/material'
-import { toJS, transaction } from 'mobx'
+import { getSyntenyTracks } from '@jbrowse/synteny-core'
+import { Button, Container, Grid, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackSelector from './TrackSelector.tsx'
+import { doSubmit } from './doSubmit.ts'
 
 import type { DotplotViewModel } from '../../model.ts'
 
@@ -25,35 +19,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-function doSubmit({
-  model,
-  assembly1,
-  assembly2,
-}: {
-  assembly1: string
-  assembly2: string
-  model: DotplotViewModel
-}) {
-  const session = getSession(model)
-  const { importFormSyntenyTrackSelections } = model
-
-  model.setError(undefined)
-  transaction(() => {
-    if (isSessionWithAddTracks(session)) {
-      toJS(importFormSyntenyTrackSelections).map((f, idx) => {
-        if (f.type === 'userOpened') {
-          session.addTrackConf(f.value)
-          model.toggleTrack(f.value?.trackId)
-        } else if (f.type === 'preConfigured') {
-          model.showTrack(f.value, idx)
-        }
-      })
-    }
-
-    model.setAssemblyNames(assembly2, assembly1)
-  })
-}
-
 const DotplotImportForm = observer(function DotplotImportForm({
   model,
 }: {
@@ -62,15 +27,17 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const { classes } = useStyles()
   const session = getSession(model)
   const { assemblyNames } = session
-  const [assembly2, setAssembly2] = useState(assemblyNames[0] || '')
-  const [assembly1, setAssembly1] = useState(assemblyNames[0] || '')
+  const firstAssembly = assemblyNames[0] ?? ''
+  const [assemblyX, setAssemblyX] = useState(firstAssembly)
+  const [assemblyY, setAssemblyY] = useState(firstAssembly)
   const [error, setError] = useState<unknown>()
 
-  // this is a combination of any displayed error message we have
-  const displayError = error || model.error
+  const syntenyTracks = getSyntenyTracks(session.tracks, [assemblyX, assemblyY])
+  const displayError = error ?? model.error
+
   return (
     <Container className={classes.importFormContainer}>
-      {displayError ? <ErrorMessage error={displayError} /> : null}
+      {displayError ? <ErrorBanner error={displayError} /> : null}
 
       <Paper style={{ padding: 12 }}>
         <Typography style={{ textAlign: 'center' }}>
@@ -82,50 +49,50 @@ const DotplotImportForm = observer(function DotplotImportForm({
           sx={{ justifyContent: 'center', alignItems: 'center' }}
         >
           <AssemblySelector
-            helperText="x-axis assembly"
-            selected={assembly2}
+            label="X-axis assembly"
+            helperText=""
+            selected={assemblyX}
             session={session}
-            onChange={val => {
-              setAssembly2(val)
+            onChange={asm => {
+              setAssemblyX(asm)
             }}
           />
           <AssemblySelector
-            helperText="y-axis assembly"
-            selected={assembly1}
+            label="Y-axis assembly"
+            helperText=""
+            selected={assemblyY}
             session={session}
-            onChange={val => {
-              setAssembly1(val)
+            onChange={asm => {
+              setAssemblyY(asm)
             }}
           />
-          <FormControl>
-            <Button
-              onClick={() => {
-                // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                ;(async () => {
-                  try {
-                    setError(undefined)
-                    doSubmit({
-                      assembly1,
-                      assembly2,
-                      model,
-                    })
-                  } catch (e) {
-                    console.error(e)
-                    setError(e)
-                  }
-                })()
-              }}
-              variant="contained"
-              color="primary"
-            >
-              Launch
-            </Button>
-          </FormControl>
+          <Button
+            onClick={() => {
+              try {
+                setError(undefined)
+                doSubmit({
+                  model,
+                  session,
+                  assemblyX,
+                  assemblyY,
+                })
+              } catch (e) {
+                console.error(e)
+                setError(e)
+              }
+            }}
+            variant="contained"
+            color="primary"
+          >
+            Launch
+          </Button>
         </Grid>
         <TrackSelector
-          assembly2={assembly2}
-          assembly1={assembly1}
+          key={`${assemblyX}-${assemblyY}`}
           model={model}
+          assemblyX={assemblyX}
+          assemblyY={assemblyY}
+          syntenyTracks={syntenyTracks}
         />
       </Paper>
     </Container>

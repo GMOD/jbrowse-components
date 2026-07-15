@@ -1,14 +1,18 @@
-import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom, toArray } from 'rxjs'
+import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
+import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 
-import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
+import { resolveSampleName } from '../shared/getSources.ts'
+import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { LastStopTokenCheck, Region } from '@jbrowse/core/util'
+import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import type {
+  LastStopTokenCheck,
+  Region,
+  StatusCallback,
+} from '@jbrowse/core/util'
 
 export async function getPhasedGenotypeMatrix({
   pluginManager,
@@ -22,68 +26,101 @@ export async function getPhasedGenotypeMatrix({
     headers?: Record<string, string>
     regions: Region[]
     sources: Source[]
-    bpPerPx: number
+    bpPerPx?: number
     minorAlleleFrequencyFilter: number
-    lengthCutoffFilter: number
+    maxMissingnessFilter: number
+    filters?: SerializableFilterChain
     sampleInfo: Record<string, SampleInfo>
+    statusCallback?: StatusCallback
   }
 }) {
   const {
     sources,
     minorAlleleFrequencyFilter,
+    maxMissingnessFilter,
+    filters,
     regions,
     adapterConfig,
     sessionId,
-    lengthCutoffFilter,
     stopTokenCheck,
     sampleInfo,
+    statusCallback,
   } = args
-  const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
-  const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
-
-  const rows = {} as Record<string, number[]>
-  const splitCache = {} as Record<string, string[]>
-
-  for (const { name } of sources) {
-    const info = sampleInfo[name]
-    const ploidy = info?.maxPloidy ?? 2
-    for (let hp = 0; hp < ploidy; hp++) {
-      rows[`${name} HP${hp}`] = []
-    }
-  }
-
-  const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
-    minorAlleleFrequencyFilter,
-    lengthCutoffFilter,
-    stopTokenCheck,
-    splitCache,
-    features: await firstValueFrom(
-      dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
-    ),
+  const dataAdapter = await getFeatureAdapterOrThrow({
+    pluginManager,
+    sessionId,
+    adapterConfig,
   })
 
-  for (const { feature } of mafs) {
-    const genotypes = feature.get('genotypes') as Record<string, string>
-    for (const { name } of sources) {
-      const val = genotypes[name]!
-      const info = sampleInfo[name]
-      const ploidy = info?.maxPloidy ?? 2
-      const isPhased = val.includes('|')
+  // Hoist per-source key resolution and max ploidy out of the feature loop.
+  // Build per-source resolved entries first; row buffers are pre-sized to
+  // mafs.length once mafs is fetched.
+  const resolved = sources.map(s => ({
+    name: s.name,
+    key: resolveSampleName(s),
+    maxPloidy: sampleInfo[s.name]?.maxPloidy ?? 2,
+  }))
 
-      if (isPhased) {
-        const alleles = splitCache[val] ?? (splitCache[val] = val.split('|'))
-        for (let hp = 0; hp < ploidy; hp++) {
+  const rawFeatures = await updateStatus(
+    'Loading features',
+    statusCallback,
+    () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
+  )
+  const mafs = getFilteredVariants({
+    minorAlleleFrequencyFilter,
+    maxMissingnessFilter,
+    filterChain: filters,
+    features: rawFeatures,
+    report: createProgressReporter({
+      label: 'Filtering variants',
+      total: rawFeatures.length,
+      statusCallback,
+      stopTokenCheck,
+    }),
+  })
+
+  // Pre-size each haplotype row to mafs.length and assign by feature index.
+  // Int16 is wide enough for VCF allele indices including pathological
+  // multi-allelic sites, well past Int8's 127-allele cap.
+  const numFeatures = mafs.length
+  const rows: Record<string, Int16Array> = {}
+  const rowArraysBySrc: Int16Array[][] = resolved.map(r => {
+    const arrs: Int16Array[] = []
+    for (let hp = 0; hp < r.maxPloidy; hp++) {
+      const arr = new Int16Array(numFeatures)
+      rows[`${r.name} HP${hp}`] = arr
+      arrs.push(arr)
+    }
+    return arrs
+  })
+
+  const report = createProgressReporter({
+    label: 'Building genotype matrix',
+    total: numFeatures,
+    statusCallback,
+    stopTokenCheck,
+  })
+  for (let f = 0; f < numFeatures; f++) {
+    const feature = mafs[f]!.feature
+    const genotypes = feature.get('genotypes') as Record<string, string>
+    for (let k = 0; k < resolved.length; k++) {
+      const r = resolved[k]!
+      const val = genotypes[r.key]!
+      const arrs = rowArraysBySrc[k]!
+      if (val.includes('|')) {
+        const alleles = val.split('|')
+        for (let hp = 0; hp < r.maxPloidy; hp++) {
           const allele = alleles[hp]
           const value = allele === '.' || allele === undefined ? -1 : +allele
-          rows[`${name} HP${hp}`]!.push(value)
+          arrs[hp]![f] = value
         }
       } else {
-        for (let hp = 0; hp < ploidy; hp++) {
-          rows[`${name} HP${hp}`]!.push(-1)
+        for (let hp = 0; hp < r.maxPloidy; hp++) {
+          arrs[hp]![f] = -1
         }
       }
     }
-    checkStopToken2(stopTokenCheck)
+    report(f)
   }
   return rows
 }

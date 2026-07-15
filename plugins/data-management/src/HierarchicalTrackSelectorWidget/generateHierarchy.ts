@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { isSessionWithSessionTracks } from '@jbrowse/product-core'
 
 import { sortConfs } from './sortUtils.ts'
 import { matchesLower } from './util.ts'
@@ -27,6 +28,15 @@ export function generateHierarchy({
   const { filterText, activeSortTrackNames, activeSortCategories } = model
   const session = getSession(model)
 
+  // a non-admin's added/copied tracks live in session.sessionTracks and are
+  // grouped under a "Session tracks" category. Membership is the session's own
+  // list — the source of truth — not a suffix baked into the trackId.
+  const sessionTrackIds = new Set(
+    isSessionWithSessionTracks(session)
+      ? session.sessionTracks.map(t => t.trackId)
+      : [],
+  )
+
   const queryLower = filterText.trim().toLowerCase()
   const confs = queryLower
     ? trackConfs.filter(conf => matchesLower(queryLower, conf, session))
@@ -39,7 +49,7 @@ export function generateHierarchy({
     activeSortTrackNames,
     activeSortCategories,
   )) {
-    const isSessionTrack = conf.trackId.endsWith('sessionTrack')
+    const isSessionTrack = sessionTrackIds.has(conf.trackId)
     const baseCategories =
       (readConfObject(conf, 'category') as string[] | undefined) ?? []
     const categories = isSessionTrack

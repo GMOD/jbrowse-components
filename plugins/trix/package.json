@@ -26,14 +26,14 @@
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "peerDependencies": {
-    "react": ">=18.0.0"
+    "react": ">=19.0.0"
   },
   "dependencies": {
-    "@gmod/trix": "^3.0.16",
+    "@gmod/trix": "^3.0.17",
     "@jbrowse/core": "workspace:^"
   },
   "publishConfig": {

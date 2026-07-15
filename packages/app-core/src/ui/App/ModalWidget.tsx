@@ -1,26 +1,27 @@
 import { Suspense } from 'react'
 
-import { Dialog, PluggableComponent } from '@jbrowse/core/ui'
+import { Dialog, LoadingEllipses, PluggableComponent } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import CloseIcon from '@mui/icons-material/Close'
-import { AppBar, IconButton, Paper, Toolbar, Typography } from '@mui/material'
+import {
+  AppBar,
+  Box,
+  IconButton,
+  Paper,
+  Toolbar,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 
-const useStyles = makeStyles()(theme => ({
+const useStyles = makeStyles()({
   paper: {
     overflow: 'auto',
     minWidth: 800,
   },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-}))
+})
 
 const DrawerAppBar = observer(function DrawerAppBar({
   session,
@@ -29,7 +30,6 @@ const DrawerAppBar = observer(function DrawerAppBar({
   session: SessionWithWidgets
   onClose: () => void
 }) {
-  const { classes } = useStyles()
   const { visibleWidget } = session
   const { pluginManager } = getEnv(session)
 
@@ -50,10 +50,11 @@ const DrawerAppBar = observer(function DrawerAppBar({
         ) : (
           <Typography variant="h6">{heading}</Typography>
         )}
+        <Box sx={{ flexGrow: 1 }} />
+        <IconButton color="inherit" onClick={onClose}>
+          <CloseIcon />
+        </IconButton>
       </Toolbar>
-      <IconButton className={classes.closeButton} onClick={onClose}>
-        <CloseIcon />
-      </IconButton>
     </AppBar>
   )
 })
@@ -85,7 +86,7 @@ const ModalWidget = observer(function ModalWidget({
       header={<DrawerAppBar onClose={onClose} session={session} />}
     >
       {ReactComponent ? (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingEllipses />}>
           <Paper className={classes.paper}>
             <PluggableComponent
               pluginManager={pluginManager}

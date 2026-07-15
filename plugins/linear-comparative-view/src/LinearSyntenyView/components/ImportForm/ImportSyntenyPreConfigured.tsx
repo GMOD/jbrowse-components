@@ -1,75 +1,62 @@
-import { useEffect } from 'react'
-
-import { readConfObject } from '@jbrowse/core/configuration'
-import { ErrorMessage } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getSyntenyTracks, pickSyntenyTrackId } from '@jbrowse/synteny-core'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../model.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 const ImportSyntenyTrackSelector = observer(
   function ImportSyntenyTrackSelector({
     model,
-    selectedRow,
     assembly1,
     assembly2,
+    selectedRow,
   }: {
     model: LinearSyntenyViewModel
-    selectedRow: number
     assembly1: string
     assembly2: string
+    selectedRow: number
   }) {
     const session = getSession(model)
-    const { importFormSyntenyTrackSelections } = model
-    const { tracks, sessionTracks = [] } = session
-    const allTracks = [...tracks, ...sessionTracks] as AnyConfigurationModel[]
-    const filteredTracks = allTracks.filter(track => {
-      const assemblyNames = readConfObject(track, 'assemblyNames')
-      return (
-        assemblyNames.includes(assembly1) &&
-        assemblyNames.includes(assembly2) &&
-        track.type.includes('Synteny')
-      )
-    })
-    const resetTrack = filteredTracks[0]?.trackId || ''
-    const r = importFormSyntenyTrackSelections[selectedRow]
-    const value = r?.type === 'preConfigured' ? r.value : undefined
-    useEffect(() => {
-      model.setImportFormSyntenyTrack(selectedRow, {
-        type: 'preConfigured',
-        value: resetTrack,
-      })
-    }, [assembly2, assembly1, resetTrack, selectedRow, model])
+    const filteredTracks = getSyntenyTracks(session.tracks, [
+      assembly1,
+      assembly2,
+    ])
+    const selection = model.importFormSyntenyTrackSelections[selectedRow]
+    const picked = selection?.type === 'preConfigured' ? selection.value : ''
+    const value = pickSyntenyTrackId(picked, filteredTracks) ?? ''
     return (
       <Paper style={{ padding: 12 }}>
-        <Typography>
-          Select a track from the select box below, the track will be shown when
-          you hit "Launch".
-        </Typography>
-
-        {value && filteredTracks.map(r => r.trackId).includes(value) ? (
-          <Select
-            value={value}
-            onChange={event => {
-              model.setImportFormSyntenyTrack(selectedRow, {
-                type: 'preConfigured',
-                value: event.target.value,
-              })
-            }}
-          >
-            {filteredTracks.map(track => (
-              <MenuItem key={track.trackId} value={track.trackId}>
-                {getTrackName(track, session)}
-              </MenuItem>
-            ))}
-          </Select>
+        {filteredTracks.length ? (
+          <>
+            <Typography>
+              Select a track from the select box below, the track will be shown
+              when you hit "Launch".
+            </Typography>
+            <Select
+              value={value}
+              inputProps={{ 'aria-label': 'Synteny track' }}
+              onChange={event => {
+                model.setImportFormSyntenyTrack(selectedRow, {
+                  type: 'preConfigured',
+                  value: event.target.value,
+                })
+              }}
+            >
+              {filteredTracks.map(track => (
+                <MenuItem key={track.trackId} value={track.trackId}>
+                  {getTrackName(track, session)}
+                </MenuItem>
+              ))}
+            </Select>
+          </>
         ) : (
-          <ErrorMessage
-            error={`No synteny tracks found for ${assembly1},${assembly2}`}
-          />
+          <Typography color="text.secondary">
+            {assembly1 === assembly2
+              ? 'Choose two different assemblies, or use "Quick start" above to auto-fill from a synteny track.'
+              : `No pre-configured synteny track connects ${assembly1} and ${assembly2}. Choose "New track" to add one, or use "Quick start" above.`}
+          </Typography>
         )}
       </Paper>
     )

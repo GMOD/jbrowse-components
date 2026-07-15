@@ -1,29 +1,53 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AssemblySelector, FileSelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { useSeedTrackMixin } from '../addTrackMixinContribution.ts'
+
+import type { AddTrackComponentModel } from '../addTrackMixinContribution.ts'
 import type { FileLocation } from '@jbrowse/core/util'
+
+interface AnchorsForm {
+  bed1Assembly?: string
+  bed2Assembly?: string
+  bed1Location?: FileLocation
+  bed2Location?: FileLocation
+}
+
+function formToMixin(form: AnchorsForm) {
+  const { bed1Assembly, bed2Assembly, bed1Location, bed2Location } = form
+  return {
+    adapter: {
+      assemblyNames: [bed1Assembly, bed2Assembly],
+      bed1Location,
+      bed2Location,
+    },
+  }
+}
 
 const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
   model,
-}: any) {
+}: {
+  model: AddTrackComponentModel
+}) {
   const session = getSession(model)
-  const [r0, setR0] = useState(session.assemblies[0]?.name)
-  const [r1, setR1] = useState(session.assemblies[0]?.name)
-  const [bed1Location, setBed1Location] = useState<FileLocation>()
-  const [bed2Location, setBed2Location] = useState<FileLocation>()
-  useEffect(() => {
-    model.setMixinData({
-      adapter: {
-        assemblyNames: [r0, r1],
-        bed1Location,
-        bed2Location,
-      },
-    })
-  }, [model, bed1Location, bed2Location, r0, r1])
+  const defaultAsm = session.assemblies[0]?.name
+  const [form, setForm] = useState<AnchorsForm>({
+    bed1Assembly: defaultAsm,
+    bed2Assembly: defaultAsm,
+  })
+
+  useSeedTrackMixin(model, formToMixin(form))
+
+  function update(patch: Partial<AnchorsForm>) {
+    const next = { ...form, ...patch }
+    setForm(next)
+    model.setMixinData(formToMixin(next))
+  }
+
   return (
     <div style={{ marginTop: 20 }}>
       <Typography>
@@ -34,9 +58,9 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         session={session}
         label="BED1 assembly"
         helperText=""
-        selected={r0}
+        selected={form.bed1Assembly}
         onChange={asm => {
-          setR0(asm)
+          update({ bed1Assembly: asm })
         }}
         fullWidth
       />
@@ -44,9 +68,9 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         session={session}
         label="BED2 assembly"
         helperText=""
-        selected={r1}
+        selected={form.bed2Assembly}
         onChange={asm => {
-          setR1(asm)
+          update({ bed2Assembly: asm })
         }}
         fullWidth
       />
@@ -54,18 +78,18 @@ const MCScanAddTrackComponent = observer(function MCScanAddTrackComponent({
         name="BED1"
         inline
         description=""
-        location={bed1Location}
+        location={form.bed1Location}
         setLocation={loc => {
-          setBed1Location(loc)
+          update({ bed1Location: loc })
         }}
       />
       <FileSelector
         name="BED2"
         inline
         description=""
-        location={bed2Location}
+        location={form.bed2Location}
         setLocation={loc => {
-          setBed2Location(loc)
+          update({ bed2Location: loc })
         }}
       />
     </div>

@@ -18,4 +18,8 @@ export const useSlotEditorStyles = makeStyles()(theme => ({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  resetButton: {
+    display: 'flex',
+    alignItems: 'center',
+  },
 }))

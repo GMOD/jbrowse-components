@@ -1,30 +1,49 @@
 ---
 id: trackmenusessionmixin
 title: TrackMenuSessionMixin
+sidebar_label: Mixin -> TrackMenuSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/TrackMenuSessionMixin.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+The minimal track menus used by the embedded react views, which have no
+track-editing actions to offer: just "About track" plus any plugin-contributed
+items (`Core-extraTrackMenuItems`). Mirrors the shape of the full
+`TrackMenuItemsSessionMixin` so both menu surfaces stay consistent across
+products, minus the Settings/Copy/Delete actions.
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/TrackMenu.ts)
+## Members
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/TrackMenuSessionMixin.md)
+| Member                                                     | Kind    | Defined by            | Description                                                 |
+| ---------------------------------------------------------- | ------- | --------------------- | ----------------------------------------------------------- |
+| [getTrackListMenuItems](#method-gettracklistmenuitems)     | Methods | TrackMenuSessionMixin | flattened menu items for use in hierarchical track selector |
+| [getTrackActionMenuItems](#method-gettrackactionmenuitems) | Methods | TrackMenuSessionMixin |                                                             |
 
-## Docs
+<details>
+<summary>TrackMenuSessionMixin - Methods</summary>
 
-### TrackMenuSessionMixin - Methods
+#### method: getTrackListMenuItems
+
+flattened menu items for use in hierarchical track selector
+
+```ts
+type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+```
+
+</details>
+
+<details>
+<summary>TrackMenuSessionMixin - Methods (other undocumented members)</summary>
 
 #### method: getTrackActionMenuItems
 
-```js
-// type signature
-getTrackActionMenuItems: (config: any, extraTrackActions?: MenuItem[] | undefined, effectiveConfig?: Record<string, unknown> | undefined, _view?: { showTrack: (id: string) => void; } | undefined) => MenuItem[]
+```ts
+type getTrackActionMenuItems = ({ config, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; view?: TrackActionView | undefined; }) => MenuItem[]
 ```
+
+</details>

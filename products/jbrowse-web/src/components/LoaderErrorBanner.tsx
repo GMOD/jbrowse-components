@@ -3,7 +3,7 @@ import { ErrorBanner } from '@jbrowse/core/ui'
 import NoConfigMessage from './NoConfigMessage.tsx'
 
 export default function LoaderErrorBanner({ error }: { error: unknown }) {
-  return /HTTP 404 fetching config.json/.exec(`${error}`) ? (
+  return /HTTP 404 fetching config.json/.test(`${error}`) ? (
     <div>
       <h1>It worked!</h1>
       <p
@@ -20,9 +20,12 @@ export default function LoaderErrorBanner({ error }: { error: unknown }) {
           quick start guide
         </a>{' '}
         to continue or browse the sample data{' '}
-        <a href="?config=test_data/volvox/config.json">here</a>.
+        <a href="?config=test_data/volvox/config.json">here</a>. To see what
+        JBrowse 2 can do, explore the{' '}
+        <a href="https://jbrowse.org/jb2/gallery/">visualization gallery</a> and{' '}
+        <a href="https://jbrowse.org/jb2/demos/">live demos</a>.
       </p>
-      <NoConfigMessage />
+      {process.env.NODE_ENV === 'development' ? <NoConfigMessage /> : null}
     </div>
   ) : (
     <div>

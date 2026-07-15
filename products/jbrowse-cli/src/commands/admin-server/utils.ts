@@ -1,12 +1,12 @@
-import crypto from 'crypto'
-import fs from 'fs'
-import path from 'path'
+import crypto from 'node:crypto'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { debug, resolveConfigPath, writeJsonFile } from '../../utils.ts'
 import { createDefaultConfig } from '../add-assembly/utils.ts'
 
 import type { Express, Request, Response } from 'express'
-import type http from 'http'
+import type http from 'node:http'
 
 interface ServerRef {
   current: http.Server | null
@@ -24,7 +24,7 @@ export function parsePort({
   }
 
   const parsedPort = Number.parseInt(portStr, 10)
-  if (!(parsedPort > 0 && parsedPort < 65535)) {
+  if (!(parsedPort > 0 && parsedPort <= 65535)) {
     throw new Error(`${portStr} is not a valid port`)
   }
 
@@ -32,7 +32,7 @@ export function parsePort({
 }
 
 export function generateKey(): string {
-  return crypto.randomBytes(5).toString('hex')
+  return crypto.randomBytes(16).toString('hex')
 }
 
 export async function setupConfigFile({
@@ -65,14 +65,19 @@ function validateAndExtractParams({
   outFile: string
 }): { isValid: boolean; configPath?: string; error?: string } {
   const { body } = req
-  const adminKey = body?.adminKey || (req.query.adminKey as string | undefined)
+  const queryAdminKey = req.query.adminKey
+  const adminKey =
+    body?.adminKey ||
+    (typeof queryAdminKey === 'string' ? queryAdminKey : undefined)
 
   if (adminKey !== key) {
     return { isValid: false, error: 'Invalid admin key' }
   }
 
+  const queryConfig = req.query.config
   const configPathParam =
-    body?.configPath || (req.query.config as string | undefined)
+    body?.configPath ||
+    (typeof queryConfig === 'string' ? queryConfig : undefined)
 
   try {
     const configPath = configPathParam
@@ -121,8 +126,10 @@ export function setupRoutes({
       return
     }
 
-    if (body.adminKey) {
-      delete body.adminKey
+    if (config === undefined) {
+      res.status(400).setHeader('Content-Type', 'text/plain')
+      res.send('Error: Missing config in request body')
+      return
     }
 
     try {

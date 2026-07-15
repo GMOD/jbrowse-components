@@ -5,16 +5,27 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
-  isSessionModelWithWidgets,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { SharedLinearPileupDisplayMixin } from '@jbrowse/plugin-alignments'
+import {
+  getColorByMenuItem,
+  getFeatureHeightMenuItem,
+  getFiltersMenuItem,
+  linearAlignmentsDisplayStateModelFactory,
+  pickColorOptions,
+} from '@jbrowse/plugin-alignments'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
+
+import {
+  canLaunchSyntenyForMate,
+  findVisibleBlockForFeature,
+  getMate,
+} from './components/util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 const LaunchSyntenyViewDialog = lazy(
   () => import('./components/LaunchSyntenyViewDialog.tsx'),
@@ -25,111 +36,179 @@ const LaunchSyntenyViewDialog = lazy(
  * displays location of "synteny" feature in a plain LGV, allowing linking out
  * to external synteny views
  *
- * extends
- * - [SharedLinearPileupDisplayMixin](../sharedlinearpileupdisplaymixin)
+ * #example
+ * Shows a `SyntenyTrack`'s alignments in a plain linear view (rather than the
+ * two-row synteny view). Same track config as a synteny track — just pick this
+ * display type:
+ * ```js
+ * {
+ *   type: 'SyntenyTrack',
+ *   trackId: 'hg38_vs_mm10',
+ *   name: 'hg38 vs mm10',
+ *   assemblyNames: ['hg38', 'mm10'],
+ *   adapter: {
+ *     type: 'PAFAdapter',
+ *     uri: 'https://example.com/hg38_vs_mm10.paf',
+ *     queryAssembly: 'hg38',
+ *     targetAssembly: 'mm10',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LGVSyntenyDisplay',
+ *       displayId: 'hg38_vs_mm10-LGVSyntenyDisplay',
+ *     },
+ *   ],
+ * }
+ * ```
  */
 function stateModelFactory(schema: AnyConfigurationSchemaType) {
-  return types
-    .compose(
-      'LGVSyntenyDisplay',
-      SharedLinearPileupDisplayMixin(schema),
-      types.model({
+  const baseModel = linearAlignmentsDisplayStateModelFactory(schema)
+  return (
+    types
+      .compose(
+        'LGVSyntenyDisplay',
+        baseModel,
+        types.model({
+          /**
+           * #property
+           */
+          type: types.literal('LGVSyntenyDisplay'),
+          /**
+           * #property
+           */
+          configuration: ConfigurationReference(schema),
+        }),
+      )
+      // showCoverage defaults to false for synteny via the config-slot override
+      // in configSchemaF (the base alignments display defaults it to true).
+      .views(() => ({
         /**
-         * #property
+         * #getter
+         * synteny features open the SyntenyFeatureWidget; the inherited
+         * `selectFeature` action reads this getter, so no override is needed.
          */
-        type: types.literal('LGVSyntenyDisplay'),
-        /**
-         * #property
-         */
-        configuration: ConfigurationReference(schema),
-      }),
-    )
-    .views(self => {
-      const superContextMenuItems = self.contextMenuItems
-      return {
+        get featureWidgetType() {
+          return {
+            type: 'SyntenyFeatureWidget',
+            id: 'syntenyFeature',
+          }
+        },
+      }))
+      .views(self => ({
         /**
          * #method
          */
         contextMenuItems() {
           const feature = self.contextMenuFeature
-          return [
-            ...superContextMenuItems(),
-            ...(feature
-              ? [
-                  {
-                    label: 'Launch synteny view for this position',
-                    onClick: () => {
-                      getSession(self).queueDialog(handleClose => [
-                        LaunchSyntenyViewDialog,
-                        {
-                          view: getContainingView(self) as LGV,
-                          trackId: getConf(getContainingTrack(self), 'trackId'),
-                          handleClose,
-                          session: getSession(self),
-                          feature,
-                        },
-                      ])
-                    },
+          const mateAssembly = feature
+            ? getMate(feature).assemblyName
+            : undefined
+          const canLaunchSynteny = canLaunchSyntenyForMate(
+            getConf(getContainingTrack(self), 'assemblyNames'),
+            mateAssembly,
+          )
+          return feature
+            ? [
+                {
+                  label: 'Open feature details',
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    self.selectFeature(feature)
                   },
-                ]
-              : []),
-          ]
+                },
+                ...(canLaunchSynteny
+                  ? [
+                      {
+                        label: 'Launch synteny view for this position',
+                        onClick: () => {
+                          getSession(self).queueDialog(handleClose => [
+                            LaunchSyntenyViewDialog,
+                            {
+                              visibleRegion: findVisibleBlockForFeature(
+                                getContainingView(
+                                  self,
+                                ) as LinearGenomeViewModel,
+                                feature,
+                              ),
+                              trackId: getConf(
+                                getContainingTrack(self),
+                                'trackId',
+                              ),
+                              handleClose,
+                              session: getSession(self),
+                              feature,
+                            },
+                          ])
+                        },
+                      },
+                    ]
+                  : []),
+                {
+                  label: 'Copy info to clipboard',
+                  icon: ContentCopyIcon,
+                  onClick: async () => {
+                    const session = getSession(self)
+                    try {
+                      const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
+                      const { default: copy } =
+                        await import('@jbrowse/core/util/copyToClipboard')
+                      copy(JSON.stringify(rest, null, 4))
+                      session.notify('Copied to clipboard', 'success')
+                    } catch (e) {
+                      console.error(e)
+                      session.notifyError(`${e}`, e)
+                    }
+                  },
+                },
+              ]
+            : []
         },
-      }
-    })
-    .views(self => {
-      const {
-        trackMenuItems: superTrackMenuItems,
-        colorSchemeSubMenuItems: superColorSchemeSubMenuItems,
-      } = self
-      return {
         /**
          * #method
          */
         trackMenuItems() {
+          const groupedByMate = self.groupBy?.type === 'mateAssembly'
           return [
-            ...superTrackMenuItems(),
+            getFeatureHeightMenuItem(self, 'feature'),
+            getColorByMenuItem(self, {
+              colorOptions: pickColorOptions(
+                'normal',
+                'strand',
+                'mappingQuality',
+              ),
+            }),
+            getFiltersMenuItem(self),
             {
-              label: 'Color scheme',
-              subMenu: [...superColorSchemeSubMenuItems()],
+              label: 'Show coverage',
+              type: 'checkbox' as const,
+              checked: self.showCoverage,
+              onClick: () => {
+                self.setShowCoverage(!self.showCoverage)
+              },
+            },
+            {
+              label: 'Lay out large features first',
+              type: 'checkbox' as const,
+              checked: self.largeFeaturesFirst,
+              onClick: () => {
+                self.setLargeFeaturesFirst(!self.largeFeaturesFirst)
+              },
+            },
+            {
+              label: 'Group by mate sample',
+              type: 'checkbox' as const,
+              checked: groupedByMate,
+              icon: WorkspacesIcon,
+              onClick: () => {
+                self.setGroupBy(
+                  groupedByMate ? undefined : { type: 'mateAssembly' },
+                )
+              },
             },
           ]
         },
-      }
-    })
-    .actions(self => ({
-      /**
-       * #action
-       */
-      selectFeature(feature: Feature) {
-        const session = getSession(self)
-        if (isSessionModelWithWidgets(session)) {
-          const r2 = getContainingView(self)
-          let r3 = r2
-          try {
-            r3 = getContainingView(r3)
-          } catch (e) {}
-          const featureWidget = session.addWidget(
-            'SyntenyFeatureWidget',
-            'syntenyFeature',
-            {
-              featureData: feature.toJSON(),
-              view: r3,
-              track: getContainingTrack(self),
-            },
-          )
-          session.showWidget(featureWidget)
-        }
-        session.setSelection(feature)
-      },
-      afterCreate() {
-        // use color by strand to help indicate inversions better on first load,
-        // otherwise use selected orientation
-        if (!self.colorBySetting && self.colorBy.type === 'normal') {
-          self.setColorScheme({ type: 'strand' })
-        }
-      },
-    }))
+      }))
+  )
 }
 
 export default stateModelFactory

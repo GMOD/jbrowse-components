@@ -1,86 +1,79 @@
 ---
 id: dotplot1dview
 title: Dotplot1DView
+sidebar_label: View -> Dotplot1DView
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`dotplot-view` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/1dview.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotView/1dview.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/Dotplot1DView.md)
-
-## Docs
+## Overview
 
 ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state
 used here
 
-### Dotplot1DView - Getters
+## Members
+
+| Member                                 | Kind    | Defined by    | Description                               |
+| -------------------------------------- | ------- | ------------- | ----------------------------------------- |
+| [dynamicBlocks](#getter-dynamicblocks) | Getters | Dotplot1DView | this uses padding=false and elision=false |
+| [maxBpPerPx](#getter-maxbpperpx)       | Getters | Dotplot1DView |                                           |
+| [minBpPerPx](#getter-minbpperpx)       | Getters | Dotplot1DView |                                           |
+| [maxOffset](#getter-maxoffset)         | Getters | Dotplot1DView |                                           |
+| [minOffset](#getter-minoffset)         | Getters | Dotplot1DView |                                           |
+| [center](#action-center)               | Actions | Dotplot1DView |                                           |
+
+<details>
+<summary>Dotplot1DView - Getters</summary>
 
 #### getter: dynamicBlocks
 
 this uses padding=false and elision=false
 
-```js
-// type
-BlockSet
+```ts
+type dynamicBlocks = BlockSet
 ```
 
-#### getter: scaleFactor
+</details>
 
-```js
-// type
-number
-```
+<details>
+<summary>Dotplot1DView - Getters (other undocumented members)</summary>
 
 #### getter: maxBpPerPx
 
-```js
-// type
-number
+```ts
+type maxBpPerPx = number
 ```
 
 #### getter: minBpPerPx
 
-```js
-// type
-number
+```ts
+type minBpPerPx = number
 ```
 
 #### getter: maxOffset
 
-```js
-// type
-number
+```ts
+type maxOffset = number
 ```
 
 #### getter: minOffset
 
-```js
-// type
-number
+```ts
+type minOffset = number
 ```
 
-### Dotplot1DView - Actions
+</details>
 
-#### action: setScaleFactor
-
-```js
-// type signature
-setScaleFactor: (n: number) => void
-```
+<details>
+<summary>Dotplot1DView - Actions</summary>
 
 #### action: center
 
-```js
-// type signature
-center: () => void
+```ts
+type center = () => void
 ```
+
+</details>

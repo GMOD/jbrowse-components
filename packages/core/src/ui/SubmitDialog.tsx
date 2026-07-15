@@ -3,23 +3,36 @@ import { observer } from 'mobx-react'
 
 import Dialog from './Dialog.tsx'
 
-import type { DialogProps } from '@mui/material'
+import type { Props as DialogComponentProps } from './Dialog.tsx'
+import type { ButtonProps } from '@mui/material'
 
-interface Props extends DialogProps {
+export interface SubmitDialogProps extends DialogComponentProps {
   onCancel: () => void
   onSubmit: () => void
   cancelText?: string
   submitText?: string
   submitDisabled?: boolean
+  submitColor?: ButtonProps['color']
+  submitStartIcon?: React.ReactNode
+  // When provided, the secondary button becomes a "Restore default" action
+  // (calls onReset, does NOT dismiss) in place of Cancel — for dialogs whose
+  // settings apply live, where Submit is really just "Close". onCancel still
+  // handles backdrop/escape dismissal.
+  onReset?: () => void
+  resetText?: string
 }
 
-const SubmitDialog = observer(function SubmitDialog(props: Props) {
+const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
   const {
     onSubmit,
     onCancel,
     cancelText = 'Cancel',
     submitText = 'Submit',
     submitDisabled = false,
+    submitColor = 'primary',
+    submitStartIcon,
+    onReset,
+    resetText = 'Restore default',
     children,
     ...dialogProps
   } = props
@@ -39,16 +52,21 @@ const SubmitDialog = observer(function SubmitDialog(props: Props) {
             color="secondary"
             variant="contained"
             onClick={() => {
-              onCancel()
+              if (onReset) {
+                onReset()
+              } else {
+                onCancel()
+              }
             }}
           >
-            {cancelText}
+            {onReset ? resetText : cancelText}
           </Button>
           <Button
             type="submit"
-            color="primary"
+            color={submitColor}
             variant="contained"
             disabled={submitDisabled}
+            startIcon={submitStartIcon}
           >
             {submitText}
           </Button>

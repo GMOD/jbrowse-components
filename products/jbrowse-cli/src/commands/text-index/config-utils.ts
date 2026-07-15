@@ -1,18 +1,10 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { supported } from '../../types/common.ts'
+import { parseCommaSeparatedString } from '../../utils.ts'
 
 import type { Config, Track } from '../../base.ts'
-
-export function parseCommaSeparatedString(value?: string): string[] {
-  return (
-    value
-      ?.split(',')
-      .map(s => s.trim())
-      .filter(Boolean) ?? []
-  )
-}
 
 export function validatePrefixSize(
   value?: string | number,
@@ -21,7 +13,7 @@ export function validatePrefixSize(
     return undefined
   }
   const parsed = typeof value === 'number' ? value : parseInt(value, 10)
-  if (isNaN(parsed) || parsed < 0) {
+  if (Number.isNaN(parsed) || parsed <= 0) {
     throw new Error(
       `Invalid prefixSize: "${value}". Must be a positive number.`,
     )
@@ -44,7 +36,7 @@ export function prepareIndexDriverFlags(flags: {
 }
 
 export function readConf(configPath: string): Config {
-  return JSON.parse(fs.readFileSync(configPath, 'utf8')) as Config
+  return JSON.parse(fs.readFileSync(configPath, 'utf8'))
 }
 
 export function writeConf(obj: Config, configPath: string): void {
@@ -90,47 +82,51 @@ export function getAssemblyNames(
   return asms
 }
 
+export function formatDryRun(trackConfigs: Track[]): string {
+  return trackConfigs.map(t => `${t.trackId}\t${t.adapter?.type}`).join('\n')
+}
+
 export function getTrackConfigs(
   config: Config,
   trackIds?: string[],
   assemblyName?: string,
   excludeTrackIds?: string[],
 ): Track[] {
-  const { tracks } = config
-  if (!tracks) {
-    return []
-  }
-  const trackIdsToIndex = trackIds?.length
-    ? trackIds
-    : tracks.map(track => track.trackId)
-  const excludeSet = new Set(excludeTrackIds)
+  const tracks = config.tracks ?? []
 
-  return trackIdsToIndex
-    .map(trackId => {
-      const currentTrack = tracks.find(t => trackId === t.trackId)
-      if (!currentTrack) {
-        throw new Error(
-          `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
-        )
-      }
-      return currentTrack
-    })
-    .filter(track => {
-      if (excludeSet.has(track.trackId)) {
-        // console.log(`Skipping ${track.trackId}: excluded via --exclude-tracks`)
-        return false
-      }
-      if (!supported(track.adapter?.type)) {
-        return false
-      }
-      if (assemblyName && !track.assemblyNames.includes(assemblyName)) {
-        console.log(
-          `Skipping ${track.trackId}: not in assembly '${assemblyName}'`,
-        )
-        return false
-      }
-      return true
-    })
+  // when specific trackIds are requested every one must exist; otherwise
+  // consider all tracks in the config
+  const requested = trackIds?.length
+    ? trackIds.map(trackId => {
+        const track = tracks.find(t => t.trackId === trackId)
+        if (track) {
+          return track
+        } else {
+          throw new Error(
+            `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
+          )
+        }
+      })
+    : tracks
+
+  const excludeSet = new Set(excludeTrackIds)
+  return requested.filter(track => {
+    const inAssembly =
+      !assemblyName || track.assemblyNames.includes(assemblyName)
+    if (!inAssembly) {
+      console.log(
+        `Skipping ${track.trackId}: not in assembly '${assemblyName}'`,
+      )
+    }
+    return (
+      inAssembly &&
+      !excludeSet.has(track.trackId) &&
+      !track.metadata?.skipTextIndex &&
+      supported(track.adapter?.type)
+    )
+  })
 }
 
 export { sanitizeForFilename as sanitizeNameForPath } from '@jbrowse/text-indexing-core'
+
+export { parseCommaSeparatedString } from '../../utils.ts'

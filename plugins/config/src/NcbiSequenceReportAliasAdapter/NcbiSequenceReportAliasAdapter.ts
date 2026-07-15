@@ -1,47 +1,58 @@
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { openLocation } from '@jbrowse/core/util/io'
 
+import { readAliasRows } from '../aliasUtils.ts'
+
+import type { NcbiSequenceReportAliasAdapterConfig } from './configSchema.ts'
 import type { BaseRefNameAliasAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
+// locate a column by its header name, throwing a column-specific error if a
+// required one is absent
+function requireColumn(header: string[], name: string) {
+  const idx = header.indexOf(name)
+  if (idx === -1) {
+    throw new Error(
+      `sequence_report.tsv header is missing required column "${name}"`,
+    )
+  }
+  return idx
+}
+
 export default class NcbiSequenceReportAliasAdapter
-  extends BaseAdapter
+  extends BaseAdapter<NcbiSequenceReportAliasAdapterConfig>
   implements BaseRefNameAliasAdapter
 {
   async getRefNameAliases() {
-    const loc = this.getConf('location')
-    if (loc.uri === '' || loc.uri === '/path/to/my/sequence_report.tsv') {
+    const rows = await readAliasRows(
+      this.getConf('location'),
+      this.pluginManager,
+    )
+    if (rows.length === 0) {
       return []
     }
     const override = this.getConf('useNameOverride')
-    const results = await openLocation(loc, this.pluginManager).readFile('utf8')
-    const lines = results
-      .split(/\n|\r\n|\r/)
-      .filter(f => !!f.trim())
-      .map(row => row.split('\t'))
+    const header = rows[0]!
+    const dataRows = rows.slice(1)
+    const genBankIdx = requireColumn(header, 'GenBank seq accession')
+    const refSeqIdx = requireColumn(header, 'RefSeq seq accession')
+    const ucscIdx = requireColumn(header, 'UCSC style name')
+    // Sequence name is optional; -1 means absent
+    const seqNameIdx = header.indexOf('Sequence name')
+    const seqName = (cols: string[]) =>
+      seqNameIdx === -1 ? undefined : cols[seqNameIdx]
 
-    const r = lines[0] ?? []
-    const genBankIdx = r.indexOf('GenBank seq accession')
-    const refSeqIdx = r.indexOf('RefSeq seq accession')
-    const ucscIdx = r.indexOf('UCSC style name')
-    const seqNameIdx = r.indexOf('Sequence name')
-    if (genBankIdx === -1 || refSeqIdx === -1 || ucscIdx === -1) {
-      throw new Error(
-        'Header line must include "GenBank seq accession", "RefSeq seq accession", "UCSC style name", and "Sequence name"',
-      )
-    }
-    return lines
-      .slice(1)
-      .filter(cols => !!cols[ucscIdx] || !!cols[seqNameIdx])
+    // refName comes from the UCSC name, falling back to the Sequence name; the
+    // filter guarantees one is present, so every mapped row has a truthy refName
+    return dataRows
+      .filter(cols => !!cols[ucscIdx] || !!seqName(cols))
       .map(cols => ({
-        refName: (cols[ucscIdx] || cols[seqNameIdx])!,
+        refName: (cols[ucscIdx] || seqName(cols))!,
         aliases: [
           cols[genBankIdx],
           cols[refSeqIdx],
           cols[ucscIdx],
-          cols[seqNameIdx],
+          seqName(cols),
         ].filter((f): f is string => !!f),
         override,
       }))
-      .filter(f => !!f.refName)
   }
 }

@@ -1,13 +1,11 @@
 import {
-  getFillProps,
   getSession,
-  getStrokeProps,
   polarToCartesian,
   radToDeg,
+  stripAlpha,
   toLocale,
 } from '@jbrowse/core/util'
 import { makeContrasting } from '@jbrowse/core/util/color'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
@@ -18,25 +16,12 @@ import type {
   SliceNonElidedRegion,
 } from '../slices.ts'
 
-const useStyles = makeStyles()({
-  rulerLabel: {
-    fontSize: '0.8rem',
-    fontWeight: 500,
-    lineHeight: 1.6,
-    letterSpacing: '0.0075em',
-  },
-})
-
-function sliceArcPath(
-  slice: Slice,
+function arcPath(
+  startXY: [number, number],
+  endXY: [number, number],
   radiusPx: number,
-  startBase: number,
-  endBase: number,
+  largeArc: '0' | '1',
 ) {
-  const startXY = slice.bpToXY(startBase, radiusPx)
-  const endXY = slice.bpToXY(endBase, radiusPx)
-  const largeArc =
-    Math.abs(endBase - startBase) / slice.bpPerRadian > Math.PI ? '1' : '0'
   return [
     'M',
     ...startXY,
@@ -50,6 +35,19 @@ function sliceArcPath(
   ].join(' ')
 }
 
+function sliceArcPath(
+  slice: Slice,
+  radiusPx: number,
+  startBase: number,
+  endBase: number,
+) {
+  const startXY = slice.bpToXY(startBase, radiusPx)
+  const endXY = slice.bpToXY(endBase, radiusPx)
+  const largeArc =
+    Math.abs(endBase - startBase) / slice.bpPerRadian > Math.PI ? '1' : '0'
+  return arcPath(startXY, endXY, radiusPx, largeArc)
+}
+
 const ElisionRulerArc = observer(function ElisionRulerArc({
   model,
   slice,
@@ -60,11 +58,8 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
   region: SliceElidedRegion
 }) {
   const theme = useTheme()
-  const { radiusPx: modelRadiusPx } = model
-  const radiusPx = modelRadiusPx + 1
+  const radiusPx = model.radiusPx + 1
   const { endRadians, startRadians } = slice
-  const startXY = polarToCartesian(radiusPx, startRadians)
-  const endXY = polarToCartesian(radiusPx, endRadians)
   const widthPx = (endRadians - startRadians) * radiusPx
   const largeArc = endRadians - startRadians > Math.PI ? '1' : '0'
   const centerRadians = (endRadians + startRadians) / 2
@@ -81,18 +76,13 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
         color={theme.palette.text.primary}
       />
       <path
-        d={[
-          'M',
-          ...startXY,
-          'A',
+        d={arcPath(
+          polarToCartesian(radiusPx, startRadians),
+          polarToCartesian(radiusPx, endRadians),
           radiusPx,
-          radiusPx,
-          '0',
           largeArc,
-          '1',
-          ...endXY,
-        ].join(' ')}
-        {...getStrokeProps(theme.palette.text.secondary)}
+        )}
+        stroke={stripAlpha(theme.palette.text.secondary)}
         strokeWidth={2}
         strokeDasharray="2,2"
         fill="none"
@@ -118,7 +108,6 @@ const RulerLabel = observer(function RulerLabel({
   title?: string
   color: string
 }) {
-  const { classes } = useStyles()
   if (!text || maxWidthPx <= 4) {
     return null
   }
@@ -136,11 +125,13 @@ const RulerLabel = observer(function RulerLabel({
     <text
       x={0}
       y={0}
-      className={classes.rulerLabel}
+      fontSize={13}
+      fontWeight={500}
+      letterSpacing="0.0075em"
       textAnchor={textAnchor}
       dominantBaseline="middle"
       transform={`translate(${textXY}) rotate(${rotation})`}
-      {...getFillProps(color)}
+      fill={stripAlpha(color)}
     >
       {text}
       <title>{title || text}</title>
@@ -164,14 +155,13 @@ const RegionRulerArc = observer(function RegionRulerArc({
   const widthPx = (endRadians - startRadians) * radiusPx
   const session = getSession(model)
   const assembly = session.assemblyManager.get(region.assemblyName)
-  let color = assembly ? assembly.getRefNameColor(region.refName) : undefined
-  if (color) {
-    try {
-      color = makeContrasting(color, theme.palette.background.paper)
-    } catch (error) {
-      color = theme.palette.text.primary
-    }
-  } else {
+  const refNameColor = assembly?.getRefNameColor(region.refName)
+  let color: string
+  try {
+    color = refNameColor
+      ? makeContrasting(refNameColor, theme.palette.background.paper)
+      : theme.palette.text.primary
+  } catch {
     color = theme.palette.text.primary
   }
 
@@ -187,7 +177,7 @@ const RegionRulerArc = observer(function RegionRulerArc({
       />
       <path
         d={sliceArcPath(slice, radiusPx + 1, region.start, region.end)}
-        {...getStrokeProps(color)}
+        stroke={stripAlpha(color)}
         strokeWidth={2}
         fill="none"
       />

@@ -1,12 +1,19 @@
+import { lazy } from 'react'
+
+import { LoadingEllipses } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import BreakpointSplitViewOverlay from './BreakpointSplitViewOverlay.tsx'
 import Header from './Header.tsx'
-import Rubberband from './Rubberband.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
+
+const BreakpointSplitViewImportForm = lazy(
+  () => import('./BreakpointSplitViewImportForm.tsx'),
+)
 
 const useStyles = makeStyles()(theme => ({
   viewDivider: {
@@ -53,7 +60,7 @@ const BreakpointSplitViewLevels = observer(function BreakpointSplitViewLevels({
     <div className={classes.content}>
       <div className={classes.rel}>
         {views.flatMap((view, idx) => {
-          const { ReactComponent } = pluginManager.getViewType(view.type)!
+          const { ReactComponent } = pluginManager.getViewType(view.type)
           const viewComponent = <ReactComponent key={view.id} model={view} />
           return idx === views.length - 1
             ? [viewComponent]
@@ -76,12 +83,15 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
   model: BreakpointViewModel
 }) {
   const { classes } = useStyles()
+  if (model.showImportForm) {
+    return <BreakpointSplitViewImportForm model={model} />
+  }
   return (
     <div className={classes.rubberbandContainer}>
-      {model.showHeader && model.initialized ? <Header model={model} /> : null}
       {model.initialized ? (
         <>
-          <Rubberband
+          {model.showHeader ? <Header model={model} /> : null}
+          <MultiLevelRubberband
             model={model}
             ControlComponent={<div className={classes.rubberbandDiv} />}
           />
@@ -90,7 +100,9 @@ const BreakpointSplitView = observer(function BreakpointSplitView({
             <BreakpointSplitViewOverlay model={model} />
           </div>
         </>
-      ) : null}
+      ) : (
+        <LoadingEllipses variant="h6" />
+      )}
     </div>
   )
 })

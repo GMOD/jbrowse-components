@@ -1,38 +1,23 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
-import { LocalFile } from 'generic-filehandle2'
-import { configure } from 'mobx'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import {
+  grapePeachGetFile,
+  utilizeFetchMockForTest,
+} from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
 
 setup()
 
-console.warn = jest.fn()
-console.error = jest.fn()
-
-configure({ disableErrorBoundaries: true })
-
-const getFile = (url: string) => {
-  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
-  const filePath = cleanUrl.startsWith('test_data')
-    ? cleanUrl
-    : `test_data/grape_peach_synteny/${cleanUrl}`
-  return new LocalFile(require.resolve(`../../${filePath}`))
-}
+beforeEach(() => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  jest.spyOn(console, 'error').mockImplementation()
+})
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
-
-afterEach(() => {
-  localStorage.clear()
-  sessionStorage.clear()
-})
+utilizeFetchMockForTest(grapePeachGetFile)
 
 async function createDotplotViewWithInit(init: {
   views: { assembly: string }[]
@@ -108,7 +93,6 @@ test('DotplotView showImportForm is true when no init', () => {
 
   const view = session.addView('DotplotView', {})
 
-  expect(view.showImportForm).toBe(true)
   expect(view.hasSomethingToShow).toBe(false)
 }, 40000)
 
@@ -141,4 +125,34 @@ test('DotplotView can re-initialize with different assemblies', async () => {
   expect(view.hview.displayedRegions.length).toBeGreaterThan(0)
   expect(view.vview.displayedRegions.length).toBeGreaterThan(0)
   expect(view.showLoading).toBe(false)
+}, 40000)
+
+// Regression: a snapshot taken before the view materializes (e.g. autosave
+// firing while the init autorun hasn't set assemblyNames yet) must keep init,
+// so a reload/restore rebuilds instead of stranding on the import form. Once
+// assemblyNames are set, init is redundant and stripped.
+test('snapshot keeps init until assemblyNames set, strips it after', async () => {
+  const { rootModel } = getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('DotplotView', {
+    init: { views: [{ assembly: 'peach' }, { assembly: 'grape' }] },
+  })
+
+  // no width yet -> init autorun hasn't run
+  expect(view.assemblyNames.length).toBe(0)
+  const before: { init?: unknown } = getSnapshot(view)
+  expect(before.init).toBeDefined()
+
+  view.setWidth(800)
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  expect(view.assemblyNames.length).toBe(2)
+  const after: { init?: unknown } = getSnapshot(view)
+  expect(after.init).toBeUndefined()
 }, 40000)

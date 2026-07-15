@@ -1,21 +1,29 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
-import { openLocation } from '@jbrowse/core/util/io'
+import { updateStatus } from '@jbrowse/core/util'
+import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import VcfFeature from '../VcfFeature/index.ts'
+import { getVcfSources, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
 
+import type { SplitVcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
-export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
+export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVcfTabixAdapterConfig> {
+  public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
+
   private configuredByRef = new Map<
     string,
     Promise<{ vcf: TabixIndexedFile; parser: VcfParser }>
   >()
+
+  // refNames whose per-contig index has finished downloading; gates the status
+  // label so pan/zoom re-entry into configure() doesn't re-flash "Downloading
+  // index" for a contig already loaded
+  private readyRefs = new Set<string>()
 
   private configureOnce(refName: string) {
     if (!this.configuredByRef.has(refName)) {
@@ -24,25 +32,26 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
       const indexLocation = this.getConf('indexLocationMap')[refName] ?? {
         uri: `${vcfGzLocation.uri}.${indexType.toLowerCase()}`,
       }
-      const isCSI = indexType === 'CSI'
       const vcf = new TabixIndexedFile({
         filehandle: openLocation(vcfGzLocation, this.pluginManager),
-        csiFilehandle: isCSI
-          ? openLocation(indexLocation, this.pluginManager)
-          : undefined,
-        tbiFilehandle: !isCSI
-          ? openLocation(indexLocation, this.pluginManager)
-          : undefined,
+        ...openTabixIndexFilehandle(
+          indexLocation,
+          indexType,
+          this.pluginManager,
+        ),
         chunkCacheSize: 50 * 2 ** 20,
       })
       this.configuredByRef.set(
         refName,
         vcf
           .getHeader()
-          .then(header => ({
-            vcf,
-            parser: new VcfParser({ header }),
-          }))
+          .then(header => {
+            this.readyRefs.add(refName)
+            return {
+              vcf,
+              parser: new VcfParser({ header }),
+            }
+          })
           .catch((e: unknown) => {
             this.configuredByRef.delete(refName)
             throw e
@@ -52,66 +61,92 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter {
     return this.configuredByRef.get(refName)!
   }
 
+  // Show "Downloading index" only while a contig's index is genuinely
+  // downloading. Once loaded, callers await the cached promise silently rather
+  // than re-flashing the label on pan/zoom.
   async configure(refName: string, opts?: BaseOptions) {
-    return updateStatus('Downloading index', opts?.statusCallback, () =>
-      this.configureOnce(refName),
-    )
+    return this.readyRefs.has(refName)
+      ? this.configureOnce(refName)
+      : updateStatus('Downloading index', opts?.statusCallback, () =>
+          this.configureOnce(refName),
+        )
   }
 
   public async getRefNames() {
     return Object.keys(this.getConf('vcfGzLocationMap'))
   }
 
+  // Index-only compressed-byte estimate (no feature download). Each refName is
+  // a separate file, so regions are grouped by refName and estimated against
+  // their own index — used to short-circuit an over-budget region before
+  // pulling every line (see executeRenderFeatureData).
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    const byRef = new Map<string, Region[]>()
+    for (const region of regions) {
+      const list = byRef.get(region.refName)
+      if (list) {
+        list.push(region)
+      } else {
+        byRef.set(region.refName, [region])
+      }
+    }
+    let total = 0
+    for (const [refName, refRegions] of byRef) {
+      const { vcf } = await this.configure(refName, opts)
+      total += await vcf.bytesForRegions(refRegions, opts)
+    }
+    return total
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { refName, start, end } = query
-      const { vcf, parser } = await this.configure(refName, opts)
+      const { vcf, parser } = await this.configure(query.refName, opts)
+      await streamVcfFeatures(
+        { vcf, parser, idPrefix: this.id },
+        query,
+        opts,
+        observer,
+      )
+    }, opts.stopToken)
+  }
 
-      await updateStatus('Downloading variants', opts.statusCallback, () =>
-        vcf.getLines(refName, start, end, {
-          lineCallback: (line, fileOffset) => {
-            observer.next(
-              new VcfFeature({
-                variant: parser.parseLine(line),
-                parser,
-                id: `${this.id}-vcf-${fileOffset}`,
-              }),
-            )
+  public async getExportData(
+    regions: NoAssemblyRegion[],
+    formatType: string,
+    opts?: BaseOptions,
+  ): Promise<string | undefined> {
+    if (formatType !== 'vcf') {
+      return undefined
+    }
+
+    const exportLines: string[] = []
+    let headerWritten = false
+    for (const region of regions) {
+      const { vcf } = await this.configure(region.refName, opts)
+      if (!headerWritten) {
+        exportLines.push(...(await vcf.getHeader()).split('\n').filter(Boolean))
+        headerWritten = true
+      }
+      await updateStatus('Exporting variants', opts?.statusCallback, () =>
+        vcf.getLines(region.refName, region.start, region.end, {
+          lineCallback: (line: string) => {
+            exportLines.push(line)
           },
           ...opts,
         }),
       )
-      observer.complete()
-    }, opts.stopToken)
+    }
+
+    return exportLines.join('\n')
   }
 
   async getSources() {
-    const conf = this.getConf('samplesTsvLocation')
-    const r = Object.keys(this.getConf('vcfGzLocationMap'))[0]!
-    if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
-      const { parser } = await this.configure(r)
-      return parser.samples.map(name => ({ name }))
-    } else {
-      const txt = await fetchAndMaybeUnzipText(
-        openLocation(conf, this.pluginManager),
-      )
-      const lines = txt.split(/\n|\r\n|\r/)
-      const header = lines[0]!.split('\t')
-      const { parser } = await this.configure(r)
-      const s = new Set(parser.samples)
-      return lines
-        .slice(1)
-        .map(line => {
-          const cols = line.split('\t')
-          return {
-            name: cols[0]!,
-            ...Object.fromEntries(
-              // force col 0 to be called name
-              cols.slice(1).map((c, idx) => [header[idx + 1]!, c] as const),
-            ),
-          }
-        })
-        .filter(f => s.has(f.name))
-    }
+    const [refName] = Object.keys(this.getConf('vcfGzLocationMap'))
+    const { parser } = await this.configure(refName!)
+    return getVcfSources(
+      this.getConf('samplesTsvLocation'),
+      parser,
+      this.pluginManager,
+    )
   }
 }

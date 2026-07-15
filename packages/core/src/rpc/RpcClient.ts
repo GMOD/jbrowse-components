@@ -1,14 +1,18 @@
 import { deserializeError } from './serializeError/index.ts'
 
+import type { ErrorObject } from './serializeError/index.ts'
+
 type Listener = (arg: unknown) => void
 
 interface RpcMessageData {
   uid: string
   libRpc?: true
-  error?: string
-  method?: string
+  // errors arrive as a serialized ErrorObject, or a bare string for
+  // framework-level failures (e.g. `Unknown RPC method "..."`)
+  error?: string | ErrorObject
   eventName?: string
-  data: unknown
+  // absent on error frames; carried by replies and events
+  data?: unknown
 }
 
 interface PendingCall {
@@ -33,11 +37,12 @@ export default class RpcClient {
   }
 
   on(event: string, listener: Listener) {
-    let listeners = this.events.get(event)
-    if (!listeners) {
-      this.events.set(event, (listeners = []))
+    const listeners = this.events.get(event)
+    if (listeners) {
+      listeners.push(listener)
+    } else {
+      this.events.set(event, [listener])
     }
-    listeners.push(listener)
     return this
   }
 
@@ -63,25 +68,30 @@ export default class RpcClient {
   }
 
   protected handler(e: MessageEvent<RpcMessageData>) {
-    const { uid, error, method, eventName, data, libRpc } = e.data
+    const { uid, error, eventName, data, libRpc } = e.data
     if (!libRpc) {
       return
     }
+    // three frame kinds share the channel: an error (rejects the call), a
+    // named event (status side-channel), and — the default — a call reply
     if (error) {
       this.reject(uid, error)
-    } else if (method) {
-      this.resolve(uid, data)
     } else if (eventName) {
       this.emit(eventName, data)
+    } else {
+      this.resolve(uid, data)
     }
   }
 
   protected catch(e: ErrorEvent) {
     const error = new Error(e.message)
-    for (const { reject } of this.pending.values()) {
+    // snapshot before clearing so a synchronous reject handler that schedules
+    // a new call() can't have its entry dropped by the clear()
+    const snapshot = [...this.pending.values()]
+    this.pending.clear()
+    for (const { reject } of snapshot) {
       reject(error)
     }
-    this.pending.clear()
     this.emit('error', {
       message: e.message,
       lineno: e.lineno,
@@ -89,7 +99,7 @@ export default class RpcClient {
     })
   }
 
-  protected reject(uid: string, error: string | Error) {
+  protected reject(uid: string, error: string | ErrorObject) {
     const p = this.pending.get(uid)
     if (p) {
       p.reject(deserializeError(error))

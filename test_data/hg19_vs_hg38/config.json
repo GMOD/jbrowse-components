@@ -8,7 +8,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "hg19.chrom.sizes",
+            "uri": "hg19.karyotype.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -22,7 +22,7 @@
         "adapter": {
           "type": "ChromSizesAdapter",
           "chromSizesLocation": {
-            "uri": "hg38.chrom.sizes",
+            "uri": "hg38.karyotype.chrom.sizes",
             "locationType": "UriLocation"
           }
         }
@@ -53,16 +53,10 @@
       {
         "id": "MiDMyyWpp",
         "type": "DotplotView",
-        "assemblyNames": ["hg38", "hg19"],
-        "hview": {
-          "displayedRegions": [],
-          "bpPerPx": 100000,
-          "offsetPx": 0
-        },
-        "vview": {
-          "displayedRegions": [],
-          "bpPerPx": 200000,
-          "offsetPx": 0
+        "init": {
+          "views": [{ "assembly": "hg38" }, { "assembly": "hg19" }],
+          "tracks": ["hg19ToHg38.over.chain.gz-1645073157673"],
+          "showColorLegend": false
         },
         "headerHeight": 44,
         "width": 1850,

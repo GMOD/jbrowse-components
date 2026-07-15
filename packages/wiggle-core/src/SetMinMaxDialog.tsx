@@ -1,9 +1,10 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
-import { TextField, Typography } from '@mui/material'
+import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
-export default function SetMinMaxDialog(props: {
+export default observer(function SetMinMaxDialog(props: {
   model: {
     minScore: number
     maxScore: number
@@ -17,34 +18,29 @@ export default function SetMinMaxDialog(props: {
   const { minScore, maxScore, scaleType } = model
 
   const [min, setMin] = useState(
-    `${minScore !== Number.MIN_VALUE ? minScore : ''}`,
+    minScore === Number.MIN_VALUE ? undefined : minScore,
   )
   const [max, setMax] = useState(
-    `${maxScore !== Number.MAX_VALUE ? maxScore : ''}`,
+    maxScore === Number.MAX_VALUE ? undefined : maxScore,
   )
 
-  const ok =
-    min !== '' && max !== '' && !Number.isNaN(+min) && !Number.isNaN(+max)
-      ? +max > +min
-      : true
-
-  const logOk =
-    scaleType === 'log' && min !== '' && !Number.isNaN(+min) ? +min > 0 : true
+  const rangeOk = min === undefined || max === undefined || max > min
+  const logOk = !(scaleType === 'log' && min !== undefined && min <= 0)
 
   return (
     <SubmitDialog
       open
       title="Set min/max score for track"
-      submitDisabled={!ok || !logOk}
+      submitDisabled={!rangeOk || !logOk}
       onCancel={handleClose}
       onSubmit={() => {
-        model.setMinScore(min !== '' && !Number.isNaN(+min) ? +min : undefined)
-        model.setMaxScore(max !== '' && !Number.isNaN(+max) ? +max : undefined)
+        model.setMinScore(min)
+        model.setMaxScore(max)
         handleClose()
       }}
     >
       <Typography>Enter min/max score: </Typography>
-      {!ok ? (
+      {!rangeOk ? (
         <Typography color="error">Max must be greater than min</Typography>
       ) : null}
       {!logOk ? (
@@ -52,20 +48,16 @@ export default function SetMinMaxDialog(props: {
           Min score should be greater than 0 for log scale
         </Typography>
       ) : null}
-      <TextField
-        value={min}
-        onChange={event => {
-          setMin(event.target.value)
-        }}
+      <NumberTextField
+        defaultValue={min}
+        onValueChange={setMin}
         placeholder="Enter min score"
       />
-      <TextField
-        value={max}
-        onChange={event => {
-          setMax(event.target.value)
-        }}
+      <NumberTextField
+        defaultValue={max}
+        onValueChange={setMax}
         placeholder="Enter max score"
       />
     </SubmitDialog>
   )
-}
+})

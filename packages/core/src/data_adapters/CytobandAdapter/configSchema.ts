@@ -3,7 +3,6 @@ import { ConfigurationSchema } from '../../configuration/index.ts'
 /**
  * #config CytobandAdapter
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const configSchema = ConfigurationSchema(
   'CytobandAdapter',

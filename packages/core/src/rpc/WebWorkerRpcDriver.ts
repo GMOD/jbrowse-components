@@ -1,16 +1,18 @@
-import BaseRpcDriver from './BaseRpcDriver.ts'
-import { RpcClient, deserializeError } from '../util/librpc.ts'
+import RpcClient from './RpcClient.ts'
+import WorkerPoolRpcDriver from './WorkerPoolRpcDriver.ts'
+import { deserializeError } from './serializeError/index.ts'
 import { nanoid } from '../util/nanoid.ts'
 
 import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
 import type { PluginDefinition } from '../PluginLoader.ts'
+import type { RpcStatus, StatusCallback } from '../util/progress.ts'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker
 }
 
 interface Options {
-  statusCallback?: (arg0: unknown) => void
+  statusCallback?: StatusCallback
   rpcDriverClassName: string
 }
 
@@ -32,8 +34,12 @@ class WebWorkerHandle {
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${nanoid()}`
+    // RpcClient is a generic event emitter (it also carries 'error' events), so
+    // its listeners see `unknown`. This channel is dedicated to one method's
+    // status emits, which the worker only ever posts as RpcStatus (see
+    // wrapForRpc in rpcWorker.ts), so narrowing to RpcStatus here is sound.
     const listener = (message: unknown) => {
-      statusCallback?.(message)
+      statusCallback?.(message as RpcStatus)
     }
     this.client.on(channel, listener)
     try {
@@ -49,7 +55,7 @@ class WebWorkerHandle {
   }
 }
 
-export default class WebWorkerRpcDriver extends BaseRpcDriver {
+export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
   name = 'WebWorkerRpcDriver'
 
   makeWorkerInstance: () => Worker
@@ -66,9 +72,8 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
   }
 
   async makeWorker() {
-    // note that we are making a Rpc.Client connection with a worker pool of
-    // one for each worker, because we want to do our own state-group-aware
-    // load balancing rather than using librpc's builtin round-robin
+    // one RpcClient per worker so we can do our own state-group-aware load
+    // balancing across the pool (see WorkerPoolRpcDriver)
     const instance = this.makeWorkerInstance()
     const handle = new WebWorkerHandle(instance)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)

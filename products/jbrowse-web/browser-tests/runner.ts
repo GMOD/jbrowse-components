@@ -1,1041 +1,438 @@
 /* eslint-disable no-console */
-import fs from 'fs'
-import http from 'http'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { parseArgs } from 'node:util'
 
-import pixelmatch from 'pixelmatch'
-import { PNG } from 'pngjs'
-import { type Browser, type Page, launch } from 'puppeteer'
-import handler from 'serve-handler'
+import {
+  BASE_CHROME_ARGS,
+  isBrowserConsoleNoise,
+} from '@jbrowse/browser-test-utils'
+import { launch } from 'puppeteer'
 
+import {
+  enableCrossBackendCollection,
+  runCrossBackendGate,
+} from './crossBackendGate.ts'
+import { BASICAUTH_PORT, OAUTH_PORT, PORT } from './helpers.ts'
+import { buildPath, startServer } from './server.ts'
 import { startBasicAuthServer, startOAuthServer } from './servers.ts'
+import { snapshotConfig } from './snapshot.ts'
+
+import type { TestCase, TestSuite } from './types.ts'
+import type { Server } from 'node:http'
+import type { Browser } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-const args = process.argv.slice(2)
-const headed = args.includes('--headed')
-const slowMoArg = args.find(a => a.startsWith('--slow-mo='))
-const slowMo = slowMoArg ? parseInt(slowMoArg.split('=')[1]!, 10) : 0
-const updateSnapshots =
-  args.includes('--update-snapshots') || args.includes('-u')
-
-const snapshotsDir = path.resolve(__dirname, '__snapshots__')
-const buildPath = path.resolve(__dirname, '../build')
-const testDataPath = path.resolve(__dirname, '..')
 const volvoxDataPath = path.resolve(__dirname, '../test_data/volvox')
-const PORT = 3333
-const OAUTH_PORT = 3030
-const BASICAUTH_PORT = 3040
-const runAuthTests = !args.includes('--no-auth')
 
-// Helpers
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+// `--firefox` (bare) is a legacy no-op: WebGPU always uses Firefox Nightly and
+// the binary path already defaults via FIREFOX_NIGHTLY_PATH. Strip it before
+// parsing so strict parseArgs doesn't reject it; `--firefox=<path>` still works.
+const rawArgs = process.argv.slice(2).filter(a => a !== '--firefox')
+// Strict parsing rejects unknown flags (so a typo'd `--fliter` fails loudly
+// instead of silently running every suite) and accepts both `--x=y` and `--x y`.
+const { values } = parseArgs({
+  args: rawArgs,
+  allowPositionals: false,
+  options: {
+    headed: { type: 'boolean', default: false },
+    concurrency: { type: 'string' },
+    'slow-mo': { type: 'string' },
+    'update-snapshots': { type: 'boolean', short: 'u', default: false },
+    auth: { type: 'boolean', default: false },
+    // comma-separated and/or repeated: --filter=grape,hs1 or --filter=a --filter=b
+    filter: { type: 'string', multiple: true, default: [] },
+    test: { type: 'string' },
+    smoke: { type: 'boolean', default: false },
+    'include-remote': { type: 'boolean', default: false },
+    backend: { type: 'string' },
+    'skip-webgpu': { type: 'boolean', default: false },
+    // Software-render the webgl backend (no GPU needed) — required in CI, whose
+    // runners have no GPU; locally, omit it to exercise the real GPU.
+    swiftshader: { type: 'boolean', default: false },
+    // Capture + run the cross-backend gate but skip the golden comparison. The
+    // CI-facing mode: goldens are environment-specific, the gate is not.
+    'gate-only': { type: 'boolean', default: false },
+    quiet: { type: 'boolean', default: false },
+    debug: { type: 'boolean', default: false },
+    firefox: { type: 'string' },
+  },
+})
 
-async function findByTestId(page: Page, testId: string, timeout = 30000) {
-  return page.waitForSelector(`[data-testid="${testId}"]`, {
-    timeout,
-    visible: true,
-  })
-}
+const headed = values.headed
+const CONCURRENCY = values.concurrency
+  ? Number(values.concurrency)
+  : headed
+    ? 1
+    : 4
+const slowMo = values['slow-mo'] ? parseInt(values['slow-mo'], 10) : 0
+const updateSnapshots = values['update-snapshots']
+const runAuthTests = values.auth
+// Matching is case-insensitive substring against suite name.
+const filters = values.filter
+  .flatMap(f => f.toLowerCase().split(','))
+  .filter(Boolean)
+// --test filters individual test cases within matched suites (substring match).
+const testFilter = values.test?.toLowerCase() ?? ''
+// --smoke runs every suite including the requiresRemote ones (grape/peach +
+// hs1/mm39 synteny), whose data is fetched straight from S3/UCSC at runtime.
+const smoke = values.smoke
+// Auto-enable remote when a filter is specified — no need to also pass
+// --include-remote when targeting a specific suite by name.
+const includeRemote = values['include-remote'] || smoke || filters.length > 0
+const backendValue = values.backend
+const skipWebGPU = values['skip-webgpu']
+const swiftshader = values.swiftshader
+const gateOnly = values['gate-only']
+const quiet = values.quiet
+const debug = values.debug
+// WebGPU always runs through Firefox Nightly; --firefox=<path> or
+// FIREFOX_NIGHTLY_PATH override the default binary location.
+const firefoxPath =
+  values.firefox ??
+  process.env.FIREFOX_NIGHTLY_PATH ??
+  '/usr/bin/firefox-nightly'
 
-async function findByText(page: Page, text: string | RegExp, timeout = 30000) {
-  const searchText = typeof text === 'string' ? text : text.source
-  return page.waitForSelector(`::-p-text(${searchText})`, {
-    timeout,
-    visible: true,
-  })
-}
+snapshotConfig.updateSnapshots = updateSnapshots
+snapshotConfig.gateOnly = gateOnly
 
-async function waitForLoadingToComplete(page: Page, timeout = 30000) {
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout },
-  )
-}
+type RenderingBackend = 'webgl' | 'webgpu' | 'canvas2d'
 
-async function capturePageSnapshot(page: Page, name: string) {
-  if (!fs.existsSync(snapshotsDir)) {
-    fs.mkdirSync(snapshotsDir, { recursive: true })
+function chromeArgsForRenderingBackend(backend?: RenderingBackend) {
+  const chromeArgs = [...BASE_CHROME_ARGS, '--disable-popup-blocking']
+  // webgl runs on the machine's real GPU (run headed) — no swiftshader, whose
+  // per-context memory growth is why we moved off it (see
+  // agent-docs/guides/TEST_INFRASTRUCTURE.md). webgpu does not use Chrome at all
+  // (it requires Firefox Nightly, see runWithRenderingBackend), so neither needs
+  // extra chrome flags. --swiftshader forces the webgl backend to software-render
+  // so it can run on a GPU-less CI runner; modern Chrome needs
+  // --enable-unsafe-swiftshader to allow a WebGL context on SwiftShader.
+  if (backend === 'canvas2d') {
+    chromeArgs.push('--disable-gpu')
+  } else if (swiftshader) {
+    chromeArgs.push('--use-gl=swiftshader', '--enable-unsafe-swiftshader')
   }
+  return chromeArgs
+}
 
-  const screenshot = await page.screenshot({ fullPage: true })
-  const snapshotPath = path.join(snapshotsDir, `${name}.png`)
+async function discoverSuites(): Promise<TestSuite[]> {
+  const suitesDir = path.resolve(__dirname, 'suites')
+  const files = fs
+    .readdirSync(suitesDir)
+    .filter(f => f.endsWith('.ts'))
+    .sort()
+  const suites: TestSuite[] = []
 
-  if (updateSnapshots || !fs.existsSync(snapshotPath)) {
-    fs.writeFileSync(snapshotPath, screenshot)
-    return {
-      passed: true,
-      message: updateSnapshots ? 'Snapshot updated' : 'Snapshot created',
+  for (const file of files) {
+    const mod = await import(pathToFileURL(path.join(suitesDir, file)).href)
+    const exported = mod.default
+    if (Array.isArray(exported)) {
+      for (const s of exported) {
+        suites.push(s)
+      }
+    } else {
+      suites.push(exported)
     }
   }
 
-  const expectedBuffer = fs.readFileSync(snapshotPath)
-  const expectedImg = PNG.sync.read(expectedBuffer)
-  // @ts-expect-error Uint8Array works at runtime
-  const actualImg = PNG.sync.read(screenshot)
+  return suites
+}
 
-  if (
-    expectedImg.width !== actualImg.width ||
-    expectedImg.height !== actualImg.height
-  ) {
-    fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
-    return {
-      passed: false,
-      message: `Snapshot size differs: expected ${expectedImg.width}x${expectedImg.height}, got ${actualImg.width}x${actualImg.height}`,
-    }
-  }
+// Whether a suite passes the auth/remote/name-filter gates for this run.
+function suiteIncluded(suite: TestSuite, includeAuth: boolean) {
+  const authOk = !suite.requiresAuth || includeAuth
+  const remoteOk = !suite.requiresRemote || includeRemote
+  const filterOk =
+    filters.length === 0 ||
+    filters.some(f => suite.name.toLowerCase().includes(f))
+  return authOk && remoteOk && filterOk
+}
 
-  const { width, height } = expectedImg
-  const diffImg = new PNG({ width, height })
+// Reason this individual test is skipped (logged), or undefined to run it.
+function testSkipReason(test: TestCase, includeAuth: boolean) {
+  return test.requiresRemote && !includeRemote
+    ? 'requires --include-remote'
+    : test.requiresAuth && !includeAuth
+      ? 'requires --auth'
+      : undefined
+}
 
-  const numDiffPixels = pixelmatch(
-    expectedImg.data,
-    actualImg.data,
-    diffImg.data,
-    width,
-    height,
-    { threshold: 0.1 },
-  )
-
-  const totalPixels = width * height
-  const diffPercent = numDiffPixels / totalPixels
-  const threshold = 0.05
-
-  if (diffPercent <= threshold) {
-    return { passed: true, message: 'Snapshot matches' }
-  }
-
-  fs.writeFileSync(path.join(snapshotsDir, `${name}.diff.png`), screenshot)
-  fs.writeFileSync(
-    path.join(snapshotsDir, `${name}.diff-visual.png`),
-    PNG.sync.write(diffImg),
-  )
-  return {
-    passed: false,
-    message: `Snapshot differs by ${(diffPercent * 100).toFixed(2)}% (threshold: ${threshold * 100}%)`,
+function clearProgressLine() {
+  if (process.stdout.isTTY) {
+    process.stdout.clearLine(0)
+    process.stdout.cursorTo(0)
   }
 }
 
-// Server
-function startServer(port: number): Promise<http.Server> {
-  return new Promise((resolve, reject) => {
-    const server = http.createServer((req, res) => {
-      const url = req.url || '/'
-      const publicPath = url.startsWith('/test_data/')
-        ? testDataPath
-        : buildPath
-      return handler(req, res, {
-        public: publicPath,
-        headers: [
-          {
-            source: '**/*',
-            headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
-          },
-        ],
-      })
+// Run a single test in its own fresh browser, always closing it afterward.
+// Returns the error message on failure, or undefined on success.
+async function runOneTest(
+  launchBrowser: () => Promise<Browser>,
+  suiteName: string,
+  test: TestCase,
+  progress: string,
+) {
+  const start = performance.now()
+  const getElapsed = () =>
+    `+${((performance.now() - start) / 1000).toFixed(1)}s`
+  process.stdout.write(`    ⏳ ${progress} ${suiteName} > ${test.name}...`)
+
+  let browser: Browser | undefined
+  let error: string | undefined
+  try {
+    browser = await launchBrowser()
+    const page = await setupPage(browser, getElapsed)
+    await test.fn(page, browser)
+    clearProgressLine()
+    console.log(
+      `    ✓ ${progress} ${suiteName} > ${test.name} (${Math.round(performance.now() - start)}ms)`,
+    )
+  } catch (e) {
+    error = e instanceof Error ? e.message : String(e)
+    clearProgressLine()
+    console.log(`    ✗ ${progress} FAILED: ${suiteName} > ${test.name}`)
+    console.log(`      Error: ${error}`)
+  } finally {
+    await browser?.close().catch((e: unknown) => {
+      console.warn(
+        `    (browser close error: ${e instanceof Error ? e.message : e})`,
+      )
     })
-    server.on('error', reject)
-    server.listen(port, () => {
-      resolve(server)
-    })
-  })
-}
-
-// Test helpers
-async function navigateToApp(
-  page: Page,
-  config = 'test_data/volvox/config.json',
-  sessionName = 'Test Session',
-) {
-  await page.goto(
-    `http://localhost:${PORT}/?config=${config}&sessionName=${encodeURIComponent(sessionName)}`,
-    {
-      waitUntil: 'networkidle0',
-      timeout: 60000,
-    },
-  )
-  await findByText(page, 'ctgA')
-}
-
-async function openTrack(page: Page, trackId: string) {
-  const trackLabel = await findByTestId(
-    page,
-    `htsTrackLabel-Tracks,${trackId}`,
-    10000,
-  )
-  await trackLabel?.click()
-}
-
-async function snapshot(page: Page, name: string) {
-  const result = await capturePageSnapshot(page, name)
-  if (!result.passed) {
-    throw new Error(result.message)
   }
+  return error
 }
 
-async function handleOAuthLogin(browser: Browser) {
-  // Wait for OAuth popup to appear
-  const target = await browser.waitForTarget(
-    t => t.url().includes('localhost:3030/oauth'),
-    { timeout: 15000 },
-  )
-  const popup = await target.page()
-  if (!popup) {
-    throw new Error('Could not get OAuth popup page')
-  }
-  // Wait for the form to be ready
-  await popup.waitForSelector('input[type="submit"]', { timeout: 10000 })
-  // Small delay to ensure page is fully loaded
-  await delay(500)
-  const submitBtn = await popup.$('input[type="submit"]')
-  await submitBtn?.click()
-  // Wait for popup to close after successful auth
-  await delay(2000)
-}
-
-async function handleBasicAuthLogin(page: Page) {
-  const dialog = await findByTestId(page, 'login-httpbasic', 10000)
-  if (!dialog) {
-    throw new Error('BasicAuth login dialog not found')
-  }
-
-  const usernameInput = await findByTestId(
-    page,
-    'login-httpbasic-username',
-    10000,
-  )
-  const passwordInput = await findByTestId(
-    page,
-    'login-httpbasic-password',
-    10000,
-  )
-  await usernameInput?.type('admin')
-  await passwordInput?.type('password')
-
-  const submitBtn = await findByText(page, 'Submit', 10000)
-  await submitBtn?.click()
-  await delay(500)
-}
-
-async function clearStorageAndNavigate(
-  page: Page,
-  config: string,
-  sessionName = 'Test Session',
+// Run all selected suites, launching a fresh browser per test. A clean browser
+// each time is what keeps long runs stable: headless Chrome on swiftshader and
+// Firefox/WebGPU both accumulate per-context GPU/worker memory across tabs that
+// never returns to the OS (see agent-docs/guides/TEST_INFRASTRUCTURE.md), and
+// the ~2s relaunch is far cheaper than the 15-30s penalty from that buildup.
+async function runSuites(
+  launchBrowser: () => Promise<Browser>,
+  suites: TestSuite[],
+  includeAuth: boolean,
 ) {
-  await page.goto(`http://localhost:${PORT}/`)
-  await page.evaluate(() => {
-    localStorage.clear()
-    sessionStorage.clear()
-  })
-  await navigateToApp(page, config, sessionName)
-}
-
-async function waitForDisplay(page: Page, trackId: string, timeout = 60000) {
-  await page.waitForSelector(`[data-testid^="display-${trackId}"]`, { timeout })
-}
-
-async function waitForWorkspacesReady(page: Page) {
-  await page.waitForSelector('.dockview-theme-light, .dockview-theme-dark', {
-    timeout: 10000,
-  })
-  await page.waitForSelector('[data-testid^="view-container-"]', {
-    timeout: 10000,
-  })
-  await page.waitForSelector('input[placeholder="Search for location"]', {
-    timeout: 10000,
-  })
-  await waitForLoadingToComplete(page)
-  await delay(1000)
-}
-
-async function copyView(page: Page) {
-  const viewMenu = await findByTestId(page, 'view_menu_icon', 10000)
-  await viewMenu?.click()
-  await delay(300)
-  const viewOptions = await findByText(page, 'View options', 10000)
-  await viewOptions?.click()
-  await delay(300)
-  const copyViewBtn = await findByText(page, 'Copy view', 10000)
-  await copyViewBtn?.click()
-  await delay(1000)
-}
-
-async function clickViewMenuOption(
-  page: Page,
-  optionText: string,
-  viewIndex = 0,
-) {
-  const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
-  await viewMenus[viewIndex]?.click()
-  await delay(300)
-  const viewOptions = await findByText(page, 'View options', 10000)
-  await viewOptions?.click()
-  await delay(300)
-  const option = await findByText(page, optionText, 10000)
-  await option?.click()
-}
-
-async function setupWorkspacesViaMoveToTab(page: Page) {
-  await copyView(page)
-  await clickViewMenuOption(page, 'Move to new tab', 0)
-  await waitForWorkspacesReady(page)
-}
-
-// Test suites
-interface TestSuite {
-  name: string
-  tests: {
-    name: string
-    fn: (page: Page, browser?: Browser) => Promise<void>
-  }[]
-  requiresAuth?: boolean
-}
-
-const testSuites: TestSuite[] = [
-  {
-    name: 'Session Spec URL Parameters',
-    tests: [
-      {
-        name: 'displaySnapshot type opens track with specific display type',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:1-10000',
-                tracks: [
-                  {
-                    trackId: 'volvox_sv_cram',
-                    displaySnapshot: {
-                      type: 'LinearReadCloudDisplay',
-                    },
-                  },
-                ],
-              },
-            ],
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          await findByText(page, 'ctgA')
-          // The UMD plugin adds LinearReadCloudDisplay with drawCloud:true for _sv tracks
-          await findByTestId(page, 'cloud-canvas', 60000)
-          await waitForLoadingToComplete(page)
-          await delay(1000)
-          await snapshot(page, 'session-spec-display-snapshot-type')
-        },
-      },
-      {
-        name: 'jexl',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:2,707..8,600',
-                tracks: ['volvox_test_vcf_jexl'],
-              },
-            ],
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-          await findByTestId(page, 'canvas-feature-overlay', 60000)
-          await waitForLoadingToComplete(page)
-          await delay(1000)
-          await snapshot(page, 'session-spec-jexl')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Workspaces',
-    tests: [
-      {
-        name: 'can add Linear genome view from menu with workspaces enabled',
-        fn: async page => {
-          await navigateToApp(page)
-
-          // Enable workspaces via Tools menu
-          const toolsMenu = await findByText(page, 'Tools', 10000)
-          await toolsMenu?.click()
-          await delay(300)
-          const useWorkspacesCheckbox = await findByText(
-            page,
-            'Use workspaces',
-            10000,
-          )
-          await useWorkspacesCheckbox?.click()
-          await delay(500)
-
-          // Count views before adding
-          const searchInputsBefore = await page.$$(
-            'input[placeholder="Search for location"]',
-          )
-          const viewCountBefore = searchInputsBefore.length
-
-          // Click Add menu and then Linear genome view
-          const addMenu = await findByText(page, 'Add', 10000)
-          await addMenu?.click()
-          await delay(300)
-          const linearGenomeViewOption = await findByText(
-            page,
-            'Linear genome view',
-            10000,
-          )
-          await linearGenomeViewOption?.click()
-
-          // Wait for new view to appear by polling for increased view count
-          const timeout = 10000
-          const start = Date.now()
-          let viewCountAfter = viewCountBefore
-          while (Date.now() - start < timeout) {
-            const searchInputsAfter = await page.$$(
-              'input[placeholder="Search for location"]',
-            )
-            viewCountAfter = searchInputsAfter.length
-            if (viewCountAfter > viewCountBefore) {
-              break
-            }
-            await delay(200)
-          }
-
-          if (viewCountAfter <= viewCountBefore) {
-            throw new Error(
-              `New Linear genome view was not added. Views before: ${viewCountBefore}, after: ${viewCountAfter}`,
-            )
-          }
-
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'workspaces-add-view')
-        },
-      },
-      {
-        name: 'move to new tab enables workspaces',
-        fn: async page => {
-          await navigateToApp(page)
-          await setupWorkspacesViaMoveToTab(page)
-          await snapshot(page, 'workspaces-new-tab')
-        },
-      },
-      {
-        name: 'move to split right enables workspaces',
-        fn: async page => {
-          await navigateToApp(page)
-          await copyView(page)
-          await clickViewMenuOption(page, 'Move to split view', 0)
-          await waitForWorkspacesReady(page)
-          await snapshot(page, 'workspaces-split-view')
-        },
-      },
-      {
-        name: 'copy view creates second view',
-        fn: async page => {
-          await navigateToApp(page)
-          await copyView(page)
-          const viewMenus = await page.$$('[data-testid="view_menu_icon"]')
-          if (viewMenus.length !== 2) {
-            throw new Error(`Expected 2 views, got ${viewMenus.length}`)
-          }
-        },
-      },
-      {
-        name: 'layout URL param creates workspaces with horizontal split',
-        fn: async page => {
-          // Create a session spec with 3 views and nested layout
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:1-5000',
-              },
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:5000-10000',
-              },
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgB:1-5000',
-              },
-            ],
-            // Horizontal split: left panel has views 0 and 1 stacked, right panel has view 2
-            layout: {
-              direction: 'horizontal',
-              children: [{ views: [0, 1] }, { views: [2] }],
-            },
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          // Wait for dockview to render
-          await page.waitForSelector(
-            '.dockview-theme-light, .dockview-theme-dark',
-            { timeout: 10000 },
-          )
-          await delay(2000)
-
-          // With a horizontal split, we should have 2 dockview groups
-          const groups = await page.$$('.dv-groupview')
-          if (groups.length < 2) {
-            throw new Error(
-              `Expected at least 2 dockview groups for horizontal split, got ${groups.length}`,
-            )
-          }
-
-          // Should have 3 total view containers (2 in left panel, 1 in right)
-          let viewContainers: Awaited<ReturnType<typeof page.$$>> = []
-          for (let i = 0; i < 20; i++) {
-            viewContainers = await page.$$('[data-testid^="view-container-"]')
-            if (viewContainers.length >= 3) {
-              break
-            }
-            await delay(500)
-          }
-
-          if (viewContainers.length < 3) {
-            throw new Error(
-              `Expected 3 view containers total, got ${viewContainers.length}`,
-            )
-          }
-
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'workspaces-layout-url-param')
-        },
-      },
-      {
-        name: 'layout URL param with custom sizes',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:1-5000',
-              },
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgB:1-5000',
-              },
-            ],
-            // 70/30 horizontal split
-            layout: {
-              direction: 'horizontal',
-              children: [
-                { views: [0], size: 70 },
-                { views: [1], size: 30 },
-              ],
-            },
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          // Wait for dockview to render
-          await page.waitForSelector(
-            '.dockview-theme-light, .dockview-theme-dark',
-            { timeout: 10000 },
-          )
-          await delay(2000)
-
-          // Should have 2 dockview groups
-          const groups = await page.$$('.dv-groupview')
-          if (groups.length < 2) {
-            throw new Error(`Expected 2 dockview groups, got ${groups.length}`)
-          }
-
-          // Should have 2 view containers
-          const viewContainers = await page.$$(
-            '[data-testid^="view-container-"]',
-          )
-          if (viewContainers.length !== 2) {
-            throw new Error(
-              `Expected 2 view containers, got ${viewContainers.length}`,
-            )
-          }
-
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'workspaces-layout-custom-sizes')
-        },
-      },
-      {
-        name: 'multiple views in workspace - move up and down',
-        fn: async page => {
-          await navigateToApp(page)
-          await setupWorkspacesViaMoveToTab(page)
-
-          // Copy view again to have multiple views in one panel
-          await copyView(page)
-
-          // Get the order of view containers before moving
-          const getViewOrder = () =>
-            page.evaluate(() => {
-              const containers = document.querySelectorAll(
-                '[data-testid^="view-container-"]',
-              )
-              return [...containers].map(c => (c as HTMLElement).dataset.testid)
-            })
-
-          const orderBefore = await getViewOrder()
-          if (orderBefore.length < 2) {
-            throw new Error(
-              `Expected at least 2 view containers, got ${orderBefore.length}`,
-            )
-          }
-
-          // Now try to move first view down
-          await clickViewMenuOption(page, 'Move view down', 0)
-          await delay(500)
-
-          // Verify the order actually changed
-          const orderAfter = await getViewOrder()
-          if (
-            orderBefore[0] === orderAfter[0] &&
-            orderBefore[1] === orderAfter[1]
-          ) {
-            throw new Error(
-              `View order did not change after move down. Before: ${orderBefore.join(', ')}. After: ${orderAfter.join(', ')}`,
-            )
-          }
-        },
-      },
-    ],
-  },
-  {
-    name: 'BasicLinearGenomeView',
-    tests: [
-      {
-        name: 'loads the application',
-        fn: async page => {
-          await navigateToApp(page)
-          await findByText(page, 'Help', 10000)
-        },
-      },
-      {
-        name: 'opens track selector and loads a track',
-        fn: async page => {
-          await navigateToApp(page)
-          await openTrack(page, 'volvox_refseq')
-          await findByTestId(
-            page,
-            'display-volvox_refseq-LinearReferenceSequenceDisplay',
-          )
-        },
-      },
-      {
-        name: 'can zoom in and out',
-        fn: async page => {
-          await navigateToApp(page)
-          const zoomIn = await findByTestId(page, 'zoom_in', 10000)
-          await zoomIn?.click()
-          await delay(500)
-          const zoomOut = await findByTestId(page, 'zoom_out', 10000)
-          await zoomOut?.click()
-        },
-      },
-      {
-        name: 'can access About dialog',
-        fn: async page => {
-          await navigateToApp(page)
-          const helpButton = await findByText(page, 'Help', 10000)
-          await helpButton?.click()
-          await delay(300)
-          const aboutMenuItem = await findByText(page, 'About', 10000)
-          await aboutMenuItem?.click()
-          await findByText(page, /The Evolutionary Software Foundation/i, 10000)
-        },
-      },
-      {
-        name: 'can search for a location',
-        fn: async page => {
-          await navigateToApp(page)
-          const searchInput = await page.waitForSelector(
-            'input[placeholder="Search for location"]',
-            { timeout: 30000 },
-          )
-          await searchInput?.click()
-          await searchInput?.type('ctgA:1000..2000')
-          await page.keyboard.press('Enter')
-          await delay(1000)
-        },
-      },
-    ],
-  },
-  {
-    name: 'Alignments Track',
-    tests: [
-      {
-        name: 'loads BAM track',
-        fn: async page => {
-          await navigateToApp(page)
-          await openTrack(page, 'volvox_alignments')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-        },
-      },
-      {
-        name: 'loads CRAM track',
-        fn: async page => {
-          await navigateToApp(page)
-          await openTrack(page, 'volvox_cram_alignments')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-        },
-      },
-      {
-        name: 'BAM track screenshot',
-        fn: async page => {
-          await navigateToApp(page)
-          await openTrack(page, 'volvox_alignments')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'alignments-bam')
-        },
-      },
-      {
-        name: 'volvox_sv track screenshot',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:2,707..48,600',
-                tracks: ['volvox_sv'],
-              },
-            ],
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          // The UMD plugin adds LinearReadCloudDisplay with drawCloud:true for _sv tracks
-          await findByTestId(page, 'cloud-canvas', 60000)
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'alignments-volvox-sv')
-        },
-      },
-    ],
-  },
-  {
-    name: 'MainThreadRPC',
-    tests: [
-      {
-        name: 'loads with main thread RPC',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await findByText(page, 'Help', 10000)
-        },
-      },
-      {
-        name: 'loads BAM track with main thread RPC',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await openTrack(page, 'volvox_sv')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-        },
-      },
-      {
-        name: 'loads GFF3 track with main thread RPC',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await openTrack(page, 'gff3tabix_genes')
-          await findByTestId(
-            page,
-            'display-gff3tabix_genes-LinearBasicDisplay',
-            60000,
-          )
-        },
-      },
-      {
-        name: 'main thread RPC BAM screenshot',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_main_thread.json')
-          await openTrack(page, 'volvox_sv')
-          await findByTestId(page, 'Blockset-pileup', 60000)
-          await waitForLoadingToComplete(page)
-          await snapshot(page, 'main-thread-rpc-bam')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Authentication (WebWorker RPC)',
-    requiresAuth: true,
-    tests: [
-      {
-        name: 'loads with auth config',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_auth.json')
-          await findByText(page, 'Help', 10000)
-        },
-      },
-      {
-        name: 'loads OAuth BigWig track after login',
-        fn: async (page, browser) => {
-          await navigateToApp(page, 'test_data/volvox/config_auth.json')
-          await openTrack(page, 'oauth_bigwig')
-          await handleOAuthLogin(browser!)
-          await waitForDisplay(page, 'oauth_bigwig')
-        },
-      },
-      {
-        name: 'loads BasicAuth BigWig track after login',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_auth.json')
-          await openTrack(page, 'basicauth_bigwig')
-          await handleBasicAuthLogin(page)
-          await waitForDisplay(page, 'basicauth_bigwig')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Authentication (MainThread RPC)',
-    requiresAuth: true,
-    tests: [
-      {
-        name: 'loads with main thread auth config',
-        fn: async page => {
-          await navigateToApp(page, 'test_data/volvox/config_auth_main.json')
-          await findByText(page, 'Help', 10000)
-        },
-      },
-      {
-        name: 'loads OAuth BigWig track after login (main thread)',
-        fn: async (page, browser) => {
-          await clearStorageAndNavigate(
-            page,
-            'test_data/volvox/config_auth_main.json',
-          )
-          await openTrack(page, 'oauth_bigwig')
-          await handleOAuthLogin(browser!)
-          await waitForDisplay(page, 'oauth_bigwig')
-        },
-      },
-      {
-        name: 'loads BasicAuth BigWig track after login (main thread)',
-        fn: async page => {
-          await clearStorageAndNavigate(
-            page,
-            'test_data/volvox/config_auth_main.json',
-          )
-          await openTrack(page, 'basicauth_bigwig')
-          await handleBasicAuthLogin(page)
-          await waitForDisplay(page, 'basicauth_bigwig')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Arc Renderer',
-    tests: [
-      {
-        name: 'renders arc track with custom JEXL height expression without NaN (issue #5500)',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:1-500',
-                tracks: ['arc_track_custom_height'],
-              },
-            ],
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          await findByTestId(
-            page,
-            'display-arc_track_custom_height_linear',
-            60000,
-          )
-          await waitForLoadingToComplete(page)
-          await delay(2000)
-
-          const hasNaN = await page.evaluate(() => {
-            const paths = document.querySelectorAll(
-              '[data-testid="display-arc_track_custom_height_linear"] path',
-            )
-            for (const p of paths) {
-              if (p.getAttribute('d')?.includes('NaN')) {
-                return true
-              }
-            }
-            return false
-          })
-
-          if (hasNaN) {
-            throw new Error(
-              'Arc path contains NaN — JEXL height expression not evaluated',
-            )
-          }
-
-          const pathCount = await page.evaluate(() => {
-            return document.querySelectorAll(
-              '[data-testid="display-arc_track_custom_height_linear"] path',
-            ).length
-          })
-
-          if (pathCount === 0) {
-            throw new Error('No arc paths rendered')
-          }
-
-          await snapshot(page, 'arc-custom-jexl-height')
-        },
-      },
-      {
-        name: 'renders default arc track with JEXL height expression',
-        fn: async page => {
-          const sessionSpec = {
-            views: [
-              {
-                type: 'LinearGenomeView',
-                assembly: 'volvox',
-                loc: 'ctgA:1-500',
-                tracks: ['arc_track'],
-              },
-            ],
-          }
-
-          const specParam = encodeURIComponent(JSON.stringify(sessionSpec))
-          const url = `http://localhost:${PORT}/?config=test_data/volvox/config.json&session=spec-${specParam}&sessionName=Test%20Session`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-
-          await findByTestId(page, 'display-arc_track_linear', 60000)
-          await waitForLoadingToComplete(page)
-          await delay(2000)
-
-          const hasNaN = await page.evaluate(() => {
-            const paths = document.querySelectorAll(
-              '[data-testid="display-arc_track_linear"] path',
-            )
-            for (const p of paths) {
-              if (p.getAttribute('d')?.includes('NaN')) {
-                return true
-              }
-            }
-            return false
-          })
-
-          if (hasNaN) {
-            throw new Error(
-              'Arc path contains NaN — default JEXL height not evaluated',
-            )
-          }
-
-          const pathCount = await page.evaluate(() => {
-            return document.querySelectorAll(
-              '[data-testid="display-arc_track_linear"] path',
-            ).length
-          })
-
-          if (pathCount === 0) {
-            throw new Error('No arc paths rendered')
-          }
-
-          await snapshot(page, 'arc-default-jexl-height')
-        },
-      },
-    ],
-  },
-  {
-    name: 'Custom URL Loading',
-    tests: [
-      {
-        name: 'loads specific config and snapshots',
-        fn: async page => {
-          const url = `http://localhost:${PORT}/?config=test_data%2Fconfig_demo.json&session=share-XyL52LPDoO&password=861E4`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-          await waitForLoadingToComplete(page)
-          await delay(1000) // Add a small delay for rendering stability
-          await snapshot(page, 'methylation_snapshot')
-        },
-      },
-      {
-        name: 'loads specific config and snapshots (breakpoint split view)',
-        fn: async page => {
-          const url = `http://localhost:${PORT}/?config=test_data%2Fconfig_demo.json&session=share-pjaAq1hNxB&password=Z9teR`
-          await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 })
-          await waitForLoadingToComplete(page)
-          await delay(1000) // Add a small delay for rendering stability
-          await snapshot(page, 'breakpoint_split_view_snapshot')
-        },
-      },
-    ],
-  },
-]
-
-// Runner
-async function runTests(page: Page, browser: Browser, includeAuth: boolean) {
   let passed = 0
   let failed = 0
+  const failures: { suite: string; test: string; error: string }[] = []
+  const suitesToRun = suites.filter(s => suiteIncluded(s, includeAuth))
 
-  const suitesToRun = testSuites.filter(
-    suite => !suite.requiresAuth || includeAuth,
-  )
-
+  // Flatten all (suite, test) pairs into a single queue so the worker pool
+  // can drain across suite boundaries, maximizing browser slot utilization.
+  const queue: { suite: TestSuite; test: TestCase }[] = []
   for (const suite of suitesToRun) {
-    console.log(`\n  ${suite.name}`)
-
     for (const test of suite.tests) {
-      const start = performance.now()
-      process.stdout.write(`    ⏳ ${test.name}...`)
-
-      try {
-        // Clear storage between tests to prevent state leaking
-        await page.goto(`http://localhost:${PORT}/test_data/volvox/config.json`)
-        await page.evaluate(() => {
-          localStorage.clear()
-          sessionStorage.clear()
-        })
-        await page.goto('about:blank')
-        await test.fn(page, browser)
-
-        const duration = performance.now() - start
-        passed++
-
-        if (process.stdout.isTTY) {
-          process.stdout.clearLine(0)
-          process.stdout.cursorTo(0)
-        }
-        console.log(`    ✓ ${test.name} (${Math.round(duration)}ms)`)
-      } catch (e) {
-        failed++
-        const error = e instanceof Error ? e.message : String(e)
-
-        if (process.stdout.isTTY) {
-          process.stdout.clearLine(0)
-          process.stdout.cursorTo(0)
-        }
-        console.log(`    ✗ ${test.name}`)
-        console.log(`      Error: ${error}`)
+      const skip = testSkipReason(test, includeAuth)
+      const filteredOut =
+        testFilter && !test.name.toLowerCase().includes(testFilter)
+      if (skip) {
+        console.log(`    ⚡ ${suite.name} > ${test.name} (skipped — ${skip})`)
+      } else if (!filteredOut) {
+        queue.push({ suite, test })
       }
     }
   }
 
-  return { passed, failed }
+  const total = queue.length
+  // Monotonic counter of tests started, for a meaningful [n/total] readout —
+  // the worker pool drains across suites, so a per-suite index would jump
+  // around non-monotonically.
+  let started = 0
+  const workers = Array.from(
+    { length: Math.min(CONCURRENCY, total || 1) },
+    async () => {
+      while (queue.length > 0) {
+        const item = queue.shift()!
+        const progress = `[${++started}/${total}]`
+        const error = await runOneTest(
+          launchBrowser,
+          item.suite.name,
+          item.test,
+          progress,
+        )
+        if (error === undefined) {
+          passed++
+        } else {
+          failed++
+          failures.push({
+            suite: item.suite.name,
+            test: item.test.name,
+            error,
+          })
+        }
+      }
+    },
+  )
+  await Promise.all(workers)
+
+  return { passed, failed, failures }
+}
+
+async function setupPage(browser: Browser, getElapsed: () => string) {
+  const page = await browser.newPage()
+
+  page.on('console', msg => {
+    const text = msg.text()
+    if (
+      text.includes('favicon') ||
+      text.includes('GPU stall due to ReadPixels')
+    ) {
+      return
+    }
+    const type = msg.type()
+    if (quiet && type !== 'error') {
+      return
+    }
+    if (!debug && isBrowserConsoleNoise(text)) {
+      return
+    }
+    const prefix = `  [${getElapsed()}] Browser:`
+    if (type === 'error') {
+      console.error(prefix, text)
+    } else if (type === 'warn') {
+      console.warn(prefix, text)
+    } else {
+      console.log(prefix, text)
+    }
+  })
+  page.on('pageerror', err => {
+    if (err instanceof Error) {
+      console.error(`  [${getElapsed()}] PageError:`, err.stack || err.message)
+    } else {
+      console.error(`  [${getElapsed()}] PageError:`, err)
+    }
+  })
+  return page
+}
+
+async function runWithRenderingBackend(
+  suites: TestSuite[],
+  backend: RenderingBackend,
+) {
+  snapshotConfig.backend = backend
+
+  // WebGPU requires Firefox Nightly on the real GPU, run headed. Chrome +
+  // puppeteer does not render WebGPU canvases (blank canvas / adapter-validation
+  // errors), so WebGPU always goes through Firefox Nightly.
+  const useFirefox = backend === 'webgpu'
+  const useHeadless = useFirefox ? false : !headed
+
+  const launchBrowser = useFirefox
+    ? () =>
+        launch({
+          browser: 'firefox',
+          executablePath: firefoxPath,
+          headless: useHeadless,
+          slowMo,
+          timeout: 60000,
+          extraPrefsFirefox: {
+            'dom.webgpu.enabled': true,
+            'gfx.webrender.all': true,
+            'gfx.webgpu.ignore-blocklist': true,
+          },
+          defaultViewport: { width: 1280, height: 800 },
+        }).then(trackBrowser)
+    : () =>
+        launch({
+          headless: useHeadless,
+          slowMo,
+          args: chromeArgsForRenderingBackend(backend),
+          defaultViewport: { width: 1280, height: 800 },
+        }).then(trackBrowser)
+
+  if (useFirefox) {
+    console.log(`  Using Firefox Nightly: ${firefoxPath}`)
+  }
+
+  return runSuites(launchBrowser, suites, runAuthTests)
+}
+
+// Browsers this process launched. Tracked so an exit backstop can force-kill
+// any that survive a crash path `finally { browser.close() }` doesn't catch
+// (uncaughtException, process.exit from a nested error). Only ever touches our
+// own browsers — never another agent's run.
+const liveBrowsers = new Set<Browser>()
+function trackBrowser(browser: Browser) {
+  liveBrowsers.add(browser)
+  browser.once('disconnected', () => liveBrowsers.delete(browser))
+  return browser
+}
+process.on('exit', () => {
+  for (const browser of liveBrowsers) {
+    browser.process()?.kill('SIGKILL')
+  }
+})
+
+// Reap puppeteer browsers leaked by *prior* runs that were SIGKILLed or
+// OOM-killed — paths no in-process handler can catch, so they accumulate
+// (~300MB-900MB each) until the kernel OOM-kills a live renderer mid-run.
+// Puppeteer can't fix this itself; an external startup reaper is the standard
+// remedy:
+//   https://github.com/puppeteer/puppeteer/issues/1367
+//   https://github.com/puppeteer/puppeteer/issues/12854
+//
+// A leaked browser carries puppeteer's `--enable-automation` signature (never
+// present on a real Chrome) but its launching `node` is gone, so it's been
+// reparented to init/systemd. A concurrent live run keeps `node` as the parent,
+// so this is safe under the shared multi-agent worktree — we only kill browsers
+// whose runner has died. Killing each main process is enough; its renderer
+// children self-exit when the browser process's IPC pipe closes. Linux-only.
+function killStaleTestBrowsers() {
+  if (process.platform !== 'linux') {
+    return
+  }
+  let psOut: string
+  try {
+    psOut = execSync('ps -eo pid=,ppid=,comm=,args=', {
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
+    })
+  } catch {
+    return // ps unavailable — skip the sweep rather than guess
+  }
+
+  const procs = psOut
+    .split('\n')
+    .map(line => /^(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/.exec(line.trim()))
+    .filter(m => m !== null)
+    .map(m => ({
+      pid: +m[1]!,
+      ppid: +m[2]!,
+      comm: m[3]!,
+      argv: m[4]!.split(/\s+/),
+    }))
+  const commByPid = new Map(procs.map(p => [p.pid, p.comm]))
+
+  // A test browser is a chromium-family process carrying puppeteer's
+  // `--enable-automation` token (the user's own Chrome never has it). It's an
+  // orphan — its launching `node` died — when its parent is no longer `node`.
+  const orphans = procs.filter(
+    p =>
+      /^(chrome|chromium|headless_shell)/.test(p.comm) &&
+      p.argv.includes('--enable-automation') &&
+      commByPid.get(p.ppid) !== 'node',
+  )
+  for (const orphan of orphans) {
+    try {
+      process.kill(orphan.pid, 'SIGKILL')
+    } catch {
+      // already gone between snapshot and kill — fine
+    }
+  }
+  if (orphans.length > 0) {
+    console.log(
+      `Reaped ${orphans.length} orphaned test browser(s) leaked by prior crashed runs`,
+    )
+  }
 }
 
 async function main() {
+  killStaleTestBrowsers()
   if (!fs.existsSync(buildPath)) {
     console.error(
-      'Error: Build directory not found. Run `yarn build` in products/jbrowse-web first.',
+      'Error: Build directory not found. Run `pnpm build` in products/jbrowse-web first.',
     )
     process.exit(1)
   }
@@ -1043,9 +440,8 @@ async function main() {
   console.log('Starting test server...')
   const server = await startServer(PORT)
 
-  let browser: Browser | undefined
-  let oauthServer: http.Server | undefined
-  let basicAuthServer: http.Server | undefined
+  let oauthServer: Server | undefined
+  let basicAuthServer: Server | undefined
 
   try {
     if (runAuthTests) {
@@ -1061,43 +457,127 @@ async function main() {
       })
     }
 
-    console.log(`Launching browser (headed: ${headed})...`)
-    browser = await launch({
-      headless: !headed,
-      slowMo,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-web-security',
-        '--disable-popup-blocking',
-      ],
-      defaultViewport: { width: 1280, height: 800 },
-    })
+    console.log('Discovering test suites...')
+    const suites = await discoverSuites()
+    console.log(`Found ${suites.length} test suites`)
 
-    const page = await browser.newPage()
-    page.on('console', msg => {
-      const text = msg.text()
-      if (msg.type() === 'error' && !text.includes('favicon')) {
-        console.error('  Browser:', text)
-      }
-    })
-
-    console.log('\nRunning browser tests...')
-    if (runAuthTests) {
-      console.log('(including auth tests)')
+    let backends: RenderingBackend[]
+    if (backendValue === 'all') {
+      backends = skipWebGPU
+        ? ['canvas2d', 'webgl']
+        : ['canvas2d', 'webgl', 'webgpu']
+    } else {
+      backends = [(backendValue ?? 'canvas2d') as RenderingBackend]
     }
-    const { passed, failed } = await runTests(page, browser, runAuthTests)
+
+    // A multi-backend run doubles as a differential-correctness check: collect
+    // each backend's captures in memory so they can be diffed against each other
+    // once all backends have rendered (see the gate after the loop).
+    if (backends.length > 1) {
+      enableCrossBackendCollection()
+    }
+
+    let totalPassed = 0
+    let totalFailed = 0
+    const allFailures: {
+      backend: string
+      suite: string
+      test: string
+      error: string
+    }[] = []
+
+    for (const backend of backends) {
+      console.log(`\nLaunching browser (headed: ${headed})...`)
+      if (runAuthTests) {
+        console.log('(including auth tests)')
+      }
+      if (filters.length > 0) {
+        console.log(`(filtering by: ${filters.join(', ')})`)
+      }
+      if (testFilter) {
+        console.log(`(test filter: ${testFilter})`)
+      }
+      if (smoke) {
+        console.log('(smoke test: running all suites including remote)')
+      }
+      console.log(`(backend: ${backend}, concurrency: ${CONCURRENCY})`)
+
+      const { passed, failed, failures } = await runWithRenderingBackend(
+        suites,
+        backend,
+      )
+      totalPassed += passed
+      totalFailed += failed
+      for (const f of failures) {
+        allFailures.push({ backend, ...f })
+      }
+    }
 
     console.log(`\n${'─'.repeat(50)}`)
-    console.log(`  Tests: ${passed} passed, ${failed} failed`)
+    console.log(`  Tests: ${totalPassed} passed, ${totalFailed} failed`)
+    if (backends.length > 1) {
+      console.log(`  RenderingBackends tested: ${backends.join(', ')}`)
+    }
+    if (allFailures.length > 0) {
+      // In gate-only mode the cross-backend gate is the pass/fail authority, so
+      // per-test failures (mostly UI-interaction timeouts, which produce no
+      // snapshot for the gate to compare) are surfaced for triage but don't fail
+      // the run — otherwise unrelated interaction brittleness would keep the CI
+      // gate permanently red.
+      console.log(
+        gateOnly ? `\n  Failed tests (informational):` : `\n  Failed tests:`,
+      )
+      for (const f of allFailures) {
+        const prefix = backends.length > 1 ? `[${f.backend}] ` : ''
+        console.log(`    ✗ ${prefix}${f.suite} > ${f.test}`)
+        console.log(`      ${f.error}`)
+      }
+    }
     console.log(`${'─'.repeat(50)}\n`)
 
-    process.exit(failed > 0 ? 1 : 0)
+    // Differential-correctness gate: diff the in-memory captures across backends
+    // and fail the run if any pair drifts past its threshold. Independent of the
+    // committed goldens, so it can't be fooled by stale per-backend dirs (the
+    // failure mode of the disk-based compare-backends.ts, still available via
+    // `pnpm test:browser:compare` for local visual review).
+    let crossBackendFailed = false
+    if (backends.length > 1) {
+      const { failures, drifts, compared, skipped, excluded, diffDir } =
+        runCrossBackendGate()
+      console.log(
+        `Cross-backend gate: ${compared} pair(s) compared, ${failures.length} over threshold${
+          skipped > 0 ? `, ${skipped} single-backend (uncompared)` : ''
+        }${excluded > 0 ? `, ${excluded} excluded (nondeterministic layout)` : ''}`,
+      )
+      // List every failure (over threshold or size-mismatch), then the worst few
+      // *passing* drifts so each run also shows how much headroom the noise floor
+      // has under the thresholds.
+      for (const f of failures) {
+        console.log(`    ✗ ${f.name} [${f.pair}]: ${f.detail}`)
+      }
+      const topPassing = drifts
+        .filter(d => d.pct <= d.threshold * 100)
+        .slice(0, 5)
+      for (const d of topPassing) {
+        console.log(
+          `    · ${d.name} [${d.pair}]: ${d.pct.toFixed(2)}% (threshold ${(d.threshold * 100).toFixed(0)}%)`,
+        )
+      }
+      if (failures.length > 0) {
+        crossBackendFailed = true
+        console.log(`\n  Backend diff images: ${diffDir}`)
+      }
+      console.log(`${'─'.repeat(50)}\n`)
+    }
+
+    const failRun = gateOnly
+      ? crossBackendFailed
+      : totalFailed > 0 || crossBackendFailed
+    process.exit(failRun ? 1 : 0)
   } catch (e) {
     console.error('Fatal error:', e)
     process.exit(1)
   } finally {
-    await browser?.close()
     server.close()
     oauthServer?.close()
     basicAuthServer?.close()

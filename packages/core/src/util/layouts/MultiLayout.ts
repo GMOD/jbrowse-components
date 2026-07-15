@@ -18,9 +18,8 @@ export default class MultiLayout<SUB_LAYOUT_CLASS extends BaseLayout<T>, T> {
     this.subLayoutConstructorArgs = subLayoutConstructorArgs
   }
 
-  getDataByID(id: string): unknown {
+  getDataByID(id: string): T | undefined {
     for (const layout of this.subLayouts.values()) {
-      // @ts-expect-error
       const r = layout.getDataByID(id)
       if (r) {
         return r

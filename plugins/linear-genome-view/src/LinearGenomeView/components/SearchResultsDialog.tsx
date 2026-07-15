@@ -49,6 +49,7 @@ export default function SearchResultsDialog({
       <Divider />
       <DialogActions>
         <Button
+          variant="contained"
           onClick={() => {
             handleClose()
           }}

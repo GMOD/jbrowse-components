@@ -44,7 +44,7 @@ function createMockFetch() {
 }
 
 function makeFile(mockFetch: typeof globalThis.fetch) {
-  return new RemoteFileWithRangeCache('http://example.com/data.bin', {
+  return new RemoteFileWithRangeCache('https://example.com/data.bin', {
     fetch: mockFetch,
   })
 }
@@ -54,7 +54,7 @@ async function fetchRange(
   start: number,
   end: number,
 ) {
-  const res = await file.fetch('http://example.com/data.bin', {
+  const res = await file.fetch('https://example.com/data.bin', {
     headers: { range: `bytes=${start}-${end}` },
   })
   return new Uint8Array(await res.arrayBuffer())
@@ -141,7 +141,7 @@ describe('RemoteFileWithRangeCache', () => {
   test('non-range request passes through without caching', async () => {
     const { mockFetch } = createMockFetch()
     const file = makeFile(mockFetch)
-    const res = await file.fetch('http://example.com/data.bin')
+    const res = await file.fetch('https://example.com/data.bin')
     expect(res.status).toBe(200)
   })
 
@@ -243,15 +243,15 @@ describe('RemoteFileWithRangeCache', () => {
       return new Response('', { status: 200 })
     }
 
-    const file = new RemoteFileWithRangeCache('http://example.com/small.bin', {
+    const file = new RemoteFileWithRangeCache('https://example.com/small.bin', {
       fetch: mockFetch,
     })
 
     // Prime chunk 0 (full) and chunk 1 (short — server clips to smallFileSize)
-    await file.fetch('http://example.com/small.bin', {
+    await file.fetch('https://example.com/small.bin', {
       headers: { range: `bytes=0-${CHUNK - 1}` },
     })
-    await file.fetch('http://example.com/small.bin', {
+    await file.fetch('https://example.com/small.bin', {
       headers: { range: `bytes=${CHUNK}-${2 * CHUNK - 1}` },
     })
     expect(calls).toHaveLength(2)
@@ -263,7 +263,7 @@ describe('RemoteFileWithRangeCache', () => {
     const overreadEnd = overreadStart + 65_535 // 527 679 — lands in chunk 2
     expect(Math.floor(overreadEnd / CHUNK)).toBe(2) // confirm chunk 2 is involved
 
-    const res = await file.fetch('http://example.com/small.bin', {
+    const res = await file.fetch('https://example.com/small.bin', {
       headers: { range: `bytes=${overreadStart}-${overreadEnd}` },
     })
     const result = new Uint8Array(await res.arrayBuffer())
@@ -299,18 +299,57 @@ describe('RemoteFileWithRangeCache', () => {
       }
       return new Response('', { status: 200 })
     }
-    const file = new RemoteFileWithRangeCache('http://example.com/data.bin', {
+    const file = new RemoteFileWithRangeCache('https://example.com/data.bin', {
       fetch: mockFetch,
     })
     const stat = await file.stat()
     expect(stat.size).toBe(FILE_SIZE)
   })
 
-  test('stat() does not throw when Content-Range is not exposed (CORS)', async () => {
+  test('stat() throws when Content-Range is not exposed (CORS)', async () => {
     const { mockFetch } = createMockFetch() // no Content-Range headers
     const file = makeFile(mockFetch)
-    // Falls back to parent stat() — should not crash
-    await expect(file.stat()).resolves.toBeDefined()
+    // Throws loudly rather than silently lying with size:0 — callers that can
+    // degrade gracefully (e.g. ImportWizard size check) wrap stat in try/catch.
+    await expect(file.stat()).rejects.toThrow(/Could not determine size/)
+  })
+
+  // Regression: a fresh filehandle whose chunk cache is already populated (e.g.
+  // from a previous filehandle instance's leaked fetch in the same process)
+  // must still return the correct file size from stat(). Previously stat()
+  // would short-circuit on the cached chunk and never observe Content-Range,
+  // returning a bogus size of 0.
+  test('stat() returns correct size after chunk cache is pre-populated by another instance', async () => {
+    const mockFetch = async (
+      _url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const range = new Headers(init?.headers).get('range')
+      if (range) {
+        const m = /bytes=(\d+)-(\d+)/.exec(range)
+        if (m) {
+          const start = Number(m[1])
+          const end = Math.min(Number(m[2]), FILE_SIZE - 1)
+          return new Response(slice(start, end), {
+            status: 206,
+            headers: {
+              'content-range': `bytes ${start}-${end}/${FILE_SIZE}`,
+            },
+          })
+        }
+      }
+      return new Response('', { status: 200 })
+    }
+    // First instance: prime the module-level chunk cache for the URL.
+    const file1 = makeFile(mockFetch)
+    await fetchRange(file1, 0, 99)
+
+    // Second instance for the same URL — its per-instance state starts fresh.
+    // stat() must NOT depend on the (per-instance) cachedStat field that would
+    // have been populated only as a side effect of file1's range fetch.
+    const file2 = makeFile(mockFetch)
+    const stat = await file2.stat()
+    expect(stat.size).toBe(FILE_SIZE)
   })
 
   // Cold cache: the over-read request is the FIRST request, so no short chunk
@@ -348,7 +387,7 @@ describe('RemoteFileWithRangeCache', () => {
       return new Response('', { status: 200 })
     }
 
-    const file = new RemoteFileWithRangeCache('http://example.com/small.bin', {
+    const file = new RemoteFileWithRangeCache('https://example.com/small.bin', {
       fetch: mockFetch,
     })
 
@@ -356,7 +395,7 @@ describe('RemoteFileWithRangeCache', () => {
     // Chunk 1 has data, chunk 2 is past EOF.
     const overreadStart = CHUNK + 200_000
     const overreadEnd = overreadStart + 65_535
-    const res = await file.fetch('http://example.com/small.bin', {
+    const res = await file.fetch('https://example.com/small.bin', {
       headers: { range: `bytes=${overreadStart}-${overreadEnd}` },
     })
     const result = new Uint8Array(await res.arrayBuffer())
@@ -369,6 +408,67 @@ describe('RemoteFileWithRangeCache', () => {
     expect(calls[0]!.start).toBe(CHUNK)
   })
 
+  // Regression: the module-global LRU is capped and shared across every file.
+  // A chunk this read already holds can be evicted by other concurrent reads'
+  // putCached calls during the fetch await window. Assembly must not re-read
+  // the (possibly-evicted) chunk from the Map — it holds a local reference —
+  // else getCached returns undefined and undefined.length throws a TypeError.
+  test('evicting a needed chunk mid-fetch still assembles correct bytes', async () => {
+    // Read spans chunk 0 (already cached) and chunk 1 (missing → slow fetch).
+    // While chunk 1's fetch is parked, flood the shared LRU past its cap so
+    // chunk 0's Map entry is evicted. Assembly must still produce chunk 0's
+    // bytes from its locally-held reference.
+    let releaseChunk1 = () => {}
+    const chunk1Gate = new Promise<void>(res => {
+      releaseChunk1 = res
+    })
+
+    const mainUrl = 'https://example.com/evict.bin'
+    const mockFetch = async (
+      url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const range = new Headers(init?.headers).get('range')
+      const m = range ? /bytes=(\d+)-(\d+)/.exec(range) : null
+      if (m) {
+        const start = Number(m[1])
+        const end = Math.min(Number(m[2]), FILE_SIZE - 1)
+        if (String(url) === mainUrl && start >= CHUNK) {
+          await chunk1Gate
+        }
+        return new Response(slice(start, end), { status: 206 })
+      }
+      return new Response('', { status: 200 })
+    }
+
+    // fetch() keys the cache on the url argument, so call it directly with
+    // distinct URLs here (the shared fetchRange helper hardcodes one URL).
+    const read = async (url: string, s: number, e: number) => {
+      const res = await new RemoteFileWithRangeCache(url, {
+        fetch: mockFetch,
+      }).fetch(url, { headers: { range: `bytes=${s}-${e}` } })
+      return new Uint8Array(await res.arrayBuffer())
+    }
+
+    // Prime chunk 0 so it is present in the LRU (and captured by the next read).
+    await read(mainUrl, 0, 99)
+
+    // Read spanning chunk 0 (cached) + chunk 1 (missing); parks on chunk1Gate.
+    const start = CHUNK - 50
+    const end = CHUNK + 50
+    const readPromise = read(mainUrl, start, end)
+
+    // Flood the shared LRU from other URLs past MAX_CACHE_ENTRIES (2000) so the
+    // FIFO eviction discards chunk 0's key while the read above is in flight.
+    for (let i = 0; i < 2100; i++) {
+      await read(`https://example.com/flood${i}.bin`, 0, 99)
+    }
+
+    releaseChunk1()
+    const result = await readPromise
+    expect(result).toEqual(slice(start, end))
+  })
+
   test('different URLs do not share cache', async () => {
     const { calls, mockFetch } = createMockFetch()
     const file = makeFile(mockFetch)
@@ -377,7 +477,7 @@ describe('RemoteFileWithRangeCache', () => {
     expect(calls).toHaveLength(1)
 
     // Same range but different URL should trigger a new fetch
-    const res = await file.fetch('http://example.com/other.bin', {
+    const res = await file.fetch('https://example.com/other.bin', {
       headers: { range: 'bytes=0-99' },
     })
     const result = new Uint8Array(await res.arrayBuffer())

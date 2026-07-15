@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { Dialog, PluggableComponent } from '@jbrowse/core/ui'
+import { Dialog, LoadingEllipses, PluggableComponent } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getEnv } from '@jbrowse/mobx-state-tree'
 import { AppBar, Paper, Toolbar, Typography } from '@mui/material'
@@ -54,7 +54,7 @@ const ModalWidget = observer(function ModalWidget({
         </AppBar>
       }
     >
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<LoadingEllipses />}>
         <Paper className={classes.paper}>
           <PluggableComponent
             pluginManager={pluginManager}

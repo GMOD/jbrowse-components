@@ -34,7 +34,10 @@ export default function FieldName({
   const val = [...prefix, name].join('.')
   return description ? (
     <Tooltip title={description} placement="left">
-      <div className={cx(classes.fieldDescription, classes.fieldName)}>
+      <div
+        className={cx(classes.fieldDescription, classes.fieldName)}
+        style={{ width }}
+      >
         {val}
       </div>
     </Tooltip>

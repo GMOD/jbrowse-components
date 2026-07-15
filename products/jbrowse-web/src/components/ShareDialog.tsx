@@ -1,32 +1,40 @@
-import { Suspense, lazy, useState } from 'react'
+import { useState } from 'react'
 
-import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import {
   type AbstractSessionModel,
+  type SessionShareMode,
   localStorageGetItem,
   useFetch,
 } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { bakePromotedDefaultsIntoSnapshot } from '@jbrowse/product-core'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
+  Box,
   Button,
+  Checkbox,
+  CircularProgress,
   DialogActions,
   DialogContent,
   DialogContentText,
-  IconButton,
+  FormControlLabel,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ShareDialogLinkField from './ShareDialogLinkField.tsx'
-import { buildLongShareUrl, buildShortShareUrl } from './buildShareUrl.ts'
-import { setQueryParams } from '../useQueryParam.ts'
+import ShareInfoDialog from './ShareInfoDialog.tsx'
+import { SHARE_URL_LOCALSTORAGE_KEY, buildShareUrl } from './buildShareUrl.ts'
 
-const SettingsDialog = lazy(() => import('./ShareSettingsDialog.tsx'))
-
-const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
+const SHARE_MODES = [
+  { value: 'short', label: 'Short URL' },
+  { value: 'long', label: 'Long URL' },
+  { value: 'json', label: 'Plaintext JSON' },
+] as const
 
 const ShareDialog = observer(function ShareDialog({
   handleClose,
@@ -35,14 +43,22 @@ const ShareDialog = observer(function ShareDialog({
   handleClose: () => void
   session: AbstractSessionModel & { shareURL: string }
 }) {
-  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false)
+  const [showReadableJson, setShowReadableJson] = useState(false)
 
   const shareURL = session.shareURL
-  const currentSetting =
-    localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) || 'short'
+  const [currentSetting, setCurrentSetting] = useState<SessionShareMode>(
+    () =>
+      (localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) ??
+        'short') as SessionShareMode,
+  )
   // Capture snapshot once when dialog opens — we don't want to re-upload every
-  // time the session mutates while the dialog is open
-  const [snap] = useState(() => getSnapshot(session))
+  // time the session mutates while the dialog is open. Bake the live
+  // promotable-default cascade into concrete track values so the recipient sees
+  // what the sender saw without inheriting their personal (un-shared) defaults.
+  const [snap] = useState(() =>
+    bakePromotedDefaultsIntoSnapshot(session, getSnapshot(session)),
+  )
 
   const {
     data,
@@ -50,12 +66,11 @@ const ShareDialog = observer(function ShareDialog({
     isLoading: loading,
     mutate,
   } = useFetch(['shareUrl', currentSetting], () =>
-    currentSetting === 'short'
-      ? buildShortShareUrl(snap, shareURL)
-      : buildLongShareUrl(snap),
+    buildShareUrl(currentSetting, snap, shareURL),
   )
 
   const url = data?.url ?? ''
+  const plaintext = data?.plaintext
   const disabled = loading || !!error
   return (
     <>
@@ -68,13 +83,28 @@ const ShareDialog = observer(function ShareDialog({
         <DialogContent>
           <DialogContentText>
             Copy the URL below to share your current JBrowse session.
-            <IconButton
-              onClick={() => {
-                setSettingsDialogOpen(true)
-              }}
+            <CascadingMenuButton
+              tooltip="Session sharing settings"
+              menuItems={[
+                ...SHARE_MODES.map(({ value, label }) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked: currentSetting === value,
+                  onClick: () => {
+                    localStorage.setItem(SHARE_URL_LOCALSTORAGE_KEY, value)
+                    setCurrentSetting(value)
+                  },
+                })),
+                {
+                  label: 'About session URLs',
+                  onClick: () => {
+                    setInfoDialogOpen(true)
+                  },
+                },
+              ]}
             >
               <SettingsIcon />
-            </IconButton>
+            </CascadingMenuButton>
           </DialogContentText>
 
           {error ? (
@@ -86,9 +116,36 @@ const ShareDialog = observer(function ShareDialog({
               }}
             />
           ) : loading ? (
-            <Typography>Generating short URL...</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CircularProgress size={16} />
+              <Typography>Generating {currentSetting} URL...</Typography>
+            </Box>
           ) : (
-            <ShareDialogLinkField url={url} />
+            <>
+              <ShareLinkField value={url} />
+              {plaintext ? (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showReadableJson}
+                      onChange={event => {
+                        setShowReadableJson(event.target.checked)
+                      }}
+                    />
+                  }
+                  label="Show readable JSON"
+                />
+              ) : null}
+              {plaintext && showReadableJson ? (
+                <MonospaceTextField
+                  label="Session JSON"
+                  value={plaintext}
+                  readOnly
+                  fullWidth
+                  maxRows={20}
+                />
+              ) : null}
+            </>
           )}
         </DialogContent>
         <DialogActions>
@@ -97,10 +154,12 @@ const ShareDialog = observer(function ShareDialog({
             disabled={disabled}
             onClick={event => {
               event.preventDefault()
-              setQueryParams({
-                password: data?.passwordParam ?? '',
-                session: data?.sessionParam ?? '',
-              })
+              // point the address bar at the assembled share URL (inline
+              // sessions live in the hash, see buildShareUrl) so the bookmark
+              // the user saves is the shareable one
+              if (url) {
+                window.history.replaceState(null, '', url)
+              }
               alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
             }}
           >
@@ -111,29 +170,33 @@ const ShareDialog = observer(function ShareDialog({
             startIcon={<ContentCopyIcon />}
             disabled={disabled}
             onClick={async () => {
-              const { default: copy } = await import('copy-to-clipboard')
-              await copy(url)
-              session.notify('Copied to clipboard', 'success')
+              const { default: copy } =
+                await import('@jbrowse/core/util/copyToClipboard')
+              if (copy(url)) {
+                session.notify('Copied to clipboard', 'success')
+              }
             }}
           >
             Copy to Clipboard
           </Button>
 
-          <Button onClick={handleClose} autoFocus>
+          <Button
+            onClick={() => {
+              handleClose()
+            }}
+            autoFocus
+          >
             Close
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Suspense fallback={null}>
-        <SettingsDialog
-          open={settingsDialogOpen}
-          currentSetting={currentSetting}
-          onClose={() => {
-            setSettingsDialogOpen(false)
-          }}
-        />
-      </Suspense>
+      <ShareInfoDialog
+        open={infoDialogOpen}
+        onClose={() => {
+          setInfoDialogOpen(false)
+        }}
+      />
     </>
   )
 })

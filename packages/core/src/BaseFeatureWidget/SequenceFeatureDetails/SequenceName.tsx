@@ -1,9 +1,13 @@
 import { observer } from 'mobx-react'
 
+import { modeHasUpDownstream } from './featureTypeUtil.ts'
 import { toLocale } from '../../util/index.ts'
 import { getStrandStr } from '../util.tsx'
 
-import type { SequenceFeatureDetailsModel } from './model.ts'
+import type {
+  SequenceDisplayMode,
+  SequenceFeatureDetailsModel,
+} from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 
 const SequenceName = observer(function SequenceName({
@@ -12,15 +16,15 @@ const SequenceName = observer(function SequenceName({
   feature,
 }: {
   model: SequenceFeatureDetailsModel
-  mode: string
+  mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
 }) {
   return (
-    <div style={{ background: 'white' }}>
+    <div>
       {`>${[
         [feature.name || feature.id, mode].filter(Boolean).join('-'),
         `${feature.refName}:${toLocale(feature.start + 1)}-${toLocale(feature.end)}${getStrandStr(feature.strand)}`,
-        mode.endsWith('updownstream')
+        modeHasUpDownstream(mode)
           ? `+/- ${toLocale(model.upDownBp)} up/downstream bp`
           : '',
       ]

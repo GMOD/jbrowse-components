@@ -1,84 +1,82 @@
 ---
 layout: '../layouts/MarkdownLayout.astro'
 title: JBrowse 2 Feature Overview
+description:
+  Multiple linked view types, structural variant and synteny visualization, deep
+  alignments inspection, Hi-C, and an extensible plugin system — all running on
+  the web, on desktop, or embedded in your own app.
 ---
 
 # JBrowse 2 feature overview
 
-## View types
+JBrowse 2 is a pluggable, fully client-side genome browser. The same core runs
+as a web app on static hosting (no server required), as a cross-platform desktop
+app, and as embeddable React components inside other websites.
 
-JBrowse 2 supports multiple view types that can be shown simultaneously in the
-app. Third-party plugins can also add new view types.
+## Highlights
 
-- **Linear genome view** - The primary view for browsing genomic data along a
-  reference sequence. Supports multiple tracks, zooming, navigation, and split
-  view for comparing two regions simultaneously
+- **Many view types in one session** - open linear, circular, dotplot, synteny,
+  breakpoint, and tabular views side by side and link them together, rather than
+  being limited to a single linear track viewer
 
-- **Circular view** - Whole genome overview of chromosomal translocations. VCF
-  breakend `<BND>` and `<TRA>` features are rendered as arcs across the genome
+- **Synteny and structural variants** - compare whole genomes with dotplot and
+  linear synteny views, and inspect SVs with the breakpoint split view, circular
+  arcs, and the spreadsheet-style SV inspector. This was the original motivation
+  for JBrowse 2 and remains a core strength
 
-- **Breakpoint split view** - Shows the connection between long split alignments
-  or paired-end reads across chromosomes using stacked linear genome views
+- **Deep alignments inspection** - sort, color, and filter reads by BAM/CRAM
+  tag, including base modification / methylation coloring, with per-track
+  display modes for pileup and coverage
 
-- **Dotplot view** - Zoomable comparison of whole genome alignments or synteny
-  datasets
+- **Hi-C, multi-sample variants, and MAF** - render `.hic` contact matrices,
+  population-scale variant matrices, and multiple-alignment (MAF) data alongside
+  everything else
 
-- **Linear synteny view** - Exploration of syntenic alignments using stacked
-  linear genome views
+- **Pre-loaded genomes** - launch any of a
+  [large database of species](https://genomes.jbrowse.org) without configuring
+  an assembly yourself
 
-- **SV inspector** - Spreadsheet-like view of structural variants with a linked
-  circular overview for visual context
+- **Extensible** - add view types, tracks, adapters, and renderers through
+  plugins, installable directly from the in-app plugin store
 
-- **Tabular view** - Open BED, VCF, CSV, TSV, or bespoke formats like
-  STAR-fusion output in a sortable, filterable table
+- **Runs anywhere** - web, desktop, embedded React components, Jupyter, and R;
+  client-side rendering means data can stay on the user's machine
 
-## What's new in JBrowse 2
-
-JBrowse 2 was rebuilt from the ground up, with a primary focus on synteny and
-structural variant visualization that JBrowse 1 could not support, while also
-expanding on many other capabilities. The table below highlights what is new.
-
-| Feature                                                                 | JBrowse 1 | JBrowse 2 |
-| ----------------------------------------------------------------------- | :-------: | :-------: |
-| Multiple simultaneous view types                                        |     ✗     |     ✓     |
-| Circular / dotplot / synteny views                                      |     ✗     |     ✓     |
-| Structural variant visualization (breakpoint split view, circular arcs) |     ✗     |     ✓     |
-| Hi-C contact matrix                                                     |     ✗     |     ✓     |
-| Web worker and WASM speed optimizations                                 |     ✗     |     ✓     |
-| Sort, color, and filter alignments by BAM/CRAM tag                      |     ✗     |     ✓     |
-| [Large database of pre-loaded species](https://genomes.jbrowse.org)     |     ✗     |     ✓     |
-| In-app plugin store                                                     |     ✗     |     ✓     |
-| UCSC track hub support [^1]                                             |     ✗     |     ✓     |
-| SVG export of the current view                                          |     ✗     |     ✓     |
-| Embeddable as React / NPM components [^2] [^3]                          |     ✗     |     ✓     |
+- **Shareable and exportable** - share a live view via URL, and export any view
+  as a publication-ready SVG
 
 See the [demos](/demos/) and [gallery](/gallery/) for more examples of what
 JBrowse 2 can do.
 
+## View types
+
+Any number of these can be open at once and linked together, and plugins can add
+more. See the [user guide](https://jbrowse.org/jb2/docs/user_guide/) for full
+walkthroughs.
+
+- **Linear genome view** - browse tracks along a reference, with split view for
+  comparing regions side by side
+- **Circular view** - whole-genome overview of translocations, drawn as arcs
+- **Breakpoint split view** - connect split or paired-end reads across
+  chromosomes with stacked linear views
+- **Dotplot view** - zoomable whole-genome alignment / synteny comparison
+- **Linear synteny view** - stacked genomes with their syntenic alignments drawn
+  between them
+- **SV inspector** - spreadsheet of structural variants with a linked circular
+  overview
+- **Spreadsheet view** - BED, VCF, CSV/TSV, or bespoke formats like STAR-fusion
+  output in a sortable, filterable table
+
 ## Supported data formats
 
-Core JBrowse 2 supports the following formats. Plugins extend this list further.
+JBrowse reads common genomics formats directly in the browser — sequence (FASTA,
+2bit), alignments (BAM, CRAM, htsget), features (GFF3, GTF, BED, BigBed),
+quantitative signal (BigWig, bedGraph), variants (VCF), Hi-C (`.hic`), synteny
+(PAF, chain, delta, PIF, MCScan), multiple alignment (MAF), and tabular data
+(CSV, TSV, BEDPE). It also connects to UCSC track hubs, and plugins add more.
 
-- Indexed FASTA / BGZip indexed FASTA
-- 2bit
-- BAM / CRAM
-- htsget
-- VCF (Tabix-indexed or plain text)
-- GFF3 (Tabix-indexed or plain text)
-- BED (Tabix-indexed or plain text)
-- BigBed
-- BigWig
-- .hic (Hi-C contact matrix)
-- JBrowse 1 nested containment lists (NCLists)
-- CSV, TSV, BEDPE, STAR-fusion output (tabular view)
-
-## Synteny and dotplot formats
-
-- PAF
-- Chain
-- Delta
-- Pairwise indexed format (PIF)
-- [MCScan (Python version)](https://github.com/tanghaibao/jcvi)
+For the complete list — every format and the adapter it maps to — see
+[supported file types](https://jbrowse.org/jb2/docs/config_guides/file_types/).
 
 ## Integration and embedding
 
@@ -89,15 +87,3 @@ as embeddable components for other web applications, as demonstrated by
 
 See the full list of
 [embedded components](https://jbrowse.org/jb2/docs/embedded_components/).
-
-[^1]:
-    Requires the trackhub server to allow
-    [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
-
-[^2]:
-    See
-    [`@jbrowse/react-linear-genome-view` on npm](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view)
-
-[^3]:
-    See the full list of
-    [embedded components](https://jbrowse.org/jb2/docs/embedded_components/)

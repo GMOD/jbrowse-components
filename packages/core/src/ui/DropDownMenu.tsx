@@ -43,8 +43,6 @@ const DropDownMenu = observer(function DropDownMenu({
       menuItems={menuItems}
       color="inherit"
       ButtonComponent={ButtonComponent}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
     >
       {menuTitle}
       <ArrowDropDown />

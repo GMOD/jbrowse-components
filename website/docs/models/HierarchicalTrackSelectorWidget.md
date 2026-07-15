@@ -1,379 +1,555 @@
 ---
 id: hierarchicaltrackselectorwidget
 title: HierarchicalTrackSelectorWidget
+sidebar_label: Widget -> HierarchicalTrackSelectorWidget
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`data-management` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Overview
 
-## Links
+## Members
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts)
+| Member                                                                             | Kind       | Defined by                      | Description                                                                                                                                                                                          |
+| ---------------------------------------------------------------------------------- | ---------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [id](#property-id)                                                                 | Properties | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [type](#property-type)                                                             | Properties | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [view](#property-view)                                                             | Properties | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [favorites](#volatile-favorites)                                                   | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [recentlyUsed](#volatile-recentlyused)                                             | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [selection](#volatile-selection)                                                   | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [sortTrackNames](#volatile-sorttracknames)                                         | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [sortCategories](#volatile-sortcategories)                                         | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [collapsed](#volatile-collapsed)                                                   | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [folderCategories](#volatile-foldercategories)                                     | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [filterText](#volatile-filtertext)                                                 | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [recentlyUsedCounter](#volatile-recentlyusedcounter)                               | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [favoritesCounter](#volatile-favoritescounter)                                     | Volatiles  | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [shownTrackIds](#getter-showntrackids)                                             | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [selectionSet](#getter-selectionset)                                               | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [favoritesSet](#getter-favoritesset)                                               | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [recentlyUsedSet](#getter-recentlyusedset)                                         | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [assemblyNames](#getter-assemblynames)                                             | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [activeSortTrackNames](#getter-activesorttracknames)                               | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [activeSortCategories](#getter-activesortcategories)                               | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [configAndSessionTrackConfigurations](#getter-configandsessiontrackconfigurations) | Getters    | HierarchicalTrackSelectorWidget | filter out tracks that don't match the current assembly/display types                                                                                                                                |
+| [allTrackConfigurations](#getter-alltrackconfigurations)                           | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [allTrackConfigurationMap](#getter-alltrackconfigurationmap)                       | Getters    | HierarchicalTrackSelectorWidget | unfiltered map of every track (incl. connection tracks for other assemblies/view types); used by the faceted selector                                                                                |
+| [displayableTrackConfigurationMap](#getter-displayabletrackconfigurationmap)       | Getters    | HierarchicalTrackSelectorWidget | map restricted to tracks the current view can display; connection tracks go through the same filterTracks() pass as the tree so favorites and recently-used don't surface tracks the view can't show |
+| [favoriteTracks](#getter-favoritetracks)                                           | Getters    | HierarchicalTrackSelectorWidget | filters out tracks that are not in the favorites group                                                                                                                                               |
+| [recentlyUsedTracks](#getter-recentlyusedtracks)                                   | Getters    | HierarchicalTrackSelectorWidget | filters out tracks that are not in the recently used group                                                                                                                                           |
+| [allTracks](#getter-alltracks)                                                     | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [hierarchy](#getter-hierarchy)                                                     | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [flattenedItems](#getter-flatteneditems)                                           | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [flattenedItemOffsets](#getter-flatteneditemoffsets)                               | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [folderCategoryStats](#getter-foldercategorystats)                                 | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [hasAnySubcategories](#getter-hasanysubcategories)                                 | Getters    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [isSelected](#method-isselected)                                                   | Methods    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [isFavorite](#method-isfavorite)                                                   | Methods    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [isRecentlyUsed](#method-isrecentlyused)                                           | Methods    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [getRefSeqTrackConf](#method-getrefseqtrackconf)                                   | Methods    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [itemOffsets](#method-itemoffsets)                                                 | Methods    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setSortTrackNames](#action-setsorttracknames)                                     | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setSortCategories](#action-setsortcategories)                                     | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setSelection](#action-setselection)                                               | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [addToSelection](#action-addtoselection)                                           | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [removeFromSelection](#action-removefromselection)                                 | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [clearSelection](#action-clearselection)                                           | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [addToFavorites](#action-addtofavorites)                                           | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [removeFromFavorites](#action-removefromfavorites)                                 | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [clearFavorites](#action-clearfavorites)                                           | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setRecentlyUsedCounter](#action-setrecentlyusedcounter)                           | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setRecentlyUsed](#action-setrecentlyused)                                         | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setFavoritesCounter](#action-setfavoritescounter)                                 | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [addToRecentlyUsed](#action-addtorecentlyused)                                     | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [clearRecentlyUsed](#action-clearrecentlyused)                                     | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setView](#action-setview)                                                         | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [toggleCategory](#action-togglecategory)                                           | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setCategoryCollapsed](#action-setcategorycollapsed)                               | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [expandAllCategories](#action-expandallcategories)                                 | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setCollapsedCategories](#action-setcollapsedcategories)                           | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [toggleFolderCategory](#action-togglefoldercategory)                               | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setFolderCategories](#action-setfoldercategories)                                 | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [clearFilterText](#action-clearfiltertext)                                         | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [setFilterText](#action-setfiltertext)                                             | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [collapseSubCategories](#action-collapsesubcategories)                             | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
+| [collapseTopLevelCategories](#action-collapsetoplevelcategories)                   | Actions    | HierarchicalTrackSelectorWidget |                                                                                                                                                                                                      |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/HierarchicalTrackSelectorWidget.md)
-
-## Docs
-
-### HierarchicalTrackSelectorWidget - Properties
+<details>
+<summary>HierarchicalTrackSelectorWidget - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"HierarchicalTrackSelectorWidget">
+type type = ISimpleType<'HierarchicalTrackSelectorWidget'>
 // code
 type: types.literal('HierarchicalTrackSelectorWidget')
 ```
 
 #### property: view
 
-```js
+```ts
 // type signature
-IMaybe<IReferenceType<IAnyType>>
+type view = IMaybe<IReferenceType<IAnyType>>
 // code
-view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      )
+view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
 ```
 
-### HierarchicalTrackSelectorWidget - Getters
+</details>
 
-#### getter: shownTrackIds
+<details>
+<summary>HierarchicalTrackSelectorWidget - Volatiles</summary>
 
-```js
-// type
-Set<string>
+#### volatile: favorites
+
+```ts
+// type signature
+type favorites = string[]
+// code
+favorites: localStorageGetJSON<string[]>(favoritesK(), [])
 ```
 
-#### getter: selectionSet
+#### volatile: recentlyUsed
 
-```js
-// type
-Set<{ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+```ts
+// type signature
+type recentlyUsed = string[]
+// code
+recentlyUsed: [] as string[]
 ```
 
-#### getter: favoritesSet
+#### volatile: selection
 
-```js
-// type
-Set<string>
+```ts
+// type signature
+type selection = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+// code
+selection: [] as AnyConfigurationModel[]
 ```
 
-#### getter: recentlyUsedSet
+#### volatile: sortTrackNames
 
-```js
-// type
-Set<string>
+```ts
+// type signature
+type sortTrackNames = boolean | undefined
+// code
+sortTrackNames: localStorageGetJSON<boolean | undefined>(
+  sortTrackNamesK,
+  undefined,
+)
 ```
 
-#### getter: assemblyNames
+#### volatile: sortCategories
 
-```js
-// type
-string[]
+```ts
+// type signature
+type sortCategories = boolean | undefined
+// code
+sortCategories: localStorageGetJSON<boolean | undefined>(
+  sortCategoriesK,
+  undefined,
+)
 ```
 
-#### getter: activeSortTrackNames
+#### volatile: collapsed
 
-```js
-// type
-any
+```ts
+// type signature
+type collapsed = ObservableMap<string, boolean>
+// code
+collapsed: observable.map<string, boolean>()
 ```
 
-#### getter: activeSortCategories
+#### volatile: folderCategories
 
-```js
-// type
-any
+```ts
+// type signature
+type folderCategories = ObservableSet<string>
+// code
+folderCategories: observable.set<string>()
 ```
+
+#### volatile: filterText
+
+```ts
+// type signature
+type filterText = string
+// code
+filterText: ''
+```
+
+#### volatile: recentlyUsedCounter
+
+```ts
+// type signature
+type recentlyUsedCounter = number
+// code
+recentlyUsedCounter: 0
+```
+
+#### volatile: favoritesCounter
+
+```ts
+// type signature
+type favoritesCounter = number
+// code
+favoritesCounter: 0
+```
+
+</details>
+
+<details>
+<summary>HierarchicalTrackSelectorWidget - Getters</summary>
 
 #### getter: configAndSessionTrackConfigurations
 
 filter out tracks that don't match the current assembly/display types
 
-```js
-// type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
-```
-
-#### getter: allTrackConfigurations
-
-```js
-// type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+```ts
+type configAndSessionTrackConfigurations = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allTrackConfigurationMap
 
-```js
-// type
-Map<any, { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>>
+unfiltered map of every track (incl. connection tracks for other assemblies/view
+types); used by the faceted selector
+
+```ts
+type allTrackConfigurationMap = Map<any, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```
+
+#### getter: displayableTrackConfigurationMap
+
+map restricted to tracks the current view can display; connection tracks go
+through the same filterTracks() pass as the tree so favorites and recently-used
+don't surface tracks the view can't show
+
+```ts
+type displayableTrackConfigurationMap = Map<any, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
 #### getter: favoriteTracks
 
 filters out tracks that are not in the favorites group
 
-```js
-// type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+```ts
+type favoriteTracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: recentlyUsedTracks
 
 filters out tracks that are not in the recently used group
 
-```js
-// type
-({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]
+```ts
+type recentlyUsedTracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
+
+</details>
+
+<details>
+<summary>HierarchicalTrackSelectorWidget - Getters (other undocumented members)</summary>
+
+#### getter: shownTrackIds
+
+```ts
+type shownTrackIds = Set<string>
+```
+
+#### getter: selectionSet
+
+```ts
+type selectionSet = Set<ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```
+
+#### getter: favoritesSet
+
+```ts
+type favoritesSet = Set<string>
+```
+
+#### getter: recentlyUsedSet
+
+```ts
+type recentlyUsedSet = Set<string>
+```
+
+#### getter: assemblyNames
+
+```ts
+type assemblyNames = string[]
+```
+
+#### getter: activeSortTrackNames
+
+```ts
+type activeSortTrackNames = any
+```
+
+#### getter: activeSortCategories
+
+```ts
+type activeSortCategories = any
+```
+
+#### getter: allTrackConfigurations
+
+```ts
+type allTrackConfigurations = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allTracks
 
-```js
-// type
-{ group: any; tracks: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ ...; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]; noCategories: boolean; }[]
+```ts
+type allTracks = { group: string; id: string; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]; noCategories: boolean; defaultCollapsed: boolean; loading: boolean; }[]
 ```
 
 #### getter: hierarchy
 
-```js
-// type
-{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; nestingLevel: number; children: TreeNode[]; }[]; }
+```ts
+type hierarchy = {
+  name: string
+  id: string
+  type: 'category'
+  children: {
+    name: string
+    id: string
+    type: 'category'
+    nestingLevel: number
+    defaultCollapsed: boolean
+    loading: boolean
+    children: TreeNode[]
+  }[]
+}
+```
+
+#### getter: flattenedItems
+
+```ts
+type flattenedItems = TreeNode[]
+```
+
+#### getter: flattenedItemOffsets
+
+```ts
+type flattenedItemOffsets = { cumulativeHeight: number; offsets: number[] }
+```
+
+#### getter: folderCategoryStats
+
+```ts
+type folderCategoryStats = Map<string, { active: number; total: number }>
 ```
 
 #### getter: hasAnySubcategories
 
-```js
-// type
-boolean
+```ts
+type hasAnySubcategories = boolean
 ```
 
-### HierarchicalTrackSelectorWidget - Methods
+</details>
+
+<details>
+<summary>HierarchicalTrackSelectorWidget - Methods</summary>
 
 #### method: isSelected
 
-```js
-// type signature
-isSelected: (track: { [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>) => boolean
+```ts
+type isSelected = (track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
 ```
 
 #### method: isFavorite
 
-```js
-// type signature
-isFavorite: (trackId: string) => boolean
+```ts
+type isFavorite = (trackId: string) => boolean
 ```
 
 #### method: isRecentlyUsed
 
-```js
-// type signature
-isRecentlyUsed: (trackId: string) => boolean
+```ts
+type isRecentlyUsed = (trackId: string) => boolean
 ```
 
 #### method: getRefSeqTrackConf
 
-```js
-// type signature
-getRefSeqTrackConf: (assemblyName: string) => MaybeAnyConfigurationModel
+```ts
+type getRefSeqTrackConf = (assemblyName: string) => (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | undefined
 ```
 
-### HierarchicalTrackSelectorWidget - Actions
+#### method: itemOffsets
+
+```ts
+type itemOffsets = (
+  height: number,
+  scrollTop: number,
+) => { startIndex: number; endIndex: number; totalHeight: number }
+```
+
+</details>
+
+<details>
+<summary>HierarchicalTrackSelectorWidget - Actions</summary>
 
 #### action: setSortTrackNames
 
-```js
-// type signature
-setSortTrackNames: (val: boolean) => void
+```ts
+type setSortTrackNames = (val: boolean) => void
 ```
 
 #### action: setSortCategories
 
-```js
-// type signature
-setSortCategories: (val: boolean) => void
+```ts
+type setSortCategories = (val: boolean) => void
 ```
 
 #### action: setSelection
 
-```js
-// type signature
-setSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+```ts
+type setSelection = (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: addToSelection
 
-```js
-// type signature
-addToSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+```ts
+type addToSelection = (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: removeFromSelection
 
-```js
-// type signature
-removeFromSelection: (elt: ({ [x: string]: any; } & NonEmptyObject & { setSubschema(slotName: string, data: Record<string, unknown>): Record<string, unknown> | ({ [x: string]: any; } & NonEmptyObject & ... & IStateTreeNode<...>); } & IStateTreeNode<...>)[]) => void
+```ts
+type removeFromSelection = (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: clearSelection
 
-```js
-// type signature
-clearSelection: () => void
+```ts
+type clearSelection = () => void
 ```
 
 #### action: addToFavorites
 
-```js
-// type signature
-addToFavorites: (trackId: string) => void
+```ts
+type addToFavorites = (trackId: string) => void
 ```
 
 #### action: removeFromFavorites
 
-```js
-// type signature
-removeFromFavorites: (trackId: string) => void
+```ts
+type removeFromFavorites = (trackId: string) => void
 ```
 
 #### action: clearFavorites
 
-```js
-// type signature
-clearFavorites: () => void
+```ts
+type clearFavorites = () => void
 ```
 
 #### action: setRecentlyUsedCounter
 
-```js
-// type signature
-setRecentlyUsedCounter: (val: number) => void
+```ts
+type setRecentlyUsedCounter = (val: number) => void
 ```
 
 #### action: setRecentlyUsed
 
-```js
-// type signature
-setRecentlyUsed: (str: string[]) => void
-```
-
-#### action: setFavorites
-
-```js
-// type signature
-setFavorites: (str: string[]) => void
+```ts
+type setRecentlyUsed = (str: string[]) => void
 ```
 
 #### action: setFavoritesCounter
 
-```js
-// type signature
-setFavoritesCounter: (val: number) => void
+```ts
+type setFavoritesCounter = (val: number) => void
 ```
 
 #### action: addToRecentlyUsed
 
-```js
-// type signature
-addToRecentlyUsed: (id: string) => void
+```ts
+type addToRecentlyUsed = (id: string) => void
 ```
 
 #### action: clearRecentlyUsed
 
-```js
-// type signature
-clearRecentlyUsed: () => void
+```ts
+type clearRecentlyUsed = () => void
 ```
 
 #### action: setView
 
-```js
-// type signature
-setView: (view: unknown) => void
+```ts
+type setView = (view: unknown) => void
 ```
 
 #### action: toggleCategory
 
-```js
-// type signature
-toggleCategory: (pathName: string) => void
+```ts
+type toggleCategory = (pathName: string) => void
 ```
 
 #### action: setCategoryCollapsed
 
-```js
-// type signature
-setCategoryCollapsed: (pathName: string, status: boolean) => void
+```ts
+type setCategoryCollapsed = (pathName: string, status: boolean) => void
 ```
 
 #### action: expandAllCategories
 
-```js
-// type signature
-expandAllCategories: () => void
+```ts
+type expandAllCategories = () => void
 ```
 
 #### action: setCollapsedCategories
 
-```js
-// type signature
-setCollapsedCategories: (str: [string, boolean][]) => void
+```ts
+type setCollapsedCategories = (str: [string, boolean][]) => void
 ```
 
 #### action: toggleFolderCategory
 
-```js
-// type signature
-toggleFolderCategory: (categoryId: string) => void
+```ts
+type toggleFolderCategory = (categoryId: string) => void
 ```
 
 #### action: setFolderCategories
 
-```js
-// type signature
-setFolderCategories: (ids: string[]) => void
+```ts
+type setFolderCategories = (ids: string[]) => void
 ```
 
 #### action: clearFilterText
 
-```js
-// type signature
-clearFilterText: () => void
+```ts
+type clearFilterText = () => void
 ```
 
 #### action: setFilterText
 
-```js
-// type signature
-setFilterText: (newText: string) => void
+```ts
+type setFilterText = (newText: string) => void
 ```
 
 #### action: collapseSubCategories
 
-```js
-// type signature
-collapseSubCategories: () => void
+```ts
+type collapseSubCategories = () => void
 ```
 
 #### action: collapseTopLevelCategories
 
-```js
-// type signature
-collapseTopLevelCategories: () => void
+```ts
+type collapseTopLevelCategories = () => void
 ```
+
+</details>

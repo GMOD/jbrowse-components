@@ -1,177 +1,217 @@
 ---
 id: basefeaturewidget
 title: BaseFeatureWidget
+sidebar_label: Widget -> BaseFeatureWidget
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/BaseFeatureWidget/stateModelFactory.ts).
 
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/BaseFeatureWidget/stateModelFactory.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseFeatureWidget.md)
-
-## Docs
+## Overview
 
 displays data about features, allowing configuration callbacks to modify the
 contents of what is displayed
 
 see: formatDetails-\>feature,formatDetails-\>subfeatures
 
-### BaseFeatureWidget - Properties
+## Members
+
+| Member                                                     | Kind       | Defined by        | Description |
+| ---------------------------------------------------------- | ---------- | ----------------- | ----------- |
+| [id](#property-id)                                         | Properties | BaseFeatureWidget |             |
+| [type](#property-type)                                     | Properties | BaseFeatureWidget |             |
+| [featureData](#property-featuredata)                       | Properties | BaseFeatureWidget |             |
+| [unformattedFeatureData](#property-unformattedfeaturedata) | Properties | BaseFeatureWidget |             |
+| [view](#property-view)                                     | Properties | BaseFeatureWidget |             |
+| [track](#property-track)                                   | Properties | BaseFeatureWidget |             |
+| [trackId](#property-trackid)                               | Properties | BaseFeatureWidget |             |
+| [trackType](#property-tracktype)                           | Properties | BaseFeatureWidget |             |
+| [maxDepth](#property-maxdepth)                             | Properties | BaseFeatureWidget |             |
+| [sequenceFeatureDetails](#property-sequencefeaturedetails) | Properties | BaseFeatureWidget |             |
+| [descriptions](#property-descriptions)                     | Properties | BaseFeatureWidget |             |
+| [error](#volatile-error)                                   | Volatiles  | BaseFeatureWidget |             |
+| [setFeatureData](#action-setfeaturedata)                   | Actions    | BaseFeatureWidget |             |
+| [clearFeatureData](#action-clearfeaturedata)               | Actions    | BaseFeatureWidget |             |
+| [setFormattedData](#action-setformatteddata)               | Actions    | BaseFeatureWidget |             |
+| [setExtra](#action-setextra)                               | Actions    | BaseFeatureWidget |             |
+| [setError](#action-seterror)                               | Actions    | BaseFeatureWidget |             |
+
+<details>
+<summary>BaseFeatureWidget - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"BaseFeatureWidget">
+type type = ISimpleType<'BaseFeatureWidget'>
 // code
 type: types.literal('BaseFeatureWidget')
 ```
 
 #### property: featureData
 
-```js
+```ts
 // type signature
-IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>
+type featureData = IOptionalIType<
+  IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>,
+  [undefined]
+>
 // code
-featureData: types.frozen<MaybeSerializedFeat>()
-```
-
-#### property: formattedFields
-
-```js
-// type signature
-IType<any, any, any>
-// code
-formattedFields: types.frozen()
+featureData: types.optional(types.frozen<MaybeSerializedFeat>(), undefined)
 ```
 
 #### property: unformattedFeatureData
 
-```js
+```ts
 // type signature
-IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>
+type unformattedFeatureData = IOptionalIType<
+  IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>,
+  [undefined]
+>
 // code
-unformattedFeatureData: types.frozen<MaybeSerializedFeat>()
+unformattedFeatureData: types.optional(
+  types.frozen<MaybeSerializedFeat>(),
+  undefined,
+)
 ```
 
 #### property: view
 
-```js
+```ts
 // type signature
-IMaybe<IReferenceType<IAnyType>>
+type view = IMaybe<IReferenceType<IAnyType>>
 // code
-view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      )
+view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
 ```
 
 #### property: track
 
-```js
+```ts
 // type signature
-IMaybe<IReferenceType<IAnyType>>
+type track = IMaybe<IReferenceType<IAnyType>>
 // code
 track: types.safeReference(
-        pluginManager.pluggableMstType('track', 'stateModel'),
-      )
+  pluginManager.pluggableMstType('track', 'stateModel'),
+)
 ```
 
 #### property: trackId
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type trackId = IMaybe<ISimpleType<string>>
 // code
 trackId: types.maybe(types.string)
 ```
 
 #### property: trackType
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type trackType = IMaybe<ISimpleType<string>>
 // code
 trackType: types.maybe(types.string)
 ```
 
 #### property: maxDepth
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type maxDepth = IMaybe<ISimpleType<number>>
 // code
 maxDepth: types.maybe(types.number)
 ```
 
 #### property: sequenceFeatureDetails
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{}, { showCoordinatesSetting: string; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; feature: SimpleFeatureSerialized | undefined; mode: SequenceDisplayMode; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+type sequenceFeatureDetails = IOptionalIType<IModelType<{}, { showCoordinatesSetting: ShowCoordinatesMode; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; hoverPosition: SequenceHoverPosition | undefined; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {})
 ```
 
 #### property: descriptions
 
-```js
+```ts
 // type signature
-IType<Record<string, unknown> | undefined, Record<string, unknown> | undefined, Record<string, unknown> | undefined>
+type descriptions = IOptionalIType<
+  IType<
+    Record<string, unknown> | undefined,
+    Record<string, unknown> | undefined,
+    Record<string, unknown> | undefined
+  >,
+  [undefined]
+>
 // code
-descriptions: types.frozen<Record<string, unknown> | undefined>()
+descriptions: types.optional(
+  types.frozen<Record<string, unknown> | undefined>(),
+  undefined,
+)
 ```
 
-### BaseFeatureWidget - Actions
+</details>
+
+<details>
+<summary>BaseFeatureWidget - Volatiles</summary>
+
+#### volatile: error
+
+```ts
+// type signature
+type error = undefined
+// code
+error: undefined
+```
+
+</details>
+
+<details>
+<summary>BaseFeatureWidget - Actions</summary>
 
 #### action: setFeatureData
 
-```js
-// type signature
-setFeatureData: (featureData: SimpleFeatureSerialized) => void
+```ts
+type setFeatureData = (featureData: SimpleFeatureSerialized) => void
 ```
 
 #### action: clearFeatureData
 
-```js
-// type signature
-clearFeatureData: () => void
+```ts
+type clearFeatureData = () => void
 ```
 
 #### action: setFormattedData
 
-```js
-// type signature
-setFormattedData: (feat: SimpleFeatureSerialized) => void
+```ts
+type setFormattedData = (feat: SimpleFeatureSerialized) => void
 ```
 
 #### action: setExtra
 
-```js
-// type signature
-setExtra: (type?: string | undefined, trackId?: string | undefined, maxDepth?: number | undefined) => void
+```ts
+type setExtra = (
+  type?: string | undefined,
+  trackId?: string | undefined,
+  maxDepth?: number | undefined,
+) => void
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (e: unknown) => void
+```ts
+type setError = (e: unknown) => void
 ```
+
+</details>

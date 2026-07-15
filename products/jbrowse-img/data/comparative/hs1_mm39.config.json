@@ -1,0 +1,39 @@
+{
+  "assemblies": [
+    {
+      "name": "hs1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hs1-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": { "localPath": "hs1.chrom.sizes" }
+        }
+      }
+    },
+    {
+      "name": "mm39",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "mm39-refseq",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": { "localPath": "mm39.chrom.sizes" }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hs1ToMm39.over.chain.pif",
+      "name": "hs1 vs mm39 (liftOver)",
+      "assemblyNames": ["mm39", "hs1"],
+      "adapter": {
+        "type": "ChainAdapter",
+        "uri": "https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz",
+        "assemblyNames": ["mm39", "hs1"]
+      }
+    }
+  ]
+}

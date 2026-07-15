@@ -1,3 +1,7 @@
+import SyntenyFeature from '../SyntenyFeature/index.ts'
+import { orientAlignment } from '../csUtils.ts'
+import { pafIdentity } from '../util.ts'
+
 export interface PAFRecord {
   qname: string
   qstart: number
@@ -8,10 +12,11 @@ export interface PAFRecord {
   strand: number
   extra: {
     cg?: string
+    cs?: string
     blockLen?: number
     mappingQual?: number
     numMatches?: number
-    meanScore?: number
+    meanIdentity?: number
     [key: string]: string | number | undefined
   }
 }
@@ -47,52 +52,82 @@ export interface PAFRecord {
 // that match a particular ref from a particular query (so 1d array of what
 // could be a 2d map)
 //
-// the result is a single number that says e.g. chr5 from human mapped to chr5
-// on mouse with 0.8 quality, and that 0.8 is then attached to all the pieces
-// of chr5 on human that mapped to chr5 on mouse. if chr5 on human also more
-// weakly mapped to chr6 on mouse, then it would have another value e.g. 0.6.
-// this can show strong and weak levels of synteny, especially in polyploidy
-// situations
+// the result is a single identity that says e.g. chr5 from human mapped to
+// chr5 on mouse at 0.8 identity, and that 0.8 is then attached to all the
+// pieces of chr5 on human that mapped to chr5 on mouse — so a query split
+// across many hits is colored by its overall identity to the target.
 
 export function getWeightedMeans(ret: PAFRecord[]) {
-  // First pass: compute weighted sums per query-target pair
-  const scoreMap: Record<string, { valueSum: number; weightSum: number }> = {}
+  // One pass: length-weighted identity sums per query-target pair.
+  const map: Record<string, { idSum: number; weightSum: number }> = {}
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
-    // MAPQ 255 is the PAF spec sentinel for "not computed" — treat as missing,
-    // not as a high-quality signal (which would massively upweight such records).
-    const mapq = entry.extra.mappingQual
-    const qual = mapq !== undefined && mapq !== 255 ? mapq : 1
     const len = entry.extra.blockLen ?? 1
-    const existing = scoreMap[key]
-    if (existing) {
-      existing.valueSum += qual * len
-      existing.weightSum += len
+    const id = pafIdentity(entry.extra)
+    const e = map[key]
+    if (e) {
+      e.idSum += id * len
+      e.weightSum += len
     } else {
-      scoreMap[key] = { valueSum: qual * len, weightSum: len }
+      map[key] = { idSum: id * len, weightSum: len }
     }
   }
 
-  // Convert sums to means and find min/max in one pass
-  const meanScoreMap: Record<string, number> = {}
-  let min = Infinity
-  let max = -Infinity
-  for (const [key, { valueSum, weightSum }] of Object.entries(scoreMap)) {
-    const mean = valueSum / weightSum
-    meanScoreMap[key] = mean
-    min = Math.min(mean, min)
-    max = Math.max(mean, max)
-  }
-
-  // Second pass: attach normalized scores
-  const range = max - min
+  // Mean identity is a true [0,1] fraction, so it shares the per-alignment
+  // identity color scale.
   for (const entry of ret) {
     const key = `${entry.qname}-${entry.tname}`
-    const score = meanScoreMap[key]!
-    // When all pairs have identical quality (range === 0), use 0.5 rather than
-    // 1 so the encoding reads as "neutral" instead of "maximum quality."
-    entry.extra.meanScore = range > 0 ? (score - min) / range : 0.5
+    const { idSum, weightSum } = map[key]!
+    entry.extra.meanIdentity = idSum / weightSum
   }
 
   return ret
+}
+
+// Build a SyntenyFeature from a parsed PAF row already resolved to the
+// perspective the view is anchored on. Shared by PAFAdapter and
+// AllVsAllPAFAdapter, which differ only in how they derive start/end/refName
+// and the mate (raw names vs PanSN-stripped) — the orientation, identity and
+// feature construction are identical. `flip` is true when the queried assembly
+// is the PAF query side.
+export function makeSyntenyFeature({
+  syntenyId,
+  assemblyName,
+  refName,
+  start,
+  end,
+  strand,
+  extra,
+  flip,
+  mate,
+}: {
+  syntenyId: number
+  assemblyName: string
+  refName: string
+  start: number
+  end: number
+  strand: number
+  extra: PAFRecord['extra']
+  flip: boolean
+  mate: { refName: string; start: number; end: number; assemblyName: string }
+}) {
+  const { numMatches = 0, blockLen = 1, cg, cs, ...rest } = extra
+  const { CIGAR, cs: orientedCs } = orientAlignment({ cg, cs, flip, strand })
+  return new SyntenyFeature({
+    uniqueId: syntenyId + assemblyName,
+    assemblyName,
+    start,
+    end,
+    type: 'match',
+    refName,
+    strand,
+    ...rest,
+    CIGAR,
+    cs: orientedCs,
+    syntenyId,
+    identity: pafIdentity(extra),
+    numMatches,
+    blockLen,
+    mate,
+  })
 }

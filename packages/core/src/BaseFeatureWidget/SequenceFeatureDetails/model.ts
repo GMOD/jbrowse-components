@@ -5,23 +5,32 @@ import {
   localStorageGetBoolean,
   localStorageGetItem,
   localStorageGetNumber,
+  localStorageSetBoolean,
   localStorageSetItem,
+  localStorageSetNumber,
 } from '../../util/index.ts'
 
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-function localStorageSetNumber(key: string, value: number) {
-  localStorageSetItem(key, JSON.stringify(value))
+export type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
+
+function parseShowCoordinatesMode(
+  val: string | undefined,
+): ShowCoordinatesMode {
+  return val === 'relative' || val === 'genomic' ? val : 'none'
 }
 
-function localStorageSetBoolean(key: string, value: boolean) {
-  localStorageSetItem(key, JSON.stringify(value))
+// a single genomic base the user is hovering in the sequence panel, published
+// so a connected LinearGenomeView can draw a crosshair at that position (see
+// the LGV SequenceFeatureHoverHighlight overlay). start/end are 0-based/BED.
+export interface SequenceHoverPosition {
+  refName: string
+  start: number
+  end: number
+  assemblyName?: string
 }
 
-type ShowCoordinatesMode = 'none' | 'relative' | 'genomic'
-type SequenceDisplayMode =
-  | ''
+export type SequenceDisplayMode =
   | 'gene'
   | 'gene_collapsed_intron'
   | 'gene_updownstream'
@@ -41,8 +50,9 @@ export function SequenceFeatureDetailsF() {
       /**
        * #volatile
        */
-      showCoordinatesSetting:
-        localStorageGetItem(`${p}-showCoordinatesSetting`) || 'none',
+      showCoordinatesSetting: parseShowCoordinatesMode(
+        localStorageGetItem(`${p}-showCoordinatesSetting`) ?? undefined,
+      ),
       /**
        * #volatile
        */
@@ -61,22 +71,11 @@ export function SequenceFeatureDetailsF() {
       charactersPerRow: 100,
       /**
        * #volatile
+       * genomic base currently hovered in the sequence panel, or undefined
        */
-      feature: undefined as SimpleFeatureSerialized | undefined,
-      /**
-       * #volatile
-       */
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      mode: '' as SequenceDisplayMode,
+      hoverPosition: undefined as SequenceHoverPosition | undefined,
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      setFeature(f: SimpleFeatureSerialized) {
-        self.feature = f
-      },
       /**
        * #action
        */
@@ -104,8 +103,19 @@ export function SequenceFeatureDetailsF() {
       /**
        * #action
        */
-      setMode(mode: SequenceDisplayMode) {
-        self.mode = mode
+      setHoverPosition(pos: SequenceHoverPosition | undefined) {
+        // skip no-op updates: mousemove fires per pixel but the base under the
+        // cursor changes far less often, and each change re-renders the LGV
+        // crosshair overlay
+        const prev = self.hoverPosition
+        const same =
+          prev === pos ||
+          (prev?.refName === pos?.refName &&
+            prev?.start === pos?.start &&
+            prev?.end === pos?.end)
+        if (!same) {
+          self.hoverPosition = pos
+        }
       },
     }))
     .views(self => ({
@@ -114,46 +124,6 @@ export function SequenceFeatureDetailsF() {
        */
       get showCoordinates() {
         return self.showCoordinatesSetting !== 'none'
-      },
-      /**
-       * #getter
-       */
-      get showGenomicCoordsOption() {
-        return (
-          self.mode === 'gene' ||
-          self.mode === 'gene_updownstream' ||
-          self.mode === 'genomic' ||
-          self.mode === 'genomic_sequence_updownstream'
-        )
-      },
-      /**
-       * #getter
-       */
-      get hasCDS(): boolean {
-        const featureType = self.feature?.type?.toLowerCase()
-        if (featureType === 'mature_protein_region_of_cds') {
-          return true
-        }
-        return (
-          self.feature?.subfeatures?.some(sub => {
-            const type = sub.type?.toLowerCase()
-            return type === 'cds' || type === 'mature_protein_region_of_cds'
-          }) ?? false
-        )
-      },
-      /**
-       * #getter
-       */
-      get hasExon(): boolean {
-        return (
-          self.feature?.subfeatures?.some(sub => sub.type === 'exon') ?? false
-        )
-      },
-      /**
-       * #getter
-       */
-      get hasExonOrCDS(): boolean {
-        return this.hasExon || this.hasCDS
       },
     }))
     .actions(self => ({
@@ -171,17 +141,6 @@ export function SequenceFeatureDetailsF() {
               )
             },
             { name: 'SequenceFeatureLocalStorage' },
-          ),
-        )
-        addDisposer(
-          self,
-          autorun(
-            function sequenceFeatureModeAutorun() {
-              self.setMode(
-                self.hasCDS ? 'cds' : self.hasExon ? 'cdna' : 'genomic',
-              )
-            },
-            { name: 'SequenceFeatureMode' },
           ),
         )
       },

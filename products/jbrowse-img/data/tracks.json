@@ -75,21 +75,6 @@
       "craiLocation": {
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/skbr3/skbr3.ont.sort.mod.cram.crai",
         "locationType": "UriLocation"
-      },
-      "sequenceAdapter": {
-        "type": "BgzipFastaAdapter",
-        "fastaLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
-          "locationType": "UriLocation"
-        },
-        "faiLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
-          "locationType": "UriLocation"
-        },
-        "gziLocation": {
-          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
-          "locationType": "UriLocation"
-        }
       }
     }
   }

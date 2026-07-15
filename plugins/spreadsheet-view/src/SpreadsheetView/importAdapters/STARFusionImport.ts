@@ -4,7 +4,7 @@ import { bufferToLines, parseStrand } from './util.ts'
 function parseSTARFusionBreakpointString(str: string) {
   const fields = str.split(':')
   return {
-    refName: fields[0],
+    refName: fields[0]!,
     start: +fields[1]!,
     end: +fields[1]! + 1,
     strand: parseStrand(fields[2]),
@@ -13,7 +13,10 @@ function parseSTARFusionBreakpointString(str: string) {
 
 export function parseSTARFusionBuffer(buffer: Uint8Array) {
   const lines = bufferToLines(buffer)
-  const columns = lines[0]!.slice(1).split('\t')
+  const columns = lines[0]?.slice(1).split('\t') ?? []
+  if (!columns.length) {
+    return { columns: [], rowSet: { rows: [] } }
+  }
   return {
     columns: columns.map(c => ({ name: c })),
     rowSet: {
@@ -28,9 +31,9 @@ export function parseSTARFusionBuffer(buffer: Uint8Array) {
           // an actual simplefeatureserialized
           feature: {
             uniqueId: `sf-${rowNumber}`,
-            ...parseSTARFusionBreakpointString(row.LeftBreakpoint! as string),
+            ...parseSTARFusionBreakpointString(row.LeftBreakpoint as string),
             mate: parseSTARFusionBreakpointString(
-              row.RightBreakpoint! as string,
+              row.RightBreakpoint as string,
             ),
           },
         }

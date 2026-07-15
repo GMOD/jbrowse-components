@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
@@ -17,11 +17,14 @@ import {
   RadioGroup,
   TextField,
 } from '@mui/material'
-import copy from 'copy-to-clipboard'
 import { observer } from 'mobx-react'
 
 import { fetchTrackData } from './fetchTrackData.ts'
-import { Dialog, ErrorBanner } from '../../../ui/index.ts'
+import {
+  CopyToClipboardButton,
+  Dialog,
+  ErrorBanner,
+} from '../../../ui/index.ts'
 import { getContainingView, saveAs, useFetch } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
 
@@ -57,7 +60,7 @@ function HelpDialog({
         <DialogContentText>{text}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button autoFocus onClick={onClose}>
+        <Button variant="contained" autoFocus onClick={onClose}>
           Close
         </Button>
       </DialogActions>
@@ -76,14 +79,12 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
   handleClose: () => void
 }) {
   const { classes } = useStyles()
-  const options = useMemo(() => model.saveTrackFileFormatOptions(), [model])
+  const options = model.saveTrackFileFormatOptions()
   const [type, setType] = useState(Object.keys(options)[0])
   const [helpText, setHelpText] = useState<string>()
-  const [copied, setCopied] = useState(false)
-  const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   const view = getContainingView(model) as unknown as {
-    coarseVisibleLocStrings: string[]
+    coarseVisibleLocStrings: string
     visibleRegions?: Region[]
   }
   const { visibleRegions, coarseVisibleLocStrings: regionStr } = view
@@ -174,21 +175,16 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         />
       </DialogContent>
       <DialogActions>
-        <Button
+        <CopyToClipboardButton
           disabled={loading || !!error}
-          onClick={() => {
-            void copy(str)
-            setCopied(true)
-            clearTimeout(copyTimer.current)
-            copyTimer.current = setTimeout(() => {
-              setCopied(false)
-            }, 1000)
-          }}
+          value={str}
+          copiedLabel="Copied!"
           startIcon={<ContentCopyIcon />}
         >
-          {copied ? 'Copied!' : 'Copy to clipboard'}
-        </Button>
+          Copy to clipboard
+        </CopyToClipboardButton>
         <Button
+          variant="contained"
           disabled={loading || !!error}
           onClick={() => {
             const ext = options[type!]!.extension
@@ -201,7 +197,12 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
         >
           Download
         </Button>
-        <Button variant="contained" type="submit" onClick={handleClose}>
+        <Button
+          type="submit"
+          onClick={() => {
+            handleClose()
+          }}
+        >
           Close
         </Button>
       </DialogActions>

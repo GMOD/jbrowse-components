@@ -1,15 +1,17 @@
 ---
-import { baseUrl } from '../lib/base-url'
-import BaseLayout from '../layouts/BaseLayout.astro'
 import { Icon } from 'astro-icon/components'
+
+import { currentVersion } from '../config.ts'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
 import btn from '../styles/button.module.css'
 import page from '../styles/page.module.css'
-import { currentVersion } from '../config.ts'
 const ghRelease = `https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}`
 const desktopBase = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}`
 const webZip = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}/jbrowse-web-${currentVersion}.zip`
-const lgvStorybook = `https://jbrowse.org/storybook/lgv/${currentVersion}/?path=/story/getting-started--page`
-const cgvStorybook = `https://jbrowse.org/storybook/cgv/${currentVersion}/?path=/story/getting-started--page`
+const appExamples = 'https://jbrowse.org/storybook/app/'
+const lgvExamples = 'https://jbrowse.org/storybook/lgv/'
+const cgvExamples = 'https://jbrowse.org/storybook/cgv/'
 
 const desktopDownloads = [
   { os: 'MacOS', suffix: 'mac.dmg', icon: 'mdi:apple' },
@@ -18,7 +20,10 @@ const desktopDownloads = [
 ]
 ---
 
-<BaseLayout title="Download JBrowse 2">
+<BaseLayout
+  title="Download JBrowse 2"
+  description="Download JBrowse Desktop or JBrowse Web, install the JBrowse CLI tools, or embed JBrowse as a React component, Jupyter widget, Dash app, or R/Shiny widget."
+>
   <div class={page.content}>
     <h1>Download JBrowse 2</h1>
     <p>
@@ -53,7 +58,7 @@ const desktopDownloads = [
     <p class="caption">
       Check out our <a href={`${baseUrl}/docs/quickstart_desktop/`}
         >quick start guide</a
-      >
+      >{' '}
       after downloading. Can't find what you're looking for? Check <a
         href={ghRelease}>other platforms</a
       >.
@@ -81,38 +86,46 @@ const desktopDownloads = [
     </p>
     <pre><code>npm install -g @jbrowse/cli</code></pre>
     <p>
-      After installing, check out our
+      After installing, check out our{' '}
       <a href={`${baseUrl}/docs/quickstart_web/`}>quick-start guide</a>.
     </p>
 
     <h2>Static image generator</h2>
-    <ul>
-      <li>
-        <a href="https://www.npmjs.com/package/@jbrowse/img">@jbrowse/img</a>
-        — generate images of JBrowse 2 statically on the command line
-      </li>
-    </ul>
+    <p>
+      <a href={`${baseUrl}/docs/jbrowse-img/`}>@jbrowse/img</a> generates images of
+      JBrowse 2 statically on the command line. See the{' '}
+      <a href={`${baseUrl}/docs/jbrowse-img/`}>documentation</a> or the{' '}
+      <a href="https://www.npmjs.com/package/@jbrowse/img">NPM package</a>.
+    </p>
 
     <h2>Embedded components</h2>
     <ul>
       <li>
-        <a
-          href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view"
-        >
-          @jbrowse/react-linear-genome-view
-        </a>
-        — linear genome browser React component on NPM (<a href={lgvStorybook}
-          >storybook docs</a
+        <a href="https://www.npmjs.com/package/@jbrowse/react-app2">
+          @jbrowse/react-app2
+        </a>{' '}
+        — full JBrowse 2 app React component on NPM (<a href={appExamples}
+          >live examples</a
         >)
       </li>
       <li>
         <a
-          href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view"
+          href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2"
         >
-          @jbrowse/react-circular-genome-view
-        </a>
-        — circular genome browser React component on NPM (<a href={cgvStorybook}
-          >storybook docs</a
+          @jbrowse/react-linear-genome-view2
+        </a>{' '}
+        — linear genome browser React component on NPM (<a href={lgvExamples}
+          >live examples</a
+        >)
+      </li>
+      <li>
+        <a
+          href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2"
+        >
+          @jbrowse/react-circular-genome-view2
+        </a>{' '}
+        — circular genome browser React component on NPM (<a href={cgvExamples}
+          >live examples</a
         >)
       </li>
     </ul>
@@ -122,27 +135,20 @@ const desktopDownloads = [
       >, including examples with create-react-app, vite, next.js, and vanillajs.
     </p>
 
-    <h2>Jupyter Notebooks Extension</h2>
+    <h2>Other language bindings</h2>
     <ul>
       <li>
-        <a href="https://gmod.github.io/jbrowse-jupyter/docs/html/index.html"
-          >Documentation</a
-        >
-      </li>
-      <li><a href="https://github.com/GMOD/jbrowse-jupyter">Source code</a></li>
-    </ul>
-
-    <h2>Dash — Python</h2>
-    <ul>
-      <li>
+        Python (Dash):{' '}
         <a href="https://github.com/GMOD/dash_jbrowse">GMOD/dash_jbrowse</a>
       </li>
-    </ul>
-
-    <h2>R/Shiny widget</h2>
-    <ul>
       <li>
-        <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a>
+        Python (Jupyter):{' '}
+        <a href="https://gmod.github.io/jbrowse-jupyter/docs/html/index.html"
+          >Documentation</a
+        >, <a href="https://github.com/GMOD/jbrowse-jupyter">source code</a>
+      </li>
+      <li>
+        R/Shiny: <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a>{' '}
         — R package on CRAN
       </li>
     </ul>

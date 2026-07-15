@@ -1,30 +1,19 @@
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  ReactRendering,
-  getSerializedSvg,
-  getSession,
-  max,
-  measureText,
-  renderToAbstractCanvas,
-  renderToStaticMarkup,
-  sum,
-} from '@jbrowse/core/util'
+import type { ReactNode } from 'react'
+
+import { exportMargin } from '@jbrowse/core/svg/constants'
+import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { getSession, max, measureText } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
-import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
-import { drawRef } from '../../LinearSyntenyDisplay/drawSynteny.ts'
+import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
+import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
-
-interface TrackEntry {
-  displays: unknown[]
-}
 
 // render LGV to SVG
 export async function renderToSvg(
@@ -40,161 +29,135 @@ export async function renderToSvg(
     showGridlines = false,
     Wrapper = ({ children }) => children,
     themeName = 'default',
+    fontFamily,
   } = opts
   const session = getSession(model)
-  const themeVar = session.allThemes?.()[themeName]
+  const themeVar = session.getActiveThemeOptions?.(themeName)
   const { width, views, levels } = model
-  const shift = 50
-  const offset = rulerHeight
 
-  const heights = views.map(
-    v => totalHeight(v.tracks, textHeight, trackLabels) + offset,
-  )
-  const totalHeightSvg = sum(heights) + sum(levels.map(l => l.height)) + 100
-
-  const displayResults = await Promise.all(
-    views.map(
-      async view =>
-        ({
-          view,
-          data: await Promise.all(
-            view.tracks.map(async track => {
-              const d = track.displays[0]
-              await when(() => (d.ready !== undefined ? d.ready : true))
-              return {
-                track,
-                result: await d.renderSvg({ ...opts, theme: themeVar }),
-              }
-            }),
-          ),
-        }) as const,
-    ),
+  // each view is a header (assembly label + ruler) stacked above its tracks.
+  // Minimized tracks are dropped (as the standalone LGV export does) so the
+  // reserved height and the rendered bodies stay in sync and a collapsed track
+  // doesn't export as a full-height panel.
+  const headerHeight = fontSize + rulerHeight
+  const visibleTracksByView = views.map(v => v.tracks.filter(t => !t.minimized))
+  const tracksHeights = visibleTracksByView.map(tracks =>
+    totalHeight(tracks, textHeight, trackLabels),
   )
 
-  const renderings = await Promise.all(
-    levels.map(async level => {
-      const { tracks } = level
-      return Promise.all(
-        tracks.map(async (track: TrackEntry) => {
-          const d = track.displays[0] as LinearSyntenyDisplayModel
-          await when(() => d.ready)
-          const r = await renderToAbstractCanvas(
-            width,
-            level.height,
-            { exportSVG: opts },
-            ctx => {
-              drawRef(d, ctx)
-              return undefined
-            },
-          )
-
-          if ('imageData' in r) {
-            throw new Error('found a canvas in svg export, probably a bug')
-          } else if ('canvasRecordedData' in r) {
-            return {
-              html: getSerializedSvg({
-                ...r,
-                width,
-                height: level.height,
+  // each display's renderSvg owns its own readiness wait (LGV track displays
+  // await feature-density stats internally, renderSyntenyDisplaySvg awaits
+  // featureData/error), so no outer when() gate is needed here. The genome-view
+  // track results and the ribbon levels are independent, so let both fan out
+  // concurrently rather than blocking one behind the other.
+  const [displayResults, renderings] = await Promise.all([
+    Promise.all(
+      views.map(
+        async (view, i) =>
+          ({
+            view,
+            data: await Promise.all(
+              visibleTracksByView[i]!.map(async track => {
+                const d = track.displays[0]
+                return {
+                  track,
+                  result: await d.renderSvg({ ...opts, theme: themeVar }),
+                }
               }),
-            }
-          } else {
-            return r
-          }
-        }),
-      )
-    }),
-  )
+            ),
+          }) as const,
+      ),
+    ),
+    Promise.all(
+      levels.map(level =>
+        Promise.all(
+          // linearSyntenyDisplays' getter return type widens to any through the
+          // view's Instance type (MST drops getter types), so annotate d.
+          level.linearSyntenyDisplays.map((d: LinearSyntenyDisplayModel) =>
+            renderSyntenyDisplaySvg(d, opts),
+          ),
+        ),
+      ),
+    ),
+  ])
 
   const trackLabelMaxLen =
     max(
-      views.flatMap(view =>
-        view.tracks.map(track =>
+      visibleTracksByView
+        .flat()
+        .map(track =>
           measureText(getTrackName(track.configuration, session), fontSize),
         ),
-      ),
       0,
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
-  const theme = createJBrowseTheme(themeVar)
-  const tracksHeights = views.map(v =>
-    totalHeight(v.tracks, textHeight, trackLabels),
+
+  // The export is a vertical stack, top to bottom: each genome view, and
+  // directly beneath it the synteny ribbon level between it and the next view.
+  // The last view has no level below it (N views -> N-1 levels), so `levels[i]`
+  // is the single source of that invariant — no index bookkeeping in the layout.
+  const rows = views.flatMap((view, i) => {
+    const viewRow = {
+      key: view.id,
+      height: headerHeight + tracksHeights[i]!,
+      node: (
+        <SVGLinearGenomeView
+          rulerHeight={rulerHeight}
+          trackLabelOffset={trackLabelOffset}
+          textHeight={textHeight}
+          trackLabels={trackLabels}
+          displayResults={displayResults[i]!}
+          fontSize={fontSize}
+          showGridlines={showGridlines}
+          tracksHeight={tracksHeights[i]!}
+        />
+      ),
+    }
+    const level = levels[i]
+    return level
+      ? [
+          viewRow,
+          {
+            key: `level-${i}`,
+            height: level.height,
+            node: (
+              <SVGSyntenyLevel
+                clipId={`synclip-${model.id}-${i}`}
+                width={width}
+                levelHeight={level.height}
+                trackLabelOffset={trackLabelOffset}
+                rendering={renderings[i]!}
+              />
+            ),
+          },
+        ]
+      : [viewRow]
+  })
+
+  // stack the rows top to bottom: one fold threads `y` (the running top offset)
+  // through them, producing both the positioned groups and the final height in a
+  // single pass — so the canvas size and the layout share one source of truth.
+  const stacked = rows.reduce<{ y: number; children: ReactNode[] }>(
+    (acc, row) => ({
+      y: acc.y + row.height,
+      children: [
+        ...acc.children,
+        <g key={row.key} transform={`translate(0 ${acc.y})`}>
+          {row.node}
+        </g>,
+      ],
+    }),
+    { y: 0, children: [] },
   )
-  const RenderList = [
-    <SVGLinearGenomeView
-      rulerHeight={rulerHeight}
-      trackLabelOffset={trackLabelOffset}
-      shift={shift}
-      textHeight={textHeight}
-      trackLabels={trackLabels}
-      displayResults={displayResults[0]}
-      key={views[0]!.id}
-      view={views[0]!}
-      fontSize={fontSize}
-      showGridlines={showGridlines}
-      tracksHeight={tracksHeights[0]!}
-    />,
-  ] as React.ReactNode[]
-  let currOffset = heights[0]! + fontSize + rulerHeight
-  for (let i = 1; i < views.length; i++) {
-    const view = views[i]!
-    const level = levels[i - 1]!
-    const rendering = renderings[i - 1]
-    const height = heights[i]!
-    const levelHeight = level.height || 0
-    RenderList.push(
-      <g key={view.id} transform={`translate(0 ${currOffset})`}>
-        {levelHeight ? (
-          <defs>
-            <clipPath id={`synclip-${i}`}>
-              <rect x={0} y={0} width={width} height={levelHeight} />
-            </clipPath>
-          </defs>
-        ) : null}
-        <g
-          transform={`translate(${shift + trackLabelOffset} ${fontSize})`}
-          clipPath={`url(#synclip-${i})`}
-        >
-          {rendering?.map((r, i) => (
-            <ReactRendering key={i} rendering={r} />
-          ))}
-        </g>
-        <g transform={`translate(0 ${levelHeight})`}>
-          <SVGLinearGenomeView
-            rulerHeight={rulerHeight}
-            shift={shift}
-            trackLabelOffset={trackLabelOffset}
-            textHeight={textHeight}
-            trackLabels={trackLabels}
-            displayResults={displayResults[i]}
-            key={view.id}
-            view={view}
-            fontSize={fontSize}
-            showGridlines={showGridlines}
-            tracksHeight={tracksHeights[i]!}
-          />
-        </g>
-      </g>,
-    )
-    currOffset += height + fontSize + rulerHeight + levelHeight
-  }
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
-    <ThemeProvider theme={theme}>
-      <Wrapper>
-        <svg
-          width={width}
-          height={totalHeightSvg}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, w + shift * 2, totalHeightSvg].toString()}
-        >
-          <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
-          {RenderList}
-        </svg>
-      </Wrapper>
-    </ThemeProvider>,
-  )
+  return wrapSvgExport({
+    theme: themeVar,
+    width: w,
+    height: stacked.y + exportMargin,
+    fontFamily,
+    Wrapper,
+    children: stacked.children,
+  })
 }

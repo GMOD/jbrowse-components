@@ -3,11 +3,15 @@ import {
   aggregateQuantitativeStats,
   blankStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import { SimpleFeature, max, min } from '@jbrowse/core/util'
+import { SimpleFeature } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { merge } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { firstValueFrom, merge } from 'rxjs'
+import { map, toArray } from 'rxjs/operators'
 
+import { featuresToRaw } from '../util.ts'
+
+import type { RawFeatureArrays } from '../util.ts'
+import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type {
@@ -15,67 +19,116 @@ import type {
   FileLocation,
 } from '@jbrowse/core/util/types'
 
-interface WiggleOptions extends BaseOptions {
-  resolution?: number
-  staticBlocks?: Region[]
+interface WiggleOptions extends WiggleAdapterOptions {
   sources?: { name: string }[]
 }
 
 function getFilename(uri: string) {
   const filename = uri.slice(uri.lastIndexOf('/') + 1)
-  return filename.slice(0, filename.lastIndexOf('.'))
+  const dotIdx = filename.lastIndexOf('.')
+  return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename
 }
 
-/**
- * Extract filename from a config, only works for BigWigAdapter
- * Could try to generalize across more adapter types potentially
- */
-function getFilenameFromAdapterConfig(config: any) {
-  try {
-    // Handle BigWigAdapter specifically
-    if (config.type === 'BigWigAdapter' && config.bigWigLocation) {
-      const location = config.bigWigLocation as FileLocation
-      if ('uri' in location && location.uri) {
-        return getFilename(location.uri)
-      }
-      if ('localPath' in location && location.localPath) {
-        return getFilename(location.localPath)
-      }
-      if ('blob' in location && location.blob) {
-        const blob = location.blob as File
-        return blob.name ? getFilename(blob.name) : undefined
-      }
-    }
+interface AdapterConfig {
+  type?: string
+  source?: string
+  name?: string
+  bigWigLocation?: FileLocation
+  [key: string]: unknown
+}
 
-    // Fallback for other adapter types or locations
-    return undefined
-  } catch (e) {
-    return undefined
+function getFilenameFromAdapterConfig(config: AdapterConfig) {
+  if (config.type === 'BigWigAdapter' && config.bigWigLocation) {
+    const location = config.bigWigLocation
+    if ('uri' in location && location.uri) {
+      return getFilename(location.uri)
+    }
+    if ('localPath' in location && location.localPath) {
+      return getFilename(location.localPath)
+    }
+    if ('blob' in location && location.blob) {
+      const blob = location.blob as File
+      return blob.name ? getFilename(blob.name) : undefined
+    }
   }
+  return undefined
+}
+
+function getLocationPath(location?: FileLocation) {
+  return location === undefined
+    ? undefined
+    : 'uri' in location && location.uri
+      ? location.uri
+      : 'localPath' in location && location.localPath
+        ? location.localPath
+        : 'blob' in location && location.blob instanceof File
+          ? location.blob.name || undefined
+          : undefined
+}
+
+// Grow a colliding label leftward to include its parent directory, e.g. the
+// `sample` shared by `cond1/sample.bw` and `cond2/sample.bw` becomes
+// `cond1/sample` vs `cond2/sample`.
+function parentDirLabel(label: string, path?: string) {
+  const trimmed = path?.replace(/\/+$/, '') ?? ''
+  const dirSlash = trimmed.lastIndexOf('/')
+  const dir = dirSlash === -1 ? '' : trimmed.slice(0, dirSlash)
+  const parent = dir.slice(dir.lastIndexOf('/') + 1)
+  return parent ? `${parent}/${label}` : undefined
+}
+
+// Two files sharing a basename (e.g. in different directories) derive the same
+// `source`, which is the per-subtrack identity key — colliding sources collapse
+// the subtracks into one duplicated-looking track (#5598). Qualify colliding
+// labels with their parent directory, falling back to a numeric suffix so the
+// result is always unique.
+function disambiguateSources(entries: AdapterEntry[]): AdapterEntry[] {
+  const counts = new Map<string, number>()
+  for (const { source } of entries) {
+    counts.set(source, (counts.get(source) ?? 0) + 1)
+  }
+  const used = new Set<string>()
+  return entries.map(entry => {
+    const collides = (counts.get(entry.source) ?? 0) > 1
+    const preferred = collides
+      ? (parentDirLabel(entry.source, getLocationPath(entry.bigWigLocation)) ??
+        entry.source)
+      : entry.source
+    let source = preferred
+    let n = 2
+    while (used.has(source)) {
+      source = `${preferred} (${n++})`
+    }
+    used.add(source)
+    return source === entry.source ? entry : { ...entry, source }
+  })
 }
 
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
   source: string
-  name: string
+  bigWigLocation?: FileLocation
   [key: string]: unknown
 }
 
-type MaybeStats = { scoreMin: number; scoreMax: number } | undefined
+function hasFeatureArrays(
+  adapter: BaseFeatureDataAdapter,
+): adapter is BaseFeatureDataAdapter & {
+  getFeatureArrays(
+    region: Region,
+    opts: WiggleOptions,
+  ): Promise<RawFeatureArrays>
+} {
+  return 'getFeatureArrays' in adapter
+}
 
 export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
-  public static capabilities = [
-    'hasResolution',
-    'hasLocalStats',
-    'hasGlobalStats',
-  ]
+  public static capabilities = ['hasResolution']
 
   private adaptersP?: Promise<AdapterEntry[]>
 
   public async getAdapters(): Promise<AdapterEntry[]> {
-    if (!this.adaptersP) {
-      this.adaptersP = this.getAdaptersImpl()
-    }
+    this.adaptersP ??= this.getAdaptersImpl()
     return this.adaptersP
   }
 
@@ -96,13 +149,8 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       }))
     }
 
-    // There was confusion about whether source or name was required, and
-    // effort to remove one or the other was thwarted. Adapters like
-    // BigWigAdapter, even in the BigWigAdapter configSchema.ts, use a 'source'
-    // field though, while the word 'name' still allowed in the config too. To
-    // solve, we made name===source
-    return Promise.all(
-      subConfs.map(async (conf: any) => {
+    const entries = await Promise.all(
+      subConfs.map(async (conf: AdapterConfig) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
         const source =
@@ -117,6 +165,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         }
       }),
     )
+    return disambiguateSources(entries)
   }
 
   // note: can't really have dis-agreeing refNames
@@ -128,28 +177,18 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     return [...new Set(allNames.flat())]
   }
 
-  public async getGlobalStats(opts?: BaseOptions) {
+  private async getFilteredAdapters(sources?: { name: string }[]) {
     const adapters = await this.getAdapters()
-    const stats = (
-      (await Promise.all(
-        adapters.map(adp => adp.dataAdapter.getGlobalStats(opts)),
-      )) as MaybeStats[]
-    ).filter(f => !!f)
-    return {
-      scoreMin: min(stats.map(s => s.scoreMin)),
-      scoreMax: max(stats.map(s => s.scoreMax)),
+    if (!sources?.length) {
+      return adapters
     }
+    const sourceNames = new Set(sources.map(s => s.name))
+    return adapters.filter(adp => sourceNames.has(adp.source))
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      let adapters = await this.getAdapters()
-
-      // Filter adapters if sources filter is provided (e.g., from subtree filter)
-      if (opts.sources?.length) {
-        const sourceNames = new Set(opts.sources.map(s => s.name))
-        adapters = adapters.filter(adp => sourceNames.has(adp.source))
-      }
+      const adapters = await this.getFilteredAdapters(opts.sources)
 
       merge(
         ...adapters.map(adp => {
@@ -172,30 +211,49 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }, opts.stopToken)
   }
 
+  public async getMultiSourceFeatureArrays(
+    region: Region,
+    opts: WiggleOptions = {},
+  ): Promise<{ source: string; raw: RawFeatureArrays }[]> {
+    const adapters = await this.getFilteredAdapters(opts.sources)
+    return Promise.all(
+      adapters.map(async adp => {
+        const { source, dataAdapter } = adp
+        if (hasFeatureArrays(dataAdapter)) {
+          return {
+            source,
+            raw: await dataAdapter.getFeatureArrays(region, opts),
+          }
+        }
+        const features = await firstValueFrom(
+          dataAdapter.getFeatures(region, opts).pipe(toArray()),
+        )
+        return { source, raw: featuresToRaw(features) }
+      }),
+    )
+  }
+
   public async getRegionQuantitativeStats(
     region: Region,
     opts?: WiggleOptions,
   ) {
     const adapters = await this.getAdapters()
     const allStats = await Promise.all(
-      adapters.map(async adp => {
-        const { dataAdapter } = adp
-        return dataAdapter.getRegionQuantitativeStats(region, opts)
-      }),
+      adapters.map(adp =>
+        adp.dataAdapter.getRegionQuantitativeStats(region, opts),
+      ),
     )
-    return aggregateQuantitativeStats(allStats.filter(Boolean))
+    return aggregateQuantitativeStats(allStats)
   }
 
-  // always render bigwig instead of calculating a feature density for it
+  // subadapters are bigwig-like and cap data at screen resolution, so a
+  // multiwiggle is never too large to render — skip the estimate entirely
   async getMultiRegionFeatureDensityStats(_regions: Region[]) {
     return {
-      featureDensity: 0,
+      alwaysRender: true,
     }
   }
 
-  /**
-   * Override to pass staticBlocks through to sub-adapters for caching.
-   */
   async getMultiRegionQuantitativeStats(
     regions: Region[] = [],
     opts: WiggleOptions = {},
@@ -206,26 +264,24 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
 
     const adapters = await this.getAdapters()
 
-    // Delegate to sub-adapters, passing staticBlocks through
     const allStats = await Promise.all(
-      adapters.map(async adp => {
-        const { dataAdapter } = adp
-        return dataAdapter.getMultiRegionQuantitativeStats(regions, opts)
-      }),
+      adapters.map(adp =>
+        adp.dataAdapter.getMultiRegionQuantitativeStats(regions, opts),
+      ),
     )
 
-    return aggregateQuantitativeStats(allStats.filter(Boolean))
+    return aggregateQuantitativeStats(allStats)
   }
 
   // in another adapter type, this could be dynamic depending on region or
   // something, but it is static for this particular multi-wiggle adapter type
   async getSources(_regions: Region[]) {
     const adapters = await this.getAdapters()
-    return adapters.map(({ type, bigWigLocation, dataAdapter, ...rest }) => {
-      return {
+    return adapters.map(
+      ({ type: _t, bigWigLocation: _bw, dataAdapter: _da, ...rest }) => ({
         ...rest,
         name: rest.source,
-      }
-    })
+      }),
+    )
   }
 }

@@ -3,11 +3,12 @@ import { Component } from 'react'
 
 interface Props {
   children: React.ReactNode
-  FallbackComponent: React.FC<{ error: unknown }>
+  FallbackComponent: React.FC<{ error: unknown; componentStack?: string }>
 }
 
 interface State {
   error: unknown
+  componentStack?: string
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -18,12 +19,18 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
-    this.setState({ error })
+    this.setState({
+      error,
+      componentStack: errorInfo.componentStack ?? undefined,
+    })
   }
 
   render() {
     return this.state.error ? (
-      <this.props.FallbackComponent error={this.state.error} />
+      <this.props.FallbackComponent
+        error={this.state.error}
+        componentStack={this.state.componentStack}
+      />
     ) : (
       this.props.children
     )

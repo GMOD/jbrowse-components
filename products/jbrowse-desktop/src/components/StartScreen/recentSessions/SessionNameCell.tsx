@@ -2,6 +2,7 @@ import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
+import { sessionMenuItems } from './sessionMenuItems.ts'
 import StarIcon from '../StarIcon.tsx'
 
 import type { RecentSessionData } from '../types.ts'
@@ -23,6 +24,7 @@ function SessionNameCell({
   launch,
   toggleFavorite,
   setSessionToRename,
+  setSessionsToDelete,
   addToQuickstartList,
 }: {
   value: string
@@ -31,6 +33,7 @@ function SessionNameCell({
   launch: (path: string) => Promise<void>
   toggleFavorite: (sessionPath: string) => void
   setSessionToRename: (arg: RecentSessionData) => void
+  setSessionsToDelete: (arg: RecentSessionData[]) => void
   addToQuickstartList?: (entry: RecentSessionData) => Promise<void>
 }) {
   const { classes } = useStyles()
@@ -44,45 +47,27 @@ function SessionNameCell({
       >
         {value}
       </ActionLink>
-      {isFavorite ? (
-        <StarIcon
-          isFavorite={isFavorite}
-          onClick={() => {
-            toggleFavorite(row.path)
-          }}
-        />
-      ) : null}
+      <StarIcon
+        isFavorite={isFavorite}
+        onClick={() => {
+          toggleFavorite(row.path)
+        }}
+      />
       <CascadingMenuButton
-        menuItems={[
-          {
-            label: 'Launch',
-            onClick: async () => {
-              await launch(row.path)
-            },
+        menuItems={sessionMenuItems({
+          session: row,
+          isFavorite,
+          launch,
+          onRename: setSessionToRename,
+          onDelete: session => {
+            setSessionsToDelete([session])
           },
-          {
-            label: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-            onClick: () => {
-              toggleFavorite(row.path)
-            },
+          onToggleFavorite: () => {
+            toggleFavorite(row.path)
           },
-          ...(addToQuickstartList
-            ? [
-                {
-                  label: 'Add to quickstart list',
-                  onClick: async () => {
-                    await addToQuickstartList(row)
-                  },
-                },
-              ]
-            : []),
-          {
-            label: 'Rename',
-            onClick: () => {
-              setSessionToRename(row)
-            },
-          },
-        ]}
+          onAddToQuickstartList: addToQuickstartList,
+          includeLaunch: true,
+        })}
       >
         <MoreHoriz />
       </CascadingMenuButton>

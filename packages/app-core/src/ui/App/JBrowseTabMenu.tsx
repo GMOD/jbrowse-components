@@ -10,9 +10,6 @@ const useStyles = makeStyles()({
     alignItems: 'center',
     visibility: 'hidden',
   },
-  tabIconsVisible: {
-    visibility: 'visible',
-  },
   tabIcon: {
     padding: 2,
     marginLeft: 2,
@@ -24,20 +21,16 @@ const useStyles = makeStyles()({
 })
 
 export default function JBrowseTabMenu({
-  isHovered,
   onRename,
   onClose,
 }: {
-  isHovered: boolean
   onRename: () => void
   onClose: () => void
 }) {
   const { classes } = useStyles()
 
   return (
-    <div
-      className={`${classes.tabIcons} ${isHovered ? classes.tabIconsVisible : ''}`}
-    >
+    <div className={`jbrowse-tab-menu ${classes.tabIcons}`}>
       <CascadingMenuButton
         menuItems={[
           {

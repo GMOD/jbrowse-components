@@ -13,7 +13,8 @@ export class GoogleDriveFile extends RemoteFileWithRangeCache {
     super(source, opts)
     this.statsPromise = this.fetch(source, {
       metadataOnly: true,
-    }).then(response => response.json())
+    }).then(response => response.json() as Promise<{ size: number }>)
+    this.statsPromise.catch(() => {})
   }
 
   // Override to widen opts type so metadataOnly can be passed through to getFetcher

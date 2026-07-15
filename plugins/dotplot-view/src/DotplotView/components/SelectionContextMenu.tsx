@@ -1,85 +1,69 @@
 import { Menu } from '@jbrowse/core/ui'
 
+import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
-import type { Coord } from '../types.ts'
-
-interface SelectionContextMenuProps {
-  model: DotplotViewModel
-  mouseup: Coord
-  mouseupClient: Coord
-  mousedown: Coord
-  setMouseUpClient: (coord: Coord) => void
-  setMouseDownClient: (coord: Coord) => void
-  setMouseOvered: (isOvered: boolean) => void
-}
-
-function getSelectionMenuItems(
-  model: DotplotViewModel,
-  mousedown: Coord,
-  mouseup: Coord,
-  setMouseOvered: (isOvered: boolean) => void,
-) {
-  return [
-    {
-      label: 'Zoom in',
-      onClick: () => {
-        if (mousedown && mouseup) {
-          model.zoomInToMouseCoords(mousedown, mouseup)
-        }
-        // below line is needed to prevent tooltip from sticking
-        setMouseOvered(false)
-      },
-    },
-    {
-      label: 'Open linear synteny view',
-      onClick: () => {
-        if (mousedown && mouseup) {
-          model.onDotplotView(mousedown, mouseup)
-        }
-        // below line is needed to prevent tooltip from sticking
-        setMouseOvered(false)
-      },
-    },
-  ]
-}
 
 export default function SelectionContextMenu({
   model,
-  mouseup,
-  mouseupClient,
-  mousedown,
-  setMouseUpClient,
-  setMouseDownClient,
-  setMouseOvered,
-}: SelectionContextMenuProps) {
+  interaction,
+}: {
+  model: DotplotViewModel
+  interaction: DotplotInteraction
+}) {
+  const {
+    mouseup,
+    mouseUpClient,
+    mousedown,
+    setMouseUpClient,
+    setMouseDownClient,
+    setMouseOvered,
+  } = interaction
+  const close = () => {
+    setMouseUpClient(undefined)
+    setMouseDownClient(undefined)
+  }
+  // unhover prevents the tooltip from sticking after the menu closes; the
+  // selection itself is cleared by close() via onMenuItemClick/onClose.
+  const unhover = () => {
+    setMouseOvered(false)
+  }
   return (
     <Menu
       open={Boolean(mouseup)}
-      onMenuItemClick={(_, callback) => {
+      onMenuItemClick={callback => {
         callback()
-        setMouseUpClient(undefined)
-        setMouseDownClient(undefined)
+        close()
       }}
       onClose={() => {
-        setMouseUpClient(undefined)
-        setMouseDownClient(undefined)
+        close()
       }}
       anchorReference="anchorPosition"
       anchorPosition={
-        mouseupClient
-          ? {
-              top: mouseupClient[1] + 50,
-              left: mouseupClient[0] + 50,
-            }
+        mouseUpClient
+          ? { top: mouseUpClient[1] + 50, left: mouseUpClient[0] + 50 }
           : undefined
       }
       style={{ zIndex: 11000 }}
-      menuItems={getSelectionMenuItems(
-        model,
-        mousedown,
-        mouseup,
-        setMouseOvered,
-      )}
+      menuItems={[
+        {
+          label: 'Zoom in',
+          onClick: () => {
+            if (mousedown && mouseup) {
+              model.zoomInToMouseCoords(mousedown, mouseup)
+            }
+            unhover()
+          },
+        },
+        {
+          label: 'Open linear synteny view',
+          onClick: () => {
+            if (mousedown && mouseup) {
+              model.onDotplotView(mousedown, mouseup)
+            }
+            unhover()
+          },
+        },
+      ]}
     />
   )
 }

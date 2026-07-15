@@ -10,13 +10,24 @@ import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'TrackSelector-multiTrackMenuItems': {
+      args: MenuItem[]
+      result: MenuItem[]
+      props: { session: AbstractSessionModel }
+    }
+  }
+}
 
 const ShoppingCart = observer(function ShoppingCart({
   model,
 }: {
   model: {
     clearSelection: () => void
-    selection: (AnyConfigurationModel | undefined)[]
+    selection: AnyConfigurationModel[]
   }
 }) {
   const session = getSession(model)
@@ -24,21 +35,23 @@ const ShoppingCart = observer(function ShoppingCart({
   const { pluginManager } = getEnv(model)
   const { adminMode, sessionTracks } = session
   const s = new Set<string>(sessionTracks?.map(t => t.trackId))
-  const canEdit = (t: string) => adminMode === true || s.has(t)
+  const canEdit = (t: string) => adminMode || s.has(t)
   const items = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint TrackSelector-multiTrackMenuItems | sync | Add items to the multi-track (shopping cart) menu */
     'TrackSelector-multiTrackMenuItems',
     [],
     { session },
-  ) as MenuItem[]
-  const definedSelection = selection.filter(
-    (elt): elt is AnyConfigurationModel => !!elt,
   )
   const canDeleteAll =
     isSessionWithDeleteTrackConf(session) &&
-    definedSelection.every(elt => canEdit(elt.trackId))
+    selection.every(
+      elt => canEdit(elt.trackId) && elt.type !== 'ReferenceSequenceTrack',
+    )
 
   return selection.length ? (
     <CascadingMenuButton
+      data-testid="hts-shopping-cart"
+      tooltip="Selected tracks"
       menuItems={[
         {
           label: 'Clear selection',
@@ -51,7 +64,7 @@ const ShoppingCart = observer(function ShoppingCart({
               {
                 label: 'Delete tracks',
                 onClick: () => {
-                  for (const track of definedSelection) {
+                  for (const track of selection) {
                     session.deleteTrackConf(track)
                   }
                 },

@@ -6,13 +6,23 @@ import { Job } from './jobModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
-export interface NewJob extends SnapshotIn<typeof Job> {
-  cancelCallback(): void
-  setStatusMessage(msg?: string): void
+export type JobSnapshot = SnapshotIn<typeof Job>
+
+/**
+ * Input for adding a job. `name` is the persisted property; `statusMessage`,
+ * `progressPct`, and `cancelCallback` are volatile runtime state applied via
+ * the job's setters after creation.
+ */
+export interface JobInput {
+  name: string
+  statusMessage?: string
+  progressPct?: number
+  cancelCallback?: () => void
 }
 
 /**
  * #stateModel JobsListModel
+ * #category widget
  */
 export function stateModelFactory(_pluginManager: PluginManager) {
   return types
@@ -42,103 +52,107 @@ export function stateModelFactory(_pluginManager: PluginManager) {
        */
       aborted: types.array(Job),
     })
-    .actions(self => ({
-      /**
-       * #action
-       */
-      addJob(job: NewJob) {
-        const { cancelCallback, name } = job
-        const existing = self.jobs.find(job => job.name === name)
-        if (existing) {
-          return existing
+    .actions(self => {
+      function addJobToArray(arr: typeof self.jobs, job: JobInput) {
+        // dedupe by name so re-adding doesn't create a duplicate card, but
+        // still refresh the fields so a repeated same-named job (common in
+        // Apollo's job manager) shows current status rather than stale state
+        let target = arr.find(j => j.name === job.name)
+        if (!target) {
+          const length = arr.push({ name: job.name })
+          target = arr[length - 1]!
         }
-        const length = self.jobs.push(job)
-        const addedJob = self.jobs[length - 1]!
-        addedJob.setCancelCallback(cancelCallback)
-        return addedJob
-      },
-      /**
-       * #action
-       */
-      removeJob(jobName: string) {
-        const index = self.jobs.findIndex(job => job.name === jobName)
+        if (job.cancelCallback) {
+          target.setCancelCallback(job.cancelCallback)
+        }
+        if (job.statusMessage !== undefined) {
+          target.setStatusMessage(job.statusMessage)
+        }
+        if (job.progressPct !== undefined) {
+          target.setProgressPct(job.progressPct)
+        }
+        return target
+      }
+
+      function removeFromArray(arr: typeof self.jobs, jobName: string) {
+        const index = arr.findIndex(j => j.name === jobName)
         if (index === -1) {
           return undefined
         }
-        const removed = self.jobs.splice(index, 1)
-        return removed[0]
-      },
-      /**
-       * #action
-       */
-      addFinishedJob(job: NewJob) {
-        const existing = self.finished.find(
-          finishedJob => finishedJob.name === job.name,
-        )
-        if (existing) {
-          return existing
-        }
-        const length = self.finished.push(job)
-        return self.finished[length - 1]
-      },
-      /**
-       * #action
-       */
-      addQueuedJob(job: NewJob) {
-        const existing = self.queued.find(
-          queuedJob => queuedJob.name === job.name,
-        )
-        if (existing) {
-          return existing
-        }
-        const length = self.queued.push(job)
-        return self.queued[length - 1]
-      },
-      /**
-       * #action
-       */
-      addAbortedJob(job: NewJob) {
-        const existing = self.aborted.find(
-          abortedJob => abortedJob.name === job.name,
-        )
-        if (existing) {
-          return existing
-        }
-        const length = self.aborted.push(job)
-        return self.aborted[length - 1]
-      },
-      /**
-       * #action
-       */
-      removeQueuedJob(jobName: string) {
-        const index = self.queued.findIndex(job => job.name === jobName)
-        if (index === -1) {
-          return undefined
-        }
-        const removed = self.queued.splice(index, 1)
-        return removed[0]
-      },
-      /**
-       * #action
-       */
-      updateJobStatusMessage(jobName: string, message?: string) {
-        const job = self.jobs.find(job => job.name === jobName)
-        if (!job) {
-          throw new Error(`No job found with name ${jobName}`)
-        }
-        job.setStatusMessage(message)
-      },
-      /**
-       * #action
-       */
-      updateJobProgressPct(jobName: string, pct: number) {
-        const job = self.jobs.find(job => job.name === jobName)
-        if (!job) {
-          throw new Error(`No job found with name ${jobName}`)
-        }
-        job.setProgressPct(pct)
-      },
-    }))
+        return arr.splice(index, 1)[0]
+      }
+
+      return {
+        /**
+         * #action
+         */
+        addJob(job: JobInput) {
+          return addJobToArray(self.jobs, job)
+        },
+        /**
+         * #action
+         */
+        removeJob(jobName: string) {
+          return removeFromArray(self.jobs, jobName)
+        },
+        /**
+         * #action
+         */
+        addFinishedJob(job: JobInput) {
+          return addJobToArray(self.finished, job)
+        },
+        /**
+         * #action
+         */
+        addQueuedJob(job: JobInput) {
+          return addJobToArray(self.queued, job)
+        },
+        /**
+         * #action
+         */
+        addAbortedJob(job: JobInput) {
+          return addJobToArray(self.aborted, job)
+        },
+        /**
+         * #action
+         */
+        removeQueuedJob(jobName: string) {
+          return removeFromArray(self.queued, jobName)
+        },
+        /**
+         * #action
+         */
+        clearFinished() {
+          self.finished.clear()
+        },
+        /**
+         * #action
+         */
+        clearAborted() {
+          self.aborted.clear()
+        },
+        /**
+         * #action
+         */
+        updateJobStatusMessage(jobName: string, message?: string) {
+          // job may be absent if it was cancelled/removed while a status
+          // callback was still in flight, so update only when present
+          const job = self.jobs.find(j => j.name === jobName)
+          if (job) {
+            job.setStatusMessage(message)
+          }
+        },
+        /**
+         * #action
+         */
+        updateJobProgressPct(jobName: string, pct: number) {
+          const job = self.jobs.find(j => j.name === jobName)
+          if (job) {
+            job.setProgressPct(pct)
+          }
+        },
+      }
+    })
 }
 
 export type JobsListStateModel = ReturnType<typeof stateModelFactory>

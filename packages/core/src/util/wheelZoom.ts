@@ -1,0 +1,97 @@
+// Shared wheel-zoom math for linear genome views. Both the LGV wheel handler
+// (useWheelScroll) and the breakpoint-split overlay (useOverlayWheelZoom) zoom
+// on ctrl/scroll-zoom wheel gestures and must behave identically — keeping the
+// normalizer and rate-limit here is the single source of truth.
+
+// max zoom delta per millisecond — equivalent to 0.2 per frame at 60fps
+export const MAX_ZOOM_RATE_PER_MS = 0.2 / 16.67
+
+// Scroll-zoom (plain wheel with the scrollZoom preference on) divides by a fixed
+// amount for a smooth proportional feel, rather than the adaptive
+// getZoomNormalizer used for ctrl/pinch zoom where device deltas vary wildly.
+export const SCROLL_ZOOM_FACTOR_DIVISOR = 500
+
+// The per-event contribution to the zoom accumulator, given a wheel delta
+// already normalized to pixels via normalizeWheelDelta. ctrl/pinch zoom uses the
+// adaptive normalizer; scroll-zoom uses the fixed divisor. Single source of the
+// zoom-step feel so every wheel handler (LGV, breakpoint overlay, synteny)
+// zooms identically for the same gesture.
+export function wheelZoomAccum(normalizedDeltaY: number, isCtrlZoom: boolean) {
+  return (
+    normalizedDeltaY /
+    (isCtrlZoom
+      ? getZoomNormalizer(normalizedDeltaY)
+      : SCROLL_ZOOM_FACTOR_DIVISOR)
+  )
+}
+
+// larger wheel deltas (e.g. mouse wheel notches) divide by more so a single
+// notch produces a consistent zoom step regardless of device delta magnitude
+export function getZoomNormalizer(deltaY: number) {
+  const abs = Math.abs(deltaY)
+  if (abs < 6) {
+    return 25
+  }
+  if (abs > 150) {
+    return 500
+  }
+  if (abs > 30) {
+    return 150
+  }
+  return 75
+}
+
+// One wheel notch in line mode (deltaMode 1) is roughly this many pixels, and a
+// page (deltaMode 2) roughly WHEEL_PAGE_HEIGHT — the values Facebook's
+// normalize-wheel uses, the de-facto cross-browser convention. Pixel mode (0),
+// which trackpads and modern mice report, passes through untouched.
+const WHEEL_LINE_HEIGHT = 40
+const WHEEL_PAGE_HEIGHT = 800
+
+// Convert a WheelEvent delta from its deltaMode units to pixels. Panel-scroll
+// callers pass the viewport height as `pageHeight` so a page maps to exactly one
+// screen; the zoom path omits it and takes the default. Single normalizer for
+// both the zoom math here and the vertical-scroll handlers so a notch means the
+// same thing everywhere.
+export function normalizeWheelDelta(
+  delta: number,
+  deltaMode: number,
+  pageHeight = WHEEL_PAGE_HEIGHT,
+) {
+  return deltaMode === 1
+    ? delta * WHEEL_LINE_HEIGHT
+    : deltaMode === 2
+      ? delta * pageHeight
+      : delta
+}
+
+// elapsed since the previous animation frame, clamped to 100ms and defaulting
+// to one 60fps frame when there is no prior frame (first event or post-resume)
+export function wheelFrameElapsedMs(now: number, lastRafTime: number | null) {
+  return Math.min(100, lastRafTime !== null ? now - lastRafTime : 16.67)
+}
+
+// A pinch/scroll-zoom gesture fires a continuous stream of wheel events, so we
+// treat the view as "actively zooming" until this many ms pass with no zoom
+// event. While actively zooming, callers ignore horizontal deltas: trackpads
+// emit an unintentional side-scroll mid-gesture that would otherwise pan the
+// view out from under the user.
+export const ZOOM_ACTIVE_WINDOW_MS = 100
+
+// `now` and `lastZoomTime` are both wheel-event timeStamps (same clock).
+// lastZoomTime is null before any zoom has occurred.
+export function isActivelyZooming(now: number, lastZoomTime: number | null) {
+  return lastZoomTime !== null && now - lastZoomTime < ZOOM_ACTIVE_WINDOW_MS
+}
+
+// apply an accumulated zoom amount to bpPerPx, rate-limited so a burst of wheel
+// events can't zoom faster than MAX_ZOOM_RATE_PER_MS over the frame's elapsed
+export function applyZoomAccum(
+  bpPerPx: number,
+  zoomAccum: number,
+  elapsedMs: number,
+) {
+  const max = MAX_ZOOM_RATE_PER_MS * elapsedMs
+  const d = Math.max(-max, Math.min(max, zoomAccum))
+  return d > 0 ? bpPerPx * (1 + d) : bpPerPx / (1 - d)
+}

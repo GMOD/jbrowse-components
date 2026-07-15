@@ -20,37 +20,45 @@ function crc32(str: string) {
   return (crc ^ 0xffffffff) >>> 0
 }
 
+interface Meta {
+  hashHexCharacters: number
+  compress: number
+  tracks: string[]
+}
+
 export default class HttpMap {
   url: string
 
+  private metaPromise: Promise<Meta> | undefined
+
   constructor(args: { url: string }) {
-    // make sure url has a trailing slash
     this.url = args.url.endsWith('/') ? args.url : `${args.url}/`
   }
 
   /**
    * loads meta.json file from names directory and reads number of hash_bits used
    */
-  async readMeta() {
-    const meta = await this.loadFile('meta.json')
-    const { compress, track_names: tracks } = meta
-    const hashHexCharacters = Math.ceil(meta.hash_bits / 4)
-    return { hashHexCharacters, compress, tracks }
+  async readMeta(): Promise<Meta> {
+    if (!this.metaPromise) {
+      this.metaPromise = this.loadFile('meta.json').then(meta => ({
+        hashHexCharacters: Math.ceil(meta.hash_bits / 4),
+        compress: meta.compress,
+        tracks: meta.track_names,
+      }))
+    }
+    return this.metaPromise
   }
 
   async getHashHexCharacters() {
-    const meta = await this.readMeta()
-    return meta.hashHexCharacters
+    return (await this.readMeta()).hashHexCharacters
   }
 
   async getCompress() {
-    const meta = await this.readMeta()
-    return meta.compress
+    return (await this.readMeta()).compress
   }
 
   async getTrackNames() {
-    const meta = await this.readMeta()
-    return meta.tracks
+    return (await this.readMeta()).tracks
   }
 
   /**
@@ -90,24 +98,22 @@ export default class HttpMap {
    * @param hex - hex string
    */
   async hexToDirPath(hex: string) {
-    // zero-pad the hex string to be 8 chars if necessary
-    const hashHexCharacters = await this.getHashHexCharacters()
-    if (hashHexCharacters) {
-      const compress = await this.getCompress()
-      while (hex.length < 8) {
-        hex = `0${hex}`
-      }
-      hex = hex.slice(8 - hashHexCharacters)
-      const dirpath = []
-      for (let i = 0; i < hex.length; i += 3) {
-        dirpath.push(hex.slice(i, i + 3))
-      }
-      return `${dirpath.join('/')}.json${compress ? 'z' : ''}`
+    const { hashHexCharacters, compress } = await this.readMeta()
+    if (!hashHexCharacters) {
+      return ''
     }
-    return ''
+    while (hex.length < 8) {
+      hex = `0${hex}`
+    }
+    hex = hex.slice(8 - hashHexCharacters)
+    const dirpath = []
+    for (let i = 0; i < hex.length; i += 3) {
+      dirpath.push(hex.slice(i, i + 3))
+    }
+    return `${dirpath.join('/')}.json${compress ? 'z' : ''}`
   }
 
   hash(data: string) {
-    return crc32(data).toString(16).toLowerCase().replace('-', 'n')
+    return crc32(data).toString(16).toLowerCase()
   }
 }

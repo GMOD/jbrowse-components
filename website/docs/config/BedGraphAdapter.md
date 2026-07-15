@@ -1,54 +1,60 @@
 ---
 id: bedgraphadapter
 title: BedGraphAdapter
+sidebar_label: Adapter -> BedGraphAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `bed` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/bed/src/BedGraphAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedGraphAdapter.md)
-
-## Docs
-
-### BedGraphAdapter - Pre-processor / simplified config
-
-preprocessor to allow minimal config:
-
-```json
+```js
 {
-  "type": "BedGraphAdapter",
-  "uri": "yourfile.bed"
+  type: 'QuantitativeTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedGraphAdapter',
+    uri: 'https://example.com/signal.bedGraph',
+  },
 }
 ```
 
-### BedGraphAdapter - Slots
+_See the **Config slots** section below for all available configuration fields._
+
+used to load plain-text bedGraph signal files. Loads the whole file into memory,
+so prefer the BedGraphTabixAdapter for large files.
+
+## Related links
+
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                       | Type           | Description          |
+| ------------------------------------------ | -------------- | -------------------- |
+| [bedGraphLocation](#slot-bedgraphlocation) | `fileLocation` |                      |
+| [columnNames](#slot-columnnames)           | `stringArray`  | List of column names |
+
+<details>
+<summary>BedGraphAdapter - Slots</summary>
 
 #### slot: bedGraphLocation
 
-```js
-bedGraphLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bedgraph',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bedgraph', locationType: 'UriLocation' }`
 
 #### slot: columnNames
 
-```js
-columnNames: {
-      type: 'stringArray',
-      description: 'List of column names',
-      defaultValue: [],
-    }
-```
+List of column names
+
+**Type:** `stringArray` · **Default:** `[]`
+
+</details>

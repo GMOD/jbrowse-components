@@ -1,16 +1,13 @@
-import { lazy } from 'react'
-
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { types } from '@jbrowse/mobx-state-tree'
 
+import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './stateModelFactory.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export default function DotplotDisplayF(pm: PluginManager) {
   pm.addDisplayType(() => {
-    const configSchema = configSchemaFactory(pm)
+    const configSchema = configSchemaFactory()
     return new DisplayType({
       name: 'DotplotDisplay',
       displayName: 'Dotplot display',
@@ -18,31 +15,7 @@ export default function DotplotDisplayF(pm: PluginManager) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'SyntenyTrack',
       viewType: 'DotplotView',
-      ReactComponent: lazy(() => import('./components/DotplotDisplay.tsx')),
+      ReactComponent: () => null,
     })
   })
-}
-
-/**
- * #config DotplotDisplay
- */
-export function configSchemaFactory(pm: any) {
-  return ConfigurationSchema(
-    'DotplotDisplay',
-    {
-      /**
-       * #slot
-       */
-      renderer: types.optional(pm.pluggableConfigSchemaType('renderer'), {
-        type: 'DotplotRenderer',
-      }),
-    },
-    {
-      /**
-       * #identifier
-       */
-      explicitIdentifier: 'displayId',
-      explicitlyTyped: true,
-    },
-  )
 }

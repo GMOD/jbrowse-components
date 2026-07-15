@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
@@ -66,9 +66,37 @@ describe('TrixTextSearchAdapter', () => {
     expect(results[0]!.getDisplayString()).toEqual('Apple3')
   })
 
+  it('multi-word search keeps only entries containing every word', async () => {
+    // "eden" alone matches EDEN (protein kinase) + EDEN.1/.2/.3 (splice forms);
+    // adding "splice" drops the bare EDEN entry
+    const results = await adapter.searchIndex({ queryString: 'eden splice' })
+    expect(results.map(r => r.getLabel()).sort()).toEqual([
+      'EDEN.1',
+      'EDEN.2',
+      'EDEN.3',
+    ])
+  })
+
+  it('multi-word search matches attributes, not the internal trackId', async () => {
+    // trackId is "gff3tabix_genes"; "genes" must not satisfy a search word
+    const results = await adapter.searchIndex({ queryString: 'eden genes' })
+    expect(results).toEqual([])
+  })
+
   it('exact search filters to only exact label matches', async () => {
     const results = await adapter.searchIndex({
       queryString: 'apple3',
+      searchType: 'exact',
+    })
+    expect(results.length).toEqual(1)
+    expect(results[0]!.getLabel()).toEqual('Apple3')
+    expect(results[0]!.getLocation()).toEqual('ctgA:17400..23000')
+  })
+
+  it('exact search matches a non-label attribute such as the ID', async () => {
+    // "rna-Apple3" is the ID, not the displayed label ("Apple3")
+    const results = await adapter.searchIndex({
+      queryString: 'rna-Apple3',
       searchType: 'exact',
     })
     expect(results.length).toEqual(1)

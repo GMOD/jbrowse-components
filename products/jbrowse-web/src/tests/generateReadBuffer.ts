@@ -1,3 +1,4 @@
+import { LocalFile } from 'generic-filehandle2'
 import RangeParser from 'range-parser'
 
 import type { GenericFilehandle } from 'generic-filehandle2'
@@ -24,8 +25,7 @@ export async function handleRequest(
     return rangeHeader
       ? await handleRangeRequest(cb(), rangeHeader)
       : await handleFullRequest(cb())
-  } catch (e) {
-    console.error(e)
+  } catch {
     return new Response(undefined, {
       status: 404,
     })
@@ -57,5 +57,50 @@ export async function handleFullRequest(file: GenericFilehandle) {
   const body = await file.readFile()
   return new Response(body, {
     status: 200,
+  })
+}
+
+export function defaultGetFile(url: string): GenericFilehandle {
+  return new LocalFile(
+    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
+  )
+}
+
+export function volvoxGetFile(url: string): GenericFilehandle {
+  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
+  const filePath = cleanUrl.startsWith('test_data')
+    ? cleanUrl
+    : `test_data/volvox/${cleanUrl}`
+  return new LocalFile(require.resolve(`../../${filePath}`))
+}
+
+export function grapePeachGetFile(url: string): GenericFilehandle {
+  const cleanUrl = url.replace(/http:\/\/localhost\//, '')
+  const filePath = cleanUrl.startsWith('test_data')
+    ? cleanUrl
+    : `test_data/grape_peach_synteny/${cleanUrl}`
+  return new LocalFile(require.resolve(`../../${filePath}`))
+}
+
+export function utilizeFetchMockForTest(
+  getFile: (url: string) => GenericFilehandle = defaultGetFile,
+) {
+  beforeEach(() => {
+    const realFetch = global.fetch
+    jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
+      // data: URIs (e.g. bgzf-filehandle's inlined WASM module) must reach the
+      // real fetch, not the file-serving mock
+      if (`${url}`.startsWith('data:')) {
+        return realFetch(url, args)
+      }
+      return `${url}`.includes('jb2=true')
+        ? new Response('{}')
+        : handleRequest(() => getFile(`${url}`), args)
+    })
+  })
+  afterEach(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+    jest.restoreAllMocks()
   })
 }

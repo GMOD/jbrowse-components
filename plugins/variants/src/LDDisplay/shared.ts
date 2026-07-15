@@ -2,560 +2,501 @@ import type React from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { getSession } from '@jbrowse/core/util'
-import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
-  NonBlockCanvasDisplayMixin,
+  getContainingView,
+  getRpcSessionId,
+  getSession,
+} from '@jbrowse/core/util'
+import { types } from '@jbrowse/mobx-state-tree'
+import {
+  GlobalDataDisplayMixin,
+  StaleViewportRescaleMixin,
   TrackHeightMixin,
+  computeRenderTransform,
+  computeTriangleYScalar,
+  viewportMatchesLastDrawn,
 } from '@jbrowse/plugin-linear-genome-view'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { generateLDColorRamp } from './components/ldColorRamp.ts'
+import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
-import type { LDFlatbushItem } from '../LDRenderer/types.ts'
-import type { FilterStats, LDMatrixResult } from '../VariantRPC/getLDMatrix.ts'
+import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
+import type {
+  FilterStats,
+  LDMethod,
+  LDMetric,
+  LDSnp,
+} from '../VariantRPC/getLDMatrix.ts'
+import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LegendItem,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
+
+function upperBoundFloat32(arr: Float32Array, val: number) {
+  let lo = 0
+  let hi = arr.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (arr[mid]! <= val) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return lo
+}
 
 /**
  * #stateModel SharedLDModel
+ * #category display
  * Shared state model for LD displays
- * extends
- * - [BaseDisplay](../basedisplay)
- * - [TrackHeightMixin](../trackheightmixin)
- * - [NonBlockCanvasDisplayMixin](../nonblockcanvasdisplaymixin)
  */
 export default function sharedModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
-  return types
-    .compose(
-      'SharedLDModel',
-      BaseDisplay,
-      TrackHeightMixin(),
-      NonBlockCanvasDisplayMixin(),
-      types.model({
+  return (
+    types
+      .compose(
+        'SharedLDModel',
+        BaseDisplay,
+        TrackHeightMixin(),
+        GlobalDataDisplayMixin(),
+        StaleViewportRescaleMixin(),
+        types.model({
+          configuration: ConfigurationReference(configSchema),
+        }),
+      )
+      .volatile(() => ({
         /**
-         * #property
+         * #volatile
          */
-        configuration: ConfigurationReference(configSchema),
+        rpcData: null as LDDataResult | null,
         /**
-         * #property
-         * When undefined, falls back to config value
+         * #volatile
+         * Locus (`refName:start`) of the focal SNP whose LD row+column is
+         * emphasized, or undefined. Keyed by locus rather than array index so
+         * the selection survives a re-fetch that reorders SNPs.
          */
-        minorAlleleFrequencyFilterSetting: types.maybe(types.number),
+        focalSnpLocus: undefined as string | undefined,
+      }))
+      .actions(self => ({
+        setRpcData(data: LDDataResult | null) {
+          self.rpcData = data
+        },
+        setFocalSnp(snp: LDSnp | undefined) {
+          self.focalSnpLocus = snp ? `${snp.refName}:${snp.start}` : undefined
+        },
+        setLineZoneHeight(n: number) {
+          self.configuration.setSlot('lineZoneHeight', Math.max(0, n))
+        },
+        setMafFilter(arg: number) {
+          self.configuration.setSlot('minorAlleleFrequencyFilter', arg)
+        },
+        setLDMetric(metric: LDMetric) {
+          self.configuration.setSlot('ldMetric', metric)
+        },
+        setShowLegend(show: boolean) {
+          self.configuration.setSlot('showLegend', show)
+        },
+        setShowLDTriangle(show: boolean) {
+          self.configuration.setSlot('showLDTriangle', show)
+        },
+        setShowRecombination(show: boolean) {
+          self.configuration.setSlot('showRecombination', show)
+        },
+        setFitToHeight(value: boolean) {
+          self.configuration.setSlot('fitToHeight', value)
+        },
+        setHweFilter(threshold: number) {
+          self.configuration.setSlot('hweFilterThreshold', threshold)
+        },
+        setCallRateFilter(threshold: number) {
+          self.configuration.setSlot('callRateFilter', threshold)
+        },
+        setShowVerticalGuides(show: boolean) {
+          self.configuration.setSlot('showVerticalGuides', show)
+        },
+        setShowLabels(show: boolean) {
+          self.configuration.setSlot('showLabels', show)
+        },
+        setUseGenomicPositions(value: boolean) {
+          self.configuration.setSlot('useGenomicPositions', value)
+        },
+        setSignedLD(value: boolean) {
+          self.configuration.setSlot('signedLD', value)
+        },
+        setJexlFilters(filters: string[] | undefined) {
+          self.configuration.setSlot('jexlFilters', filters)
+        },
+      }))
+      // Opt into RegionTooLargeMixin's shared derived byte gate: the too-large
+      // banner becomes a pure function of the cached estimate scaled to the
+      // current viewport (self-releases on zoom-in, no flicker on pan).
+      // performLDFetch captures the estimate; afterAttach clears it on chromosome
+      // nav. Byte-only — no density axis.
+      .views(self => ({
         /**
-         * #property
-         * When undefined, falls back to config value
+         * #getter
          */
-        lengthCutoffFilterSetting: types.maybe(types.number),
+        get derivedRegionTooLargeEnabled() {
+          return true
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * Height of the zone for connecting lines at the top
+         * #getter
          */
-        lineZoneHeightSetting: types.maybe(types.number),
+        get configuredFetchSizeLimit(): number {
+          return getConf(self, 'fetchSizeLimit')
+        },
+      }))
+      .views(self => ({
         /**
-         * #property
-         * When undefined, falls back to config value
-         * LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
+         * #getter
          */
-        ldMetricSetting: types.maybe(types.string),
+        get prefersOffset() {
+          return true
+        },
+        get minorAlleleFrequencyFilter() {
+          return getConf(self, 'minorAlleleFrequencyFilter')
+        },
+        get lengthCutoffFilter() {
+          return getConf(self, 'lengthCutoffFilter')
+        },
+        get lineZoneHeight() {
+          return getConf(self, 'lineZoneHeight')
+        },
+        get ldMetric() {
+          return getConf(self, 'ldMetric')
+        },
+        get showLegend() {
+          return getConf(self, 'showLegend')
+        },
+        get showLDTriangle() {
+          return getConf(self, 'showLDTriangle')
+        },
+        get showRecombination() {
+          return getConf(self, 'showRecombination')
+        },
+        get recombinationZoneHeight() {
+          return getConf(self, 'recombinationZoneHeight')
+        },
+        get fitToHeight() {
+          return getConf(self, 'fitToHeight')
+        },
+        get hweFilterThreshold() {
+          return getConf(self, 'hweFilterThreshold')
+        },
+        get callRateFilter() {
+          return getConf(self, 'callRateFilter')
+        },
+        get showVerticalGuides() {
+          return getConf(self, 'showVerticalGuides')
+        },
+        get showLabels() {
+          return getConf(self, 'showLabels')
+        },
+        get tickHeight() {
+          return getConf(self, 'tickHeight')
+        },
+        // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
+        get useGenomicPositions() {
+          return getConf(self, 'useGenomicPositions')
+        },
+        get signedLD() {
+          return getConf(self, 'signedLD')
+        },
+        get jexlFilters(): string[] {
+          return getConf(self, 'jexlFilters')
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
+         * #getter
+         * Returns true if this display uses pre-computed LD data (PLINK, ldmat)
+         * rather than computing LD from VCF genotypes
          */
-        colorSchemeSetting: types.maybe(types.string),
+        get snps(): LDSnp[] {
+          return self.rpcData?.snps ?? []
+        },
+        get cellWidth() {
+          return self.rpcData?.uniformW ?? 0
+        },
+        get filterStats(): FilterStats | undefined {
+          return self.rpcData?.filterStats
+        },
+        get recombination() {
+          return self.rpcData?.recombination
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
+         * #getter
+         * Global-display data-loaded signal read by `GlobalDataDisplayMixin.svgReady`
+         * (analog of `viewportWithinLoadedData`). The fetch commits `rpcData` even
+         * for an empty viewport, so this flips true once data has loaded AND that
+         * data was fetched for the current viewport. Gating on freshness — not
+         * merely `rpcData !== null` — keeps off-screen `svgReady` from resolving on
+         * data left over from the pre-pan/zoom viewport during the debounced-refetch
+         * window (`setLastDrawnViewport` runs right after `setRpcData`). Without the
+         * override the mixin default (`false`) leaves `svgReady` unable to resolve
+         * on a successful load, hanging SVG export.
          */
-        showLegendSetting: types.maybe(types.boolean),
+        get dataLoaded(): boolean {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return (
+            self.rpcData !== null &&
+            viewportMatchesLastDrawn({
+              lastDrawnOffsetPx: self.lastDrawnOffsetPx,
+              lastDrawnBpPerPx: self.lastDrawnBpPerPx,
+              viewOffsetPx: view.offsetPx,
+              viewBpPerPx: view.bpPerPx,
+            })
+          )
+        },
+        get isPrecomputedLD() {
+          return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
+            self.adapterConfig?.type,
+          )
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * Whether to show the LD triangle heatmap
+         * #getter
+         * Metric the loaded data actually represents. A pre-computed file with no
+         * D' column downgrades a 'dprime' request to 'r2', so the legend and the
+         * metric radios read this rather than the raw requested `ldMetric`.
          */
-        showLDTriangleSetting: types.maybe(types.boolean),
+        get effectiveLdMetric(): LDMetric {
+          return self.rpcData?.metric ?? getConf(self, 'ldMetric')
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * Whether to show the recombination rate track
+         * #getter
+         * Whether the D' metric can be shown — false only for a pre-computed file
+         * lacking a DP column, which disables the D' option.
          */
-        showRecombinationSetting: types.maybe(types.boolean),
+        get dprimeAvailable(): boolean {
+          return self.rpcData?.hasDprime ?? true
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * Height of the recombination track zone at the top
+         * #getter
+         * How the loaded LD values were derived: 'phased' (exact haplotypic),
+         * 'composite' (Weir estimate from unphased genotypes), or 'precomputed'
+         * (read from a PLINK/ldmat file). Undefined until data loads.
          */
-        recombinationZoneHeightSetting: types.maybe(types.number),
+        get ldMethod(): LDMethod | undefined {
+          return self.rpcData?.method
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * When true, squash the LD triangle to fit the display height
+         * #getter
+         * Array index of the focal SNP in the current `snps`, or -1 if none is
+         * selected or the locus is no longer present after a re-fetch.
          */
-        fitToHeightSetting: types.maybe(types.boolean),
+        get focalSnpIndex() {
+          const locus = self.focalSnpLocus
+          return locus === undefined
+            ? -1
+            : (self.rpcData?.snps ?? []).findIndex(
+                s => `${s.refName}:${s.start}` === locus,
+              )
+        },
+      }))
+      .views(self => ({
         /**
-         * #property
-         * When undefined, falls back to config value
-         * HWE filter p-value threshold (variants with HWE p < this are excluded)
-         * Set to 0 to disable HWE filtering
+         * #getter
+         * Pixel height of the SVG zone above the canvas (variant labels +
+         * lines, or recombination scale). The hit-test subtracts this from
+         * mouseY before reversing the render transform.
          */
-        hweFilterThresholdSetting: types.maybe(types.number),
+        get effectiveLineZoneHeight() {
+          if (self.useGenomicPositions) {
+            return self.showRecombination ? self.recombinationZoneHeight : 0
+          }
+          return self.lineZoneHeight
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * Call rate filter threshold (0-1). Variants with fewer than this
-         * proportion of non-missing genotypes are excluded.
+         * #getter
+         * Effective height for the LD canvas (total height minus the zone the
+         * recombination overlay / variant lines occupy above the matrix).
          */
-        callRateFilterSetting: types.maybe(types.number),
+        get ldCanvasHeight() {
+          return Math.max(50, self.height - this.effectiveLineZoneHeight)
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * Whether to show vertical guides at the connected genome positions on hover
+         * #getter
+         * Per-frame yScalar squash factor. When fitToHeight is on, squashes
+         * the natural (canvasWidth/2) triangle into ldCanvasHeight. Lives on
+         * the main thread so resize doesn't trigger a worker re-fetch.
          */
-        showVerticalGuidesSetting: types.maybe(types.boolean),
+        get yScalar() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return computeTriangleYScalar({
+            fitToHeight: self.fitToHeight,
+            displayHeight: this.ldCanvasHeight,
+            triangleWidth: view.dynamicBlocks.totalWidthPxWithoutBorders,
+          })
+        },
+
+        // Literal RPC payload for RenderLDData. Adding a field here
+        // automatically flows into both the RPC call (via the fetch autorun
+        // in afterAttach.ts) and into mobx's dependency tracking — the
+        // fetch autorun calls `self.rpcProps()` once, so any change to any
+        // field refires it. No hand-enumerated fields at the top of the
+        // autorun.
+        rpcProps() {
+          return {
+            ldMetric: self.ldMetric,
+            minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
+            lengthCutoffFilter: self.lengthCutoffFilter,
+            hweFilterThreshold: self.hweFilterThreshold,
+            callRateFilter: self.callRateFilter,
+            jexlFilters: self.jexlFilters,
+            signedLD: self.signedLD,
+            useGenomicPositions: self.useGenomicPositions,
+          }
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * Whether to show variant labels above the tick marks
+         * #getter
+         * Forward transform { scale, viewOffsetX } shared by GPU render,
+         * mouse hit-test, and the matrix→genomic-position SVG lines. See
+         * `computeRenderTransform` for the math.
          */
-        showLabelsSetting: types.maybe(types.boolean),
+        get renderTransform() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          return computeRenderTransform({
+            lastDrawnOffsetPx: self.lastDrawnOffsetPx,
+            lastDrawnBpPerPx: self.lastDrawnBpPerPx,
+            viewOffsetPx: view.offsetPx,
+            viewBpPerPx: view.bpPerPx,
+          })
+        },
         /**
-         * #property
-         * When undefined, falls back to config value
-         * Height of the vertical tick marks at the genomic position
+         * #getter
+         * Per-frame render state for the GPU backend. Read by the upload/render
+         * autorun — every change to any tracked observable (view.bpPerPx,
+         * view.offsetPx, model.fitToHeight, rpcData contents, …) re-fires it.
          */
-        tickHeightSetting: types.maybe(types.number),
+        get renderState() {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const data = self.rpcData
+          if (!data) {
+            return undefined
+          }
+          const { scale, viewOffsetX } = this.renderTransform
+          const canvasWidth = Math.round(
+            view.dynamicBlocks.totalWidthPxWithoutBorders,
+          )
+          return {
+            yScalar: this.yScalar,
+            canvasWidth,
+            canvasHeight: self.fitToHeight
+              ? this.ldCanvasHeight
+              : canvasWidth / 2,
+            signedLD: data.signedLD,
+            viewScale: scale,
+            viewOffsetX,
+            uniformW: data.uniformW,
+          }
+        },
+
         /**
-         * #property
-         * When undefined, falls back to config value
-         * When true, draw cells sized according to genomic distance between SNPs
-         * rather than uniform squares
+         * #method
+         * Inverse of `renderTransform` for the LD matrix: takes mouse coords
+         * (canvas-relative) and returns the LD cell under the cursor, or
+         * undefined. Mirrors plugins/hic's `hitTest` so both contact maps
+         * keep the forward and inverse transforms paired on the model.
          */
-        useGenomicPositionsSetting: types.maybe(types.boolean),
+        hitTest(mouseX: number, mouseY: number): LDFlatbushItem | undefined {
+          const data = self.rpcData
+          if (!data) {
+            return undefined
+          }
+          if (mouseY < this.effectiveLineZoneHeight) {
+            return undefined
+          }
+          const { scale, viewOffsetX } = this.renderTransform
+          const dataX = (mouseX - viewOffsetX) / scale
+          const dataY = (mouseY - this.effectiveLineZoneHeight) / scale
+          // Reverse the rendering's `scale(1, yScalar) · rotate(-π/4)` then
+          // pick the cell. yScalar squashes Y, so divide it out before
+          // un-rotating.
+          const scaledY = dataY / this.yScalar
+          const x = (dataX - scaledY) / Math.SQRT2
+          const y = (dataX + scaledY) / Math.SQRT2
+          const { boundaries, ldValues } = data
+          const n = boundaries.length - 1
+          let hitI = -1
+          let hitJ = -1
+          if (self.useGenomicPositions) {
+            hitJ = upperBoundFloat32(boundaries, x) - 1
+            hitI = upperBoundFloat32(boundaries, y) - 1
+          } else {
+            const w = self.cellWidth
+            if (w > 0) {
+              hitJ = Math.floor(x / w)
+              hitI = Math.floor(y / w)
+            }
+          }
+          if (hitI > hitJ && hitI > 0 && hitJ >= 0 && hitI < n) {
+            const ldIdx = (hitI * (hitI - 1)) / 2 + hitJ
+            return {
+              i: hitI,
+              j: hitJ,
+              ldValue: ldValues[ldIdx]!,
+              snp1: self.snps[hitI]!,
+              snp2: self.snps[hitJ]!,
+            }
+          }
+          return undefined
+        },
+      }))
+      .actions(self => ({
         /**
-         * #property
-         * When undefined, falls back to config value
-         * When true, show signed LD values (-1 to 1) instead of absolute values
+         * #action
+         * Starts the upload/render autorun. Data + color ramp both derive from
+         * the same rpcData object, so a single identity-diffed slot handles
+         * both uploads.
          */
-        signedLDSetting: types.maybe(types.boolean),
-        /**
-         * #property
-         * When undefined, falls back to config value
-         * JEXL filter expressions to apply to variants
-         */
-        jexlFiltersSetting: types.maybe(types.array(types.string)),
-      }),
-    )
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      flatbush: undefined as ArrayBufferLike | undefined,
-      /**
-       * #volatile
-       */
-      flatbushItems: [] as LDFlatbushItem[],
-      /**
-       * #volatile
-       */
-      snps: [] as LDMatrixResult['snps'],
-      /**
-       * #volatile
-       */
-      maxScore: 1,
-      /**
-       * #volatile
-       */
-      yScalar: 1,
-      /**
-       * #volatile
-       * Width of each cell in the LD matrix (in unrotated coordinates)
-       */
-      cellWidth: 0,
-      /**
-       * #volatile
-       */
-      error: undefined as Error | undefined,
-      /**
-       * #volatile
-       * Stats about filtered variants
-       */
-      filterStats: undefined as FilterStats | undefined,
-      /**
-       * #volatile
-       * Recombination rate estimates between adjacent SNPs
-       */
-      recombination: undefined as
-        | { values: number[]; positions: number[] }
-        | undefined,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setFlatbushData(
-        flatbush: ArrayBufferLike | undefined,
-        items: LDFlatbushItem[],
-        snps: LDMatrixResult['snps'],
-        maxScore: number,
-        yScalar: number,
-        cellWidth: number,
-      ) {
-        self.flatbush = flatbush
-        self.flatbushItems = items
-        self.snps = snps
-        self.maxScore = maxScore
-        self.yScalar = yScalar
-        self.cellWidth = cellWidth
-      },
-      /**
-       * #action
-       */
-      setLineZoneHeight(n: number) {
-        self.lineZoneHeightSetting = Math.max(0, n)
-      },
-      /**
-       * #action
-       */
-      setError(error: unknown) {
-        self.error = error as Error | undefined
-      },
-      /**
-       * #action
-       */
-      reload() {
-        self.error = undefined
-      },
-      /**
-       * #action
-       */
-      setMafFilter(arg: number) {
-        self.minorAlleleFrequencyFilterSetting = arg
-      },
-      /**
-       * #action
-       */
-      setLengthCutoffFilter(arg: number) {
-        self.lengthCutoffFilterSetting = arg
-      },
-      /**
-       * #action
-       */
-      setLDMetric(metric: string) {
-        self.ldMetricSetting = metric
-      },
-      /**
-       * #action
-       */
-      setColorScheme(scheme: string | undefined) {
-        self.colorSchemeSetting = scheme
-      },
-      /**
-       * #action
-       */
-      setShowLegend(show: boolean) {
-        self.showLegendSetting = show
-      },
-      /**
-       * #action
-       */
-      setShowLDTriangle(show: boolean) {
-        self.showLDTriangleSetting = show
-      },
-      /**
-       * #action
-       */
-      setShowRecombination(show: boolean) {
-        self.showRecombinationSetting = show
-      },
-      /**
-       * #action
-       */
-      setRecombinationZoneHeight(n: number) {
-        self.recombinationZoneHeightSetting = Math.max(20, n)
-      },
-      /**
-       * #action
-       */
-      setFitToHeight(value: boolean) {
-        self.fitToHeightSetting = value
-      },
-      /**
-       * #action
-       */
-      setHweFilter(threshold: number) {
-        self.hweFilterThresholdSetting = threshold
-      },
-      /**
-       * #action
-       */
-      setCallRateFilter(threshold: number) {
-        self.callRateFilterSetting = threshold
-      },
-      /**
-       * #action
-       */
-      setFilterStats(stats: typeof self.filterStats) {
-        self.filterStats = stats
-      },
-      /**
-       * #action
-       */
-      setRecombination(data: typeof self.recombination) {
-        self.recombination = data
-      },
-      /**
-       * #action
-       */
-      setShowVerticalGuides(show: boolean) {
-        self.showVerticalGuidesSetting = show
-      },
-      /**
-       * #action
-       */
-      setShowLabels(show: boolean) {
-        self.showLabelsSetting = show
-      },
-      /**
-       * #action
-       */
-      setTickHeight(height: number) {
-        self.tickHeightSetting = Math.max(0, height)
-      },
-      /**
-       * #action
-       */
-      setUseGenomicPositions(value: boolean) {
-        self.useGenomicPositionsSetting = value
-      },
-      /**
-       * #action
-       */
-      setSignedLD(value: boolean) {
-        self.signedLDSetting = value
-      },
-      /**
-       * #action
-       */
-      setJexlFilters(filters: string[] | undefined) {
-        self.jexlFiltersSetting = cast(filters)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       */
-      get blockType() {
-        return 'dynamicBlocks'
-      },
-      /**
-       * #getter
-       */
-      get prefersOffset() {
-        return true
-      },
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        return 'LDRenderer'
-      },
-      /**
-       * #getter
-       */
-      get rendererConfig() {
-        return getConf(self, 'renderer')
-      },
-      /**
-       * #getter
-       */
-      get regionTooLarge() {
-        return false
-      },
-      /**
-       * #getter
-       * Returns the effective minor allele frequency filter, falling back to config
-       */
-      get minorAlleleFrequencyFilter() {
-        return (
-          self.minorAlleleFrequencyFilterSetting ??
-          getConf(self, 'minorAlleleFrequencyFilter')
-        )
-      },
-      /**
-       * #getter
-       * Returns the effective length cutoff filter, falling back to config
-       */
-      get lengthCutoffFilter() {
-        return (
-          self.lengthCutoffFilterSetting ?? getConf(self, 'lengthCutoffFilter')
-        )
-      },
-      /**
-       * #getter
-       * Returns the effective line zone height, falling back to config
-       */
-      get lineZoneHeight() {
-        return self.lineZoneHeightSetting ?? getConf(self, 'lineZoneHeight')
-      },
-      /**
-       * #getter
-       * Returns the effective LD metric, falling back to config
-       */
-      get ldMetric() {
-        return self.ldMetricSetting ?? getConf(self, 'ldMetric')
-      },
-      /**
-       * #getter
-       * Returns the effective color scheme, falling back to config
-       */
-      get colorScheme() {
-        const setting = self.colorSchemeSetting
-        if (setting !== undefined) {
-          return setting || undefined
-        }
-        const conf = getConf(self, 'colorScheme')
-        return conf || undefined
-      },
-      /**
-       * #getter
-       * Returns the effective show legend setting, falling back to config
-       */
-      get showLegend() {
-        return self.showLegendSetting ?? getConf(self, 'showLegend')
-      },
-      /**
-       * #getter
-       * Returns the effective show LD triangle setting, falling back to config
-       */
-      get showLDTriangle() {
-        return self.showLDTriangleSetting ?? getConf(self, 'showLDTriangle')
-      },
-      /**
-       * #getter
-       * Returns the effective show recombination setting, falling back to config
-       */
-      get showRecombination() {
-        return (
-          self.showRecombinationSetting ?? getConf(self, 'showRecombination')
-        )
-      },
-      /**
-       * #getter
-       * Returns the effective recombination zone height, falling back to config
-       */
-      get recombinationZoneHeight() {
-        return (
-          self.recombinationZoneHeightSetting ??
-          getConf(self, 'recombinationZoneHeight')
-        )
-      },
-      /**
-       * #getter
-       * Returns the effective fit to height setting, falling back to config
-       */
-      get fitToHeight() {
-        return self.fitToHeightSetting ?? getConf(self, 'fitToHeight')
-      },
-      /**
-       * #getter
-       * Returns the effective HWE filter threshold, falling back to config
-       */
-      get hweFilterThreshold() {
-        return (
-          self.hweFilterThresholdSetting ?? getConf(self, 'hweFilterThreshold')
-        )
-      },
-      /**
-       * #getter
-       * Returns the effective call rate filter threshold, falling back to config
-       */
-      get callRateFilter() {
-        return self.callRateFilterSetting ?? getConf(self, 'callRateFilter')
-      },
-      /**
-       * #getter
-       * Returns the effective show vertical guides setting, falling back to config
-       */
-      get showVerticalGuides() {
-        return (
-          self.showVerticalGuidesSetting ?? getConf(self, 'showVerticalGuides')
-        )
-      },
-      /**
-       * #getter
-       * Returns the effective show labels setting, falling back to config
-       */
-      get showLabels() {
-        return self.showLabelsSetting ?? getConf(self, 'showLabels')
-      },
-      /**
-       * #getter
-       * Returns the effective tick height, falling back to config
-       */
-      get tickHeight() {
-        return self.tickHeightSetting ?? getConf(self, 'tickHeight')
-      },
-      /**
-       * #getter
-       * Returns the effective use genomic positions setting, falling back to config
-       */
-      get useGenomicPositions() {
-        return (
-          self.useGenomicPositionsSetting ??
-          getConf(self, 'useGenomicPositions')
-        )
-      },
-      /**
-       * #getter
-       * Returns the effective signed LD setting, falling back to config
-       */
-      get signedLD() {
-        return self.signedLDSetting ?? getConf(self, 'signedLD')
-      },
-      /**
-       * #getter
-       * Returns the effective jexl filters, falling back to config
-       */
-      get jexlFilters() {
-        return self.jexlFiltersSetting ?? getConf(self, 'jexlFilters')
-      },
-      /**
-       * #getter
-       * Returns true if this display uses pre-computed LD data (PLINK, ldmat)
-       * rather than computing LD from VCF genotypes
-       */
-      get isPrecomputedLD() {
-        const adapterType = self.adapterConfig?.type as string | undefined
-        return (
-          adapterType === 'PlinkLDAdapter' ||
-          adapterType === 'PlinkLDTabixAdapter' ||
-          adapterType === 'LdmatAdapter'
-        )
-      },
-      /**
-       * #method
-       */
-      regionCannotBeRendered() {
-        return null
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Effective height for the LD canvas (total height minus line zone)
-       * Note: Recombination track is overlaid on the line zone, not in a separate zone
-       */
-      get ldCanvasHeight() {
-        return Math.max(50, self.height - self.lineZoneHeight)
-      },
-    }))
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
+        startRenderingBackend(backend: LDRenderingBackend) {
+          self.attachRenderingBackend<LDRenderingBackend>(backend, {
+            upload: b => {
+              const d = self.rpcData
+              if (!d) {
+                return
+              }
+              b.uploadData({
+                ldValues: d.ldValues,
+                boundaries: d.boundaries,
+                numCells: d.numCells,
+                positions: d.positions,
+                cellSizes: d.cellSizes,
+              })
+              b.uploadColorRamp(generateLDColorRamp(d.metric, d.signedLD))
+            },
+            render: b => {
+              const state = self.renderState
+              if (!state) {
+                return false
+              }
+              const d = self.rpcData
+              b.render(
+                d
+                  ? {
+                      ldValues: d.ldValues,
+                      boundaries: d.boundaries,
+                      numCells: d.numCells,
+                      positions: d.positions,
+                      cellSizes: d.cellSizes,
+                    }
+                  : null,
+                state,
+              )
+              return true
+            },
+          })
+        },
+      }))
+      .views(self => ({
         /**
          * #method
          */
@@ -594,265 +535,279 @@ export default function sharedModelFactory(
         /**
          * #method
          */
-        renderProps() {
-          return {
-            ...superRenderProps(),
-            config: self.rendererConfig,
-            // Only pass displayHeight when fitToHeight is true
-            // This avoids tracking height changes when using natural triangle size
-            // ldCanvasHeight already accounts for lineZoneHeight and recombinationZoneHeight
-            ...(self.fitToHeight ? { displayHeight: self.ldCanvasHeight } : {}),
-            minorAlleleFrequencyFilter: self.minorAlleleFrequencyFilter,
-            lengthCutoffFilter: self.lengthCutoffFilter,
-            hweFilterThreshold: self.hweFilterThreshold,
-            callRateFilter: self.callRateFilter,
-            jexlFilters: self.jexlFilters,
-            ldMetric: self.ldMetric,
-            colorScheme: self.colorScheme,
-            fitToHeight: self.fitToHeight,
-            useGenomicPositions: self.useGenomicPositions,
-            signedLD: self.signedLD,
-          }
+        legendItems(): LegendItem[] {
+          const metric = self.effectiveLdMetric === 'dprime' ? "D'" : 'R²'
+          const range = self.signedLD ? '-1 to 1' : '0 to 1'
+          return [{ label: `${metric}: ${range}` }]
         },
-      }
-    })
-    .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
-      return {
         /**
          * #method
          */
-        trackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'LD metric',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'R² (squared correlation)',
-                  type: 'radio',
-                  checked: self.ldMetric === 'r2',
-                  onClick: () => {
-                    self.setLDMetric('r2')
-                  },
-                },
-                {
-                  label: "D' (normalized D)",
-                  type: 'radio',
-                  checked: self.ldMetric === 'dprime',
-                  onClick: () => {
-                    self.setLDMetric('dprime')
-                  },
-                },
-              ],
-            },
-            {
-              label: 'Show...',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'Show LD triangle',
-                  type: 'checkbox',
-                  checked: self.showLDTriangle,
-                  onClick: () => {
-                    self.setShowLDTriangle(!self.showLDTriangle)
-                  },
-                },
-                {
-                  label: 'Show recombination track',
-                  helpText:
-                    'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
-                  type: 'checkbox',
-                  checked: self.showRecombination,
-                  onClick: () => {
-                    self.setShowRecombination(!self.showRecombination)
-                  },
-                },
-                {
-                  label: 'Show legend',
-                  type: 'checkbox',
-                  checked: self.showLegend,
-                  onClick: () => {
-                    self.setShowLegend(!self.showLegend)
-                  },
-                },
-                {
-                  label: 'LD triangle adjusted to display height',
-                  type: 'checkbox',
-                  checked: self.fitToHeight,
-                  onClick: () => {
-                    self.setFitToHeight(!self.fitToHeight)
-                  },
-                },
-                {
-                  label: 'Vertical guides on hover',
-                  type: 'checkbox',
-                  checked: self.showVerticalGuides,
-                  onClick: () => {
-                    self.setShowVerticalGuides(!self.showVerticalGuides)
-                  },
-                },
-                {
-                  label: 'Variant labels',
-                  type: 'checkbox',
-                  checked: self.showLabels,
-                  onClick: () => {
-                    self.setShowLabels(!self.showLabels)
-                  },
-                },
-                {
-                  label: 'Use genomic positions for cell sizes',
-                  type: 'checkbox',
-                  checked: self.useGenomicPositions,
-                  onClick: () => {
-                    self.setUseGenomicPositions(!self.useGenomicPositions)
-                  },
-                },
-                // Signed LD only available for VCF-computed LD, not pre-computed
-                ...(self.isPrecomputedLD
-                  ? []
-                  : [
-                      {
-                        label: 'Show signed LD values (-1 to 1)',
-                        helpText:
-                          "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
-                        type: 'checkbox',
-                        checked: self.signedLD,
-                        onClick: () => {
-                          self.setSignedLD(!self.signedLD)
-                        },
+        svgLegendWidth(): number {
+          return self.showLegend ? 140 : 0
+        },
+      }))
+      .views(self => {
+        const { trackMenuItems: superTrackMenuItems } = self
+        return {
+          /**
+           * #method
+           */
+          trackMenuItems() {
+            // One shared sentence describing how the loaded values were derived,
+            // reused across the R²/D' help so precision is stated honestly.
+            const computeNote =
+              self.ldMethod === 'phased'
+                ? 'Computed from phased genotypes as exact haplotypic LD.'
+                : self.ldMethod === 'precomputed'
+                  ? 'Read directly from the pre-computed LD file.'
+                  : 'Estimated from unphased genotypes with the composite (Weir) method.'
+            const plinkNote = self.isPrecomputedLD
+              ? ''
+              : ' For authoritative published LD, load PLINK-computed .ld files via the PLINK adapter.'
+            return [
+              ...superTrackMenuItems(),
+              ...(self.focalSnpIndex >= 0
+                ? [
+                    {
+                      label: 'Clear focal SNP highlight',
+                      onClick: () => {
+                        self.setFocalSnp(undefined)
                       },
-                    ]),
-              ],
-            },
-            // Filter menu only available for VCF-computed LD, not pre-computed
-            ...(self.isPrecomputedLD
-              ? []
-              : [
+                    },
+                  ]
+                : []),
+              {
+                label: 'LD metric',
+                type: 'subMenu',
+                subMenu: [
                   {
-                    label: 'Filter by...',
-                    type: 'subMenu',
-                    subMenu: self.filterMenuItems(),
+                    label: 'R² (squared correlation)',
+                    type: 'radio',
+                    checked: self.effectiveLdMetric === 'r2',
+                    helpText: `Squared correlation between the two variants (0-1). ${computeNote}${plinkNote}`,
+                    onClick: () => {
+                      self.setLDMetric('r2')
+                    },
                   },
-                ]),
-          ]
-        },
+                  {
+                    label: "D' (normalized D)",
+                    type: 'radio',
+                    checked: self.effectiveLdMetric === 'dprime',
+                    disabled: !self.dprimeAvailable,
+                    helpText: self.dprimeAvailable
+                      ? `Lewontin's normalized D (0-1). ${computeNote}${
+                          self.isPrecomputedLD
+                            ? ''
+                            : ' The composite estimate from unphased data can differ slightly from EM-based tools like Haploview.'
+                        }${plinkNote}`
+                      : "This LD file has no D' (DP) column",
+                    onClick: () => {
+                      self.setLDMetric('dprime')
+                    },
+                  },
+                  // Signed LD modifies the chosen metric (R instead of R²,
+                  // signed D'), so it belongs with the metric choice rather than
+                  // the visibility toggles. VCF-computed LD only.
+                  ...(self.isPrecomputedLD
+                    ? []
+                    : [
+                        {
+                          label: 'Show signed LD values (-1 to 1)',
+                          helpText:
+                            "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
+                          type: 'checkbox',
+                          checked: self.signedLD,
+                          onClick: () => {
+                            self.setSignedLD(!self.signedLD)
+                          },
+                        },
+                      ]),
+                ],
+              },
+              {
+                label: 'Show...',
+                icon: VisibilityIcon,
+                type: 'subMenu',
+                subMenu: [
+                  {
+                    label: 'Show LD triangle',
+                    type: 'checkbox',
+                    checked: self.showLDTriangle,
+                    onClick: () => {
+                      self.setShowLDTriangle(!self.showLDTriangle)
+                    },
+                  },
+                  {
+                    label: 'Show recombination track',
+                    helpText:
+                      'Displays 1-r² between neighboring SNPs only (not all pairwise comparisons). Peaks indicate haplotype block boundaries where historical recombination has broken down LD between adjacent variants.',
+                    type: 'checkbox',
+                    checked: self.showRecombination,
+                    onClick: () => {
+                      self.setShowRecombination(!self.showRecombination)
+                    },
+                  },
+                  {
+                    label: 'Show legend',
+                    type: 'checkbox',
+                    checked: self.showLegend,
+                    onClick: () => {
+                      self.setShowLegend(!self.showLegend)
+                    },
+                  },
+                  {
+                    label: 'Show variant labels',
+                    type: 'checkbox',
+                    checked: self.showLabels,
+                    onClick: () => {
+                      self.setShowLabels(!self.showLabels)
+                    },
+                  },
+                  {
+                    label: 'Show vertical guides on hover',
+                    type: 'checkbox',
+                    checked: self.showVerticalGuides,
+                    onClick: () => {
+                      self.setShowVerticalGuides(!self.showVerticalGuides)
+                    },
+                  },
+                  // Layout toggles live alongside the visibility toggles in
+                  // this submenu, matching the Hi-C triangular display's
+                  // "Show..." grouping (plugins/hic trackMenuItems.ts) so the
+                  // two contact-map displays stay consistent.
+                  {
+                    label: 'Fit to display height',
+                    helpText:
+                      'Vertically squash the triangle to fill the display height instead of drawing it at its natural half-width height.',
+                    type: 'checkbox',
+                    checked: self.fitToHeight,
+                    onClick: () => {
+                      self.setFitToHeight(!self.fitToHeight)
+                    },
+                  },
+                  {
+                    label: 'Show cells with genome proportions',
+                    helpText:
+                      'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
+                    type: 'checkbox',
+                    checked: self.useGenomicPositions,
+                    onClick: () => {
+                      self.setUseGenomicPositions(!self.useGenomicPositions)
+                    },
+                  },
+                ],
+              },
+              // Filter menu only available for VCF-computed LD, not pre-computed
+              ...(self.isPrecomputedLD
+                ? []
+                : [
+                    {
+                      label: 'Filter by...',
+                      icon: ClearAllIcon,
+                      type: 'subMenu',
+                      subMenu: self.filterMenuItems(),
+                    },
+                  ]),
+            ]
+          },
 
+          /**
+           * #method
+           */
+          async renderSvg(
+            opts: ExportSvgDisplayOptions,
+          ): Promise<React.ReactNode> {
+            const { renderSvg } = await import('./renderSvg.tsx')
+            return renderSvg(self as SharedLDModel, opts)
+          },
+        }
+      })
+      .actions(self => ({
         /**
-         * #method
+         * #action
+         * Re-fetches LD matrix for the current viewport. Both the autorun
+         * (in `afterAttach`) and `reload()` invoke this directly.
          */
-        async renderSvg(
-          opts: ExportSvgDisplayOptions,
-        ): Promise<React.ReactNode> {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as SharedLDModel, opts)
-        },
-      }
-    })
-    .actions(self => ({
-      afterAttach() {
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        ;(async () => {
-          try {
-            const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self as SharedLDModel)
-          } catch (e) {
-            console.error(e)
-            getSession(self).notifyError(`${e}`, e)
+        async performLDFetch() {
+          if (self.isMinimized) {
+            return
           }
-        })()
-      },
-    }))
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const {
-        minorAlleleFrequencyFilterSetting,
-        lengthCutoffFilterSetting,
-        lineZoneHeightSetting,
-        ldMetricSetting,
-        colorSchemeSetting,
-        showLegendSetting,
-        showLDTriangleSetting,
-        showRecombinationSetting,
-        recombinationZoneHeightSetting,
-        fitToHeightSetting,
-        hweFilterThresholdSetting,
-        callRateFilterSetting,
-        showVerticalGuidesSetting,
-        showLabelsSetting,
-        tickHeightSetting,
-        useGenomicPositionsSetting,
-        signedLDSetting,
-        jexlFiltersSetting,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        // Only save settings that differ from config defaults
-        ...(minorAlleleFrequencyFilterSetting !== undefined &&
-        minorAlleleFrequencyFilterSetting !== 0.1
-          ? { minorAlleleFrequencyFilterSetting }
-          : {}),
-        ...(lengthCutoffFilterSetting !== undefined &&
-        lengthCutoffFilterSetting !== Number.MAX_SAFE_INTEGER
-          ? { lengthCutoffFilterSetting }
-          : {}),
-        ...(lineZoneHeightSetting !== undefined && lineZoneHeightSetting !== 100
-          ? { lineZoneHeightSetting }
-          : {}),
-        ...(ldMetricSetting !== undefined && ldMetricSetting !== 'r2'
-          ? { ldMetricSetting }
-          : {}),
-        ...(colorSchemeSetting !== undefined && colorSchemeSetting !== ''
-          ? { colorSchemeSetting }
-          : {}),
-        ...(showLegendSetting !== undefined && showLegendSetting
-          ? { showLegendSetting }
-          : {}),
-        ...(showLDTriangleSetting !== undefined && !showLDTriangleSetting
-          ? { showLDTriangleSetting }
-          : {}),
-        ...(showRecombinationSetting !== undefined && showRecombinationSetting
-          ? { showRecombinationSetting }
-          : {}),
-        ...(recombinationZoneHeightSetting !== undefined &&
-        recombinationZoneHeightSetting !== 50
-          ? { recombinationZoneHeightSetting }
-          : {}),
-        ...(fitToHeightSetting !== undefined && fitToHeightSetting
-          ? { fitToHeightSetting }
-          : {}),
-        ...(hweFilterThresholdSetting !== undefined &&
-        hweFilterThresholdSetting !== 0.001
-          ? { hweFilterThresholdSetting }
-          : {}),
-        ...(callRateFilterSetting !== undefined && callRateFilterSetting !== 0
-          ? { callRateFilterSetting }
-          : {}),
-        ...(showVerticalGuidesSetting !== undefined &&
-        !showVerticalGuidesSetting
-          ? { showVerticalGuidesSetting }
-          : {}),
-        ...(showLabelsSetting !== undefined && showLabelsSetting
-          ? { showLabelsSetting }
-          : {}),
-        ...(tickHeightSetting !== undefined && tickHeightSetting !== 6
-          ? { tickHeightSetting }
-          : {}),
-        ...(useGenomicPositionsSetting !== undefined &&
-        useGenomicPositionsSetting
-          ? { useGenomicPositionsSetting }
-          : {}),
-        ...(signedLDSetting !== undefined && signedLDSetting
-          ? { signedLDSetting }
-          : {}),
-        ...(jexlFiltersSetting?.length ? { jexlFiltersSetting } : {}),
-      } as typeof snap
-    })
+          const view = getContainingView(self) as LinearGenomeViewModel
+          if (!view.initialized) {
+            return
+          }
+          const regions = view.dynamicBlocks.contentBlocks
+          if (!self.showLDTriangle || self.regionTooLarge || !regions.length) {
+            return
+          }
+          const { bpPerPx } = view
+          const { adapterConfig } = self
+          await self.runFetch(async ctx => {
+            const { rpcManager } = getSession(self)
+            const sessionId = getRpcSessionId(self)
+            // The feature-density byte-gate estimates fetch size via
+            // CoreGetFeatureDensityStats -> getFeatures, which only the
+            // VCF-computed path's feature adapter implements. Pre-computed LD
+            // adapters (PlinkLD*) aren't feature adapters and ship pre-thinned
+            // files, so skip the density probe (it would throw "Adapter does not
+            // support retrieving features") and render them directly.
+            if (!self.isPrecomputedLD) {
+              const stats = await rpcManager.call(
+                sessionId,
+                'CoreGetFeatureDensityStats',
+                { regions: [...regions], adapterConfig },
+              )
+              if (ctx.isStale()) {
+                return
+              }
+              // Commit the estimate; the derived regionTooLarge getter then
+              // composes the shared verdict (AUTO_FORCE_LOAD_BP floor + bytes>limit
+              // precedence) as a pure function of the estimate × current viewport,
+              // so it self-releases on zoom-in without an imperative re-clear.
+              self.setFeatureDensityStats(stats)
+              if (self.regionTooLarge) {
+                return
+              }
+            }
+
+            const result = await rpcManager.call(
+              sessionId,
+              'RenderLDData',
+              {
+                adapterConfig,
+                regions: [...regions],
+                bpPerPx,
+                ...self.rpcProps(),
+                stopToken: ctx.stopToken,
+              },
+              {
+                statusCallback: self.makeStatusCallback(),
+              },
+            )
+            if (ctx.isStale()) {
+              return
+            }
+            self.setRpcData(result)
+            self.setLastDrawnViewport(view.offsetPx, view.bpPerPx)
+          })
+        },
+      }))
+      .actions(self => ({
+        afterAttach() {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          ;(async () => {
+            try {
+              const { doAfterAttach } = await import('./afterAttach.ts')
+              doAfterAttach(self)
+            } catch (e) {
+              console.error(e)
+              getSession(self).notifyError(`${e}`, e)
+            }
+          })()
+        },
+      }))
+  )
 }
 
 export type SharedLDStateModel = ReturnType<typeof sharedModelFactory>

@@ -1,7 +1,13 @@
 import { useState } from 'react'
 
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { ExternalLink } from '@jbrowse/core/ui'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import {
+  getEnv,
+  getSession,
+  installedVersionFromUrl,
+  resolvePlugin,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import AddIcon from '@mui/icons-material/Add'
@@ -46,18 +52,34 @@ const PluginCard = observer(function PluginCard({
   const session = getSession(model)
   const { pluginManager } = getEnv(model)
   const { runtimePluginDefinitions } = pluginManager
-  const isInstalled = runtimePluginDefinitions.some(
-    d => 'url' in d && d.url === plugin.url,
+
+  // resolve the plugin build that matches this JBrowse version, and install
+  // that concrete (version-pinned) definition rather than the raw store entry
+  const resolved = resolvePlugin(plugin, session.version)
+  const installDef = { ...resolved.definition, name: plugin.name }
+
+  // installed-check is by packageName, not the resolved url: once a newer
+  // compatible version is published the resolved url changes, and a url match
+  // would flip the card back to "Install" and let the user add a second copy of
+  // the same plugin (same UMD global name) alongside the one already installed,
+  // which fails to load with duplicate pluggable-element registrations. Moving
+  // to a newer version is handled separately in the installed-plugins list.
+  const { packageName } = plugin
+  const isInstalled = runtimePluginDefinitions.some(d =>
+    packageName === undefined
+      ? pluginUrl(d) === pluginUrl(resolved.definition)
+      : installedVersionFromUrl(pluginUrl(d), packageName) !== undefined,
   )
   const [tempDisabled, setTempDisabled] = useState(false)
   const { adminMode, jbrowse } = session
-  const { name, authors, description } = plugin
+  const { authors, description } = plugin
   return (
-    <Card variant="outlined" key={name} className={classes.card}>
+    <Card variant="outlined" className={classes.card}>
       <CardContent>
         <Typography variant="h5">
           <ExternalLink href={`${plugin.location}#readme`}>
             {plugin.name}
+            {resolved.pluginVersion ? ` (v${resolved.pluginVersion})` : ''}
           </ExternalLink>
         </Typography>
         <div className={classes.dataField}>
@@ -66,17 +88,23 @@ const PluginCard = observer(function PluginCard({
         </div>
         <Typography className={classes.bold}>Description:</Typography>
         <Typography>{description}</Typography>
+        {resolved.compatible ? null : (
+          <Typography color="error">
+            Not compatible with this version of JBrowse (requires JBrowse{' '}
+            {resolved.supportedRanges.join(' or ')})
+          </Typography>
+        )}
       </CardContent>
       <CardActions>
         <Button
           variant="contained"
-          disabled={isInstalled || tempDisabled}
+          disabled={isInstalled || tempDisabled || !resolved.compatible}
           startIcon={isInstalled ? <CheckIcon /> : <AddIcon />}
           onClick={() => {
             if (adminMode) {
-              jbrowse.addPlugin(plugin)
+              jbrowse.addPlugin(installDef)
             } else if (isSessionWithSessionPlugins(session)) {
-              session.addSessionPlugin(plugin)
+              session.addSessionPlugin(installDef)
             } else {
               session.notify('No way to install plugin')
             }

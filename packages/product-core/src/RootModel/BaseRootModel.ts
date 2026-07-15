@@ -6,9 +6,17 @@ import { cast, getType, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
 import { filterSessionInPlace } from '../sessionUtils.ts'
 
+import type { BaseSession } from '../Session/BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+
+// `session` is a `types.maybe(sessionModelType)` where `sessionModelType` is the
+// erased `IAnyType` (product-core can't name the concrete per-product session
+// type without a root↔session cycle), so `self.session` degrades to `any`. Every
+// concrete session composes BaseSessionModel + SnackbarModel, so asserting the
+// shared `BaseSession` contract restores real checking on the `setName`/`notify`
+// members the base root reaches for — without a hand-maintained shadow.
 
 /**
  * #stateModel BaseRootModel
@@ -44,7 +52,7 @@ export function BaseRootModelFactory({
       /**
        * #property
        */
-      sessionPath: types.optional(types.string, ''),
+      sessionPath: types.stripDefault(types.string, ''),
 
       /**
        * #property
@@ -58,13 +66,7 @@ export function BaseRootModelFactory({
       /**
        * #volatile
        */
-      rpcManager: new RpcManager(
-        pluginManager,
-        self.jbrowse.configuration.rpc,
-        {
-          MainThreadRpcDriver: {},
-        },
-      ),
+      rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc),
 
       /**
        * #volatile
@@ -95,9 +97,10 @@ export function BaseRootModelFactory({
        * #action
        * Sets the active session. Remaps any legacy display type names
        * (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), then walks the
-       * resulting MST tree to drop undefined references in arrays/maps so
-       * shared sessions still load when referencing tracks/widgets that no
-       * longer exist. If filtering throws, the previous session is restored.
+       * resulting MST tree to drop open tracks whose config can't hydrate so
+       * shared sessions still load when referencing tracks that no longer
+       * exist. Dropped tracks are surfaced to the user via a snackbar. If
+       * filtering throws, the previous session is restored.
        */
       setSession(sessionSnapshot?: SnapshotIn<IAnyType>) {
         const oldSession = self.session
@@ -108,7 +111,20 @@ export function BaseRootModelFactory({
         self.session = cast(migrated)
         if (self.session) {
           try {
-            filterSessionInPlace(self.session, getType(self.session))
+            const dropped = filterSessionInPlace(
+              self.session,
+              getType(self.session),
+            )
+            if (dropped.length > 0) {
+              const names = dropped
+                .map(d => d.configuration ?? d.type ?? 'unknown')
+                .join(', ')
+              const plural = dropped.length > 1
+              ;(self.session as BaseSession).notify(
+                `Removed ${dropped.length} track${plural ? 's' : ''} that could not be loaded: ${names}`,
+                'warning',
+              )
+            }
           } catch (error) {
             self.session = oldSession
             throw error
@@ -119,7 +135,12 @@ export function BaseRootModelFactory({
        * #action
        */
       setDefaultSession() {
-        this.setSession(self.jbrowse.defaultSession)
+        const { defaultSession } = self.jbrowse
+        this.setSession({
+          ...defaultSession,
+          // timestamp the name so repeated "new session" names don't collide
+          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
+        })
       },
       /**
        * #action
@@ -134,9 +155,7 @@ export function BaseRootModelFactory({
         // Every concrete session model is composed from BaseSessionModel, which
         // provides setName — avoid a full setSession rebuild here since the
         // only field changing is `name`.
-        ;(
-          self.session as { setName?: (s: string) => void } | undefined
-        )?.setName?.(newName)
+        ;(self.session as BaseSession | undefined)?.setName(newName)
       },
     }))
 }
@@ -145,7 +164,7 @@ export type BaseRootModelType = ReturnType<typeof BaseRootModelFactory>
 export type BaseRootModel = Instance<BaseRootModelType>
 
 /** Type guard for checking if something is a JB root model */
-export function isRootModel(thing: unknown): thing is BaseRootModelType {
+export function isRootModel(thing: unknown): thing is BaseRootModel {
   return (
     isStateTreeNode(thing) &&
     'session' in thing &&

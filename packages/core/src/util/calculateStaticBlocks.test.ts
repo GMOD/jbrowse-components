@@ -11,7 +11,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 10000 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
 
     const blocks2 = calculateBlocks({
@@ -22,7 +21,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 10000 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blocks1).toMatchSnapshot()
     expect(blocks1).toEqual(blocks2)
@@ -38,7 +36,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -53,7 +50,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blockSet.blocks).toEqual([])
   })
@@ -68,7 +64,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgB', start: 100, end: 200 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blockSet.blocks).toEqual([])
   })
@@ -83,7 +78,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgB', start: 100, end: 10000 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -98,7 +92,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgB', start: 0, end: 1000 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blockSet).toMatchSnapshot()
     expect(blockSet.blocks[1]!.offsetPx).toBe(0)
@@ -114,7 +107,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgB', start: 0, end: 1000 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -129,7 +121,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgB', start: 0, end: 10000000 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -144,7 +135,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgB', start: 0, end: 300 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blockSet).toMatchSnapshot()
   })
@@ -159,7 +149,6 @@ describe('block calculation', () => {
         { assemblyName: 'test', refName: 'ctgA', start: 300, end: 400 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blockSet.blocks[1]!.offsetPx).toBe(0)
     expect(blockSet.blocks).toMatchSnapshot()
@@ -182,7 +171,6 @@ describe('reverse block calculation', () => {
         },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -202,7 +190,6 @@ describe('reverse block calculation', () => {
         },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     const content = blocks.contentBlocks
     expect(content).toHaveLength(3)
@@ -223,7 +210,6 @@ describe('reverse block calculation', () => {
         { assemblyName: 'test', refName: 'ctgA', start: 0, end: 2400 },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     const content = blocks.contentBlocks
     expect(content).toHaveLength(3)
@@ -259,7 +245,6 @@ describe('reversed displayed regions', () => {
         },
       ],
       minimumBlockWidth: 20,
-      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -285,7 +270,6 @@ describe('reversed displayed regions', () => {
           reversed: true,
         },
       ],
-      interRegionPaddingWidth: 2,
     })
     expect(blocks).toMatchSnapshot()
   })
@@ -303,14 +287,13 @@ describe('off-screen region padding in regionBpOffset', () => {
     const blockSet = calculateBlocks({
       bpPerPx: 1,
       width: 800,
-      offsetPx: 4008,
+      offsetPx: 4000,
       displayedRegions: regions,
       minimumBlockWidth: 3,
-      interRegionPaddingWidth: 2,
     })
     const chr5Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr5')
     expect(chr5Blocks.length).toBeGreaterThan(0)
-    expect(chr5Blocks[0]!.offsetPx).toBe(4008)
+    expect(chr5Blocks[0]!.offsetPx).toBe(4000)
   })
 
   it('block offsetPx matches displayedRegionsTotalPx coordinate space', () => {
@@ -320,13 +303,10 @@ describe('off-screen region padding in regionBpOffset', () => {
       { assemblyName: 'test', refName: 'chr3', start: 0, end: 500 },
     ]
     const bpPerPx = 1
-    const interRegionPaddingWidth = 2
     const minimumBlockWidth = 3
 
     const totalGenomic = 1500
-    const nonElidedCount = 3
-    const totalPadding = (nonElidedCount - 1) * interRegionPaddingWidth
-    const displayedRegionsTotalPx = totalGenomic / bpPerPx + totalPadding
+    const displayedRegionsTotalPx = totalGenomic / bpPerPx
 
     const blockSetEnd = calculateBlocks({
       bpPerPx,
@@ -334,7 +314,6 @@ describe('off-screen region padding in regionBpOffset', () => {
       offsetPx: displayedRegionsTotalPx - 800,
       displayedRegions: regions,
       minimumBlockWidth,
-      interRegionPaddingWidth,
     })
 
     const lastContentBlock =
@@ -357,16 +336,14 @@ describe('off-screen region padding in regionBpOffset', () => {
       offsetPx: 0,
       displayedRegions: regions,
       minimumBlockWidth: 3,
-      interRegionPaddingWidth: 2,
     })
 
     const scrolledRight = calculateBlocks({
       bpPerPx: 1,
       width: 800,
-      offsetPx: 2004,
+      offsetPx: 2000,
       displayedRegions: regions,
       minimumBlockWidth: 3,
-      interRegionPaddingWidth: 2,
     })
 
     const chr3AtStart = atStart.contentBlocks.filter(b => b.refName === 'chr3')
@@ -384,7 +361,7 @@ describe('off-screen region padding in regionBpOffset', () => {
     }
   })
 
-  it('padding is not added for elided regions', () => {
+  it('elided regions have no gap before next region', () => {
     const regions = [
       { assemblyName: 'test', refName: 'chr1', start: 0, end: 1000 },
       { assemblyName: 'test', refName: 'chr2', start: 0, end: 1 },
@@ -393,14 +370,13 @@ describe('off-screen region padding in regionBpOffset', () => {
     const blockSet = calculateBlocks({
       bpPerPx: 1,
       width: 800,
-      offsetPx: 1002,
+      offsetPx: 1000,
       displayedRegions: regions,
       minimumBlockWidth: 3,
-      interRegionPaddingWidth: 2,
     })
     const chr3Blocks = blockSet.contentBlocks.filter(b => b.refName === 'chr3')
     expect(chr3Blocks.length).toBeGreaterThan(0)
-    expect(chr3Blocks[0]!.offsetPx).toBe(1003)
+    expect(chr3Blocks[0]!.offsetPx).toBe(1001)
   })
 })
 

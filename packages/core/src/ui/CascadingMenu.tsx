@@ -8,71 +8,194 @@ import {
   ListSubheader,
   Menu,
   MenuItem,
+  Tooltip,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
-import CascadingMenuHelpIconButton from './CascadingMenuHelpIconButton.tsx'
 import HoverMenu from './HoverMenu.tsx'
-import { MenuItemEndDecoration } from './MenuItems.tsx'
+import { MenuItemTrailing } from './MenuItemTrailing.tsx'
 
-import type { MenuItem as JBMenuItem, MenuItemsGetter } from './MenuTypes.ts'
+import type {
+  BaseMenuItem,
+  ClickableMenuItem,
+  CustomMenuItem,
+  MenuItem as JBMenuItem,
+  MenuItemsGetter,
+} from './MenuTypes.ts'
+import type { PopoverOrigin } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
 
-// Helper to create a data-testid from a label
-function labelToTestId(label: React.ReactNode) {
-  if (typeof label === 'string') {
-    return label.toLowerCase().replace(/\s+/g, '_')
+interface CascadingMenuListProps {
+  menuItems: JBMenuItem[]
+  closeAfterItemClick: boolean
+  onMenuItemClick: (callback: () => void) => void
+  onCloseRoot: () => void
+  // close this menu level and refocus its opener (ArrowLeft); undefined at the
+  // root level where there is nothing to go back to
+  onNavigateBack?: () => void
+}
+
+// Build a `cascading-<kind>-<label>` data-testid, or undefined for non-string
+// labels that can't be slugified
+function makeTestId(kind: string, label: React.ReactNode) {
+  return typeof label === 'string'
+    ? `cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}`
+    : undefined
+}
+
+// Leading icon slot shared by submenu rows and clickable rows; renders nothing
+// when the item has no icon (the row insets instead to stay column-aligned).
+function MenuItemLeadingIcon({
+  Icon,
+}: {
+  Icon: React.ElementType | undefined
+}) {
+  return Icon ? (
+    <ListItemIcon>
+      <Icon />
+    </ListItemIcon>
+  ) : null
+}
+
+// Which trailing/leading decoration columns the menu needs, computed menu-wide
+// (true if ANY row needs it) so every row reserves matching slots and the
+// decorations stack into aligned columns down the menu.
+function getMenuColumnFlags(menuItems: JBMenuItem[]) {
+  const hasCheckboxOrRadioWithHelp = menuItems.some(
+    m => (m.type === 'checkbox' || m.type === 'radio') && m.helpText,
+  )
+  const hasEndAdornment = menuItems.some(
+    m => 'endAdornment' in m && m.endAdornment,
+  )
+  // a single row carrying both a help "?" and a trailing adornment (e.g. pin) is
+  // the only case that genuinely needs help and adornment in separate columns
+  const hasRowWithHelpAndAdornment = menuItems.some(
+    m =>
+      'endAdornment' in m &&
+      m.endAdornment &&
+      'helpText' in m &&
+      m.helpText &&
+      !('disabled' in m && m.disabled),
+  )
+  return {
+    hasIcon: menuItems.some(m => 'icon' in m && m.icon),
+    hasCheckboxOrRadioWithHelp,
+    hasEndAdornment,
+    // when help and adornment never collide on one row, they collapse into one
+    // shared trailing column instead of each claiming its own, so a menu mixing
+    // help-only and pin-only rows doesn't reserve a wasted third column
+    sharedActionColumn:
+      hasCheckboxOrRadioWithHelp &&
+      hasEndAdornment &&
+      !hasRowWithHelpAndAdornment,
   }
-  return undefined
+}
+
+// Renders arbitrary React content (e.g. a slider) as a plain list row, not a
+// MenuItem: no click-to-close. Pointer/key events are kept local: the menu is
+// portaled in the DOM but is still a React descendant of the view, so without
+// this a slider drag bubbles (via React's synthetic-event tree) into the LGV's
+// click-drag side-scroll, and arrow-key nudging gets stolen by the menu's own
+// arrow navigation.
+function CustomMenuRow({
+  item,
+  onCloseRoot,
+}: {
+  item: CustomMenuItem
+  onCloseRoot: () => void
+}) {
+  return (
+    <li
+      style={{ padding: '4px 16px' }}
+      onMouseDown={e => {
+        e.stopPropagation()
+      }}
+      onKeyDown={e => {
+        e.stopPropagation()
+      }}
+    >
+      {item.render(onCloseRoot)}
+    </li>
+  )
+}
+
+// A disabled MenuItem has pointer-events:none, so a Tooltip placed directly on
+// it never fires; the span wrapper (per MUI guidance) restores hover. Disabled
+// rows aren't keyboard-focusable, so the extra wrapper doesn't affect menu
+// navigation. Renders children untouched unless the item is disabled and has
+// disabledHelpText.
+function DisabledTooltip({
+  item,
+  children,
+}: {
+  item: Pick<BaseMenuItem, 'disabled' | 'disabledHelpText'>
+  children: React.ReactElement
+}) {
+  return item.disabled && item.disabledHelpText ? (
+    <Tooltip title={item.disabledHelpText} placement="left">
+      <span>{children}</span>
+    </Tooltip>
+  ) : (
+    children
+  )
 }
 
 function CascadingSubmenu({
   title,
   Icon,
   inset,
+  disabled,
+  disabledHelpText,
   menuItems,
   onMenuItemClick,
   closeAfterItemClick,
   onCloseRoot,
+  onNavigateBack,
   isOpen,
   onOpen,
   onClose,
 }: {
   title: React.ReactNode
-  onMenuItemClick: (event: unknown, callback: () => void) => void
   Icon: React.ElementType | undefined
   inset: boolean
-  menuItems: JBMenuItem[]
-  closeAfterItemClick: boolean
-  onCloseRoot: () => void
+  disabled?: boolean
+  disabledHelpText?: string
   isOpen: boolean
   onOpen: () => void
   onClose: () => void
-}) {
+} & CascadingMenuListProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLLIElement | null>(null)
-  const testId = labelToTestId(title)
 
   return (
     <>
-      <MenuItem
-        ref={setAnchorEl}
-        data-testid={testId ? `cascading-submenu-${testId}` : undefined}
-        onMouseOver={onOpen}
-        onClick={onOpen}
-        onKeyDown={e => {
-          if (e.key === 'ArrowRight') {
+      <DisabledTooltip item={{ disabled, disabledHelpText }}>
+        <MenuItem
+          ref={setAnchorEl}
+          data-testid={makeTestId('submenu', title)}
+          disabled={disabled}
+          aria-haspopup="menu"
+          aria-expanded={isOpen}
+          onMouseOver={() => {
             onOpen()
-          }
-        }}
-      >
-        {Icon ? (
-          <ListItemIcon>
-            <Icon />
-          </ListItemIcon>
-        ) : null}
-        <ListItemText primary={title} inset={inset} />
-        <ChevronRight />
-      </MenuItem>
+          }}
+          onClick={() => {
+            onOpen()
+          }}
+          onKeyDown={e => {
+            if (e.key === 'ArrowRight') {
+              onOpen()
+            } else if (e.key === 'ArrowLeft') {
+              e.stopPropagation()
+              onNavigateBack?.()
+            }
+          }}
+        >
+          <MenuItemLeadingIcon Icon={Icon} />
+          <ListItemText primary={title} inset={inset} />
+          <ChevronRight />
+        </MenuItem>
+      </DisabledTooltip>
       <HoverMenu
         open={isOpen}
         anchorEl={anchorEl}
@@ -85,9 +208,83 @@ function CascadingSubmenu({
           onMenuItemClick={onMenuItemClick}
           menuItems={menuItems}
           onCloseRoot={onCloseRoot}
+          onNavigateBack={() => {
+            onClose()
+            anchorEl?.focus()
+          }}
         />
       </HoverMenu>
     </>
+  )
+}
+
+// One clickable menu row: label (with optional leading icon) plus its trailing
+// value/help/adornment decorations. The menu-wide `has*` flags let every row
+// reserve matching decoration slots so the columns line up down the menu.
+function CascadingMenuItem({
+  item,
+  hasIcon,
+  hasCheckboxOrRadioWithHelp,
+  hasEndAdornment,
+  sharedActionColumn,
+  closeAfterItemClick,
+  onMenuItemClick,
+  onCloseRoot,
+  onNavigateBack,
+  onMouseOver,
+}: {
+  item: ClickableMenuItem
+  hasIcon: boolean
+  hasCheckboxOrRadioWithHelp: boolean
+  hasEndAdornment: boolean
+  sharedActionColumn: boolean
+  closeAfterItemClick: boolean
+  onMenuItemClick: (callback: () => void) => void
+  onCloseRoot: () => void
+  onNavigateBack?: () => void
+  onMouseOver: () => void
+}) {
+  return (
+    // a disabled row can't open the help popover (pointer-events:none), so
+    // disabledHelpText is surfaced as a hover tooltip instead of the icon button
+    <DisabledTooltip item={item}>
+      <MenuItem
+        data-testid={makeTestId('menuitem', item.label)}
+        disabled={item.disabled}
+        onClick={() => {
+          // onCloseRoot runs before the callback, so item.onClick must NOT read
+          // model state that closing clears (e.g. a right-click menu's ephemeral
+          // hit/context fields): capture that state when the menu items are
+          // built, not live inside onClick.
+          if (closeAfterItemClick && !item.keepMenuOpen) {
+            onCloseRoot()
+          }
+          onMenuItemClick(item.onClick)
+        }}
+        onMouseOver={() => {
+          onMouseOver()
+        }}
+        onKeyDown={e => {
+          if (e.key === 'ArrowLeft') {
+            e.stopPropagation()
+            onNavigateBack?.()
+          }
+        }}
+      >
+        <MenuItemLeadingIcon Icon={item.icon} />
+        <ListItemText
+          primary={item.label}
+          secondary={item.subLabel}
+          inset={hasIcon && !item.icon}
+        />
+        <MenuItemTrailing
+          item={item}
+          hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
+          hasEndAdornment={hasEndAdornment}
+          sharedActionColumn={sharedActionColumn}
+        />
+      </MenuItem>
+    </DisabledTooltip>
   )
 }
 
@@ -96,24 +293,19 @@ function CascadingMenuList({
   closeAfterItemClick,
   menuItems,
   onCloseRoot,
-}: {
-  menuItems: JBMenuItem[]
-  closeAfterItemClick: boolean
-  onMenuItemClick: (event: unknown, callback: () => void) => void
-  onCloseRoot: () => void
-}) {
+  onNavigateBack,
+}: CascadingMenuListProps) {
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
   const closeSubmenu = () => {
     setOpenSubmenuIdx(undefined)
   }
 
-  const hasIcon = menuItems.some(m => 'icon' in m && m.icon)
-  const hasCheckboxOrRadioWithHelp = menuItems.some(
-    m =>
-      (m.type === 'checkbox' || m.type === 'radio') &&
-      'helpText' in m &&
-      m.helpText,
-  )
+  const {
+    hasIcon,
+    hasCheckboxOrRadioWithHelp,
+    hasEndAdornment,
+    sharedActionColumn,
+  } = getMenuColumnFlags(menuItems)
 
   const sortedItems = menuItems.toSorted(
     (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
@@ -125,87 +317,88 @@ function CascadingMenuList({
         if ('subMenu' in item) {
           return (
             <CascadingSubmenu
-              key={`subMenu-${item.label}-${idx}`}
+              key={`subMenu-${item.label}`}
               title={item.label}
               Icon={item.icon}
               inset={hasIcon && !item.icon}
+              disabled={item.disabled}
+              disabledHelpText={item.disabledHelpText}
               onMenuItemClick={onMenuItemClick}
               menuItems={item.subMenu}
               closeAfterItemClick={closeAfterItemClick}
               onCloseRoot={onCloseRoot}
-              isOpen={openSubmenuIdx === idx}
+              onNavigateBack={onNavigateBack}
+              isOpen={openSubmenuIdx === idx && !item.disabled}
               onOpen={() => {
-                setOpenSubmenuIdx(idx)
+                if (!item.disabled) {
+                  setOpenSubmenuIdx(idx)
+                }
               }}
-              onClose={closeSubmenu}
+              onClose={() => {
+                closeSubmenu()
+              }}
             />
           )
         }
         if (item.type === 'divider') {
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- dividers have no identifying field, list order is fixed
           return <Divider key={`divider-${idx}`} component="li" />
         }
         if (item.type === 'subHeader') {
           return (
-            <ListSubheader key={`subHeader-${item.label}-${idx}`}>
+            <ListSubheader key={`subHeader-${item.label}`}>
               {item.label}
             </ListSubheader>
           )
         }
-
-        const helpText = item.helpText
-        const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
-        const itemTestId = labelToTestId(item.label)
-        return (
-          <MenuItem
-            key={`${item.label}-${idx}`}
-            data-testid={
-              itemTestId ? `cascading-menuitem-${itemTestId}` : undefined
-            }
-            disabled={Boolean(item.disabled)}
-            onClick={event => {
-              if (closeAfterItemClick) {
-                onCloseRoot()
-              }
-              onMenuItemClick(event, item.onClick)
-            }}
-            onMouseOver={closeSubmenu}
-          >
-            {item.icon ? (
-              <ListItemIcon>
-                <item.icon />
-              </ListItemIcon>
-            ) : null}
-            <ListItemText
-              primary={item.label}
-              secondary={item.subLabel}
-              inset={hasIcon && !item.icon}
+        if (item.type === 'custom') {
+          return (
+            <CustomMenuRow
+              key={`custom-${item.label}`}
+              item={item}
+              onCloseRoot={onCloseRoot}
             />
-            <div style={{ flexGrow: 1, minWidth: 10 }} />
-            {isCheckOrRadio ? (
-              <MenuItemEndDecoration
-                type={item.type}
-                checked={item.checked}
-                disabled={item.disabled}
-              />
-            ) : null}
-            {helpText ? (
-              <CascadingMenuHelpIconButton
-                helpText={helpText}
-                label={item.label}
-              />
-            ) : isCheckOrRadio && hasCheckboxOrRadioWithHelp ? (
-              <div
-                style={{ marginLeft: 4, padding: 4, width: 28, height: 28 }}
-              />
-            ) : null}
-          </MenuItem>
+          )
+        }
+
+        return (
+          <CascadingMenuItem
+            key={`menuitem-${item.label}`}
+            item={item}
+            hasIcon={hasIcon}
+            hasCheckboxOrRadioWithHelp={hasCheckboxOrRadioWithHelp}
+            hasEndAdornment={hasEndAdornment}
+            sharedActionColumn={sharedActionColumn}
+            closeAfterItemClick={closeAfterItemClick}
+            onMenuItemClick={onMenuItemClick}
+            onCloseRoot={onCloseRoot}
+            onNavigateBack={onNavigateBack}
+            onMouseOver={() => {
+              closeSubmenu()
+            }}
+          />
         )
       })}
     </>
   )
 }
 
-export default function CascadingMenu({
+interface CascadingMenuProps {
+  onMenuItemClick: (callback: () => void) => void
+  closeAfterItemClick?: boolean
+  menuItems: MenuItemsGetter
+  open: boolean
+  onClose: () => void
+  anchorEl?: Element | null
+  anchorOrigin?: PopoverOrigin
+  transformOrigin?: PopoverOrigin
+  anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
+  anchorPosition?: { top: number; left: number }
+  slotProps?: { transition?: { onExit?: () => void } }
+  style?: React.CSSProperties
+}
+
+const CascadingMenu = observer(function CascadingMenu({
   onMenuItemClick,
   closeAfterItemClick = true,
   menuItems,
@@ -217,29 +410,8 @@ export default function CascadingMenu({
   anchorReference,
   anchorPosition,
   slotProps,
-  marginThreshold,
   style,
-}: {
-  onMenuItemClick: (event: unknown, callback: () => void) => void
-  closeAfterItemClick?: boolean
-  menuItems: MenuItemsGetter
-  open: boolean
-  onClose: () => void
-  anchorEl?: Element | null
-  anchorOrigin?: {
-    vertical: 'top' | 'center' | 'bottom'
-    horizontal: 'left' | 'center' | 'right'
-  }
-  transformOrigin?: {
-    vertical: 'top' | 'center' | 'bottom'
-    horizontal: 'left' | 'center' | 'right'
-  }
-  anchorReference?: 'anchorEl' | 'anchorPosition' | 'none'
-  anchorPosition?: { top: number; left: number }
-  slotProps?: { transition?: { onExit?: () => void } }
-  marginThreshold?: number | null
-  style?: React.CSSProperties
-}) {
+}: CascadingMenuProps) {
   const items = Array.isArray(menuItems) ? menuItems : menuItems()
 
   return (
@@ -252,7 +424,6 @@ export default function CascadingMenu({
       anchorReference={anchorReference}
       anchorPosition={anchorPosition}
       slotProps={slotProps}
-      marginThreshold={marginThreshold ?? undefined}
       style={style}
     >
       <CascadingMenuList
@@ -263,4 +434,6 @@ export default function CascadingMenu({
       />
     </Menu>
   )
-}
+})
+
+export default CascadingMenu

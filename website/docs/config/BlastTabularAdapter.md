@@ -1,76 +1,60 @@
 ---
 id: blasttabularadapter
 title: BlastTabularAdapter
+sidebar_label: Adapter -> BlastTabularAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`comparative-adapters` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/BlastTabularAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Config slots
 
-## Links
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/BlastTabularAdapter/configSchema.ts)
+| Slot                                           | Type           | Description                                                                   |
+| ---------------------------------------------- | -------------- | ----------------------------------------------------------------------------- |
+| [assemblyNames](#slot-assemblynames)           | `stringArray`  | Query assembly is the first value in the array, target assembly is the second |
+| [targetAssembly](#slot-targetassembly)         | `string`       | Alternative to assemblyNames array: the target assembly                       |
+| [queryAssembly](#slot-queryassembly)           | `string`       | Alternative to assemblyNames array: the query assembly                        |
+| [blastTableLocation](#slot-blasttablelocation) | `fileLocation` |                                                                               |
+| [columns](#slot-columns)                       | `string`       | Optional space-separated column name list.                                    |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BlastTabularAdapter.md)
-
-## Docs
-
-### BlastTabularAdapter - Slots
+<details>
+<summary>BlastTabularAdapter - Slots</summary>
 
 #### slot: assemblyNames
 
-```js
-assemblyNames: {
-      type: 'stringArray',
-      defaultValue: [],
-      description:
-        'Query assembly is the first value in the array, target assembly is the second',
-    }
-```
+Query assembly is the first value in the array, target assembly is the second
+
+**Type:** `stringArray` · **Default:** `[]`
 
 #### slot: targetAssembly
 
-```js
-targetAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the target assembly',
-    }
-```
+Alternative to assemblyNames array: the target assembly
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: queryAssembly
 
-```js
-queryAssembly: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Alternative to assemblyNames array: the query assembly',
-    }
-```
+Alternative to assemblyNames array: the query assembly
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: blastTableLocation
 
-```js
-blastTableLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/blastTable.tsv',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/blastTable.tsv', locationType: 'UriLocation' }`
 
 #### slot: columns
 
-```js
-columns: {
-      type: 'string',
-      description:
-        'Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required',
-      defaultValue:
-        'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore',
-    }
-```
+Optional space-separated column name list. If custom columns were used in
+outfmt, enter them here exactly as specified in the command. At least qseqid,
+sseqid, qstart, qend, sstart, and send are required
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore'`
+
+</details>

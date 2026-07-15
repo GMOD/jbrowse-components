@@ -1,12 +1,13 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
-import { SimpleFeature, getSession } from '@jbrowse/core/util'
+import { ActionLink } from '@jbrowse/core/ui'
+import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import {
   getAssemblyName,
   hasBreakpointSplitView,
   launchBreakpointSplitView,
   navToLoc,
 } from '@jbrowse/sv-core'
-import { Link, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { VariantFeatureWidgetModel } from '../stateModelFactory.ts'
@@ -23,19 +24,16 @@ const LocStringList = observer(function LocStringList({
     <div>
       <Typography>Navigate to breakend endpoint in linear view:</Typography>
       <ul>
-        {locStrings.map((locString, index) => (
-          /* biome-ignore lint/suspicious/noArrayIndexKey: */
-          <li key={`${locString}-${index}`}>
+        {locStrings.map(locString => (
+          <li key={locString}>
             {locString}{' '}
-            <Link
-              href="#"
-              onClick={event => {
-                event.preventDefault()
+            <ActionLink
+              onClick={() => {
                 navToLoc(locString, model)
               }}
             >
-              (LGV)
-            </Link>
+              Open in linear view
+            </ActionLink>
           </li>
         ))}
       </ul>
@@ -62,11 +60,9 @@ const LaunchBreakpointSplitViewPanel = observer(
         <ul>
           {locStrings.map(locString => (
             <li key={locString}>
-              {`${feature.refName}:${feature.start} // ${locString}`}{' '}
-              <Link
-                href="#"
-                onClick={event => {
-                  event.preventDefault()
+              {`${feature.refName}:${toLocale(feature.start + 1)} // ${locString}`}{' '}
+              <ActionLink
+                onClick={() => {
                   launchBreakpointSplitView({
                     session,
                     view: model.view,
@@ -76,8 +72,8 @@ const LaunchBreakpointSplitViewPanel = observer(
                   })
                 }}
               >
-                (breakpoint split view)
-              </Link>
+                Open in breakpoint split view
+              </ActionLink>
             </li>
           ))}
         </ul>

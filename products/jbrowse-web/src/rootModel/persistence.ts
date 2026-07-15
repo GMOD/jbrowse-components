@@ -1,23 +1,45 @@
 import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
-import { openDB } from 'idb'
 import { autorun } from 'mobx'
 
+import { openSessionDB } from '../openSessionDB.ts'
+
+import type { Session, SessionDB } from '../types.ts'
 import type { WebRootModel } from './rootModel.ts'
-import type { SessionDB } from '../types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { IDBPDatabase } from 'idb'
+
+// Autosaves accumulate in IndexedDB forever otherwise: every distinct session
+// leaves a full snapshot behind, eventually risking the storage quota. Keep all
+// favorites plus the most recent non-favorites; the active session is never
+// pruned.
+const MAX_AUTOSAVED_SESSIONS = 100
+
+async function pruneOldSessions(
+  sessionDB: IDBPDatabase<SessionDB>,
+  activeId: string | undefined,
+) {
+  const metadata = await sessionDB.getAll('metadata')
+  const stale = metadata
+    .filter(m => !m.favorite && m.id !== activeId)
+    .sort((a, b) => +b.createdAt - +a.createdAt)
+    .slice(MAX_AUTOSAVED_SESSIONS)
+  await Promise.all(
+    stale.flatMap(m => [
+      sessionDB.delete('sessions', m.id),
+      sessionDB.delete('metadata', m.id),
+    ]),
+  )
+}
 
 // Opens the IndexedDB for autosave persistence, then mirrors session changes
 // + metadata into idb on each session edit (debounced 400ms). Skipped when
 // indexedDB is unavailable (tests, restricted environments).
 export async function setupSessionDB(self: WebRootModel) {
   try {
-    const sessionDB = await openDB<SessionDB>('sessionsDB', 2, {
-      upgrade(db) {
-        db.createObjectStore('metadata')
-        db.createObjectStore('sessions')
-      },
-    })
+    const sessionDB = await openSessionDB()
     self.setSessionDB(sessionDB)
+    await pruneOldSessions(sessionDB, self.session?.id)
+    await self.fetchSessionMetadata()
 
     addDisposer(
       self,
@@ -26,34 +48,28 @@ export async function setupSessionDB(self: WebRootModel) {
           if (self.session) {
             try {
               // careful not to access self.savedSessionMetadata in here, or
-              // else it can create an infinite loop
-              const s = self.session
-              if (self.sessionDB) {
-                await sessionDB.put('sessions', getSnapshot(s), s.id)
-                if (!isAlive(self)) {
-                  return
-                }
-                const ret = await self.sessionDB.get('metadata', s.id)
-                if (!isAlive(self)) {
-                  return
-                }
-                await sessionDB.put(
-                  'metadata',
-                  {
-                    ...ret,
-                    favorite: ret?.favorite ?? false,
-                    name: s.name,
-                    id: s.id,
-                    createdAt: ret?.createdAt ?? new Date(),
-                    configPath: self.configPath ?? '',
-                  },
-                  s.id,
-                )
+              // else it can create an infinite loop. Capture id/name/snapshot
+              // synchronously so the reactive reads are tracked and the async
+              // tail never touches a possibly-destroyed node.
+              const { id, name } = self.session
+              const snap = getSnapshot<Session>(self.session)
+              const configPath = self.configPath ?? ''
+              await sessionDB.put('sessions', snap, id)
+              const ret = await sessionDB.get('metadata', id)
+              await sessionDB.put(
+                'metadata',
+                {
+                  favorite: ret?.favorite ?? false,
+                  createdAt: ret?.createdAt ?? new Date(),
+                  name,
+                  id,
+                  configPath,
+                },
+                id,
+              )
+              if (isAlive(self)) {
+                await self.fetchSessionMetadata()
               }
-              if (!isAlive(self)) {
-                return
-              }
-              await self.fetchSessionMetadata()
             } catch (e) {
               console.error(e)
               self.session?.notifyError(`${e}`, e)

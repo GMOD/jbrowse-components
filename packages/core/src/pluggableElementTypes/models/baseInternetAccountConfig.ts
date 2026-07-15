@@ -4,7 +4,6 @@ import { ConfigurationSchema } from '../../configuration/index.ts'
  * #config BaseInternetAccount
  * the "base" internet account type
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export const BaseInternetAccountConfig = ConfigurationSchema(
   'InternetAccount',

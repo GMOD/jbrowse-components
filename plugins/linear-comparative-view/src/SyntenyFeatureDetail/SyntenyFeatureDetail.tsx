@@ -1,9 +1,9 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Formatter from './Formatter.tsx'
 import LinkToSyntenyView from './LinkToSyntenyView.tsx'
 
 import type { SyntenyFeatureDetailModel } from './types.ts'
@@ -13,16 +13,15 @@ const SyntenyFeatureDetail = observer(function SyntenyFeatureDetail(props: {
 }) {
   const { model } = props
   const { featureData } = model
-  const feat = structuredClone(featureData)
-  return feat ? (
+  return featureData ? (
     <Paper>
       <FeatureDetails
         {...props}
-        feature={feat}
+        feature={featureData}
         formatter={value => <Formatter value={value} />}
       />
       <BaseCard title="Link to view">
-        <LinkToSyntenyView model={model} feat={feat} />
+        <LinkToSyntenyView model={model} feat={featureData} />
       </BaseCard>
     </Paper>
   ) : (

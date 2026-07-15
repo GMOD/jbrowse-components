@@ -1,158 +1,342 @@
 ---
-id: analyze_trio
-title: Analyzing a phased trio
+title: Phased trio analysis
 description: Examine inheritance patterns and variant phasing in a trio dataset
-date: 2025-03-25
 guide_category: Tutorials
+tutorial_category: Population genomics
 ---
 
-## Introduction
+A **trio** is sequencing data from a mother, father, and child together. A
+**phased** VCF assigns each variant to one of the two haplotypes (`0|1` vs
+`1|0`), so you can trace which copy of the genome each variant came from.
 
-In some scenarios, it can be useful to gather genome sequencing data from both
-the parents and offspring, this can form a "trio" (e.g. mom, dad, and child)
+This tutorial uses a pre-built phased VCF from the 1000 Genomes Project, the
+Kinh-Vietnamese trio HG02024 (chr1 only):
 
-After doing variant calling and producing a VCF file, the VCF data can
-additionally be "phased" which tells us information about each "haplotype" of a
-VCF dataset
+- [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
+- [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
 
-For this tutorial, we will not go through the process of creating such a file,
-but will look at trio from the 1000 genomes dataset for a Kinh-Vietnamese trio
-(KHV in filename)
-
-- VCF tabix file
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz
-- VCF tabix index file
-  https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi
-
-You can either use the JBrowse CLI or GUI to add this file to JBrowse. Note that
-this file only represents chr1
-
-After adding the VCF it will look like this
+Every track here references the `hg38` assembly, so set that up first if you
+haven't. See the
+[assemblies configuration guide](/docs/config_guides/assemblies). Then add the
+VCF via the CLI (`jbrowse add-track`) or the in-app "Add track" workflow (see
+the [variant track guide](/docs/config_guides/variant_track)). Once loaded:
 
 <Figure caption="Initial load of the VCF file, showing the default display mode with simple orange boxes for each variant" src="/img/trio-basic.png"/>
 
 ## Enabling the matrix view
 
-JBrowse can show variant datasets using a specialized "display mode" called the
-"Multi-sample variant display (matrix)"
+Switch the track to the
+[Multi-sample variant display (matrix)](/docs/user_guides/multivariant_track)
+display. Each sample becomes a row, each variant a column, with black lines
+connecting columns back to their genomic positions.
 
-This mode produces a new visualization modality that shows all the samples at
-once, along with all the variants, in a dense "heatmap" or "matrix" style
-display
+<Figure caption="Multi-sample variant display (matrix). Each sample is a row and each variant is a column, and black lines connect columns to their genome positions." src="/img/trio-matrix.png"/>
 
-<Figure caption="Navigating to the track menu, and selecting 'Multi-sample variant display (matrix) enables all the samples to be given their own row in the view. Each variant is a 'column' in this matrix, and each sample is a 'row'. Black lines connect the variants to their genome position" src="/img/trio-matrix.png"/>
+## Enabling the phased mode
 
-In the above figure, the default coloring for this matrix view is enabled.
+The matrix display has a "phased" rendering mode, available when the genotypes
+use the `0|1` (phased) separator instead of `0/1` (unphased).
 
-## Enabling the "phased mode" of the matrix view
-
-The matrix mode offers several options, one of which is the "phased" mode. If
-you have phased genotypes (e.g. you have genotypes with a vertical bar 0|1) for
-at least some of your variants, then this rendering mode will be available
-
-The ideal is that your variants will be "completely phased". This sometimes
-requires specialized programs like SHAPEIT
+Ideally your variants are fully phased, which often requires a dedicated phasing
+program such as SHAPEIT.
 
 <Figure caption="Screenshot showing the phased rendering mode along with the menu item used to select it 'Rendering mode'->'Phased'" src="/img/trio-matrix-phased.png"/>
 
-## Finding matching haplotypes with "visual phasing"
+## Reading matching haplotypes off the matrix
 
-The term "visual phasing" comes from the genetic genealogy subfield. I am
-borrowing it here, but the idea is simple: you can look at the genotype matrix
-here, and see areas where different rows are matching. You would expect that the
-child would match the mom in some places, and the dad in other places. And
-indeed, each row looks somewhat like a barcode, so you can find matching pieces
-like this
+In the phased display each row reads like a barcode, so matching stretches
+between rows stand out by eye: the child's two haplotypes match the mother's in
+some blocks and the father's in others. The rest of this tutorial turns that
+by-eye pattern into a painted track.
 
 <Figure caption="Screenshot showing the phased rendering mode without any added markup. You can look at this figure and see various areas where rows match one another. The first two rows are the two haplotypes of the child, next two rows are the two haplotypes of the mom, and next two rows are the two haplotypes of the father" src="/img/trio-matrix-phased-clean.png"/>
 
 ## Using a program to help find phased blocks
 
-In the above section, we could see matching blocks with our eyes, but can a
-program help?
+The by-eye matching above can also be found programmatically.
+[hap-ibd](https://github.com/browning-lab/hap-ibd) finds "identical by descent"
+blocks (built for population-scale cohorts, but works on a single trio VCF too).
+It takes as input:
 
-There are indeed options for this. The program hap-ibd
-(https://github.com/browning-lab/hap-ibd) can find "identical by descent"
-blocks. It is actually capable of finding such blocks in massive
-population-scale datasets, but we are applying it here to a smaller trio VCF.
-The hap-ibd program takes as input:
-
-- a phased VCF like the trio dataset
-  (https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
+- a phased VCF like the
+  [trio dataset](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
 - a genetic map in PLINK format (the README of hap-ibd provides these for
   GRCh38)
 
-## Converting hap-ibd data into a format for JBrowse
+Download `hap-ibd.jar` from the
+[hap-ibd releases page](https://github.com/browning-lab/hap-ibd/releases) along
+with the GRCh38 PLINK maps linked there; running it (and FLARE later) needs Java
+8+.
 
-By loading the hap-ibd data in JBrowse, hap-ibd can tell us which blocks of the
-chromosome are matches
+## What we're visualizing: crossover points
+
+Each of the child's inherited chromosomes is a mosaic of the two copies its
+parent carries, joined at crossover breakpoints. The painting below marks where
+those joins fall: one row per parental haplotype, with the block stepping
+between a parent's two rows at each crossover.
+
+## Running hap-ibd
+
+hap-ibd needs the phased VCF and a genetic map. The trio VCF labels its
+chromosome `1` (no `chr` prefix), so use the `no_chr_in_chrom_field` variant of
+the GRCh38 PLINK map:
 
 ```bash
-#!/bin/bash
-# create a bed file from hap-ibd output with columns "chr, start, end, sample_name1 hap1 sample_name2 hap2"
-# add this config to jbrowse: get(feature,'sample1')+':HP'+get(feature,'hap1')+'     '+get(feature,'sample2')+':HP'+get(feature,'hap2')
-zcat result.ibd.gz | cut -f 5,6,7 > coords.bed
-zcat result.ibd.gz | cut -f 1,2,3,4 > samples.txt
-printf '#chr\tstart\tend\tsample1\thap1\tsample2\thap2\n' > out.bed
-paste coords.bed samples.txt >> out.bed
+java -jar hap-ibd.jar \
+  gt=HG02024_VN049_KHVTrio.chr1.vcf.gz \
+  map=plink.chr1.GRCh38.map \
+  out=trio min-seed=1.0 min-output=1.0
 ```
 
-After this conversion, we can load this simple BED file into JBrowse via the GUI
-or the CLI. It is probably small enough that it doesn't even need tabix
-conversion
+This writes `trio.ibd.gz`, one row per shared segment, with columns: sample1,
+hap1, sample2, hap2, chrom, start, end, cM-length. In a trio, every segment
+pairs the child with one parent, and the child's two haplotypes split cleanly
+between the parents:
 
-## Background: relationship between phased blocks, and the biology of recombination
+| child haplotype | matches parent   | inherited copy |
+| --------------- | ---------------- | -------------- |
+| HG02024:1       | HG02026 (father) | paternal       |
+| HG02024:2       | HG02025 (mother) | maternal       |
 
-Many people have heard of the term "recombination" or "crossing over" with
-regards to DNA, but what is it?
+(The parent roles come from the 1000 Genomes pedigree line
+`VN049 HG02024 HG02026 HG02025`, father HG02026, mother HG02025.) Within a child
+haplotype the matching _parental_ copy flips between the parent's copy 1 and
+copy 2 at each recombination breakpoint. That flip is the crossing-over event we
+want to see.
 
-NHGRI "Crossing over, as related to genetics and genomics, refers to the
-exchange of DNA between paired homologous chromosomes (one from each parent)
-that occurs during the development of egg and sperm cells (meiosis)."
-(https://www.genome.gov/genetics-glossary/Crossing-Over)
+The raw segments are fragmented, though: hap-ibd only emits stretches that pass
+its cM-length thresholds, so there are gaps, and statistically-phased data (see
+[the caveat on the input data](#a-caveat-on-the-input-data) below) sprinkles in
+short spurious flips. So we don't paint the raw segments. We first collapse them
+into clean inheritance blocks.
 
-![](/img/crossing_over.jpg) Figure from
-https://www.genome.gov/genetics-glossary/Crossing-Over
+## Converting hap-ibd data into painted inheritance blocks
 
-But there is a subtle but important point here: Your parents' genomes don't
-recombine during fertilization. Recombination happens during the production of
-their gametes. Therefore, your grandparents' genomes recombine during the
-production your parents sperm/eggs. We will see this visually below
+We want **one row per parental haplotype** (father copy 1, father copy 2, mother
+copy 1, mother copy 2), with the child's inherited chromosome tiled across each
+parent's pair of rows. A crossover then shows up as the painted block stepping
+from one row to its partner.
 
-## Visualizing phased blocks and crossing over points in phased VCF files in JBrowse
+A short post-processing step turns the raw hap-ibd segments into clean blocks.
+Per child haplotype it:
 
-After loading the hap-ibd track, we can see the blocks that hap-ibd calculated.
-We can additionally connect the lines onto the matrix view (which admittedly
-isn't straightforward, we have to follow the lines from the genomic position to
-the matrix position),
+- merges adjacent segments of the same parental copy into runs,
+- drops short interior runs (the switch-error specks), and
+- snaps each remaining crossover to the midpoint of the gap between runs, so the
+  blocks abut (genuine large gaps, like the centromere, stay blank).
 
-We can see this in the trio dataset where the child has a mixture of the dad's
-haplotypes and a mixture of the mom's haplotypes
+It writes one BED9 line per block plus a `parenthap` label, coloring the
+father's two copies in blues and the mother's in reds via `itemRgb`. The
+[`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
+script is that step. Give it the `trio.ibd.gz` from above plus the child,
+father, and mother sample IDs, then `bgzip` and `tabix -p bed` the result so the
+`BedTabixAdapter` below can read it:
 
-<Figure caption="Screenshot showing the connection between hap-ibd annotations (orange) and the phased VCF matrix view. The colored blocks are marked-up using Google Slides. As a result of this visualization, we can see a crossing-over point that occurred (independently) in both the mom and dad at almost the same position, which form continuous blocks in the child." src="/img/trio-crossing-over.png"/>
+```bash
+python3 scripts/hapibd_to_bed.py trio.ibd.gz HG02024 HG02026 HG02025 trio.hapibd.bed
+sort -k1,1 -k2,2n trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
+tabix -p bed trio.hapibd.bed.gz
+```
 
-In the above screenshot, you can look at the 'barcode-like' patterns to see the
-matches between MOM A1 (allele 1) in mom and the child, MOM A2 (allele 2) in mom
-and child, DAD A1 (allele 1) in dad and child, DAD A2 (allele 2) in dad and
-child
+The finished track for this dataset is already loaded in the
+[live demo](#live-demo) at the end of this page.
 
-You can see why we mentioned the grandparents above: for instance, the DAD A1
-and DAD A2 alleles come from the crossing over of his two copies of his
-chromosomes that he got from his parents, which then recombine into a single
-chromosome in his child
+Load the result as a `FeatureTrack` whose display is a
+`LinearMultiRowFeatureDisplay`: partition rows by the `parenthap` column, order
+the four rows father-then-mother, and read each block's color from `itemRgb`.
+Add this object to the `tracks` array of your `config.json` (or paste it via the
+add-track JSON editor in the app):
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "khv_trio_hapibd",
+  "name": "KHV trio hap-ibd haplotype blocks (chr1)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "disableGeneHeuristic": true,
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "score",
+      "strand",
+      "thickStart",
+      "thickEnd",
+      "itemRgb",
+      "parenthap"
+    ],
+    "bedGzLocation": { "uri": "trio.hapibd.bed.gz" },
+    "index": { "location": { "uri": "trio.hapibd.bed.gz.tbi" } }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "displayId": "khv_trio_hapibd-LinearMultiRowFeatureDisplay",
+      "partitionField": "parenthap",
+      "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+      "rowOrder": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
+    }
+  ]
+}
+```
+
+## Visualizing crossing-over points
+
+The painting is now automatic, with no manual markup needed. The four rows are
+the two parental copies of each parent (blues for father HG02026, reds for
+mother HG02025):
+
+<Figure caption="hap-ibd inheritance blocks painted with the multi-row feature display. The top two rows (blue) are father HG02026's two haplotypes, and the bottom two (red) are mother HG02025's. The child's paternal chromosome is tiled across the two blue rows and its maternal chromosome across the two red rows, so each crossover is the boundary where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
+
+Read the two blue rows together as the child's single **paternal** chromosome:
+at any position exactly one of them is filled, telling you which of the father's
+two copies the child inherited there. Each place the block steps between the two
+blue rows is a **crossing-over point**. The two red rows work the same way for
+the **maternal** chromosome.
+
+## Coloring an admixed trio by ancestry
+
+Haplotypes can also be painted by **continental ancestry**. That is only
+informative for an _admixed_ individual, so this section switches to a 1000
+Genomes **African-American (ASW) trio**: child NA19828 with parents NA19818 and
+NA19819. African-American genomes are a two-way mosaic of **African** and
+**European** ancestry, and 1000 Genomes has clean reference panels for both.
+
+[FLARE](https://github.com/browning-lab/flare) infers per-haplotype local
+ancestry by comparing each target haplotype against labeled reference samples.
+Give it the phased trio genotypes (`gt`), phased reference genotypes (`ref`)
+each tagged `AFR` or `EUR` in the `ref-panel` map, and a genetic map (this
+command is illustrative, since the `build_asw_trio_ancestry.sh` script below
+builds these inputs for you):
+
+```bash
+java -jar flare.jar \
+  ref=ref.vcf.gz ref-panel=ref_panel_map.txt gt=trio.vcf.gz \
+  map=plink.chr1.GRCh38.map out=asw_trio seed=42
+```
+
+FLARE writes per-marker calls in the `AN1`/`AN2` `FORMAT` fields of
+`asw_trio.anc.vcf.gz`. Collapse those into per-haplotype runs, one BED9 line per
+run, rows labeled `Child/Mother/Father hap1|hap2` and colored by ancestry via
+`itemRgb`. Selecting the reference panel, extracting the genotypes from the
+public 1000 Genomes phased panel, running FLARE, and writing the BED are one
+reproducible script:
+[`scripts/build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh).
+
+Load the result as a `LinearMultiRowFeatureDisplay` partitioned by `sample`, so
+each haplotype gets its own row (again, add it to your `config.json` `tracks`
+array or paste it via the add-track JSON editor):
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "asw_trio_ancestry",
+  "name": "African-American (ASW) trio local ancestry (FLARE, chr1)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "disableGeneHeuristic": true,
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "score",
+      "strand",
+      "thickStart",
+      "thickEnd",
+      "itemRgb",
+      "sample",
+      "ancestry"
+    ],
+    "bedGzLocation": { "uri": "asw_trio.ancestry.bed.gz" },
+    "index": { "location": { "uri": "asw_trio.ancestry.bed.gz.tbi" } }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "displayId": "asw_trio_ancestry-LinearMultiRowFeatureDisplay",
+      "partitionField": "sample",
+      "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+      "rowOrder": [
+        "Child hap1",
+        "Child hap2",
+        "Mother hap1",
+        "Mother hap2",
+        "Father hap1",
+        "Father hap2"
+      ]
+    }
+  ]
+}
+```
+
+Each of the six rows is one haplotype, painted as an African (orange) / European
+(blue) mosaic. The parents carry their own long ancestry blocks, and the child's
+two haplotypes recombine the blocks inherited from each parent.
+
+<Figure caption="Per-haplotype FLARE local-ancestry calls for a 1000 Genomes African-American (ASW) trio along chromosome 1, painted with the multi-row feature display. Each of the six rows is one haplotype (child, mother, father), colored African (orange) or European (blue) against African + European 1000 Genomes reference panels. The African/European mosaic and its inheritance from parents to child are visible across the chromosome." src="/img/trio-ancestry.png"/>
+
+## Relating the painting back to the genotypes
+
+Stacking the painting directly above the same VCF in the **phased multi-sample
+variant display** shows where the blocks come from. That display draws the
+genotypes at their genomic positions (use it rather than the _matrix_ mode,
+whose evenly-spaced columns no longer line up with the painting). It has six
+rows (the two haplotypes of each trio member), and the painting summarizes which
+parental haplotype the child's haplotype matches at each position.
+
+A crossover spans a single base, so the whole-chromosome view is too zoomed-out
+to read it off the genotypes. At that scale the matrix is a solid block of
+color. Zoom instead to a few hundred kb around one boundary, where the
+painting's block-step is clear and the genotype columns resolve into individual
+variants. The clearest crossover to start with is the **paternal** one near
+chr1:29.7 Mb:
+
+<Figure caption="Paternal crossover near chr1:29.7 Mb (~400 kb wide). In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue), and an arrow drops to the same breakpoint in the genotypes below. The tinted frames read the switch off the raw genotypes: left of the crossover the yellow frame ties Child hap1 to Father hap2, right of it the purple frame ties Child hap1 to Father hap1, and the yellow/purple blocks on the Child hap1 row abut exactly at the breakpoint." src="/img/trio-crossover-paternal.png"/>
+
+The **maternal** chromosome does the same thing at its own boundaries. Near
+chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
+copies:
+
+<Figure caption="Maternal crossover near chr1:55.8 Mb (~400 kb wide), the cleanest maternal boundary on chr1. The child's maternal chromosome steps from Mother hap2 (pink) to Mother hap1 (red). Same idea as the paternal figure in its own palette: the green frame ties Child hap2 to Mother hap2 left of the crossover, the orange frame ties it to Mother hap1 right of it, and the green/orange blocks abut at the breakpoint on the Child hap2 row." src="/img/trio-crossover-maternal.png"/>
+
+The painting is the clean summary. The genotype rows are the raw evidence behind
+it, and that evidence is noisy. Read the inherited copy site-by-site off the
+genotypes and it flickers between the two parental copies every few kb. Those
+flickers are phasing switch errors, not crossovers, and hap-ibd's length
+threshold filters most of them out, which is why we trust its block-step over
+the raw genotypes. It doesn't catch all of them, so treat the two crossovers
+above as the well-supported ones and the smaller boundaries as approximate. The
+next section explains why.
+
+## A caveat on the input data
+
+This 1000 Genomes VCF is _statistically_ phased, not trio- or read-backed
+phased, so its haplotypes carry **switch errors** roughly every megabase. Read
+straight off the genotypes, those errors look like dozens of extra crossovers
+per chromosome. hap-ibd's cM-length threshold acts as a switch-error filter,
+which is why its post-processed blocks track the real boundaries more closely,
+but it was built for distant relatives in large cohorts, not trios, so treat the
+block boundaries as approximate. For an exact map, re-phase the trio with a
+pedigree-aware or read-backed phaser (SHAPEIT with the pedigree, WhatsHap on
+long reads) before painting.
 
 ## See also
 
-For structural variant analysis with the 1000 Genomes dataset — multi-sample
-genotypes, trio inheritance of SVs, and a large chromosomal inversion — see the
-[Multi-sample SV visualization with 1000 Genomes](/docs/tutorials/sv_multisamples)
-tutorial.
+- [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) -
+  structural variant analysis with the 1000 Genomes dataset: multi-sample
+  genotypes, trio inheritance of SVs, and a large chromosomal inversion.
+- [Multi-sample variant display](/docs/user_guides/multivariant_track) - the
+  matrix/phased display this tutorial builds on.
+- [Variant track config](/docs/config_guides/variant_track) - loading the phased
+  VCF used throughout.
 
 ## Live demo
 
-[Open this session](https://jbrowse.org/code/jb2/main/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-4gbEzsiqFe&password=Q2O2L)
-to explore the trio dataset described above.
-
-Note: the final visualization with marked-up crossing-over blocks was produced
-manually in an image editor. Automated detection of crossing-over points is not
-currently built into JBrowse.
+Every figure above links to the live session that produced it. Use its "Open
+this view in JBrowse ↗" link to explore that view yourself. The painting figure
+opens the hap-ibd track on its own.

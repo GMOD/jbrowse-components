@@ -8,6 +8,7 @@ exports[`export session with alignments and gff tracks 1`] = `
     },
     "id": "test-id-0",
     "sessionPlugins": [],
+    "trackConfigDeltas": {},
     "views": [
       {
         "bpPerPx": 0.5,
@@ -20,36 +21,17 @@ exports[`export session with alignments and gff tracks 1`] = `
           },
         ],
         "id": "integration_test",
-        "scalebarOnly": false,
         "tracks": [
           {
             "configuration": "volvox_alignments_pileup_coverage",
             "displays": [
               {
-                "PileupDisplay": {
-                  "configuration": {
-                    "displayId": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay_LinearPileupDisplay_xyz",
-                    "type": "LinearPileupDisplay",
-                  },
-                  "heightPreConfig": 205,
-                  "id": "test-id-5",
-                  "type": "LinearPileupDisplay",
-                },
-                "SNPCoverageDisplay": {
-                  "configuration": {
-                    "displayId": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay_snpcoverage_xyz",
-                    "type": "LinearSNPCoverageDisplay",
-                  },
-                  "heightPreConfig": 45,
-                  "id": "test-id-4",
-                  "type": "LinearSNPCoverageDisplay",
-                },
                 "configuration": "volvox_alignments_pileup_coverage-LinearAlignmentsDisplay",
-                "id": "test-id-3",
+                "id": "test-id-2",
                 "type": "LinearAlignmentsDisplay",
               },
             ],
-            "id": "test-id-2",
+            "id": "test-id-1",
             "type": "AlignmentsTrack",
           },
           {
@@ -57,11 +39,11 @@ exports[`export session with alignments and gff tracks 1`] = `
             "displays": [
               {
                 "configuration": "gff3tabix_genes-LinearBasicDisplay",
-                "id": "test-id-7",
+                "id": "test-id-4",
                 "type": "LinearBasicDisplay",
               },
             ],
-            "id": "test-id-6",
+            "id": "test-id-3",
             "type": "FeatureTrack",
           },
         ],

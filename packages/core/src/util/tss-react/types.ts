@@ -17,15 +17,4 @@ export interface Css {
 // SEE: https://github.com/emotion-js/emotion/pull/2276
 export type Cx = (...classNames: CxArg[]) => string
 
-export function matchCSSObject(
-  arg: TemplateStringsArray | CSSInterpolation,
-): arg is CSSObject {
-  return (
-    arg instanceof Object &&
-    !('styles' in arg) &&
-    !('length' in arg) &&
-    !('__emotion_styles' in arg)
-  )
-}
-
 export type { CxArg } from './tools/classnames.ts'

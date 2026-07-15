@@ -29,7 +29,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   const adapter = new Adapter(
     configSchema.create({
       endpoint: {
-        uri: 'http://somesite.com/sparql',
+        uri: 'https://somesite.com/sparql',
         locationType: 'UriLocation',
       },
       queryTemplate: 'fakeSPARQLQuery-start{start}-end{end}-{refName}',
@@ -41,7 +41,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
 
   const refNames = await adapter.getRefNames()
   expect(spy).toHaveBeenLastCalledWith(
-    'http://somesite.com/sparql?query=fakeRefNamesQuery&format=json',
+    'https://somesite.com/sparql?query=fakeRefNamesQuery&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
       stopToken: undefined,
@@ -58,7 +58,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   const featuresArray = await firstValueFrom(features.pipe(toArray()))
   expect(featuresArray).toMatchSnapshot()
   expect(spy).toHaveBeenLastCalledWith(
-    'http://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr1&format=json',
+    'https://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr1&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
       stopToken: undefined,
@@ -75,7 +75,7 @@ test('adapter can fetch variants from volvox.vcf.gz', async () => {
   )
   expect(featuresArrayNonExist).toEqual([])
   expect(spy).toHaveBeenLastCalledWith(
-    'http://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr80&format=json',
+    'https://somesite.com/sparql?query=fakeSPARQLQuery-start0-end20000-chr80&format=json',
     {
       headers: { accept: 'application/json,application/sparql-results+json' },
       stopToken: undefined,

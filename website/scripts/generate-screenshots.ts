@@ -1,203 +1,250 @@
-/* eslint-disable no-console */
-import fs from 'fs'
-import http from 'http'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { execFile, execFileSync } from 'node:child_process'
+import fs from 'node:fs'
+import http from 'node:http'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { parseArgs, promisify } from 'node:util'
 
+import {
+  BASE_CHROME_ARGS,
+  createTestServer,
+  findChromeExecutable,
+  isBrowserConsoleNoise,
+  waitForDisplaysDone,
+  waitForLoadingComplete,
+  waitForQuiescent,
+} from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
-import handler from 'serve-handler'
 
-import { specs } from './screenshot-specs.ts'
-import type { ScreenshotAction, ScreenshotSpec } from './screenshot-specs.ts'
+import { delay, runAction, textSelector, waitForVisible } from './actions.ts'
+import {
+  clearAnnotations,
+  drawAnnotations,
+  hideLingeringTooltip,
+} from './annotations.ts'
+import {
+  commitScreenshot,
+  optimizePng,
+  pngDiffFraction,
+} from './image-pipeline.ts'
+import {
+  matchesFilterTokens,
+  parseFilterTokens,
+  specs,
+} from './screenshot-specs.ts'
+
+import type { CommitResult } from './image-pipeline.ts'
+import type {
+  Annotation,
+  BrowserScreenshotSpec,
+  CliSpec,
+  ComposeSpec,
+  EmbeddedSpec,
+  ScreenshotAction,
+  ScreenshotSpec,
+  ScreenshotStage,
+  SessionUrlSpec,
+} from './screenshot-specs.ts'
+import type { Server } from 'node:http'
 import type { Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const execFileAsync = promisify(execFile)
 
-const cliArgs = process.argv.slice(2)
-const headed = cliArgs.includes('--headed')
-const filterArg = cliArgs.find(a => a.startsWith('--filter='))
-const filter = filterArg?.split('=')[1]
-const portArg = cliArgs.find(a => a.startsWith('--port='))
-const externalPort = portArg ? parseInt(portArg.split('=')[1]!, 10) : undefined
-const DEFAULT_PORT = 3334
+// Strict parsing rejects unknown flags (a typo'd `--fliter` fails loudly
+// instead of silently screenshotting every spec) and accepts `--x=y` or `--x y`.
+const { values } = parseArgs({
+  args: process.argv.slice(2),
+  allowPositionals: false,
+  options: {
+    help: { type: 'boolean', short: 'h', default: false },
+    headed: { type: 'boolean', default: false },
+    filter: { type: 'string', short: 'f' },
+    exact: { type: 'boolean', default: false },
+    // point the proxy at an already-running app server instead of build/
+    port: { type: 'string' },
+    localport: { type: 'string' },
+    concurrency: { type: 'string' },
+    // render with the Firefox backend instead of Chrome (some WebGL/molstar
+    // content rasterizes more cleanly under headless Firefox than headless
+    // Chrome's swiftshader)
+    firefox: { type: 'boolean', default: false },
+    // overwrite every PNG, bypassing the content-stable diff gate
+    force: { type: 'boolean', default: false },
+    // render each spec twice and fail if the two captures drift past threshold,
+    // without touching committed PNGs — a CI guard against newly-flaky specs
+    check: { type: 'boolean', default: false },
+    // fraction-of-pixels diff below which a re-render keeps the committed PNG
+    'diff-threshold': { type: 'string' },
+  },
+})
+
+// Parse a numeric CLI option, returning undefined when absent or non-finite.
+function optNum(raw: string | undefined) {
+  const n = raw ? Number(raw) : Number.NaN
+  return Number.isFinite(n) ? n : undefined
+}
+
+const { headed, filter, exact, force, check, firefox } = values
+// With dithering disabled (see optimizePng) flat-UI specs re-render byte-for-
+// byte, but text-heavy specs still drift ~0.2% from headless-Chrome sub-pixel
+// glyph-positioning jitter (ruler/track labels, SNP ticks render a hair
+// differently run-to-run). 0.5% absorbs that with ~2.5x margin while still
+// letting a genuine edit — a new legend, a moved element — through. Raise it
+// further for timing/remote-data specs.
+const DEFAULT_DIFF_THRESHOLD = 0.005
+const DEFAULT_LOCAL_PORT = 3334
+const diffThreshold = optNum(values['diff-threshold']) ?? DEFAULT_DIFF_THRESHOLD
+const externalPort = optNum(values.port)
+const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
+// Math.max(1, …) so `--concurrency 0` can't spin up zero workers and silently
+// skip every render spec while still exiting 0.
+const CONCURRENCY = Math.max(1, optNum(values.concurrency) ?? (headed ? 1 : 4))
+
+const HELP = `Render website screenshots from scripts/screenshot-specs.ts.
+
+Usage: pnpm generate-screenshots [options]
+
+Options:
+  -h, --help              Show this help and exit
+  -f, --filter <a,b,c>    Only render specs whose name matches any token
+                          (substring match; see --exact)
+      --exact             Make --filter tokens match spec names exactly
+      --force             Overwrite every PNG, bypassing the content-stable
+                          diff gate
+      --check             Render each spec twice and report specs that drift
+                          past the threshold; commits nothing
+      --firefox           Render with the Firefox backend instead of Chrome
+      --headed            Run a visible browser (defaults --concurrency to 1)
+      --concurrency <n>   Browsers to run at once (default: 4, or 1 if headed)
+      --diff-threshold <f>  Pixel-diff fraction below which a re-render keeps
+                          the committed PNG (default: ${DEFAULT_DIFF_THRESHOLD})
+      --port <n>          Proxy to an app server already running on this port
+                          instead of serving products/jbrowse-web/build
+      --localport <n>     Port to serve/proxy on (default: ${DEFAULT_LOCAL_PORT})
+
+Examples:
+  pnpm generate-screenshots
+  pnpm generate-screenshots --filter lgv_pileup,dotplot
+  pnpm generate-screenshots --check --filter dotplot
+  pnpm generate-screenshots --force
+`
+
+if (values.help) {
+  console.log(HELP)
+  process.exit(0)
+}
 
 const repoRoot = path.resolve(__dirname, '..', '..')
 const buildPath = path.resolve(repoRoot, 'products', 'jbrowse-web', 'build')
 const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const outDir = path.resolve(__dirname, '..', 'static', 'img')
-const VOLVOX_CONFIG = 'test_data/volvox/config.json'
+// jb2export (the @jbrowse/img CLI) renders the products/jbrowse-img/README
+// example images straight to PNG via React SSR — no browser involved, so
+// CliSpecs bypass the puppeteer pipeline entirely and land here instead of
+// outDir. Run from source via tsx (not the npm-installed `jb2export` binary)
+// so a local edit to products/jbrowse-img/src is reflected immediately.
+const jbrowseImgDir = path.resolve(repoRoot, 'products', 'jbrowse-img')
+const jbrowseImgOutDir = path.join(jbrowseImgDir, 'img')
+const jb2exportBin = path.join(jbrowseImgDir, 'src', 'bin.ts')
+const repoTsconfig = path.join(repoRoot, 'tsconfig.json')
+// Prebuilt UMD of the embedded LGV component, used by `mode:'embedded'` specs.
+// Built by `pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack`.
+const EMBED_UMD_PATH = path.resolve(
+  repoRoot,
+  'products',
+  'jbrowse-react-linear-genome-view',
+  'dist',
+  'react-linear-genome-view.umd.production.min.js',
+)
+// Maximum time to wait for canvas displays to signal paint-complete via their
+// *-done testids. Acts as a timeout (proceed if it expires), not a fixed floor.
 const DEFAULT_SETTLE_MS = 2500
+// Default ceiling for the ready-selector / loading-overlay / quiescent waits.
+// Slow remote-data specs raise it via spec.readyTimeout.
+const DEFAULT_READY_TIMEOUT_MS = 30000
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-
-function proxyToPort(
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  targetPort: number,
-) {
-  const options: http.RequestOptions = {
-    hostname: 'localhost',
-    port: targetPort,
-    path: req.url ?? '/',
-    method: req.method,
-    headers: req.headers,
-  }
-  const proxyReq = http.request(options, proxyRes => {
-    res.writeHead(proxyRes.statusCode ?? 200, proxyRes.headers)
-    proxyRes.pipe(res, { end: true })
-  })
-  proxyReq.on('error', err => {
-    console.error(`    proxy error: ${err.message}`)
-    res.writeHead(502)
-    res.end('Bad Gateway')
-  })
-  req.pipe(proxyReq, { end: true })
-}
-
-function startServer(port: number, proxyPort?: number): Promise<http.Server> {
-  const corsHeaders = [
-    {
-      source: '**/*',
-      headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
-    },
-  ]
-  return new Promise((resolve, reject) => {
-    const server = http.createServer((req, res) => {
-      const url = req.url ?? '/'
-      if (url.startsWith('/test_data/')) {
-        return handler(req, res, { public: testDataRoot, headers: corsHeaders })
-      } else if (url.startsWith('/extra_test_data/')) {
-        return handler(req, res, { public: repoRoot, headers: corsHeaders })
-      } else if (proxyPort !== undefined) {
-        proxyToPort(req, res, proxyPort)
-      } else {
-        return handler(req, res, { public: buildPath, headers: corsHeaders })
-      }
-    })
-    server.on('error', reject)
-    server.listen(port, () => resolve(server))
-  })
-}
-
-async function waitForLoadingComplete(page: Page, timeout = 30000) {
-  await page.waitForFunction(
-    () =>
-      document.querySelectorAll('[data-testid="loading-overlay"]').length === 0,
-    { timeout },
+// Build a per-process temp PNG path for a spec, sanitizing '/' in the name and
+// tagging with the pid (and an optional suffix) so concurrent workers and the
+// two captures of a --check run never collide on one path.
+function tempPath(prefix: string, name: string, suffix = '') {
+  return path.join(
+    os.tmpdir(),
+    `${prefix}-${process.pid}-${name.replaceAll('/', '_')}${suffix}.png`,
   )
 }
 
-async function runAction(page: Page, action: ScreenshotAction) {
-  if (action.type === 'delay') {
-    await delay(action.ms ?? 500)
-  } else if (action.type === 'click' && action.selector) {
-    await page.click(action.selector)
-  } else if (action.type === 'waitForText' && action.text) {
-    await page.waitForSelector(`::-p-text(${action.text})`, {
-      visible: true,
-      timeout: 30000,
-    })
+// Wait out a spec's readiness signals before capture: its readyText/readySelector
+// become visible, the loading overlay clears, any in-track "Loading…"/"Rendering…"
+// indicator quiesces, and canvas displays signal paint-complete. readyText is
+// only the track label (present well before a slow remote BAM finishes), so the
+// spec's readyTimeout gates every wait here — the fixed default otherwise cut off
+// slow whole-genome-alignment blocks mid-load and captured a "Loading" panel.
+async function waitForReady(page: Page, spec: SessionUrlSpec | EmbeddedSpec) {
+  const readyTimeout = spec.readyTimeout ?? DEFAULT_READY_TIMEOUT_MS
+  const readySelectors = [
+    spec.readyText ? textSelector(spec.readyText) : undefined,
+    spec.readySelector,
+  ].filter((s): s is string => s !== undefined)
+  for (const selector of readySelectors) {
+    await waitForVisible(page, selector, { timeout: readyTimeout }).catch(
+      async (e: unknown) => {
+        await debugDump(page, spec.name)
+        throw e
+      },
+    )
   }
-}
-
-async function setLocation(page: Page, loc: string) {
-  const locBox = await page.waitForSelector(
-    'input[placeholder="Search for location"]',
-    { visible: true, timeout: 15000 },
-  )
-  await locBox?.click({ clickCount: 3 })
-  await locBox?.type(loc)
-  await page.keyboard.press('Enter')
-  await delay(300)
-}
-
-async function scrollTrackListUntilVisible(page: Page, trackId: string) {
-  const selector = `[data-testid="htsTrackLabel-Tracks,${trackId}"]`
-  // The track list is virtualized, so scroll its container until the item renders
-  for (let step = 0; step < 30; step++) {
-    const found = await page.$(selector)
-    if (found) {
-      return found
-    }
-    await page.evaluate((s: number) => {
-      // Find the scrollable track list container (overflowY:auto with scrollable content)
-      const containers = Array.from(document.querySelectorAll<HTMLElement>('*'))
-      const scrollable = containers.find(
-        el =>
-          window.getComputedStyle(el).overflowY === 'auto' &&
-          el.scrollHeight > el.clientHeight + 10,
-      )
-      if (scrollable) {
-        scrollable.scrollTop = s * 150
-      }
-    }, step)
-    await delay(100)
-  }
-  return null
-}
-
-async function openTrack(page: Page, trackId: string) {
-  const selector = `[data-testid="htsTrackLabel-Tracks,${trackId}"]`
-  // First check if it's already in the DOM
-  const quick = await page.$(selector)
-  if (!quick) {
-    await scrollTrackListUntilVisible(page, trackId)
-  }
-  const label = await page.waitForSelector(selector, { timeout: 5000 })
-  await label?.click()
-}
-
-async function captureLGV(
-  page: Page,
-  spec: ScreenshotSpec & { mode?: 'lgv' },
-  port: number,
-) {
-  const config = spec.config ?? VOLVOX_CONFIG
-  await page.goto(
-    `http://localhost:${port}/?config=${config}&sessionName=Screenshot`,
-    { waitUntil: 'networkidle0', timeout: 60000 },
-  )
-
-  // Wait for the view to be fully initialized (ctgA appears in the default volvox session)
-  await page.waitForSelector('::-p-text(ctgA)', {
-    visible: true,
-    timeout: 30000,
+  await waitForLoadingComplete(page, {
+    waitForDownloads: true,
+    timeout: readyTimeout,
   })
-  await waitForLoadingComplete(page)
+  await waitForQuiescent(page, { timeout: readyTimeout })
+  await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+}
 
-  if (spec.loc) {
-    await setLocation(page, spec.loc)
-    await delay(500)
+// Guard against capturing a view that rendered no content. The ViewContainer
+// always renders its header chrome, so a screenshot with header-but-empty-body
+// (e.g. a render regression) still "succeeds" and slips through review. A
+// healthy view — including an import form — fills its body, so an empty body
+// uniquely signals a broken render.
+async function assertViewsRendered(page: Page, name: string) {
+  const emptyViews = await page.evaluate(() =>
+    Array.from(
+      document.querySelectorAll<HTMLElement>(
+        '[data-testid^="view-container-"]',
+      ),
+    )
+      .filter(c => {
+        const body = c.lastElementChild
+        return !body || body.childElementCount === 0
+      })
+      .map(c => c.dataset.testid ?? '?'),
+  )
+  if (emptyViews.length > 0) {
+    await debugDump(page, name)
+    throw new Error(`view(s) rendered blank: ${emptyViews.join(', ')}`)
   }
-
-  for (const trackId of spec.openTracks ?? []) {
-    await openTrack(page, trackId)
-    await delay(300)
-  }
-
-  await delay(spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 
 async function debugDump(page: Page, name: string) {
   const bodyText = await page
-    .evaluate(() => document.body?.innerText?.substring(0, 800))
-    .catch(() => 'eval failed')
+    .evaluate(() => document.body.innerText.substring(0, 800))
+    .catch(() => '')
   console.error(
-    `    debug text: ${(bodyText ?? '').replace(/\s+/g, ' ').trim()}`,
+    `    [${name}] debug text: ${bodyText.replaceAll(/\s+/g, ' ').trim()}`,
   )
-  const debugPath = path.join(outDir, `debug_${name.replace(/\//g, '_')}.png`)
+  const debugPath = path.join(outDir, `debug_${name.replaceAll('/', '_')}.png`)
   await page
     .screenshot()
-    .then(png => fs.writeFileSync(debugPath, png))
+    .then(png => {
+      fs.writeFileSync(debugPath, png)
+    })
     .catch(() => {})
-  console.error(`    debug screenshot: ${debugPath}`)
+  console.error(`    [${name}] debug screenshot: ${debugPath}`)
 }
 
-async function captureUrl(
-  page: Page,
-  spec: ScreenshotSpec & { mode: 'url' },
-  port: number,
-) {
+async function captureUrl(page: Page, spec: SessionUrlSpec, port: number) {
   const fullUrl = spec.url.startsWith('http')
     ? spec.url
     : `http://localhost:${port}/${spec.url}`
@@ -208,73 +255,376 @@ async function captureUrl(
     timeout: 60000,
   })
 
-  const readyTimeout = spec.readyTimeout ?? 30000
-  if (spec.readyText) {
-    await page
-      .waitForSelector(`::-p-text(${spec.readyText})`, {
-        visible: true,
-        timeout: readyTimeout,
-      })
-      .catch(async e => {
-        await debugDump(page, spec.name)
-        throw e
-      })
-  }
-  if (spec.readySelector) {
-    await page
-      .waitForSelector(spec.readySelector, {
-        visible: true,
-        timeout: readyTimeout,
-      })
-      .catch(async e => {
-        await debugDump(page, spec.name)
-        throw e
-      })
-  }
-
-  await waitForLoadingComplete(page)
-  await delay(spec.settleMs ?? DEFAULT_SETTLE_MS)
+  await waitForReady(page, spec)
 }
 
-async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
-  console.log(`  → ${spec.name}`)
-
-  if (spec.mode === 'url') {
-    await captureUrl(page, spec, port)
-  } else {
-    await captureLGV(page, spec, port)
+// Apply the shared pre-shot steps (hide stray tooltip, draw/clear callouts,
+// flush pending WebGL frames) then screenshot straight to `file`.
+async function shoot(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+  annotations: Annotation[] | undefined,
+  file: string,
+) {
+  // Freeze CSS transitions/animations so menus, ripples, and MUI Grow/Fade
+  // fly-outs snap to their settled state instead of being caught mid-transition
+  // — the dominant source of large run-to-run diffs on menu-capture specs.
+  await page.evaluate(() => {
+    const id = '__screenshot_freeze_anim'
+    if (!document.getElementById(id)) {
+      const style = document.createElement('style')
+      style.id = id
+      style.textContent =
+        '*,*::before,*::after{transition:none !important;animation:none !important;}'
+      document.head.append(style)
+    }
+  })
+  if (spec.hideTooltip) {
+    await hideLingeringTooltip(page)
   }
-
-  for (const action of spec.actions ?? []) {
-    await runAction(page, action)
-  }
-
-  const screenshotOptions =
-    spec.crop !== undefined
-      ? {
-          clip: {
-            x: spec.crop.x,
-            y: spec.crop.y,
-            width: spec.crop.width,
-            height: spec.crop.height,
-          },
+  if (spec.hideSelectors && spec.hideSelectors.length > 0) {
+    await page.evaluate(selectors => {
+      for (const sel of selectors) {
+        for (const el of document.querySelectorAll<HTMLElement>(sel)) {
+          el.style.display = 'none'
         }
-      : {}
-
-  const png = await page.screenshot(screenshotOptions)
-  const outputPath = path.join(outDir, `${spec.name}.png`)
-  const outputDir = path.dirname(outputPath)
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true })
+      }
+    }, spec.hideSelectors)
   }
-  fs.writeFileSync(outputPath, png)
-  console.log(`  ✓ ${spec.name}.png`)
+  if (annotations && annotations.length > 0) {
+    await drawAnnotations(page, annotations)
+  } else {
+    await clearAnnotations(page)
+  }
+  await waitForRasterize(page)
+  const clip = spec.crop
+  await page.screenshot(clip ? { path: file, clip } : { path: file })
+}
+
+// Wait for the browser to actually rasterize the current DOM before capturing.
+// A single rAF callback fires *before* paint, so a freshly-composited layer —
+// e.g. a just-opened menu Popper, on its own GPU layer that software-GL
+// (swiftshader) rasterizes a frame late at deviceScaleFactor 2 — can be fully
+// settled in the DOM (opacity:1, laid out) yet still absent from the capture,
+// the dominant cause of menu-spec flakiness. Two chained rAFs guarantee a full
+// frame committed; the trailing settle gives slow layer rasterization a beat.
+async function waitForRasterize(page: Page) {
+  await page.evaluate(
+    () =>
+      new Promise<void>(resolve => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(resolve, 50)
+          })
+        })
+      }),
+  )
+}
+
+// Self-contained harness page for an embedded-component capture: load the UMD
+// bundle and mount the LGV with the spec's createViewState arg, exactly the
+// script-tag setup the embed tutorial documents.
+function embeddedHarnessHtml(viewState: object) {
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html, body, #root { margin: 0; padding: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="/jbrowse.umd.js"></script>
+    <script>
+      const { createViewState, JBrowseLinearGenomeView, React, createRoot } =
+        window.JBrowseReactLinearGenomeView
+      const viewState = createViewState(${JSON.stringify(viewState)})
+      createRoot(document.getElementById('root')).render(
+        React.createElement(JBrowseLinearGenomeView, { viewState }),
+      )
+    </script>
+  </body>
+</html>`
+}
+
+// Minimal static server for one embedded harness: '/' serves the harness HTML,
+// '/jbrowse.umd.js' streams the prebuilt UMD bundle. Listens on an ephemeral
+// port so concurrent embedded captures never collide.
+function serveEmbeddedHarness(html: string, umdPath: string) {
+  return new Promise<{ server: Server; port: number }>((resolve, reject) => {
+    const server = http.createServer((req, res) => {
+      const url = req.url ?? '/'
+      if (url.startsWith('/jbrowse.umd.js.map')) {
+        // Bundle carries a sourceMappingURL; serve the sibling map (devtools
+        // only) so it doesn't 404.
+        if (fs.existsSync(`${umdPath}.map`)) {
+          res.writeHead(200, { 'content-type': 'application/json' })
+          fs.createReadStream(`${umdPath}.map`).pipe(res)
+        } else {
+          res.writeHead(404)
+          res.end()
+        }
+      } else if (url.startsWith('/jbrowse.umd.js')) {
+        res.writeHead(200, { 'content-type': 'application/javascript' })
+        fs.createReadStream(umdPath).pipe(res)
+      } else if (url.startsWith('/favicon.ico')) {
+        // The browser auto-requests a favicon for the bare harness page; answer
+        // empty so it doesn't log a spurious 404.
+        res.writeHead(204)
+        res.end()
+      } else if (url === '/' || url.startsWith('/index')) {
+        res.writeHead(200, { 'content-type': 'text/html' })
+        res.end(html)
+      } else {
+        res.writeHead(404)
+        res.end()
+      }
+    })
+    server.on('error', reject)
+    server.listen(0, () => {
+      const addr = server.address()
+      if (addr && typeof addr === 'object') {
+        resolve({ server, port: addr.port })
+      } else {
+        reject(new Error('embedded server failed to bind a port'))
+      }
+    })
+  })
+}
+
+// Render an embedded-component spec to a finished temp PNG: serve the harness,
+// drive the component to ready, then screenshot the component element (its full
+// height, even past the viewport) rather than the page.
+async function captureEmbeddedToTemp(
+  page: Page,
+  spec: EmbeddedSpec,
+  suffix = '',
+) {
+  if (!fs.existsSync(EMBED_UMD_PATH)) {
+    throw new Error(
+      `Embedded UMD not found at ${EMBED_UMD_PATH}. Build it with "pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack".`,
+    )
+  }
+  const { server, port } = await serveEmbeddedHarness(
+    embeddedHarnessHtml(spec.viewState),
+    EMBED_UMD_PATH,
+  )
+  try {
+    await page.goto(`http://localhost:${port}/`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
+    })
+    await waitForReady(page, spec)
+    await waitForRasterize(page)
+
+    const renderPath = tempPath('jb-final', spec.name, suffix)
+    const el = await page.$('#root')
+    if (!el) {
+      throw new Error('embedded harness #root not found')
+    }
+    await el.screenshot({ path: renderPath })
+    optimizePng(renderPath)
+    return renderPath
+  } finally {
+    server.close()
+  }
+}
+
+async function runActions(
+  page: Page,
+  name: string,
+  actions: ScreenshotAction[] | undefined,
+) {
+  for (const action of actions ?? []) {
+    await runAction(page, action).catch(async (e: unknown) => {
+      await debugDump(page, name)
+      throw e
+    })
+  }
+}
+
+// Drive the page through the spec and produce one finished, optimized PNG in a
+// temp file (caller decides whether to commit it or diff it). `suffix` keeps the
+// two captures of a --check run from colliding on the same temp path.
+async function renderSpecToTemp(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+  port: number,
+  suffix = '',
+) {
+  // Embedded captures run their own harness server + element screenshot, so
+  // they bypass the jbrowse-web goto and the shared shoot/stages path entirely.
+  if (spec.mode === 'embedded') {
+    return captureEmbeddedToTemp(page, spec, suffix)
+  }
+
+  await captureUrl(page, spec, port)
+
+  await runActions(page, spec.name, spec.actions)
+  await assertViewsRendered(page, spec.name)
+
+  const renderPath = tempPath('jb-final', spec.name, suffix)
+  if (spec.stages && spec.stages.length > 0) {
+    await captureStages(page, spec, spec.stages, renderPath)
+  } else {
+    await shoot(page, spec, spec.annotations, renderPath)
+  }
+  optimizePng(renderPath)
+  return renderPath
+}
+
+// Capture each stage of a multi-stage figure to its own temp file, then stack
+// them top-to-bottom with ImageMagick (`convert f0 f1 -append`) into
+// `renderPath` — the same composition the hand-made two-stage teaching figures
+// used.
+async function captureStages(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+  stages: ScreenshotStage[],
+  renderPath: string,
+) {
+  const stageFiles = stages.map((_, i) =>
+    tempPath('jb-shot', spec.name, `-${i}`),
+  )
+  for (const [i, stage] of stages.entries()) {
+    if (stage.closeMenusFirst) {
+      await page.keyboard.press('Escape')
+      await delay(300)
+    }
+    // drop the previous stage's annotation overlay before this stage acts on
+    // the page, so its SVG callout text can't be matched by a ::-p-text() click
+    // target in this stage's actions
+    await clearAnnotations(page)
+    await runActions(page, spec.name, stage.actions)
+    await shoot(page, spec, stage.annotations, stageFiles[i]!)
+    // re-check after each stage capture: assertViewsRendered only runs once
+    // before the loop, so a stage that captures a blank view body (a rare
+    // paint race after the stage's interaction) would otherwise be committed
+    // silently — the staged frames ARE the published image.
+    await assertViewsRendered(page, spec.name)
+  }
+  execFileSync('convert', [...stageFiles, '-append', renderPath])
+  for (const f of stageFiles) {
+    fs.rmSync(f, { force: true })
+  }
+}
+
+// Per-spec pixel-diff gate: a spec can raise the global threshold when its
+// render carries irreducible jitter (remote-data timing, heavy text).
+function specThreshold(spec: ScreenshotSpec) {
+  return spec.diffThreshold ?? diffThreshold
+}
+
+// Commit a freshly rendered temp PNG to its output path under the shared
+// force / diff-gate options, reporting what happened.
+function commit(renderPath: string, outputPath: string, spec: ScreenshotSpec) {
+  return commitScreenshot(renderPath, outputPath, spec.name, {
+    force,
+    diffThreshold: specThreshold(spec),
+  })
+}
+
+async function captureSpec(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+  port: number,
+) {
+  const renderPath = await renderSpecToTemp(page, spec, port)
+  const outputPath = path.join(outDir, `${spec.name}.png`)
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+  return commit(renderPath, outputPath, spec)
+}
+
+// jb2export renders the products/jbrowse-img/README example images straight
+// to PNG via React SSR (see CliSpec in screenshot-specs.ts) — no browser
+// involved, so this bypasses the puppeteer pipeline entirely. `suffix` keeps
+// the two captures of a --check run from colliding on the same temp path.
+async function renderCliSpecToTemp(spec: CliSpec, suffix = '') {
+  const renderPath = tempPath('jb-img', spec.name, suffix)
+  await execFileAsync(
+    'npx',
+    [
+      'tsx',
+      '--tsconfig',
+      repoTsconfig,
+      jb2exportBin,
+      ...spec.args,
+      '--out',
+      renderPath,
+    ],
+    { cwd: jbrowseImgDir, maxBuffer: 1024 * 1024 * 64 },
+  )
+  optimizePng(renderPath)
+  return renderPath
+}
+
+async function captureCliSpec(spec: CliSpec) {
+  const renderPath = await renderCliSpecToTemp(spec)
+  const baseName = spec.name.replace(/^jbrowse-img\//, '')
+  const outputPath = path.join(jbrowseImgOutDir, `${baseName}.png`)
+  const result = commit(renderPath, outputPath, spec)
+  // jb2export writes into products/jbrowse-img/img — the README/npm copy served
+  // via raw.github. The docs site and the screenshot-review UI instead read the
+  // website's own mirror at static/img/jbrowse-img (spec name `jbrowse-img/x`
+  // resolves to outDir/jbrowse-img/x.png), which generate-img-doc.ts otherwise
+  // only refreshes on `pnpm autogen`, and only for README-referenced names. Sync
+  // the fresh capture here too so a plain `pnpm screenshots` doesn't leave the
+  // review UI showing a stale (or, for a non-README spec like `sequence`,
+  // missing) jbrowse-img image.
+  mirrorFile(outputPath, path.join(outDir, `${spec.name}.png`))
+  return result
+}
+
+// Copy a committed jb2export image into the website static mirror, only when the
+// bytes differ, so an unchanged spec doesn't churn the tracked website copy.
+function mirrorFile(src: string, dest: string) {
+  if (fs.existsSync(src)) {
+    const upToDate =
+      fs.existsSync(dest) && fs.readFileSync(dest).equals(fs.readFileSync(src))
+    if (!upToDate) {
+      fs.mkdirSync(path.dirname(dest), { recursive: true })
+      fs.copyFileSync(src, dest)
+    }
+  }
+}
+
+// Stack the committed PNGs of `spec.parts` into one figure (top to bottom) with
+// the same `convert -append` a `stages` capture uses. Runs after the render
+// pool so the parts are already fresh on disk; a filter that targets only the
+// compose spec recomposes from the committed parts.
+async function captureComposeSpec(spec: ComposeSpec) {
+  const partPaths = spec.parts.map(p => path.join(outDir, `${p}.png`))
+  const missing = spec.parts.filter((_, i) => !fs.existsSync(partPaths[i]!))
+  if (missing.length > 0) {
+    throw new Error(`missing part image(s): ${missing.join(', ')}`)
+  }
+  const renderPath = tempPath('jb-compose', spec.name)
+  execFileSync('convert', [...partPaths, '-append', renderPath])
+  optimizePng(renderPath)
+  const outputPath = path.join(outDir, `${spec.name}.png`)
+  return commit(renderPath, outputPath, spec)
+}
+
+// Print a titled, ===-barred block of lines to stderr (failure/flaky summaries).
+function printReport(title: string, lines: string[]) {
+  const bar = '='.repeat(60)
+  console.error(`\n${bar}`)
+  console.error(title)
+  console.error(bar)
+  for (const line of lines) {
+    console.error(line)
+  }
+  console.error(`\n${bar}`)
 }
 
 async function main() {
-  const filteredSpecs = filter
-    ? specs.filter(s => s.name.includes(filter))
-    : specs
+  // `--filter a,b,c` matches a spec when any comma-separated token matches, so
+  // "re-render these few" is one invocation instead of a shell loop.
+  const filterTokens = parseFilterTokens(filter)
+  const filteredSpecs = specs.filter(s =>
+    matchesFilterTokens(s.name, filterTokens, exact),
+  )
 
   if (filteredSpecs.length === 0) {
     console.error(`No specs match filter: ${filter}`)
@@ -286,10 +636,13 @@ async function main() {
   )
 
   const needsLocalServer = filteredSpecs.some(
-    s => s.mode !== 'url' || !s.url.startsWith('http'),
+    s =>
+      s.mode !== 'cli' &&
+      s.mode !== 'embedded' &&
+      (s.mode !== 'url' || !s.url.startsWith('http')),
   )
 
-  let server: http.Server | undefined
+  let server: Server | undefined
   const port = DEFAULT_PORT
 
   if (needsLocalServer) {
@@ -299,7 +652,11 @@ async function main() {
       )
       process.exit(1)
     }
-    server = await startServer(port, externalPort)
+    server = await createTestServer(port, {
+      jbrowseWebRoot: testDataRoot,
+      repoRoot,
+      proxyPort: externalPort,
+    })
     console.log(
       externalPort
         ? `Proxy on port ${port}, app on port ${externalPort}`
@@ -307,65 +664,218 @@ async function main() {
     )
   }
 
-  const chromePaths = [
-    '/usr/bin/google-chrome',
-    '/usr/bin/chromium-browser',
-    '/usr/bin/chromium',
-  ]
-  const executablePath = chromePaths.find(p => fs.existsSync(p))
+  const executablePath = findChromeExecutable()
 
-  const launchOptions = {
+  // wider viewport for more genomic context; deviceScaleFactor 2 keeps the
+  // capture hidpi/retina-crisp (2x backing store) at the larger size
+  const defaultViewport = { width: 1500, height: 800, deviceScaleFactor: 2 }
+  const {
+    width: vpWidth,
+    height: vpHeight,
+    deviceScaleFactor,
+  } = defaultViewport
+
+  // Chrome leans on swiftshader for headless WebGL; Firefox needs WebGL forced
+  // on past the headless GL caveat so molstar's canvas renders at all.
+  const buildLaunchOptions = (useFirefox: boolean) => ({
     headless: !headed,
-    executablePath,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-web-security',
-    ],
-    defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 2 },
-  }
+    defaultViewport,
+    ...(useFirefox
+      ? {
+          browser: 'firefox' as const,
+          extraPrefsFirefox: {
+            'webgl.force-enabled': true,
+            'webgl.disabled': false,
+            'webgl.disable-fail-if-major-performance-caveat': true,
+          },
+        }
+      : {
+          executablePath,
+          args: [...BASE_CHROME_ARGS, '--enable-unsafe-swiftshader'],
+        }),
+  })
+
+  // Compose specs stack other specs' committed PNGs, so they run in a second,
+  // sequential pass after the render pool refreshes those parts. --check writes
+  // nothing, so a deterministic append has nothing to verify — skip them there
+  // (and drop them from the [n/total] denominator, which is why total sums the
+  // two lists rather than counting filteredSpecs).
+  const renderSpecs = filteredSpecs.filter(s => s.mode !== 'compose')
+  const composeSpecs = check
+    ? []
+    : filteredSpecs.filter(s => s.mode === 'compose')
 
   let passed = 0
   let failed = 0
-  const failures: string[] = []
+  let kept = 0
+  let started = 0
+  const total = renderSpecs.length + composeSpecs.length
+  const failures: { name: string; error: string }[] = []
+  const flaky: { name: string; frac: number }[] = []
+  const changed: { name: string; result: CommitResult }[] = []
+
+  // Zero-padded `[ 7/40]` so the counter column stays aligned as it grows,
+  // keeping the interleaved per-worker lines readable.
+  function progress() {
+    started += 1
+    return `[${String(started).padStart(String(total).length)}/${total}]`
+  }
+
+  // Fresh browser per call (avoids service-worker caching between navigations),
+  // viewport set per spec, then run the body with the prepared page.
+  async function withFreshPage<T>(
+    spec: BrowserScreenshotSpec,
+    body: (page: Page) => Promise<T>,
+  ) {
+    const browser = await launch(buildLaunchOptions(firefox || !!spec.firefox))
+    try {
+      const page = await browser.newPage()
+      if (spec.viewportHeight || spec.viewportWidth) {
+        await page.setViewport({
+          width: spec.viewportWidth ?? vpWidth,
+          height: spec.viewportHeight ?? vpHeight,
+          deviceScaleFactor,
+        })
+      }
+      page.on('console', msg => {
+        const t = msg.type()
+        const text = msg.text()
+        const expected = spec.expectedConsole?.some(s => text.includes(s))
+        if (!isBrowserConsoleNoise(text) && !expected) {
+          console.error(
+            `    [${spec.name}] browser[${t}]: ${text.substring(0, 300)}`,
+          )
+        }
+      })
+      return await body(page)
+    } finally {
+      await browser.close()
+    }
+  }
+
+  // --check: render the spec twice (via the caller's `render`, which decides
+  // browser-vs-cli) and compare the two captures to each other. A drift past
+  // threshold means the spec is nondeterministic — it would churn its committed
+  // PNG on every regen. Doesn't touch committed files.
+  async function checkTwice(
+    spec: BrowserScreenshotSpec | CliSpec,
+    render: (suffix: string) => Promise<string>,
+  ) {
+    const a = await render('-a')
+    const b = await render('-b')
+    const frac = pngDiffFraction(a, b)
+    fs.rmSync(a, { force: true })
+    fs.rmSync(b, { force: true })
+    if (frac === null || frac >= specThreshold(spec)) {
+      const pct =
+        frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
+      console.log(`  ✗ ${spec.name} FLAKY (${pct} between two renders)`)
+      flaky.push({ name: spec.name, frac: frac ?? 1 })
+    } else {
+      console.log(`  ✓ ${spec.name} stable (${(frac * 100).toFixed(3)}%)`)
+    }
+  }
+
+  async function runSpec(spec: ScreenshotSpec) {
+    if (spec.mode !== 'compose' && spec.curated) {
+      console.log(
+        `${progress()} ⊘ ${spec.name} (curated, keeping committed image)`,
+      )
+      return
+    }
+    console.log(`${progress()} → ${spec.name}`)
+    try {
+      let result: CommitResult | undefined
+      if (spec.mode === 'compose') {
+        result = await captureComposeSpec(spec)
+      } else if (spec.mode === 'cli') {
+        if (check) {
+          await checkTwice(spec, suffix => renderCliSpecToTemp(spec, suffix))
+        } else {
+          result = await captureCliSpec(spec)
+        }
+      } else if (check) {
+        await checkTwice(spec, suffix =>
+          withFreshPage(spec, p => renderSpecToTemp(p, spec, port, suffix)),
+        )
+      } else {
+        result = await withFreshPage(spec, page =>
+          captureSpec(page, spec, port),
+        )
+      }
+      if (result) {
+        if (result.status === 'kept') {
+          kept++
+        } else {
+          changed.push({ name: spec.name, result })
+        }
+      }
+      passed++
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      console.error(`  ✗ ${spec.name}: ${error}`)
+      failed++
+      failures.push({ name: spec.name, error })
+    }
+  }
+
+  console.log(`Running with concurrency ${CONCURRENCY}`)
 
   try {
-    for (const spec of filteredSpecs) {
-      // Fresh browser per spec to avoid service worker caching between navigations
-      const browser = await launch(launchOptions)
-      try {
-        const page = await browser.newPage()
-        page.on('console', msg => {
-          const t = msg.type()
-          if (
-            (t === 'error' || t === 'warning') &&
-            !msg.text().includes('favicon')
-          ) {
-            console.error(`    browser[${t}]: ${msg.text().substring(0, 200)}`)
-          }
-        })
-        await captureSpec(page, spec, port)
-        passed++
-      } catch (err) {
-        console.error(`  ✗ ${spec.name}: ${err}`)
-        failed++
-        failures.push(spec.name)
-      } finally {
-        await browser.close()
+    // Pool: keep CONCURRENCY browsers running at once
+    const queue = [...renderSpecs]
+    const workers = Array.from({ length: CONCURRENCY }, async () => {
+      while (queue.length > 0) {
+        const spec = queue.shift()!
+        await runSpec(spec)
       }
+    })
+    await Promise.all(workers)
+
+    for (const spec of composeSpecs) {
+      await runSpec(spec)
     }
   } finally {
     server?.close()
   }
 
-  console.log(`\n${passed} succeeded, ${failed} failed`)
+  console.log(
+    `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
+      check ? `, ${flaky.length} flaky` : `, ${kept} unchanged`
+    }`,
+  )
+  if (changed.length > 0) {
+    printReport(
+      `UPDATED SCREENSHOTS (${changed.length})`,
+      changed.map(({ name, result }) =>
+        result.status === 'updated'
+          ? `• ${name}.png (${result.detail})`
+          : `• ${name}.png (new)`,
+      ),
+    )
+  }
+  if (flaky.length > 0) {
+    printReport(
+      `FLAKY SPECS (${flaky.length}) — nondeterministic renders`,
+      flaky.map(
+        ({ name, frac }) =>
+          `• ${name}: ${(frac * 100).toFixed(3)}% drift between renders`,
+      ),
+    )
+    process.exit(1)
+  }
   if (failures.length > 0) {
-    console.error('Failed:', failures.join(', '))
+    printReport(
+      `FAILURE SUMMARY (${failures.length})`,
+      failures.map(
+        ({ name, error }) => `\n• ${name}\n  ${error.replaceAll('\n', '\n  ')}`,
+      ),
+    )
     process.exit(1)
   }
 }
 
-main().catch(err => {
+main().catch((err: unknown) => {
   console.error(err)
   process.exit(1)
 })

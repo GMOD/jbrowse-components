@@ -1,8 +1,8 @@
 /* eslint no-cond-assign: ["error", "except-parens"] */
 import { objectHash } from '@jbrowse/core/util'
-import setValue from 'set-value'
 
 import getValue from './get-value.ts'
+import setValue from './set-value.ts'
 import { isSource, isTrack } from './util.ts'
 
 import type { Config, Names, Source, Store, Track } from './types.ts'
@@ -30,13 +30,6 @@ export function parseJB1Conf(config: string, url: string): Config {
   return regularizeConf(parsedConf, url)
 }
 
-function isAlwaysArray(varName: string): boolean {
-  if (varName === 'include') {
-    return true
-  }
-  return false
-}
-
 function parse(text: string, url: string): Config {
   let section: string[] = []
   let keyPath: string[] | undefined
@@ -47,13 +40,7 @@ function parse(text: string, url: string): Config {
 
   function recordVal(): void {
     if (value !== undefined) {
-      let parsedValue:
-        | string
-        | number
-        | boolean
-        | string[]
-        | number[]
-        | boolean[]
+      let parsedValue: string | number | boolean | unknown[]
       try {
         // parse json
         const match = /^json:(.+)/i.exec(value)
@@ -72,18 +59,13 @@ function parse(text: string, url: string): Config {
         }
         const path = [...section, ...keyPath].join('.')
         if (operation === '+=') {
-          let existing = getValue(data, path)
-          if (existing) {
-            if (!Array.isArray(existing)) {
-              existing = [existing]
-            }
-          } else {
-            existing = []
-          }
-
-          // @ts-expect-error
+          const prev = getValue(data, path)
+          const existing: unknown[] = Array.isArray(prev)
+            ? prev
+            : prev
+              ? [prev]
+              : []
           existing.push(parsedValue)
-          // @ts-expect-error
           parsedValue = existing
         }
         if (parsedValue === 'true') {
@@ -128,9 +110,8 @@ function parse(text: string, url: string): Config {
     ) {
       recordVal()
       keyPath = match[1]!.trim().split(/\s*\.\s*/)
-      // @ts-expect-error
-      ;[, , operation] = match
-      if (isAlwaysArray([...section, ...keyPath].join('.'))) {
+      operation = match[2]!
+      if ([...section, ...keyPath].join('.') === 'include') {
         operation = '+='
       }
       value = match[3]!.trim()

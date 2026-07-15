@@ -1,0 +1,261 @@
+import { useState } from 'react'
+
+import {
+  CopyToClipboardButton,
+  ErrorBanner,
+  LoadingEllipses,
+} from '@jbrowse/core/ui'
+import {
+  getContainingView,
+  getSession,
+  useFetch,
+  useLocalStorage,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import {
+  buildClusteredLayout,
+  generateClusterRScript,
+  matrixToTsv,
+  parseClusterOrder,
+} from '@jbrowse/tree-sidebar'
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  FormControlLabel,
+  Paper,
+  Radio,
+  RadioGroup,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { ReducedModel } from './types.ts'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const useStyles = makeStyles()({
+  textAreaFont: {
+    fontFamily: 'Courier New',
+  },
+})
+
+const ClusterDialogManuals = observer(function ClusterDialogManuals({
+  model,
+  handleClose,
+  children,
+}: {
+  model: ReducedModel
+  handleClose: () => void
+  children: React.ReactNode
+}) {
+  const { classes } = useStyles()
+  const [paste, setPaste] = useState('')
+  const [showAdvanced, setShowAdvanced] = useLocalStorage(
+    'cluster-showAdvanced',
+    false,
+  )
+  const [clusterMethod, setClusterMethod] = useState('single')
+
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const {
+    data: ret,
+    error,
+    isLoading: loading,
+  } = useFetch(
+    view.initialized ? ['genotypeMatrix', model] : null,
+    async () => {
+      const { rpcManager } = getSession(model)
+      const {
+        sourcesWithoutLayout,
+        minorAlleleFrequencyFilter,
+        maxMissingnessFilter,
+        filters,
+        adapterConfig,
+      } = model
+      const sessionId = getRpcSessionId(model)
+      return rpcManager.call(sessionId, 'MultiSampleVariantGetGenotypeMatrix', {
+        regions: view.dynamicBlocks.contentBlocks,
+        sources: sourcesWithoutLayout ?? [],
+        minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
+        maxMissingnessFilter: maxMissingnessFilter ?? 1,
+        filters,
+        adapterConfig,
+      })
+    },
+  )
+
+  const results = ret ? generateClusterRScript(ret, clusterMethod) : undefined
+  const resultsTsv = ret ? matrixToTsv(ret) : undefined
+
+  return (
+    <>
+      <DialogContent>
+        {children}
+        <Paper style={{ padding: 16 }}>
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+                marginBottom: '16px',
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={async () => {
+                  const { saveAs } = await import('@jbrowse/core/util')
+                  saveAs(
+                    new Blob([results || ''], {
+                      type: 'text/plain;charset=utf-8',
+                    }),
+                    'cluster.R',
+                  )
+                }}
+              >
+                Download Rscript
+              </Button>{' '}
+              or{' '}
+              <CopyToClipboardButton
+                variant="contained"
+                value={() => results || ''}
+              >
+                Copy Rscript to clipboard
+              </CopyToClipboardButton>{' '}
+              or{' '}
+              <Button
+                variant="contained"
+                onClick={async () => {
+                  const { saveAs } = await import('@jbrowse/core/util')
+                  saveAs(
+                    new Blob([resultsTsv || ''], {
+                      type: 'text/plain;charset=utf-8',
+                    }),
+                    'genotypes.tsv',
+                  )
+                }}
+              >
+                Download TSV
+              </Button>
+              <div>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setShowAdvanced(!showAdvanced)
+                  }}
+                >
+                  {showAdvanced
+                    ? 'Hide advanced options'
+                    : 'Show advanced options'}
+                </Button>
+              </div>
+            </div>
+            {showAdvanced ? (
+              <div>
+                <Typography variant="h6">Advanced options</Typography>
+                <RadioGroup>
+                  {Object.entries({
+                    single: 'Single',
+                    complete: 'Complete',
+                  }).map(([key, val]) => (
+                    <FormControlLabel
+                      key={key}
+                      control={
+                        <Radio
+                          checked={clusterMethod === key}
+                          onChange={() => {
+                            setClusterMethod(key)
+                          }}
+                        />
+                      }
+                      label={val}
+                    />
+                  ))}
+                </RadioGroup>
+              </div>
+            ) : null}
+            {results ? (
+              <div />
+            ) : loading ? (
+              <LoadingEllipses
+                variant="h6"
+                message="Generating genotype matrix"
+              />
+            ) : error ? (
+              <ErrorBanner error={error} />
+            ) : null}
+          </div>
+
+          <div>
+            <Typography
+              variant="subtitle2"
+              gutterBottom
+              style={{ marginTop: '16px' }}
+            >
+              Clustering Results:
+            </Typography>
+            <TextField
+              multiline
+              fullWidth
+              variant="outlined"
+              placeholder="Paste results from Rscript here (sequence of numbers, one per line, specifying the new ordering)"
+              rows={10}
+              value={paste}
+              onChange={event => {
+                setPaste(event.target.value)
+              }}
+              slotProps={{
+                input: {
+                  classes: {
+                    input: classes.textAreaFont,
+                  },
+                },
+              }}
+            />
+          </div>
+        </Paper>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="contained"
+          onClick={() => {
+            const { sourcesWithoutLayout } = model
+            if (sourcesWithoutLayout) {
+              try {
+                // parseClusterOrder yields 1-based R indices; buildClusteredLayout
+                // (shared with the auto dialog) expects 0-based, and merges
+                // existing layout so colors/labels survive a re-cluster.
+                model.setLayout(
+                  buildClusteredLayout(
+                    sourcesWithoutLayout,
+                    model.layout,
+                    parseClusterOrder(paste).map(idx => idx - 1),
+                  ),
+                )
+              } catch (e) {
+                console.error(e)
+                getSession(model).notifyError(`${e}`, e)
+              }
+            }
+            handleClose()
+          }}
+        >
+          Apply clustering
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={() => {
+            handleClose()
+          }}
+        >
+          Cancel
+        </Button>
+      </DialogActions>
+    </>
+  )
+})
+
+export default ClusterDialogManuals

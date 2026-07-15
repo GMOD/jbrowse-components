@@ -1,141 +1,86 @@
-import { forwardRef, isValidElement, useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { ResizeHandle, SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import {
-  getContainingView,
-  getSession,
-  getStrokeProps,
-} from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { alpha, useTheme } from '@mui/material'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import VariantLabels from './VariantLabels.tsx'
 import Wrapper from './Wrapper.tsx'
+import { getSnpViewportX } from './snpViewportX.ts'
+import {
+  ConnectorLine,
+  ConnectorLineField,
+  ConnectorResizeHandle,
+} from '../../shared/ConnectorLines.tsx'
 
+import type { ConnectorCoord } from '../../shared/ConnectorLines.tsx'
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()(theme => ({
-  resizeHandle: {
-    height: 5,
-    boxSizing: 'border-box',
-    background: 'transparent',
-    '&:hover': {
-      background: theme.palette.divider,
-    },
-  },
-}))
-
-function getGenomicX(
-  view: LinearGenomeViewModel,
-  assembly: { getCanonicalRefName2: (refName: string) => string },
-  snp: { refName: string; start: number },
-  offsetAdjustment: number,
+// NOTE: not horizontally-flip aware. The SNP-index axis runs left-to-right
+// regardless of view.reversed, so on a flipped view these connector lines cross
+// the genome ruler. Unlike the 1D variant matrix (which mirrors the column
+// index at draw time), fixing LD means mirroring the whole rotated triangle —
+// the shader transform, Canvas2D renderer, hitTest inverse, this anchor,
+// FocalSnpHighlight, Crosshairs, VariantLabels, and SVG export — across both
+// index and genomic positioning modes. All-or-nothing: mirroring only these
+// lines points them at an un-mirrored triangle. Left as a scoped follow-up.
+function getMatrixX(
+  idx: number,
+  blockWidth: number,
+  n: number,
+  viewScale: number,
+  viewOffsetX: number,
 ) {
-  return (
-    (view.bpToPx({
-      refName: assembly.getCanonicalRefName2(snp.refName),
-      coord: snp.start,
-    })?.offsetPx || 0) - offsetAdjustment
-  )
+  return (((idx + 0.5) * blockWidth) / n) * viewScale + viewOffsetX
 }
 
-interface MouseOverLine {
+interface HoveredLine extends ConnectorCoord {
   snp: { id: string; refName: string; start: number; end: number }
-  idx: number
-  genomicX: number
 }
-
-interface Props {
-  message: React.ReactNode | string
-}
-
-const TooltipContents = forwardRef<HTMLDivElement, Props>(
-  function TooltipContents2({ message }, ref) {
-    return (
-      <div ref={ref}>
-        {isValidElement(message) ? (
-          message
-        ) : message ? (
-          <SanitizedHTML html={String(message)} />
-        ) : null}
-      </div>
-    )
-  },
-)
-
-const LineTooltip = observer(function LineTooltip({
-  contents,
-}: {
-  contents?: string
-}) {
-  return contents ? (
-    <BaseTooltip>
-      <TooltipContents message={contents} />
-    </BaseTooltip>
-  ) : null
-})
 
 const AllLines = observer(function AllLines({
   model,
-  setMouseOverLine,
+  onHover,
 }: {
   model: SharedLDModel
-  setMouseOverLine: (arg: MouseOverLine | undefined) => void
+  onHover: (arg: HoveredLine | undefined) => void
 }) {
-  const theme = useTheme()
   const { assemblyManager } = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, snps, tickHeight } = model
-  const { offsetPx, assemblyNames, dynamicBlocks } = view
+  const { lineZoneHeight, snps } = model
+  const { assemblyNames, dynamicBlocks } = view
   const assembly = assemblyManager.get(assemblyNames[0]!)
-  const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
+  const blockWidth = dynamicBlocks.totalWidthPxWithoutBorders
   const n = snps.length
-  const offsetAdj = Math.max(offsetPx, 0)
-  const strokeProps = getStrokeProps(alpha(theme.palette.text.primary, 0.4))
+  const { scale: viewScale, viewOffsetX } = model.renderTransform
+
+  const lineCoords = useMemo(() => {
+    if (!assembly || n === 0) {
+      return []
+    }
+    return snps.map((snp, i) => ({
+      snp,
+      mx: getMatrixX(i, blockWidth, n, viewScale, viewOffsetX),
+      gx: getSnpViewportX(view, assembly, snp),
+    }))
+  }, [assembly, n, snps, blockWidth, viewScale, viewOffsetX, view])
 
   if (!assembly || n === 0) {
     return null
   }
 
   return (
-    <>
-      {snps.map((snp, i) => {
-        const genomicX = getGenomicX(view, assembly, snp, offsetAdj)
-        const matrixX = ((i + 0.5) * b0) / n
-        return (
-          <g
-            key={`${snp.id}-${i}`}
-            onMouseEnter={() => {
-              setMouseOverLine({ snp, idx: i, genomicX })
-            }}
-            onMouseLeave={() => {
-              setMouseOverLine(undefined)
-            }}
-          >
-            <line
-              {...strokeProps}
-              strokeWidth={1}
-              x1={matrixX}
-              x2={genomicX}
-              y1={lineZoneHeight}
-              y2={tickHeight}
-            />
-            <line
-              {...strokeProps}
-              strokeWidth={1}
-              x1={genomicX}
-              x2={genomicX}
-              y1={0}
-              y2={tickHeight}
-            />
-          </g>
-        )
-      })}
+    <ConnectorLineField
+      lineCoords={lineCoords}
+      lineZoneHeight={lineZoneHeight}
+      strokeWidth={1}
+      onHoverIndex={i => {
+        onHover(i === undefined ? undefined : lineCoords[i])
+      }}
+    >
       <VariantLabels model={model} />
-    </>
+    </ConnectorLineField>
   )
 })
 
@@ -149,65 +94,36 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     exportSVG?: boolean
     yOffset?: number
   }) {
-    const { classes } = useStyles()
-    const view = getContainingView(model) as LinearGenomeViewModel
-    const [mouseOverLine, setMouseOverLine] = useState<MouseOverLine>()
+    const [hovered, setHovered] = useState<HoveredLine>()
     const { lineZoneHeight, snps } = model
-    const { dynamicBlocks } = view
-    const b0 = dynamicBlocks.contentBlocks[0]?.widthPx || 0
-    const n = snps.length
 
-    if (n === 0) {
+    if (snps.length === 0) {
       return null
     }
-
-    const highlightMatrixX = mouseOverLine
-      ? ((mouseOverLine.idx + 0.5) * b0) / n
-      : 0
 
     return (
       <>
         <Wrapper exportSVG={exportSVG} model={model} yOffset={yOffset}>
-          <AllLines model={model} setMouseOverLine={setMouseOverLine} />
-          {mouseOverLine ? (
+          <AllLines model={model} onHover={setHovered} />
+          {hovered ? (
             <>
-              <line
-                stroke="#f00c"
-                strokeWidth={2}
-                style={{
-                  pointerEvents: 'none',
-                }}
-                x1={highlightMatrixX}
-                x2={mouseOverLine.genomicX}
-                y1={lineZoneHeight}
-                y2={model.tickHeight}
+              <ConnectorLine
+                mx={hovered.mx}
+                gx={hovered.gx}
+                lineZoneHeight={lineZoneHeight}
               />
-              <line
-                stroke="#f00c"
-                strokeWidth={2}
-                style={{
-                  pointerEvents: 'none',
-                }}
-                x1={mouseOverLine.genomicX}
-                x2={mouseOverLine.genomicX}
-                y1={0}
-                y2={model.tickHeight}
-              />
-              <LineTooltip contents={mouseOverLine.snp.id} />
+              {hovered.snp.id ? (
+                <BaseTooltip>{hovered.snp.id}</BaseTooltip>
+              ) : null}
             </>
           ) : null}
         </Wrapper>
         {!exportSVG ? (
-          <ResizeHandle
-            style={{
-              position: 'absolute',
-              top: lineZoneHeight - 4,
-            }}
-            onDrag={d => {
+          <ConnectorResizeHandle
+            lineZoneHeight={lineZoneHeight}
+            onResize={d => {
               model.setLineZoneHeight(lineZoneHeight + d)
-              return undefined
             }}
-            className={classes.resizeHandle}
           />
         ) : null}
       </>

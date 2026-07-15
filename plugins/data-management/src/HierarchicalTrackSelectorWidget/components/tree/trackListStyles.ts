@@ -2,7 +2,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { MenuItem } from '@jbrowse/core/ui/Menu'
 
-// styles are used by FavoriteTracks and RecentlyUsedTracks
+// styles + dropdown menu items shared by the favorites / recently-used badges
+// (see BadgeDropdownTracks)
 
 export const useSmallBadgeStyles = makeStyles()({
   // eslint-disable-next-line tss-unused-classes/unused-classes
@@ -42,6 +43,7 @@ export function getDropdownMenuItems({
     : [
         {
           label: emptyLabel,
+          disabled: true,
           onClick: () => {},
         },
       ]

@@ -5,16 +5,13 @@ import { types } from '@jbrowse/mobx-state-tree'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
 import {
-  BaseLinearDisplay,
   BaseLinearDisplayComponent,
   baseLinearDisplayConfigSchema,
 } from './BaseLinearDisplay/index.ts'
-import BasicTrackF from './BasicTrack/index.ts'
 import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
-import LinearBareDisplayF from './LinearBareDisplay/index.ts'
-import LinearBasicDisplayF from './LinearBasicDisplay/index.ts'
 import ZoomControls from './LinearGenomeView/components/HeaderZoomControls.tsx'
+import SequenceFeatureHoverHighlightExtensionF from './LinearGenomeView/components/SequenceFeatureHoverHighlightExtension.tsx'
 import LinearGenomeViewF, {
   LinearGenomeView,
   SearchBox,
@@ -28,7 +25,6 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   exports = {
     BaseLinearDisplayComponent,
-    BaseLinearDisplay,
     baseLinearDisplayConfigSchema,
     SearchBox,
     ZoomControls,
@@ -37,6 +33,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   /**
    * #config LinearGenomeViewConfigSchema
+   * #category root
    */
   configurationSchema = ConfigurationSchema('LinearGenomeViewConfigSchema', {
     /**
@@ -44,7 +41,7 @@ export default class LinearGenomeViewPlugin extends Plugin {
      */
     trackLabels: {
       type: 'string',
-      defaultValue: 'overlapping',
+      defaultValue: 'offset',
       model: types.enumeration('trackLabelOptions', [
         'offset',
         'overlapping',
@@ -55,11 +52,9 @@ export default class LinearGenomeViewPlugin extends Plugin {
 
   install(pluginManager: PluginManager) {
     FeatureTrackF(pluginManager)
-    BasicTrackF(pluginManager)
-    LinearBasicDisplayF(pluginManager)
     LinearGenomeViewF(pluginManager)
-    LinearBareDisplayF(pluginManager)
     LaunchLinearGenomeViewF(pluginManager)
+    SequenceFeatureHoverHighlightExtensionF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {
@@ -76,93 +71,130 @@ export default class LinearGenomeViewPlugin extends Plugin {
 }
 
 export type {
-  BaseLinearDisplayModel,
-  BlockModel,
   ExportSvgDisplayOptions,
-  FeatureLabelData,
-  FloatingLabelData,
-  LayoutFeatureMetadata,
   LayoutRecord,
   LegendItem,
-  RenderedProps,
+  LegendSection,
+  LinearDisplayModel,
 } from './BaseLinearDisplay/index.ts'
 
 export {
-  configSchemaFactory as linearBareDisplayConfigSchemaFactory,
-  stateModelFactory as linearBareDisplayStateModelFactory,
-} from './LinearBareDisplay/index.ts'
-export {
-  BaseLinearDisplay,
   BaseLinearDisplayComponent,
   BlockMsg,
-  ConfigOverrideMixin,
+  DisplayChrome,
   DisplayErrorBar,
   DisplayLoadingOverlay,
-  FeatureDensityMixin,
+  FetchMixin,
   FloatingLegend,
+  GROW_MAX_HEIGHT,
   GlobalDataDisplayMixin,
+  GlobalFetchMixin,
+  HEIGHT_MODE_VALUES,
+  HeightModeMixin,
+  MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
-  NonBlockCanvasDisplayComponent,
-  NonBlockCanvasDisplayMixin,
-  SVGLegend,
+  PromotableDefaultsMixin,
+  RegionTooLargeMixin,
   StaleViewportRescaleMixin,
+  TOO_MANY_FEATURES_REASON,
   TooLargeMessage,
+  TrackHeightIndicator,
   TrackHeightMixin,
+  autorunOnReadyView,
   baseLinearDisplayConfigSchema,
-  calculateSvgLegendWidth,
+  bytesTooLargeReason,
+  checkByteEstimate,
   computeRenderTransform,
-  createSubfeatureLabelMetadata,
+  computeTriangleYScalar,
   drawCanvasImageData,
+  evaluateRegionTooLarge,
+  fetchAllRegions,
+  fetchEachRegion,
   getDisplayStr,
-  migrateOldSettingSnapshots,
+  getHeightModeOptions,
+  getTrackSizingMenuItem,
+  heightModeMenuItems,
+  installGlobalFetchAutorun,
+  installGrowExitBake,
   onDisplayedRegionsChange,
+  raiseLimitPast,
+  resolveByteLimit,
+  scaleByteEstimate,
+  scaledForceLoadByteLimit,
+  viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {
   ByteEstimateConfig,
   FetchContext,
   GlobalDataDisplayMixinType,
+  HeightMode,
+  HeightModeMenuModel,
   MultiRegionDisplayMixinType,
-  NonBlockCanvasDisplayMixinType,
-  NonBlockCanvasDisplayModel,
+  RegionTooLargeStatus,
   RenderTransform,
   RenderTransformInputs,
   StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
+// re-exported so LGV plugins that host their own (non-GPU) chrome can share the
+// single terminal-state precedence instead of re-encoding it (arc's SVG chrome)
+export { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
+export type {
+  DisplayPhase,
+  DisplayPhaseInputs,
+} from '@jbrowse/render-core/displayPhase'
 export {
   AUTO_FORCE_LOAD_BP,
   HighlightBand,
+  HighlightChip,
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
-  RefNameAutocomplete,
+  OverviewHighlightBand,
+  SVGHighlightBand,
   SearchBox,
+  type SyncableViewAction,
+  installLinkedViewSync,
+  stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
+export {
+  MultiLevelRubberband,
+  type MultiLevelRubberbandModel,
+} from './MultiLevelRubberband/index.ts'
 export { fetchResults } from './searchUtils.ts'
+export { normalizeTrackInit } from './LinearGenomeView/normalizeTrackInit.ts'
+export type { LaunchLinearGenomeViewArgs } from './LaunchLinearGenomeView/index.ts'
 export type {
   BpOffset,
   ExportSvgOptions,
   HighlightType,
   InitState,
   NavLocation,
+  TrackInit,
+  TrackLabelMode,
   VolatileGuide,
 } from './LinearGenomeView/types.ts'
 export {
   SVGGridlines,
   SVGRuler,
   SVGTracks,
+  SVGView,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
-export { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
-export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'
+export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
+export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
+export { default as ConnectedHoverHighlight } from './LinearGenomeView/components/ConnectedHoverHighlight.tsx'
+export { default as HoverPositionHighlight } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
+export { TrackOverlayContext } from './LinearGenomeView/TrackOverlayContext.ts'
+export { TrackOverlayPortal } from './LinearGenomeView/TrackOverlayPortal.tsx'
+export { FloatingSvgOverlay } from './LinearGenomeView/FloatingSvgOverlay.tsx'
+export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export {
-  configSchema as linearBasicDisplayConfigSchemaFactory,
-  modelFactory as linearBasicDisplayModelFactory,
-} from './LinearBasicDisplay/index.ts'
+  SVGErrorBox,
+  SvgChrome,
+  SvgClipRect,
+} from '@jbrowse/core/svg/SvgExport'
+export { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
+export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 export {
-  configSchema as linearFeatureDisplayConfigSchemaFactory,
-  modelFactory as linearFeatureDisplayModelFactory,
-} from './LinearFeatureDisplay/index.ts'
-export type {
-  LinearFeatureDisplayModel,
-  LinearFeatureDisplayStateModel,
-} from './LinearFeatureDisplay/index.ts'
-export { default as LinearBasicDisplayComponent } from './LinearBasicDisplay/components/LinearBasicDisplayComponent.tsx'
+  totalHeight,
+  trackBoxHeight,
+} from './LinearGenomeView/svgcomponents/util.ts'

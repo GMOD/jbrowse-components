@@ -1,48 +1,96 @@
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
-import { YSCALEBAR_LABEL_OFFSET, computeYTicks } from '@jbrowse/wiggle-core'
-import EqualizerIcon from '@mui/icons-material/Equalizer'
+import {
+  MultiRegionDisplayMixin,
+  TrackHeightMixin,
+  fetchAllRegions,
+} from '@jbrowse/plugin-linear-genome-view'
+import {
+  computeYTicks,
+  makeCrossHatchItem,
+  makeScoreSubMenu,
+  resolveRenderState,
+} from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import SharedWiggleMixin from '../shared/SharedWiggleMixin.ts'
+import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
+import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
+import { makeRenderState } from '../shared/wiggleComponentUtils.ts'
+import {
+  makeLineWidthMenuItems,
+  makePointSizeMenuItems,
+  makeRenderingTypeSubMenu,
+  makeResolutionSubMenu,
+  makeShowSubMenu,
+  makeSummaryScoreModeSubMenu,
+} from '../shared/wiggleMenuItems.tsx'
+import {
+  SINGLE_WIGGLE_SOURCE_NAME,
+  WIGGLE_RENDERINGS,
+  YSCALEBAR_LABEL_OFFSET,
+} from '../util.ts'
 
+import type { WiggleDataResult } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnyReactComponentType } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 
-// lazies
-const Tooltip = lazy(() => import('./components/Tooltip.tsx'))
+export type { Region } from '@jbrowse/core/util'
+
+type LGV = LinearGenomeViewModel
+
+const WiggleComponent = lazy(() => import('./components/WiggleComponent.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
-
-// using a map because it preserves order
-const rendererTypes = new Map([
-  ['xyplot', 'XYPlotRenderer'],
-  ['density', 'DensityRenderer'],
-  ['line', 'LinePlotRenderer'],
-])
 
 /**
  * #stateModel LinearWiggleDisplay
- * extends
- * - [SharedWiggleMixin](../sharedwigglemixin)
+ * #category display
+ *
+ * State model factory for the single-source wiggle display.
+ *
+ * #example
+ * A complete `QuantitativeTrack` config to paste into `tracks`. `height` and the
+ * score-range and rendering options (autoscale, min/max score, renderer) are all
+ * config slots on the track itself — see the `QuantitativeTrack` config:
+ * ```js
+ * {
+ *   type: 'QuantitativeTrack',
+ *   trackId: 'coverage',
+ *   name: 'Coverage',
+ *   assemblyNames: ['hg38'],
+ *   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
+ *   displays: [
+ *     {
+ *       type: 'LinearWiggleDisplay',
+ *       displayId: 'coverage-LinearWiggleDisplay',
+ *       height: 100,
+ *     },
+ *   ],
+ * }
+ * ```
  */
-function stateModelFactory(
-  pluginManager: PluginManager,
+export default function stateModelFactory(
+  _pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
   return types
     .compose(
       'LinearWiggleDisplay',
-      SharedWiggleMixin(configSchema),
+      BaseDisplay,
+      TrackHeightMixin(),
+      MultiRegionDisplayMixin(),
+      WiggleCommonMixin(),
       types.model({
         /**
          * #property
@@ -51,299 +99,246 @@ function stateModelFactory(
         /**
          * #property
          */
-        invertedSetting: types.maybe(types.boolean),
+        configuration: ConfigurationReference(configSchema),
       }),
     )
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get DisplayMessageComponent() {
+        return WiggleComponent
+      },
+
+      /**
+       * #getter
+       */
+      get color(): string {
+        return getConf(self, 'color')
+      },
+
+      /**
+       * #getter
+       */
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
+      get useBicolor(): boolean {
+        return getConf(self, 'useBicolor')
+      },
+
+      /**
+       * #getter
+       */
+      get isDensityMode() {
+        return self.renderingType === 'density'
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get ticks() {
+        return computeYTicks({
+          height: self.height,
+          domain: self.domain,
+          scaleType: self.scaleType,
+          minimalTicks: getConf(self, 'minimalTicks'),
+        })
+      },
+
+      /**
+       * #getter
+       * Offset the track label above the plot so the left y-axis stays pinned
+       * to the content edge instead of dodging right of the label. Density mode
+       * draws no left axis (just a top score legend), so let the label overlap.
+       */
+      get prefersOffset() {
+        return !self.isDensityMode
+      },
+
+      /**
+       * #getter
+       */
+      get renderState() {
+        const view = getContainingView(self) as LGV
+        const width = view.trackWidthPx
+        const height = self.height - 2 * YSCALEBAR_LABEL_OFFSET
+        return resolveRenderState(self.domain, domain =>
+          makeRenderState(
+            domain,
+            self.scaleType,
+            self.renderingType,
+            width,
+            height,
+            1,
+            self.scatterPointSize,
+            self.lineWidth,
+          ),
+        )
+      },
+
+      /**
+       * #method
+       */
+      rpcProps() {
+        return {
+          useBicolor: self.useBicolor,
+          bicolorPivot: self.bicolorPivot,
+          resolution: self.resolution,
+        }
+      },
+
+      /**
+       * #method
+       * single-source gpuProps mapped onto the multi-source build path:
+       * - bicolor: no source color override; build emits pos+neg with their
+       *   respective colors
+       * - solid: worker put all features in pos arrays (useBicolor=false);
+       *   non-density modes use the user's color; density uses posColor
+       *   (multi default, so leave source.color undefined)
+       */
+      gpuProps() {
+        const wantsSolidColor = !self.useBicolor && !self.isDensityMode
+        return {
+          sources: [
+            {
+              name: SINGLE_WIGGLE_SOURCE_NAME,
+              color: wantsSolidColor ? self.color : undefined,
+            },
+          ],
+          posColor: self.posColor,
+          negColor: self.negColor,
+          summaryScoreMode: self.summaryScoreMode,
+          isDensityMode: self.isDensityMode,
+          renderingType: self.renderingType,
+        }
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
-      setInverted(arg: boolean) {
-        self.invertedSetting = arg
+      setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
+        self.rpcDataMap.set(displayedRegionIndex, data)
+      },
+
+      /**
+       * #action
+       */
+      setUseBicolor(val?: boolean) {
+        self.configuration.setSlot('useBicolor', val)
+      },
+
+      /**
+       * #action
+       */
+      setColor(color?: string) {
+        self.configuration.setSlot('color', color)
+      },
+
+      /**
+       * #action
+       */
+      setPosColor(color?: string) {
+        self.configuration.setSlot('posColor', color)
+      },
+
+      /**
+       * #action
+       */
+      setNegColor(color?: string) {
+        self.configuration.setSlot('negColor', color)
       },
     }))
-
-    .views(self => ({
+    .actions(self => ({
       /**
-       * #getter
+       * #action
        */
-      get TooltipComponent() {
-        return Tooltip as AnyReactComponentType
-      },
-
-      /**
-       * #getter
-       */
-      get rendererTypeName() {
-        const name = self.rendererTypeNameSimple
-        const rendererType = rendererTypes.get(name)
-        if (!rendererType) {
-          throw new Error(`unknown renderer ${name}`)
-        }
-        return rendererType
-      },
-      /**
-       * #getter
-       * unused currently
-       */
-      get quantitativeStatsRelevantToCurrentZoom() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return self.stats?.currStatsBpPerPx === view.bpPerPx
-      },
-
-      /**
-       * #getter
-       */
-      get graphType() {
-        return (
-          self.rendererTypeName === 'XYPlotRenderer' ||
-          self.rendererTypeName === 'LinePlotRenderer'
-        )
-      },
-      /**
-       * #getter
-       */
-      get inverted() {
-        return self.invertedSetting ?? (getConf(self, 'inverted') as boolean)
-      },
-    }))
-
-    .views(self => {
-      const { renderProps: superRenderProps } = self
-      return {
-        /**
-         * #method
-         */
-        adapterProps() {
-          const superProps = superRenderProps()
-          const { filters, resolution, scaleOpts } = self
-          return {
-            ...superProps,
-            rpcDriverName: self.effectiveRpcDriverName,
-            config: self.rendererConfig,
-            displayCrossHatches: self.displayCrossHatchesSetting,
-            scaleOpts,
-            resolution,
-            filters,
-          }
-        },
-
-        /**
-         * #getter
-         */
-        get ticks() {
-          return computeYTicks({
-            height: self.height,
-            domain: self.domain,
-            scaleType: self.scaleType,
-            minimalTicks: getConf(self, 'minimalTicks') as boolean,
+      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
+        const view = getContainingView(self) as LGV
+        const { adapterConfig } = self
+        if (adapterConfig) {
+          const { bpPerPx } = view
+          const sessionId = getRpcSessionId(self)
+          const { rpcManager } = getSession(self)
+          return fetchAllRegions(self, needed, {
+            call: (regions, ctx) =>
+              rpcManager.call(sessionId, 'RenderWiggleData', {
+                adapterConfig,
+                regions,
+                ...self.rpcProps(),
+                stopToken: ctx.stopToken,
+                bpPerPx,
+                statusCallback: self.makeRegionStatusCallback(
+                  needed[0]!.displayedRegionIndex,
+                ),
+              }),
+            onResult: (idx, result) => {
+              self.setRpcData(idx, result)
+            },
+            onComplete: () => {
+              self.setLoadedBpPerPx(bpPerPx)
+            },
           })
-        },
-      }
-    })
-    .views(self => ({
-      /**
-       * #method
-       */
-      renderProps() {
-        const { inverted, ticks, height, domain } = self
-        const superProps = self.adapterProps()
-        const view = getContainingView(self) as LinearGenomeViewModel
-        const statsRegion = JSON.stringify(view.dynamicBlocks)
-        return {
-          ...self.adapterProps(),
-          notReady:
-            superProps.notReady ||
-            !domain ||
-            self.stats?.statsRegion !== statsRegion,
-          height,
-          ticks,
-          inverted,
-          offset: YSCALEBAR_LABEL_OFFSET,
         }
-      },
-
-      /**
-       * #getter
-       */
-      get fillSetting() {
-        if (self.filled) {
-          return 0
-        } else if (self.minSize === 1) {
-          return 1
-        } else {
-          return 2
-        }
-      },
-      /**
-       * #getter
-       */
-      get quantitativeStatsReady() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        return (
-          view.initialized &&
-          self.featureDensityStatsReadyAndRegionNotTooLarge &&
-          !self.error
-        )
+        return undefined
       },
     }))
-    .views(self => {
-      const { trackMenuItems: superTrackMenuItems } = self
-      const hasRenderings = getConf(self, 'defaultRendering')
-      return {
-        /**
-         * #method
-         * Base track menu items shared by all wiggle displays (Score submenu)
-         */
-        wiggleBaseTrackMenuItems() {
-          return [
-            ...superTrackMenuItems(),
-            {
-              label: 'Score',
-              icon: EqualizerIcon,
-              subMenu: self.scoreTrackMenuItems(),
-            },
-          ]
-        },
-
-        /**
-         * #method
-         * Menu items specific to LinearWiggleDisplay (Color, Inverted, etc.)
-         * Not used by SNPCoverageDisplay
-         */
-        wiggleOnlyTrackMenuItems() {
-          return [
-            ...(self.canHaveFill
-              ? [
-                  {
-                    label: 'Fill mode',
-                    subMenu: ['filled', 'no fill', 'no fill w/ emphasis'].map(
-                      (elt, idx) => ({
-                        label: elt,
-                        type: 'radio',
-                        checked: self.fillSetting === idx,
-                        onClick: () => {
-                          self.setFill(idx)
-                        },
-                      }),
-                    ),
-                  },
-                ]
-              : []),
-
-            ...(hasRenderings
-              ? [
-                  {
-                    label: 'Renderer type',
-                    subMenu: ['xyplot', 'density', 'line'].map(key => ({
-                      label: key,
-                      type: 'radio',
-                      checked: self.rendererTypeNameSimple === key,
-                      onClick: () => {
-                        self.setRendererType(key)
-                      },
-                    })),
-                  },
-                ]
-              : []),
-
-            {
-              label: 'Color',
-              icon: PaletteIcon,
-              onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  SetColorDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
-              },
-            },
-          ]
-        },
-      }
-    })
     .views(self => ({
       /**
        * #method
        */
       trackMenuItems() {
         return [
-          ...self.wiggleBaseTrackMenuItems(),
+          makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
+          ...makeResolutionSubMenu(self),
+          // scaleType: true keeps the scale-type submenu (manhattan, linear-only,
+          // drops it); summary score mode leads the Score submenu, matching
+          // multi-wiggle.
+          makeScoreSubMenu(self, {
+            scaleType: true,
+            leadingItems: makeSummaryScoreModeSubMenu(self),
+          }),
+          // cross hatches are meaningless in density mode (score maps to color,
+          // not height)
+          ...makeShowSubMenu([
+            ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
+          ]),
+          // point size / line width are top-level submenus, each present only in
+          // its respective scatter / line rendering
+          ...makePointSizeMenuItems(self),
+          ...makeLineWidthMenuItems(self),
           {
-            label: 'Show...',
-            icon: VisibilityIcon,
-            subMenu: [
-              {
-                label: 'Show tooltips',
-                type: 'checkbox',
-                checked: self.showTooltipsEnabled,
-                onClick: () => {
-                  self.setShowTooltips(!self.showTooltipsEnabled)
+            label: 'Edit color...',
+            icon: PaletteIcon,
+            onClick: () => {
+              getSession(self).queueDialog(handleClose => [
+                SetColorDialog,
+                {
+                  model: self,
+                  handleClose,
                 },
-              },
-              ...(self.graphType
-                ? [
-                    {
-                      label: 'Show inverted',
-                      type: 'checkbox',
-                      checked: self.inverted,
-                      onClick: () => {
-                        self.setInverted(!self.inverted)
-                      },
-                    },
-                    {
-                      label: 'Show cross hatches',
-                      type: 'checkbox',
-                      checked: self.displayCrossHatchesSetting,
-                      onClick: () => {
-                        self.toggleCrossHatches()
-                      },
-                    },
-                  ]
-                : []),
-            ],
+              ])
+            },
           },
-          ...self.wiggleOnlyTrackMenuItems(),
         ]
       },
     }))
-    .actions(self => {
-      const { renderSvg: superRenderSvg } = self
-
-      return {
-        afterAttach() {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          ;(async () => {
-            const { getQuantitativeStatsAutorun } =
-              await import('../getQuantitativeStatsAutorun.ts')
-            getQuantitativeStatsAutorun(self)
-          })()
-        },
-        /**
-         * #action
-         */
-        async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts, superRenderSvg)
-        },
-      }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { invertedSetting, ...rest } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(invertedSetting !== undefined ? { invertedSetting } : {}),
-      } as typeof snap
-    })
+    .actions(self => ({
+      /**
+       * #action
+       */
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self as LinearWiggleDisplayModel, opts)
+      },
+      /**
+       * #action
+       */
+      startRenderingBackend(backend: WiggleRenderingBackend) {
+        installWiggleRenderingBackend(self, backend)
+      },
+    }))
 }
 
-export type WiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
-export type WiggleDisplayModel = Instance<WiggleDisplayStateModel>
-
-export default stateModelFactory
+export type LinearWiggleDisplayStateModel = ReturnType<typeof stateModelFactory>
+export type LinearWiggleDisplayModel = Instance<LinearWiggleDisplayStateModel>

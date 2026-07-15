@@ -1,11 +1,9 @@
 import { Fragment } from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
+import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { getSession, radToDeg } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
 import Ruler from '../components/Ruler.tsx'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
@@ -15,46 +13,35 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await when(() => model.initialized)
-  const { themeName = 'default', Wrapper = ({ children }) => children } = opts
+  const { themeName = 'default', fontFamily, Wrapper } = opts
   const session = getSession(model)
-  const theme = session.allThemes?.()[themeName]
+  const theme = session.getActiveThemeOptions?.(themeName)
 
-  const { width, tracks, height } = model
-  const shift = 50
+  const { figureSize, staticSlices, offsetRadians, centerXY } = model
   const displayResults = await Promise.all(
-    tracks.map(async track => {
-      const display = track.displays[0]
-      await when(() => display.ready)
-      return { track, result: await display.renderSvg({ ...opts, theme }) }
-    }),
+    model.tracks.map(async track => ({
+      id: track.id,
+      result: await track.displays[0]!.renderSvg({ ...opts, theme }),
+    })),
   )
-
-  const { staticSlices, offsetRadians, centerXY } = model
   const deg = radToDeg(offsetRadians)
 
-  // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
-      <Wrapper>
-        <svg
-          width={width}
-          height={height}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, width + shift * 2, height].toString()}
-        >
-          <SVGBackground width={width} height={height} shift={shift} />
-          <g transform={`translate(${centerXY}) rotate(${deg})`}>
-            {staticSlices.map(slice => (
-              <Ruler key={slice.key} model={model} slice={slice} />
-            ))}
-            {displayResults.map(({ result }, i) => (
-              /* biome-ignore lint/suspicious/noArrayIndexKey: */
-              <Fragment key={i}>{result}</Fragment>
-            ))}
-          </g>
-        </svg>
-      </Wrapper>
-    </ThemeProvider>,
-  )
+  return wrapSvgExport({
+    theme,
+    width: figureSize,
+    height: figureSize,
+    margin: 0,
+    fontFamily,
+    Wrapper,
+    children: (
+      <g transform={`translate(${centerXY}) rotate(${deg})`}>
+        {staticSlices.map(slice => (
+          <Ruler key={slice.key} model={model} slice={slice} />
+        ))}
+        {displayResults.map(({ id, result }) => (
+          <Fragment key={id}>{result}</Fragment>
+        ))}
+      </g>
+    ),
+  })
 }

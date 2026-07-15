@@ -1,12 +1,19 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseConnectionModelFactory } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import configSchema from './configSchema.ts'
+import { isTrack } from './util.ts'
 
+import type { Track } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+/**
+ * #stateModel JBrowse1Connection
+ * Connection that imports tracks from a legacy JBrowse 1 data directory,
+ * composed on the base connection model.
+ */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(
@@ -30,13 +37,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           if (!assemblyName) {
             throw new Error('assembly name required for JBrowse 1 connection')
           }
-          // @ts-expect-error
-          const jb2Tracks = config.tracks?.map(jb1Track => ({
+          const rawTracks = config.tracks
+          const jb1Tracks: Track[] = Array.isArray(rawTracks)
+            ? rawTracks
+            : rawTracks === undefined
+              ? []
+              : isTrack(rawTracks)
+                ? [rawTracks]
+                : Object.entries(rawTracks).map(([label, track]) =>
+                    isTrack(track) ? track : { label, ...track },
+                  )
+          const jb2Tracks = jb1Tracks.map(jb1Track => ({
             ...convertTrackConfig(jb1Track, config.dataRoot || ''),
             assemblyNames: [assemblyName],
           }))
 
-          self.setTrackConfs(jb2Tracks)
+          // the node can be destroyed during the awaits above (e.g. a React
+          // StrictMode double-mount disposes the first rootModel)
+          if (isAlive(self)) {
+            self.setTrackConfs(jb2Tracks)
+          }
         } catch (error) {
           console.error(error)
           session.notifyError(

@@ -1,16 +1,18 @@
-import fs from 'fs'
-import path from 'path'
-import { Readable } from 'stream'
+import fs from 'node:fs'
+import path from 'node:path'
+import { Readable } from 'node:stream'
 
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import {
-  adapterLocationKey,
+  checkStopToken2,
+  checkStopToken,
+  createStopTokenChecker,
+} from '@jbrowse/core/util/stopToken'
+import {
   defaultAttributesToIndex,
   defaultFeatureTypesToExclude,
   generateMeta,
-  indexGff3,
-  indexVcf,
+  indexFiles,
   sanitizeForFilename,
 } from '@jbrowse/text-indexing-core'
 import { ixIxxStream } from 'ixixx'
@@ -164,14 +166,37 @@ async function indexDriver({
   statusCallback: (message: string) => void
   stopToken?: StopToken
 }) {
+  const checker = createStopTokenChecker(stopToken)
+  // accumulate across tracks so an aggregate index reports monotonic progress
+  // rather than resetting to zero at each track. The denominator grows as each
+  // track's size is discovered (we don't stat every file up front), but the
+  // numerator only ever increases
+  let bankedBytes = 0
+  let cumulativeTotal = 0
   const readable = Readable.from(
     indexFiles({
       tracks,
       attributesToIndex,
       outDir,
       featureTypesToExclude,
-      statusCallback,
-      stopToken,
+      checkAbort: () => {
+        checkStopToken2(checker)
+      },
+      makeProgress: () => {
+        let trackTotal = 0
+        return {
+          onStart: bytes => {
+            trackTotal = bytes
+            cumulativeTotal += bytes
+          },
+          onUpdate: bytes => {
+            statusCallback(`${bankedBytes + bytes}/${cumulativeTotal}`)
+          },
+          onDone: () => {
+            bankedBytes += trackTotal
+          },
+        }
+      },
     }),
   )
   statusCallback('Indexing files.')
@@ -186,68 +211,6 @@ async function indexDriver({
     assemblyNames,
   })
   checkStopToken(stopToken)
-}
-
-async function* indexFiles({
-  tracks,
-  attributesToIndex,
-  outDir,
-  featureTypesToExclude,
-  statusCallback,
-  stopToken,
-}: {
-  tracks: Track[]
-  attributesToIndex: string[]
-  outDir: string
-  featureTypesToExclude: string[]
-  statusCallback: (message: string) => void
-  stopToken?: StopToken
-}) {
-  for (const track of tracks) {
-    checkStopToken(stopToken)
-    const { adapter, textSearching } = track
-    const { type } = adapter ?? {}
-    const resolvedAttrs = textSearching?.indexingAttributes ?? attributesToIndex
-    const resolvedExcludes =
-      textSearching?.indexingFeatureTypesToExclude ?? featureTypesToExclude
-    let myTotalBytes: number | undefined
-    const onStart = (totalBytes: number) => {
-      myTotalBytes = totalBytes
-    }
-    const onUpdate = (progressBytes: number) => {
-      statusCallback(`${progressBytes}/${myTotalBytes}`)
-    }
-    if (type === 'Gff3Adapter' || type === 'Gff3TabixAdapter') {
-      yield* indexGff3({
-        config: track,
-        attributesToIndex: resolvedAttrs,
-        inLocation: getLoc(adapterLocationKey[type]!, track),
-        outDir,
-        featureTypesToExclude: resolvedExcludes,
-        onStart,
-        onUpdate,
-      })
-    } else if (type === 'VcfAdapter' || type === 'VcfTabixAdapter') {
-      yield* indexVcf({
-        config: track,
-        attributesToIndex: resolvedAttrs,
-        inLocation: getLoc(adapterLocationKey[type]!, track),
-        outDir,
-        onStart,
-        onUpdate,
-      })
-    }
-  }
-}
-
-function getLoc(attr: string, config: Track) {
-  const elt = config.adapter?.[attr] as
-    | { uri: string; localPath: string }
-    | undefined
-  if (!elt) {
-    throw new Error(`Track ${config.trackId} missing adapter location: ${attr}`)
-  }
-  return elt.uri || elt.localPath
 }
 
 function runIxIxx(readStream: Readable, idxLocation: string, name: string) {

@@ -1,5 +1,5 @@
-import { Dialog } from '@jbrowse/core/ui'
-import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import { ConfirmDialog } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 
 export default function DeletePluginDialog({
   onClose,
@@ -9,45 +9,26 @@ export default function DeletePluginDialog({
   onClose: (s?: string) => void
 }) {
   return (
-    <Dialog
+    <ConfirmDialog
       open
       title={`Remove ${plugin}`}
-      onClose={() => {
+      submitText="Remove"
+      submitColor="error"
+      onCancel={() => {
         onClose()
       }}
+      onSubmit={() => {
+        // delay so the runtime plugin warning doesn't flash before unmount
+        window.setTimeout(() => {
+          onClose(plugin)
+        }, 500)
+      }}
     >
-      <DialogContent>
-        <Typography>
-          Please confirm that you want to remove {plugin}.
-        </Typography>
-        <Typography color="error">
-          Note: if any resources in this session still use this plugin, it may
-          cause your session to crash
-        </Typography>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            onClose()
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          color="error"
-          onClick={() => {
-            // delay so the runtime plugin warning doesn't flash before unmount
-            window.setTimeout(() => {
-              onClose(plugin)
-            }, 500)
-          }}
-        >
-          Remove
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <Typography>Please confirm that you want to remove {plugin}.</Typography>
+      <Typography color="error">
+        Note: if any resources in this session still use this plugin, it may
+        cause your session to crash
+      </Typography>
+    </ConfirmDialog>
   )
 }

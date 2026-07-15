@@ -1,9 +1,14 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  CopyToClipboardButton,
+  Dialog,
+  ErrorBanner,
+  LoadingEllipses,
+  MonospaceTextField,
+} from '@jbrowse/core/ui'
 import { complement, reverse, toLocale, useFetch } from '@jbrowse/core/util'
 import { formatSeqFasta } from '@jbrowse/core/util/formatFastaStrings'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import GetAppIcon from '@mui/icons-material/GetApp'
 import {
@@ -13,7 +18,6 @@ import {
   DialogContent,
   FormControlLabel,
   FormGroup,
-  TextField,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -22,15 +26,6 @@ import { fetchSequence } from './fetchSequence.ts'
 
 import type { BpOffset } from '../types.ts'
 import type { Region } from '@jbrowse/core/util'
-
-const useStyles = makeStyles()({
-  dialogContent: {
-    width: '80em',
-  },
-  textAreaFont: {
-    fontFamily: 'Courier New',
-  },
-})
 
 const GetSequenceDialog = observer(function GetSequenceDialog({
   model,
@@ -44,10 +39,8 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
   }
   handleClose: () => void
 }) {
-  const { classes } = useStyles()
-  const [rev, setReverse] = useState(false)
-  const [copied, setCopied] = useState(false)
-  const [comp, setComplement] = useState(false)
+  const [rev, setRev] = useState(false)
+  const [comp, setComp] = useState(false)
   const { leftOffset, rightOffset } = model
 
   const { data: sequenceChunks, error } = useFetch(
@@ -74,15 +67,15 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
   const sequence = sequenceChunks
     ? formatSeqFasta(
         sequenceChunks.map(chunk => {
-          let chunkSeq = chunk.get('seq')
+          let chunkSeq = chunk.get('seq') as string
           const chunkRefName = chunk.get('refName')
           const chunkStart = chunk.get('start') + 1
           const chunkEnd = chunk.get('end')
           const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-          if (chunkSeq?.length !== chunkEnd - chunkStart + 1) {
+          if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
             throw new Error(
               `${loc} returned ${toLocale(chunkSeq.length)} bases, but should have returned ${toLocale(
-                chunkEnd - chunkStart,
+                chunkEnd - chunkStart + 1,
               )}`,
             )
           }
@@ -113,41 +106,31 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         model.setOffsets()
       }}
     >
-      <DialogContent>
+      <DialogContent style={{ width: '80em' }}>
         {error ? (
           <ErrorBanner error={error} />
         ) : loading ? (
           <LoadingEllipses message="Retrieving sequences" />
         ) : null}
-        <TextField
-          variant="outlined"
-          multiline
+        <MonospaceTextField
+          fullWidth
+          readOnly
           minRows={5}
           maxRows={10}
           disabled={sequenceTooLarge}
-          className={classes.dialogContent}
-          fullWidth
           value={
             sequenceTooLarge
               ? 'Reference sequence too large to display, use the download FASTA button'
               : sequence
           }
-          slotProps={{
-            input: {
-              readOnly: true,
-              classes: {
-                input: classes.textAreaFont,
-              },
-            },
-          }}
         />
         <FormGroup>
           <FormControlLabel
             control={
               <Checkbox
-                value={rev}
+                checked={rev}
                 onChange={event => {
-                  setReverse(event.target.checked)
+                  setRev(event.target.checked)
                 }}
               />
             }
@@ -156,9 +139,9 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           <FormControlLabel
             control={
               <Checkbox
-                value={comp}
+                checked={comp}
                 onChange={event => {
-                  setComplement(event.target.checked)
+                  setComp(event.target.checked)
                 }}
               />
             }
@@ -170,22 +153,17 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={async () => {
-            const { default: copy } = await import('copy-to-clipboard')
-            await copy(sequence)
-            setCopied(true)
-            setTimeout(() => {
-              setCopied(false)
-            }, 500)
-          }}
+        <CopyToClipboardButton
+          value={sequence}
+          copiedLabel="Copied"
           disabled={loading || !!error || sequenceTooLarge}
           color="primary"
           startIcon={<ContentCopyIcon />}
         >
-          {copied ? 'Copied' : 'Copy to clipboard'}
-        </Button>
+          Copy to clipboard
+        </CopyToClipboardButton>
         <Button
+          variant="contained"
           onClick={async () => {
             const { saveAs } = await import('@jbrowse/core/util')
             saveAs(
@@ -201,7 +179,12 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         >
           Download FASTA
         </Button>
-        <Button onClick={handleClose} variant="contained">
+        <Button
+          onClick={() => {
+            handleClose()
+          }}
+          variant="contained"
+        >
           Close
         </Button>
       </DialogActions>

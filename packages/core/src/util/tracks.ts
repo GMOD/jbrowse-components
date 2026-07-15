@@ -4,6 +4,7 @@ import {
   isRoot,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
+import { observable, runInAction, untracked } from 'mobx'
 
 import {
   getFileHandle,
@@ -11,8 +12,9 @@ import {
   verifyPermission,
 } from './fileHandleStore.ts'
 import { getEnv, getSession, objectHash } from './mstUtils.ts'
-import { readConfObject } from '../configuration/index.ts'
+import { isConfigurationSlot, readConfObject } from '../configuration/index.ts'
 
+import type PluginManager from '../PluginManager.ts'
 import type {
   BlobLocation,
   FileHandleLocation,
@@ -27,8 +29,6 @@ import type {
   types,
 } from '@jbrowse/mobx-state-tree'
 
-/* utility functions for use by track models and so forth */
-
 // Cache for track assembly names - keyed by track object to avoid
 // repeated track.configuration access which triggers MobX machinery
 const trackAssemblyNamesCache = new WeakMap<IAnyStateTreeNode, string[]>()
@@ -38,7 +38,6 @@ export function getTrackAssemblyNames(
 ) {
   let cached = trackAssemblyNamesCache.get(track)
   if (!cached) {
-    // Only access track.configuration on cache miss
     cached = getConfAssemblyNames(track.configuration)
     trackAssemblyNamesCache.set(track, cached)
   }
@@ -47,11 +46,11 @@ export function getTrackAssemblyNames(
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
-    | string[]
-    | undefined
+    string[] | undefined
   if (!trackAssemblyNames) {
-    // Check if it's an assembly sequence track
-    const parent = getParent<any>(conf)
+    const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(
+      conf,
+    )
     if ('sequence' in parent) {
       return [readConfObject(parent, 'name') as string]
     } else {
@@ -71,7 +70,11 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
   }
   let highestRpcSessionId: string | undefined
 
-  for (let node = thisNode; !isRoot(node); node = getParent<any>(node)) {
+  for (
+    let node = thisNode;
+    !isRoot(node);
+    node = getParent<IAnyStateTreeNode>(node)
+  ) {
     if ('rpcSessionId' in node) {
       highestRpcSessionId = (node as NodeWithRpcSessionId).rpcSessionId
     }
@@ -84,43 +87,23 @@ export function getRpcSessionId(thisNode: IAnyStateTreeNode) {
   return highestRpcSessionId
 }
 
-/**
- * given an MST node, get the renderprops of the first parent container that
- * has renderProps
- * @param node -
- * @returns renderprops, or empty object if none found
- */
-export function getParentRenderProps(node: IAnyStateTreeNode) {
-  for (
-    let currentNode = getParent<any>(node);
-    !isRoot(currentNode);
-    currentNode = getParent(currentNode)
-  ) {
-    if ('renderProps' in currentNode) {
-      return currentNode.renderProps()
-    }
-  }
-
-  return {}
-}
-
 export const UNKNOWN = 'UNKNOWN'
 export const UNSUPPORTED = 'UNSUPPORTED'
 
 let blobMap: Record<string, File> = {}
 
-// get a specific blob
 export function getBlob(id: string) {
   return blobMap[id]
 }
 
-// used to export entire context to webworker
 export function getBlobMap() {
   return blobMap
 }
 
-// TODO:IS THIS BAD?
-// used in new contexts like webworkers
+// Populates the blobMap in a fresh JS realm (e.g. a web worker, which starts
+// with an empty module-level blobMap). RPC args are the only channel into the
+// worker, so the main thread ships its full blobMap and the worker replaces its
+// own here before adapters call the synchronous getBlob() during openLocation.
 export function setBlobMap(map: Record<string, File>) {
   blobMap = map
 }
@@ -145,37 +128,40 @@ export function storeBlobLocation(
   return location
 }
 
-// In-memory cache of File objects from FileSystemFileHandles
-// This allows openLocation to remain synchronous while FileHandle access is async
-let fileHandleCache: Record<string, File> = {}
+// openLocation is synchronous, so File objects are cached here after async handle
+// resolution. Observable so an open LocalFileChooser reactively clears its "needs
+// reload" notice once a restore (afterAttach / "Restore access") populates the
+// cache; the worker/RPC readers run outside any reaction so nothing else
+// subscribes.
+const fileHandleCache = observable.map<string, File>()
 
 export function getFileFromCache(handleId: string) {
-  return fileHandleCache[handleId]
+  return fileHandleCache.get(handleId)
 }
 
 export function setFileInCache(handleId: string, file: File) {
-  fileHandleCache[handleId] = file
+  runInAction(() => {
+    fileHandleCache.set(handleId, file)
+  })
 }
 
 export function clearFileFromCache(handleId: string) {
-  delete fileHandleCache[handleId]
+  runInAction(() => {
+    fileHandleCache.delete(handleId)
+  })
 }
 
-export function getFileHandleCache() {
-  return fileHandleCache
+export function hasFileHandlesInCache() {
+  // read in RpcMethodType.serializeArguments, which an RPC-fetch autorun can
+  // reach; untracked so populating the cache never re-triggers that autorun
+  return untracked(() => fileHandleCache.size > 0)
 }
 
-export function setFileHandleCache(cache: Record<string, File>) {
-  fileHandleCache = cache
-}
-
-// Async function to resolve handle and populate cache
-// Returns the File if permission is granted, throws if not
 export async function ensureFileHandleReady(
   handleId: string,
   requestPermission = true,
 ) {
-  const cached = fileHandleCache[handleId]
+  const cached = fileHandleCache.get(handleId)
   if (cached) {
     return cached
   }
@@ -195,7 +181,7 @@ export async function ensureFileHandleReady(
   }
 
   const file = await handle.getFile()
-  fileHandleCache[handleId] = file
+  setFileInCache(handleId, file)
   return file
 }
 
@@ -204,7 +190,7 @@ export async function storeFileHandleLocation(
 ): Promise<FileHandleLocation> {
   const handleId = await storeFileHandle(handle)
   const file = await handle.getFile()
-  fileHandleCache[handleId] = file
+  setFileInCache(handleId, file)
   return {
     locationType: 'FileHandleLocation',
     name: handle.name,
@@ -216,48 +202,48 @@ export async function restoreFileHandles(
   handleIds: string[],
   requestPermission = false,
 ) {
-  const results = []
-  for (const handleId of handleIds) {
-    try {
-      await ensureFileHandleReady(handleId, requestPermission)
-      results.push({ handleId, success: true })
-    } catch (e) {
-      results.push({ handleId, success: false, error: e })
-    }
-  }
-  return results
+  const settled = await Promise.allSettled(
+    handleIds.map(handleId =>
+      ensureFileHandleReady(handleId, requestPermission),
+    ),
+  )
+  return settled.map((result, i) =>
+    result.status === 'fulfilled'
+      ? { handleId: handleIds[i]!, success: true as const }
+      : {
+          handleId: handleIds[i]!,
+          success: false as const,
+          error: result.reason,
+        },
+  )
 }
 
-export function findFileHandleIds(
-  obj: unknown,
-  handleIds = new Set<string>(),
-  seen = new WeakSet<object>(),
-) {
-  if (!obj || typeof obj !== 'object') {
-    return handleIds
-  }
-
-  if (seen.has(obj)) {
-    return handleIds
-  }
-  seen.add(obj)
-
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      findFileHandleIds(item, handleIds, seen)
+export function findFileHandleIds(obj: unknown) {
+  const handleIds = new Set<string>()
+  const seen = new WeakSet<object>()
+  function walk(o: unknown) {
+    if (!o || typeof o !== 'object' || seen.has(o)) {
+      return
     }
-  } else {
-    const record = obj as Record<string, unknown>
-    if (
-      record.locationType === 'FileHandleLocation' &&
-      typeof record.handleId === 'string'
-    ) {
-      handleIds.add(record.handleId)
-    }
-    for (const value of Object.values(record)) {
-      findFileHandleIds(value, handleIds, seen)
+    seen.add(o)
+    if (Array.isArray(o)) {
+      for (const item of o) {
+        walk(item)
+      }
+    } else {
+      const record = o as Record<string, unknown>
+      if (
+        record.locationType === 'FileHandleLocation' &&
+        typeof record.handleId === 'string'
+      ) {
+        handleIds.add(record.handleId)
+      }
+      for (const value of Object.values(record)) {
+        walk(value)
+      }
     }
   }
+  walk(obj)
   return handleIds
 }
 
@@ -265,11 +251,10 @@ export async function restoreFileHandlesFromSnapshot(
   sessionSnapshot: unknown,
   requestPermission = false,
 ) {
-  const handleIds = findFileHandleIds(sessionSnapshot)
-  if (handleIds.size > 0) {
-    return restoreFileHandles([...handleIds], requestPermission)
-  }
-  return []
+  return restoreFileHandles(
+    [...findFileHandleIds(sessionSnapshot)],
+    requestPermission,
+  )
 }
 
 /**
@@ -285,6 +270,9 @@ export function makeIndex(location: FileLocation, suffix: string) {
     return {
       uri: location.uri + suffix,
       locationType: 'UriLocation',
+      // carry the parent's baseUri so a derived sibling index resolves against
+      // the same config location as the file it indexes
+      ...(location.baseUri ? { baseUri: location.baseUri } : {}),
     }
   } else if ('localPath' in location) {
     return {
@@ -328,33 +316,23 @@ export type TrackTypeGuesser = (
   file?: FileLocation,
 ) => string | undefined
 
+// Handles both forward slashes and Windows backslashes in file:// URLs
+function filenameFromPath(path: string) {
+  return path.replaceAll('\\', '/').split('/').at(-1) ?? ''
+}
+
 export function getFileName(track: FileLocation) {
-  const uri = 'uri' in track ? track.uri : undefined
-  const localPath = 'localPath' in track ? track.localPath : undefined
-  const blob = 'blobId' in track ? track : undefined
-  const fileHandle = 'handleId' in track ? track : undefined
-
-  if (blob?.name) {
-    return blob.name
+  switch (track.locationType) {
+    case 'BlobLocation':
+    case 'FileHandleLocation':
+      return track.name
+    case 'UriLocation':
+      return filenameFromPath(track.uri)
+    case 'LocalPathLocation':
+      return filenameFromPath(track.localPath)
+    default:
+      return ''
   }
-
-  if (fileHandle?.name) {
-    return fileHandle.name
-  }
-
-  if (uri) {
-    // Normalize path separators and find the last one
-    // This handles both forward slashes and Windows backslashes in file:// URLs
-    const normalized = uri.replace(/\\/g, '/')
-    return normalized.slice(normalized.lastIndexOf('/') + 1)
-  }
-
-  if (localPath) {
-    const normalized = localPath.replace(/\\/g, '/')
-    return normalized.slice(normalized.lastIndexOf('/') + 1)
-  }
-
-  return ''
 }
 
 export function guessAdapter(
@@ -366,14 +344,9 @@ export function guessAdapter(
   if (model) {
     const { pluginManager } = getEnv(model)
     const adapterGuesser = pluginManager.evaluateExtensionPoint(
+      /** #extensionPoint Core-guessAdapterForLocation | sync | Guess an adapter config from a file location */
       'Core-guessAdapterForLocation',
-      (
-        _file: FileLocation,
-        _index?: FileLocation,
-        _adapterHint?: string,
-      ): AdapterConfig | undefined => {
-        return undefined
-      },
+      (): AdapterConfig | undefined => undefined,
     ) as AdapterGuesser
 
     const adapter = adapterGuesser(file, index, adapterHint)
@@ -398,10 +371,9 @@ export function guessTrackType(
     const trackTypeGuesser = getEnv(
       session,
     ).pluginManager.evaluateExtensionPoint(
+      /** #extensionPoint Core-guessTrackTypeForLocation | sync | Guess a track type from a file location */
       'Core-guessTrackTypeForLocation',
-      (_adapterName: string): AdapterConfig | undefined => {
-        return undefined
-      },
+      (): string | undefined => undefined,
     ) as TrackTypeGuesser
 
     const trackType = trackTypeGuesser(adapterType, file)
@@ -412,20 +384,87 @@ export function guessTrackType(
   return 'FeatureTrack'
 }
 
-export function generateUnsupportedTrackConf(
+export interface LooseTrackInput {
+  uri: string
+  index?: string
+  [key: string]: unknown
+}
+
+/**
+ * Expand a loose track description — a bare data-file URI, or an object with
+ * `uri` (and optional `index`) plus any extra config keys — into a full track
+ * config, the same inference the "Add track" flow does: the adapter and track
+ * type are guessed from the file via the format plugins, a stable `trackId` and
+ * a `name` are derived from the filename, and the assembly is stamped on. Extra
+ * keys on the input (`name`, `category`, `displays`, ...) override the inferred
+ * defaults. Takes a `pluginManager` (not a model) so it runs headlessly — in a
+ * worker/Node export as well as the browser. Throws when no format matches, so
+ * the caller can ask for a full config instead.
+ */
+export function guessTrackConf(
+  input: string | LooseTrackInput,
+  pluginManager: PluginManager,
+  assemblyName?: string,
+) {
+  const { uri, index, ...extra } =
+    typeof input === 'string' ? { uri: input } : input
+  const file = { uri, locationType: 'UriLocation' } as const
+  const indexLocation = index
+    ? ({ uri: index, locationType: 'UriLocation' } as const)
+    : undefined
+  const adapterGuesser = pluginManager.evaluateExtensionPoint(
+    'Core-guessAdapterForLocation',
+    () => undefined,
+  ) as AdapterGuesser
+  const adapter = adapterGuesser(file, indexLocation, undefined)
+  if (!adapter || adapter.type === UNKNOWN) {
+    throw new Error(
+      `could not infer a track type from "${uri}"; pass a full track config instead`,
+    )
+  }
+  const trackTypeGuesser = pluginManager.evaluateExtensionPoint(
+    'Core-guessTrackTypeForLocation',
+    () => undefined,
+  ) as TrackTypeGuesser
+  const name = getFileName(file)
+  return {
+    trackId: `${name}-${objectHash(adapter).slice(0, 8)}`,
+    type: trackTypeGuesser(adapter.type, file) ?? 'FeatureTrack',
+    name,
+    assemblyNames: assemblyName ? [assemblyName] : [],
+    adapter,
+    ...extra,
+  }
+}
+
+function generateProblemTrackConf(
   trackName: string,
-  trackUrl: string,
   categories: string[] | undefined,
+  label: string,
+  description: string,
 ) {
   const conf = {
     type: 'FeatureTrack',
-    name: `${trackName} (Unsupported)`,
-    description: `Support not yet implemented for "${trackUrl}"`,
+    name: `${trackName} (${label})`,
+    description,
     category: categories,
     trackId: '',
   }
   conf.trackId = objectHash(conf)
   return conf
+}
+
+export function generateUnsupportedTrackConf(
+  trackName: string,
+  trackUrl: string,
+  categories: string[] | undefined,
+) {
+  return generateProblemTrackConf(
+    trackName,
+    categories,
+    'Unsupported',
+    `Support not yet implemented for "${trackUrl}"`,
+  )
 }
 
 export function generateUnknownTrackConf(
@@ -433,28 +472,24 @@ export function generateUnknownTrackConf(
   trackUrl: string,
   categories?: string[],
 ) {
-  const conf = {
-    type: 'FeatureTrack',
-    name: `${trackName} (Unknown)`,
-    description: `Could not determine track type for "${trackUrl}"`,
-    category: categories,
-    trackId: '',
-  }
-  conf.trackId = objectHash(conf)
-  return conf
+  return generateProblemTrackConf(
+    trackName,
+    categories,
+    'Unknown',
+    `Could not determine track type for "${trackUrl}"`,
+  )
 }
 
 export function getTrackName(
-  conf: AnyConfigurationModel | { name?: string; type?: string },
+  conf:
+    AnyConfigurationModel | { name?: string; type?: string; trackId?: string },
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
-  // Handle both MST models and plain objects
-  const trackName = isStateTreeNode(conf)
+  const isMst = isStateTreeNode(conf)
+  const trackName = isMst
     ? (readConfObject(conf, 'name') as string)
     : (conf.name ?? '')
-  const trackType = isStateTreeNode(conf)
-    ? (readConfObject(conf, 'type') as string)
-    : conf.type
+  const trackType = isMst ? (readConfObject(conf, 'type') as string) : conf.type
   if (!trackName && trackType === 'ReferenceSequenceTrack') {
     const asm = session.assemblies.find(a => a.sequence === conf)
     return asm
@@ -463,7 +498,10 @@ export function getTrackName(
         })`
       : 'Reference sequence'
   }
-  return trackName
+  const trackId = isMst
+    ? (readConfObject(conf, 'trackId') as string)
+    : (conf.trackId ?? '')
+  return trackName || trackId
 }
 
 type MSTArray<T extends IAnyType> = Instance<ReturnType<typeof types.array<T>>>
@@ -477,103 +515,147 @@ interface GenericView {
   tracks: MSTArray<MinimalTrack>
 }
 
+interface DisplayInitialSnapshot {
+  type?: string
+  [key: string]: unknown
+}
+
 export function showTrackGeneric(
   self: GenericView,
   trackId: string,
   initialSnapshot = {},
-  displayInitialSnapshot = {},
+  displayInitialSnapshot: DisplayInitialSnapshot = {},
+  inlineConf?: Record<string, unknown>,
 ) {
   const { pluginManager } = getEnv(self)
   const session = getSession(self)
 
-  // Check if track is already shown
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
     return found
   }
 
-  const rawConf = session.tracksById[trackId]
-  if (!rawConf) {
-    throw new Error(`Could not resolve identifier "${trackId}"`)
-  }
+  // Single choke point for all "open a track" paths — errors surface as
+  // snackbars. Config is validated before the push so the open set never holds
+  // a broken track.
+  try {
+    const rawConf = inlineConf ?? session.getTrackById(trackId)
+    if (!rawConf) {
+      throw new Error(`Could not resolve identifier "${trackId}"`)
+    }
 
-  // Allow plugins to preprocess the track config (e.g. to add default displays)
-  // Use getSnapshot for MST models, structuredClone for plain objects
-  const confSnapshot = structuredClone(
-    isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
-  )
-  const conf = pluginManager.evaluateExtensionPoint(
-    'Core-preProcessTrackConfig',
-    confSnapshot,
-  ) as typeof rawConf
-
-  const trackType = pluginManager.getTrackType(conf.type)
-  if (!trackType) {
-    throw new Error(`Unknown track type ${conf.type}`)
-  }
-
-  // Find a compatible display for this view type
-  const viewType = pluginManager.getViewType(self.type)!
-  const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
-  const displays = conf.displays ?? []
-  const displayConf = displays.find((d: { type: string }) =>
-    supportedDisplays.has(d.type),
-  )
-
-  // Find a compatible display type for this view
-  // If displayInitialSnapshot specifies a type, use that instead
-  const snapshotType = (displayInitialSnapshot as { type?: string }).type
-  const defaultDisplayType =
-    displayConf?.type ??
-    trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
-  const displayType = snapshotType ?? defaultDisplayType
-
-  if (!displayType) {
-    throw new Error(
-      `Could not find a compatible display for view type ${self.type}`,
+    const confSnapshot = structuredClone(
+      isStateTreeNode(rawConf) ? getSnapshot(rawConf) : rawConf,
     )
+    const conf = pluginManager.evaluateExtensionPoint(
+      'Core-preProcessTrackConfig',
+      confSnapshot,
+    ) as typeof rawConf
+
+    const trackType = pluginManager.getTrackType(conf.type)
+    try {
+      trackType.configSchema.create(conf, getEnv(self))
+    } catch (e) {
+      throw new Error(`Track "${trackId}" has an invalid configuration: ${e}`, {
+        cause: e,
+      })
+    }
+
+    const viewType = pluginManager.getViewType(self.type)
+    const supportedDisplays = new Set(viewType.displayTypes.map(d => d.name))
+    const displays = conf.displays ?? []
+    const displayConf = displays.find((d: { type: string }) =>
+      supportedDisplays.has(d.type),
+    )
+
+    const displayType =
+      displayInitialSnapshot.type ??
+      displayConf?.type ??
+      trackType.displayTypes.find(d => supportedDisplays.has(d.name))?.name
+
+    if (!displayType) {
+      throw new Error(
+        `Could not find a compatible display for view type ${self.type}`,
+      )
+    }
+
+    const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
+
+    const track = trackType.stateModel.create({
+      ...initialSnapshot,
+      type: conf.type,
+      configuration: inlineConf ?? trackId,
+      displays: [
+        {
+          ...displayConf,
+          type: displayType,
+          configuration: displayId,
+          ...displayInitialSnapshot,
+        },
+      ],
+    })
+    self.tracks.push(track)
+
+    // Display settings (height, color, …) are config slots now, not display
+    // instance props — passed in the display snapshot they'd be dropped as
+    // unknown MST keys. Route the ones that are real slots onto the persistent
+    // display config so they take effect and survive hide/retick (#5591). Runs
+    // after the push so the display's config reference can resolve.
+    const display = track.displays[0] as {
+      configuration: AnyConfigurationModel
+    }
+    for (const [key, value] of Object.entries(displayInitialSnapshot)) {
+      if (key !== 'type' && isConfigurationSlot(display.configuration, key)) {
+        display.configuration.setSlot(key, value)
+      }
+    }
+    // if this track came from a connection, persist its config so it survives
+    // reload without re-establishing the connection (no-op otherwise)
+    session.captureConnectionTrack?.(trackId)
+    return track
+  } catch (e) {
+    session.notifyError(`${e}`, e)
+    return undefined
   }
+}
 
-  // Generate displayId based on the actual display type being used
-  const displayId = displayConf?.displayId ?? `${trackId}-${displayType}`
+interface DisplaySnapshot {
+  id: string
+  [key: string]: unknown
+}
+interface TrackSnapshot {
+  id: string
+  displays: DisplaySnapshot[]
+  [key: string]: unknown
+}
 
-  // Extract initial state properties from displayConf (excluding config-specific fields)
-  const {
-    type: _type,
-    displayId: _displayId,
-    ...displayConfState
-  } = displayConf ?? {}
-
-  // Create track with just the trackId - the ConfigurationReference will resolve it
-  const track = trackType.stateModel.create({
-    ...initialSnapshot,
-    type: conf.type,
-    configuration: trackId,
-    displays: [
-      {
-        type: displayType,
-        configuration: displayId,
-        ...displayConfState,
-        ...displayInitialSnapshot,
-      },
-    ],
-  })
-  self.tracks.push(track)
-  return track
+// Strip a track's identifier and its nested display identifiers (both are
+// types.identifier) so a duplicated/copied snapshot doesn't collide with the
+// source's ids when added back into the same session tree.
+export function stripTrackIds(tracks: TrackSnapshot[]) {
+  return tracks.map(({ id, displays, ...rest }) => ({
+    ...rest,
+    displays: displays.map(({ id, ...d }) => d),
+  }))
 }
 
 export function hideTrackGeneric(self: GenericView, trackId: string) {
   const t = self.tracks.find(t => t.configuration.trackId === trackId)
   if (t) {
     self.tracks.remove(t)
-    return 1
+    // drop the persisted connection-track config if no other view holds it
+    // (persisted → guards saved-session size; the volatile working-copy cache
+    // in SessionTracks is deliberately not pruned, see editableTrackConfigs)
+    getSession(self).pruneConnectionTrackConfig?.(trackId)
+    return true
   }
-  return 0
+  return false
 }
 
+// Returns true if the track is now shown, false if it was hidden or failed to
+// open (callers use this to e.g. record only newly-opened tracks as recent).
 export function toggleTrackGeneric(self: GenericView, trackId: string) {
-  const hiddenCount = hideTrackGeneric(self, trackId)
-  if (!hiddenCount) {
-    showTrackGeneric(self, trackId)
-  }
+  return hideTrackGeneric(self, trackId)
+    ? false
+    : !!showTrackGeneric(self, trackId)
 }

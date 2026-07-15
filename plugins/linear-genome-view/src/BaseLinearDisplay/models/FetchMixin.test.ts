@@ -146,6 +146,46 @@ describe('FetchMixin: cancellation', () => {
   })
 })
 
+describe('FetchMixin: user cancel + retry', () => {
+  it('cancelFetchByUser stops the fetch and sets a durable fetchCanceled flag', () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {})) // never resolves
+    expect(m.isLoading).toBe(true)
+    m.cancelFetchByUser()
+    expect(m.isLoading).toBe(false)
+    expect(m.fetchCanceled).toBe(true)
+    expect(m.activeStopToken).toBeUndefined()
+  })
+
+  it('cancelFetchByUser does NOT bump fetchGeneration (so autoruns do not restart)', () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {}))
+    const before = m.fetchGeneration
+    m.cancelFetchByUser()
+    expect(m.fetchGeneration).toBe(before)
+  })
+
+  it('a new runFetch clears fetchCanceled (the retry path)', async () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {}))
+    m.cancelFetchByUser()
+    expect(m.fetchCanceled).toBe(true)
+    m.runFetch(async () => {})
+    expect(m.fetchCanceled).toBe(false)
+    await tick()
+    await tick()
+  })
+
+  it('internal cancelFetch clears fetchCanceled (it is a retrigger, not a stop)', () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {}))
+    m.cancelFetchByUser()
+    expect(m.fetchCanceled).toBe(true)
+    m.cancelFetch()
+    expect(m.fetchCanceled).toBe(false)
+  })
+})
+
 describe('FetchMixin: fetchGeneration bump semantics', () => {
   it('bumps once on successful completion', async () => {
     const m = makeModel()
@@ -211,6 +251,114 @@ describe('FetchMixin: status message', () => {
     m.setStatusMessage('working...')
     m.cancelFetch()
     expect(m.statusMessage).toBeUndefined()
+  })
+})
+
+describe('FetchMixin: progress reporting', () => {
+  it('setStatusMessage splits a determinate status into message + fraction', () => {
+    const m = makeModel()
+    m.setStatusMessage({ message: 'Downloading', current: 1, total: 4 })
+    expect(m.statusMessage).toBe('Downloading')
+    expect(m.statusProgress).toBe(0.25)
+  })
+
+  it('setStatusMessage leaves progress undefined for an indeterminate status', () => {
+    const m = makeModel()
+    m.setStatusMessage('Processing')
+    expect(m.statusMessage).toBe('Processing')
+    expect(m.statusProgress).toBeUndefined()
+  })
+
+  it('setRegionStatus aggregates concurrent regions into one bar', () => {
+    const m = makeModel()
+    // two regions downloading in parallel: the bar reflects Σcurrent/Σtotal,
+    // not whichever region reported last
+    m.setRegionStatus(0, { message: 'Downloading', current: 30, total: 100 })
+    m.setRegionStatus(1, { message: 'Downloading', current: 10, total: 100 })
+    expect(m.statusMessage).toBe('Downloading')
+    expect(m.statusProgress).toBeCloseTo(0.2)
+  })
+
+  it('setRegionStatus(key, undefined) drops a region from the aggregate', () => {
+    const m = makeModel()
+    m.setRegionStatus(0, { message: 'Downloading', current: 50, total: 100 })
+    m.setRegionStatus(1, { message: 'Downloading', current: 0, total: 100 })
+    expect(m.statusProgress).toBeCloseTo(0.25)
+    m.setRegionStatus(1, undefined)
+    expect(m.statusProgress).toBeCloseTo(0.5)
+  })
+
+  it('clears the aggregate when the last region finishes', () => {
+    const m = makeModel()
+    m.setRegionStatus(0, { message: 'Downloading', current: 1, total: 2 })
+    m.setRegionStatus(0, undefined)
+    expect(m.statusMessage).toBeUndefined()
+    expect(m.statusProgress).toBeUndefined()
+  })
+
+  it('cancelFetch clears statusProgress and the per-region bookkeeping', () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {}))
+    m.setRegionStatus(0, { message: 'Downloading', current: 1, total: 2 })
+    expect(m.statusProgress).toBeCloseTo(0.5)
+    m.cancelFetch()
+    expect(m.statusProgress).toBeUndefined()
+    // a fresh fetch must not inherit the stale region entry
+    m.setRegionStatus(1, { message: 'Downloading', current: 1, total: 4 })
+    expect(m.statusProgress).toBeCloseTo(0.25)
+  })
+})
+
+describe('FetchMixin: status callback throttle', () => {
+  it('drops rapid callback updates within the 100ms window, applies the first', () => {
+    const m = makeModel()
+    const cb = m.makeStatusCallback()
+    const now = jest.spyOn(Date, 'now')
+
+    now.mockReturnValue(1000)
+    cb({ message: 'Downloading', current: 1, total: 100 })
+    expect(m.statusProgress).toBeCloseTo(0.01)
+
+    // +50ms: inside the window, dropped, value unchanged
+    now.mockReturnValue(1050)
+    cb({ message: 'Downloading', current: 50, total: 100 })
+    expect(m.statusProgress).toBeCloseTo(0.01)
+
+    // +200ms from the last applied: past the window, applied
+    now.mockReturnValue(1200)
+    cb({ message: 'Downloading', current: 80, total: 100 })
+    expect(m.statusProgress).toBeCloseTo(0.8)
+  })
+
+  it('passes updates spaced beyond the window through unthrottled', () => {
+    const m = makeModel()
+    const cb = m.makeStatusCallback()
+    const now = jest.spyOn(Date, 'now')
+
+    now.mockReturnValue(5000)
+    cb('one')
+    expect(m.statusMessage).toBe('one')
+
+    now.mockReturnValue(5150)
+    cb('two')
+    expect(m.statusMessage).toBe('two')
+  })
+
+  it('resetStatus reopens the window so the next fetch reports immediately', () => {
+    const m = makeModel()
+    const cb = m.makeStatusCallback()
+    const now = jest.spyOn(Date, 'now')
+
+    now.mockReturnValue(2000)
+    cb('first')
+    expect(m.statusMessage).toBe('first')
+
+    m.resetStatus()
+
+    // only +50ms since the last write, but the reset cleared the throttle clock
+    now.mockReturnValue(2050)
+    cb('after reset')
+    expect(m.statusMessage).toBe('after reset')
   })
 })
 

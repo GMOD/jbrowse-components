@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react'
 
-import { stitch } from '../../util.tsx'
+import { stitch } from '../../../util/seqUtils.ts'
 import { cdsColor } from '../consts.ts'
 import { splitString } from '../util.ts'
 import SequenceDisplay from './SequenceDisplay.tsx'

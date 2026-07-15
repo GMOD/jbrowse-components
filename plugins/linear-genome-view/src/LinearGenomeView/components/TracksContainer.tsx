@@ -1,28 +1,62 @@
 import { Suspense, lazy, useRef } from 'react'
+import type { ReactNode } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
-import { getEnv } from '@jbrowse/core/util'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines.tsx'
+import OverviewHighlightBand from './OverviewHighlightBand.tsx'
+import PaddingBlocks from './PaddingBlocks.tsx'
+import RangeSelectOverlay from './RangeSelectOverlay.tsx'
 import Rubberband from './Rubberband.tsx'
 import Scalebar from './Scalebar.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
-import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import { useRangeSelect } from './useRangeSelect.ts'
+import { getHighlightColor, highlightKey } from './util.ts'
+import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import { useSideScroll } from './useSideScroll.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LinearGenomeView-TracksContainerComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel }
+    }
+    'LinearGenomeView-ScalebarHighlightComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel }
+    }
+    'LinearGenomeView-HighlightSVGComponent': {
+      args: ReactNode[]
+      result: ReactNode[]
+      props: { model: LinearGenomeViewModel; height: number }
+    }
+  }
+}
+
 const CenterLine = lazy(() => import('./CenterLine.tsx'))
 const Highlight = lazy(() => import('./Highlight.tsx'))
-const RubberbandSpan = lazy(() => import('./RubberbandSpan.tsx'))
 
 const useStyles = makeStyles()({
   tracksContainer: {
     position: 'relative',
     contain: 'layout style',
+  },
+  scalebarHighlights: {
+    position: 'absolute',
+    top: 0,
+    height: SCALE_BAR_HEIGHT,
+    width: '100%',
+    // above Rubberband div (825) so bands show over the scalebar,
+    // below RubberbandSpan (830) so the selection rect stays on top
+    zIndex: 826,
+    pointerEvents: 'none',
   },
 })
 
@@ -37,38 +71,20 @@ const TracksContainer = observer(function TracksContainer({
 }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
-  const { mouseDown: mouseDown1, mouseUp } = useSideScroll(model)
-  const {
-    stickyViewHeaders,
-    rubberbandTop,
-    showGridlines,
-    showCenterLine,
-    isScalebarRefNameMenuOpen,
-  } = model
+  const { mouseDown: sideScrollMouseDown, mouseUp } = useSideScroll(model)
+  const { showGridlines, showCenterLine } = model
   const ref = useRef<HTMLDivElement>(null)
-  const {
-    guideX,
-    rubberbandOn,
-    leftBpOffset,
-    rightBpOffset,
-    numOfBpSelected,
-    width,
-    left,
-    anchorPosition,
-    open,
-    isClick,
-    clickBpOffset,
-    handleMenuItemClick,
-    handleClose,
-    mouseMove,
-    mouseDown: mouseDown2,
-  } = useRangeSelect(ref, model, true)
+  // shift-drag range select over the whole tracks area. This is intentionally
+  // a separate range-select instance from the one inside <Rubberband> (the
+  // scalebar control); don't dedupe them — they cover different regions.
+  const range = useRangeSelect(ref, model, true)
 
   const additional = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint LinearGenomeView-TracksContainerComponent | sync | Add a component into the LGV tracks container */
     'LinearGenomeView-TracksContainerComponent',
-    [] as React.ReactNode[],
+    [],
     { model },
-  ) as React.ReactNode
+  )
 
   return (
     <div
@@ -76,52 +92,27 @@ const TracksContainer = observer(function TracksContainer({
       data-testid="tracksContainer"
       className={classes.tracksContainer}
       onMouseDown={event => {
-        mouseDown1(event)
-        mouseDown2(event)
+        sideScrollMouseDown(event)
+        range.mouseDown(event)
       }}
-      onMouseMove={mouseMove}
+      onMouseMove={range.mouseMove}
+      onMouseLeave={range.mouseOut}
       onMouseUp={mouseUp}
     >
-      {showGridlines ? <Gridlines model={model} /> : null}
+      {showGridlines ? (
+        <>
+          <Gridlines model={model} />
+          <PaddingBlocks model={model} />
+        </>
+      ) : null}
       <Suspense fallback={null}>
         {showCenterLine ? <CenterLine model={model} /> : null}
       </Suspense>
-      {guideX !== undefined && !isScalebarRefNameMenuOpen ? (
-        <VerticalGuide model={model} coordX={guideX} />
-      ) : rubberbandOn ? (
-        <Suspense fallback={null}>
-          <RubberbandSpan
-            leftBpOffset={leftBpOffset}
-            rightBpOffset={rightBpOffset}
-            numOfBpSelected={numOfBpSelected}
-            width={width}
-            left={left}
-            top={rubberbandTop}
-            sticky={stickyViewHeaders}
-          />
-        </Suspense>
-      ) : null}
+      <RangeSelectOverlay model={model} range={range} />
       {model.volatileGuides.map((guide, idx) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed 2-entry positional list (left/right guide), never reordered
         <VerticalGuide key={idx} model={model} coordX={guide.xPos} />
       ))}
-      {anchorPosition ? (
-        <Menu
-          anchorReference="anchorPosition"
-          anchorPosition={{
-            left: anchorPosition.clientX,
-            top: anchorPosition.clientY,
-          }}
-          onMenuItemClick={handleMenuItemClick}
-          open={open}
-          onClose={handleClose}
-          menuItems={
-            isClick && clickBpOffset
-              ? model.rubberbandClickMenuItems(clickBpOffset)
-              : model.rubberBandMenuItems()
-          }
-        />
-      ) : null}
-
       <Rubberband
         model={model}
         ControlComponent={
@@ -134,6 +125,7 @@ const TracksContainer = observer(function TracksContainer({
           />
         }
       />
+      <ScalebarHighlightGroup model={model} />
       <HighlightGroup model={model} />
       {additional}
       {children}
@@ -146,17 +138,51 @@ const HighlightGroup = observer(function HighlightGroup({
 }: {
   model: LGV
 }) {
-  return model.highlightsVisible && model.highlight.length ? (
+  return getSession(model).highlightsVisible && model.highlight.length ? (
     <Suspense fallback={null}>
       {model.highlight.map((highlight, idx) => (
         <Highlight
-          key={`${JSON.stringify(highlight)}-${idx}`}
+          key={highlightKey(highlight, idx)}
           model={model}
           highlight={highlight}
         />
       ))}
     </Suspense>
   ) : null
+})
+
+const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
+  model,
+}: {
+  model: LGV
+}) {
+  const theme = useTheme()
+  const { pluginManager } = getEnv(model)
+  const { classes } = useStyles()
+  const viewBands = getSession(model).highlightsVisible
+    ? model.highlight.map((h, idx) => {
+        const coords = model.getHighlightCoords(h)
+        return coords ? (
+          <OverviewHighlightBand
+            key={highlightKey(h, idx)}
+            coords={coords}
+            background={getHighlightColor(h, theme).toRgbString()}
+          />
+        ) : null
+      })
+    : []
+  const additional = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint LinearGenomeView-ScalebarHighlightComponent | sync | Add a highlight component to the scalebar */
+    'LinearGenomeView-ScalebarHighlightComponent',
+    [],
+    { model },
+  )
+  return (
+    <div className={classes.scalebarHighlights}>
+      {viewBands}
+      {additional}
+    </div>
+  )
 })
 
 export default TracksContainer

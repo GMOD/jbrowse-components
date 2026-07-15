@@ -1,8 +1,10 @@
-import { lazy } from 'react'
-
-import { AssembliesMixin, DockviewLayoutMixin } from '@jbrowse/app-core'
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
-import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
+import {
+  AppSessionMixin,
+  AssembliesMixin,
+  DockviewLayoutMixin,
+} from '@jbrowse/app-core'
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import { getConf } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
   restoreFileHandles,
@@ -11,28 +13,27 @@ import {
 import {
   addDisposer,
   cast,
+  flow,
   getParent,
   getSnapshot,
-  isStateTreeNode,
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
   MultipleViewsSessionMixin,
+  PreferencesSessionMixin,
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
+  TrackMenuItemsSessionMixin,
+  copyTrackSnapshot,
+  finalizeSession,
+  trackActionItems,
 } from '@jbrowse/product-core'
-import DeleteIcon from '@mui/icons-material/Delete'
-import CopyIcon from '@mui/icons-material/FileCopy'
-import InfoIcon from '@mui/icons-material/Info'
-import OpenInNewIcon from '@mui/icons-material/OpenInNew'
-import SettingsIcon from '@mui/icons-material/Settings'
 import { autorun } from 'mobx'
 
 import { WebSessionConnectionsMixin } from '../SessionConnections.ts'
 
-import type { WebRootModelInterface } from '../WebRootModel.ts'
-import type { Menu } from '@jbrowse/app-core'
+import type { AbstractWebRootModel } from '../WebRootModel.ts'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
@@ -44,50 +45,39 @@ import type {
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AssemblyManager } from '@jbrowse/core/util/types'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
-
-// lazies
-const AboutDialog = lazy(() => import('./AboutDialog.tsx'))
-
-interface Display {
-  displayId: string
-}
+import type { TrackActionView } from '@jbrowse/core/util/types'
+import type { IAnyModelType, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
- * #stateModel BaseWebSession
- * used for "web based" products, including jbrowse-web and react-app
- * composed of
- * - [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
- * - [ThemeManagerSessionMixin](../thememanagersessionmixin)
- * - [MultipleViewsSessionMixin](../multipleviewssessionmixin)
- * - [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
- * - [AssembliesMixin](../assembliesmixin)
- * - [WebSessionConnectionsMixin](../websessionconnectionsmixin)
+ * #stateModel BaseWebSessionModel
+ *
+ * Composable web session shared by jbrowse-web and react-app, before
+ * {@link finalizeWebSession} (the snapshotProcessor can't be `compose`d).
+ * jbrowse-web composes `WebSessionManagementMixin` onto this; react-app uses it
+ * as-is.
  */
-export function BaseWebSession({
+export function BaseWebSessionModel({
   pluginManager,
   assemblyConfigSchema,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
 }) {
-  const sessionModel = types
+  return types
     .compose(
       'WebCoreSessionModel',
+      ReferenceManagementSessionMixin(pluginManager),
+      ThemeManagerSessionMixin(pluginManager),
+      MultipleViewsSessionMixin(pluginManager),
+      PreferencesSessionMixin(pluginManager),
+      SessionTracksManagerSessionMixin(pluginManager),
+      AssembliesMixin(pluginManager, assemblyConfigSchema),
+      AppSessionMixin(pluginManager),
+      WebSessionConnectionsMixin(pluginManager),
+      // nested to stay within types.compose's 10-argument limit
       types.compose(
-        'WebCoreSessionModelGroupA',
-        ReferenceManagementSessionMixin(pluginManager),
-        ThemeManagerSessionMixin(pluginManager),
-        MultipleViewsSessionMixin(pluginManager),
-      ),
-      types.compose(
-        'WebCoreSessionModelGroupB',
-        SessionTracksManagerSessionMixin(pluginManager),
-        AssembliesMixin(pluginManager, assemblyConfigSchema),
-        WebSessionConnectionsMixin(pluginManager),
         DockviewLayoutMixin(),
-        SnackbarModel(),
+        TrackMenuItemsSessionMixin(pluginManager),
       ),
     )
     .props({
@@ -102,35 +92,20 @@ export function BaseWebSession({
       /**
        * #volatile
        */
-      sessionThemeName: localStorageGetItem('themeName') || 'default',
+      sessionThemeName: localStorageGetItem('themeName') ?? 'default',
       /**
        * #volatile
        */
       pendingFileHandleIds: [] as string[],
     }))
     .views(self => ({
+      // `tracks` (with session-override shadowing) comes from
+      // SessionTracksManagerSessionMixin — no need to redefine it here
       /**
        * #getter
        */
-      get tracks(): AnyConfigurationModel[] {
-        return [...self.sessionTracks, ...self.jbrowse.tracks]
-      },
-      /**
-       * #getter
-       */
-      get root(): WebRootModelInterface {
-        return getParent<WebRootModelInterface>(self)
-      },
-      /**
-       * #getter
-       * list of sessionAssemblies and jbrowse config assemblies, does not
-       * include temporaryAssemblies. basically the list to be displayed in a
-       * AssemblySelector dropdown
-       */
-      get assemblies(): (Instance<BaseAssemblyConfigSchema> & {
-        sequence: { trackId: string }
-      })[] {
-        return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
+      get root(): AbstractWebRootModel {
+        return getParent<AbstractWebRootModel>(self)
       },
       /**
        * #getter
@@ -143,20 +118,30 @@ export function BaseWebSession({
 
     .views(self => ({
       /**
-       * #getter
-       * list of sessionAssemblies and jbrowse config assemblies, does not
-       * include temporaryAssemblies. basically the list to be displayed in a
-       * AssemblySelector dropdown
+       * #method
+       * whether the user may edit this track's config (admins may edit any;
+       * everyone else only their own session tracks)
        */
-      get assemblyNames() {
-        return self.assemblies.map(f => readConfObject(f, 'name') as string)
+      canEditTrack(trackId: string): boolean {
+        return (
+          self.adminMode || self.sessionTracks.some(t => t.trackId === trackId)
+        )
       },
+
       /**
-       * #getter
+       * #method
+       * whether `trackId` has a non-admin config override (a delta stored in
+       * trackConfigDeltas against an admin-owned config track, see
+       * updateTrackConfiguration), rather than a standalone user-added session
+       * track. Drives the "Reset track settings" menu swap and the edited badge.
        */
-      get version() {
-        return self.root.version
+      isTrackOverride(trackId: string): boolean {
+        // real changed slots, not merely `trackId in trackConfigDeltas`: a delta
+        // can hold only content-free display stubs (see getTrackConfigChanges /
+        // flattenTrackConfigDelta), which must not read as an override
+        return self.getTrackConfigChanges(trackId).length > 0
       },
+
       /**
        * #getter
        */
@@ -168,35 +153,6 @@ export function BaseWebSession({
        */
       get textSearchManager(): TextSearchManager {
         return self.root.textSearchManager
-      },
-      /**
-       * #getter
-       */
-      get assemblyManager(): AssemblyManager {
-        return self.root.assemblyManager
-      },
-      /**
-       * #getter
-       */
-      get savedSessionMetadata() {
-        return self.root.savedSessionMetadata
-      },
-
-      /**
-       * #getter
-       */
-      get history() {
-        return self.root.history
-      },
-
-      /**
-       * #method
-       */
-      renderProps() {
-        return {
-          theme: self.theme,
-          highResolutionScaling: getConf(self, 'highResolutionScaling'),
-        }
       },
     }))
     .actions(self => ({
@@ -214,59 +170,18 @@ export function BaseWebSession({
           throw new Error('session plugin cannot be installed twice')
         }
         self.sessionPlugins.push(plugin)
-        self.root.setPluginsUpdated(true)
+        self.root.setPluginsUpdated()
       },
 
       /**
        * #action
        */
       removeSessionPlugin(pluginDefinition: PluginDefinition) {
-        type PluginUrls = Partial<{
-          url: string
-          umdUrl: string
-          cjsUrl: string
-          esmUrl: string
-        }>
-        const def = pluginDefinition as PluginUrls
+        const targetUrl = pluginUrl(pluginDefinition)
         self.sessionPlugins = cast(
-          self.sessionPlugins.filter(plugin => {
-            const p = plugin as PluginUrls
-            return (
-              p.url !== def.url ||
-              p.umdUrl !== def.umdUrl ||
-              p.cjsUrl !== def.cjsUrl ||
-              p.esmUrl !== def.esmUrl
-            )
-          }),
+          self.sessionPlugins.filter(p => pluginUrl(p) !== targetUrl),
         )
-        self.root.setPluginsUpdated(true)
-      },
-
-      /**
-       * #action
-       */
-      deleteSavedSession(id: string) {
-        return self.root.deleteSavedSession(id)
-      },
-
-      /**
-       * #action
-       */
-      setSavedSessionFavorite(id: string, favorite: boolean) {
-        return self.root.setSavedSessionFavorite(id, favorite)
-      },
-      /**
-       * #action
-       */
-      renameCurrentSession(sessionName: string) {
-        self.root.renameCurrentSession(sessionName)
-      },
-
-      /**
-       * #action
-       */
-      activateSession(sessionName: string) {
-        return self.root.activateSession(sessionName)
+        self.root.setPluginsUpdated()
       },
 
       /**
@@ -286,16 +201,14 @@ export function BaseWebSession({
     .actions(self => ({
       /**
        * #action
+       * opens the config editor for a track. Available for any track: a
+       * non-admin's edits to an admin-owned track persist as a delta
+       * (trackConfigDeltas) that rides along in the shared/saved session, rather
+       * than mutating the admin-owned config itself.
        */
       editTrackConfiguration(
         configuration: AnyConfigurationModel | { trackId: string },
       ) {
-        const { adminMode, sessionTracks } = self
-        const trackId = configuration.trackId
-        const isSessionTrack = sessionTracks.some(t => t.trackId === trackId)
-        if (!adminMode && !isSessionTrack) {
-          throw new Error("Can't edit the configuration of a non-session track")
-        }
         self.editConfiguration(configuration)
       },
     }))
@@ -306,144 +219,22 @@ export function BaseWebSession({
        */
       getTrackActions(
         config: BaseTrackConfig,
-        view?: { showTrack: (id: string) => void },
+        view?: TrackActionView,
       ): MenuItem[] {
-        const { adminMode, sessionTracks } = self
-        const canEdit =
-          adminMode || sessionTracks.some(t => t.trackId === config.trackId)
-        const isRefSeq = config.type === 'ReferenceSequenceTrack'
-        const makeSnap = () => {
-          const snap = structuredClone(
-            isStateTreeNode(config) ? getSnapshot(config) : config,
-          ) as { [key: string]: unknown; displays?: Display[] }
-          const now = Date.now()
-          snap.trackId += `-${now}`
-          if (snap.displays) {
-            for (const display of snap.displays) {
-              display.displayId += `-${now}`
-            }
-          }
-          // the -sessionTrack suffix to trackId is used as metadata for
-          // the track selector to store the track in a special category,
-          // and default category is also cleared
-          if (!self.adminMode) {
-            snap.trackId += '-sessionTrack'
-            snap.category = undefined
-          }
-          snap.name += ' (copy)'
-          return snap
-        }
-        return [
-          {
-            label: 'Settings',
-            disabled: !canEdit,
-            icon: SettingsIcon,
-            onClick: () => {
-              self.editTrackConfiguration(config)
-            },
-          },
-          {
-            label: 'Copy track',
-            disabled: isRefSeq,
-            onClick: () => {
-              self.addTrackConf(makeSnap())
-            },
-            icon: CopyIcon,
-          },
-          {
-            label: 'Copy and open track',
-            disabled: isRefSeq || !view,
-            onClick: () => {
-              const snap = makeSnap()
-              self.addTrackConf(snap)
-              view!.showTrack(snap.trackId as string)
-            },
-            icon: OpenInNewIcon,
-          },
-          {
-            label: 'Delete track',
-            disabled: !canEdit || isRefSeq,
-            icon: DeleteIcon,
-            onClick: () => {
-              self.deleteTrackConf(config)
-            },
-          },
-        ]
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * flattened menu items for use in hierarchical track selector
-       */
-      getTrackListMenuItems(
-        config: BaseTrackConfig,
-        view?: { showTrack: (id: string) => void },
-      ): MenuItem[] {
-        return [
-          {
-            label: 'About track',
-            onClick: () => {
-              self.queueDialog(handleClose => [
-                AboutDialog,
-                {
-                  config,
-                  handleClose,
-                  session: self,
-                },
-              ])
-            },
-            icon: InfoIcon,
-          },
-          ...self.getTrackActions(config, view),
-        ]
-      },
-
-      /**
-       * #method
-       * @param config - track configuration
-       * @param extraTrackActions - additional items to merge into "Track actions" submenu
-       */
-      getTrackActionMenuItems(
-        config: BaseTrackConfig,
-        extraTrackActions?: MenuItem[],
-        effectiveConfig?: Record<string, unknown>,
-        view?: { showTrack: (id: string) => void },
-      ): MenuItem[] {
-        return [
-          {
-            label: 'About track',
-            priority: 1002,
-            onClick: () => {
-              self.queueDialog(handleClose => [
-                AboutDialog,
-                {
-                  config: effectiveConfig ?? config,
-                  handleClose,
-                  session: self,
-                },
-              ])
-            },
-            icon: InfoIcon,
-          },
-          {
-            type: 'subMenu' as const,
-            label: 'Track actions',
-            priority: 1001,
-            subMenu: [
-              ...self.getTrackActions(config, view),
-              ...(extraTrackActions ?? []),
-            ],
-          },
-          { type: 'divider' as const },
-        ]
-      },
-
-      /**
-       * #method
-       */
-      menus(): Menu[] {
-        return self.root.menus()
+        return trackActionItems({
+          session: self,
+          config,
+          view,
+          canEdit: self.canEditTrack(config.trackId),
+          isSessionOverride: self.isTrackOverride(config.trackId),
+          // a non-admin's copy is routed to sessionTracks (see addTrackConf) and
+          // the selector groups it under "Session tracks" from that membership;
+          // clear the original category so it isn't also nested there
+          makeCopy: () =>
+            copyTrackSnapshot(config, {
+              clearCategory: !self.adminMode,
+            }),
+        })
       },
     }))
     .actions(self => ({
@@ -471,37 +262,37 @@ export function BaseWebSession({
           })
           .catch((err: unknown) => {
             console.error('Error restoring file handles:', err)
+            self.notifyError(`Error restoring file handles: ${err}`, err)
           })
       },
-      async restorePendingFileHandles() {
-        const results = await restoreFileHandles(
-          self.pendingFileHandleIds,
-          true,
-        )
+      restorePendingFileHandles: flow(function* restorePendingFileHandles() {
+        const results: Awaited<ReturnType<typeof restoreFileHandles>> =
+          yield restoreFileHandles(self.pendingFileHandleIds, true)
         self.setPendingFileHandleIds(
           results.filter(r => !r.success).map(r => r.handleId),
         )
-      },
+      }),
     }))
+}
 
-  const extendedSessionModel = pluginManager.evaluateExtensionPoint(
-    'Core-extendSession',
-    sessionModel,
-  ) as typeof sessionModel
+/** Apply the `Core-extendSession` extension point + legacy snapshot processor. */
+export function finalizeWebSession<T extends IAnyModelType>(
+  pluginManager: PluginManager,
+  sessionModel: T,
+) {
+  return finalizeSession(pluginManager, sessionModel)
+}
 
-  return types.snapshotProcessor(extendedSessionModel, {
-    preProcessor(
-      snapshot: SnapshotIn<typeof extendedSessionModel> & {
-        connectionInstances?: unknown
-      },
-    ) {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      const { connectionInstances, ...rest } = snapshot || {}
-
-      // connectionInstances schema changed from object to an array, so any old
-      // connectionInstances as object is in snapshot, filter it out
-      // xref https://github.com/GMOD/jbrowse-components/issues/1903
-      return !Array.isArray(connectionInstances) ? rest : snapshot
-    },
-  })
+/**
+ * Finalized web session without the session-database management surface, used
+ * by the embedded react-app; jbrowse-web composes `WebSessionManagementMixin`
+ * before finalizing. This is just {@link BaseWebSessionModel} run through
+ * {@link finalizeWebSession}, so its state-model shape is documented there (the
+ * autogen documents a single composable model per source file).
+ */
+export function BaseWebSession(args: {
+  pluginManager: PluginManager
+  assemblyConfigSchema: BaseAssemblyConfigSchema
+}) {
+  return finalizeWebSession(args.pluginManager, BaseWebSessionModel(args))
 }

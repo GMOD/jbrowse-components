@@ -1,14 +1,24 @@
-import { fetchJson as fetchjson, useFetch } from '@jbrowse/core/util'
+import { fetchJson, useFetch } from '@jbrowse/core/util'
+
+const CATEGORIES_URL = 'https://jbrowse.org/hubs/categories.json'
+
+export interface Category {
+  key: string
+  title: string
+  url: string
+}
+
+export interface Categories {
+  categories: Category[]
+}
 
 export default function useCategories() {
-  const { data, error, isLoading } = useFetch('categories', () =>
-    fetchjson('https://jbrowse.org/hubs/categories.json'),
+  const { data, error, isLoading } = useFetch<Categories>(CATEGORIES_URL, () =>
+    fetchJson<Categories>(CATEGORIES_URL),
   )
 
   return {
-    categories: data as
-      | { categories: { key: string; title: string; url: string }[] }
-      | undefined,
+    categories: data,
     isLoading,
     error,
   }

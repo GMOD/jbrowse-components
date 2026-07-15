@@ -5,6 +5,7 @@ import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines.tsx'
+import PaddingBlocks from './PaddingBlocks.tsx'
 import ScalebarCoordinateLabels from './ScalebarCoordinateLabels.tsx'
 import ScalebarRefNameLabels from './ScalebarRefNameLabels.tsx'
 
@@ -53,6 +54,7 @@ const Scalebar = observer(function Scalebar({
     >
       {/* offset 1px for left track border */}
       <Gridlines model={model} offset={1} />
+      <PaddingBlocks model={model} offset={1} />
       <div className={classes.zoomContainer}>
         <div
           className={classes.scalebar}

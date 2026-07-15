@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { useEffect } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -7,31 +7,27 @@ import SequenceName from './SequenceName.tsx'
 
 import type { SequencePanelProps } from './types.ts'
 
+// raw inline styles (not classes) so an html copy carries styling into external
+// documents like Word; the explicit black-on-white also keeps the readout
+// legible under a dark theme (coordinate labels and introns are uncolored)
+const baseSeqStyle = {
+  fontFamily: 'monospace',
+  color: 'black',
+  background: 'white',
+  fontSize: 11,
+} as const
+
 function WordWrap({ children }: { children: React.ReactNode }) {
-  return (
-    <pre
-      style={{
-        /* raw styles instead of className so that html copy works */
-        fontFamily: 'monospace',
-        color: 'black',
-        fontSize: 11,
-      }}
-    >
-      {children}
-    </pre>
-  )
+  return <pre style={baseSeqStyle}>{children}</pre>
 }
 
 function NoWordWrap({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        /* raw styles instead of className so that html copy works */
-        fontFamily: 'monospace',
-        color: 'black',
-        fontSize: 11,
+        ...baseSeqStyle,
         maxWidth: 600,
-        whiteSpace: 'wrap',
+        whiteSpace: 'normal',
         wordBreak: 'break-all',
       }}
     >
@@ -40,30 +36,52 @@ function NoWordWrap({ children }: { children: React.ReactNode }) {
   )
 }
 
-const SequencePanel = observer(
-  forwardRef<HTMLDivElement, SequencePanelProps>(function S(props, ref) {
-    const { sequence, model, feature } = props
-    const { showCoordinates, mode } = model
-
-    const Container = showCoordinates ? WordWrap : NoWordWrap
-    return (
-      <div
-        data-testid="sequence_panel"
-        ref={ref}
-        style={{ maxHeight: 300, overflow: 'auto' }}
-      >
-        <Container>
-          <SequenceName model={model} mode={mode} feature={feature} />
-          <SequenceContents
-            model={model}
-            mode={mode}
-            feature={feature}
-            sequence={sequence}
-          />
-        </Container>
-      </div>
-    )
-  }),
-)
+const SequencePanel = observer(function SequencePanel({
+  sequence,
+  model,
+  feature,
+  mode,
+  assemblyGeneticCodeId,
+  ref,
+}: SequencePanelProps) {
+  const { showCoordinates } = model
+  const Container = showCoordinates ? WordWrap : NoWordWrap
+  // clear the LGV crosshair if the panel unmounts mid-hover (e.g. the sequence
+  // is hidden) so it doesn't linger
+  useEffect(
+    () => () => {
+      model.setHoverPosition(undefined)
+    },
+    [model],
+  )
+  return (
+    <div
+      data-testid="sequence_panel"
+      ref={ref}
+      style={{ maxHeight: 300, overflow: 'auto' }}
+      onMouseLeave={() => {
+        model.setHoverPosition(undefined)
+      }}
+    >
+      <Container>
+        <SequenceName model={model} mode={mode} feature={feature} />
+        <SequenceContents
+          model={model}
+          mode={mode}
+          feature={feature}
+          sequence={sequence}
+          assemblyGeneticCodeId={assemblyGeneticCodeId}
+          onHoverBase={base0 => {
+            model.setHoverPosition({
+              refName: feature.refName,
+              start: base0,
+              end: base0 + 1,
+            })
+          }}
+        />
+      </Container>
+    </div>
+  )
+})
 
 export default SequencePanel

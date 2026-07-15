@@ -205,5 +205,8 @@
     },
     "activeWidgets": {},
     "connections": {}
+  },
+  "configuration": {
+    "disableAnalytics": true
   }
 }

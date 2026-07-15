@@ -7,12 +7,12 @@ import { IconButton, InputAdornment } from '@mui/material'
 const HelpDialog = lazy(() => import('./HelpDialog.tsx'))
 
 function HelpAdornment() {
-  const [isHelpDialogDisplayed, setHelpDialogDisplayed] = useState(false)
+  const [isHelpDialogDisplayed, setIsHelpDialogDisplayed] = useState(false)
   return (
     <>
       <IconButton
         onClick={() => {
-          setHelpDialogDisplayed(true)
+          setIsHelpDialogDisplayed(true)
         }}
         size="small"
       >
@@ -22,7 +22,7 @@ function HelpAdornment() {
         <Suspense fallback={null}>
           <HelpDialog
             handleClose={() => {
-              setHelpDialogDisplayed(false)
+              setIsHelpDialogDisplayed(false)
             }}
           />
         </Suspense>

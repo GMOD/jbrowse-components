@@ -3,10 +3,11 @@ import { Suspense, lazy } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import ViewContainer from './ViewContainer.tsx'
+import { useDockview } from './DockviewContext.tsx'
+import ViewStack from './ViewStack.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
-import type { DockviewSessionType } from './types.ts'
+import type { JBrowseViewPanelParams } from './types.ts'
 import type { IDockviewPanelProps } from 'dockview-react'
 
 const ViewLauncher = lazy(() => import('./ViewLauncher.tsx'))
@@ -21,9 +22,6 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     flexDirection: 'column',
   },
-  spacer: {
-    height: 300,
-  },
   emptyPanel: {
     display: 'flex',
     alignItems: 'center',
@@ -32,19 +30,19 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-export interface JBrowseViewPanelParams {
-  panelId: string
-  session?: DockviewSessionType
-}
-
 const JBrowseViewPanel = observer(function JBrowseViewPanel({
-  params,
+  api,
 }: IDockviewPanelProps<JBrowseViewPanelParams>) {
-  const { panelId, session } = params
+  // Panel identity is the dockview panel id, not params — so layouts persisted
+  // before params carried the panelId (blanked to {}) still restore correctly.
+  const panelId = api.id
+  const { session } = useDockview()
   const { classes } = useStyles()
 
+  // session is always provided by TiledViewsContainer's DockviewContext; the
+  // guard only satisfies the optional default-context type.
   if (!session) {
-    return <div className={classes.container}>Loading...</div>
+    return null
   }
 
   const views = getViewsForPanel(panelId, session)
@@ -64,10 +62,7 @@ const JBrowseViewPanel = observer(function JBrowseViewPanel({
   return (
     <div className={classes.container}>
       <div className={classes.viewStack}>
-        {views.map(view => (
-          <ViewContainer key={view.id} view={view} session={session} />
-        ))}
-        <div className={classes.spacer} />
+        <ViewStack views={views} session={session} />
       </div>
     </div>
   )

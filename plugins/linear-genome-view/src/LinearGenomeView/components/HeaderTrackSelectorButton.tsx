@@ -7,9 +7,11 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 const useStyles = makeStyles()(theme => ({
   toggleButton: {
-    height: 44,
     border: 'none',
     marginLeft: theme.spacing(4),
+  },
+  selected: {
+    backgroundColor: theme.palette.action.selected,
   },
 }))
 
@@ -18,12 +20,21 @@ const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
+  const { isTrackSelectorOpen } = model
   return (
     <IconButton
-      onClick={model.activateTrackSelector}
-      className={classes.toggleButton}
-      title="Open track selector"
+      color={isTrackSelectorOpen ? 'primary' : 'default'}
+      onClick={() => {
+        model.toggleTrackSelector()
+      }}
+      className={cx(
+        classes.toggleButton,
+        isTrackSelectorOpen ? classes.selected : undefined,
+      )}
+      title={
+        isTrackSelectorOpen ? 'Close track selector' : 'Open track selector'
+      }
       value="track_select"
     >
       <TrackSelectorIcon />

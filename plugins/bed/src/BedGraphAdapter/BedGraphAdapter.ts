@@ -1,18 +1,16 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  IntervalTree,
-  SimpleFeature,
-  fetchAndMaybeUnzip,
-} from '@jbrowse/core/util'
+import { IntervalTree, fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { bucketBedLines, parseNamesFromHeader } from '../util.ts'
+import { intervalTreeFeatures } from '../adapterUtil.ts'
+import { makeBedGraphFeature } from '../bedGraphUtil.ts'
+import { bucketBedLines, resolveColumnNames } from '../util.ts'
 
+import type { BedGraphAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 
-export default class BedGraphAdapter extends BaseFeatureDataAdapter {
+export default class BedGraphAdapter extends BaseFeatureDataAdapter<BedGraphAdapterConfig> {
   protected bedFeatures?: Promise<{
     header: string
     features: Record<string, string[]>
@@ -24,12 +22,10 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
   > = {}
 
   async getNames() {
-    const columnNames: string[] = this.getConf('columnNames')
-    if (columnNames.length) {
-      return columnNames
-    }
-    const { header } = await this.loadData()
-    return parseNamesFromHeader(header)
+    return resolveColumnNames(
+      this.getConf('columnNames'),
+      async () => (await this.loadData()).header,
+    )
   }
   private async loadFeatureIntervalTreeHelper(refName: string) {
     const { features } = await this.loadData()
@@ -40,29 +36,21 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     const names = (await this.getNames())?.slice(3) ?? []
     const intervalTree = new IntervalTree<Feature>()
     for (let i = 0, l = lines.length; i < l; i++) {
-      const line = lines[i]!
-      const [refName, s, e, ...rest] = line.split('\t')
-
+      const [refName, s, e, ...rest] = lines[i]!.split('\t')
+      const start = +s!
+      const end = +e!
       for (let j = 0, l2 = rest.length; j < l2; j++) {
-        const uniqueId = `${this.id}-${refName}-${i}-${j}`
-        const start = +s!
-        const end = +e!
-        const score = +rest[j]!
-        const source = names[j] || `col${j}`
-        if (!Number.isNaN(score)) {
-          intervalTree.insert(
-            [start, end],
-            new SimpleFeature({
-              id: uniqueId,
-              data: {
-                refName,
-                start,
-                end,
-                score,
-                source,
-              },
-            }),
-          )
+        const feat = makeBedGraphFeature({
+          uniqueId: `${this.id}-${refName}-${i}-${j}`,
+          refName: refName!,
+          start,
+          end,
+          names,
+          j,
+          value: rest[j]!,
+        })
+        if (feat) {
+          intervalTree.insert([start, end], feat)
         }
       }
     }
@@ -100,13 +88,8 @@ export default class BedGraphAdapter extends BaseFeatureDataAdapter {
     return this.bedFeatures
   }
   public getFeatures(query: Region, opts: BaseOptions = {}) {
-    return ObservableCreate<Feature>(async observer => {
-      const { start, end, refName } = query
-      const intervalTree = await this.loadFeatureIntervalTree(refName)
-      for (const feature of intervalTree?.search([start, end]) ?? []) {
-        observer.next(feature)
-      }
-      observer.complete()
-    }, opts.stopToken)
+    return intervalTreeFeatures(query, opts, refName =>
+      this.loadFeatureIntervalTree(refName),
+    )
   }
 }

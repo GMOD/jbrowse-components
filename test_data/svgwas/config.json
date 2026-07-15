@@ -1,0 +1,100 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Homo sapiens (hg38)",
+      "aliases": ["GRCh38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "P6R5xbRqRr",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "cytobandLocation": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "GWASTrack",
+      "trackId": "ukb_mcv_sv_gwas",
+      "name": "UKB MCV SV-GWAS (imputed long-read SVs)",
+      "category": ["GWAS", "Structural variants"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/svgwas/UKB_MCV_SV_GWAS.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/svgwas/UKB_MCV_SV_GWAS.bed.gz.tbi"
+          }
+        }
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "UKB Mean corpuscular volume SV-GWAS",
+    "views": [
+      {
+        "id": "svgwas_view",
+        "type": "LinearGenomeView",
+        "bpPerPx": 66000,
+        "offsetPx": 0,
+        "displayedRegions": [
+          {
+            "refName": "16",
+            "start": 0,
+            "end": 90338345,
+            "assemblyName": "hg38"
+          }
+        ],
+        "tracks": [
+          {
+            "id": "svgwas_track",
+            "type": "GWASTrack",
+            "configuration": "ukb_mcv_sv_gwas",
+            "displays": [
+              {
+                "id": "svgwas_display",
+                "type": "LinearManhattanDisplay",
+                "configuration": "ukb_mcv_sv_gwas-LinearManhattanDisplay",
+                "height": 250
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

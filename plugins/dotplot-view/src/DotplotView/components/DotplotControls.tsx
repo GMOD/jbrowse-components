@@ -1,10 +1,12 @@
-import { lazy, useState } from 'react'
+import { lazy } from 'react'
 
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
@@ -12,8 +14,7 @@ import { observer } from 'mobx-react'
 
 import ColorBySelector from './ColorBySelector.tsx'
 import { CursorMouse, CursorMove } from './CursorIcon.tsx'
-import MinLengthSlider from './MinLengthSlider.tsx'
-import OpacitySlider from './OpacitySlider.tsx'
+import DotplotSettingsPopover from './DotplotSettingsPopover.tsx'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -21,18 +22,34 @@ const DiagonalizationProgressDialog = lazy(
   () => import('./DiagonalizationProgressDialog.tsx'),
 )
 
+const useStyles = makeStyles()({
+  root: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+})
+
 const DotplotControls = observer(function DotplotControls({
   model,
 }: {
   model: DotplotViewModel
 }) {
-  const [showDynamicControls, setShowDynamicControls] = useState(true)
-
-  // Check if we have any displays to show sliders
-  const hasDisplays = model.tracks[0]?.displays[0]
+  const { classes } = useStyles()
+  const session = getSession(model)
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+    <div className={classes.root}>
+      {isSessionModelWithWidgets(session) ? (
+        <IconButton
+          onClick={() => {
+            model.activateTrackSelector()
+          }}
+          title="Open track selector"
+        >
+          <TrackSelectorIcon />
+        </IconButton>
+      ) : null}
       <IconButton
         onClick={() => {
           model.zoomOut()
@@ -50,35 +67,47 @@ const DotplotControls = observer(function DotplotControls({
       </IconButton>
 
       <IconButton
-        onClick={() => model.activateTrackSelector()}
-        title="Open track selector"
+        onClick={() => {
+          model.setCursorMode(
+            model.cursorMode === 'move' ? 'crosshair' : 'move',
+          )
+        }}
+        title={
+          model.cursorMode === 'move'
+            ? 'Drag pans (click to switch to region select)'
+            : 'Drag selects region (click to switch to pan)'
+        }
       >
-        <TrackSelectorIcon />
+        {model.cursorMode === 'move' ? <CursorMove /> : <CursorMouse />}
       </IconButton>
 
       <CascadingMenuButton
         menuItems={[
           {
             label: 'Square view - same bp per pixel',
+            disabled: model.lockAspectRatio,
             onClick: () => {
               model.squareView()
             },
-            helpText:
-              'Makes both views use the same zoom level (bp per pixel), adjusting to the average of each. This ensures features are displayed at comparable scales for easier visual comparison.',
+            helpText: model.lockAspectRatio
+              ? 'Disabled while aspect ratio is locked — the lock already keeps both axes at the same bp/px.'
+              : 'Makes both views use the same zoom level (bp per pixel), adjusting to the average of each. This ensures features are displayed at comparable scales for easier visual comparison.',
           },
           {
             label: 'Rectangular view - same total bp',
+            disabled: model.lockAspectRatio,
             onClick: () => {
               model.squareViewProportional()
             },
-            helpText:
-              'Adjusts zoom levels proportionally so both views show the same total number of base pairs. This accounts for different view widths while maintaining the same total genomic span.',
+            helpText: model.lockAspectRatio
+              ? 'Disabled while aspect ratio is locked — proportional zoom would conflict with the same-bp/px constraint.'
+              : 'Adjusts zoom levels proportionally so both views show the same total number of base pairs. This accounts for different view widths while maintaining the same total genomic span.',
           },
           {
             label: 'Re-order chromosomes',
             icon: ShuffleIcon,
             onClick: () => {
-              getSession(model).queueDialog(handleClose => [
+              session.queueDialog(handleClose => [
                 DiagonalizationProgressDialog,
                 {
                   handleClose,
@@ -91,6 +120,7 @@ const DotplotControls = observer(function DotplotControls({
           },
           {
             label: 'Show...',
+            icon: VisibilityIcon,
             subMenu: [
               {
                 label: 'Show all regions',
@@ -99,26 +129,6 @@ const DotplotControls = observer(function DotplotControls({
                 },
                 helpText:
                   'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
-              },
-              {
-                label: 'Show pan buttons',
-                type: 'checkbox',
-                checked: model.showPanButtons,
-                onClick: () => {
-                  model.setShowPanButtons(!model.showPanButtons)
-                },
-                helpText:
-                  'Show or hide directional pan buttons that allow you to navigate the dotplot view by clicking arrows. Useful for precise navigation without using mouse drag.',
-              },
-              {
-                label: 'Show dynamic controls',
-                type: 'checkbox',
-                checked: showDynamicControls,
-                onClick: () => {
-                  setShowDynamicControls(!showDynamicControls)
-                },
-                helpText:
-                  'Toggle visibility of dynamic controls like opacity and minimum length sliders. These controls allow you to adjust dotplot visualization parameters in real-time.',
               },
               {
                 type: 'checkbox',
@@ -130,71 +140,19 @@ const DotplotControls = observer(function DotplotControls({
                 helpText:
                   'Toggle detailed CIGAR string visualization showing matches, insertions, and deletions in alignments. Disable for a cleaner view that shows only broad syntenic blocks.',
               },
-            ],
-          },
-          {
-            label: 'Click and drag mode',
-            helpText:
-              'Configure how clicking and dragging behaves in the dotplot view. Choose between panning and region selection as the default action.',
-            subMenu: [
               {
-                label: 'Pan by default',
-                icon: CursorMove,
-                type: 'radio',
-                checked: model.cursorMode === 'move',
+                type: 'checkbox',
+                label: 'Lock aspect ratio (same bp/px)',
+                checked: model.lockAspectRatio,
                 onClick: () => {
-                  model.setCursorMode('move')
+                  const next = !model.lockAspectRatio
+                  model.setLockAspectRatio(next)
+                  if (next) {
+                    model.squareView()
+                  }
                 },
                 helpText:
-                  'Click and drag to pan the view. Hold Ctrl/Cmd while dragging to select a region for zooming or creating a linear synteny view.',
-              },
-              {
-                label: 'Select region by default',
-                icon: CursorMouse,
-                type: 'radio',
-                checked: model.cursorMode === 'crosshair',
-                onClick: () => {
-                  model.setCursorMode('crosshair')
-                },
-                helpText:
-                  'Click and drag to select a region for zooming or creating a linear synteny view. Hold Ctrl/Cmd while dragging to pan the view instead.',
-              },
-            ],
-          },
-          {
-            label: 'Wheel scroll mode',
-            helpText:
-              'Configure how mouse wheel scrolling behaves in the dotplot view.',
-            subMenu: [
-              {
-                label: 'Pan view',
-                type: 'radio',
-                checked: model.wheelMode === 'pan',
-                onClick: () => {
-                  model.setWheelMode('pan')
-                },
-                helpText:
-                  'Mouse wheel scrolling will pan the view up/down. Useful for navigating through the genome without changing zoom level.',
-              },
-              {
-                label: 'Zoom view',
-                type: 'radio',
-                checked: model.wheelMode === 'zoom',
-                onClick: () => {
-                  model.setWheelMode('zoom')
-                },
-                helpText:
-                  'Mouse wheel scrolling will zoom in/out of the view. Provides quick zoom control for detailed inspection of regions.',
-              },
-              {
-                label: 'Disable',
-                type: 'radio',
-                checked: model.wheelMode === 'none',
-                onClick: () => {
-                  model.setWheelMode('none')
-                },
-                helpText:
-                  'Mouse wheel scrolling will be disabled for the dotplot view. Use this to prevent accidental zoom or pan when scrolling the page.',
+                  'When enabled, both axes are kept at the same bp/px so the dotplot stays square as you zoom and pan.',
               },
             ],
           },
@@ -204,11 +162,8 @@ const DotplotControls = observer(function DotplotControls({
       </CascadingMenuButton>
       <ColorBySelector model={model} />
 
-      {hasDisplays && showDynamicControls ? (
-        <>
-          <OpacitySlider model={model} />
-          <MinLengthSlider model={model} />
-        </>
+      {model.dotplotDisplays.length > 0 ? (
+        <DotplotSettingsPopover model={model} />
       ) : null}
     </div>
   )

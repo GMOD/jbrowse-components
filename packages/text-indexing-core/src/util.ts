@@ -36,18 +36,27 @@ export interface VcfAdapter {
 }
 
 export interface Track {
+  type?: string
   adapter?: { type: string; [key: string]: unknown }
   textSearching?: {
     indexingFeatureTypesToExclude?: string[]
     indexingAttributes?: string[]
     [key: string]: unknown
   }
+  metadata?: {
+    // when true, `jbrowse text-index` always skips this track (declarative
+    // equivalent of passing its trackId to --excludeTracks)
+    skipTextIndex?: boolean
+    [key: string]: unknown
+  }
   name: string
   assemblyNames: string[]
   trackId: string
+  category?: string[]
+  description?: string
 }
 
-export const defaultAttributesToIndex = ['Name', 'ID']
+export const defaultAttributesToIndex = ['Name', 'ID', 'symbol']
 export const defaultFeatureTypesToExclude = ['exon', 'CDS']
 
 export const adapterLocationKey: Record<string, string> = {
@@ -64,6 +73,8 @@ export interface IndexerOptions {
   outDir: string
   onStart: (totalBytes: number) => void
   onUpdate: (progressBytes: number) => void
+  // throttled cancellation check; throws to abort the index mid-stream
+  checkAbort?: () => void
 }
 
 export interface Gff3IndexerOptions extends IndexerOptions {

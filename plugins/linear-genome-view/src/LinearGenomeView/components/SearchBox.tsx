@@ -8,12 +8,16 @@ import { getSession } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
+import {
+  SearchResultsNotFoundError,
+  fetchResults,
+  navigateToSelectedOption,
+} from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
-const defaultStyle = { margin: SPACING }
-
 import type { LinearGenomeViewModel } from '../model.ts'
+
+const defaultStyle = { margin: SPACING }
 
 const SearchBox = observer(function SearchBox({
   model,
@@ -31,7 +35,7 @@ const SearchBox = observer(function SearchBox({
   const theme = useTheme()
   const session = getSession(model)
   const { textSearchManager, assemblyManager } = session
-  const { assemblyNames, rankSearchResults } = model
+  const { assemblyNames } = model
   const assemblyName = assemblyNames[0]!
   const assembly = assemblyManager.get(assemblyName)
   const searchScope = model.searchScope(assemblyName)
@@ -43,7 +47,10 @@ const SearchBox = observer(function SearchBox({
           await navigateToSelectedOption({ model, assemblyName, option })
         } catch (e) {
           console.error(e)
-          session.notify(`${e}`, 'warning')
+          session.notify(
+            e instanceof SearchResultsNotFoundError ? e.message : `${e}`,
+            'warning',
+          )
         }
       }}
       assemblyName={assemblyName}
@@ -51,7 +58,6 @@ const SearchBox = observer(function SearchBox({
         fetchResults({
           queryString,
           searchScope,
-          rankSearchResults,
           textSearchManager,
           assembly,
         })

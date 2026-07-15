@@ -26,17 +26,20 @@
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/vcf": "^7.0.8",
+    "@gmod/vcf": "^7.0.9",
+    "@jbrowse/alignments-core": "workspace:^",
+    "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.2",
+    "@jbrowse/mobx-state-tree": "^5.12.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@mui/icons-material": "^9.0.1",
-    "@mui/material": "^9.0.1",
-    "mobx": "^6.15.4",
+    "@jbrowse/sv-core": "workspace:^",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/material": "^9.2.0",
+    "mobx": "^6.16.1",
     "mobx-react": "^9.2.2"
   },
   "peerDependencies": {

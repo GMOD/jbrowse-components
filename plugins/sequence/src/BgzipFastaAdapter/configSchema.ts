@@ -1,21 +1,24 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
+import { deriveFastaLocations } from '../chromSizesUtils.ts'
 /**
  * #config BgzipFastaAdapter
+ * #trackType ReferenceSequenceTrack
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
+ * ```js
+ * {
+ *   type: 'BgzipFastaAdapter',
+ *   uri: 'https://example.com/genome.fa.gz',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
-
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
     ? {
         ...snap,
-        fastaLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-        faiLocation: {
-          uri: `${snap.uri}.fai`,
-          baseUri: snap.baseUri,
-        },
+        ...deriveFastaLocations(snap),
         gziLocation: {
           uri: `${snap.uri}.gzi`,
           baseUri: snap.baseUri,

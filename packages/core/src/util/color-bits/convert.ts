@@ -315,7 +315,7 @@ export function labToLch(
   a: number,
   b: number,
 ): [number, number, number] {
-  return [l, Math.sqrt(a * a + b * b), radToDeg(Math.atan2(b, a))]
+  return [l, Math.hypot(a, b), radToDeg(Math.atan2(b, a))]
 }
 
 export function displayP3ToXyzd50(

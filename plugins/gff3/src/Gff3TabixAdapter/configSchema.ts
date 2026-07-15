@@ -1,12 +1,24 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config Gff3TabixAdapter
  * #category adapter
+ * #trackType FeatureTrack
  * used to load bgzip-compressed, tabix-indexed GFF3 files
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a
+ * `.csi` index instead:
+ * ```js
+ * {
+ *   type: 'Gff3TabixAdapter',
+ *   uri: 'https://example.com/genes.gff3.gz',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -17,8 +29,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
           baseUri: snap.baseUri,
         },
         index: {
+          indexType: snap.csi ? 'CSI' : 'TBI',
           location: {
-            uri: `${snap.uri}.tbi`,
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
             baseUri: snap.baseUri,
           },
         },
@@ -80,17 +93,20 @@ const Gff3TabixAdapter = ConfigurationSchema(
      *
      *
      * preprocessor to allow minimal config, assumes tbi index at
-     * yourfile.gff3.gz.tbi:
+     * yourfile.gff3.gz.tbi (or .csi if csi:true):
      *
      * ```json
      * {
      *   "type": "Gff3TabixAdapter",
      *   "uri": "yourfile.gff3.gz",
+     *   "csi": true
      * }
      * ```
      */
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type Gff3TabixAdapterConfig = Instance<typeof Gff3TabixAdapter>
 
 export default Gff3TabixAdapter

@@ -1,20 +1,21 @@
 import { BamRecord } from '@gmod/bam'
 import {
-  CHAR_FROM_CODE,
-  CIGAR_H,
-  CIGAR_S,
-  HARDCLIP_TYPE,
-  INSERTION_TYPE,
-  MISMATCH_TYPE,
-  SOFTCLIP_TYPE,
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_MATE_REVERSE,
+  SAM_FLAG_REVERSE,
+} from '@jbrowse/alignments-core'
+import {
+  clipLengthAtStartOfReadNumeric,
   forEachMismatchNumeric,
 } from '@jbrowse/cigar-utils'
 
+import { collectMismatches } from '../shared/collectMismatches.ts'
 import { decodeSeq } from '../shared/decodeSeq.ts'
+import { getPairOrientation } from '../shared/pairOrientation.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type BamAdapter from './BamAdapter.ts'
-import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature
@@ -22,7 +23,10 @@ export default class BamSlightlyLazyFeature
   implements Feature
 {
   public adapter!: BamAdapter
+  // shared region-wide reference string (covers many reads); refOffset locates
+  // this read's start within it, so no per-read substring is allocated
   public ref?: string
+  public refOffset = 0
   private _cachedFields?: SimpleFeatureSerialized
 
   id() {
@@ -37,56 +41,17 @@ export default class BamSlightlyLazyFeature
   // computing mismatches array up front was faster, so this is no longer the
   // primary way mismatches are used
   get mismatches() {
-    const mismatches: Mismatch[] = []
-    this.forEachMismatch(
-      (type, start, length, base, qual, altbase, cliplen) => {
-        if (type === MISMATCH_TYPE) {
-          mismatches.push({
-            type: 'mismatch',
-            start,
-            length,
-            base,
-            qual: qual !== undefined && qual >= 0 ? qual : undefined,
-            altbase:
-              altbase !== undefined && altbase > 0
-                ? CHAR_FROM_CODE[altbase]
-                : undefined,
-          })
-        } else if (type === INSERTION_TYPE) {
-          mismatches.push({
-            type: 'insertion',
-            start,
-            length,
-            insertlen: cliplen!,
-            insertedBases: base,
-          })
-        } else if (type === SOFTCLIP_TYPE) {
-          mismatches.push({
-            type: 'softclip',
-            start,
-            length,
-            cliplen: cliplen!,
-          })
-        } else if (type === HARDCLIP_TYPE) {
-          mismatches.push({
-            type: 'hardclip',
-            start,
-            length,
-            cliplen: cliplen!,
-          })
-        } else {
-          mismatches.push({
-            type: type === 2 ? 'deletion' : 'skip',
-            start,
-            length,
-          })
-        }
-      },
-    )
-    return mismatches
+    return collectMismatches(this)
   }
 
-  forEachMismatch(callback: MismatchCallback) {
+  // windowStart/windowEnd are genomic reference coords of the viewport; the
+  // walk skips CIGAR ops outside them so a chromosome-spanning contig only
+  // processes its visible slice. Converted to read-relative roffset here.
+  forEachMismatch(
+    callback: MismatchCallback,
+    windowStart?: number,
+    windowEnd?: number,
+  ) {
     forEachMismatchNumeric(
       this.NUMERIC_CIGAR,
       this.NUMERIC_SEQ,
@@ -95,6 +60,9 @@ export default class BamSlightlyLazyFeature
       this.qual,
       this.ref,
       callback,
+      this.refOffset,
+      windowStart === undefined ? undefined : windowStart - this.start,
+      windowEnd === undefined ? undefined : windowEnd - this.start,
     )
   }
 
@@ -103,39 +71,36 @@ export default class BamSlightlyLazyFeature
   }
 
   get clipLengthAtStartOfRead() {
-    const cigar = this.NUMERIC_CIGAR
-    if (cigar.length === 0) {
-      return 0
-    }
-    const packed = this.strand === -1 ? cigar[cigar.length - 1]! : cigar[0]!
-    const op = packed & 0xf
-    if (op === CIGAR_S || op === CIGAR_H) {
-      return packed >> 4
-    }
-    return 0
+    return clipLengthAtStartOfReadNumeric(this.NUMERIC_CIGAR, this.strand)
   }
 
   get pair_orientation() {
     if (!this.isPaired()) {
       return undefined
     }
-    const isRead1 = !!(this.flags & 0x40)
-    const isSelfRev = !!(this.flags & 0x10)
-    const isMateRev = !!(this.flags & 0x20)
-    const selfStrand = isSelfRev ? 'R' : 'F'
-    const mateStrand = isMateRev ? 'R' : 'F'
-    const selfNum = isRead1 ? '1' : '2'
-    const mateNum = isRead1 ? '2' : '1'
-
-    return this.next_refid !== this.ref_id || this.start <= this.next_pos
-      ? selfStrand + selfNum + mateStrand + mateNum
-      : mateStrand + mateNum + selfStrand + selfNum
+    return getPairOrientation({
+      isRead1: !!(this.flags & SAM_FLAG_FIRST_IN_PAIR),
+      isSelfRev: !!(this.flags & SAM_FLAG_REVERSE),
+      isMateRev: !!(this.flags & SAM_FLAG_MATE_REVERSE),
+      selfRefId: this.ref_id,
+      selfPos: this.start,
+      mateRefId: this.next_refid,
+      matePos: this.next_pos,
+    })
   }
 
   get refName() {
     return this.adapter.refIdToName(this.ref_id)!
   }
-  get(field: string): any {
+  get(name: 'refName'): string
+  get(name: 'name' | 'type' | 'id' | 'source'): string | undefined
+  get(name: 'start' | 'end'): number
+  get(name: 'phase'): 0 | 1 | 2 | undefined
+  get(name: 'strand'): -1 | 0 | 1 | undefined
+  get(name: 'score'): number | undefined
+  get(name: 'subfeatures'): Feature[] | undefined
+  get(field: string): unknown
+  get(field: string): unknown {
     switch (field) {
       case 'mismatches':
         return this.mismatches

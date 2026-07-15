@@ -1,56 +1,29 @@
-import { getNextRefPos } from '@jbrowse/cigar-utils'
-import {
-  getModPositions,
-  getModProbabilities,
-} from '@jbrowse/modifications-utils'
+import { forEachModRefPos } from '@jbrowse/modifications-utils'
 
-import { getTagAlt } from '../util.ts'
-
-import type { Feature } from '@jbrowse/core/util'
-
-interface MaximumProbabilityMod {
-  type: string
-  prob: number
-  allProbs: number[]
-}
+import type { ModWithPositions } from '@jbrowse/modifications-utils'
 
 export function getMaxProbModAtEachPosition(
-  feature: Feature,
+  modifications: ModWithPositions[],
+  probabilities: number[] | undefined,
   ops: ArrayLike<number>,
+  fstrand: -1 | 0 | 1,
 ) {
-  const fstrand = feature.get('strand') as -1 | 0 | 1
-  const seq = feature.get('seq') as string | undefined
-  const mm = (getTagAlt(feature, 'MM', 'Mm') as string) || ''
-  if (seq) {
-    const modifications = getModPositions(mm, seq, fstrand)
-    const probabilities = getModProbabilities(feature)
-    const maxProbModForPosition = [] as MaximumProbabilityMod[]
-
-    let probIndex = 0
-    for (const { type, positions } of modifications) {
-      getNextRefPos(ops, positions, (ref, idx) => {
-        const prob =
-          probabilities?.[
-            probIndex + (fstrand === -1 ? positions.length - 1 - idx : idx)
-          ] ?? 0
-        if (!maxProbModForPosition[ref]) {
-          maxProbModForPosition[ref] = {
-            type,
-            prob,
-            allProbs: [prob],
-          }
-        } else {
-          const old = maxProbModForPosition[ref]
-          maxProbModForPosition[ref] = {
-            allProbs: [...old.allProbs, prob],
-            prob: Math.max(old.prob, prob),
-            type: old.prob > prob ? old.type : type,
-          }
-        }
-      })
-      probIndex += positions.length
-    }
-    return maxProbModForPosition
-  }
-  return undefined
+  const maxProbModForPosition: {
+    type: string
+    base: string
+    prob: number
+  }[] = []
+  forEachModRefPos(
+    modifications,
+    probabilities,
+    ops,
+    fstrand === -1,
+    ({ type, base }, ref, _idx, prob) => {
+      const existing = maxProbModForPosition[ref]
+      if (!existing || prob > existing.prob) {
+        maxProbModForPosition[ref] = { type, base, prob }
+      }
+    },
+  )
+  return maxProbModForPosition
 }

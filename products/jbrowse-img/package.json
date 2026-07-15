@@ -28,26 +28,38 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "clean": "rm -rf esm *.tsbuildinfo",
+    "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
-    "build:esm": "tsgo --build tsconfig.build.esm.json",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
     "prepack": "pnpm build",
-    "preversion": "pnpm build"
+    "preversion": "pnpm build",
+    "test:integration": "npx tsx --tsconfig ../../tsconfig.json --import ./src/integrationRegister.mjs --test src/**/*.test.mjs"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
-    "@jbrowse/mobx-state-tree": "^5.10.2",
+    "@jbrowse/mobx-state-tree": "^5.12.0",
+    "@jbrowse/plugin-circular-view": "workspace:^",
+    "@jbrowse/plugin-dotplot-view": "workspace:^",
+    "@jbrowse/plugin-linear-comparative-view": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@jbrowse/react-linear-genome-view2": "workspace:^",
+    "@jbrowse/product-core": "workspace:^",
+    "@jbrowse/react-app2": "workspace:^",
     "@types/jsdom": "^28.0.3",
-    "@types/yargs": "^17.0.35",
     "canvas": "^3.2.3",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "tmp": "^0.2.7",
-    "yargs": "^18.0.0"
+    "jsdom": "^29.1.1",
+    "mobx-react": "^9.2.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "tmp": "^0.2.7"
+  },
+  "devDependencies": {
+    "@jbrowse/plugin-alignments": "workspace:^",
+    "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-hic": "workspace:^",
+    "@jbrowse/plugin-variants": "workspace:^",
+    "@jbrowse/plugin-wiggle": "workspace:^"
   },
   "publishConfig": {
     "access": "public"

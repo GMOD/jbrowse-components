@@ -24,6 +24,7 @@ const TypeSelector = observer(function TypeSelector({
           value={slot.type}
           label="Type"
           select
+          variant="outlined"
           helperText={`Type of ${slotName} to use`}
           fullWidth
           onChange={onChange}

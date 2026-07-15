@@ -6,9 +6,6 @@
 //
 // see https://github.com/cmdcolin/cra-webpack5-web-worker-example for simple example
 // and docs https://webpack.js.org/guides/web-workers/
-//
-// also note: the craco config for webpack publicPath: 'auto' is needed for
-// these workers
 export default function makeWorkerInstance() {
   return new Worker(new URL('./rpcWorker', import.meta.url))
 }

@@ -8,15 +8,15 @@ This folder contains scripts to auto-generate some docs
 In the root dir run
 
 ```
-pnpm statedocs
-pnpm configdocs
+pnpm autogen
 ```
 
-To update statemodels and config individually
+This updates website/docs/models, website/docs/config, and website/docs/api
+(state models, config, and exported functions), then runs the formatter. The
+generators share a single TypeScript program load (the dominant cost — see
+`generate.ts`), so they always run together.
 
-These will update website/docs/models and website/docs/config respectively
-
-You will have to manually do This
+You will have to manually do this
 
 It looks for comments named
 
@@ -34,12 +34,19 @@ and
  */
 ```
 
-it is not able to document a single variable, so in some places, a dummy
-function is put below the `#config/#stateModel` comments
+and
 
+```js
+/**
+ * #api groupName
+ * description of the function...
+ */
 ```
-function x(){}
-```
+
+The comment can sit directly above a `const`, `function`, or `export default`
+declaration. The extractor reads JSDoc that's attached to the declaration via
+TypeScript's parser, so make sure there is no blank line between the JSDoc and
+the declaration it documents.
 
 Only one config/statemodel per file can be used currently
 
@@ -47,15 +54,60 @@ It uses the typescript compiler which spiders over many files when processing a
 single file, and it is otherwise hard to keep track of which config/statemodel
 is processed unless we keep it to one config/statemodel at a time.
 
+Unlike config/statemodel, **many `#api` exports per file** are allowed. Each
+`#api` tag documents one exported function or const. The text after the tag is
+an optional group/page name; with no name the export's package is used (e.g.
+anything in `packages/cigar-utils` → `cigar-utils`). Pass a name
+(`#api core/util`) to split a large package across finer-grained pages. The
+description on the following lines becomes the doc body; the type signature is
+read from the TypeScript checker, so `@param`/`@returns` tags aren't needed.
+Output goes to `website/docs/api/<group>.md`, and the same exports are mirrored
+into each package's `README.md` between `<!-- API_DOCS_START -->` /
+`<!-- API_DOCS_END -->` markers (idempotent; hand-written README prose is left
+untouched).
+
+```js
+/**
+ * #api
+ * Returns the JBrowse session model for any node in the state tree.
+ */
+export function getSession(node) {
+  /* ... */
+}
+```
+
 Then, in statemodels
 
 ```
 #stateModel
 #getter
 #property - model property
+#volatile - volatile (runtime-only) property
 #action
 #method - a view that takes function params or is called as a function
 ```
+
+Each `#stateModel` page renders a flattened "Inherited members" section
+reproducing every member reachable through composition in full, grouped by the
+model that defines it (with a "Derived from" link back to that model's own
+page), so the page is self-contained — a reader sees the whole API surface
+without chasing links. A member redeclared by a more specific model is shown
+once, at its most-specific definition. The "Members" index table at the top
+covers the same whole surface — own members first, then each ancestor's — with a
+"Defined by" column naming the source (a link to the ancestor's page for
+inherited members), so scanning the table finds any member on the page. Both the
+table and the inherited section render from one deduped computation, so they
+cannot disagree. The composition graph is **derived from code**, not authored —
+the generator resolves the models passed to the factory's `types.compose(...)`
+call, and the base of a `return BaseFactory(args).views(...)` extension chain,
+through the TypeScript checker (alias-followed, and following
+`const X = factory()` exports), so no `extends`/`composed of` comment needs to
+be written or kept in sync. The only requirement is that the `#stateModel` JSDoc
+sit on the model's factory (or its `types.compose`), not an unrelated preceding
+declaration. Any leftover hand-authored `extends`/`composed of` block is
+stripped from the rendered prose so it cannot drift from the derived list.
+
+This mirrors how `#baseConfiguration` derives config inheritance (below).
 
 and in config models
 
@@ -64,3 +116,85 @@ and in config models
 #baseConfiguration - baseConfiguration
 #slot - a config slot
 ```
+
+The `#baseConfiguration` slot links a config to the one it derives from. The
+generator resolves the base config automatically through the TypeScript checker
+(following the right-hand-side expression and import aliases), so no name needs
+to be written — `createBaseTrackConfig(pluginManager)`,
+`baseLinearDisplayConfigSchema`, an aliased default import, and even
+`pluginManager.getDisplayType('LinearWiggleDisplay')!.configSchema` (resolved by
+the quoted name) all link. Each config page then renders an "Inherited config
+slots" section reproducing every base slot in full, so the page is
+self-contained; an unresolved base prints a warning at generation time.
+
+## Adding examples with `#example`
+
+Any `#config`, `#stateModel`, `#slot`, `#getter`, `#action`, `#method`, or
+`#api` block can carry one or more `#example` sections. Examples are rendered
+prominently at the top of the generated page (before the prose description), so
+they are the first thing a reader sees.
+
+Write an `#example` block **after** the rest of the doc text so it stays out of
+the prose that `extends` resolution reads:
+
+````js
+/**
+ * #config BamAdapter
+ * used to configure BAM adapter
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.bai` index:
+ * ```js
+ * {
+ *   type: 'BamAdapter',
+ *   uri: 'https://example.com/sample.bam',
+ * }
+ * ```
+ */
+````
+
+The content between `#example` and the end of the JSDoc (or the next `#example`
+marker) is rendered verbatim — prose lines explain the snippet, fenced code
+blocks are copy-pasteable.
+
+### Multiple labeled examples
+
+Add a label after `#example` to get named subsections. Useful when showing a
+minimal form alongside a fully-expanded one:
+
+````js
+/**
+ * #config CramAdapter
+ *
+ * #example minimal
+ * Minimal — `uri` auto-resolves the `.crai` index:
+ * ```js
+ * { type: 'CramAdapter', uri: 'https://example.com/sample.cram' }
+ * ```
+ *
+ * #example with-explicit-index
+ * Explicit index path for non-standard naming:
+ * ```js
+ * {
+ *   type: 'CramAdapter',
+ *   cramLocation: { uri: 'https://example.com/sample.cram' },
+ *   craiLocation: { uri: 'https://example.com/sample.crai' },
+ * }
+ * ```
+ */
+````
+
+Labeled examples render as `### Example: minimal` /
+`### Example: with-explicit-index` subsections nested under `## Example usage`.
+Slot- and member-level labeled examples use italic (`_label_`) instead of a
+heading to stay subordinate.
+
+### Where `#example` can appear
+
+| Tag                               | Renders at                                      |
+| --------------------------------- | ----------------------------------------------- |
+| `#config`                         | Top of the config page (`## Example usage`)     |
+| `#stateModel`                     | Top of the model page (`## Example usage`)      |
+| `#slot`                           | After the slot's code block (`**Example:**`)    |
+| `#getter` / `#method` / `#action` | After the member's code block (`**Example:**`)  |
+| `#api`                            | After the type signature (`#### Example usage`) |

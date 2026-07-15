@@ -1,25 +1,31 @@
 ---
-id: avoiding_stale_config
 title: Avoiding stale config
 description:
   Cache-busting strategies for servers that aggressively cache config.json
 guide_category: Other features
 ---
 
-Some servers strongly cache the "config.json" file. If you want to avoid this,
-you can edit the index.html of JBrowse to include the following
+Some servers aggressively cache `config.json`. To force a fresh fetch, add this
+`<script>` to the `<head>` of JBrowse's index.html:
 
+```html
+<script>
+  window.__jbrowseCacheBuster = true
+</script>
 ```
 
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <script>
-      window.__jbrowseCacheBuster = true
-    </script>
-    <meta charset="utf-8" />
-```
+This appends a random query string to the config.json request, bypassing the
+browser cache.
 
-This will request the config.json file with a random query string appended to
-force the data to be fetched from the server instead of being loaded from the
-local browser cache
+Because `config.json` is fetched before it can configure anything, this snippet
+is the one piece of deploy config that must live in `index.html` rather than in
+`config.json`. It is a single line, so it is easy to inject from a build script
+instead of hand-editing. See
+[Deploying JBrowse Web](/docs/config_guides/deploying).
+
+## See also
+
+- [Deploying JBrowse Web](/docs/config_guides/deploying), the pipeline that
+  injects this snippet into index.html at build time
+- [config.json format](/docs/config_guides/intro), clarifies why this one
+  setting must live outside config.json

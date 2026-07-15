@@ -8,9 +8,6 @@ import {
 import { cigarToMismatches2 } from './cigarToMismatches2.ts'
 import { mdToMismatches2 } from './mdToMismatches2.ts'
 
-const startClip = new RegExp(/(\d+)[SH]$/)
-const endClip = new RegExp(/^(\d+)([SH])/)
-
 // CIGAR operation char codes to indices (from BAM spec)
 const CIGAR_CODE_TO_INDEX: Record<number, number> = {
   77: 0, // M
@@ -24,7 +21,10 @@ const CIGAR_CODE_TO_INDEX: Record<number, number> = {
   88: 8, // X
 }
 
-// Parses CIGAR string to alternating [length, op, ...] string array
+/**
+ * #api
+ * Parses a CIGAR string to an alternating `[length, op, ...]` string array.
+ */
 export function parseCigar(s = '') {
   let currLen = ''
   const ret: string[] = []
@@ -40,7 +40,11 @@ export function parseCigar(s = '') {
   return ret
 }
 
-// Parses CIGAR string to packed number array where each value is (length << 4) | opIndex
+/**
+ * #api
+ * Parses a CIGAR string to a packed number array where each value is
+ * `(length << 4) | opIndex`.
+ */
 export function parseCigar2(s = '') {
   let currLen = 0
   const ret: number[] = []
@@ -57,9 +61,12 @@ export function parseCigar2(s = '') {
   return ret
 }
 
-// Same encoding as parseCigar2 but writes into a packed Uint32Array — matches
-// the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can use a
-// single typed-array code path. Two-pass: count ops, then alloc and fill.
+/**
+ * #api
+ * Same encoding as `parseCigar2` but writes into a packed `Uint32Array` —
+ * matches the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can
+ * use a single typed-array code path.
+ */
 export function parseCigar2Typed(s = '') {
   let opCount = 0
   for (let i = 0, l = s.length; i < l; i++) {
@@ -83,6 +90,11 @@ export function parseCigar2Typed(s = '') {
   return out
 }
 
+/**
+ * #api
+ * Computes the list of mismatches (SNVs, indels, clips, skips) for a read from
+ * its CIGAR, optional MD tag, sequence, reference, and quality.
+ */
 export function getMismatches(
   cigar?: string,
   md?: string,
@@ -98,6 +110,10 @@ export function getMismatches(
   return mismatches
 }
 
+/**
+ * #api
+ * Length the read spans on the reference (sum of M/=/X/D/N ops).
+ */
 export function getLengthOnRef(cigar: string) {
   const cigarOps = parseCigar2(cigar)
   let lengthOnRef = 0
@@ -110,6 +126,10 @@ export function getLengthOnRef(cigar: string) {
   return lengthOnRef
 }
 
+/**
+ * #api
+ * Length of the read sequence (sum of all ops except D/N).
+ */
 export function getLength(cigar: string) {
   const cigarOps = parseCigar2(cigar)
   let length = 0
@@ -139,10 +159,47 @@ export function getLengthSansClipping(cigar: string) {
   return length
 }
 
+// clip at the end of the CIGAR string = start of a reverse-strand read,
+// clip at the start of the CIGAR string = start of a forward-strand read
 export function getClip(cigar: string, strand: number) {
-  return strand === -1
-    ? +(startClip.exec(cigar) ?? [])[1]! || 0
-    : +(endClip.exec(cigar) ?? [])[1]! || 0
+  if (!cigar) {
+    return 0
+  }
+  if (strand === -1) {
+    const last = cigar.length - 1
+    const op = cigar[last]
+    if (op === 'S' || op === 'H') {
+      let i = last
+      while (i > 0 && cigar[i - 1]! >= '0' && cigar[i - 1]! <= '9') {
+        i--
+      }
+      return +cigar.slice(i, last)
+    }
+    return 0
+  } else {
+    let i = 0
+    while (cigar[i]! >= '0' && cigar[i]! <= '9') {
+      i++
+    }
+    const op = cigar[i]
+    return (op === 'S' || op === 'H') && i > 0 ? +cigar.slice(0, i) : 0
+  }
+}
+
+// numeric analog of getClip: reads the start-clip length straight off a packed
+// NUMERIC_CIGAR (each entry = (length << 4) | opIndex) without serializing to a
+// CIGAR string. Reverse-strand reads clip at the CIGAR tail, forward at the head.
+export function clipLengthAtStartOfReadNumeric(
+  cigar: ArrayLike<number>,
+  strand: number,
+) {
+  const len = cigar.length
+  if (len === 0) {
+    return 0
+  }
+  const packed = strand === -1 ? cigar[len - 1]! : cigar[0]!
+  const op = packed & 0xf
+  return op === CIGAR_S || op === CIGAR_H ? packed >> 4 : 0
 }
 
 // produces a list of "feature-like" object from parsing supplementary
@@ -197,6 +254,3 @@ export function featurizeSA(
       }) ?? []
   )
 }
-
-export { getNextRefPos } from './getNextRefPos.ts'
-export { cigarToMismatches2 } from './cigarToMismatches2.ts'

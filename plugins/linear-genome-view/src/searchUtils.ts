@@ -1,13 +1,40 @@
-import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
+import { RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
+import {
+  UnknownRefNameError,
+  dedupe,
+  getEnv,
+  getSession,
+} from '@jbrowse/core/util'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { parseLocStrings } from './LinearGenomeView/util.ts'
 
 import type { LinearGenomeViewModel } from './LinearGenomeView/index.ts'
+import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import type TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { SearchType } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { TextSearchManager } from '@jbrowse/core/util'
+import type { AbstractSessionModel } from '@jbrowse/core/util'
+
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    'LinearGenomeView-searchResultSelected': {
+      args: undefined
+      result: undefined
+      props: {
+        session: AbstractSessionModel
+        result: BaseResult
+        model: LinearGenomeViewModel
+        assemblyName: string
+      }
+    }
+  }
+}
+
+// cap on refname suggestions surfaced from a query; the autocomplete only
+// displays a bounded list, so there's no point collecting more
+const MAX_REFNAME_HITS = 10
 
 // shared dispatch used by SearchBox.onSelect and the LGV ImportForm submit:
 // route a chosen result to a direct nav, a multi-result dialog, or a generic
@@ -43,7 +70,11 @@ export async function navToOption({
   option: BaseResult
   assemblyName: string
 }) {
-  const location = option.getLocation() ?? option.getLabel()
+  // getLocation() can be an empty string when a result reports hasLocation()
+  // but carries no coordinates; treat that as "no location" and fall back to
+  // the label rather than forwarding '' into an empty, view-blanking parse
+  const rawLocation = option.getLocation()
+  const location = rawLocation ? rawLocation : option.getLabel()
   const trackId = option.getTrackId()
   const session = getSession(model)
   const { assemblyManager } = session
@@ -54,16 +85,24 @@ export async function navToOption({
     assemblyName,
     0.2,
   )
-  if (trackId) {
+  if (trackId && isAlive(model)) {
     model.showTrack(trackId)
   }
 
   const { pluginManager } = getEnv(session)
   await pluginManager.evaluateAsyncExtensionPoint(
+    /** #extensionPoint LinearGenomeView-searchResultSelected | async | Invoked when a search result is selected */
     'LinearGenomeView-searchResultSelected',
     undefined,
     { session, result: option, model, assemblyName },
   )
+}
+
+// Thrown when a name search yields no hits and the input isn't coordinate-shaped.
+// Typed (rather than a bare Error) so callers can render it as a soft "not found"
+// warning instead of an error — string-matching the message would be brittle.
+export class SearchResultsNotFoundError extends Error {
+  name = 'SearchResultsNotFoundError'
 }
 
 // if input is a known ref or locstring, navigate directly;
@@ -84,27 +123,32 @@ export async function handleSelectedRegion({
   const assembly = assemblyManager.get(assemblyName)
   const allRefs = assembly?.allRefNamesWithLowerCase
 
-  if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
-    await model.navToLocations(
-      parseLocStrings(
-        input,
-        assemblyName,
-        ref => allRefs.has(ref) || allRefs.has(ref.toLowerCase()),
+  // navigate treating input as one or more whitespace-separated locstrings
+  const navToLocstrings = () =>
+    model.navToLocations(
+      parseLocStrings(input, assemblyName, (ref, asm) =>
+        assemblyManager.isValidRefName(ref, asm),
       ),
       assemblyName,
       grow,
     )
+
+  if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
+    await navToLocstrings()
   } else {
     const searchScope = model.searchScope(assemblyName)
     const results = await fetchResults({
       queryString: input,
       searchType: 'exact',
       searchScope,
-      rankSearchResults: model.rankSearchResults,
       textSearchManager,
       assembly,
     })
 
+    // the view may have been closed/detached while the text-search RPC ran
+    if (!isAlive(model)) {
+      return
+    }
     if (results.length > 1) {
       model.setSearchResults(results, input.toLowerCase(), assemblyName)
     } else if (results.length === 1) {
@@ -114,13 +158,23 @@ export async function handleSelectedRegion({
         assemblyName,
       })
     } else {
-      await model.navToLocations(
-        parseLocStrings(input, assemblyName, (ref, asm) =>
-          assemblyManager.isValidRefName(ref, asm),
-        ),
-        assemblyName,
-        grow,
-      )
+      // no search hits: still try to resolve the input as a locstring (bare
+      // refname, "ref start end" triplet, etc). if that also can't find a
+      // refname AND the input is a single bare token (a plausible gene name),
+      // reframe the unknown-ref error as a clean "no results" message; keep the
+      // specific ref error for coordinate/multi-part queries
+      try {
+        await navToLocstrings()
+      } catch (e) {
+        const isPlainName = !input.includes(':') && !input.includes(' ')
+        if (e instanceof UnknownRefNameError && isPlainName) {
+          throw new SearchResultsNotFoundError(
+            `No results found for "${input}"`,
+          )
+        } else {
+          throw e
+        }
+      }
     }
   }
 }
@@ -134,13 +188,11 @@ export async function fetchResults({
   queryString,
   searchType,
   searchScope,
-  rankSearchResults,
   textSearchManager,
   assembly,
 }: {
   queryString: string
   searchScope: SearchScope
-  rankSearchResults: (results: BaseResult[]) => BaseResult[]
   searchType?: SearchType
   textSearchManager?: TextSearchManager
   assembly?: Assembly
@@ -151,35 +203,49 @@ export async function fetchResults({
       searchType,
     },
     searchScope,
-    rankSearchResults,
   )
 
-  // resolve aliases (e.g. 'contigB') to the canonical refname ('ctgB') so
-  // the dropdown shows the name that matches the FASTA / displayed regions.
-  // matchedObject is set so the client-side filter (which checks label
-  // against the user's query) keeps these even when the typed alias text
-  // doesn't appear in the canonical label.
-  const refNameResults = [
-    ...new Set(
-      assembly?.allRefNames
-        ?.filter(ref => ref.toLowerCase().startsWith(queryString.toLowerCase()))
-        .map(ref => assembly.getCanonicalRefName(ref) ?? ref)
-        .slice(0, 10),
-    ),
-  ].map(r => new BaseResult({ label: r, matchedObject: { refName: r } }))
+  // ensure aliases are loaded: allRefNames is a pure getter, so reading it does
+  // not itself kick off the lazy load
+  await assembly?.load()
+  const refNameResults = assembly
+    ? searchRefNames(assembly, queryString, searchType)
+    : []
 
   return dedupe([...refNameResults, ...(textSearchResults ?? [])], elt =>
     elt.getId(),
   )
 }
 
+// Scan assembly refnames for query matches, resolving aliases (e.g. 'contigB')
+// to the canonical refname ('ctgB') so the dropdown shows the name that matches
+// the FASTA / displayed regions. allRefNames can hold ~10^6 entries, so stop
+// once enough unique canonical hits accumulate rather than lowercasing and
+// scanning the entire list on every keystroke.
+function searchRefNames(
+  assembly: Assembly,
+  queryString: string,
+  searchType?: SearchType,
+) {
+  const q = queryString.toLowerCase()
+  const canonicalHits = new Set<string>()
+  for (const ref of assembly.allRefNames ?? []) {
+    const lower = ref.toLowerCase()
+    const isMatch = searchType === 'exact' ? lower === q : lower.startsWith(q)
+    if (isMatch) {
+      canonicalHits.add(assembly.getCanonicalRefName(ref) ?? ref)
+      if (canonicalHits.size >= MAX_REFNAME_HITS) {
+        break
+      }
+    }
+  }
+  return [...canonicalHits].map(
+    r => new RefSequenceResult({ label: r, refName: r }),
+  )
+}
+
 // splits on the last instance of a character
 export function splitLast(str: string, split: string): [string, string] {
-  const lastIndex = str.lastIndexOf(split)
-  if (lastIndex === -1) {
-    return [str, '']
-  }
-  const before = str.slice(0, lastIndex)
-  const after = str.slice(lastIndex + 1)
-  return [before, after]
+  const i = str.lastIndexOf(split)
+  return i === -1 ? [str, ''] : [str.slice(0, i), str.slice(i + 1)]
 }

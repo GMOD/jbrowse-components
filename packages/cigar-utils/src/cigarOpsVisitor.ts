@@ -45,11 +45,21 @@ export function visitCigarOps(
   }
 }
 
+// Indels narrower than this (in pixels) are merged into surrounding match
+// context rather than rendered as separate quads. At 1px an indel resolving to
+// a single pixel still renders — small on-screen detail is intentionally kept.
+// The old 2px floor guarded against 1bp-indel aliasing on noisy long reads, but
+// the synteny/dotplot CIGAR fill now fades sub-pixel indels by their true MSAA
+// coverage instead of aliasing, so a genuinely sub-pixel indel fades honestly
+// rather than flickering. A 1bp indel in a whole-chromosome view is far below
+// 1px and still drops out here, as intended.
+const MIN_INDEL_PX = 1
+
 /**
  * Walks pre-parsed (packed int) CIGAR ops in bp-space and fires a callback
- * for each rendered segment. Small indels (len < bpPerPx) are merged into
- * surrounding context; tiny M segments (both accumulators advance < bpPerPx)
- * are accumulated before emitting.
+ * for each rendered segment. Small indels (width < MIN_INDEL_PX) are merged
+ * into surrounding context; tiny M segments (both accumulators advance <
+ * bpPerPx) are accumulated before emitting.
  *
  * Used by synteny and dotplot GPU renderers so both stay in sync.
  * Re-exported via @jbrowse/synteny-core for consistent import paths.
@@ -100,7 +110,7 @@ export function visitCigarRenderedSegments(
 
     if (op === CIGAR_D || op === CIGAR_N || op === CIGAR_I) {
       const relevantBpPerPx = op === CIGAR_I ? bpPerPx1 : bpPerPx0
-      if (len < relevantBpPerPx) {
+      if (len < relevantBpPerPx * MIN_INDEL_PX) {
         continuingFlag = true
         continue
       }

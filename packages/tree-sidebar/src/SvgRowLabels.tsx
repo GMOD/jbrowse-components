@@ -1,4 +1,5 @@
-import { max, measureText } from '@jbrowse/core/util'
+import { getFillProps, max, measureText } from '@jbrowse/core/util'
+import { alpha, useTheme } from '@mui/material'
 
 export function SvgRowLabels({
   sources,
@@ -7,18 +8,27 @@ export function SvgRowLabels({
   scrollTop = 0,
   availableHeight,
 }: {
-  sources: { name: string; labelColor?: string }[]
+  sources: { name: string; label?: string; labelColor?: string }[]
   rowHeight: number
   labelOffset: number
   scrollTop?: number
   availableHeight?: number
 }) {
+  const theme = useTheme()
   if (rowHeight < 6) {
     return null
   }
   const fontSize = Math.min(rowHeight, 12)
   const boxHeight = Math.min(rowHeight, 20)
-  const labelWidth = max(sources.map(s => measureText(s.name, fontSize))) + 10
+
+  // `name` is the identity (key + hit-test); `label` is the displayed string if
+  // the adapter config supplied one.
+  const boxWidth = max(
+    sources.map(s => measureText(s.label ?? s.name, fontSize) + 10),
+    10,
+  )
+
+  const defaultBackground = alpha(theme.palette.background.paper, 0.8)
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {
@@ -29,24 +39,29 @@ export function SvgRowLabels({
         ) {
           return null
         }
+        // Per-source labelColor tints the label box (identity coding for
+        // multirow/density tracks); text auto-contrasts against it.
         const lc = source.labelColor
+        const fg = lc
+          ? theme.palette.getContrastText(lc)
+          : theme.palette.text.primary
         return (
           <g key={source.name}>
             <rect
               x={0}
               y={y}
-              width={labelWidth}
+              width={boxWidth}
               height={boxHeight}
-              fill={lc ?? 'rgba(255,255,255,0.8)'}
+              {...getFillProps(lc ?? defaultBackground)}
             />
             <text
               x={4}
               y={y + boxHeight / 2}
               fontSize={fontSize}
               dominantBaseline="central"
-              fill={lc ? 'white' : 'black'}
+              {...getFillProps(fg)}
             >
-              {source.name}
+              {source.label ?? source.name}
             </text>
           </g>
         )

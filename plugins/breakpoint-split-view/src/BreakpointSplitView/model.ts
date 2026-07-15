@@ -2,13 +2,8 @@ import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { avg, getSession, notEmpty } from '@jbrowse/core/util'
-import {
-  addDisposer,
-  addMiddleware,
-  cast,
-  getPath,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -17,69 +12,26 @@ import { autorun } from 'mobx'
 import {
   classifyVariantFeatures,
   getBadlyPairedAlignments,
+  getClipLengthAtStartOfRead,
   getMatchedAlignmentFeatures,
   getMatchedBreakendFeatures,
   getMatchedPairedFeatures,
   getMatchedTranslocationFeatures,
   hasPairedReads,
+  markHiddenSegments,
 } from './components/util.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
   calc,
+  computeOverlayY,
+  findFeatureViewLevel,
   getBlockFeatures,
   intersect,
+  makeOffscreenLayout,
 } from './util.ts'
 
-type Compactness = 'normal' | 'compact' | 'super-compact'
-
-interface CompactableDisplay {
-  setCompactness: (v: Compactness) => void
-}
-
-function isCompactable(d: unknown): d is CompactableDisplay {
-  return d !== null && typeof d === 'object' && 'setCompactness' in d
-}
-
-// SYNC: plugins/linear-genome-view/src/LinearGenomeView/menuItems.ts, plugins/linear-comparative-view/src/LinearComparativeView/model.ts
-function buildCompactAllTracksMenu(tracks: { displays: unknown[] }[]) {
-  const compactable = tracks.flatMap(t => t.displays.filter(isCompactable))
-  if (compactable.length === 0) {
-    return []
-  }
-  function applyCompactness(level: Compactness) {
-    for (const display of compactable) {
-      display.setCompactness(level)
-    }
-  }
-  return [
-    {
-      label: 'Compact all tracks',
-      subMenu: [
-        {
-          label: 'Normal',
-          onClick: () => {
-            applyCompactness('normal')
-          },
-        },
-        {
-          label: 'Compact',
-          onClick: () => {
-            applyCompactness('compact')
-          },
-        },
-        {
-          label: 'Super-compact',
-          onClick: () => {
-            applyCompactness('super-compact')
-          },
-        },
-      ],
-    },
-  ]
-}
-
 import type {
-  BreakpointSplitViewInit,
+  BreakpointSplitViewInitView,
   ExportSvgOptions,
   LayoutRecord,
   OverlayMatch,
@@ -94,8 +46,23 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
 /**
  * #stateModel BreakpointSplitView
- * extends
- * - [BaseViewModel](../baseviewmodel)
+ * #category view
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. `init` is an array — one entry
+ * per stacked panel — each declaring the `assembly`, a `loc`, and the `tracks`
+ * to show. The two panels flank a structural-variant breakpoint:
+ * ```js
+ * {
+ *   type: 'BreakpointSplitView',
+ *   init: [
+ *     { assembly: 'hg38', loc: 'chr1:1,000,000-1,100,000', tracks: ['alignments'] },
+ *     { assembly: 'hg38', loc: 'chr5:2,000,000-2,100,000', tracks: ['alignments'] },
+ *   ],
+ * }
+ * ```
+ * Each `tracks` entry can also be a `{ trackId, displaySnapshot }` object to
+ * set per-panel display options (e.g. a shorter alignments height).
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400
@@ -111,42 +78,47 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        height: types.optional(types.number, defaultHeight),
+        height: types.stripDefault(types.number, defaultHeight),
         /**
          * #property
          */
-        trackSelectorType: 'hierarchical',
+        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
         /**
          * #property
          */
-        showIntraviewLinks: true,
+        showIntraviewLinks: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
-        linkViews: false,
+        linkViews: types.stripDefault(types.boolean, false),
         /**
          * #property
          */
-        interactiveOverlay: true,
+        interactiveOverlay: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
-        showHeader: true,
+        showHeader: types.stripDefault(types.boolean, true),
         /**
          * #property
          */
         views: types.array(
-          pluginManager.getViewType('LinearGenomeView')!
+          pluginManager.getViewType('LinearGenomeView')
             .stateModel as LinearGenomeViewStateModel,
         ),
         /**
          * #property
-         * used for initializing the view from a session snapshot
+         * declarative child panels (loc/assembly/tracks) resolved into `views`
+         * once the view has a width; used for initializing from a session
+         * snapshot. Transient — stripped by postProcessSnapshot.
          */
-        init: types.frozen<BreakpointSplitViewInit | undefined>(),
+        init: types.frozen<BreakpointSplitViewInitView[] | undefined>(),
       }),
     )
-    .volatile(() => ({
+    .volatile<{
+      width: number
+      matchedTrackFeatures: Record<string, Feature[][]>
+    }>(() => ({
       /**
        * #volatile
        */
@@ -155,8 +127,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        */
 
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      matchedTrackFeatures: {} as Record<string, Feature[][]>,
+      matchedTrackFeatures: {},
     }))
     .views(self => ({
       /**
@@ -200,45 +171,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { renderToSvg } =
           await import('./svgcomponents/SVGBreakpointSplitView.tsx')
         const html = await renderToSvg(self as BreakpointViewModel, opts)
-        const { saveAs } = await import('@jbrowse/core/util')
-
-        if (opts.format === 'png') {
-          const img = new Image()
-          const svgBlob = new Blob([html], { type: 'image/svg+xml' })
-          const url = URL.createObjectURL(svgBlob)
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => {
-              const canvas = document.createElement('canvas')
-              canvas.width = img.width
-              canvas.height = img.height
-              const ctx = canvas.getContext('2d')!
-              ctx.drawImage(img, 0, 0)
-              URL.revokeObjectURL(url)
-              canvas.toBlob(blob => {
-                if (blob) {
-                  saveAs(blob, opts.filename || 'image.png')
-                  resolve()
-                } else {
-                  reject(
-                    new Error(
-                      `Failed to create PNG. The image may be too large (${img.width}x${img.height}). Try reducing the view size or use SVG format.`,
-                    ),
-                  )
-                }
-              }, 'image/png')
-            }
-            img.onerror = () => {
-              URL.revokeObjectURL(url)
-              reject(new Error('Failed to load SVG for PNG conversion'))
-            }
-            img.src = url
-          })
-        } else {
-          saveAs(
-            new Blob([html], { type: 'image/svg+xml' }),
-            opts.filename || 'image.svg',
-          )
-        }
+        const { saveSvgAsImage } = await import('@jbrowse/core/util')
+        await saveSvgAsImage(html, opts)
       },
     }))
     .views(self => ({
@@ -260,25 +194,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Get tracks with a given trackId across multiple views
+       * Get tracks with a given trackId across multiple views. Callers that
+       * index the result by view level (getTrackOverlayData,
+       * getMatchedFeaturesInLayout) rely on it staying aligned with `views` —
+       * which holds only because overlays are driven by `overlayMatches`, whose
+       * trackIds come from `matchedTracks` (the intersect across all views), so
+       * the track is present in every view and `filter` drops nothing. Don't
+       * level-index the result for an arbitrary trackId.
        */
       getMatchedTracks(trackConfigId: string) {
         return self.views
           .map(view => view.getTrack(trackConfigId))
           .filter(notEmpty)
-      },
-
-      /**
-       * #method
-       * Get a composite map of featureId-\>feature map for a track across
-       * multiple views
-       */
-      getTrackFeatures(trackConfigId: string) {
-        return new Map(
-          self.matchedTrackFeatures[trackConfigId]
-            ?.flat()
-            .map(f => [f.id(), f] as const),
-        )
       },
 
       /**
@@ -329,12 +256,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         function getY(level: number, c: LayoutRecord) {
-          const off = coverageOffsets[level]
-          const top = c[1]
-          const bot = c[3]
-          const mid = top - scrollTops[level] + (bot - top) / 2 + off
-          const max = heights[level]
-          return yOffsets[level] + (mid < off ? off : Math.min(mid, max))
+          return computeOverlayY({
+            yOffset: yOffsets[level],
+            height: heights[level],
+            coverageOffset: coverageOffsets[level],
+            scrollTop: scrollTops[level],
+            layout: c,
+          })
         }
 
         function getX(level: number, refName: string, coord: number) {
@@ -349,22 +277,37 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
         const tracks = this.getMatchedTracks(trackConfigId)
+        const { views } = self
         return features.map(c =>
           c
             .map(feature => {
+              const clipLengthAtStartOfRead =
+                getClipLengthAtStartOfRead(feature)
               for (const [level, track] of tracks.entries()) {
                 const layout = calc(track, feature)
                 if (layout) {
-                  return {
-                    feature,
-                    layout,
-                    level,
-                    clipLengthAtStartOfRead:
-                      feature.get('clipLengthAtStartOfRead') ?? 0,
-                  }
+                  return { feature, layout, level, clipLengthAtStartOfRead }
                 }
               }
-              return undefined
+              // Feature wasn't found in any track's pileup layout — usually
+              // filterBy excluded it, the alignments display's maxHeight
+              // pushed it off the bottom, or it hasn't loaded yet. Synthesize
+              // an off-display LayoutRecord so the connection still draws to
+              // the track's bottom edge (see makeOffscreenLayout / getY).
+              const start = feature.get('start')
+              const level = findFeatureViewLevel(
+                views,
+                feature.get('refName'),
+                start,
+              )
+              return level === undefined
+                ? undefined
+                : {
+                    feature,
+                    layout: makeOffscreenLayout(start, feature.get('end')),
+                    level,
+                    clipLengthAtStartOfRead,
+                  }
             })
             .filter(notEmpty),
         )
@@ -391,6 +334,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           )
           const type = track.type
           if (type === 'AlignmentsTrack') {
+            // Paired-vs-split is decided per track-match here (any PAIRED flag
+            // ⇒ treat the whole match as paired). Consequence: a paired read
+            // that is ALSO SA-split has its split junctions drawn with the
+            // paired endpoint rule (both 3' edges, no 5'-leading foldback) in
+            // AlignmentConnections. The alignments-track linked-read overlay
+            // resolves this per-connection instead (readGroupConnections emits
+            // both the split junctions and the mate link). Unifying would mean
+            // porting sub-read chaining into this match resolution.
             const paired = hasPairedReads(allFeatures)
             const matched = paired
               ? getBadlyPairedAlignments(allFeatures)
@@ -405,6 +356,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   (a, b) =>
                     a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
                 )
+                markHiddenSegments(m)
               }
             }
             result.set(trackId, {
@@ -492,7 +444,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           const center = view.pxToBp(view.width / 2)
           view.setNewView(average, view.offsetPx)
           if (center.refName) {
-            view.centerAt(center.coord, center.refName, center.index)
+            view.centerAt(center.coord0, center.refName, center.index)
           }
         }
       },
@@ -500,61 +452,34 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: BreakpointSplitViewInit) {
+      setInit(init?: BreakpointSplitViewInitView[]) {
         self.init = init
       },
 
       /**
        * #action
        */
-      setViews(
-        viewInits: {
-          loc?: string
-          assembly: string
-          tracks?: string[]
-        }[],
-      ) {
+      setViews(viewInits: BreakpointSplitViewInitView[]) {
         self.views = cast(
-          viewInits.map(viewInit => ({
+          viewInits.map(({ loc, assembly, tracks }) => ({
             type: 'LinearGenomeView' as const,
             hideHeader: true,
-            init: viewInit,
+            init: { loc, assembly, tracks },
           })),
         )
       },
     }))
     .actions(self => ({
       afterAttach() {
-        addDisposer(
-          self,
-          addMiddleware(self, (rawCall, next) => {
-            if (rawCall.type === 'action' && rawCall.id === rawCall.rootId) {
-              const syncActions = [
-                'horizontalScroll',
-                'zoomTo',
-                'showTrack',
-                'toggleTrack',
-                'hideTrack',
-                'setTrackLabels',
-                'toggleCenterLine',
-              ]
-
-              if (self.linkViews && syncActions.includes(rawCall.name)) {
-                const sourcePath = getPath(rawCall.context)
-                next(rawCall)
-                for (const view of self.views) {
-                  const viewPath = getPath(view)
-                  if (viewPath !== sourcePath) {
-                    // @ts-expect-error
-                    view[rawCall.name](rawCall.args[0])
-                  }
-                }
-                return
-              }
-            }
-            next(rawCall)
-          }),
-        )
+        installLinkedViewSync(self, [
+          'horizontalScroll',
+          'zoomTo',
+          'showTrack',
+          'toggleTrack',
+          'hideTrack',
+          'setTrackLabels',
+          'setShowCenterLine',
+        ])
         addDisposer(
           self,
           autorun(
@@ -564,7 +489,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 return
               }
 
-              self.setViews(init.views)
+              self.setViews(init)
               self.setInit(undefined)
             },
             { name: 'BreakpointSplitViewInit' },
@@ -614,7 +539,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #method
        */
       menuItems() {
-        const allTracks = self.views.flatMap(v => v.tracks)
         return [
           ...self.views.map((view, idx) => ({
             label: `Row ${idx + 1} view menu`,
@@ -644,7 +568,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             label: 'Show...',
             icon: VisibilityIcon,
             subMenu: [
-              ...buildCompactAllTracksMenu(allTracks),
               {
                 label: 'Show header',
                 type: 'checkbox',
@@ -707,29 +630,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
+      // init is transient: redundant once views materialize, so strip it then.
+      // But while views is still empty (a snapshot taken before the init
+      // autorun runs setViews) init is the only thing that can rebuild the view
+      // -> keep it so a reload/restore resumes instead of dropping to the
+      // import form.
+      if (snap.views.length) {
+        const { init, ...rest } = snap
+        return rest
       }
-      const {
-        init,
-        height,
-        trackSelectorType,
-        showIntraviewLinks,
-        linkViews,
-        interactiveOverlay,
-        showHeader,
-        ...rest
-      } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(height !== 400 ? { height } : {}),
-        ...(trackSelectorType !== 'hierarchical' ? { trackSelectorType } : {}),
-        ...(!showIntraviewLinks ? { showIntraviewLinks } : {}),
-        ...(linkViews ? { linkViews } : {}),
-        ...(!interactiveOverlay ? { interactiveOverlay } : {}),
-        ...(!showHeader ? { showHeader } : {}),
-      } as typeof snap
+      return snap
     })
 }
 

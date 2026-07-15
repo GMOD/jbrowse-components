@@ -1,5 +1,4 @@
 ---
-id: pluggable_elements
 title: Pluggable elements
 description: Overview of all element types a plugin can register
 guide_category: Getting started
@@ -22,17 +21,13 @@ in the application's state to modify its behavior.
 
 Plugins often also have their `install` method add "pluggable elements" into the
 host JBrowse application. This is how plugins can add new kinds of views,
-tracks, renderers, and so forth.
-
-:::info
+tracks, displays, and so forth.
 
 Many plugins referenced below are in the
 [JBrowse Github repo](https://github.com/gmod/jbrowse-components) and serve as
 up-to-date examples.
 
-:::
-
-### Pluggable elements
+## Pluggable elements
 
 Pluggable elements are pieces of functionality that plugins can add to JBrowse.
 Examples of pluggable types include:
@@ -41,7 +36,6 @@ Examples of pluggable types include:
 - Track types
 - View types
 - Display types
-- Renderer types
 - Widgets
 - RPC calls
 - Extension points
@@ -50,10 +44,10 @@ Examples of pluggable types include:
 - Text search adapter types
 - Add track workflow
 
-Elements are composable — adapters can wrap other adapters, views can contain
+Elements are composable. Adapters can wrap other adapters, views can contain
 sub-views, and tracks can contain other tracks.
 
-### View types
+## View types
 
 View types allow entirely different visualizations alongside the standard linear
 genome view. Examples include:
@@ -63,9 +57,8 @@ genome view. Examples include:
 - `DotplotView` - a comparative 2-D genome view
 - `SvInspectorView` - super-view containing `CircularView` and `SpreadsheetView`
   sub-views
-- And more
 
-### Adapters
+## Adapters
 
 Adapters parse a given data format. To write your own, see
 [creating adapters](/docs/developer_guides/creating_adapter/). The
@@ -73,15 +66,14 @@ Adapters parse a given data format. To write your own, see
 
 - `BamAdapter` - This adapter uses the `@gmod/bam` NPM module, and adapts it for
   use by the browser.
-- `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. Note that
-  CramAdapter also takes a sequenceAdapter as a sub-adapter configuration, and
-  uses getSubAdapter to instantiate it
+- `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. The sequence
+  adapter is automatically injected at runtime from the enclosing assembly
 
-### Track types
+## Track types
 
 Track types are a high level type that controls how features are drawn. In most
-cases, a track combines a renderer and an adapter, and can do additional things
-like:
+cases, a track combines an adapter with one or more displays, and can do
+additional things like:
 
 - Control what widget pops up on feature click
 - Add extra menu items to the track menu
@@ -98,17 +90,16 @@ Example tracks:
 - `FeatureTrack` (from `@jbrowse/plugin-gff3`) - displays generic features
   including gene glyphs
 
-### Displays
+## Displays
 
 A _display_ is a method for displaying a particular track in a particular view.
 
-For example, we have a notion of a synteny track type, and the synteny track
-type has two display models:
+For example, the synteny track type has two display models:
 
 - `DotplotDisplay`, which is used in the dotplot view
 - `LinearSyntenyDisplay`, which is used in the linear synteny view
 
-This enables a single track entry to be used in multiple view types e.g. if I
+This enables a single track entry to be used in multiple view types, e.g. if you
 run `jbrowse add-track myfile.paf`, this automatically creates a `SyntenyTrack`
 entry in the tracklist, and when this track is opened in the dotplot view, the
 `DotplotDisplay` is used for rendering.
@@ -120,33 +111,23 @@ which has two display methods
 - `ChordVariantDisplay` - used in the circular view to draw breakends and
   structural variants
 
-### Renderers
+## Rendering
 
-Renderers run in a web worker and draw features (e.g. to an OffscreenCanvas).
-See [creating renderers](/docs/developer_guides/creating_renderer/).
+Drawing is owned by the **display**. There is no separate renderer pluggable
+element. High-volume track types (alignments, wiggle, features, variants) draw
+on the main thread with GPU/Canvas2D from worker-fetched data; a few low-volume
+displays (the arc and circular-chord displays) draw with plain main-thread SVG.
+See [renderer architecture](/docs/developer_guides/renderer_architecture/) and
+[creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display).
 
-For example, the `@jbrowse/plugin-alignments` exports several renderer types:
+How views, tracks, and displays relate:
 
-- `PileupRenderer` - a renderer type that renders Pileup type display of
-  alignments fetched from the `BamAdapter`/`CramAdapter`
-- `SNPCoverageRenderer` - a renderer that draws the coverage. Note that this
-  renderer derives from the wiggle renderer, but does the additional step of
-  drawing the mismatches over the coverage track
+- A view is a container that typically _has tracks_
+- A track controls _what_ data (adapter) and _how_ it's displayed (display)
+- A display is a specific way to draw a track's data and owns the drawing. A
+  track may have multiple displays for different view types
 
-:::info
-
-How views, tracks, displays, and renderers relate:
-
-- A **view** is a container that typically _has tracks_
-- A **track** controls _what_ data (adapter) and _how_ it's displayed
-  (display/renderer)
-- A **display** is a specific way to render a track's data — a track may have
-  multiple displays for different view types
-- A **renderer** controls the actual drawing, e.g. what happens on mouse over
-
-:::
-
-### Widgets
+## Widgets
 
 Widgets are custom info panels that can show up in side panels, modals, or other
 places in an app.
@@ -167,35 +148,50 @@ custom display of the alignments.
   the feature details of alignments features that customizes the basic feature
   detail widget
 
-### RPC methods
+## RPC methods
 
 Plugins can register their own RPC methods, which can allow them to offload
 custom behaviors to a web-worker or server side process.
 
 The wiggle plugin, for example, registers custom RPC method types including:
 
-- `WiggleGetMultiRegionQuantitativeStats`
-- `WiggleGetGlobalQuantitativeStats`
+- `MultiWiggleGetScoreMatrix`
+- `MultiWiggleClusterScoreMatrix`
 
 These methods can run in the web worker when available.
 
-### Add track workflows
+## Add track workflows
 
 Add track workflows allow users to specify a custom react component for loading
 tracks into a jbrowse session.
 
-Checkout the [docs here](/docs/developer_guides/creating_addtrack_workflow).
+Check out the
+[add-track workflow guide](/docs/developer_guides/creating_addtrack_workflow)
+for details.
 
-### Extension points
+## Extension points
 
 Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
 
-Checkout the [full extension point API](/docs/developer_guides/extension_points)
-or an [example for adding context menu items](/docs/developer_guides/menus) for
-more detailed information.
+See the [full extension point API](/docs/developer_guides/extension_points) or
+the [menus guide](/docs/developer_guides/menus) for an example of adding context
+menu items.
 
-### Next steps
+## See also
 
-- [Configuration model](/docs/developer_guides/config_model)
-- [Plugin tutorial](/docs/developer_guides/simple_plugin/)
+- [Custom track and display types](/docs/developer_guides/creating_display) -
+  define new track categories and control how a track renders in a given view
+  type
+- [Custom view types](/docs/developer_guides/creating_view) - add entirely new
+  view panels such as `DotplotView` or `CircularView`
+- [Custom widgets](/docs/developer_guides/creating_widget) - add new
+  drawer/panel UI components
+- [Configuration schema](/docs/developer_guides/configuration_schema) - config
+  slot types, defaults, and how configuration schemas work
+- [Writing a plugin](/docs/developer_guides/simple_plugin) - scaffold a plugin
+  that registers pluggable elements from an official template
+- [Text search adapters](/docs/developer_guides/creating_text_search_adapter) -
+  implement a custom backend for the search box
+- [Custom connections](/docs/developer_guides/creating_connection) - add a new
+  way to import remote/external data sources

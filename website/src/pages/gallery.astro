@@ -1,0 +1,283 @@
+---
+import DocsSidebarNav from '../components/DocsSidebarNav.astro'
+import SidebarLayout from '../layouts/SidebarLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
+import { gallerySections, itemHref, itemImg } from '../lib/gallery.ts'
+import page from '../styles/page.module.css'
+
+// Sections shown as screenshot cards vs. compact link lists: an item appears in
+// the card grid when it has a figure, otherwise in the "more examples" list.
+// `demoOnly` items (entry points / hubs) are shown only on the demos page.
+const sections = gallerySections
+  .map(s => ({
+    ...s,
+    cards: s.items.filter(i => itemImg(i) && !i.demoOnly),
+    links: s.items.filter(i => !itemImg(i) && !i.demoOnly),
+  }))
+  .filter(s => s.cards.length > 0 || s.links.length > 0)
+---
+
+<SidebarLayout
+  title="JBrowse 2 Visualizations Gallery"
+  description="A gallery of genome visualizations built with JBrowse 2, including synteny, structural variants, alignments, methylation, and Hi-C contact matrices."
+  toggleLabel="Explore"
+  navLabel="Site navigation"
+>
+  <DocsSidebarNav slot="nav" currentSlug="gallery" />
+  <div class="showcase-main">
+    <div class={`${page.content} wide`}>
+      <h1>JBrowse 2 visualizations gallery</h1>
+
+      {
+        sections.map(s => (
+          <section>
+            <h2 id={s.id}>{s.title}</h2>
+            {s.cards.length > 0 && (
+              <div class="grid">
+                {s.cards.map(item => {
+                  const href = itemHref(item, baseUrl)
+                  const src = `${baseUrl}/img/${itemImg(item)}`
+                  const openLabel = item.guide
+                    ? 'Open tutorial ↗'
+                    : 'Open in JBrowse ↗'
+                  return (
+                    <figure class="card">
+                      <button
+                        type="button"
+                        class="card-img-btn"
+                        data-full={src}
+                        data-label={item.label}
+                        data-href={href}
+                        data-open-label={openLabel}
+                        aria-label={`Enlarge: ${item.label}`}
+                      >
+                        <img src={src} alt={item.label} loading="lazy" />
+                      </button>
+                      <figcaption>
+                        <a href={href} class="card-title">
+                          {item.label}
+                        </a>
+                        {item.description && <p>{item.description}</p>}
+                      </figcaption>
+                    </figure>
+                  )
+                })}
+              </div>
+            )}
+            {s.links.length > 0 && (
+              <>
+                {s.cards.length > 0 && <p class="more">More examples</p>}
+                <ul class="links">
+                  {s.links.map(item => (
+                    <li>
+                      <a href={itemHref(item, baseUrl)}>{item.label}</a>
+                      {item.description && <span> — {item.description}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </section>
+        ))
+      }
+    </div>
+  </div>
+
+  <div id="lightbox" class="lightbox" hidden>
+    <button type="button" class="lightbox-close" aria-label="Close">×</button>
+    <figure class="lightbox-fig">
+      <img id="lightbox-img" src="" alt="" />
+      <figcaption>
+        <span id="lightbox-caption"></span>
+        <a id="lightbox-link" class="lightbox-open" href=""></a>
+      </figcaption>
+    </figure>
+  </div>
+</SidebarLayout>
+
+<script>
+  const lb = document.getElementById('lightbox')!
+  const lbImg = document.getElementById('lightbox-img') as HTMLImageElement
+  const lbCaption = document.getElementById('lightbox-caption')!
+  const lbLink = document.getElementById('lightbox-link') as HTMLAnchorElement
+
+  function openLightbox(btn: HTMLElement) {
+    lbImg.src = btn.dataset.full ?? ''
+    lbImg.alt = btn.dataset.label ?? ''
+    lbCaption.textContent = btn.dataset.label ?? ''
+    lbLink.href = btn.dataset.href ?? ''
+    lbLink.textContent = btn.dataset.openLabel ?? ''
+    lb.hidden = false
+    document.body.style.overflow = 'hidden'
+  }
+
+  function closeLightbox() {
+    lb.hidden = true
+    lbImg.src = ''
+    document.body.style.overflow = ''
+  }
+
+  for (const btn of document.querySelectorAll<HTMLElement>('.card-img-btn')) {
+    btn.addEventListener('click', () => {
+      openLightbox(btn)
+    })
+  }
+
+  // Backdrop or close-button click closes; a click on the image or its
+  // "open" link passes through (the link navigates).
+  lb.addEventListener('click', e => {
+    const target = e.target as HTMLElement
+    if (target === lb || target.classList.contains('lightbox-close')) {
+      closeLightbox()
+    }
+  })
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !lb.hidden) {
+      closeLightbox()
+    }
+  })
+</script>
+
+<style>
+  .showcase-main {
+    flex: 1;
+    min-width: 0;
+  }
+  .wide {
+    max-width: 1100px;
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin: 0 0 1rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.75rem;
+  }
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin: 2.5rem 0 1rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+  }
+  .card {
+    margin: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.15s;
+  }
+  .card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  .card-img-btn {
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    cursor: zoom-in;
+  }
+  .card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.85);
+  }
+  .lightbox[hidden] {
+    display: none;
+  }
+  .lightbox-fig {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 96vw;
+    max-height: 92vh;
+  }
+  .lightbox-fig img {
+    max-width: 96vw;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  }
+  .lightbox-fig figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.85rem;
+    color: #fff;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+  .lightbox-open {
+    color: #6ab0ff;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .lightbox-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 1.25rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #fff;
+    font-size: 2.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  figcaption {
+    padding: 0.75rem 1rem 1rem;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  figcaption p {
+    margin: 0.4rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+  }
+
+  .more {
+    margin: 1.25rem 0 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+  .links {
+    margin: 0.25rem 0;
+    padding-left: 1.25rem;
+    line-height: 1.7;
+  }
+  .links span {
+    font-size: 0.88rem;
+    color: var(--color-text-muted);
+  }
+</style>

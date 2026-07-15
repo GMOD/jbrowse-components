@@ -1,0 +1,52 @@
+import { observer } from 'mobx-react'
+
+import TrackBandCanvas from './TrackBandCanvas.tsx'
+import { drawRowIdentity } from './drawRowIdentity.ts'
+
+import type { LinearMafDisplayModel } from '../stateModel.ts'
+
+/**
+ * Per-row identity rendering over the (cleared) GPU base canvas in the rows
+ * area — when `activeRowRendering` is an identity style the base canvas paints
+ * nothing, so this replaces it rather than overlaying SNP marks. Its parent div
+ * is already offset to `rowsTopOffset`.
+ */
+const MafRowIdentityCanvas = observer(function MafRowIdentityCanvas({
+  model,
+}: {
+  model: LinearMafDisplayModel
+}) {
+  const { activeRowRendering, rowsHeight, effectiveRowHeight, rowProportion } =
+    model
+  // Only the identity styles (heatmap / xyplot) draw here; `codon`, `bases`, and
+  // `sourceChrom` are rendered elsewhere (codon overlay / GPU canvas / source-
+  // chromosome canvas).
+  const identityMode =
+    activeRowRendering === 'bases' ||
+    activeRowRendering === 'codon' ||
+    activeRowRendering === 'sourceChrom'
+      ? undefined
+      : activeRowRendering
+  return (
+    <TrackBandCanvas
+      model={model}
+      top={0}
+      height={rowsHeight}
+      show={!!identityMode}
+      draw={ctx => {
+        const nRows = model.sources?.length ?? 0
+        if (identityMode && nRows > 0) {
+          drawRowIdentity(ctx, model.renderBlocks, model.rpcDataMap, {
+            rowHeight: effectiveRowHeight,
+            rowProportion,
+            nRows,
+            canvasWidth: model.lgv.width,
+            mode: identityMode,
+          })
+        }
+      }}
+    />
+  )
+})
+
+export default MafRowIdentityCanvas

@@ -1,6 +1,5 @@
 ---
-id: customizing_feature_details
-title: Customizing feature details with callbacks and plugins
+title: Customizing feature details
 description: Customizing feature detail panels with the formatDetails slot
 guide_category: Callbacks and customization
 ---
@@ -32,9 +31,9 @@ Here is an example track with a formatter:
 }
 ```
 
-<Figure src="/img/customized_feature_details.png" caption="Example screenshot showing customized feature detail panel with links"/>
+<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name) instead of plain text. The same callback also injects the extra 'newfield' row and drops the default 'type' row."/>
 
-This formatter links the `name` field to a Google search — useful for linking to
+This formatter links the `name` field to a Google search, useful for linking to
 gene pages. It also adds a custom `newfield` and removes `type` from the
 display.
 
@@ -42,7 +41,8 @@ The schema for `formatDetails` is:
 
 - `feature` - customizes the top-level feature
 - `subfeatures` - customizes the subfeatures, recursively up to `depth`
-- `depth` - depth to customize the subfeatures to, default 1
+- [`depth`](/docs/config/formatdetails/#slot-configurationformatdetailsdepth) -
+  depth to customize the subfeatures to
 
 Use a jexl callback for `feature`, `subfeatures`, or both. The callback returns
 an object with the fields to replace.
@@ -53,12 +53,27 @@ In the example above we return an object with:
 - `type` - we make this undefined, which removes it from the feature details
 - `newfield` - this generates a new field in the feature details
 
-### Making sophisticated customizations to feature detail panels
+## How the returned object is applied
 
-If your feature detail panel customization is complex, you can create a custom
-javascript function in a plugin that is registered with the jexl system.
+The object you return is shallow-merged onto the feature (any keys you don't
+mention are left untouched), and the result drives what the panel shows:
 
-You can make a small plugin file "myplugin.js"
+- a **new key** adds a field
+- an **existing key** overrides that field's value (the raw value is replaced,
+  not shown alongside)
+- a key set to **`undefined` or `null`** hides the field. The panel filters out
+  null-ish values, so either works. `null` is the more robust choice if you
+  build the object in JavaScript, since a serialization round-trip (e.g. saving
+  a session) turns hidden fields into `null` anyway.
+
+This applies to core fields too: returning `{type: undefined}` removes the Type
+row, `{name: ...}` rewrites the Name row, and so on.
+
+## Making sophisticated customizations to feature detail panels
+
+For complex customizations, register a jexl function in a plugin.
+
+Create a small plugin file, `myplugin.js`:
 
 ```js
 // myplugin.js
@@ -74,8 +89,8 @@ export default class MyPlugin {
 }
 ```
 
-Then you can put myplugin.js in the same directory as your config file, and can
-use the custom `jexl` function in your config callbacks as follows:
+Put `myplugin.js` in the same directory as your config file, then use the custom
+`jexl` function in your config callbacks:
 
 ```json
 {
@@ -102,7 +117,7 @@ use the custom `jexl` function in your config callbacks as follows:
 See [our no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
 more info on setting up a simple plugin for doing these customizations.
 
-### Example: Renaming multiple GFF3 attributes with a single function
+## Example: Renaming multiple GFF3 attributes with a single function
 
 The `formatName` example above returns a single value for one field. You can
 also return an entire object from your jexl function to rename, add, or remove
@@ -133,7 +148,7 @@ export default class MyPlugin {
 }
 ```
 
-Then in your config.json, the `formatDetails` callback is simply:
+Then in your config.json, the `formatDetails` callback is:
 
 ```json
 {
@@ -157,16 +172,14 @@ Then in your config.json, the `formatDetails` callback is simply:
 }
 ```
 
-The returned object is spread over the original feature attributes, so any keys
-you don't include are left unchanged. Setting a key to `undefined` hides it, and
-new keys with spaces or custom capitalization are added as-is. This approach
-scales better than the inline jexl syntax when you have many attributes to
-rename.
+As before, the returned object is shallow-merged onto the feature, and setting a
+key to `undefined` hides it. Unlike the inline jexl syntax, this scales cleanly
+when you have many attributes to rename, and new keys with spaces or custom
+capitalization are added as-is.
 
-### Example: A generalized solution to dbxrefs
+## Example: A generalized solution to dbxrefs
 
-If you wanted to always link out to different websites mentioned in the dbxrefs
-of your data file, you could make a jexl function such as the following
+To link out to websites referenced in `dbxref`, use a jexl function like this:
 
 ```js
 // myplugin.js
@@ -202,7 +215,7 @@ export default class MyPlugin {
 }
 ```
 
-And then in your config.json
+And then in your config.json:
 
 ```json
 {
@@ -226,13 +239,30 @@ And then in your config.json
 }
 ```
 
-:::note
-
 The feature in `formatDetails` callbacks is a plain JS object (not a
-`SimpleFeature`), so use `feature.start` instead of `feature.get('start')`. This
-is because the feature detail panel reads from the serialized session. Alignment
-features are not fully serialized for performance reasons, which is why color
-callbacks use `feature.get(...)` while detail callbacks use `feature.*`
-directly.
+`SimpleFeature`), so attributes are only available as plain properties like
+`feature.start`. The `feature.get('start')` method form does **not** work here.
+This is because the feature detail panel reads from the serialized session. In
+color callbacks the feature is a `SimpleFeature`, where property form
+(`feature.start`) and method form (`feature.get('start')`) both work. Property
+form is preferred.
 
-:::
+## Going beyond field formatting
+
+`formatDetails` callbacks reshape the fields of an existing feature. To add an
+entirely new section, or to replace the widget wholesale, use a plugin with
+these extension points (see
+[extension points](/docs/developer_guides/extension_points/)):
+
+- `Core-extraFeaturePanel` - append a custom panel (your own React component)
+  below the built-in sections
+- `Core-replaceWidget` - wrap or replace the whole feature-details widget
+
+## See also
+
+- [Using jexl callbacks](/docs/config_guides/jexl), the expression syntax used
+  in `formatDetails` callbacks
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors),
+  the same jexl-and-plugin pattern applied to per-feature coloring
+- [Extension points](/docs/developer_guides/extension_points), the
+  `Core-extraFeaturePanel` / `Core-replaceWidget` hooks above

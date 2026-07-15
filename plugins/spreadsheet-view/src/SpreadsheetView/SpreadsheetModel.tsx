@@ -9,7 +9,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import LocationCell from './components/LocationCell.tsx'
 
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
-import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type { GridColDef } from '@mui/x-data-grid'
 
 export interface Row {
@@ -51,7 +51,16 @@ export default function stateModelFactory() {
       /**
        * #property
        */
-      visibleColumns: types.frozen<Record<string, boolean>>(),
+      visibleColumns: types.optional(
+        types.frozen<Record<string, boolean>>(),
+        {},
+      ),
+      /**
+       * #property
+       * selected value of the SVTYPE quick-filter dropdown (undefined = show
+       * all); applied to the INFO.SVTYPE column when the imported data has one
+       */
+      svTypeFilter: types.maybe(types.string),
     })
     .volatile(() => ({
       /**
@@ -80,11 +89,11 @@ export default function stateModelFactory() {
        * #getter
        */
       get initialized() {
-        const session = getSession(self)
-        const name = self.assemblyName
+        const { rowSet, assemblyName } = self
         return !!(
-          self.rowSet &&
-          (name ? session.assemblyManager.get(name)?.initialized : false)
+          rowSet &&
+          assemblyName &&
+          getSession(self).assemblyManager.get(assemblyName)?.initialized
         )
       },
     }))
@@ -136,12 +145,22 @@ export default function stateModelFactory() {
                 f =>
                   ({
                     field: f.name,
+                    // cap the auto-fit width: a single multi-kb cell (e.g. a
+                    // VCF REF/ALT carrying a long indel sequence) would
+                    // otherwise stretch the column to measureGridWidth's 1000px
+                    // default and shove every later column off-screen. The full
+                    // value stays available via the cell tooltip / feature
+                    // details; the user can still drag-resize wider.
                     width: measureGridWidth(
                       [...rows.map(r => r[f.name]), f.name],
-                      { minWidth: 20 },
+                      { minWidth: 20, maxWidth: 200 },
                     ),
+                    // infer the column type from the first populated cell, not
+                    // rows[0]: a leading empty/string cell would otherwise drop
+                    // numeric sorting for the whole column
                     type:
-                      typeof rows[0]?.[f.name] === 'number'
+                      typeof rows.find(r => r[f.name] != null)?.[f.name] ===
+                      'number'
                         ? 'number'
                         : undefined,
                   }) satisfies GridColDef,
@@ -157,6 +176,33 @@ export default function stateModelFactory() {
           ? self.rows?.filter(row => visibleRowFlags[row.id] !== false)
           : self.rows
       },
+      /**
+       * #getter
+       * the SVTYPE column field name, present only for structural-variant VCFs
+       * (drives whether the SV-type quick-filter dropdown is shown)
+       */
+      get svTypeColumnField() {
+        return self.columns.find(c => c.name === 'INFO.SVTYPE')?.name
+      },
+      /**
+       * #getter
+       * the distinct SVTYPE values present in the data, sorted, for the
+       * quick-filter dropdown options
+       */
+      get svTypeOptions() {
+        const field = this.svTypeColumnField
+        return field
+          ? [
+              ...new Set(
+                self.rows
+                  ?.map(r => r[field])
+                  .filter(
+                    (v): v is string => typeof v === 'string' && v !== '',
+                  ),
+              ),
+            ].sort((a, b) => a.localeCompare(b))
+          : []
+      },
     }))
     .actions(self => ({
       /**
@@ -168,33 +214,48 @@ export default function stateModelFactory() {
       /**
        * #action
        */
+      setSvTypeFilter(arg?: string) {
+        self.svTypeFilter = arg
+      },
+      /**
+       * #action
+       */
       setVisibleColumns(arg: Record<string, boolean>) {
         self.visibleColumns = arg
       },
     }))
-    .preProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      return snap
-        ? {
-            ...snap,
-            // @ts-expect-error no longer support derived columns
-            columns: snap.columns.filter(f => !f.isDerived),
-            rowSet: snap.rowSet
-              ? {
-                  ...snap.rowSet,
-                  rows: snap.rowSet.rows.map(r => ({
-                    ...r,
-                    feature:
-                      r.feature ??
-                      // @ts-expect-error
-                      (r.extendedData?.vcfFeature as SimpleFeatureSerialized),
-                  })),
-                }
-              : undefined,
-          }
-        : snap
-    })
+    .preProcessSnapshot(
+      (
+        snap:
+          | ({
+              columns?: { isDerived?: boolean }[]
+              rowSet?: {
+                rows?: {
+                  feature?: SimpleFeatureSerialized
+                  extendedData?: { vcfFeature?: SimpleFeatureSerialized }
+                }[]
+              }
+            } & Record<string, unknown>)
+          | undefined,
+      ) =>
+        snap
+          ? {
+              ...snap,
+              columns: snap.columns?.filter(f => !f.isDerived),
+              rowSet: snap.rowSet
+                ? {
+                    ...snap.rowSet,
+                    rows: snap.rowSet.rows?.map(r => ({
+                      ...r,
+                      feature: r.feature ?? r.extendedData?.vcfFeature,
+                    })),
+                  }
+                : undefined,
+            }
+          : snap,
+    )
 }
 
 export type SpreadsheetStateModel = ReturnType<typeof stateModelFactory>
 export type SpreadsheetModel = Instance<SpreadsheetStateModel>
+export type SpreadsheetSnapshot = SnapshotIn<SpreadsheetStateModel>

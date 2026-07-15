@@ -1,76 +1,68 @@
 import {
-  featurizeSA,
-  getClip,
-  getLength,
-  getLengthSansClipping,
-} from '@jbrowse/cigar-utils'
+  buildReadVsRefFeatures,
+  buildReadVsRefTemporaryAssembly,
+} from '@jbrowse/alignments-core'
 import { getConf } from '@jbrowse/core/configuration'
-import { gatherOverlaps, getSession, sum } from '@jbrowse/core/util'
+import {
+  gatherOverlaps,
+  getSession,
+  sum,
+  truncateMiddle,
+} from '@jbrowse/core/util'
 
-import type { ReducedFeature } from '../util.ts'
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearPileupDisplayModel } from '@jbrowse/plugin-alignments'
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 
-export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
+export function onClick(feature: Feature, self: LinearAlignmentsDisplayModel) {
   const session = getSession(self)
   try {
-    const cigar = feature.get('CIGAR')
-    const clipLengthAtStartOfRead = getClip(cigar, 1)
-    const flags = feature.get('flags')
-    const strand = feature.get('strand')
-    const readName: string = feature.get('name') ?? ''
-    const readAssembly = `${readName}_assembly_${Date.now()}`
+    const { features, totalLength, readName, seq } =
+      buildReadVsRefFeatures(feature)
     const { parentTrack } = self
-    const [trackAssembly] = getConf(parentTrack, 'assemblyNames')
-    const assemblyNames = [trackAssembly, readAssembly]
-    const trackId = `track-${Date.now()}`
-    const trackName = `${readName}_vs_${trackAssembly}`
-    const SA = feature.get('tags')?.SA as string
-    const SA2 = featurizeSA(SA, feature.id(), strand ?? 1, readName, true)
+    const [trackAssembly] = getConf(parentTrack, 'assemblyNames') as string[]
+    const stamp = Date.now()
+    const readAssembly = `${readName}_assembly_${stamp}`
+    const assemblyNames = [trackAssembly!, readAssembly]
+    const trackId = `track-${stamp}`
+    const shortName = truncateMiddle(readName)
+    const trackName = `${shortName}_vs_${trackAssembly}`
 
-    // if secondary alignment or supplementary, calculate length from SA[0]'s
-    // CIGAR which is the primary alignments. otherwise it is the primary
-    // alignment just use seq.length if primary alignment
-    const totalLength = getLength(flags & 2048 ? SA2[0]!.CIGAR : cigar)
+    // The synthetic read assembly must be registered for the DotplotView to
+    // initialize (assembliesInitialized gates on every assemblyName resolving);
+    // it is torn down by DotplotView.beforeDestroy via removeTemporaryAssembly.
+    session.addTemporaryAssembly?.(
+      buildReadVsRefTemporaryAssembly({
+        readName,
+        readAssembly,
+        totalLength,
+        seq,
+        trackId: `${readName}_${stamp}`,
+        uniqueId: `${readName}_${stamp}`,
+      }),
+    )
 
-    const features = (
-      [
-        {
-          ...feature.toJSON(),
-          strand: 1,
-          mate: {
-            refName: readName,
-            start: clipLengthAtStartOfRead,
-            end: clipLengthAtStartOfRead + getLengthSansClipping(cigar),
-          },
-        },
-        ...SA2,
-      ] as ReducedFeature[]
-    ).sort((a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead)
+    // Size hview's bpPerPx from the regions it actually draws, so overlap
+    // merging in gatherOverlaps is reflected exactly.
+    const hviewRegions = gatherOverlaps(
+      features.map(f => ({
+        start: f.start,
+        end: f.end,
+        refName: f.refName,
+        assemblyName: trackAssembly,
+      })),
+    )
 
     session.addView('DotplotView', {
       type: 'DotplotView',
       hview: {
         offsetPx: 0,
-        bpPerPx: sum(features.map(a => a.end - a.start)) / 800,
-        displayedRegions: gatherOverlaps(
-          features.map((f, index) => {
-            const { start, end, refName } = f
-            return {
-              start,
-              end,
-              refName,
-              index,
-              assemblyName: trackAssembly,
-            }
-          }),
-        ),
+        bpPerPx: sum(hviewRegions.map(r => r.end - r.start)) / 800,
+        displayedRegions: hviewRegions,
       },
       vview: {
         offsetPx: 0,
         bpPerPx: totalLength / 400,
         minimumBlockWidth: 0,
-        interRegionPaddingWidth: 0,
         displayedRegions: [
           {
             assemblyName: readAssembly,
@@ -107,7 +99,7 @@ export function onClick(feature: Feature, self: LinearPileupDisplayModel) {
         },
       ],
 
-      displayName: `${readName} vs ${trackAssembly}`,
+      displayName: `${shortName} vs ${trackAssembly}`,
     })
   } catch (e) {
     console.error(e)

@@ -1,4 +1,5 @@
 import { serializeError } from './serializeError/index.ts'
+import { isRpcResult } from '../util/rpc.ts'
 
 import type { ErrorObject } from './serializeError/index.ts'
 
@@ -7,7 +8,8 @@ interface WorkerSelf {
   addEventListener(type: string, listener: (e: MessageEvent) => void): void
 }
 
-const workerSelf = self as unknown as WorkerSelf
+const workerSelf =
+  typeof self !== 'undefined' ? (self as unknown as WorkerSelf) : null
 
 export interface RpcResult {
   __rpcResult: true
@@ -19,8 +21,16 @@ export function rpcResult(value: unknown, transferables: Transferable[]) {
   return { __rpcResult: true, value, transferables } as RpcResult
 }
 
-function isRpcResult(value: unknown): value is RpcResult {
-  return typeof value === 'object' && value !== null && '__rpcResult' in value
+// rpcResult with transferables auto-derived from the result's top-level
+// TypedArray fields, so a newly-added typed-array field is transferred (moved,
+// zero-copy) rather than silently structurally cloned just because a
+// hand-maintained buffer list wasn't extended. Use for any worker RPC whose
+// result is a flat object of typed arrays (canvas/synteny/dotplot/wiggle packers).
+export function rpcResultWithArrayBuffers(value: object) {
+  const transferables = Object.values(value)
+    .filter((v): v is ArrayBufferView => ArrayBuffer.isView(v))
+    .map(v => v.buffer as ArrayBuffer)
+  return rpcResult(value, transferables)
 }
 
 type Procedure = (data: unknown) => Promise<unknown>
@@ -37,7 +47,7 @@ export default class RpcServer {
 
   constructor(methods: Record<string, Procedure>) {
     this.methods = methods
-    workerSelf.addEventListener('message', (e: MessageEvent) => {
+    workerSelf!.addEventListener('message', (e: MessageEvent) => {
       this.handler(e)
     })
   }
@@ -47,50 +57,50 @@ export default class RpcServer {
     if (!libRpc) {
       return
     }
-    const methodFn = this.methods[method]
+    const methodFn = Object.hasOwn(this.methods, method)
+      ? this.methods[method]
+      : undefined
     if (methodFn) {
-      Promise.resolve(data)
-        .then(methodFn)
-        .then(
-          response => {
-            this.reply(uid, method, response)
-          },
-          (error: unknown) => {
-            this.throw(uid, serializeError(error))
-          },
-        )
+      // wrap so a synchronous throw inside methodFn still routes to .throw()
+      ;(async () => methodFn(data))()
+        .then(response => {
+          this.reply(uid, response)
+        })
+        .catch((error: unknown) => {
+          this.throw(uid, serializeError(error))
+        })
     } else {
       this.throw(uid, `Unknown RPC method "${method}"`)
     }
   }
 
-  protected reply(uid: string, method: string, response: unknown) {
+  // every outgoing message carries the libRpc tag so the client can tell our
+  // frames apart from unrelated worker traffic
+  private post(
+    payload: Record<string, unknown>,
+    transferables: Transferable[],
+  ) {
+    workerSelf!.postMessage({ ...payload, libRpc: true }, transferables)
+  }
+
+  protected reply(uid: string, response: unknown) {
+    // a renderer may return an rpcResult wrapper carrying transferables for
+    // zero-copy; a plain return travels as data with nothing to transfer
+    const { value, transferables } = isRpcResult(response)
+      ? response
+      : { value: response, transferables: [] }
     try {
-      if (isRpcResult(response)) {
-        const { value, transferables } = response
-        workerSelf.postMessage(
-          { uid, method, data: value, libRpc: true },
-          transferables,
-        )
-      } else {
-        workerSelf.postMessage(
-          { uid, method, data: response, libRpc: true },
-          [],
-        )
-      }
+      this.post({ uid, data: value }, transferables)
     } catch (e) {
       this.throw(uid, serializeError(e))
     }
   }
 
   protected throw(uid: string, error: ErrorObject | string) {
-    workerSelf.postMessage({ uid, error, libRpc: true })
+    this.post({ uid, error }, [])
   }
 
   emit(eventName: string, data: unknown, transferables?: Transferable[]) {
-    workerSelf.postMessage(
-      { eventName, data, libRpc: true },
-      transferables ?? [],
-    )
+    this.post({ eventName, data }, transferables ?? [])
   }
 }

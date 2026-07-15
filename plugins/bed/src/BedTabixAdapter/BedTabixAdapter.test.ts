@@ -128,6 +128,55 @@ test('adapter can fetch bed with header', async () => {
   expect(featuresJsonArray.slice(0, 10)).toMatchSnapshot()
 })
 
+test('adapter reads 1-based skip-line header (Pan-UKB style)', async () => {
+  const adapter = makeAdapter('./test_data/panukb_style.tsv.bgz', {
+    scoreColumn: 'score_col',
+  })
+  const features = adapter.getFeatures({
+    refName: '1',
+    start: 0,
+    end: 10_000,
+    assemblyName: 'hg38',
+  })
+
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  expect(featuresArray).toHaveLength(2)
+
+  const [f0, f1] = featuresArray as [
+    (typeof featuresArray)[0],
+    (typeof featuresArray)[0],
+  ]
+  // 1-based pos 1000 → 0-based start 999, end 1000
+  expect(f0.get('start')).toBe(999)
+  expect(f0.get('end')).toBe(1000)
+  expect(f0.get('score')).toBe(5.5)
+  expect(f1.get('start')).toBe(1999)
+  expect(f1.get('score')).toBe(3.2)
+})
+
+// LocusZoom-style GWAS files are chrom/pos columnar indexed with the VCF
+// preset, so the tabix index has no end column (end column 0). Such features
+// are a single position: end = start + 1.
+test('adapter reads point features from an index with no end column', async () => {
+  const adapter = makeAdapter('./test_data/gwas_point_noend.tsv.bgz', {
+    scoreColumn: 'neg_log_pvalue',
+  })
+  const features = adapter.getFeatures({
+    refName: '1',
+    start: 0,
+    end: 10_000,
+    assemblyName: 'hg19',
+  })
+
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  expect(featuresArray).toHaveLength(2)
+  const [f0] = featuresArray as [(typeof featuresArray)[0]]
+  // 1-based pos 1000 → 0-based start 999, point end 1000 (not NaN)
+  expect(f0.get('start')).toBe(999)
+  expect(f0.get('end')).toBe(1000)
+  expect(f0.get('score')).toBe(5.5)
+})
+
 test('adapter can use gwas header', async () => {
   const adapter = makeAdapter('./test_data/gwas.bed.gz')
   const features = adapter.getFeatures({

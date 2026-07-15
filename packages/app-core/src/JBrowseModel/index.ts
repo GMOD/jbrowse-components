@@ -9,29 +9,45 @@ import { JBrowseConfigF } from '../JBrowseConfig/index.ts'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  ConfigurationSchemaDefinition,
+} from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
+
+// This config model always lives at rootModel.jbrowse, so its MST parent is the
+// root model. This is the slice of the root model this file reaches for; typing
+// it replaces `getParent<any>` so the contract is checked rather than assumed.
+// setPluginsUpdated takes no argument: every product reacts to "plugins
+// changed" by rebuilding the plugin manager (desktop reloads from disk, web
+// reloads the page), so there is no state to pass.
+interface JBrowseModelParent {
+  rpcManager: RpcManager
+  session?: { name: string }
+  setPluginsUpdated: () => void
+}
 
 /**
  * #stateModel AppCoreJBrowseModel
- * note that JBrowseRootConfig is a config model, but config models are MST
- * trees themselves, which is why this stateModel is allowed to extend it
- *
- * the AppCoreJBrowseModel is generally on a property named rootModel.jbrowse
- *
- * extends
- * - [JBrowseRootConfig](/docs/config/jbrowserootconfig)
-
+ * #category root
+ * built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model —
+ * config models are MST trees themselves, which is why this state model is
+ * allowed to build on one. Generally found on a property named rootModel.jbrowse
  */
 export function JBrowseModelF({
   pluginManager,
   assemblyConfigSchema,
+  extraConfigSlots,
 }: {
-  adminMode?: boolean
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
+  extraConfigSlots?: ConfigurationSchemaDefinition
 }) {
-  const model = JBrowseConfigF({ pluginManager, assemblyConfigSchema })
+  const model = JBrowseConfigF({
+    pluginManager,
+    assemblyConfigSchema,
+    extraConfigSlots,
+  })
     .views(self => ({
       /**
        * #getter
@@ -43,7 +59,7 @@ export function JBrowseModelF({
        * #getter
        */
       get rpcManager(): RpcManager {
-        return getParent<any>(self).rpcManager
+        return getParent<JBrowseModelParent>(self).rpcManager
       },
     }))
     .actions(self => ({
@@ -105,7 +121,12 @@ export function JBrowseModelF({
        * #action
        */
       deleteConnectionConf(configuration: AnyConfigurationModel) {
-        const elt = self.connections.find(conn => conn.id === configuration.id)
+        // key on connectionId: the connection schema's explicitIdentifier means
+        // `.id` is undefined on every entry, so an id-based find always matched
+        // the first connection and deleted the wrong one
+        const elt = self.connections.find(
+          conn => conn.connectionId === configuration.connectionId,
+        )
         return elt ? self.connections.remove(elt) : false
       },
       /**
@@ -124,7 +145,6 @@ export function JBrowseModelF({
         const { trackId } = trackConf
         const idx = self.tracks.findIndex(t => t.trackId === trackId)
         if (idx !== -1) {
-          // Replace the track at that index
           const newTracks = [...self.tracks]
           newTracks[idx] = trackConf
           self.tracks = newTracks
@@ -135,9 +155,7 @@ export function JBrowseModelF({
        */
       addPlugin(pluginDefinition: PluginDefinition) {
         self.plugins.push(pluginDefinition)
-
-        const rootModel = getParent<any>(self)
-        rootModel.setPluginsUpdated(true)
+        getParent<JBrowseModelParent>(self).setPluginsUpdated()
       },
       /**
        * #action
@@ -147,8 +165,7 @@ export function JBrowseModelF({
         self.plugins = cast(
           self.plugins.filter(plugin => pluginUrl(plugin) !== targetUrl),
         )
-
-        getParent<any>(self).setPluginsUpdated(true)
+        getParent<JBrowseModelParent>(self).setPluginsUpdated()
       },
 
       /**
@@ -156,7 +173,7 @@ export function JBrowseModelF({
        */
       setDefaultSessionConf(sessionConf: AnyConfigurationModel) {
         const newDefault =
-          getParent<any>(self).session.name === sessionConf.name
+          getParent<JBrowseModelParent>(self).session?.name === sessionConf.name
             ? getSnapshot(sessionConf)
             : toJS(sessionConf)
 
@@ -181,7 +198,11 @@ export function JBrowseModelF({
        * #action
        */
       deleteInternetAccountConf(configuration: AnyConfigurationModel) {
-        const elt = self.internetAccounts.find(a => a.id === configuration.id)
+        // key on internetAccountId, not the undefined `.id` (see
+        // deleteConnectionConf) so the correct account is removed
+        const elt = self.internetAccounts.find(
+          a => a.internetAccountId === configuration.internetAccountId,
+        )
         return elt ? self.internetAccounts.remove(elt) : false
       },
     }))

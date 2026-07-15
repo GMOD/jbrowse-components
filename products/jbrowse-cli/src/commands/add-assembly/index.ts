@@ -1,5 +1,5 @@
-import path from 'path'
-import { parseArgs } from 'util'
+import path from 'node:path'
+import { parseArgs } from 'node:util'
 
 import {
   addAssemblyToConfig,
@@ -8,9 +8,11 @@ import {
   isSequenceType,
   loadOrCreateConfig,
   resolveTargetPath,
+  validateSequenceType,
 } from './utils.ts'
-import { debug, printHelp } from '../../utils.ts'
-import { loadFile } from '../add-track-utils/file-operations.ts'
+import { debug, printHelp, requirePositional } from '../../utils.ts'
+import { loadFiles } from '../add-track-utils/file-operations.ts'
+import { validateLoadOption } from '../add-track-utils/validators.ts'
 import { saveConfigAndReport } from '../shared/config-operations.ts'
 
 export async function run(args?: string[]) {
@@ -58,7 +60,6 @@ export async function run(args?: string[]) {
       description:
         'Type of aliases defined by --refNameAliases; if "custom", --refNameAliases is either a JSON file location or inline JSON that defines a custom sequence adapter',
       choices: ['aliases', 'custom'],
-      dependsOn: ['refNameAliases'],
     },
     refNameColors: {
       type: 'string',
@@ -100,6 +101,8 @@ export async function run(args?: string[]) {
 
   const description = 'Add an assembly to a JBrowse 2 configuration'
 
+  const usage = 'jbrowse add-assembly <sequence> [options]'
+
   const examples = [
     '# add assembly to installation in current directory. assumes .fai file also exists, and copies GRCh38.fa and GRCh38.fa.fai to current directory',
     '$ jbrowse add-assembly GRCh38.fa --load copy',
@@ -130,13 +133,17 @@ export async function run(args?: string[]) {
     printHelp({
       description,
       examples,
-      usage: 'jbrowse add-assembly <sequence> [options]',
+      usage,
       options,
     })
     return
   }
 
-  const argsSequence = positionals[0] || ''
+  validateLoadOption(runFlags.load)
+  validateSequenceType(runFlags.type)
+
+  const argsSequence = positionals[0]
+  requirePositional(argsSequence, 'sequence', usage)
   const output = runFlags.target || runFlags.out || '.'
   const flags = {
     ...runFlags,
@@ -146,11 +153,15 @@ export async function run(args?: string[]) {
   debug(`Sequence location is: ${argsSequence}`)
 
   const target = await resolveTargetPath(output)
-  const { assembly: baseAssembly, filesToLoad } = await getAssembly({
-    runFlags: flags,
-    argsSequence,
-  })
-  const assembly = await enhanceAssembly(baseAssembly, flags)
+  const { assembly: baseAssembly, filesToLoad: sequenceFiles } =
+    await getAssembly({
+      runFlags: flags,
+      argsSequence,
+    })
+  const { assembly, filesToLoad: aliasFiles } = await enhanceAssembly(
+    baseAssembly,
+    flags,
+  )
 
   const configContents = await loadOrCreateConfig(target)
   const { config: updatedConfig, wasOverwritten } = await addAssemblyToConfig({
@@ -159,20 +170,24 @@ export async function run(args?: string[]) {
     runFlags: flags,
   })
 
-  if (flags.load) {
-    const destDir = path.dirname(target)
-    await Promise.all(
-      filesToLoad.map(src =>
-        loadFile({ src, destDir, mode: flags.load!, force: flags.force }),
-      ),
-    )
-  }
+  await loadFiles({
+    files: [...sequenceFiles, ...aliasFiles],
+    destDir: path.dirname(target),
+    mode: flags.load,
+    force: flags.force,
+  })
 
   await saveConfigAndReport({
     config: updatedConfig,
     target,
     itemType: 'assembly',
     itemName: assembly.name,
+    itemId: assembly.name,
     wasOverwritten,
   })
+
+  console.log(
+    `\nNext, add tracks to this assembly (replace with your data file):\n` +
+      `  jbrowse add-track myfile.bam -a ${assembly.name} --load copy`,
+  )
 }

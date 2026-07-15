@@ -1,4 +1,7 @@
-import { parseLineByLine } from './parseLineByLine.ts'
+import {
+  makeFeatureIntervalTreeMap,
+  parseLineByLine,
+} from './parseLineByLine.ts'
 
 describe('parseLineByLine', () => {
   it('should call callback for each line', () => {
@@ -78,9 +81,13 @@ line2`
       mockStatusCallback,
     )
 
-    expect(mockStatusCallback).toHaveBeenCalledWith(
-      expect.stringContaining('Loading'),
-    )
+    // determinate progress: a StatusWithProgress object carrying byte offset
+    // (current) against the buffer size (total), not a baked percentage string
+    expect(mockStatusCallback).toHaveBeenCalledWith({
+      message: 'Loading',
+      current: expect.any(Number),
+      total: buffer.length,
+    })
   })
 
   it('should provide line index to callback', () => {
@@ -136,5 +143,47 @@ line3`
     })
 
     expect(lines).toEqual(['single line'])
+  })
+})
+
+describe('makeFeatureIntervalTreeMap', () => {
+  const parse = (lines: string[]) =>
+    lines.map(line => {
+      const [start, end] = line.split('\t').map(Number)
+      return { start: start!, end: end! }
+    })
+
+  it('keys factories by refName and searches by interval', () => {
+    const map = makeFeatureIntervalTreeMap(
+      { ctgA: ['0\t10', '20\t30'], ctgB: ['5\t15'] },
+      parse,
+      'Parsing',
+    )
+
+    expect(Object.keys(map)).toEqual(['ctgA', 'ctgB'])
+    expect(map.ctgA!().search([5, 25])).toEqual([
+      { start: 0, end: 10 },
+      { start: 20, end: 30 },
+    ])
+    expect(map.ctgB!().search([0, 1])).toEqual([])
+  })
+
+  it('parses lazily once per ref and emits the status message', () => {
+    const spy = jest.fn(parse)
+    const statusCallback = jest.fn()
+    const map = makeFeatureIntervalTreeMap(
+      { ctgA: ['0\t10'] },
+      spy,
+      'Parsing data',
+    )
+
+    expect(spy).not.toHaveBeenCalled()
+
+    map.ctgA!(statusCallback)
+    map.ctgA!(statusCallback)
+
+    expect(spy).toHaveBeenCalledTimes(1)
+    expect(statusCallback).toHaveBeenCalledWith('Parsing data')
+    expect(statusCallback).toHaveBeenCalledTimes(1)
   })
 })

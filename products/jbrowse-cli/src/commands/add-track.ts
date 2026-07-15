@@ -1,25 +1,27 @@
-import path from 'path'
-import { parseArgs } from 'util'
+import path from 'node:path'
+import { parseArgs } from 'node:util'
 
 import { printHelp, readJsonFile, resolveConfigPath } from '../utils.ts'
 import {
-  guessAdapter,
-  guessFileNames,
+  guessTrack,
   guessTrackType,
+  makeLocationProtocol,
 } from './add-track-utils/adapter-utils.ts'
-import { loadFile } from './add-track-utils/file-operations.ts'
+import { loadFiles } from './add-track-utils/file-operations.ts'
 import {
   addSyntenyAssemblyNames,
   buildTrackConfig,
   mapLocationForFiles,
+  mergeDisplayDefaults,
 } from './add-track-utils/track-config.ts'
 import {
-  createTargetDirectory,
+  parseConfigFlag,
   validateAdapterType,
   validateAssemblies,
   validateLoadAndLocation,
   validateLoadOption,
   validateTrackArg,
+  warnUnknownAssemblyNames,
 } from './add-track-utils/validators.ts'
 import {
   findAndUpdateOrAdd,
@@ -61,7 +63,8 @@ export async function run(args?: string[]) {
     assemblyNames: {
       type: 'string',
       short: 'a',
-      description: 'Assembly name or names for track as comma separated string',
+      description:
+        'Assembly name or names for track as comma separated string. For synteny tracks the order is query,target (reverse of minimap2/nucmer argument order)',
     },
     category: {
       type: 'string',
@@ -71,6 +74,21 @@ export async function run(args?: string[]) {
     config: {
       type: 'string',
       description: 'Any extra config settings to add to a track',
+    },
+    color: {
+      type: 'string',
+      description:
+        'Track color: a plain CSS color or a jexl callback. Merged into displayDefaults',
+    },
+    height: {
+      type: 'string',
+      description:
+        'Track display height in pixels. Merged into displayDefaults',
+    },
+    displayDefaults: {
+      type: 'string',
+      description:
+        'Inline JSON merged into the track displayDefaults (labels, mouseover, jexlFilters, etc.)',
     },
     target: {
       type: 'string',
@@ -92,7 +110,9 @@ export async function run(args?: string[]) {
     load: {
       type: 'string',
       short: 'l',
-      description: 'How to manage the track (copy, symlink, move, inPlace)',
+      description:
+        'How to manage the track file relative to config.json. Required for local files, omit for URLs',
+      choices: ['copy', 'symlink', 'move', 'inPlace'],
     },
     force: {
       type: 'boolean',
@@ -120,6 +140,25 @@ export async function run(args?: string[]) {
 
   const description = 'Add a track to a JBrowse 2 configuration'
 
+  const notes =
+    '--load controls how the data file is placed relative to config.json: ' +
+    'copy, move, or symlink it into the install directory, or inPlace to ' +
+    'reference a pre-staged local file where it already sits. Omit --load ' +
+    'entirely for URLs. The matching index (.bai/.csi/.tbi/.fai) is inferred from the ' +
+    'data file name; pass --indexFile when it differs.\n\n' +
+    '--config takes inline JSON (not a file path) that is merged into the ' +
+    'generated track config, so you can set fields the dedicated flags do not ' +
+    'cover, e.g. --config \'{"metadata":{"skipTextIndex":true}}\' to exclude ' +
+    'the track from jbrowse text-index.\n\n' +
+    '--color and --height set the two most common appearance settings without ' +
+    'writing JSON. Wrap the value in single quotes and use double quotes inside ' +
+    'a jexl callback so nothing needs escaping, e.g. ' +
+    '--color \'jexl:feature.strand==1?"blue":"red"\'. --displayDefaults takes ' +
+    'inline JSON for any other appearance setting (labels, mouseover, ' +
+    'jexlFilters).\n\n' +
+    'For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — ' +
+    'the reverse of the minimap2/nucmer input order.'
+
   const examples = [
     '# copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json',
     '$ jbrowse add-track /path/to/my.bam --load copy',
@@ -138,12 +177,16 @@ export async function run(args?: string[]) {
     '',
     '# --load inPlace adds a track without doing file operations',
     '$ jbrowse add-track /url/relative/path.bam --load inPlace',
+    '',
+    '# color a track by strand and set its height (no escaping: single-quote the value, double-quote inside the jexl)',
+    `$ jbrowse add-track genes.gff3.gz --load copy --color 'jexl:feature.strand==1?"blue":"red"' --height 200`,
   ]
 
   if (flags.help) {
     printHelp({
       description,
       examples,
+      notes,
       usage: 'jbrowse add-track <track> [options]',
       options,
     })
@@ -152,8 +195,8 @@ export async function run(args?: string[]) {
 
   validateLoadOption(flags.load)
 
-  const track = positionals[0]
-  validateTrackArg(track)
+  const location = positionals[0]
+  validateTrackArg(location)
 
   const {
     config,
@@ -171,26 +214,36 @@ export async function run(args?: string[]) {
     adapterType,
   } = flags
 
+  validateLoadAndLocation(location, load)
+
+  const baseConfigObj = config ? parseConfigFlag(config) : undefined
+  const displayDefaults = mergeDisplayDefaults({
+    configObj: baseConfigObj,
+    color: flags.color,
+    height: flags.height,
+    displayDefaults: flags.displayDefaults,
+  })
+  const configObj = displayDefaults
+    ? { ...baseConfigObj, displayDefaults }
+    : baseConfigObj
+
   const targetConfigPath = await resolveConfigPath(target, out)
   const configDir = path.dirname(targetConfigPath)
 
-  createTargetDirectory(configDir, subDir)
-  const location = track!
+  const wrap = makeLocationProtocol(protocol)
+  const mapLocation = (p: string) => wrap(mapLocationForFiles(p, load, subDir))
 
-  const mapLoc = (p: string) => mapLocationForFiles(p, load, subDir)
-
-  let adapter = guessAdapter({
-    protocol,
-    location: mapLoc(location),
-    index: index ? mapLoc(index) : undefined,
-    bed1: bed1 ? mapLoc(bed1) : undefined,
-    bed2: bed2 ? mapLoc(bed2) : undefined,
+  const { adapter: guessedAdapter, files } = guessTrack({
+    location,
+    index,
+    bed1,
+    bed2,
     adapterType,
+    mapLocation,
   })
 
-  adapter = addSyntenyAssemblyNames(adapter, flags.assemblyNames)
+  const adapter = addSyntenyAssemblyNames(guessedAdapter, flags.assemblyNames)
 
-  validateLoadAndLocation(location, load)
   validateAdapterType(adapter.type)
 
   const configContents: Config = await readJsonFile(targetConfigPath)
@@ -202,6 +255,7 @@ export async function run(args?: string[]) {
   const name = flags.name || trackId
   const assemblyNames =
     flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
+  warnUnknownAssemblyNames(configContents, assemblyNames)
 
   const trackConfig = buildTrackConfig({
     trackType,
@@ -210,7 +264,7 @@ export async function run(args?: string[]) {
     assemblyNames,
     category,
     description: trackDescription,
-    config,
+    configObj,
     adapter,
   })
 
@@ -224,15 +278,13 @@ export async function run(args?: string[]) {
   })
   const updatedConfig = { ...configContents, tracks }
 
-  if (load) {
-    await Promise.all(
-      Object.values(guessFileNames({ location, index, bed1, bed2 }))
-        .filter((f): f is string => !!f)
-        .map(src =>
-          loadFile({ src, destDir: configDir, mode: load, subDir, force }),
-        ),
-    )
-  }
+  await loadFiles({
+    files,
+    destDir: configDir,
+    mode: load,
+    subDir,
+    force,
+  })
 
   await saveConfigAndReport({
     config: updatedConfig,

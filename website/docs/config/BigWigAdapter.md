@@ -1,69 +1,77 @@
 ---
 id: bigwigadapter
 title: BigWigAdapter
+sidebar_label: Adapter -> BigWigAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `wiggle`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/BigWigAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/BigWigAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BigWigAdapter.md)
-
-## Docs
-
-used to load BigWig or BigBed quantitative signal files
-
-### BigWigAdapter - Pre-processor / simplified config
-
-preprocessor to allow minimal config:
-
-```json
+```js
 {
-  "type": "BigWigAdapter",
-  "uri": "yourfile.bw"
+  type: 'QuantitativeTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigWigAdapter',
+    uri: 'https://example.com/coverage.bw',
+  },
 }
 ```
 
-### BigWigAdapter - Slots
+_See the **Config slots** section below for all available configuration fields._
+
+used to load BigWig quantitative signal files
+
+## Related links
+
+- **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                   | Type           | Description                                    |
+| -------------------------------------- | -------------- | ---------------------------------------------- |
+| [bigWigLocation](#slot-bigwiglocation) | `fileLocation` |                                                |
+| [source](#slot-source)                 | `string`       | added as feature.get('source') on all features |
+
+<details>
+<summary>Advanced slots (1)</summary>
+
+| Slot                                               | Type     | Description                                                                                                                               |
+| -------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| [resolutionMultiplier](#slot-resolutionmultiplier) | `number` | Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points) |
+
+</details>
+
+<details>
+<summary>BigWigAdapter - Slots</summary>
 
 #### slot: bigWigLocation
 
-```js
-bigWigLocation: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my.bw',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my.bw', locationType: 'UriLocation' }`
 
 #### slot: source
 
 added as feature.get('source') on all features
 
-```js
-source: {
-      type: 'string',
-      defaultValue: '',
-      description: 'Used for multiwiggle',
-    }
-```
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: resolutionMultiplier
 
-```js
-resolutionMultiplier: {
-      type: 'number',
-      defaultValue: 1,
-      description:
-        'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
-    }
-```
+Resolution multiplier applied to every fetch: <1 fetches more points (higher
+resolution), >1 fetches fewer (e.g. 2 = half as many points)
+
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
+
+</details>

@@ -43,9 +43,7 @@ export const ExternalTokenEntryForm = ({
           type="submit"
           disabled={!token}
           onClick={() => {
-            if (token) {
-              handleClose(token)
-            }
+            handleClose(token)
           }}
         >
           Add

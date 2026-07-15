@@ -1,0 +1,12 @@
+---
+import Example from "../examples/WithExternalPlugin.tsx"
+import code from "../examples/WithExternalPlugin.tsx?raw"
+import { examples } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+
+const meta = examples.find(e => e.slug === "with-external-plugin")!
+---
+
+<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
+  <Example client:only="react" />
+</Layout>

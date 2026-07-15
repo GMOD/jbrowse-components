@@ -1,13 +1,12 @@
-import { revcom } from '../../util/index.ts'
+import { revcom, revlist } from '../../util/seqUtils.ts'
 import {
   calculateUTRs2,
   calculateUTRs,
   filterSuccessiveElementsWithSameStartAndEndCoord,
-  revlist,
 } from '../util.tsx'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { ErrorState, Feat, SeqState } from '../util.tsx'
+import type { Feat, SeqState } from '../util.tsx'
 
 interface FeatureData {
   sequence: SeqState
@@ -47,10 +46,10 @@ function processFeatureData(
         }),
       )
   const exons = filterSuccessiveElementsWithSameStartAndEndCoord(
-    children.filter(sub => sub.type === 'exon'),
+    children.filter(sub => sub.type?.toLowerCase() === 'exon'),
   )
   let utr = filterSuccessiveElementsWithSameStartAndEndCoord(
-    children.filter(sub => sub.type?.match(/utr/i)),
+    children.filter(sub => /utr/i.test(sub.type ?? '')),
   )
 
   if (!utr.length && cds.length && exons.length) {
@@ -76,8 +75,8 @@ function handleReverseStrand(
   return {
     sequence: {
       seq: revcom(seq),
-      upstream: downstream ? revcom(downstream) : '',
-      downstream: upstream ? revcom(upstream) : '',
+      upstream: revcom(downstream),
+      downstream: revcom(upstream),
     },
     cds: revlist(cds, seq.length),
     exons: revlist(exons, seq.length),
@@ -85,36 +84,28 @@ function handleReverseStrand(
   }
 }
 
-export function useSequenceData({
+export function getSequenceData({
   feature,
   sequence,
 }: {
   feature: SimpleFeatureSerialized
-  sequence?: SeqState | ErrorState
+  sequence: SeqState
 }) {
   const children = prepareSubfeatures(feature)
   const { cds, exons, utr } = processFeatureData(children, feature)
+  const {
+    sequence: adjusted,
+    cds: adjustedCds,
+    exons: adjustedExons,
+    utr: adjustedUtr,
+  } = feature.strand === -1
+    ? handleReverseStrand(sequence, cds, exons, utr)
+    : { sequence, cds, exons, utr }
 
-  if (!sequence || 'error' in sequence) {
-    return undefined
-  } else {
-    const {
-      sequence: adjustedSequence,
-      cds: adjustedCds,
-      exons: adjustedExons,
-      utr: adjustedUtr,
-    } = feature.strand === -1
-      ? handleReverseStrand(sequence, cds, exons, utr)
-      : { sequence, cds, exons, utr }
-
-    const { seq, upstream, downstream } = adjustedSequence
-    return {
-      seq,
-      upstream,
-      downstream,
-      cds: adjustedCds,
-      exons: adjustedExons,
-      utr: adjustedUtr,
-    }
+  return {
+    ...adjusted,
+    cds: adjustedCds,
+    exons: adjustedExons,
+    utr: adjustedUtr,
   }
 }

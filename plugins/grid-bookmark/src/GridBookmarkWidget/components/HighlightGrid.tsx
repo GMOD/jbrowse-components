@@ -1,40 +1,64 @@
 import { useState } from 'react'
 
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
-import PopoverPicker from '@jbrowse/core/ui/PopoverPicker'
 import {
   assembleLocString,
   getSession,
-  measureGridWidth,
-  measureText,
+  resolveSelectedIds,
 } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import Delete from '@mui/icons-material/Delete'
-import { IconButton, Link, Tooltip, useTheme } from '@mui/material'
-import { DataGrid, GRID_CHECKBOX_SELECTION_COL_DEF } from '@mui/x-data-grid'
+import { useTheme } from '@mui/material'
+import {
+  DataGrid,
+  GRID_CHECKBOX_SELECTION_COL_DEF,
+  useGridApiRef,
+} from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
+
+import EmptyState from './EmptyState.tsx'
+import SelectionActions from './SelectionActions.tsx'
+import {
+  COMPACT_ROW_HEIGHT,
+  DEFAULT_PAGE_SIZE,
+  assemblyColumn,
+  colorColumn,
+  labelColumn,
+  locationColumn,
+  startLabelEditOnClick,
+  useCellStyles,
+} from './columns.tsx'
 
 import type { GridBookmarkModel, IExtendedLGV } from '../model.ts'
 import type { GridRowId } from '@mui/x-data-grid'
 
-const useStyles = makeStyles()({
-  cell: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-})
+function NoHighlightsOverlay() {
+  return (
+    <EmptyState message="No highlights yet. Highlights added to a view appear here." />
+  )
+}
+
+type Highlight = IExtendedLGV['highlight'][number]
+
+interface HighlightRow {
+  id: string
+  view: IExtendedLGV
+  highlight: Highlight
+  locString: string
+  label: string
+  assemblyName: string
+  color?: string
+}
 
 const HighlightGrid = observer(function HighlightGrid({
   model,
 }: {
   model: GridBookmarkModel
 }) {
-  const { classes } = useStyles()
+  const { classes } = useCellStyles()
+  const apiRef = useGridApiRef()
   const theme = useTheme()
   const session = getSession(model)
-  const [selectedIds, setSelectedIds] = useState(new Set<GridRowId>())
-  const selectedSet = new Set(model.selectedAssemblies)
+  const [selectedIds, setSelectedIds] = useState(() => new Set<GridRowId>())
+  const { assembliesInViews } = model
   const rows = session.views
     .filter(
       (v): v is IExtendedLGV =>
@@ -42,7 +66,7 @@ const HighlightGrid = observer(function HighlightGrid({
         Array.isArray((v as IExtendedLGV).highlight),
     )
     .flatMap(view =>
-      view.highlight.map((highlight, hIdx) => {
+      view.highlight.map((highlight, hIdx): HighlightRow => {
         const { assemblyName = '', refName, start, end } = highlight
         return {
           id: `${view.id}-${hIdx}`,
@@ -55,128 +79,78 @@ const HighlightGrid = observer(function HighlightGrid({
         }
       }),
     )
-    // honor the AssemblySelector in the widget header. highlights without an
-    // assemblyName (pre-init session JSON) always pass through so they're not
-    // hidden by the filter
-    .filter(r => !r.assemblyName || selectedSet.has(r.assemblyName))
+    // only show highlights whose assembly is open in a view. highlights
+    // without an assemblyName (pre-init session JSON) always pass through so
+    // they're not hidden by the filter
+    .filter(r => !r.assemblyName || assembliesInViews.has(r.assemblyName))
 
-  return rows.length ? (
+  return (
     <DataGridFlexContainer>
-      {selectedIds.size > 0 ? (
-        <Tooltip title={`Delete ${selectedIds.size} selected highlight(s)`}>
-          <IconButton
-            size="small"
-            sx={{ ml: 1 }}
-            onClick={() => {
-              for (const r of rows.filter(r => selectedIds.has(r.id))) {
-                r.view.removeHighlight(r.highlight)
-              }
-              setSelectedIds(new Set())
-            }}
-          >
-            <Delete fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      ) : null}
+      <SelectionActions
+        count={selectedIds.size}
+        color={rows.find(r => selectedIds.has(r.id))?.color}
+        onDelete={() => {
+          const selectedRows = rows.filter(r => selectedIds.has(r.id))
+          for (const r of selectedRows) {
+            r.view.removeHighlight(r.highlight)
+          }
+          setSelectedIds(new Set())
+        }}
+        onRecolor={color => {
+          const selectedRows = rows.filter(r => selectedIds.has(r.id))
+          for (const r of selectedRows) {
+            r.view.updateHighlight(r.highlight, { color })
+          }
+        }}
+      />
       <DataGrid
+        apiRef={apiRef}
         density="compact"
+        rowHeight={COMPACT_ROW_HEIGHT}
         disableRowSelectionOnClick
         hideFooterSelectedRowCount
-        hideFooterPagination={rows.length <= 100}
+        onCellClick={startLabelEditOnClick(apiRef)}
+        hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
+        slots={{ noRowsOverlay: NoHighlightsOverlay }}
         rows={rows}
         columns={[
-          {
-            ...GRID_CHECKBOX_SELECTION_COL_DEF,
-            width: 50,
-          },
-          {
-            field: 'locString',
-            headerName: 'Location',
-            width: Math.max(
-              measureText('Location', 12) + 30,
-              measureGridWidth(rows.map(r => r.locString)),
-            ),
-            renderCell: ({ value, row }) => (
-              <Link
-                className={classes.cell}
-                href="#"
-                onClick={event => {
-                  event.preventDefault()
-                  row.view.navTo(
-                    {
-                      refName: row.highlight.refName,
-                      start: row.highlight.start,
-                      end: row.highlight.end,
-                      assemblyName: row.highlight.assemblyName,
-                    },
-                    // slightly zoom out so the highlighted region has
-                    // context on either side
-                    0.2,
-                  )
-                }}
-              >
-                {value}
-              </Link>
-            ),
-          },
-          {
-            field: 'label',
-            headerName: 'Label',
-            editable: true,
-            width: Math.max(
-              measureText('Label', 12) + 30,
-              measureGridWidth(rows.map(r => r.label)),
-            ),
-          },
-          {
-            field: 'assemblyName',
-            headerName: 'Assembly',
-            width: Math.max(
-              measureText('Assembly', 12) + 30,
-              measureGridWidth(rows.map(r => r.assemblyName)),
-            ),
-          },
-          {
-            field: 'color',
-            headerName: 'Color',
-            width: 100,
-            renderCell: ({ value, row }) => (
-              <PopoverPicker
-                color={value ?? theme.palette.highlight.main}
-                onChange={newColor => {
-                  row.view.updateHighlight(row.highlight, { color: newColor })
-                }}
-              />
-            ),
-          },
-          {
-            field: 'actions',
-            headerName: '',
-            width: 50,
-            sortable: false,
-            filterable: false,
-            renderCell: ({ row }) => (
-              <Tooltip title="Remove highlight">
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    row.view.removeHighlight(row.highlight)
-                  }}
-                >
-                  <Delete fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            ),
-          },
+          { ...GRID_CHECKBOX_SELECTION_COL_DEF, width: 50 },
+          locationColumn<HighlightRow>(classes.cell, 'Location', row => {
+            row.view.navTo(
+              {
+                refName: row.highlight.refName,
+                start: row.highlight.start,
+                end: row.highlight.end,
+                assemblyName: row.highlight.assemblyName,
+              },
+              // slightly zoom out so the highlighted region has context on
+              // either side
+              0.2,
+            )
+          }),
+          labelColumn<HighlightRow>(classes.cell),
+          ...assemblyColumn<HighlightRow>(rows.map(r => r.assemblyName)),
+          colorColumn<HighlightRow>(
+            'color',
+            row => row.color ?? theme.palette.highlight.main,
+            (row, color) => {
+              row.view.updateHighlight(row.highlight, { color })
+            },
+          ),
         ]}
         checkboxSelection
-        onRowSelectionModelChange={({ ids }) => {
-          setSelectedIds(ids)
+        onRowSelectionModelChange={selectionModel => {
+          setSelectedIds(
+            resolveSelectedIds(
+              selectionModel,
+              rows.map(r => r.id),
+            ),
+          )
         }}
         rowSelectionModel={{ type: 'include', ids: selectedIds }}
         processRowUpdate={row => {
           row.view.updateHighlight(row.highlight, {
-            label: row.label || undefined,
+            label: row.label,
           })
           return row
         }}
@@ -185,7 +159,7 @@ const HighlightGrid = observer(function HighlightGrid({
         }}
       />
     </DataGridFlexContainer>
-  ) : null
+  )
 })
 
 export default HighlightGrid

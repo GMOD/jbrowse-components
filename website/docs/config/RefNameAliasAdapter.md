@@ -1,22 +1,15 @@
 ---
 id: refnamealiasadapter
 title: RefNameAliasAdapter
+sidebar_label: Adapter -> RefNameAliasAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `config`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/RefNameAliasAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/config/src/RefNameAliasAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/RefNameAliasAdapter.md)
-
-## Docs
+## Overview
 
 can read "chromAliases" type files from UCSC or any tab separated file of
 refName aliases
@@ -32,41 +25,46 @@ preprocessor to allow minimal config:
 }
 ```
 
-### RefNameAliasAdapter - Slots
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                       | Type           | Description |
+| -------------------------- | -------------- | ----------- |
+| [location](#slot-location) | `fileLocation` |             |
+
+<details>
+<summary>Advanced slots (2)</summary>
+
+| Slot                                                     | Type     | Description                                                                                                                |
+| -------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| [refNameColumn](#slot-refnamecolumn)                     | `number` | by default, the "ref names that match the fasta" are assumed to be in the first column (0), change this variable if needed |
+| [refNameColumnHeaderName](#slot-refnamecolumnheadername) | `string` | refNameColumnHeaderName                                                                                                    |
+
+</details>
+
+<details>
+<summary>RefNameAliasAdapter - Slots</summary>
 
 #### slot: location
 
-```js
-location: {
-      type: 'fileLocation',
-      defaultValue: {
-        uri: '/path/to/my/aliases.txt',
-        locationType: 'UriLocation',
-      },
-    }
-```
+**Type:** [`fileLocation`](/docs/config_guides/slot_types#filelocation) ·
+**Default:** `{ uri: '/path/to/my/aliases.txt', locationType: 'UriLocation' }`
 
 #### slot: refNameColumn
 
 by default, the "ref names that match the fasta" are assumed to be in the first
 column (0), change this variable if needed
 
-```js
-refNameColumn: {
-      type: 'number',
-      defaultValue: 0,
-    }
-```
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0` ·
+_advanced_
 
 #### slot: refNameColumnHeaderName
 
 refNameColumnHeaderName
 
-```js
-refNameColumnHeaderName: {
-      type: 'string',
-      description:
-        'alternative to refNameColumn, instead looks at header (starts with # and finds column name)',
-      defaultValue: '',
-    }
-```
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+· _advanced_
+
+</details>

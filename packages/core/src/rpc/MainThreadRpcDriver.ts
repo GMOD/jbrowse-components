@@ -1,61 +1,25 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 
-import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
-import type PluginManager from '../PluginManager.ts'
-
-class DummyHandle {
-  destroy(): void {}
-
-  async call(
-    _functionName: string,
-    _filteredArgs?: Record<string, unknown>,
-    _options = {},
-  ): Promise<unknown> {
-    return undefined
-  }
-}
+import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
+import type { StatusCallback } from '../util/progress.ts'
 
 /**
- * RPC driver that runs RPC functions in-band in the main thread.
- * Supports direct execution for methods that implement executeDirect(),
- * bypassing serialization overhead entirely.
+ * RPC driver that runs RPC functions in-band on the main thread. It owns no
+ * worker pool, so the per-session lifecycle hooks (freeSession/destroy) stay as
+ * the BaseRpcDriver no-ops.
  */
 export default class MainThreadRpcDriver extends BaseRpcDriver {
   name = 'MainThreadRpcDriver'
 
-  makeWorker: () => Promise<DummyHandle>
-
-  constructor(args: RpcDriverConstructorArgs) {
-    super(args)
-    this.makeWorker = async (): Promise<DummyHandle> => new DummyHandle()
-  }
-
-  async call(
-    pm: PluginManager,
-    sessionId: string,
-    funcName: string,
-    args: Record<string, unknown>,
+  protected async transport(
+    _pluginManager: unknown,
+    _sessionId: string,
+    rpcMethod: RpcMethodType,
+    serializedArgs: Record<string, unknown>,
+    statusCallback: StatusCallback | undefined,
   ) {
-    if (!sessionId) {
-      throw new TypeError('sessionId is required')
-    }
-    const rpcMethod = pm.getRpcMethodType(funcName)
-    if (!rpcMethod) {
-      throw new Error(`unknown RPC method ${funcName}`)
-    }
-
-    // Use direct execution if the method supports it (avoids serialization)
-    if (rpcMethod.supportsDirectExecution()) {
-      const result = await rpcMethod.executeDirect(args)
-      if (result !== undefined) {
-        return result
-      }
-      // Fall through to serialized path if executeDirect returns undefined
-    }
-
-    // Fallback to serialized execution
-    const serializedArgs = await rpcMethod.serializeArguments(args, this.name)
-    const result = await rpcMethod.execute(serializedArgs, this.name)
-    return rpcMethod.deserializeReturn(result, args, this.name)
+    // re-attach the out-of-band statusCallback that BaseRpcDriver.call split off,
+    // mirroring how the worker re-wires it on the far side of postMessage
+    return rpcMethod.execute({ ...serializedArgs, statusCallback }, this.name)
   }
 }

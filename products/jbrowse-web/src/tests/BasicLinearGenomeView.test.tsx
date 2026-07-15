@@ -1,4 +1,11 @@
-import { createEvent, fireEvent, screen, waitFor } from '@testing-library/react'
+import {
+  createEvent,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
+import { userEvent } from '@testing-library/user-event'
 
 import { createView, doBeforeEach, hts, setup } from './util.tsx'
 setup()
@@ -94,22 +101,38 @@ test('click and drag to reorder tracks', async () => {
 test('click and zoom in and back out', async () => {
   const { view, findByTestId, findAllByText } = await createView()
   await findAllByText('ctgA', ...opts)
+
+  // mock requestAnimationFrame and performance.now so the spring
+  // animation used by zoom() completes synchronously
+  const origRAF = window.requestAnimationFrame
+  const origPerfNow = performance.now.bind(performance)
+  let fakeTime = origPerfNow()
+  performance.now = () => fakeTime
+  window.requestAnimationFrame = (cb: FrameRequestCallback) => {
+    fakeTime += 16
+    cb(fakeTime)
+    return 0
+  }
+
+  // wait for coarseBpPerPx to be set (500ms debounced autorun) so
+  // the zoom buttons become enabled
   const before = view.bpPerPx
+  await waitFor(() => {
+    expect(view.coarseBpPerPx).toBeGreaterThan(0)
+  }, delay)
+
   fireEvent.click(await findByTestId('zoom_in'))
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before / 2)
   }, delay)
 
-  // wait for it not to be disabled also
-  const elt = await findByTestId('zoom_out')
-  await waitFor(() => {
-    expect(elt).toHaveProperty('disabled', false)
-  })
-  fireEvent.click(elt)
-
+  fireEvent.click(await findByTestId('zoom_out'))
   await waitFor(() => {
     expect(view.bpPerPx).toBe(before)
   }, delay)
+
+  window.requestAnimationFrame = origRAF
+  performance.now = origPerfNow
 }, 60000)
 
 test('opens track selector', async () => {
@@ -143,21 +166,16 @@ test('click to display center line with correct value', async () => {
 }, 30000)
 
 test('test choose option from dropdown refName autocomplete', async () => {
-  const {
-    findByTestId,
-    findAllByText,
-    findByPlaceholderText,
-    getByPlaceholderText,
-  } = await createView()
+  const user = userEvent.setup()
+  const { findAllByText, findByPlaceholderText, getByPlaceholderText } =
+    await createView()
 
   await findAllByText('ctgA', ...opts)
-  fireEvent.click(await findByPlaceholderText('Search for location'))
-  const autocomplete = await findByTestId('autocomplete')
-  autocomplete.focus()
-  fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-  fireEvent.keyDown(autocomplete, { key: 'ArrowDown' })
-  fireEvent.click((await screen.findAllByText(/ctgB/))[0]!)
-  fireEvent.keyDown(autocomplete, { key: 'Enter', code: 'Enter' })
+  const input = await findByPlaceholderText('Search for location')
+  await user.click(input)
+  await user.click(
+    within(await screen.findByRole('listbox', ...opts)).getByText(/ctgB/),
+  )
 
   await waitFor(() => {
     const n = getByPlaceholderText('Search for location') as HTMLInputElement

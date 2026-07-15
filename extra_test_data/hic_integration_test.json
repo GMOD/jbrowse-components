@@ -60,5 +60,8 @@
     "activeWidgets": {
       "hierarchicalTrackSelector": "hierarchicalTrackSelector"
     }
+  },
+  "configuration": {
+    "disableAnalytics": true
   }
 }

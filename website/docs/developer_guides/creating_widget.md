@@ -1,13 +1,15 @@
 ---
-id: creating_widget
-title: Creating custom widgets
+title: Custom widgets
 description: Add new drawer/panel UI components
 guide_category: Creating pluggable elements
 ---
 
-Here is an example of registering a custom widget
+Widgets are info panels that appear in side panels (drawers), modals, or other
+places in the app, such as the configuration editor, feature detail popups, and
+the add-track form. A custom widget pairs a state model with a React component
+and is registered with `pluginManager.addWidgetType`.
 
-index.tsx
+Register a custom widget in `index.tsx`:
 
 ```tsx
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
@@ -15,10 +17,15 @@ import WidgetType from '@jbrowse/core/pluggableElementTypes/WidgetType'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { types } from '@jbrowse/mobx-state-tree'
+import { observer } from 'mobx-react'
 
-function ReactComponent({ model }: { model: any }) {
+const ReactComponent = observer(function ({
+  model,
+}: {
+  model: { mydata: unknown }
+}) {
   return <div>Message: {`${model.mydata}`}</div>
-}
+})
 
 const configSchema = ConfigurationSchema('MyWidget', {})
 
@@ -51,7 +58,7 @@ export default (pluginManager: PluginManager) => {
 }
 ```
 
-This can then be used in code by saying
+Use it:
 
 ```typescript
 const widget = session.addWidget('MyWidget', 'instanceOfMyWidget', {
@@ -59,3 +66,13 @@ const widget = session.addWidget('MyWidget', 'instanceOfMyWidget', {
 })
 session.showWidget(widget)
 ```
+
+## See also
+
+- [Drawer widgets in embedded components](/docs/developer_guides/drawer_widgets)
+  - show a widget as a resizable side panel
+- [Extension points](/docs/developer_guides/extension_points) -
+  `Core-replaceWidget` and `Core-extraFeaturePanel` customize existing widgets
+- [Configuration schema](/docs/developer_guides/configuration_schema) - define
+  the widget's `configSchema`
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

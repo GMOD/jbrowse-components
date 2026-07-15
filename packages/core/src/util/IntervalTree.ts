@@ -1,309 +1,103 @@
 /**
- * Vendored and simplified from @flatten-js/interval-tree
- * https://github.com/nickolanack/flatten-interval-tree
- * License: MIT
- * Created by Alex Bol on 3/31/2017.
+ * Static augmented interval tree: returns the values whose interval overlaps a
+ * query interval.
  *
- * Simplified to only support numeric intervals and the subset of API we use:
- * - constructor, insert, search
+ * Replaces a vendored red-black implementation. Every JBrowse caller builds the
+ * tree fully (many `insert`s) and then only queries it (`search`) — never
+ * interleaving inserts with searches and never deleting — so the self-balancing
+ * machinery (rotations, color fixups, parent pointers, nil sentinels) was
+ * unnecessary. Intervals are collected on `insert`; a balanced tree is built
+ * lazily on the first `search` via recursive median split, giving O(n log n)
+ * build and O(log n + k) query.
+ *
+ * Originally vendored from @flatten-js/interval-tree (MIT, Alex Bol).
  */
 
-const RB_TREE_COLOR_RED = 1
-const RB_TREE_COLOR_BLACK = 0
-type NodeColor = typeof RB_TREE_COLOR_RED | typeof RB_TREE_COLOR_BLACK
-
-class Interval {
+interface RawInterval<V> {
   low: number
   high: number
-
-  constructor(low: number, high: number) {
-    this.low = low
-    this.high = high
-  }
-
-  lessThan(other: Interval) {
-    return (
-      this.low < other.low || (this.low === other.low && this.high < other.high)
-    )
-  }
-
-  equalTo(other: Interval) {
-    return this.low === other.low && this.high === other.high
-  }
-
-  intersects(other: Interval) {
-    return !(this.high < other.low || other.high < this.low)
-  }
-
-  merge(other: Interval) {
-    return new Interval(
-      Math.min(this.low, other.low),
-      Math.max(this.high, other.high),
-    )
-  }
+  value: V
 }
 
-class Node<V> {
-  left: Node<V> | null = null
-  right: Node<V> | null = null
-  parent: Node<V> | null = null
-  color: NodeColor = RB_TREE_COLOR_BLACK
-  key: Interval | undefined
-  values: V[] = []
-  max: Interval | undefined
-
-  constructor(
-    key?: Interval | [number, number],
-    value?: V,
-    left?: Node<V> | null,
-    right?: Node<V> | null,
-    parent?: Node<V> | null,
-    color?: NodeColor,
-  ) {
-    if (left !== undefined) {
-      this.left = left
-    }
-    if (right !== undefined) {
-      this.right = right
-    }
-    if (parent !== undefined) {
-      this.parent = parent
-    }
-    if (color !== undefined) {
-      this.color = color
-    }
-    if (value !== undefined) {
-      this.values.push(value)
-    }
-    if (key !== undefined) {
-      if (Array.isArray(key)) {
-        const [low, high] = key
-        this.key =
-          low <= high ? new Interval(low, high) : new Interval(high, low)
-      } else {
-        this.key = key
-      }
-      this.max = this.key
-    }
-  }
-
-  lessThan(other: Node<V>) {
-    return this.key!.lessThan(other.key!)
-  }
-
-  equalTo(other: Node<V>) {
-    return this.key!.equalTo(other.key!)
-  }
-
-  intersects(other: Node<V>) {
-    return this.key!.intersects(other.key!)
-  }
-
-  updateMax() {
-    this.max = this.key
-    if (this.right?.max && this.max) {
-      this.max = this.max.merge(this.right.max)
-    }
-    if (this.left?.max && this.max) {
-      this.max = this.max.merge(this.left.max)
-    }
-  }
-
-  notIntersectLeftSubtree(searchNode: Node<V>) {
-    if (!this.left) {
-      return true
-    }
-    const high = this.left.max?.high ?? this.left.key!.high
-    return high < searchNode.key!.low
-  }
-
-  notIntersectRightSubtree(searchNode: Node<V>) {
-    if (!this.right) {
-      return true
-    }
-    const low = this.right.max?.low ?? this.right.key!.low
-    return searchNode.key!.high < low
-  }
+interface IntervalNode<V> extends RawInterval<V> {
+  // max `high` across this node's subtree, used to prune the left descent
+  maxHigh: number
+  left: IntervalNode<V> | undefined
+  right: IntervalNode<V> | undefined
 }
 
 export class IntervalTree<V> {
-  root: Node<V> | null = null
-  private nilNode = new Node<V>()
+  private intervals: RawInterval<V>[] = []
+  private root: IntervalNode<V> | undefined
+  private built = false
 
   insert(key: [number, number], value: V) {
-    const existing = this.treeSearch(this.root, new Node<V>(key))
-    if (existing) {
-      existing.values.push(value)
-      return existing
-    }
-    const insertNode = new Node(
-      key,
-      value,
-      this.nilNode,
-      this.nilNode,
-      null,
-      RB_TREE_COLOR_RED,
-    )
-    this.treeInsert(insertNode)
-    this.recalcMax(insertNode)
-    return insertNode
+    const [a, b] = key
+    // normalize reversed intervals so low <= high
+    this.intervals.push({ low: Math.min(a, b), high: Math.max(a, b), value })
+    this.built = false
   }
 
   search(interval: [number, number]): V[] {
-    const searchNode = new Node<V>(interval)
-    const resultNodes: Node<V>[] = []
-    this.treeSearchInterval(this.root, searchNode, resultNodes)
-    return resultNodes.flatMap(node => node.values)
+    if (!this.built) {
+      // stable sort keeps insertion order among equal intervals, so the
+      // in-order query output matches the old red-black in-order traversal
+      const sorted = [...this.intervals].sort(
+        (x, y) => x.low - y.low || x.high - y.high,
+      )
+      this.root = buildBalanced(sorted, 0, sorted.length - 1)
+      this.built = true
+    }
+    const [a, b] = interval
+    const out: V[] = []
+    query(this.root, Math.min(a, b), Math.max(a, b), out)
+    return out
   }
+}
 
-  private recalcMax(node: Node<V>) {
-    let current = node
-    while (current.parent != null) {
-      current.parent.updateMax()
-      current = current.parent
-    }
+function buildBalanced<V>(
+  items: RawInterval<V>[],
+  start: number,
+  end: number,
+): IntervalNode<V> | undefined {
+  if (start > end) {
+    return undefined
   }
-
-  private treeInsert(insertNode: Node<V>) {
-    let current: Node<V> | null = this.root
-    let parent: Node<V> | null = null
-
-    if (this.root == null || this.root === this.nilNode) {
-      this.root = insertNode
-    } else {
-      while (current !== this.nilNode) {
-        parent = current!
-        current = insertNode.lessThan(current!) ? current!.left : current!.right
-      }
-      insertNode.parent = parent
-      if (insertNode.lessThan(parent!)) {
-        parent!.left = insertNode
-      } else {
-        parent!.right = insertNode
-      }
-    }
-    this.insertFixup(insertNode)
+  const mid = Math.floor((start + end) / 2)
+  const item = items[mid]!
+  const left = buildBalanced(items, start, mid - 1)
+  const right = buildBalanced(items, mid + 1, end)
+  return {
+    ...item,
+    left,
+    right,
+    maxHigh: Math.max(
+      item.high,
+      left?.maxHigh ?? -Infinity,
+      right?.maxHigh ?? -Infinity,
+    ),
   }
+}
 
-  private insertFixup(insertNode: Node<V>) {
-    let current = insertNode
-    while (
-      current !== this.root &&
-      current.parent!.color === RB_TREE_COLOR_RED
-    ) {
-      if (current.parent === current.parent!.parent!.left) {
-        const uncle = current.parent!.parent!.right!
-        if (uncle.color === RB_TREE_COLOR_RED) {
-          current.parent!.color = RB_TREE_COLOR_BLACK
-          uncle.color = RB_TREE_COLOR_BLACK
-          current.parent!.parent!.color = RB_TREE_COLOR_RED
-          current = current.parent!.parent!
-        } else {
-          if (current === current.parent!.right) {
-            current = current.parent!
-            this.rotateLeft(current)
-          }
-          current.parent!.color = RB_TREE_COLOR_BLACK
-          current.parent!.parent!.color = RB_TREE_COLOR_RED
-          this.rotateRight(current.parent!.parent!)
-        }
-      } else {
-        const uncle = current.parent!.parent!.left!
-        if (uncle.color === RB_TREE_COLOR_RED) {
-          current.parent!.color = RB_TREE_COLOR_BLACK
-          uncle.color = RB_TREE_COLOR_BLACK
-          current.parent!.parent!.color = RB_TREE_COLOR_RED
-          current = current.parent!.parent!
-        } else {
-          if (current === current.parent!.left) {
-            current = current.parent!
-            this.rotateRight(current)
-          }
-          current.parent!.color = RB_TREE_COLOR_BLACK
-          current.parent!.parent!.color = RB_TREE_COLOR_RED
-          this.rotateLeft(current.parent!.parent!)
-        }
-      }
-    }
-    this.root!.color = RB_TREE_COLOR_BLACK
+// in-order overlap collection: left before self before right keeps results
+// sorted by (low, high), matching what the old red-black tree returned
+function query<V>(
+  node: IntervalNode<V> | undefined,
+  low: number,
+  high: number,
+  out: V[],
+) {
+  // no interval in this subtree reaches `low`
+  if (!node || node.maxHigh < low) {
+    return
   }
-
-  private treeSearch(
-    node: Node<V> | null,
-    searchNode: Node<V>,
-  ): Node<V> | undefined {
-    if (node == null || node === this.nilNode) {
-      return undefined
-    }
-    if (searchNode.equalTo(node)) {
-      return node
-    }
-    return searchNode.lessThan(node)
-      ? this.treeSearch(node.left, searchNode)
-      : this.treeSearch(node.right, searchNode)
+  query(node.left, low, high, out)
+  if (node.low <= high && node.high >= low) {
+    out.push(node.value)
   }
-
-  private treeSearchInterval(
-    node: Node<V> | null,
-    searchNode: Node<V>,
-    results: Node<V>[],
-  ) {
-    if (node != null && node !== this.nilNode) {
-      if (
-        node.left !== this.nilNode &&
-        !node.notIntersectLeftSubtree(searchNode)
-      ) {
-        this.treeSearchInterval(node.left, searchNode, results)
-      }
-      if (node.intersects(searchNode)) {
-        results.push(node)
-      }
-      if (
-        node.right !== this.nilNode &&
-        !node.notIntersectRightSubtree(searchNode)
-      ) {
-        this.treeSearchInterval(node.right, searchNode, results)
-      }
-    }
-  }
-
-  private rotateLeft(x: Node<V>) {
-    const y = x.right!
-    x.right = y.left
-    if (y.left !== this.nilNode) {
-      y.left!.parent = x
-    }
-    y.parent = x.parent
-    if (x === this.root) {
-      this.root = y
-    } else if (x === x.parent!.left) {
-      x.parent!.left = y
-    } else {
-      x.parent!.right = y
-    }
-    y.left = x
-    x.parent = y
-    x.updateMax()
-    y.updateMax()
-  }
-
-  private rotateRight(y: Node<V>) {
-    const x = y.left!
-    y.left = x.right
-    if (x.right !== this.nilNode) {
-      x.right!.parent = y
-    }
-    x.parent = y.parent
-    if (y === this.root) {
-      this.root = x
-    } else if (y === y.parent!.left) {
-      y.parent!.left = x
-    } else {
-      y.parent!.right = x
-    }
-    x.right = y
-    y.parent = x
-    y.updateMax()
-    x.updateMax()
+  // right subtree lows are all >= node.low (input is sorted by low); if
+  // node.low is already past `high`, nothing on the right can overlap
+  if (node.low <= high) {
+    query(node.right, low, high, out)
   }
 }

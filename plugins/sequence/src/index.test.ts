@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import ThisPlugin from './index.ts'
@@ -11,11 +12,26 @@ test('plugin in a stock JBrowse', () => {
     /JBrowse already configured, cannot add plugins/,
   )
 
-  const TwoBitAdapter = pluginManager.getAdapterType('TwoBitAdapter')!
+  const TwoBitAdapter = pluginManager.getAdapterType('TwoBitAdapter')
   const cfg = TwoBitAdapter.configSchema.create({ type: 'TwoBitAdapter' })
   expect(getSnapshot(cfg)).toMatchSnapshot()
 
-  const FastaAdapter = pluginManager.getAdapterType('IndexedFastaAdapter')!
+  const FastaAdapter = pluginManager.getAdapterType('IndexedFastaAdapter')
   const cfg2 = FastaAdapter.configSchema.create({ type: 'IndexedFastaAdapter' })
   expect(getSnapshot(cfg2)).toMatchSnapshot()
+})
+
+// MotifListPanel names this adapter by string when it builds a track config, so
+// a mismatch here would only surface as a broken track at runtime
+test('MotifListAdapter registers under the name the search panel uses', () => {
+  const pluginManager = new PluginManager([new ThisPlugin()])
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
+  const MotifListAdapter = pluginManager.getAdapterType('MotifListAdapter')
+  const cfg = MotifListAdapter.configSchema.create({
+    type: 'MotifListAdapter',
+    motifs: 'EcoRI G^AATTC',
+  })
+  expect(readConfObject(cfg, 'motifs')).toBe('EcoRI G^AATTC')
 })

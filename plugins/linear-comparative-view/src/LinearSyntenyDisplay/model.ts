@@ -1,37 +1,138 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
+import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { getContainingView } from '@jbrowse/core/util'
+import { getParent, types } from '@jbrowse/mobx-state-tree'
+import {
+  NO_CIGAR_OPS,
+  coerceColorBy,
+  isDataCurrent,
+} from '@jbrowse/synteny-core'
 
-import { applyAlpha, colorSchemes, getQueryColor } from './drawSyntenyUtils.ts'
-import baseModelFactory from '../LinearComparativeDisplay/stateModelFactory.ts'
+import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
+import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
+import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
+import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
 
-import type { ColorScheme } from './drawSyntenyUtils.ts'
+import type { ClickCoord } from './components/util.ts'
+import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
 
-interface Pos {
-  offsetPx: number
+export interface SyntenyFeatureData {
+  strands: Int8Array
+  starts: Uint32Array
+  ends: Uint32Array
+  identities: Float32Array
+  // PAF mapping-quality (column 12), -1 where missing. Float32 because the
+  // sentinel is -1 and we want to avoid an extra "valid" bitmap.
+  mappingQuals: Float32Array
+  // Adapter-computed length-weighted mean sequence identity per query/target
+  // pair, a true [0,1] fraction. -1 where missing. See
+  // PAFAdapter/util.ts:getWeightedMeans.
+  meanIdentities: Float32Array
+  featureIds: string[]
+  names: string[]
+  refNames: string[]
+  assemblyNames: string[]
+  // Mate fields packed as parallel arrays. Uint32 buffers are RPC-transferable
+  // and match the bp coord convention used elsewhere in the codebase.
+  // mate.name was always undefined (no adapter sets it) so it's dropped.
+  mateStarts: Uint32Array
+  mateEnds: Uint32Array
+  mateRefNames: string[]
+  mateAssemblyNames: string[]
+  // True when at least one feature in this RPC response carried a CIGAR
+  // string. Used to gate CIGAR-related menu items so they don't appear when
+  // the resolved tier (coarse PIF, or a CIGAR-less PAF) has no per-row ops.
+  hasCigar: boolean
 }
 
 export interface FeatPos {
-  p11: Pos
-  p12: Pos
-  p21: Pos
-  p22: Pos
-  f: Feature
-  cigar: string[]
+  id: string
+  strand: number
+  name: string
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+  mate: {
+    start: number
+    end: number
+    refName: string
+    assemblyName: string
+  }
+  identity?: number
+}
+
+// The worker sizes its viewport cull in px at fetch time, so zooming out by
+// ~2x can leave features missing beyond the previous cull window. Bucketing
+// bpPerPx on log2 lets the fetch autorun refire once per half-decade of zoom
+// instead of on every settled zoom.
+function bucketBpPerPx(bpPerPx: number) {
+  return Math.floor(Math.log2(Math.max(bpPerPx, 1)))
+}
+
+function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
+  const identity = data.identities[i]!
+  return {
+    id: data.featureIds[i]!,
+    strand: data.strands[i]!,
+    name: data.names[i]!,
+    refName: data.refNames[i]!,
+    start: data.starts[i]!,
+    end: data.ends[i]!,
+    assemblyName: data.assemblyNames[i]!,
+    mate: {
+      start: data.mateStarts[i]!,
+      end: data.mateEnds[i]!,
+      refName: data.mateRefNames[i]!,
+      assemblyName: data.mateAssemblyNames[i]!,
+    },
+    identity: identity === -1 ? undefined : identity,
+  }
 }
 
 /**
  * #stateModel LinearSyntenyDisplay
- * extends
- * - [LinearComparativeDisplay](../linearcomparativedisplay)
+ *
+ * Pure-data model. The containing LinearSyntenyView owns the shared GPU
+ * backend, the upload autorun (which watches every display's `instanceData`
+ * and keys it by `displayKey`), and the render autorun. This display only
+ * carries per-track state and the `renderParams` the view reads out.
+ *
+ * #example
+ * A complete `SyntenyTrack` config to paste into `tracks`. The adapter needs
+ * the query (first) and target (second) assembly names, matched by the track's
+ * `assemblyNames`:
+ * ```js
+ * {
+ *   type: 'SyntenyTrack',
+ *   trackId: 'hg38_vs_mm10',
+ *   name: 'hg38 vs mm10',
+ *   assemblyNames: ['hg38', 'mm10'],
+ *   adapter: {
+ *     type: 'PAFAdapter',
+ *     uri: 'https://example.com/hg38_vs_mm10.paf',
+ *     queryAssembly: 'hg38',
+ *     targetAssembly: 'mm10',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearSyntenyDisplay',
+ *       displayId: 'hg38_vs_mm10-LinearSyntenyDisplay',
+ *     },
+ *   ],
+ * }
+ * ```
  */
 function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return types
     .compose(
       'LinearSyntenyDisplay',
-      baseModelFactory(configSchema),
+      BaseDisplay,
       types.model({
         /**
          * #property
@@ -41,148 +142,97 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * color scheme to use for rendering synteny features
-         */
-        colorBy: types.optional(types.string, 'default'),
-        /**
-         * #property
-         * alpha transparency value for synteny drawing (0-1)
-         */
-        alpha: types.optional(types.number, 0.2),
-        /**
-         * #property
-         * minimum alignment length to display (in bp)
-         */
-        minAlignmentLength: types.optional(types.number, 0),
       }),
     )
     .volatile(() => ({
       /**
        * #volatile
-       * canvas used for drawing visible screen
        */
-      mainCanvas: null as HTMLCanvasElement | null,
-
+      featureData: undefined as SyntenyFeatureData | undefined,
       /**
        * #volatile
-       * canvas used for drawing click map with feature ids this renders a
-       * unique color per alignment, so that it can be re-traced after a
-       * feature click with getImageData at that pixel
+       * Raw GPU-instance geometry produced by the RPC. The view observes
+       * this on every display and uploads it to the shared backend keyed by
+       * `displayKey`. Clearing it (undefined) triggers backend eviction.
        */
-      clickMapCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * canvas used for drawing click map with cigar data this can show if you
-       * are mousing over a insertion/deletion. it is similar in purpose to the
-       * clickMapRef but was not feasible to pack this into the clickMapRef
-       */
-      cigarClickMapCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * canvas for drawing mouseover shading this is separate from the other
-       * code for speed: don't have to redraw entire canvas to do a feature's
-       * mouseover shading
-       */
-      mouseoverCanvas: null as HTMLCanvasElement | null,
-
-      /**
-       * #volatile
-       * assigned by reaction
-       */
-      featPositions: [] as FeatPos[],
-
-      /**
-       * #volatile
-       * currently mouse'd over feature
-       */
-      mouseoverId: undefined as string | undefined,
-
-      /**
-       * #volatile
-       * currently click'd over feature
-       */
-      clickId: undefined as string | undefined,
-
-      /**
-       * #volatile
-       * currently mouseover'd CIGAR subfeature
-       */
-      cigarMouseoverId: -1,
+      instanceData: undefined as SyntenyGeometry | undefined,
+      hoveredFeatureIdx: -1,
+      clickedFeatureIdx: -1,
+      contextMenuAnchor: undefined as ClickCoord | undefined,
+      // True while an RPC fetch is in-flight. Distinguishes a first load (no
+      // data yet) from a refetch (stale data still on screen) so the two get
+      // different overlays — see `loading`/`refetching`.
+      fetching: false,
+      // Fetch-input signature the current featureData/instanceData was fetched
+      // for (see `currentFetchKey`). Compared against the live inputs in
+      // `dataCurrent` to detect data gone stale after a region/zoom change,
+      // including during the pre-refetch debounce gap where `fetching` is still
+      // false.
+      loadedFetchKey: undefined as string | undefined,
+      // Set once at view load by a refName-comparison check, independent of the
+      // per-render fetch. See afterAttach.
+      assembliesSwapped: false,
     }))
     .actions(self => ({
       /**
        * #action
+       * Set both feature and instance data in one MST action so downstream
+       * autoruns (upload, render) fire once per RPC completion, not twice.
        */
-      setFeatPositions(arg: FeatPos[]) {
-        self.featPositions = arg
+      setRpcData(
+        featureData: SyntenyFeatureData | undefined,
+        instanceData: SyntenyGeometry | undefined,
+        fetchKey: string,
+      ) {
+        self.featureData = featureData
+        self.instanceData = instanceData
+        self.loadedFetchKey = fetchKey
       },
-      /**
-       * #action
-       */
-      setMainCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mainCanvas = ref
+      setFetching(arg: boolean) {
+        self.fetching = arg
       },
-      /**
-       * #action
-       */
-      setClickMapCanvasRef(ref: HTMLCanvasElement | null) {
-        self.clickMapCanvas = ref
+      setAssembliesSwapped(arg: boolean) {
+        self.assembliesSwapped = arg
       },
-      /**
-       * #action
-       */
-      setCigarClickMapCanvasRef(ref: HTMLCanvasElement | null) {
-        self.cigarClickMapCanvas = ref
+      setHoveredFeatureIdx(idx: number) {
+        self.hoveredFeatureIdx = idx
       },
-      /**
-       * #action
-       */
-      setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
-        self.mouseoverCanvas = ref
+      setClickedFeatureIdx(idx: number) {
+        self.clickedFeatureIdx = idx
       },
-      /**
-       * #action
-       */
-      setMouseoverId(arg?: string) {
-        self.mouseoverId = arg
+      openContextMenu(anchor: ClickCoord) {
+        self.contextMenuAnchor = anchor
       },
-      /**
-       * #action
-       */
-      setCigarMouseoverId(arg: number) {
-        self.cigarMouseoverId = arg
-      },
-      /**
-       * #action
-       */
-      setClickId(arg?: string) {
-        self.clickId = arg
-      },
-      /**
-       * #action
-       */
-      setAlpha(value: number) {
-        self.alpha = value
-      },
-      /**
-       * #action
-       */
-      setMinAlignmentLength(value: number) {
-        self.minAlignmentLength = value
-      },
-      /**
-       * #action
-       */
-      setColorBy(value: string) {
-        self.colorBy = value
+      closeContextMenu() {
+        self.contextMenuAnchor = undefined
       },
     }))
-
     .views(self => ({
+      /**
+       * #getter
+       */
+      get parentHelper() {
+        return getParent<{
+          height: number
+          level: number
+        }>(self, 4)
+      },
+      get level() {
+        return this.parentHelper.level
+      },
+      /**
+       * #getter
+       * Stable backend key under the view-shared backend.
+       */
+      get displayKey() {
+        return syntenyDisplayKey(self.id)
+      },
+      /**
+       * #getter
+       */
+      get height() {
+        return this.parentHelper.height
+      },
       /**
        * #getter
        */
@@ -193,114 +243,319 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           ...getConf(self.parentTrack, 'adapter'),
         }
       },
-
-      /**
-       * #getter
-       */
-      get trackIds() {
-        return getConf(self, 'trackIds') as string[]
-      },
-
       /**
        * #getter
        */
       get numFeats() {
-        return self.featPositions.length
+        return self.featureData?.featureIds.length ?? 0
       },
-
       /**
        * #getter
-       * used for synteny svg rendering
+       * Which CIGAR indel ops are actually painted in the current geometry.
+       * The worker only emits an indel instance for an op wide enough to draw
+       * (sub-pixel indels are dropped), so a set bit means a visible-width op
+       * of that kind is on screen. The legend keys its indel chips off this
+       * rather than the coarse "file has any CIGAR" flag, so whole-genome zoom
+       * (every indel sub-pixel) shows no dead insertion/deletion swatch.
+       */
+      get presentCigarKinds(): CigarOpMask {
+        const { instanceData } = self
+        return instanceData
+          ? computePresentCigarKinds(
+              instanceData.kinds,
+              instanceData.instanceCount,
+            )
+          : NO_CIGAR_OPS
+      },
+      /**
+       * #getter
+       * Warnings surfaced in the view header. Flags a likely reversed assembly
+       * row order, detected once at view load (only when the two assemblies have
+       * distinct chromosome names).
+       */
+      get warnings() {
+        return self.assembliesSwapped
+          ? [
+              {
+                message: 'The assemblies appear to be in the wrong order',
+                effect:
+                  'The chromosome names in the file match the opposite row. Try re-opening the synteny import form with the assemblies in the opposite order.',
+              },
+            ]
+          : []
+      },
+      /**
+       * #getter
+       * A fetch has completed (data is present, even if it mapped zero
+       * features). Not `numFeats > 0` — an empty-but-finished fetch is ready,
+       * otherwise an empty result spins the loading overlay forever.
        */
       get ready() {
-        return this.numFeats > 0
+        return self.featureData !== undefined
       },
-
+      /**
+       * #getter
+       * First load: a fetch is running and no data has arrived yet. Excludes
+       * error so error UI and loading UI never show simultaneously. Drives the
+       * full striped LoadingOverlay.
+       */
+      get loading() {
+        return !this.ready && !self.error
+      },
+      /**
+       * #getter
+       * Refetch in-flight: a new fetch is running but stale ribbons are still
+       * on screen (e.g. zoom-out across a log2 bucket, region change). Drives a
+       * subtle corner indicator instead of the full overlay so the visible
+       * ribbons aren't masked on every viewport change.
+       */
+      get refetching() {
+        return self.fetching && this.ready && !self.error
+      },
+      /**
+       * #getter
+       * Fetch-input signature (region set/order, snapped fetch window, zoom
+       * bucket, CIGAR/marker draw options, LOD tier) for the view's current
+       * state — the same tracked deps the fetch autorun refetches on. Reactive:
+       * flips the instant any of them changes. Before both connected views are
+       * ready it collapses to a degenerate signature (empty region sig, no
+       * fetch-window/zoom keys) that no connected fetch can produce — a real
+       * fetch requires non-empty displayedRegions — so `dataCurrent` reads false
+       * until a real fetch lands. Non-nullable so it mirrors dotplot's.
+       */
+      get currentFetchKey(): string {
+        const connected = this.connectedViews
+        const view = this.view
+        const regionSig = connected
+          ? [connected.v0, connected.v1]
+              .map(v =>
+                v.displayedRegions
+                  .map(
+                    r =>
+                      `${r.refName}:${r.start}:${r.end}:${r.reversed ? 1 : 0}`,
+                  )
+                  .join(','),
+              )
+              .join('_')
+          : ''
+        return [
+          this.fetchRegionsKey,
+          this.bpPerPxBucketKey,
+          regionSig,
+          view.drawCIGAR,
+          view.drawCIGARMatchesOnly,
+          view.drawLocationMarkers,
+          view.lodMode,
+        ].join('|')
+      },
+      /**
+       * #getter
+       * True when the rendered data was fetched for the view's current inputs.
+       * Goes false the instant a region/zoom/draw-option change makes the held
+       * ribbons stale — including during the pre-refetch debounce gap where
+       * `fetching` is still false so `refetching` alone can't catch it. The
+       * synteny analog of LGV's `viewportWithinLoadedData` and arc's
+       * `loadedRegionSignature === currentRegionSignature`.
+       */
+      get dataCurrent(): boolean {
+        return isDataCurrent(self.loadedFetchKey, this.currentFetchKey)
+      },
+      /**
+       * #getter
+       * Off-screen SVG export gate (see agent-docs/ARCHITECTURE.md, "svgReady").
+       * Synteny is not an LGV display — it composes only `BaseDisplay` with its
+       * own fetch — so it has no `MultiRegionDisplayMixin`/`GlobalDataDisplayMixin`
+       * `svgReady`; this is the equivalent. Stale-safe on both axes: `dataCurrent`
+       * closes the pre-refetch debounce gap (stale window before `fetching`
+       * flips) and `!refetching` covers the in-flight RPC, so an export fired
+       * right after a zoom/pan waits for fresh ribbons instead of capturing stale
+       * ones. No `regionTooLarge` state (synteny never gates on region size).
+       */
+      get svgReady() {
+        return (
+          (this.ready && !this.refetching && this.dataCurrent) || !!self.error
+        )
+      },
       /**
        * #getter
        */
-      get featMap() {
-        return Object.fromEntries(self.featPositions.map(f => [f.f.id(), f]))
+      get view() {
+        return getContainingView(self) as LinearSyntenyViewModel
       },
-
-      /**
-       * #getter
-       * cached color scheme config based on colorBy
-       */
-      get colorSchemeConfig() {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return colorSchemes[self.colorBy as ColorScheme] || colorSchemes.default
-      },
-
-      /**
-       * #getter
-       * cached CIGAR colors with alpha applied
-       */
-      get colorMapWithAlpha() {
-        const { alpha } = self
-        const activeColorMap = this.colorSchemeConfig.cigarColors
-        return {
-          I: applyAlpha(activeColorMap.I, alpha),
-          N: applyAlpha(activeColorMap.N, alpha),
-          D: applyAlpha(activeColorMap.D, alpha),
-          X: applyAlpha(activeColorMap.X, alpha),
-          M: applyAlpha(activeColorMap.M, alpha),
-          '=': applyAlpha(activeColorMap['='], alpha),
-        }
-      },
-
-      /**
-       * #getter
-       * cached positive strand color with alpha
-       */
-      get posColorWithAlpha() {
-        const posColor =
-          self.colorBy === 'strand' ? colorSchemes.strand.posColor : 'red'
-        return applyAlpha(posColor, self.alpha)
-      },
-
-      /**
-       * #getter
-       * cached negative strand color with alpha
-       */
-      get negColorWithAlpha() {
-        const negColor =
-          self.colorBy === 'strand' ? colorSchemes.strand.negColor : 'blue'
-        return applyAlpha(negColor, self.alpha)
-      },
-
-      /**
-       * #getter
-       * cached query colors with alpha - returns a function that caches results
-       */
-      get queryColorWithAlphaMap() {
-        const { alpha } = self
-        const cache = new Map<string, string>()
-        return (queryName: string) => {
-          if (!cache.has(queryName)) {
-            const color = getQueryColor(queryName)
-            cache.set(queryName, applyAlpha(color, alpha))
-          }
-          return cache.get(queryName)!
-        }
-      },
-
-      /**
-       * #getter
-       * cached query total lengths for minAlignmentLength filtering
-       */
-      get queryTotalLengths() {
-        if (self.minAlignmentLength <= 0) {
+      getFeature(index: number) {
+        const { featureData, instanceData } = self
+        if (!featureData) {
           return undefined
         }
-        const lengths = new Map<string, number>()
-        for (const { f } of self.featPositions) {
-          const queryName = f.get('name') || f.get('id') || f.id()
-          const alignmentLength = Math.abs(f.get('end') - f.get('start'))
-          const currentTotal = lengths.get(queryName) || 0
-          lengths.set(queryName, currentTotal + alignmentLength)
+        const featureIdx = instanceData?.instanceFeatureIdx[index] ?? index
+        if (featureIdx < 0 || featureIdx >= featureData.featureIds.length) {
+          return undefined
         }
-        return lengths
+        return getFeatureAtIndex(featureData, featureIdx)
+      },
+      /**
+       * #getter
+       * Main-thread-computed per-instance colors. Recomputes whenever
+       * colorBy, featureData, or instanceData descriptors change — this is
+       * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
+       * flow through here without touching the RPC.
+       */
+      get computedColors() {
+        const { instanceData, featureData } = self
+        const { opacityByIdentity } = this.view
+        if (!instanceData || !featureData) {
+          return undefined
+        }
+        return computeSyntenyColors({
+          instanceData,
+          featureData,
+          colorBy: this.effectiveColorBy,
+          opacityByIdentity,
+        })
+      },
+      /**
+       * #getter
+       * The view-level colorBy resolved for this specific level. 'reference' is
+       * a stacked-view mode that colors every level by the shared anchor
+       * assembly's chromosome names; each level maps it to 'query' or 'target'
+       * depending on which of its two assemblies is the anchor, so the coloring
+       * stays consistent across levels. Every other mode passes through.
+       */
+      get effectiveColorBy(): SyntenyColorBy {
+        const colorBy = coerceColorBy(this.view.colorBy)
+        if (colorBy === 'reference') {
+          const { anchorAssemblyName: anchor, views } = this.view
+          // this level draws between views[level] (query) and views[level+1]
+          // (target); color by whichever side is the anchor so every level
+          // keys on the same reference assembly's chromosome names
+          const queryAsm = views[this.level]?.assemblyNames[0]
+          const targetAsm = views[this.level + 1]?.assemblyNames[0]
+          return targetAsm === anchor && queryAsm !== anchor
+            ? 'target'
+            : 'query'
+        }
+        return colorBy
+      },
+      /**
+       * #getter
+       * Instance data with main-thread-computed colors substituted in. The
+       * view's upload autorun reads this, so any colorBy change re-fires
+       * upload without an RPC round-trip.
+       */
+      get renderInstanceData() {
+        const { instanceData } = self
+        const colors = this.computedColors
+        if (!instanceData || !colors) {
+          return undefined
+        }
+        return { ...instanceData, colors }
+      },
+      get tooltipText() {
+        const { hoveredFeatureIdx, instanceData } = self
+        if (hoveredFeatureIdx < 0) {
+          return ''
+        }
+        const feat = this.getFeature(hoveredFeatureIdx)
+        if (!feat) {
+          return ''
+        }
+        const cigarOp = instanceData
+          ? getCigarOpAtInstance(instanceData, hoveredFeatureIdx)
+          : undefined
+        return getTooltip(feat, cigarOp)
+      },
+      /**
+       * #getter
+       * The two adjacent genome views this level draws between, or undefined
+       * until both are initialized with regions. A level draws between an
+       * adjacent pair, so both render and fetch depend only on those two views,
+       * not the whole stack. Single source of truth for that gate.
+       */
+      get connectedViews() {
+        const { views } = this.view
+        const v0 = views[this.level]
+        const v1 = views[this.level + 1]
+        return this.view.initialized &&
+          v0?.initialized &&
+          v1?.initialized &&
+          v0.displayedRegions.length > 0 &&
+          v1.displayedRegions.length > 0
+          ? { v0, v1 }
+          : undefined
+      },
+      /**
+       * #getter
+       * Stable key over the log2 zoom bucket of both connected views. The
+       * fetch autorun tracks this (a computed compares its string output)
+       * instead of raw bpPerPx, so it only refetches when zoom crosses a
+       * half-decade rather than on every settled zoom within a bucket.
+       */
+      get bpPerPxBucketKey() {
+        const connected = this.connectedViews
+        return connected
+          ? `${bucketBpPerPx(connected.v0.bpPerPx)}_${bucketBpPerPx(connected.v1.bpPerPx)}`
+          : undefined
+      },
+      /**
+       * #getter
+       * Stable key over the *snapped* fetch window of both connected views. The
+       * fetch autorun tracks this so a scroll/zoom that moves the snapped window
+       * refetches, while a sub-buffer pan (identical snapped window) does not —
+       * a MobX computed only notifies when its string output changes. Mirrors
+       * the window syntenyFetchRegions hands the worker.
+       */
+      get fetchRegionsKey() {
+        const connected = this.connectedViews
+        return connected
+          ? [connected.v0, connected.v1]
+              .map(v =>
+                syntenyFetchRegions({
+                  visibleRegions: v.visibleRegions,
+                  displayedRegions: v.displayedRegions,
+                  width: v.width,
+                  bpPerPx: v.bpPerPx,
+                })
+                  .map(r => `${r.refName}:${r.start}-${r.end}`)
+                  .join(','),
+              )
+              .join('_')
+          : undefined
+      },
+      /**
+       * #getter
+       * Per-track render params consumed by the view's aggregator. The view
+       * substitutes yTop before handing this to the backend.
+       */
+      get renderParams() {
+        const connected = this.connectedViews
+        if (self.isMinimized || !connected) {
+          return undefined
+        }
+        const view = this.view
+        const { v0, v1 } = connected
+        const { hoveredFeatureIdx, clickedFeatureIdx, instanceData } = self
+        // Instance index -> 1-based featureId (0 = "no hit"), the id the
+        // shaders/canvas compare against to highlight every instance of a
+        // feature. Matches the `instanceFeatureIdx[i] + 1` mapping in
+        // interleaveInstances and the pick engine.
+        const toFeatureId = (idx: number) =>
+          idx >= 0 && instanceData
+            ? instanceData.instanceFeatureIdx[idx]! + 1
+            : 0
+        return {
+          yTop: 0,
+          height: this.height,
+          alpha: view.alpha,
+          fadeThinAlignments: view.fadeThinAlignments,
+          minAlignmentLength: view.minAlignmentLength,
+          hoveredFeatureId: toFeatureId(hoveredFeatureIdx),
+          clickedFeatureId: toFeatureId(clickedFeatureIdx),
+          offsetPx0: v0.offsetPx,
+          offsetPx1: v1.offsetPx,
+          bpPerPx0: v0.bpPerPx,
+          bpPerPx1: v1.bpPerPx,
+          drawCurves: view.drawCurves,
+        }
       },
     }))
     .actions(self => ({
@@ -309,7 +564,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         ;(async () => {
           try {
             const { doAfterAttach } = await import('./afterAttach.ts')
-            doAfterAttach(self)
+            doAfterAttach(self as typeof self & { afterAttach(): void })
           } catch (e) {
             console.error(e)
             self.setError(e)

@@ -1,48 +1,57 @@
 ---
 id: gccontentadapter
 title: GCContentAdapter
+sidebar_label: Adapter -> GCContentAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `gccontent`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Config slots
 
-## Links
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gccontent/src/GCContentAdapter/configSchema.ts)
+| Slot                                     | Type                         | Description                                          |
+| ---------------------------------------- | ---------------------------- | ---------------------------------------------------- |
+| [sequenceAdapter](#slot-sequenceadapter) | `frozen`                     |                                                      |
+| [gcMode](#slot-gcmode)                   | `stringEnum` (content, skew) | calculate GC content fraction or GC skew (G-C)/(G+C) |
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GCContentAdapter.md)
+<details>
+<summary>Advanced slots (2)</summary>
 
-## Docs
+| Slot                             | Type     | Description |
+| -------------------------------- | -------- | ----------- |
+| [windowSize](#slot-windowsize)   | `number` |             |
+| [windowDelta](#slot-windowdelta) | `number` |             |
 
-### GCContentAdapter - Slots
+</details>
+
+<details>
+<summary>GCContentAdapter - Slots</summary>
 
 #### slot: sequenceAdapter
 
-```js
-sequenceAdapter: {
-        type: 'frozen',
-        defaultValue: null,
-      }
-```
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:**
+`null`
 
 #### slot: windowSize
 
-```js
-windowSize: {
-        type: 'number',
-        defaultValue: 100,
-      }
-```
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
+· _advanced_
 
 #### slot: windowDelta
 
-```js
-windowDelta: {
-        type: 'number',
-        defaultValue: 100,
-      }
-```
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `100`
+· _advanced_
+
+#### slot: gcMode
+
+calculate GC content fraction or GC skew (G-C)/(G+C)
+
+**Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
+`content`, `skew`) · **Default:** `'content'`
+
+</details>

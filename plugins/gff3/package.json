@@ -26,16 +26,15 @@
     "prepublishOnly": "pnpm test",
     "prepack": "pnpm build",
     "prebuild": "pnpm clean",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@flatten-js/interval-tree": "^2.0.3",
-    "@gmod/tabix": "^3.3.8",
+    "@gmod/tabix": "^3.4.2",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.2",
-    "gff-nostream": "^3.0.9",
-    "mobx": "^6.15.4",
+    "@jbrowse/mobx-state-tree": "^5.12.0",
+    "gff-nostream": "^5.0.0",
+    "mobx": "^6.16.1",
     "rxjs": "^7.8.2"
   },
   "publishConfig": {

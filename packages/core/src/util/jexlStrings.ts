@@ -1,5 +1,3 @@
-import createJexlInstance from './jexl.ts'
-
 export interface JexlExpression {
   eval(context?: Record<string, unknown>): unknown
   _exprStr?: string
@@ -9,28 +7,30 @@ export interface JexlInstance {
   compile(code: string): JexlExpression
 }
 
-const compilationCache: Record<string, JexlExpression> = {}
+/** The `jexl:` prefix marks a config value as a deferred callback expression. */
+export const JEXL_PREFIX = 'jexl:'
 
-// revert function strings back to main, create a different file for
-// jexlStrings.ts pass the jexl property of the pluginManager as a param
+export function isJexl(str: unknown): str is string {
+  return typeof str === 'string' && str.startsWith(JEXL_PREFIX)
+}
+
+/** Add the `jexl:` prefix unless the string already carries it. */
+export function ensureJexlPrefix(code: string) {
+  return isJexl(code) ? code : `${JEXL_PREFIX}${code}`
+}
 
 /**
- * compile a jexlExpression to a string
+ * Compile a `jexl:...` string to an Expression. Compilation is memoized on the
+ * jexl instance (see `createJexlInstance`), so this is a thin prefix-stripping
+ * wrapper.
  *
  * @param str - string of code like `jexl:...`
- * @param options -
+ * @param jexl - the instance whose registered functions the expression may call
+ *   (`pluginManager.jexl` on eval paths)
  */
-export function stringToJexlExpression(str: string, jexl?: JexlInstance) {
-  if (!compilationCache[str]) {
-    if (!str.startsWith('jexl:')) {
-      throw new Error('string does not appear to be in jexl format')
-    }
-    const code = str.slice('jexl:'.length)
-    const compiled = jexl
-      ? jexl.compile(code)
-      : createJexlInstance().compile(code)
-    compilationCache[str] = compiled
+export function stringToJexlExpression(str: string, jexl: JexlInstance) {
+  if (!isJexl(str)) {
+    throw new Error('string does not appear to be in jexl format')
   }
-
-  return compilationCache[str]
+  return jexl.compile(str.slice(JEXL_PREFIX.length))
 }

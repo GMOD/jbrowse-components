@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { saveAs } from '@jbrowse/core/util/FileSaver'
 import { screen, waitFor } from '@testing-library/react'
@@ -18,6 +18,7 @@ setup()
 
 beforeEach(() => {
   doBeforeEach()
+  // this is a false positive
   ;(saveAs as unknown as jest.Mock).mockClear()
 })
 
@@ -41,7 +42,6 @@ function readBlobAsText(blob: Blob): Promise<string> {
       resolve(reader.result as string)
     }
     reader.onerror = reject
-    // eslint-disable-next-line unicorn/prefer-blob-reading-methods
     reader.readAsText(blob)
   })
 }
@@ -77,8 +77,12 @@ test.each([
     await user.click(await screen.findByText('Download'))
 
     await waitFor(() => {
+      // this is a false positive
+
       expect(saveAs).toHaveBeenCalled()
     }, delay)
+
+    // this is a false positive
 
     const call = (saveAs as unknown as jest.Mock).mock.calls[0]
     const blob = call[0] as Blob

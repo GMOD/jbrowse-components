@@ -1,0 +1,87 @@
+digraph product_architecture {
+  rankdir=TB
+  labelloc=t
+  fontname="Helvetica"
+  fontsize=18
+  label="Product architecture"
+
+  node [shape=box, fontname="Helvetica", fontsize=12, style=filled, fillcolor="#ffffff"]
+  edge [fontname="Helvetica", fontsize=10, color="#555555"]
+
+  // ── Products built on shared packages ────────────────────────────
+  subgraph cluster_products {
+    label="Products (built on shared @jbrowse/* packages)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#e3f2fd"
+    color="#90caf9"
+
+    web      [label="jbrowse-web"]
+    desktop  [label="jbrowse-desktop"]
+    embedded [label="embedded components\n(react-linear-genome-view ...)"]
+  }
+
+  // ── Application state: the MST model tree ────────────────────────
+  subgraph cluster_state {
+    label="Application state (mobx-state-tree)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#f1f8e9"
+    color="#aed581"
+
+    root [label="RootModel", fillcolor="#dcedc8"]
+    config [label="configuration"]
+    asmMgr [label="assemblyManager"]
+    session [label="Session"]
+    views [label="Views\n(LinearGenomeView ...)"]
+    widgets [label="UI widgets"]
+    tracks [label="Tracks"]
+    displays [label="Displays"]
+
+    root -> config
+    root -> asmMgr
+    root -> session
+    session -> views
+    session -> widgets
+    views -> tracks
+    tracks -> displays
+  }
+
+  // ── React component tree mirrors the state tree ──────────────────
+  subgraph cluster_react {
+    label="React components (mirror the state tree)"
+    labelloc=t
+    fontname="Helvetica"
+    fontsize=13
+    style=filled
+    fillcolor="#fff3e0"
+    color="#ffcc80"
+
+    appC [label="App", fillcolor="#ffe0b2"]
+    sessionC [label="Session"]
+    viewC [label="View\n(LinearGenomeView ...)"]
+    trackC [label="Track"]
+    displayC [label="Display"]
+
+    appC -> sessionC
+    sessionC -> viewC
+    viewC -> trackC
+    trackC -> displayC
+  }
+
+  // Products instantiate the root state model + render the App tree
+  web      -> root [lhead=cluster_state, label="instantiate", constraint=false]
+  desktop  -> root [lhead=cluster_state, style=invis]
+  embedded -> root [lhead=cluster_state, style=invis]
+
+  // Each state node is observed/rendered by its matching React component
+  root     -> appC     [label="observer()", style=dashed, color="#9e9e9e", constraint=false]
+  session  -> sessionC [style=dashed, color="#9e9e9e", constraint=false]
+  views    -> viewC    [style=dashed, color="#9e9e9e", constraint=false]
+  tracks   -> trackC   [style=dashed, color="#9e9e9e", constraint=false]
+  displays -> displayC [style=dashed, color="#9e9e9e", constraint=false]
+}

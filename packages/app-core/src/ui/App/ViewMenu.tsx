@@ -24,18 +24,6 @@ import type { SvgIconProps } from '@mui/material'
 
 type ViewMenuSession = SessionWithMultipleViews & SessionWithDockviewLayout
 
-function getPanelViewCount(session: unknown, viewId: string) {
-  if (!isSessionWithDockviewLayout(session)) {
-    return 0
-  }
-  for (const viewIds of session.panelViewAssignments.values()) {
-    if (viewIds.includes(viewId)) {
-      return viewIds.length
-    }
-  }
-  return 0
-}
-
 const ViewMenu = observer(function ViewMenu({
   model,
   IconProps,
@@ -48,7 +36,7 @@ const ViewMenu = observer(function ViewMenu({
   const { moveViewToNewTab, moveViewToSplitRight } = useDockview()
   const usePanel = session.useWorkspaces && isSessionWithDockviewLayout(session)
   const viewCount = usePanel
-    ? getPanelViewCount(session, model.id)
+    ? (session.getPanelContainingView(model.id)?.viewIds.length ?? 0)
     : session.views.length
 
   const moveView = (
@@ -65,6 +53,7 @@ const ViewMenu = observer(function ViewMenu({
   return (
     <CascadingMenuButton
       data-testid="view_menu_icon"
+      tooltip="View menu"
       menuItems={() => [
         {
           label: 'View options',
@@ -78,7 +67,6 @@ const ViewMenu = observer(function ViewMenu({
                   model.type,
                   renameIds(
                     structuredClone(
-                      // @ts-expect-error
                       getSnapshot(model) as Record<string, unknown>,
                     ),
                   ),
@@ -89,7 +77,11 @@ const ViewMenu = observer(function ViewMenu({
               label: 'Move to new tab',
               icon: OpenInNewIcon,
               onClick: () => {
-                moveViewToNewTab(model.id)
+                if (usePanel) {
+                  moveViewToNewTab(model.id)
+                } else {
+                  session.setPendingMove({ type: 'newTab', viewId: model.id })
+                }
                 session.setUseWorkspaces(true)
               },
             },
@@ -97,7 +89,14 @@ const ViewMenu = observer(function ViewMenu({
               label: 'Move to split view (right side of screen)',
               icon: VerticalSplitIcon,
               onClick: () => {
-                moveViewToSplitRight(model.id)
+                if (usePanel) {
+                  moveViewToSplitRight(model.id)
+                } else {
+                  session.setPendingMove({
+                    type: 'splitRight',
+                    viewId: model.id,
+                  })
+                }
                 session.setUseWorkspaces(true)
               },
             },

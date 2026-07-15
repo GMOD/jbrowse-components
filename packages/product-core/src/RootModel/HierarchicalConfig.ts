@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config HierarchicalConfigSchema
+ * #category root
  * generally exists on the config.json or root config as configuration.hierarchical
  */
 export function HierarchicalConfigSchemaFactory() {

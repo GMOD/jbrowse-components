@@ -1,42 +1,35 @@
 import {
   getEnv,
   getRoot,
-  getSnapshot,
-  isLateType,
+  isArrayType,
+  isMapType,
   isStateTreeNode,
-  isType,
   resolveIdentifier,
   types,
 } from '@jbrowse/mobx-state-tree'
 
 import ConfigSlot from './configurationSlot.ts'
-import { isConfigurationSchemaType } from './util.ts'
+import {
+  getConfigurationSchemaMetadata,
+  registerConfigurationSchema,
+} from './schemaRegistry.ts'
+import {
+  isConfigurationSchemaType,
+  isConstantEntry,
+  isSlotDefinitionEntry,
+} from './util.ts'
 import { getContainingTrack, getSession } from '../util/index.ts'
 import { ElementId } from '../util/types/mst.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
-import type { IAnyType, SnapshotOut } from '@jbrowse/mobx-state-tree'
+import type PluginManager from '../PluginManager.ts'
+import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 export type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-  AnyConfigurationSlot,
-  AnyConfigurationSlotType,
 } from './types.ts'
-
-function isEmptyObject(thing: unknown) {
-  return (
-    typeof thing === 'object' &&
-    !Array.isArray(thing) &&
-    thing !== null &&
-    Object.keys(thing).length === 0
-  )
-}
-
-function isEmptyArray(thing: unknown) {
-  return Array.isArray(thing) && thing.length === 0
-}
 
 export interface ConfigurationSchemaDefinition {
   [n: string]:
@@ -64,6 +57,19 @@ export interface ConfigurationSchemaOptions<
   ) => Record<string, unknown>
 }
 
+// Options merged from a baseConfiguration are a shallow `{...base, ...child}`
+// spread, not a composition — if both sides define the same hook, the child's
+// silently replaces the base's instead of extending it. Checked eagerly here
+// (at schema-construction time, i.e. plugin registration) so that mistake
+// fails loud immediately rather than shipping a track/display that quietly
+// lost some of its base behavior.
+const OVERRIDABLE_HOOK_KEYS = [
+  'actions',
+  'views',
+  'extend',
+  'preProcessSnapshot',
+] as const satisfies readonly (keyof ConfigurationSchemaOptions<any, any>)[]
+
 function preprocessConfigurationSchemaArguments(
   modelName: string,
   inputSchemaDefinition: ConfigurationSchemaDefinition,
@@ -79,13 +85,26 @@ function preprocessConfigurationSchemaArguments(
   // extending, grab the slot definitions from that
   let schemaDefinition = inputSchemaDefinition
   let options = inputOptions
-  if (inputOptions.baseConfiguration?.jbrowseSchemaDefinition) {
+  const baseMeta = inputOptions.baseConfiguration
+    ? getConfigurationSchemaMetadata(inputOptions.baseConfiguration)
+    : undefined
+  if (baseMeta) {
+    const clobberedHooks = OVERRIDABLE_HOOK_KEYS.filter(
+      key => baseMeta.options[key] && inputOptions[key],
+    )
+    if (clobberedHooks.length) {
+      throw new Error(
+        `${modelName} and its baseConfiguration both define ${clobberedHooks.join(', ')} — ` +
+          `${modelName}'s would silently replace the base's instead of composing. ` +
+          `Rename one, or fold the base's ${clobberedHooks.join(', ')} into ${modelName}'s directly.`,
+      )
+    }
     schemaDefinition = {
-      ...inputOptions.baseConfiguration.jbrowseSchemaDefinition,
+      ...baseMeta.definition,
       ...schemaDefinition,
     }
     options = {
-      ...inputOptions.baseConfiguration.jbrowseSchemaOptions,
+      ...baseMeta.options,
       ...inputOptions,
       baseConfiguration: undefined,
     }
@@ -110,61 +129,60 @@ function makeConfigurationSchemaModel<
       `Cannot have both explicit and implicit identifiers in ${modelName}`,
     )
   }
-  if (options.explicitIdentifier) {
-    if (typeof options.explicitIdentifier === 'string') {
-      modelDefinition[options.explicitIdentifier] = types.identifier
-      identifier = options.explicitIdentifier
-    } else {
-      modelDefinition.id = types.identifier
-      identifier = 'id'
-    }
-  } else if (options.implicitIdentifier) {
-    if (typeof options.implicitIdentifier === 'string') {
-      modelDefinition[options.implicitIdentifier] = ElementId
-      identifier = options.implicitIdentifier
-    } else {
-      modelDefinition.id = ElementId
-      identifier = 'id'
-    }
+  // explicit identifiers are plain MST identifiers (caller-supplied id);
+  // implicit identifiers auto-generate via ElementId. Both name the field after
+  // the option string, or default to `id` when the option is just `true`.
+  const idSpec = options.explicitIdentifier
+    ? { name: options.explicitIdentifier, idType: types.identifier }
+    : options.implicitIdentifier
+      ? { name: options.implicitIdentifier, idType: ElementId }
+      : undefined
+  if (idSpec) {
+    identifier = typeof idSpec.name === 'string' ? idSpec.name : 'id'
+    modelDefinition[identifier] = idSpec.idType
   }
 
-  const volatileConstants: Record<string, unknown> = {
-    isJBrowseConfigurationSchema: true,
-    jbrowseSchema: {
-      modelName,
-      definition: schemaDefinition,
-      options,
-    },
-  }
+  // String/number entries in the schema definition become volatile instance
+  // constants (read via `model.someName`). Per-slot metadata lives in the
+  // schema registry (a WeakMap keyed by the MST type, see schemaRegistry.ts),
+  // not on the instance.
+  const volatileConstants: Record<string, unknown> = {}
+  // Keys of single sub-schema slots (not array/map-of-sub-schema). setSubschema
+  // replaces such a node via `.create(data)`, which throws a confusing MST
+  // validation error if pointed at an array/map-typed slot, so those are
+  // excluded here — collected as the loop classifies each entry rather than
+  // re-scanning modelDefinition afterward.
+  const subSchemaKeys = new Set<string>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
-    if (
-      (isType(slotDefinition) && isLateType(slotDefinition)) ||
-      isConfigurationSchemaType(slotDefinition)
-    ) {
-      // this is either an MST late() type (which we assume to be a sub-configuration),
-      // or an actual sub-configuration
-      modelDefinition[slotName] = slotDefinition
-    } else if (
-      typeof slotDefinition === 'string' ||
-      typeof slotDefinition === 'number'
-    ) {
-      volatileConstants[slotName] = slotDefinition
-    } else if (typeof slotDefinition === 'object') {
-      // this is a slot definition
-      if (!slotDefinition.type) {
-        throw new Error(`no type set for config slot ${modelName}.${slotName}`)
+    if (isConfigurationSchemaType(slotDefinition)) {
+      // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
+      // (so it strips when all-default); an array/map of sub-schemas gets
+      // wrapped so an empty/default collection is likewise omitted from the
+      // snapshot.
+      if (isArrayType(slotDefinition)) {
+        modelDefinition[slotName] = types.stripDefault(slotDefinition, [])
+      } else if (isMapType(slotDefinition)) {
+        modelDefinition[slotName] = types.stripDefault(slotDefinition, {})
+      } else {
+        modelDefinition[slotName] = slotDefinition
+        subSchemaKeys.add(slotName)
       }
+    } else if (isConstantEntry(slotDefinition)) {
+      volatileConstants[slotName] = slotDefinition
+    } else if (isSlotDefinitionEntry(slotDefinition)) {
+      // slotDefinition is narrowed to ConfigSlotDefinition here (no cast)
       try {
-        modelDefinition[slotName] = ConfigSlot(
-          slotName,
-          slotDefinition as ConfigSlotDefinition,
-        )
+        modelDefinition[slotName] = ConfigSlot(slotDefinition)
       } catch (e) {
         throw new Error(
           `invalid config slot definition for ${modelName}.${slotName}: ${e}`,
           { cause: e },
         )
       }
+    } else if (typeof slotDefinition === 'object') {
+      // an object that's neither a sub-schema nor a slot is almost always a
+      // slot definition missing its required `type` field
+      throw new Error(`no type set for config slot ${modelName}.${slotName}`)
     } else {
       throw new Error(
         `invalid configuration schema definition, "${slotName}" must be either a valid configuration slot definition, a constant, or a nested configuration schema`,
@@ -176,7 +194,7 @@ function makeConfigurationSchemaModel<
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
     .actions(self => ({
       setSubschema(slotName: string, data: Record<string, unknown>) {
-        if (!isConfigurationSchemaType(modelDefinition[slotName])) {
+        if (!subSchemaKeys.has(slotName)) {
           throw new Error(`${slotName} is not a subschema, cannot replace`)
         }
         const newSchema = isStateTreeNode(data)
@@ -184,6 +202,11 @@ function makeConfigurationSchemaModel<
           : modelDefinition[slotName].create(data)
         self[slotName] = newSchema
         return newSchema
+      },
+      // generic slot setter the config editor's slot facade routes through. A
+      // slot is a bare value-union property, so this is a plain assignment.
+      setSlot(slotName: string, value: unknown) {
+        self[slotName] = value
       },
     }))
 
@@ -199,97 +222,96 @@ function makeConfigurationSchemaModel<
   if (options.extend) {
     completeModel = completeModel.extend(options.extend)
   }
+  if (options.preProcessSnapshot) {
+    completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
+  }
 
   const identifierDefault = identifier ? { [identifier]: 'placeholderId' } : {}
   const modelDefault = options.explicitlyTyped
     ? { type: modelName, ...identifierDefault }
     : identifierDefault
 
-  const defaultSnap = getSnapshot(completeModel.create(modelDefault))
-  completeModel = completeModel.postProcessSnapshot(snap => {
-    const newSnap: SnapshotOut<typeof completeModel> = {}
-    let matchesDefault = true
-    for (const [key, value] of Object.entries(snap)) {
-      if (matchesDefault) {
-        if (typeof defaultSnap[key] === 'object' && typeof value === 'object') {
-          if (JSON.stringify(defaultSnap[key]) !== JSON.stringify(value)) {
-            matchesDefault = false
-          }
-        } else if (defaultSnap[key] !== value) {
-          matchesDefault = false
-        }
-      }
-      // Omit undefined values and volatile constants.
-      // Only skip empty objects/arrays for sub-schema keys — slot values of []
-      // or {} must be preserved even when empty, since they may differ from a
-      // non-empty default (isEmptyArray/isEmptyObject on a slot value would
-      // cause it to silently revert to the default on next load).
-      const isSubSchema = isConfigurationSchemaType(modelDefinition[key])
-      if (
-        value !== undefined &&
-        volatileConstants[key] === undefined &&
-        !(isSubSchema && (isEmptyObject(value) || isEmptyArray(value)))
-      ) {
-        newSnap[key] = value
-      }
-    }
-    if (matchesDefault) {
-      return {}
-    }
-    return newSnap
-  })
+  // stripDefault (not optional) so a nested all-default sub-schema is omitted
+  // from its parent's snapshot: the slot props strip themselves, the sub-schema
+  // collapses to its default, and the parent's stripDefault drops the key.
+  const wrappedModel = types.stripDefault(completeModel, modelDefault)
 
-  if (options.preProcessSnapshot) {
-    completeModel = completeModel.preProcessSnapshot(options.preProcessSnapshot)
-  }
+  // Register metadata against BOTH handles: the inner model (what getType(node)
+  // returns for a live config — the config editor's slot facade looks it up
+  // from there) and the stripDefault wrapper (what ConfigurationSchema returns
+  // and what sub-schema properties hold), so a lookup succeeds from either.
+  const metadata = { definition: schemaDefinition, options }
+  registerConfigurationSchema(completeModel, metadata)
+  registerConfigurationSchema(wrappedModel, metadata)
 
-  return types.optional(completeModel, modelDefault)
+  return wrappedModel
 }
 
 export interface ConfigurationSchemaType<
   DEFINITION extends ConfigurationSchemaDefinition,
   OPTIONS extends ConfigurationSchemaOptions<any, any>,
 > extends ReturnType<typeof makeConfigurationSchemaModel<DEFINITION, OPTIONS>> {
-  isJBrowseConfigurationSchema: boolean
-  jbrowseSchemaDefinition: DEFINITION
-  jbrowseSchemaOptions: OPTIONS
   type: string
-  [key: string]: unknown
 }
 
 export function ConfigurationSchema<
   DEFINITION extends ConfigurationSchemaDefinition,
-  OPTIONS extends ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined = undefined,
   EXPLICIT_IDENTIFIER extends string | undefined = undefined,
 >(
   modelName: string,
   inputSchemaDefinition: DEFINITION,
   inputOptions?: ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>,
-): ConfigurationSchemaType<DEFINITION, OPTIONS> {
+): ConfigurationSchemaType<
+  DEFINITION,
+  ConfigurationSchemaOptions<BASE_SCHEMA, EXPLICIT_IDENTIFIER>
+> {
   const { schemaDefinition, options } = preprocessConfigurationSchemaArguments(
     modelName,
     inputSchemaDefinition,
     inputOptions,
   )
-  const schemaType = makeConfigurationSchemaModel(
+  return makeConfigurationSchemaModel(
     modelName,
     schemaDefinition,
     options,
   ) as AnyConfigurationSchemaType
-  // saving a couple of jbrowse-specific things in the type object. hope nobody gets mad.
-  schemaType.isJBrowseConfigurationSchema = true
-  schemaType.jbrowseSchemaDefinition = schemaDefinition
-  schemaType.jbrowseSchemaOptions = options
-  return schemaType
 }
 
-// Lazy hydration cache for frozen track configs. jbrowse.tracks is
-// types.frozen (plain objects) for large-tracklist performance; this WeakMap
-// converts each frozen object to an MST node on first reference access.
-// Keyed by the frozen object itself, so the entry is GC'd when updateTrackConf
-// replaces the snapshot and nothing else holds the old reference.
-const frozenTrackCache = new WeakMap<object, unknown>()
+// The hydration cache lives on the PluginManager instance (see
+// trackConfigHydrationCache's doc comment there and ADR-031), not as a
+// module-level singleton: it must never hand a track resolved on one
+// PluginManager instance a node built with another instance's env, and
+// scoping it to the instance rules that out structurally rather than by
+// convention. Nested a second level by schemaType, since one PluginManager
+// registers a distinct schemaType per track type.
+function frozenTrackHydrationCache(
+  pluginManager: PluginManager,
+  schemaType: IAnyType,
+) {
+  const byType = pluginManager.trackConfigHydrationCache
+  let cache = byType.get(schemaType)
+  if (!cache) {
+    cache = new WeakMap()
+    byType.set(schemaType, cache)
+  }
+  return cache
+}
+
+// A slot holding either an id string (resolved through `ref`) or a full inline
+// config snapshot (held as a standalone schema instance). Both reference kinds
+// resolve to `schemaType` instances, so MST can't auto-dispatch on the instance
+// side — the explicit snapshot dispatcher (string → ref, object → schema)
+// disambiguates. Shared by TrackConfigurationReference/DisplayConfigurationReference.
+function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
+  return types.union(
+    {
+      dispatcher: snapshot => (typeof snapshot === 'string' ? ref : schemaType),
+    },
+    ref,
+    schemaType,
+  )
+}
 
 /**
  * Reference to a track configuration. Snapshot output is the trackId string.
@@ -297,7 +319,7 @@ const frozenTrackCache = new WeakMap<object, unknown>()
  * Two load-bearing complications, both for views that hold ephemeral track
  * configs without registering them in `session.tracks`:
  *
- * 1. **`get` falls back from `tracksById` to MST `resolveIdentifier`.**
+ * 1. **`get` falls back from `getTrackById` to MST `resolveIdentifier`.**
  *    Required by `LinearSyntenyView.viewTrackConfigs` (LinearReadVsRef);
  *    `ReadVsRef.test.tsx` is the canary.
  *
@@ -316,8 +338,12 @@ const frozenTrackCache = new WeakMap<object, unknown>()
 export function TrackConfigurationReference(schemaType: IAnyType) {
   const trackRef = types.reference(schemaType, {
     get(id, parent) {
+      const session = getSession(parent)
       let ret: unknown =
-        getSession(parent).tracksById[id] ??
+        // Per-id lookup: subscribes only to this trackId's derivation, so
+        // resolving one track's config doesn't re-render the others. Derived on
+        // read, so it's fresh during hydration and add-and-show — no dual path.
+        session.getTrackById(String(id)) ??
         // @ts-expect-error -- schemaType is IAnyType so resolveIdentifier's
         // generic can't narrow. Tree-wide MST identifier lookup; see the
         // function-level JSDoc for why this fallback is required.
@@ -326,13 +352,33 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
         throw new Error(`Could not resolve trackId "${id}"`)
       }
       if (!isStateTreeNode(ret)) {
-        const cached = frozenTrackCache.get(ret)
-        if (cached) {
-          ret = cached
+        // A non-admin session hands back a private, per-track working copy so a
+        // shown track's in-place quick-edits (setSlot) mutate that copy and
+        // never the shared frozen base node (see agent-docs/ADR-032). Admin and
+        // embedded sessions return undefined here and fall through to the frozen
+        // hydration cache (ADR-031) — admin edits the frozen entry in place.
+        const editable = (
+          session as {
+            getEditableTrackConfig?: (
+              trackId: string,
+              frozenConfig: unknown,
+              schemaType: IAnyType,
+            ) => unknown
+          }
+        ).getEditableTrackConfig?.(String(id), ret, schemaType)
+        if (editable) {
+          ret = editable
         } else {
-          const model = schemaType.create(ret, getEnv(parent))
-          frozenTrackCache.set(ret, model)
-          ret = model
+          const env = getEnv<{ pluginManager: PluginManager }>(parent)
+          const cache = frozenTrackHydrationCache(env.pluginManager, schemaType)
+          const cached = cache.get(ret)
+          if (cached) {
+            ret = cached
+          } else {
+            const model = schemaType.create(ret, env)
+            cache.set(ret, model)
+            ret = model
+          }
         }
       }
       return ret
@@ -342,14 +388,7 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     },
   })
 
-  return types.union(
-    {
-      dispatcher: snapshot =>
-        typeof snapshot === 'string' ? trackRef : schemaType,
-    },
-    trackRef,
-    schemaType,
-  )
+  return idOrSnapshotUnion(trackRef, schemaType)
 }
 
 /**
@@ -378,8 +417,12 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // track.configuration is a hydrated MST node (hydrated lazily via
       // TrackConfigurationReference), so its displays array contains MST nodes.
       const track = getContainingTrack(parent)
-      const displays = track.configuration.displays
-      let ret = displays.find((d: { displayId: string }) => d.displayId === id)
+      const displays = track.configuration.displays as {
+        displayId: string
+        type?: string
+      }[]
+      const displayType = (parent as { type?: string }).type
+      let ret = displays.find(d => d.displayId === id)
 
       // Fallback: match by display type when the displayId isn't found.
       // baseTrackConfig.preProcessSnapshot injects a display entry for every
@@ -388,17 +431,11 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
       // entry here. The `if (displayType)` guard prevents an undefined
       // parent.type from silently matching a display whose `.type` is also
       // undefined.
-      if (!ret) {
-        const displayType = (parent as { type?: string }).type
-        if (displayType) {
-          ret = displays.find(
-            (d: unknown) => (d as { type?: string }).type === displayType,
-          )
-        }
+      if (!ret && displayType) {
+        ret = displays.find(d => d.type === displayType)
       }
 
       if (!ret) {
-        const displayType = (parent as { type?: string }).type
         const trackId = (track.configuration as { trackId?: string }).trackId
         throw new Error(
           `Display configuration "${id}" not found on track "${trackId}" (looked up by displayId, then by type "${displayType ?? '<no type on parent>'}")`,
@@ -411,19 +448,12 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
     },
   })
 
-  return types.union(
-    {
-      dispatcher: snapshot =>
-        typeof snapshot === 'string' ? displayRef : schemaType,
-    },
-    displayRef,
-    schemaType,
-  )
+  return idOrSnapshotUnion(displayRef, schemaType)
 }
 
 /**
  * Dispatch by the schema's identifier: `trackId` → track-ref (resolves through
- * `session.tracksById`), `displayId` → display-ref (resolves through the
+ * `session.getTrackById`), `displayId` → display-ref (resolves through the
  * parent track's displays array), anything else → plain reference.
  *
  * Display schemas must declare `explicitIdentifier: 'displayId'` (directly or
@@ -433,15 +463,16 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
 >(schemaType: SCHEMATYPE) {
-  const id = schemaType.jbrowseSchemaOptions?.explicitIdentifier
+  const id =
+    getConfigurationSchemaMetadata(schemaType)?.options.explicitIdentifier
   if (id === 'trackId') {
     return TrackConfigurationReference(schemaType)
-  }
-  if (id === 'displayId') {
+  } else if (id === 'displayId') {
     return DisplayConfigurationReference(schemaType)
+  } else {
+    // Plain (non-track/display) ref. The union accepts either an id string
+    // (resolved via `types.reference`) or an inline schema snapshot (held as a
+    // standalone schema instance).
+    return types.union(types.reference(schemaType), schemaType)
   }
-  // Plain (non-track/display) ref. The union accepts either an id string
-  // (resolved via `types.reference`) or an inline schema snapshot (held as a
-  // standalone schema instance).
-  return types.union(types.reference(schemaType), schemaType)
 }

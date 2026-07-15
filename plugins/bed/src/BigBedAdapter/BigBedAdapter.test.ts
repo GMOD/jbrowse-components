@@ -6,8 +6,8 @@ import configSchema from './configSchema.ts'
 
 // The EDEN gene in volvox.bb has 3 transcripts (EDEN.1, EDEN.2, EDEN.3) sharing
 // geneName "EDEN". When aggregateField="geneName", they should be grouped under one
-// parent gene feature. This exercises the aggregation path that was refactored to
-// use featureData2's output instead of a separate parser.parseLine call.
+// parent gene feature. This exercises the aggregation path that reads the
+// aggregate field from featureData's output instead of a separate parseLine call.
 test('adapter aggregates transcripts sharing the same geneName into a gene parent', async () => {
   const adapter = new BigBedAdapter(
     configSchema.create({

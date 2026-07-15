@@ -5,14 +5,15 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import VcfFeature from '../VcfFeature/index.ts'
-import { parseSamplesTsv } from '../shared/parseSamplesTsv.ts'
+import VcfFeature, { getEnd } from '../VcfFeature/index.ts'
+import { getVcfSources } from '../shared/vcfAdapterUtils.ts'
 
+import type { VcfAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { StatusCallback } from '@jbrowse/core/util/parseLineByLine'
 
-export default class VcfAdapter extends BaseFeatureDataAdapter {
+export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig> {
   private vcfFeatures?: Promise<{
     header: string
     parser: VcfParser
@@ -111,7 +112,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       return undefined
     }
 
-    const { header, featureMap } = await this.setup()
+    const { header, featureMap, parser } = await this.setup()
     const exportLines: string[] = [header]
 
     for (const region of regions) {
@@ -119,10 +120,14 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
       const lines = featureMap[refName]
       if (lines) {
         for (const line of lines) {
-          // POS is 1-based in VCF; convert to 0-based for comparison
-          const fields = line.split('\t')
-          const pos = parseInt(fields[1]!, 10)
-          if (pos - 1 >= start && pos - 1 < end) {
+          // match getFeatures: a variant belongs to the region when its full
+          // [start, end] span overlaps it, not just its POS — so spanning
+          // deletions/SVs that start before the region are still exported. Same
+          // closed-interval overlap the IntervalTree search uses.
+          const variant = parser.parseLine(line)
+          const featureStart = variant.POS - 1
+          const featureEnd = getEnd(variant, featureStart)
+          if (featureStart <= end && featureEnd >= start) {
             exportLines.push(line)
           }
         }
@@ -133,14 +138,11 @@ export default class VcfAdapter extends BaseFeatureDataAdapter {
   }
 
   async getSources() {
-    const conf = this.getConf('samplesTsvLocation')
-    if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
-      const { parser } = await this.setup()
-      return parser.samples.map(name => ({ name }))
-    } else {
-      const txt = await openLocation(conf).readFile('utf8')
-      const { parser } = await this.setup()
-      return parseSamplesTsv(txt, parser.samples)
-    }
+    const { parser } = await this.setup()
+    return getVcfSources(
+      this.getConf('samplesTsvLocation'),
+      parser,
+      this.pluginManager,
+    )
   }
 }

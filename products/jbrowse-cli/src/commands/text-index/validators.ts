@@ -8,8 +8,8 @@ export function validateTrackConfigs(tracks: Track[]): void {
   }
 }
 
-export function validateFileInput(file?: string | string[]): void {
-  if (!file) {
+export function validateFileInput(file?: string[]): asserts file is string[] {
+  if (!file?.length) {
     throw new Error('Cannot index file list without files')
   }
 }

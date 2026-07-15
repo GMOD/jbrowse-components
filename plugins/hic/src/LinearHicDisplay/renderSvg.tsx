@@ -1,17 +1,19 @@
-import type React from 'react'
-
+/* eslint-disable react-refresh/only-export-components */
+import { getContainingView } from '@jbrowse/core/util'
+import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  getContainingView,
-  getRpcSessionId,
-  getSession,
-} from '@jbrowse/core/util'
-import {
-  ReactRendering,
-  renderingToSvg,
-} from '@jbrowse/core/util/offscreenCanvasUtils'
-import { SvgClipRect } from '@jbrowse/core/util/svgExport'
+  SvgChrome,
+  SvgClipRect,
+  awaitSvgReady,
+  computeTriangleYScalar,
+} from '@jbrowse/plugin-linear-genome-view'
 
+import { drawHicBlocks } from './components/Canvas2DHicRenderer.ts'
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
+import {
+  generateColorRamp,
+  makeHicFillStyleLut,
+} from './components/colorRamp.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
 import type {
@@ -21,74 +23,102 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
-interface RenderingResult {
-  reactElement?: React.ReactNode
-  html?: string
-  canvasRecordedData?: unknown
-  maxScore?: number
-}
-
 export async function renderSvg(
   self: LinearHicDisplayModel,
   opts: ExportSvgDisplayOptions,
 ) {
+  // svgReady (GlobalDataDisplayMixin) waits out an in-place refetch — which
+  // holds stale rpcData until the new result commits — so exports never capture
+  // a partial or stale viewport.
+  await awaitSvgReady(self)
   const view = getContainingView(self) as LGV
-  const session = getSession(self)
-  const { rpcManager } = session
   const height = opts.overrideHeight ?? self.height
+  return (
+    <SvgChrome
+      error={self.error}
+      regionTooLarge={self.regionTooLarge}
+      width={view.width}
+      height={height}
+    >
+      <HicSvgBody self={self} view={view} height={height} opts={opts} />
+    </SvgChrome>
+  )
+}
 
-  const { useLogScale, colorScheme, showLegend, adapterConfig } = self
-  const { bpPerPx, dynamicBlocks } = view
-  const regions = dynamicBlocks.contentBlocks
-
-  if (!regions.length) {
+function HicSvgBody({
+  self,
+  view,
+  height,
+  opts,
+}: {
+  self: LinearHicDisplayModel
+  view: LGV
+  height: number
+  opts: ExportSvgDisplayOptions
+}) {
+  const { rpcData, colorScheme, showLegend, useLogScale, colorMaxScore } = self
+  const hasLegendData = self.hasLegendData
+  const renderState = self.renderState
+  // svgReady + SvgChrome already guarantee a loaded, non-terminal state here, so
+  // this narrows the nullable fetch blob / render state for TS only —
+  // unreachable at runtime. An empty (numContacts === 0) result still paints an
+  // empty matrix.
+  if (!rpcData || !renderState) {
     return null
   }
 
-  const renderProps = self.renderProps()
-
-  // Call CoreRender RPC method (same as afterAttach uses)
-  // Use getRpcSessionId to ensure we use the same worker as normal rendering
-  const rpcSessionId = getRpcSessionId(self)
-  const rendering = (await rpcManager.call(rpcSessionId, 'CoreRender', {
-    sessionId: rpcSessionId,
-    rendererType: 'HicRenderer',
-    regions: [...regions],
-    adapterConfig,
-    bpPerPx,
-    ...renderProps,
-    exportSVG: opts,
-  })) as RenderingResult
-
-  const finalRendering = await renderingToSvg(
-    rendering,
-    view.staticBlocks.totalWidthPx,
-    height,
-  )
-
-  // Clip to the visible region (view width), not the full staticBlocks width
+  const { positions, counts, numContacts } = rpcData
   const visibleWidth = view.width
+  const fillStyleLut = makeHicFillStyleLut(generateColorRamp(colorScheme))
 
-  // Create a clip path to clip to the visible region
-  const clipId = `clip-${self.id}-svg`
+  // yScalar squashes the triangle to fill the display height, so when the
+  // export overrides the height it must be recomputed against that height —
+  // renderState.yScalar is keyed to the on-screen height and would mis-size the
+  // exported triangle whenever overrideHeight differs (fit-to-height only).
+  const yScalar = computeTriangleYScalar({
+    fitToHeight: self.fitToHeight,
+    displayHeight: height,
+    triangleWidth: view.totalWidthPx,
+  })
 
-  // Use maxScore from rendering result or from model
-  const maxScore = rendering.maxScore ?? self.maxScore
-
+  // Reuse the model's renderState so the export shares one source of truth for
+  // the transform and color params with the on-screen render (handles
+  // scrolled-left-of-genome and stale zoom); yScalar and the canvas dims are the
+  // export-specific overrides.
   return (
     <>
-      <SvgClipRect id={clipId} width={visibleWidth} height={height}>
-        <g transform={`translate(${Math.max(0, -view.offsetPx)} 0)`}>
-          <ReactRendering rendering={finalRendering} />
-        </g>
+      <SvgClipRect
+        id={`hic-clip-${self.id}`}
+        width={visibleWidth}
+        height={height}
+      >
+        <PaintLayer
+          width={visibleWidth}
+          height={height}
+          opts={opts}
+          paint={ctx => {
+            drawHicBlocks(
+              ctx,
+              { positions, counts, numContacts },
+              fillStyleLut,
+              {
+                ...renderState,
+                yScalar,
+                canvasWidth: visibleWidth,
+                canvasHeight: height,
+              },
+            )
+          }}
+        />
       </SvgClipRect>
-      {showLegend && maxScore > 0 ? (
+      {showLegend && hasLegendData ? (
         <HicSVGColorLegend
-          maxScore={maxScore}
+          maxScore={colorMaxScore}
           colorScheme={colorScheme}
           useLogScale={useLogScale}
           width={visibleWidth}
-          legendAreaWidth={opts.legendWidth}
+          positionOutside={opts.legendWidth !== undefined}
+          idSuffix={self.id}
         />
       ) : null}
     </>

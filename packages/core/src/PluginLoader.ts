@@ -9,16 +9,19 @@ export interface UMDLocPluginDefinition {
     baseUri?: string
   }
   name: string
+  integrity?: string
 }
 
 export interface UMDUrlPluginDefinition {
   umdUrl: string
   name: string
+  integrity?: string
 }
 
 export interface LegacyUMDPluginDefinition {
   url: string
   name: string
+  integrity?: string
 }
 
 type UMDPluginDefinition = UMDLocPluginDefinition | UMDUrlPluginDefinition
@@ -40,8 +43,7 @@ export interface ESMUrlPluginDefinition {
 }
 
 export type ESMPluginDefinition =
-  | ESMLocPluginDefinition
-  | ESMUrlPluginDefinition
+  ESMLocPluginDefinition | ESMUrlPluginDefinition
 
 export function isESMPluginDefinition(
   def: PluginDefinition,
@@ -53,11 +55,19 @@ export interface CJSPluginDefinition {
   cjsUrl: string
 }
 
-function promisifiedLoadScript(src: string) {
+function promisifiedLoadScript(src: string, integrity?: string) {
   return new Promise<string>((resolve, reject) => {
     const script = document.createElement('script')
     script.type = 'text/javascript'
     script.async = true
+    // Subresource integrity guarantees the fetched bytes match the hash the
+    // plugin store published, so a tampered or swapped artifact fails to load.
+    // crossOrigin is required for the browser to enforce integrity on a
+    // cross-origin script.
+    if (integrity) {
+      script.integrity = integrity
+      script.crossOrigin = 'anonymous'
+    }
     script.src = src
     script.onload = () => {
       resolve(script.src)
@@ -69,20 +79,24 @@ function promisifiedLoadScript(src: string) {
   })
 }
 
-async function loadScript(scriptUrl: string) {
-  if (!isInWebWorker()) {
-    return promisifiedLoadScript(scriptUrl)
-  }
+function hasImportScripts(
+  scope: typeof globalThis,
+): scope is typeof globalThis & { importScripts: (url: string) => void } {
+  return 'importScripts' in scope
+}
 
-  // @ts-expect-error
-  if (globalThis.importScripts) {
-    // @ts-expect-error
-    await globalThis.importScripts(scriptUrl)
+async function loadScript(scriptUrl: string, integrity?: string) {
+  const scope = globalThis
+  if (!isInWebWorker()) {
+    return promisifiedLoadScript(scriptUrl, integrity)
+  } else if (hasImportScripts(scope)) {
+    scope.importScripts(scriptUrl)
     return
+  } else {
+    throw new Error(
+      'cannot figure out how to load external JS scripts in this environment',
+    )
   }
-  throw new Error(
-    'cannot figure out how to load external JS scripts in this environment',
-  )
 }
 
 export function isCJSPluginDefinition(
@@ -98,6 +112,25 @@ export type PluginDefinition =
   | ESMLocPluginDefinition
   | ESMUrlPluginDefinition
   | CJSPluginDefinition
+
+// Plugins that used to ship as external config `plugins[]` entries but are now
+// bundled into the jbrowse-web/desktop core build. Remote configs on jbrowse.org
+// still list them, so we drop those entries before loading: core already
+// registers the same elements (and wins, since core plugins register first), and
+// skipping the external copy avoids a redundant network fetch plus a flurry of
+// "already registered" console warnings. Matched on the config-level `name`
+// (the external plugin's UMD-global name, e.g. "MafViewer"/"GWAS"), not the core
+// class name. Apply only in products whose core bundle actually vendors these —
+// not globally — so CLI indexing, @jbrowse/img, and react-circular (which don't
+// bundle them) still load the external plugin. Also drives the plugin store,
+// which hides these so a user can't install a colliding second copy.
+export const vendoredPluginNames = new Set(['MafViewer', 'GWAS'])
+
+export function dropVendoredPlugins(defs: PluginDefinition[]) {
+  return defs.filter(
+    d => !(isUMDPluginDefinition(d) && vendoredPluginNames.has(d.name)),
+  )
+}
 
 export interface PluginRecord {
   plugin: PluginConstructor
@@ -142,8 +175,7 @@ function assertHttpProtocol(url: URL) {
 }
 
 function addCacheBuster(url: string) {
-  // @ts-expect-error
-  if (!globalThis.__jbrowseCacheBuster) {
+  if (!('__jbrowseCacheBuster' in globalThis)) {
     return url
   }
   const u = new URL(url)
@@ -209,12 +241,16 @@ export default class PluginLoader {
     assertHttpProtocol(parsedUrl)
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
-    await loadScript(addCacheBuster(parsedUrl.href))
+    // a cache buster query string would change the bytes the browser hashes for
+    // SRI, so skip it when an integrity hash is present (the url is already
+    // version-pinned and immutable, so cache-busting is unnecessary anyway)
+    await loadScript(
+      def.integrity ? parsedUrl.href : addCacheBuster(parsedUrl.href),
+      def.integrity,
+    )
 
-    // @ts-expect-error
-    const plugin = globalThis[umdName] as
-      | { default: PluginConstructor }
-      | undefined
+    const plugin = (globalThis as Record<string, unknown>)[umdName] as
+      { default: PluginConstructor } | undefined
     if (!plugin) {
       throw new Error(
         `Failed to load UMD bundle for ${moduleName}, ${umdName} is undefined`,
@@ -251,8 +287,9 @@ export default class PluginLoader {
   }
 
   installGlobalReExports(target: WindowOrWorkerGlobalScope) {
-    // @ts-expect-error
-    target.JBrowseExports = { ...ReExports }
+    ;(target as unknown as Record<string, unknown>).JBrowseExports = {
+      ...ReExports,
+    }
     return this
   }
 

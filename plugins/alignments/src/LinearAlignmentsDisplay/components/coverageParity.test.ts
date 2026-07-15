@@ -1,0 +1,672 @@
+import {
+  coverageLayout,
+  packCoverageBinsForGpu,
+  packIndicatorsForGpu,
+  packInterbaseSegmentsForGpu,
+  packSnpSegmentsForGpu,
+} from '@jbrowse/alignments-core'
+import { MockHal } from '@jbrowse/render-core/hal'
+
+import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
+import {
+  ALIGNMENTS_PASSES,
+  GPU_PILEUP_PASS,
+  GpuAlignmentsRenderer,
+  coveragePassPlan,
+} from '../renderers/GpuAlignmentsRenderer.ts'
+
+import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type {
+  ColorPalette,
+  CoverageUploadData,
+  ReadUploadData,
+  RenderState,
+  SectionRender,
+} from '../renderers/rendererTypes.ts'
+
+Object.defineProperty(globalThis, 'devicePixelRatio', {
+  value: 1,
+  writable: true,
+  configurable: true,
+})
+
+const REGION_START = 10000
+// Absolute genomic position where coverage depths[0] begins.
+const COVERAGE_START_OFFSET = REGION_START + 5
+
+function makeCoverageData(): CoverageUploadData {
+  const coverageDepths = new Float32Array([10, 30, 50, 20, 40])
+  const coverageMaxDepth = 50
+  const snpPositions = new Uint32Array([REGION_START + 1, REGION_START + 3])
+  const snpYOffsets = new Float32Array([0, 0.2])
+  const snpHeights = new Float32Array([0.4, 0.3])
+  const snpColorTypes = new Uint8Array([1, 2])
+  const snpRelDepths = new Float32Array([1, 1])
+  const interbaseCovPositions = new Uint32Array([])
+  const interbaseCovYOffsets = new Float32Array([])
+  const interbaseCovHeights = new Float32Array([])
+  const interbaseCovColorTypes = new Uint8Array([])
+  const indicatorPositions = new Uint32Array([REGION_START + 2])
+  const indicatorColorTypes = new Uint8Array([1])
+  return {
+    coverageDepths,
+    coverageMaxDepth,
+    coverageStartPos: COVERAGE_START_OFFSET,
+    coverageBinSize: 1,
+    coverageGpuBinCount: coverageDepths.length,
+    coveragePackedBuffer: packCoverageBinsForGpu(
+      coverageDepths,
+      coverageMaxDepth,
+      COVERAGE_START_OFFSET,
+      coverageDepths.length,
+    ),
+    snpPositions,
+    snpYOffsets,
+    snpHeights,
+    snpColorTypes,
+    snpRelDepths,
+    snpPackedBuffer: packSnpSegmentsForGpu(
+      snpPositions,
+      snpYOffsets,
+      snpHeights,
+      snpColorTypes,
+      snpRelDepths,
+      snpPositions.length,
+    ),
+    interbaseCovPositions,
+    interbaseCovYOffsets,
+    interbaseCovHeights,
+    interbaseCovColorTypes,
+    interbaseMaxCount: 0,
+    interbasePackedBuffer: packInterbaseSegmentsForGpu(
+      interbaseCovPositions,
+      interbaseCovYOffsets,
+      interbaseCovHeights,
+      interbaseCovColorTypes,
+      0,
+    ),
+    indicatorPositions,
+    indicatorColorTypes,
+    indicatorPackedBuffer: packIndicatorsForGpu(
+      indicatorPositions,
+      indicatorColorTypes,
+      indicatorPositions.length,
+    ),
+  }
+}
+
+function makeMinimalReadData() {
+  return {
+    regionStart: REGION_START,
+    readPositions: new Uint32Array([]),
+    readYs: new Uint16Array([]),
+    readFlags: new Uint16Array([]),
+    readMapqs: new Uint8Array([]),
+    readInsertSizes: new Float32Array([]),
+    readPairOrientations: new Uint8Array([]),
+    readStrands: new Int8Array([]),
+    readInterchrom: new Uint8Array([]),
+    readTagColors: new Uint32Array(0),
+    readChainHasSupp: undefined,
+    readIds: [],
+    insertSizeStats: undefined,
+    maxY: 0,
+    segmentPositions: new Uint32Array([]),
+    segmentReadIndices: new Uint32Array([]),
+    segmentEdgeFlags: new Uint8Array([]),
+    numSegments: 0,
+  } as ReadUploadData
+}
+
+// Stubs for the CIGAR / modification / mod-coverage fields of
+// PileupDataResult. Coverage tests don't exercise these but uploadRegion
+// reads them.
+const EMPTY_PILEUP_STUBS = {
+  gapPositions: new Uint32Array(),
+  gapYs: new Uint16Array(),
+  gapTypes: new Uint8Array(),
+  gapFrequencies: new Uint8Array(),
+  mismatchPositions: new Uint32Array(),
+  mismatchYs: new Uint16Array(),
+  mismatchBases: new Uint8Array(),
+  mismatchFrequencies: new Uint8Array(),
+  mismatchQuals: new Uint8Array(),
+  interbasePositions: new Uint32Array(),
+  interbaseYs: new Uint16Array(),
+  interbaseLengths: new Uint16Array(),
+  interbaseFrequencies: new Uint8Array(),
+  numInsertions: 0,
+  numSoftclips: 0,
+  numHardclips: 0,
+  softclipBasePositions: new Uint32Array(),
+  softclipBaseYs: new Uint16Array(),
+  softclipBaseBases: new Uint8Array(),
+  modificationPositions: new Uint32Array(),
+  modificationYs: new Uint16Array(),
+  modificationColors: new Uint32Array(),
+  modCovPositions: new Uint32Array(),
+  modCovYOffsets: new Float32Array(),
+  modCovHeights: new Float32Array(),
+  modCovColors: new Uint32Array(),
+  modCovRelDepths: new Float32Array(),
+  modCovPackedBuffer: new ArrayBuffer(0),
+  connectingLinePositions: new Uint32Array(),
+  connectingLineYs: new Uint16Array(),
+  linkedReadLinePositions: new Uint32Array(),
+  linkedReadLineYs: new Uint16Array(),
+  linkedReadLineColorTypes: new Uint8Array(),
+  numLinkedReadLines: 0,
+  overlapPositions: new Uint32Array(),
+  overlapYs: new Uint16Array(),
+  perBaseQualPositions: new Uint32Array(),
+  perBaseQualYs: new Uint16Array(),
+  perBaseQualScores: new Uint8Array(),
+  perBaseQualReadIndices: new Uint32Array(),
+  perBaseLetterPositions: new Uint32Array(),
+  perBaseLetterYs: new Uint16Array(),
+  perBaseLetterBases: new Uint8Array(),
+  perBaseLetterReadIndices: new Uint32Array(),
+}
+
+function makeMinimalPileupResult(cov: CoverageUploadData) {
+  return {
+    ...makeMinimalReadData(),
+    ...EMPTY_PILEUP_STUBS,
+    ...cov,
+  } as unknown as PileupDataResult
+}
+
+function recordingCtx() {
+  const rects: { x: number; y: number; w: number; h: number; fill: string }[] =
+    []
+  let currentFill = ''
+  return {
+    rects,
+    ctx: {
+      set fillStyle(v: string) {
+        currentFill = v
+      },
+      get fillStyle() {
+        return currentFill
+      },
+      fillRect(x: number, y: number, w: number, h: number) {
+        rects.push({ x, y, w, h, fill: currentFill })
+      },
+      setTransform() {},
+      translate() {},
+      clearRect() {},
+      beginPath() {},
+      moveTo() {},
+      lineTo() {},
+      closePath() {},
+      fill() {},
+      save() {},
+      restore() {},
+      rect() {},
+      clip() {},
+      strokeStyle: '',
+      lineWidth: 1,
+      stroke() {},
+    } as unknown as CanvasRenderingContext2D,
+  }
+}
+
+// `GPU_PILEUP_PASS` and `coveragePassPlan` resolve layer ids to `PASS_*` strings
+// that `drawPass` looks up in the HAL, which is seeded from `ALIGNMENTS_PASSES`.
+// Nothing in the type system links the two, so a pass referenced but not
+// registered fails at runtime (blank/crashing pass), not compile. Lock the link.
+describe('every drawn pass is registered in ALIGNMENTS_PASSES', () => {
+  const registered = new Set(ALIGNMENTS_PASSES.map(p => p.id))
+
+  it('all pileup-layer passes are registered', () => {
+    for (const pass of Object.values(GPU_PILEUP_PASS)) {
+      expect(registered.has(pass)).toBe(true)
+    }
+  })
+
+  it('all coverage-band passes are registered', () => {
+    // A state that enables every coverage pass so the plan emits all of them.
+    const state = {
+      coverageMaxDepth: 50,
+      showInterbaseIndicators: true,
+    } as unknown as RenderState
+    for (const [pass] of coveragePassPlan(state)) {
+      expect(registered.has(pass)).toBe(true)
+    }
+  })
+})
+
+describe('coverage packing parity between GPU and Canvas2D', () => {
+  it('both backends normalize coverage depth identically', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const covData = makeCoverageData()
+
+    // GPU path: upload to HAL
+    gpu.uploadReads(0, makeMinimalReadData())
+    gpu.uploadCoverage(0, covData)
+
+    const gpuCovBuf = hal.getBuffer(0, 'coverage')
+    expect(gpuCovBuf).toBeDefined()
+
+    // GPU layout per bin: [posOffset(f32), normalizedDepth(f32)] = 2 floats
+    const gpuF32 = new Float32Array(gpuCovBuf!.data)
+    const gpuNormalizedDepths: number[] = []
+    for (let i = 0; i < covData.coverageDepths.length; i++) {
+      gpuNormalizedDepths.push(gpuF32[i * 2 + 1]!)
+    }
+
+    // Canvas2D path: create a mock canvas and upload
+    const canvas = {
+      getContext: () => ({ setTransform() {}, clearRect() {} }),
+    } as unknown as HTMLCanvasElement
+    const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
+    canvas2d.sync({
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+          arcsRpcDataMap: new Map(),
+        },
+      ],
+    })
+
+    // The normalized depths should be identical
+    const expectedDepths = [10 / 50, 30 / 50, 50 / 50, 20 / 50, 40 / 50]
+    for (let i = 0; i < expectedDepths.length; i++) {
+      expect(gpuNormalizedDepths[i]).toBeCloseTo(expectedDepths[i]!)
+    }
+  })
+
+  it('SNP segment packing produces same yOffset/height/colorType', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const covData = makeCoverageData()
+
+    gpu.uploadReads(0, makeMinimalReadData())
+    gpu.uploadCoverage(0, covData)
+
+    const gpuSnpBuf = hal.getBuffer(0, 'snpCov')
+    expect(gpuSnpBuf).toBeDefined()
+
+    // GPU SNP layout: [position(u32), yOffset(f32), height(f32), colorType(f32),
+    // relDepth(f32)] — 5 floats per segment.
+    const gpuF32 = new Float32Array(gpuSnpBuf!.data)
+    const SNP_GPU_STRIDE = 5
+
+    // Canvas2D packs with regionStart offset
+    const canvas = {
+      getContext: () => ({ setTransform() {}, clearRect() {} }),
+    } as unknown as HTMLCanvasElement
+    const canvas2d = new Canvas2DAlignmentsRenderer(canvas)
+    canvas2d.sync({
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+          arcsRpcDataMap: new Map(),
+        },
+      ],
+    })
+
+    // Both should have same yOffset, height, colorType per segment
+    // GPU positions are relative (no regionStart), Canvas2D are absolute
+    // But yOffset/height/colorType must match
+    for (let i = 0; i < covData.snpPositions.length; i++) {
+      const gpuOff = i * SNP_GPU_STRIDE
+      expect(gpuF32[gpuOff + 1]).toBeCloseTo(covData.snpYOffsets[i]!)
+      expect(gpuF32[gpuOff + 2]).toBeCloseTo(covData.snpHeights[i]!)
+      expect(gpuF32[gpuOff + 3]).toBe(covData.snpColorTypes[i]!)
+    }
+  })
+
+  it('Canvas2D drawCoverage produces rectangles at expected screen positions', () => {
+    const covData = makeCoverageData()
+    const { ctx, rects } = recordingCtx()
+    const canvas = {
+      getContext: () => ctx,
+      width: 0,
+      height: 0,
+    } as unknown as HTMLCanvasElement
+    const renderer = new Canvas2DAlignmentsRenderer(canvas)
+
+    renderer.sync({
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(covData)]]),
+          arcsRpcDataMap: new Map(),
+        },
+      ],
+    })
+
+    const covH = 100
+    const block = {
+      displayedRegionIndex: 0,
+      start: REGION_START,
+      end: REGION_START + 20,
+      screenStartPx: 0,
+      screenEndPx: 200,
+      reversed: false,
+    }
+
+    renderer.renderBlocks([block], {
+      canvasWidth: 200,
+      canvasHeight: 200,
+      featureHeight: 10,
+      featureSpacing: 1,
+      coverageHeight: covH,
+      coverageYOffset: 5,
+      linkedReads: 'off',
+      showCoverage: true,
+      readConnections: 'off',
+      readConnectionsHeight: 0,
+      pileupTopOffset: covH,
+      coverageTopOffset: 0,
+      sections: [
+        {
+          pileupTopOffset: covH,
+          coverageTopOffset: 0,
+          covClipTop: 0,
+          covClipHeight: 200,
+          pileupClipTop: covH,
+          pileupClipHeight: 100,
+        },
+      ],
+      showMismatches: false,
+      showSoftClipping: false,
+      showModifications: false,
+      colors: {
+        colorCoverage: [0.2, 0.4, 0.8] as [number, number, number],
+        colorBaseA: [0, 1, 0] as [number, number, number],
+        colorBaseC: [0, 0, 1] as [number, number, number],
+        colorBaseG: [1, 0.65, 0] as [number, number, number],
+        colorBaseT: [1, 0, 0] as [number, number, number],
+        colorBaseN: [0.47, 0.33, 0.28] as [number, number, number],
+        colorInsertion: [0.75, 0, 0.75] as [number, number, number],
+        colorDeletion: [0, 0, 0] as [number, number, number],
+        colorSoftclip: [0, 0.5, 1] as [number, number, number],
+        colorHardclip: [1, 0.5, 0] as [number, number, number],
+        colorInsertionIndicator: [0.75, 0, 0.75] as [number, number, number],
+        colorSoftclipIndicator: [0, 0.5, 1] as [number, number, number],
+        colorHardclipIndicator: [1, 0.5, 0] as [number, number, number],
+      },
+      selectedChainIds: [],
+      showInterbaseIndicators: false,
+      start: REGION_START,
+      end: REGION_START + 20,
+      scrollTop: 0,
+      colorScheme: 0,
+      coverageMaxDepth: 50,
+    } as unknown as RenderState)
+
+    // Coverage bins should produce rectangles
+    // Bins at absolute positions: REGION_START + COVERAGE_START_OFFSET + i
+    // = 10005, 10006, 10007, 10008, 10009
+    // Block maps [10000, 10020] → [0, 200] (10 px per bp)
+    // So bin 10005 → x=50, bin 10006 → x=60, etc.
+    //
+    // The first fillRect call is the clearRect from prepareCanvas (full canvas)
+    // Then the block clip rect, then coverage rects
+    const allFillRects = rects
+    // Coverage rects should be in the coverage area (y < covH) and narrow (w ~10px per bp)
+    const covRects = allFillRects.filter(
+      r => r.w > 0 && r.w < 100 && r.h > 0 && r.y < covH && r.y >= 0,
+    )
+    // 5 coverage bins + 2 SNP segments = 7 narrow rects in coverage area
+    expect(covRects.length).toBe(7)
+
+    // First coverage bin at position 10005: x = (10005-10000)/20 * 200 = 50
+    expect(covRects[0]!.x).toBeCloseTo(50, 0)
+    // Bin width = 1bp = 200/20 = 10px, plus ALIGNMENTS_FUDGE_FACTOR (0.8)
+    // applied by drawCoverageBins to close subpixel gaps between bars
+    expect(covRects[0]!.w).toBeCloseTo(10.8, 1)
+    // Coverage bins should have the coverage color
+    expect(covRects[0]!.fill).toBe('rgb(51,102,204)')
+
+    // SNP segments should have base colors (A=green, C=blue)
+    const snpRects = covRects.filter(r => r.fill !== 'rgb(51,102,204)')
+    expect(snpRects.length).toBe(2)
+    expect(snpRects[0]!.fill).toBe('rgb(0,255,0)') // baseA
+    expect(snpRects[1]!.fill).toBe('rgb(0,0,255)') // baseC
+  })
+
+  it('drawCoverageBins Y mapping matches GPU shader formula', () => {
+    const coverageHeight = 100
+    const normalizedDepth = 0.6 // depth/maxDepth, already in [0,1]
+
+    const { effectiveH, bottom } = coverageLayout(coverageHeight)
+
+    // drawCoverageBins: bandTop = bottom - normalizedDepth * effectiveH
+    const sharedTop = bottom - normalizedDepth * effectiveH
+    const sharedBarH = bottom - sharedTop
+
+    // GPU shader: same formula in clip space, converted to pixels
+    const gpuBarTopPx = bottom - normalizedDepth * effectiveH
+    const gpuBarH = bottom - gpuBarTopPx
+
+    expect(sharedTop).toBeCloseTo(gpuBarTopPx)
+    expect(sharedBarH).toBeCloseTo(gpuBarH)
+  })
+})
+
+describe('GPU sync rebuild transaction', () => {
+  it('clears a pass buffer when its data empties between syncs', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const cov = makeCoverageData()
+
+    const withOverlap = {
+      ...makeMinimalPileupResult(cov),
+      overlapPositions: new Uint32Array([REGION_START, REGION_START + 5]),
+      overlapYs: new Uint16Array([0]),
+    } as unknown as PileupDataResult
+
+    gpu.sync({
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, withOverlap]]),
+          arcsRpcDataMap: new Map(),
+        },
+      ],
+    })
+    expect(hal.getBufferCount(0, 'overlap')).toBeGreaterThan(0)
+
+    // Same region still active, but the overlap data is gone. The overlap
+    // upload's `if (n > 0)` guard skips it, so only the begin/endUpload sweep
+    // can clear the now-stale buffer.
+    gpu.sync({
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+          arcsRpcDataMap: new Map(),
+        },
+      ],
+    })
+    expect(hal.getBufferCount(0, 'overlap')).toBe(0)
+  })
+
+  it('drops every buffer for a region that leaves the active set', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const cov = makeCoverageData()
+
+    gpu.sync({
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([[0, makeMinimalPileupResult(cov)]]),
+          arcsRpcDataMap: new Map(),
+        },
+      ],
+    })
+    expect(hal.getBufferCount(0, 'coverage')).toBeGreaterThan(0)
+
+    gpu.sync({ sections: [] })
+    expect(hal.getBufferCount(0, 'coverage')).toBe(0)
+  })
+})
+
+// `renderBlocks` returns whether anything painted; the model feeds that into
+// `canvasDrawn`. A coverage- or arcs-only section (empty pileup band, e.g.
+// read-cloud) still paints real content — gating the return on the
+// pileup band once left read-cloud stuck on "Loading". Lock that in.
+describe('GPU renderBlocks canvasDrawn gating', () => {
+  const triple: [number, number, number] = [0, 0, 0]
+  const fullColors: ColorPalette = {
+    colorFwdStrand: triple,
+    colorRevStrand: triple,
+    colorNostrand: triple,
+    colorPairLR: triple,
+    colorPairRL: triple,
+    colorPairRR: triple,
+    colorPairLL: triple,
+    colorBaseA: triple,
+    colorBaseC: triple,
+    colorBaseG: triple,
+    colorBaseT: triple,
+    colorBaseN: triple,
+    colorInsertion: triple,
+    colorDeletion: triple,
+    colorSkip: triple,
+    colorSoftclip: triple,
+    colorHardclip: triple,
+    colorInsertionIndicator: triple,
+    colorSoftclipIndicator: triple,
+    colorHardclipIndicator: triple,
+    colorCoverage: triple,
+    colorModificationFwd: triple,
+    colorModificationRev: triple,
+    colorMutedSnpBase: triple,
+    colorLongInsert: triple,
+    colorShortInsert: triple,
+    colorSupplementary: triple,
+    colorSplitInversion: triple,
+    colorUnmappedMate: triple,
+    colorInterchrom: triple,
+  }
+
+  const block = {
+    displayedRegionIndex: 0,
+    start: REGION_START,
+    end: REGION_START + 20,
+    screenStartPx: 0,
+    screenEndPx: 200,
+    reversed: false,
+  }
+
+  function makeState(
+    section: Partial<SectionRender>,
+    extra?: Partial<RenderState>,
+  ): RenderState {
+    const sec: SectionRender = {
+      pileupTopOffset: 0,
+      coverageTopOffset: 0,
+      covClipTop: 0,
+      covClipHeight: 0,
+      pileupClipTop: 0,
+      pileupClipHeight: 0,
+      ...section,
+    }
+    return {
+      canvasWidth: 200,
+      canvasHeight: 200,
+      scrollTop: 0,
+      colorScheme: 0,
+      featureHeight: 10,
+      featureSpacing: 1,
+      showCoverage: false,
+      coverageHeight: 100,
+      coverageYOffset: 5,
+      coverageMaxDepth: 50,
+      coverageIsLog: false,
+      showMismatches: false,
+      filterMismatchesByFrequency: false,
+      mismatchAlpha: false,
+      showSoftClipping: false,
+      showInterbaseIndicators: false,
+      showModifications: false,
+      showPerBaseQuality: false,
+      showPerBaseLetter: false,
+      selectedChainIds: [],
+      colors: fullColors,
+      linkedReads: 'off',
+      showLinkedReadLines: false,
+      flipStrandLongReadChains: true,
+      colorSupplementaryChains: false,
+      readConnectionsLineWidth: 1,
+      readConnections: 'off',
+      readConnectionsDown: false,
+      readConnectionsHeight: 0,
+      showOutline: false,
+      pileupTopOffset: sec.pileupTopOffset,
+      coverageTopOffset: sec.coverageTopOffset,
+      sections: [sec],
+      ...extra,
+    }
+  }
+
+  // A renderer with region 0 synced (coverage + empty pileup), ready to draw.
+  function syncedRenderer() {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    gpu.sync({
+      sections: [
+        {
+          groupKey: '',
+          laidOutPileupMap: new Map([
+            [0, makeMinimalPileupResult(makeCoverageData())],
+          ]),
+          arcsRpcDataMap: new Map(),
+        },
+      ],
+    })
+    return gpu
+  }
+
+  it('returns true for a coverage-only section with an empty pileup band', () => {
+    const drew = syncedRenderer().renderBlocks(
+      [block],
+      makeState(
+        { covClipHeight: 100, pileupClipTop: 100, pileupClipHeight: 0 },
+        { showCoverage: true },
+      ),
+    )
+    expect(drew).toBe(true)
+  })
+
+  it('returns true for an arcs-only section (read-cloud) with empty pileup and no coverage', () => {
+    const drew = syncedRenderer().renderBlocks(
+      [block],
+      makeState({
+        covClipHeight: 0,
+        pileupClipHeight: 0,
+        arcBand: { top: 0, height: 100, down: false },
+      }),
+    )
+    expect(drew).toBe(true)
+  })
+
+  it('returns false when no band paints', () => {
+    const drew = syncedRenderer().renderBlocks(
+      [block],
+      makeState({ covClipHeight: 0, pileupClipHeight: 0 }),
+    )
+    expect(drew).toBe(false)
+  })
+
+  it('returns false when the block has no synced region', () => {
+    const hal = new MockHal(ALIGNMENTS_PASSES)
+    const gpu = new GpuAlignmentsRenderer(hal)
+    const drew = gpu.renderBlocks(
+      [block],
+      makeState(
+        { covClipHeight: 100, pileupClipHeight: 100 },
+        { showCoverage: true },
+      ),
+    )
+    expect(drew).toBe(false)
+  })
+})

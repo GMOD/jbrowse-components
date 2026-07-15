@@ -2,8 +2,20 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config PAFAdapter
+ * #trackType SyntenyTrack
+ *
+ * #example
+ * A PAF has no index, but it needs the query and target assembly names (query
+ * first):
+ * ```js
+ * {
+ *   type: 'PAFAdapter',
+ *   uri: 'https://example.com/aln.paf',
+ *   queryAssembly: 'hg19',
+ *   targetAssembly: 'hg38',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

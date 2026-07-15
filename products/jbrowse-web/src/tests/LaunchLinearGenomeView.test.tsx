@@ -1,8 +1,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -12,20 +11,9 @@ global.nodeImage = Image
 // @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
-const getFile = (url: string) =>
-  new LocalFile(
-    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
-  )
-
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 10000 }
 
-jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  return `${url}`.includes('jb2=true')
-    ? new Response('{}')
-    : handleRequest(() => getFile(`${url}`), args)
-})
+utilizeFetchMockForTest()
 
 test('can use a spec url for lgv', async () => {
   const { findByText, findByPlaceholderText } = render(
@@ -51,7 +39,7 @@ test('can use a spec gene name for lgv', async () => {
 }, 60000)
 
 test('nonexist', async () => {
-  console.error = jest.fn()
+  jest.spyOn(console, 'error').mockImplementation()
   const { findByText, findByPlaceholderText } = render(
     <App search="?config=test_data/volvox/config_main_thread.json&loc=ctgA:6000-7000&assembly=volvox&tracks=volvox_bam_pileup,nonexist" />,
   )
@@ -61,7 +49,7 @@ test('nonexist', async () => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:6,000..7,000')
   }, delay)
   await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)')
-  await findByText(/Could not resolve identifiers: nonexist/)
+  await findByText(/Could not resolve identifier "nonexist"/)
 }, 60000)
 
 test('shows whole genome when no loc is specified', async () => {
@@ -72,5 +60,74 @@ test('shows whole genome when no loc is specified', async () => {
   const elt = await findByPlaceholderText('Search for location', {}, delay)
   await waitFor(() => {
     expect((elt as HTMLInputElement).value).toBe('ctgA:1..50,001 ctgB:1..6,079')
+  }, delay)
+}, 60000)
+
+test('spec url with multiple tracks opens the view and shows every track', async () => {
+  // mirrors the "Volvox (genes + multi-wiggle + BAM)" no-config sample link:
+  // a spec session carrying a loc plus several tracks. guards the
+  // loader -> loadSessionSpec -> LaunchView-LinearGenomeView -> init autorun
+  // chain against silently dropping the view or any of its tracks.
+  const { findByText, findByPlaceholderText } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["gff3tabix_genes","volvox_bam_pileup"]}]}' />,
+  )
+
+  const elt = await findByPlaceholderText('Search for location', {}, delay)
+  await waitFor(() => {
+    expect((elt as HTMLInputElement).value).toBe('ctgA:1..50,000')
+  }, delay)
+  await findByText('volvox-sorted.bam (contigA LinearPileupDisplay)', {}, delay)
+  await findByText(/GFF3Tabix genes/, {}, delay)
+}, 60000)
+
+test('unknown view type in spec surfaces an error instead of failing silently', async () => {
+  jest.spyOn(console, 'error').mockImplementation()
+  const { findByText } = render(
+    <App search='?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"NonexistentView","assembly":"volvox"}]}' />,
+  )
+
+  await findByText(
+    /Unknown view type\(s\) in session spec: NonexistentView/,
+    {},
+    delay,
+  )
+}, 60000)
+
+test('spec url can carry its own assembly via sessionAssemblies', async () => {
+  // a self-contained spec: an assembly the hosted config does not define,
+  // supplied inline, plus a view launched on it. guards the
+  // loadSessionSpec -> addSessionAssembly wiring so a novel assembly resolves
+  // without being baked into the config first.
+  const spec = {
+    sessionAssemblies: [
+      {
+        name: 'volvox_session',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'volvox_session_refseq',
+          adapter: {
+            type: 'TwoBitAdapter',
+            uri: 'test_data/volvox/volvox.2bit',
+          },
+        },
+      },
+    ],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'volvox_session',
+        loc: 'ctgA:1-50000',
+      },
+    ],
+  }
+  const { findByPlaceholderText } = render(
+    <App
+      search={`?config=test_data/volvox/config_main_thread.json&session=spec-${JSON.stringify(spec)}`}
+    />,
+  )
+
+  const elt = await findByPlaceholderText('Search for location', {}, delay)
+  await waitFor(() => {
+    expect((elt as HTMLInputElement).value).toBe('ctgA:1..50,000')
   }, delay)
 }, 60000)

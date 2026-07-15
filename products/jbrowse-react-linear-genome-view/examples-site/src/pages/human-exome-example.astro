@@ -1,0 +1,12 @@
+---
+import Example from '../examples/HumanExomeExample.tsx'
+import code from '../examples/HumanExomeExample.tsx?raw'
+import { examples } from '../examples.ts'
+import Layout from '../layouts/ExampleLayout.astro'
+
+const meta = examples.find(e => e.slug === 'human-exome-example')!
+---
+
+<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
+  <Example client:only="react" />
+</Layout>

@@ -1,0 +1,30 @@
+digraph wiggle_gpu_overview {
+  rankdir=TB
+  node [shape=box, fontname="Courier", fontsize=12]
+  edge [fontname="Courier", fontsize=10]
+
+  subgraph cluster_main {
+    label="Main Thread"
+    style=filled; fillcolor="#f5f5f5"
+
+    component  [label="WiggleComponent\nuseGpuModelLifecycle(WiggleRenderer, model)"]
+    model      [label="model.ts\nrpcDataMap  renderState\nstartGpuBackendLifecycle(backend)"]
+    gpuMixin   [label="GpuBackendLifecycleSlotMixin\nupload autorun  (observes rpcDataMap)\nrender autorun  (observes renderState)"]
+    backend    [label="WiggleBackend\nuploadRegion()  renderBlocks()"]
+    hal        [label="HAL  (WebGPU | WebGL2)\nuploadBuffer()  drawPass()\n→ canvas pixels"]
+  }
+
+  subgraph cluster_worker {
+    label="RPC Worker"
+    style=filled; fillcolor="#ede7f6"
+
+    worker [label="'RenderWiggleData'\nadapter.getFeatureArrays(region, bpPerPx)\n→ WiggleDataResult { featurePositions: Uint32Array\n                     featureScores:    Float32Array }"]
+  }
+
+  component -> model    [label="startGpuBackendLifecycle(backend)"]
+  model -> gpuMixin     [label="installGpuDisplay(upload cb, render cb)"]
+  model -> worker       [label="rpcManager.call('RenderWiggleData',\n{ region, bpPerPx, adapterConfig })"]
+  worker -> model       [label="setRpcData(regionIndex, result)"]
+  gpuMixin -> backend   [label="upload cb / render cb"]
+  backend -> hal        [label="uploadBuffer / drawPass"]
+}

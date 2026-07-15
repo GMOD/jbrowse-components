@@ -1,0 +1,26 @@
+import { isFeatureAdapter } from '../../data_adapters/BaseAdapter/index.ts'
+import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
+import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
+
+import type { StopToken } from '../../util/stopToken.ts'
+
+export default class CoreGetInfo extends RpcMethodType {
+  name = 'CoreGetInfo'
+
+  async execute(
+    args: {
+      sessionId: string
+      stopToken?: StopToken
+      adapterConfig: Record<string, unknown>
+    },
+    rpcDriver: string,
+  ) {
+    const pm = this.pluginManager
+    const deserializedArgs = await this.deserializeArguments(args, rpcDriver)
+    const { sessionId, adapterConfig } = deserializedArgs
+    const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
+    return isFeatureAdapter(dataAdapter)
+      ? dataAdapter.getHeader(deserializedArgs)
+      : null
+  }
+}

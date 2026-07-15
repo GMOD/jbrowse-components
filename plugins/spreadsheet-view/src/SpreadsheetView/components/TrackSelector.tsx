@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { coarseStripHTML } from '@jbrowse/core/util'
@@ -7,6 +7,10 @@ import { observer } from 'mobx-react'
 
 import type { ImportWizardModel } from '../ImportWizard.ts'
 
+// The model source/type is seeded to the first track by the parent (via
+// selectDefaultTrack) whenever this selector is shown, so there's no mount
+// effect here. The parent also renders this with key={selectedAssembly}, so
+// switching assembly remounts and re-seeds selectedTrackId to the first track.
 const TrackSelector = observer(function TrackSelector({
   model,
   selectedAssembly,
@@ -14,25 +18,14 @@ const TrackSelector = observer(function TrackSelector({
   model: ImportWizardModel
   selectedAssembly: string
 }) {
-  const filteredTracks = model.tracksForAssembly(selectedAssembly)
-  const firstTrack = filteredTracks[0]
-  const firstTrackId = firstTrack?.track.trackId ?? ''
-  const [selectedTrackId, setSelectedTrackId] = useState(firstTrackId)
-
-  // firstTrackId is a string primitive — stable dep that changes only when the
-  // assembly changes, avoiding the "new array ref on every render" problem
-  useEffect(() => {
-    setSelectedTrackId(firstTrackId)
-    if (firstTrack) {
-      model.setFileSource(firstTrack.loc)
-      model.setFileType(firstTrack.type)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firstTrackId])
+  const tracks = model.tracksForAssembly(selectedAssembly)
+  const [selectedTrackId, setSelectedTrackId] = useState(
+    tracks[0]?.track.trackId ?? '',
+  )
 
   return (
     <div>
-      {filteredTracks.length ? (
+      {tracks.length ? (
         <TextField
           select
           label="Tracks"
@@ -41,14 +34,14 @@ const TrackSelector = observer(function TrackSelector({
           onChange={event => {
             const id = event.target.value
             setSelectedTrackId(id)
-            const entry = filteredTracks.find(f => f.track.trackId === id)
+            const entry = tracks.find(f => f.track.trackId === id)
             if (entry) {
               model.setFileSource(entry.loc)
               model.setFileType(entry.type)
             }
           }}
         >
-          {filteredTracks.map(({ track, label }) => (
+          {tracks.map(({ track, label }) => (
             <MenuItem key={track.trackId} value={track.trackId}>
               {coarseStripHTML(label)}
             </MenuItem>

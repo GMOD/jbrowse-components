@@ -3,11 +3,11 @@ import { Suspense, lazy } from 'react'
 import { parseBreakend } from '@gmod/vcf'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import FeatureDetails from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails'
+import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter'
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AltFormatter from './AltFormatter.tsx'
-import Formatter from './Formatter.tsx'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
@@ -17,6 +17,9 @@ import type { Descriptions, VCFFeatureSerialized } from './types.ts'
 // lazies
 const LaunchBreakendPanel = lazy(
   () => import('./LaunchBreakendPanel/LaunchBreakendPanel.tsx'),
+)
+const LaunchSvPanel = lazy(
+  () => import('./LaunchBreakendPanel/LaunchSvPanel.tsx'),
 )
 const VariantConsequenceDataGrid = lazy(
   () => import('./VariantConsequence/VariantConsequenceDataGrid.tsx'),
@@ -36,7 +39,14 @@ function AnnotationPanel({
   regex: RegExp
 }) {
   const desc = descriptions?.INFO?.[fieldKey]?.Description
-  const fields = desc?.match(regex)?.[1]?.split('|') ?? []
+  // SnpEff/VEP write the field list with padding (e.g. "annotations: 'Allele |
+  // Annotation | ...'") while the per-variant data uses bare pipes, so trim
+  // each header field to line the DataGrid columns up with the values.
+  const fields =
+    desc
+      ?.match(regex)?.[1]
+      ?.split('|')
+      .map(f => f.trim()) ?? []
   const data = feature.INFO?.[fieldKey] ?? []
   return (
     <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
@@ -52,7 +62,7 @@ function LaunchBreakendWidgetArea({
   model: VariantFeatureWidgetModel
   feat: VCFFeatureSerialized
 }) {
-  const { type = '', ALT = [], INFO, mate, refName, start, end } = feat
+  const { type = '', ALT = [], INFO, mate } = feat
 
   return type === 'breakend' ? (
     <LaunchBreakendPanel
@@ -73,17 +83,7 @@ function LaunchBreakendWidgetArea({
       locStrings={[`${mate.refName}:${mate.start}`]}
     />
   ) : svTypes.some(t => type.includes(t)) ? (
-    <LaunchBreakendPanel
-      feature={{
-        uniqueId: 'random',
-        refName,
-        start,
-        end: start + 1,
-        mate: { refName, start: end, end: end + 1 },
-      }}
-      model={model}
-      locStrings={[`${refName}:${end}`]}
-    />
+    <LaunchSvPanel feature={feat} model={model} />
   ) : null
 }
 
@@ -103,7 +103,12 @@ const FeatDefined = observer(function FeatDefined({
     clickedAlleles,
     ...rest
   } = feat
-  const { REF = '' } = rest
+  const { REF = '', INFO } = rest
+  const svlenInfo = INFO?.SVLEN
+  const svlen =
+    Array.isArray(svlenInfo) && svlenInfo.every(v => typeof v === 'number')
+      ? svlenInfo
+      : undefined
 
   return (
     <Paper data-testid="variant-side-drawer">
@@ -114,9 +119,13 @@ const FeatDefined = observer(function FeatDefined({
           ...variantFieldDescriptions,
           ...descriptions,
         }}
-        formatter={(value, key) =>
+        formatter={(value, key, index) =>
           key === 'ALT' ? (
-            <AltFormatter value={`${value}`} refString={REF} />
+            <AltFormatter
+              value={`${value}`}
+              refString={REF}
+              svlen={index === undefined ? undefined : svlen?.[index]}
+            />
           ) : (
             <Formatter value={value} />
           )
@@ -128,14 +137,14 @@ const FeatDefined = observer(function FeatDefined({
           descriptions={descriptions}
           fieldKey="CSQ"
           title="Variant CSQ field"
-          regex={/.*Format: (.*)/}
+          regex={/Format:\s*(.*)/}
         />
         <AnnotationPanel
           feature={rest}
           descriptions={descriptions}
           fieldKey="ANN"
           title="Variant ANN field"
-          regex={/.*Functional annotations:'(.*)'$/}
+          regex={/Functional annotations:\s*'(.*)'/}
         />
         <LaunchBreakendWidgetArea model={model} feat={feat} />
       </Suspense>
@@ -155,9 +164,9 @@ const VariantFeatureWidget = observer(function VariantFeatureWidget({
 }: {
   model: VariantFeatureWidgetModel
 }) {
-  const feat = structuredClone(model.featureData)
-  return feat ? (
-    <FeatDefined feat={feat} model={model} />
+  const { featureData } = model
+  return featureData ? (
+    <FeatDefined feat={featureData} model={model} />
   ) : (
     <div>
       No feature loaded, may not be available after page refresh because it was

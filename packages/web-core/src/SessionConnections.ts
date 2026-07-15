@@ -1,13 +1,24 @@
 import { types } from '@jbrowse/mobx-state-tree'
-import { ConnectionManagementSessionMixin } from '@jbrowse/product-core'
+import {
+  ConnectionManagementSessionMixin,
+  asSession,
+  isSessionWithConnections,
+} from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
-import type {
-  BaseSession,
-  SessionWithSessionTracks,
-} from '@jbrowse/product-core'
+
+export interface WebSessionWithConnections {
+  sessionConnections: AnyConfigurationModel[]
+  makeConnection(conf: AnyConfigurationModel): void
+}
+
+export function isWebSessionWithConnections(
+  session: unknown,
+): session is WebSessionWithConnections {
+  return isSessionWithConnections(session) && 'sessionConnections' in session
+}
 
 /**
  * #stateModel WebSessionConnectionsMixin
@@ -22,13 +33,14 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
         /**
          * #property
          */
-        sessionConnections: types.array(
-          pluginManager.pluggableConfigSchemaType('connection'),
+        sessionConnections: types.stripDefault(
+          types.array(pluginManager.pluggableConfigSchemaType('connection')),
+          [],
         ),
       }),
     )
     .actions(s => {
-      const self = s as typeof s & BaseSession & SessionWithSessionTracks
+      const self = asSession(s)
       const superDeleteConnection = self.deleteConnection
       const superAddConnectionConf = self.addConnectionConf
       return {
@@ -59,29 +71,24 @@ export function WebSessionConnectionsMixin(pluginManager: PluginManager) {
          * #action
          */
         deleteConnection(configuration: AnyConfigurationModel) {
-          if (self.adminMode) {
+          // a session connection is removed from sessionConnections regardless
+          // of adminMode (an admin may be viewing a shared/hub session that
+          // carries them); only a config-level connection defers to jbrowse,
+          // which only admins may edit. Both paths tear down the connection's
+          // tracks first (super does it for the config path).
+          const { connectionId } = configuration
+          const idx = self.sessionConnections.findIndex(
+            c => c.connectionId === connectionId,
+          )
+          if (idx !== -1) {
+            self.teardownConnection(configuration)
+            return self.sessionConnections.splice(idx, 1)
+          } else if (self.adminMode) {
             return superDeleteConnection(configuration)
           } else {
-            const { connectionId } = configuration
-            const idx = self.sessionConnections.findIndex(
-              c => c.connectionId === connectionId,
-            )
-            return idx === -1
-              ? undefined
-              : self.sessionConnections.splice(idx, 1)
+            return undefined
           }
         },
       }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { sessionConnections, ...rest } = snap as Omit<typeof snap, symbol>
-      return {
-        ...rest,
-        ...(sessionConnections.length ? { sessionConnections } : {}),
-      } as typeof snap
     })
 }

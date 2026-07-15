@@ -1,6 +1,8 @@
-import { getProgressDisplayStr } from './index.ts'
+import { IntervalTree } from './IntervalTree.ts'
 
-export type StatusCallback = (arg: string) => void
+import type { RpcStatus } from './progress.ts'
+
+export type StatusCallback = (arg: RpcStatus) => void
 export type LineCallback = (
   line: string,
   lineIndex: number,
@@ -37,6 +39,43 @@ export function groupLinesByRef(
 }
 
 /**
+ * Build a `refName -> lazy IntervalTree` map from feature lines grouped by ref
+ * (the output of {@link groupLinesByRef}). Each ref's lines are parsed and
+ * indexed into an interval tree on first access, then the raw lines are
+ * released. Shared scaffolding for the plain-text GFF3 and GTF adapters, which
+ * differ only in how they parse a ref's lines into features.
+ */
+export function makeFeatureIntervalTreeMap<
+  T extends { start: number; end: number },
+>(
+  linesByRef: Record<string, string[]>,
+  parse: (lines: string[], refName: string) => T[],
+  parsingStatusMessage: string,
+) {
+  const cache: Record<string, IntervalTree<T>> = {}
+  return Object.fromEntries(
+    Object.entries(linesByRef).map(([refName, refLines]) => {
+      let lines: string[] | null = refLines
+      return [
+        refName,
+        (statusCallback?: StatusCallback) => {
+          if (!cache[refName]) {
+            statusCallback?.(parsingStatusMessage)
+            const intervalTree = new IntervalTree<T>()
+            for (const feature of parse(lines!, refName)) {
+              intervalTree.insert([feature.start, feature.end], feature)
+            }
+            lines = null
+            cache[refName] = intervalTree
+          }
+          return cache[refName]
+        },
+      ]
+    }),
+  )
+}
+
+/**
  * Parse buffer line by line, calling a callback for each line
  * @param buffer - The buffer to parse
  * @param lineCallback - Callback function called for each line. Return false to stop parsing.
@@ -66,9 +105,11 @@ export function parseLineByLine(
     }
 
     if (i++ % 10_000 === 0) {
-      statusCallback(
-        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
-      )
+      statusCallback({
+        message: 'Loading',
+        current: blockStart,
+        total: buffer.length,
+      })
     }
 
     // If no newline found, we've reached the end

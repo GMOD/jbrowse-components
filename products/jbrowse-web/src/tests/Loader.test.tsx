@@ -7,9 +7,9 @@ import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
 const getFile = (url: string) =>
@@ -17,12 +17,10 @@ const getFile = (url: string) =>
     require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
   )
 
-jest.mock('../makeWorkerInstance', () => () => {})
-
 const delay = { timeout: 20000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  if (/plugin-store/.exec(`${url}`)) {
+  if (`${url}`.includes('plugin-store')) {
     return new Response(
       JSON.stringify({
         plugins: [
@@ -58,7 +56,7 @@ afterEach(() => {
 })
 
 test('errors with config in URL that does not exist', async () => {
-  console.error = jest.fn()
+  jest.spyOn(console, 'error').mockImplementation()
   const { findByText } = render(<App search="?config=doesNotExist.json" />)
   await findByText(/HTTP 404 fetching doesNotExist.json/)
 })
@@ -112,11 +110,4 @@ test('can use config from a url with nonexistent share param ', async () => {
     <App search="?config=test_data/volvox/config_main_thread.json&session=share-nonexist" />,
   )
   await findAllByText(/Error/, {}, delay)
-}, 20000)
-
-xtest('can catch error from loading a bad config', async () => {
-  const { findAllByText } = render(
-    <App search="?config=test_data/bad_config_test/config.json" />,
-  )
-  await findAllByText(/Error while converting/)
 }, 20000)

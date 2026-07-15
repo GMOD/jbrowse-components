@@ -1,67 +1,53 @@
-import { parseBreakend } from '@gmod/vcf'
 import { assembleLocString } from '@jbrowse/core/util'
+import { SV_SYMBOLIC_ALLELES, parseSvAlt } from '@jbrowse/sv-core'
 
 import type { Feature } from '@jbrowse/core/util'
 
 export function makeFeaturePair(feature: Feature, alt?: string) {
-  const bnd = alt ? parseBreakend(alt) : undefined
   const start = feature.get('start')
-  let end = feature.get('end')
-  const strand = feature.get('strand')
-  const mate = feature.get('mate') as
-    | {
-        refName: string
-        start: number
-        end: number
-        mateDirection?: number
-      }
-    | undefined
   const refName = feature.get('refName')
-
-  let mateRefName: string | undefined
-  let mateEnd = 0
-  let mateStart = 0
-  let joinDirection = 0
-  let mateDirection = 0
-
-  // one sided bracket used, because there could be <INS:ME> and we just check
-  // startswith below
-  const symbolicAlleles = ['<TRA', '<DEL', '<INV', '<INS', '<DUP', '<CNV']
-  if (symbolicAlleles.some(a => alt?.startsWith(a))) {
-    // END is defined to be a single value, not an array. CHR2 not defined in
-    // VCF spec, but should be similar
-    const info = feature.get('INFO')
-    const e = info?.END?.[0] ?? end
-    mateRefName = info?.CHR2?.[0] ?? refName
-    mateEnd = e
-    mateStart = e - 1
-    // re-adjust the arc to be from start to end of feature by re-assigning end
-    // to the 'mate'
-    end = start + 1
-  } else if (bnd?.MatePosition) {
-    const matePosition = bnd.MatePosition.split(':')
-    mateDirection = bnd.MateDirection === 'left' ? 1 : -1
-    joinDirection = bnd.Join === 'left' ? -1 : 1
-    mateEnd = +matePosition[1]!
-    mateStart = +matePosition[1]! - 1
-    mateRefName = matePosition[0]
-  }
+  const mate = feature.get('mate') as
+    | { refName: string; start: number; end: number; mateDirection?: number }
+    | undefined
+  const parsed = parseSvAlt(feature, alt)
+  const isSymbolic = alt
+    ? SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))
+    : false
 
   return {
     k1: {
       refName,
       start,
-      end,
-      strand,
-      mateDirection,
+      // symbolic alleles: arc spans start→end, so collapse the local end to start+1
+      end: parsed && isSymbolic ? start + 1 : feature.get('end'),
+      mateDirection: parsed?.joinDirection ?? 0,
     },
     k2: mate ?? {
-      refName: mateRefName || 'unknown',
-      end: mateEnd,
-      start: mateStart,
-      mateDirection: joinDirection,
+      refName: parsed?.mateRefName ?? 'unknown',
+      end: parsed?.matePos ?? 0,
+      start: parsed ? parsed.matePos - 1 : 0,
+      mateDirection: parsed?.mateDirection ?? 0,
     },
   }
+}
+
+interface Endpoint {
+  refName: string
+  start: number
+  end: number
+}
+
+// Canonical, orientation-independent key for an arc: a paired feature is
+// emitted from both endpoints' interval trees (flip r1/r2), and reciprocal VCF
+// BNDs are two records pointing at each other, so the same physical connection
+// arrives twice with the endpoints swapped. Sorting the two endpoint locstrings
+// collapses those to one key so the arc is drawn once. The key is deliberately
+// ALT-independent: reciprocal BNDs carry distinct ALT strings for the same
+// junction, so folding them requires keying on the endpoints alone.
+export function pairKey(k1: Endpoint, k2: Endpoint) {
+  const a = `${k1.refName}:${k1.start}-${k1.end}`
+  const b = `${k2.refName}:${k2.start}-${k2.end}`
+  return [a, b].sort().join('|')
 }
 
 export function makeSummary(feature: Feature, alt?: string) {
@@ -71,7 +57,7 @@ export function makeSummary(feature: Feature, alt?: string) {
     feature.get('id'),
     assembleLocString(k1),
     assembleLocString(k2),
-    feature.get('INFO')?.SVTYPE,
+    (feature.get('INFO') as { SVTYPE?: unknown } | undefined)?.SVTYPE,
     alt,
   ]
     .filter(Boolean)

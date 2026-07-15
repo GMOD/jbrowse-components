@@ -1,0 +1,14 @@
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": ["peach_grape_minimap2"],
+      "drawCurves": true,
+      "autoDiagonalize": true,
+      "colorBy": "query",
+      "alpha": 0.4,
+      "levelHeights": [350],
+      "views": [{ "assembly": "peach" }, { "assembly": "grape" }]
+    }
+  ]
+}

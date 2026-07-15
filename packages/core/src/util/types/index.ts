@@ -10,22 +10,24 @@ import type {
   Region as MUIRegion,
   UriLocation as MUUriLocation,
 } from './mst.ts'
+import type { PluginDefinition } from '../../PluginLoader.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
 import type assemblyManager from '../../assemblyManager/index.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
-import type { MenuItem } from '../../ui/index.ts'
+import type { MenuItem, SerializableThemeArgs } from '../../ui/index.ts'
 import type { Feature } from '../simpleFeature.ts'
+import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
-import type { ThemeOptions } from '@mui/material'
+import type { Theme, ThemeOptions } from '@mui/material'
 
-export * from './util.ts'
+export type * from './util.ts'
 
 /** abstract type for a model that contains multiple views */
 export interface AbstractViewContainer extends IStateTreeNode {
@@ -61,8 +63,21 @@ export interface BasePlugin {
   url?: string
 }
 
+// A single published plugin version and the semver range of JBrowse versions it
+// supports. The url fields mirror the top-level JBrowsePlugin url fields.
+export interface JBrowsePluginVersion {
+  pluginVersion: string
+  jbrowseRange: string
+  url?: string
+  umdUrl?: string
+  esmUrl?: string
+  cjsUrl?: string
+  integrity?: string
+}
+
 export interface JBrowsePlugin {
   name: string
+  packageName?: string
   authors: string[]
   description: string
   location: string
@@ -70,17 +85,38 @@ export interface JBrowsePlugin {
   umdUrl?: string
   esmUrl?: string
   cjsUrl?: string
+  integrity?: string
+  // v2 plugin store entries list per-version urls + JBrowse compatibility ranges.
+  // When absent, the top-level url applies to all JBrowse versions.
+  versions?: JBrowsePluginVersion[]
   license: string
   image?: string
 }
 
 export type DialogComponentType =
-  | React.LazyExoticComponent<React.FC<any>>
-  | React.FC<any>
+  React.LazyExoticComponent<React.FC<any>> | React.FC<any>
+
+/**
+ * the slice of a view that track-action menu items need: opening a track, and
+ * (for views that show tracks) reporting which display is active for a given
+ * track so the config editor can expand it and collapse the rest
+ */
+export interface TrackActionView {
+  showTrack: (id: string) => void
+  getActiveDisplayId?: (trackId: string) => string | undefined
+}
+
+/**
+ * controls feature-layout animations. 'system' respects the OS
+ * prefers-reduced-motion setting, 'enabled' always animates, 'disabled' never
+ * animates
+ */
+export type AnimationMode = 'system' | 'enabled' | 'disabled'
 
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
-  tracksById: Record<string, AnyConfigurationModel>
+  getTrackById: (id: string) => AnyConfigurationModel | undefined
+  /** @deprecated prefer the per-id reactive `getTrackById(id)` */
   getTracksById: () => Record<string, AnyConfigurationModel>
   jbrowse: IAnyStateTreeNode
   drawerPosition?: string
@@ -91,11 +127,33 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   selection?: unknown
   focusedViewId?: string
   themeName?: string
-  theme?: ThemeOptions
+  theme: Theme
+  themeOptions?: SerializableThemeArgs
+  animationMode: AnimationMode
+  scrollZoom: boolean
+  // whether region highlight bands (URL/view highlights and bookmark overlays)
+  // are drawn; one session-wide toggle shared by all views
+  highlightsVisible: boolean
+  setHighlightsVisible: (arg: boolean) => void
+  getPreference: (key: string) => unknown
+  setPreferenceOverride?: (key: string, value: unknown) => void
+  clearPreferenceOverrides?: () => void
+  setScrollZoom?: (flag: boolean) => void
+  // per-display-type slot default a user promoted (e.g. "make compact the
+  // default for all tracks like this"), persisted alongside preferences
+  getDisplayTypeDefault?: (displayType: string, slot: string) => unknown
+  setDisplayTypeDefault?: (
+    displayType: string,
+    slot: string,
+    value: unknown,
+  ) => void
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
   allThemes?: () => Record<string, ThemeOptions & { name?: string }>
+  getActiveThemeOptions?: (
+    name?: string,
+  ) => (ThemeOptions & { name?: string }) | undefined
   setSelection: (feature: Feature) => void
   setSession?: (arg: { name: string; [key: string]: unknown }) => void
   clearSelection: () => void
@@ -113,21 +171,22 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   ) => void
   assemblyManager: AssemblyManager
   version: string
-  getTrackActionMenuItems?: (
-    config: AnyConfigurationModel,
-    extraTrackActions?: MenuItem[],
-    effectiveConfig?: Record<string, unknown>,
-    view?: { showTrack: (id: string) => void },
-  ) => MenuItem[]
+  gitCommit?: string
+  getTrackActionMenuItems?: (arg: {
+    config: AnyConfigurationModel
+    view?: TrackActionView
+  }) => MenuItem[]
   getTrackActions?: (
     arg: AnyConfigurationModel,
-    view?: { showTrack: (id: string) => void },
+    view?: TrackActionView,
   ) => MenuItem[]
   getTrackListMenuItems?: (
     arg: AnyConfigurationModel,
-    view?: { showTrack: (id: string) => void },
+    view?: TrackActionView,
   ) => MenuItem[]
   addAssembly?: (conf: Record<string, unknown>) => void
+  addSessionAssembly?: (conf: Record<string, unknown>) => void
+  sessionAssemblies?: AnyConfigurationModel[]
   removeAssembly?: (name: string) => void
   textSearchManager?: TextSearchManager
   connections: AnyConfigurationModel[]
@@ -137,18 +196,25 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   removeTemporaryAssembly?: (arg: string) => void
   sessionConnections?: AnyConfigurationModel[]
   sessionTracks?: AnyConfigurationModel[]
-  connectionInstances?: {
-    name: string
-    tracks: AnyConfigurationModel[]
-    configuration: AnyConfigurationModel
-  }[]
+  trackConfigDeltas?: Record<
+    string,
+    { trackId: string; [key: string]: unknown }
+  >
+  // effective per-track config edits vs the base, and the action that drops them
+  // (web session only; see SessionTracks / trackConfigDeltas)
+  getTrackConfigChanges?: (trackId: string) => TrackConfigChange[]
+  resetTrackConfiguration?: (trackId: string) => void
+  connectionInstances?: ConnectionInstance[]
+  connectionTrackConfigs?: Record<
+    string,
+    { connectionId: string; config: Record<string, unknown> }
+  >
   makeConnection?: (arg: AnyConfigurationModel) => void
   breakConnection?: (arg: AnyConfigurationModel) => void
-
-  prepareToBreakConnection?: (
-    arg: AnyConfigurationModel,
-  ) => [() => void, Record<string, number>] | undefined
-  adminMode?: boolean
+  captureConnectionTrack?: (trackId: string) => void
+  pruneConnectionTrackConfig?: (trackId: string) => void
+  hydrateConnection?: (connectionId: string) => void
+  adminMode: boolean
   showWidget?: (widget: unknown) => void
   addWidget?: (
     typeName: string,
@@ -178,7 +244,16 @@ export function isSessionModel(thing: unknown): thing is AbstractSessionModel {
 
 /** abstract interface for a session allows editing configurations */
 export interface SessionWithConfigEditing extends AbstractSessionModel {
-  editConfiguration(configuration: AnyConfigurationModel): void
+  editConfiguration(
+    configuration: AnyConfigurationModel,
+    opts?: { expandedDisplayId?: string },
+  ): void
+  // persist an edited track snapshot (admins → jbrowse config in place, others
+  // → a shareable delta in trackConfigDeltas against the same-id base config)
+  updateTrackConfiguration(trackConf: {
+    trackId: string
+    [key: string]: unknown
+  }): void
 }
 export function isSessionModelWithConfigEditing(
   t: unknown,
@@ -188,15 +263,28 @@ export function isSessionModelWithConfigEditing(
 
 /** abstract interface for a session allows adding tracks */
 export interface SessionWithAddTracks extends AbstractSessionModel {
+  // returns the added config, or undefined if it was invalid (surfaced as a
+  // snackbar) — see SessionTracks.addTrackConf
   addTrackConf(
     configuration: AnyConfigurationModel | SnapshotIn<AnyConfigurationModel>,
-  ): void
+  ): AnyConfigurationModel | undefined
 }
 export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   return (
-    // @ts-expect-error
-    isSessionModel(t) && 'addTrackConf' in t && !t.disableAddTracks
+    isSessionModel(t) &&
+    'addTrackConf' in t &&
+    !('disableAddTracks' in t && t.disableAddTracks)
   )
+}
+
+/** abstract interface for a session that allows adding session assemblies */
+export interface SessionWithAddAssembly extends AbstractSessionModel {
+  addSessionAssembly(conf: Record<string, unknown>): void
+}
+export function isSessionWithAddAssembly(
+  t: unknown,
+): t is SessionWithAddAssembly {
+  return isSessionModel(t) && typeof t.addSessionAssembly === 'function'
 }
 
 /** abstract interface for a session that allows deleting track configs */
@@ -222,6 +310,7 @@ export function isSessionWithShareURL(
 export interface Widget {
   type: string
   id: string
+  view?: { id: string }
 }
 
 /** Minimal map interface compatible with both native Map and MST IMSTMap */
@@ -268,8 +357,21 @@ export function isSessionModelWithWidgets(
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
 }
-export interface SessionWithConnections {
+/** a live connection instance held in a session's `connectionInstances` */
+export interface ConnectionInstance {
+  name: string
+  connectionId: string
+  tracks: AnyConfigurationModel[]
+  configuration: AnyConfigurationModel
+  // true while the connection is fetching its tracks
+  loading: boolean
+}
+/** a session that can turn connections on and off */
+export interface SessionWithConnections extends AbstractSessionModel {
+  connectionInstances: ConnectionInstance[]
   makeConnection: (arg: AnyConfigurationModel) => void
+  breakConnection: (arg: AnyConfigurationModel) => void
+  deleteConnection: (arg: AnyConfigurationModel) => void
 }
 export function isSessionModelWithConnections(
   thing: unknown,
@@ -277,10 +379,10 @@ export function isSessionModelWithConnections(
   return isSessionModel(thing) && 'makeConnection' in thing
 }
 
-export interface SessionWithConnectionEditing {
-  addConnectionConf: (arg: AnyConfigurationModel) => void
+/** a session that can also add new connection configs */
+export interface SessionWithConnectionEditing extends SessionWithConnections {
+  addConnectionConf: (arg: AnyConfigurationModel) => AnyConfigurationModel
 }
-
 export function isSessionModelWithConnectionEditing(
   thing: unknown,
 ): thing is SessionWithConnectionEditing {
@@ -288,9 +390,9 @@ export function isSessionModelWithConnectionEditing(
 }
 
 export interface SessionWithSessionPlugins extends AbstractSessionModel {
-  sessionPlugins: JBrowsePlugin[]
-  addSessionPlugin: (plugin: BasePlugin) => void
-  removeSessionPlugin: (plugin: Record<string, unknown> | undefined) => void
+  sessionPlugins: (PluginDefinition & { name: string })[]
+  addSessionPlugin: (plugin: PluginDefinition & { name: string }) => void
+  removeSessionPlugin: (plugin: PluginDefinition) => void
 }
 export function isSessionWithSessionPlugins(
   thing: unknown,
@@ -331,6 +433,7 @@ export interface AbstractViewModel {
   displayName: string | undefined
   setDisplayName: (arg: string) => void
   menuItems: () => MenuItem[]
+  assemblyNames?: string[]
 }
 export function isViewModel(thing: unknown): thing is AbstractViewModel {
   return (
@@ -355,8 +458,10 @@ export function isTrackModel(thing: unknown): thing is AbstractTrackModel {
     typeof thing === 'object' &&
     thing !== null &&
     'configuration' in thing &&
-    // @ts-expect-error
-    thing.configuration.trackId
+    typeof thing.configuration === 'object' &&
+    thing.configuration !== null &&
+    'trackId' in thing.configuration &&
+    !!thing.configuration.trackId
   )
 }
 
@@ -364,16 +469,26 @@ export interface AbstractDisplayModel {
   id: string
   parentTrack: AbstractTrackModel
   renderDelay: number
-  rendererType: any
   cannotBeRenderedReason?: string
+  // Effective config differences a session-wide displayTypeDefault imposes on
+  // this display (distinct from per-track config edits / trackConfigDeltas).
+  // Empty when the resolved value equals the configured one. Optional: only
+  // display types that participate in displayTypeDefaults implement it.
+  displayTypeDefaultChanges?: () => TrackConfigChange[]
+  // Clear the session-wide defaults reported by displayTypeDefaultChanges so this
+  // display (and its siblings of the same type) revert to their config values.
+  clearDisplayTypeDefaults?: () => void
 }
 export function isDisplayModel(thing: unknown): thing is AbstractDisplayModel {
-  if (typeof thing === 'object' && thing !== null && 'configuration' in thing) {
-    // @ts-expect-error
-    const { displayId } = thing.configuration
-    return !!displayId
-  }
-  return false
+  return (
+    typeof thing === 'object' &&
+    thing !== null &&
+    'configuration' in thing &&
+    typeof thing.configuration === 'object' &&
+    thing.configuration !== null &&
+    'displayId' in thing.configuration &&
+    !!thing.configuration.displayId
+  )
 }
 
 export interface TrackViewModel extends AbstractViewModel {
@@ -393,8 +508,9 @@ export function isTrackViewModel(thing: unknown): thing is TrackViewModel {
 export interface AbstractRootModel {
   jbrowse: IAnyStateTreeNode
   session?: AbstractSessionModel
+  setSession?(arg: { name: string; [key: string]: unknown }): void
   setDefaultSession?(): void
-  adminMode?: boolean
+  adminMode: boolean
   error?: unknown
 }
 
@@ -404,6 +520,11 @@ export interface AppRootModel extends AbstractRootModel {
   findAppropriateInternetAccount(
     location: UriLocation,
   ): BaseInternetAccountModel | undefined
+  createEphemeralInternetAccount(
+    internetAccountId: string,
+    initialSnapshot: Record<string, unknown>,
+    url: string,
+  ): BaseInternetAccountModel
 }
 
 export function isAppRootModel(thing: unknown): thing is AppRootModel {
@@ -537,16 +658,6 @@ export class AuthNeededError extends Error {
   }
 }
 
-export class RetryError extends Error {
-  internetAccountId: string
-
-  constructor(message: string, internetAccountId: string) {
-    super(message)
-    this.internetAccountId = internetAccountId
-    this.name = 'RetryError'
-  }
-}
-
 export function isAuthNeededException(
   exception: unknown,
 ): exception is AuthNeededError {
@@ -559,23 +670,11 @@ export function isAuthNeededException(
   )
 }
 
-export function isRetryException(exception: Error): boolean {
-  return (
-    // DOMException
-    exception.name === 'RetryError' ||
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    (exception as RetryError).internetAccountId !== undefined
-  )
-}
-
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation =
-  | LocalPathLocation
-  | UriLocation
-  | BlobLocation
-  | FileHandleLocation
+  LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the
@@ -597,5 +696,3 @@ export type PreFileLocation =
   | PreLocalPathLocation
   | PreBlobLocation
   | PreFileHandleLocation
-
-export { default as TextSearchManager } from '../../TextSearch/TextSearchManager.ts'

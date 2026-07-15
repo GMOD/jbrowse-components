@@ -1,0 +1,41 @@
+---
+// Shared example gallery grid for each site's index page. Symlinked into every
+// product's src/layouts/, so — like Shell — it must stay self-contained with no
+// relative imports; the example list arrives via props and its shape is inlined.
+interface ExampleMeta {
+  slug: string
+  title: string
+  description: string
+  group: string
+}
+
+interface Props {
+  examples: ExampleMeta[]
+}
+
+const { examples } = Astro.props
+const base = import.meta.env.BASE_URL
+const groups = [...new Set(examples.map(e => e.group))]
+---
+
+<div class="gallery">
+  {
+    groups.map(group => (
+      <section>
+        <h2>{group}</h2>
+        <ul>
+          {examples
+            .filter(e => e.group === group)
+            .map(e => (
+              <li>
+                <a href={`${base}${e.slug}/`}>
+                  <div class="title">{e.title}</div>
+                  <div class="desc">{e.description}</div>
+                </a>
+              </li>
+            ))}
+        </ul>
+      </section>
+    ))
+  }
+</div>

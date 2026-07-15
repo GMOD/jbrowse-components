@@ -67,6 +67,11 @@ const TreeItem = observer(function TreeItem({
   const { nestingLevel } = item
   const height = getItemHeight(item, model.folderCategories)
   const marginLeft = nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
+  const content = isCategory ? (
+    <TrackCategory model={model} item={item} />
+  ) : (
+    <TrackLabel model={model} item={item} />
+  )
 
   return (
     <div
@@ -86,19 +91,13 @@ const TreeItem = observer(function TreeItem({
       />
       <div
         className={useAccordionStyle ? classes.accordionCard : undefined}
-        style={{
-          marginLeft,
-          whiteSpace: 'nowrap',
-          flex: 1,
-        }}
+        style={{ marginLeft, whiteSpace: 'nowrap', flex: 1 }}
       >
-        <div className={useAccordionStyle ? classes.accordionColor : undefined}>
-          {isCategory ? (
-            <TrackCategory model={model} item={item} />
-          ) : (
-            <TrackLabel model={model} item={item} />
-          )}
-        </div>
+        {useAccordionStyle ? (
+          <div className={classes.accordionColor}>{content}</div>
+        ) : (
+          content
+        )}
       </div>
     </div>
   )

@@ -1,8 +1,10 @@
-import path from 'path'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
+import { makeLocation, makeTrackConfig } from './makeConfigs.ts'
 import { standardizeArgv } from './parseArgv.ts'
-import { makeTrackConfig, readData } from './readData.ts'
-import { booleanize } from './util.ts'
+import { readData } from './readData.ts'
 
 const dataDir = path.join(__dirname, '..', 'data')
 const configFile = path.join(dataDir, 'config.json')
@@ -16,22 +18,6 @@ const fakeAssembly = {
     adapter: { type: 'IndexedFastaAdapter' },
   },
 }
-
-describe('booleanize', () => {
-  test('false string returns false', () => {
-    expect(booleanize('false')).toBe(false)
-  })
-
-  test('non-empty string returns true', () => {
-    expect(booleanize('true')).toBe(true)
-    expect(booleanize('1')).toBe(true)
-    expect(booleanize('yes')).toBe(true)
-  })
-
-  test('empty string returns false', () => {
-    expect(booleanize('')).toBe(false)
-  })
-})
 
 describe('standardizeArgv', () => {
   const trackTypes = [
@@ -70,6 +56,31 @@ describe('standardizeArgv', () => {
     const args: [string, string[]][] = [['noRasterize', []]]
     const result = standardizeArgv(args, trackTypes)
     expect(result.noRasterize).toBe(true)
+  })
+})
+
+describe('makeLocation', () => {
+  test('http/https/ftp/s3 schemes become uri locations', () => {
+    expect(makeLocation('https://example.com/a.bw')).toEqual({
+      uri: 'https://example.com/a.bw',
+    })
+    expect(makeLocation('https://example.com/a.bw')).toEqual({
+      uri: 'https://example.com/a.bw',
+    })
+    expect(makeLocation('ftp://example.com/a.bw')).toEqual({
+      uri: 'ftp://example.com/a.bw',
+    })
+    expect(makeLocation('s3://bucket/a.bw')).toEqual({
+      uri: 's3://bucket/a.bw',
+    })
+  })
+
+  test('local paths become localPath locations', () => {
+    expect(makeLocation('/data/a.bw')).toEqual({ localPath: '/data/a.bw' })
+    expect(makeLocation('./a.bw')).toEqual({ localPath: './a.bw' })
+    expect(makeLocation(String.raw`C:\data\a.bw`)).toEqual({
+      localPath: String.raw`C:\data\a.bw`,
+    })
   })
 })
 
@@ -319,5 +330,30 @@ describe('readData', () => {
     expect(() =>
       readData({ config: configFile, tracks: assemblyAsTrack }),
     ).toThrow(/expected a JSON array of tracks/)
+  })
+
+  test('resolves localPath in a tracks file relative to that file', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbimg-'))
+    const tracksFile = path.join(dir, 'tracks.json')
+    fs.writeFileSync(
+      tracksFile,
+      JSON.stringify([
+        {
+          type: 'FeatureTrack',
+          trackId: 'local',
+          adapter: {
+            type: 'BigBedAdapter',
+            bigBedLocation: { localPath: 'sub/features.bb' },
+          },
+        },
+      ]),
+    )
+    const result = readData({ fasta: '/ref.fa', tracks: tracksFile })
+    const adapter = result.tracks[0]!.adapter as {
+      bigBedLocation: { localPath: string }
+    }
+    expect(adapter.bigBedLocation.localPath).toBe(
+      path.join(dir, 'sub/features.bb'),
+    )
   })
 })

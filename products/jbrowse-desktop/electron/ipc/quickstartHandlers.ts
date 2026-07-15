@@ -1,19 +1,17 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
-import parseJson from 'json-parse-even-better-errors'
-
-import { getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'
+import { LEGACY_QUICKSTARTS } from '../fileSystemInit.ts'
+import { ENCODING, getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
 
 const { readFile, copyFile, readdir, rename, unlink, writeFile } = fs.promises
-const ENCODING = 'utf8'
 
 async function readQuickstart(quickstartPath: string): Promise<unknown> {
   try {
-    return parseJson(await readFile(quickstartPath, ENCODING))
+    return JSON.parse(await readFile(quickstartPath, ENCODING))
   } catch (e) {
     throw new Error(`Failed to read quickstart file ${quickstartPath}: ${e}`, {
       cause: e,
@@ -37,11 +35,13 @@ export function registerQuickstartHandlers(paths: AppPaths) {
   })
 
   ipcHandle('deleteQuickstart', async (_, name) => {
-    const quickstartPath = getQuickstartPath(paths, name)
-    const deletedMarkerPath = getDeletedMarkerPath(paths, name)
-
-    await unlink(quickstartPath)
-    await writeFile(deletedMarkerPath, '', ENCODING)
+    await unlink(getQuickstartPath(paths, name))
+    // Only legacy quickstarts need a gravestone, to stop cleanupLegacyQuickstarts
+    // from re-deleting a user-recreated hg19/hg38/mm10 on next startup. Writing
+    // one for any other name just leaves an orphan file nothing reads.
+    if (LEGACY_QUICKSTARTS.includes(name)) {
+      await writeFile(getDeletedMarkerPath(paths, name), '', ENCODING)
+    }
   })
 
   ipcHandle('renameQuickstart', async (_, oldName, newName) => {

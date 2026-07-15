@@ -1,44 +1,63 @@
 ---
 id: htsgetbamadapter
 title: HtsgetBamAdapter
+sidebar_label: Adapter -> HtsgetBamAdapter
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `alignments`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/HtsgetBamAdapter/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
+```js
+{
+  type: 'AlignmentsTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'HtsgetBamAdapter',
+    htsgetBase: 'https://htsget.example.com/reads/',
+    htsgetTrackId: 'NA12878',
+  },
+}
+```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/HtsgetBamAdapter/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/HtsgetBamAdapter.md)
-
-## Docs
+_See the **Config slots** section below for all available configuration fields._
 
 Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam
 library
 
-### HtsgetBamAdapter - Slots
+## Related links
+
+- **Track:** [AlignmentsTrack](../alignmentstrack)
+- **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                 | Type     | Description                                    |
+| ------------------------------------ | -------- | ---------------------------------------------- |
+| [htsgetBase](#slot-htsgetbase)       | `string` | the base URL to fetch from                     |
+| [htsgetTrackId](#slot-htsgettrackid) | `string` | the trackId, which is appended to the base URL |
+
+<details>
+<summary>HtsgetBamAdapter - Slots</summary>
 
 #### slot: htsgetBase
 
-```js
-htsgetBase: {
-      type: 'string',
-      description: 'the base URL to fetch from',
-      defaultValue: '',
-    }
-```
+the base URL to fetch from
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: htsgetTrackId
 
-```js
-htsgetTrackId: {
-      type: 'string',
-      description: 'the trackId, which is appended to the base URL',
-      defaultValue: '',
-    }
-```
+the trackId, which is appended to the base URL
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
+</details>

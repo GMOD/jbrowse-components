@@ -1,14 +1,16 @@
 ---
-id: text_searching
 title: Text searching
 description: Per-track and aggregate full-text search indexes
 guide_category: Other features
 ---
 
-Text searching appears in two forms: "per-track indexes" and "aggregate indexes"
-which search across multiple tracks.
+Text searching comes in two forms. An **aggregate index** lives in the top-level
+`aggregateTextSearchAdapters` array and is searched across many tracks at once.
+Use it for a genome-wide gene-name index shared by every track on an assembly. A
+**per-track index** attaches to a single track's `textSearching` slot. Use it to
+make just one track searchable.
 
-Aggregate indexes may look like this:
+An aggregate index looks like this:
 
 ```json
 {
@@ -17,16 +19,13 @@ Aggregate indexes may look like this:
       "type": "TrixTextSearchAdapter",
       "textSearchAdapterId": "hg19-index",
       "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix",
-        "locationType": "UriLocation"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
       },
       "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx",
-        "locationType": "UriLocation"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
       },
       "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json",
-        "locationType": "UriLocation"
+        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
       },
       "assemblyNames": ["hg19"]
     }
@@ -34,7 +33,7 @@ Aggregate indexes may look like this:
 }
 ```
 
-An example per-track config may look like this:
+A per-track config looks like this:
 
 ```json
 {
@@ -48,16 +47,10 @@ An example per-track config may look like this:
   "textSearching": {
     "textSearchAdapter": {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "hg19-index",
-      "ixFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
-      },
-      "ixxFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ixx"
-      },
-      "metaFilePath": {
-        "uri": "https://jbrowse.org/genomes/hg19/trix/meta.json"
-      },
+      "textSearchAdapterId": "mytrack-index",
+      "ixFilePath": { "uri": "trix/mytrack.ix" },
+      "ixxFilePath": { "uri": "trix/mytrack.ixx" },
+      "metaFilePath": { "uri": "trix/mytrack_meta.json" },
       "assemblyNames": ["hg19"]
     },
     "indexingAttributes": ["Name", "ID"],
@@ -66,56 +59,43 @@ An example per-track config may look like this:
 }
 ```
 
-See [jbrowse text-index](/docs/cli#jbrowse-text-index) for generating indexes
-via the CLI.
+The `textSearching` slots control what gets indexed when you run
+`jbrowse text-index` against this track:
 
-### TrixTextSearchAdapter config
+- [`indexingAttributes`](/docs/config/basetrack/#slot-textsearchingindexingattributes),
+  feature attributes to index
+- [`indexingFeatureTypesToExclude`](/docs/config/basetrack/#slot-textsearchingindexingfeaturetypestoexclude),
+  feature types to skip (e.g. `CDS`, `exon`), so the index holds only the
+  genes/transcripts users search for
+
+See [jbrowse text-index](/docs/cli#jbrowse-text-index) for generating indexes
+via the CLI. See the
+[Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter) for adapter
+options including CSI index support and `dontRedispatch`.
+
+## TrixTextSearchAdapter config
 
 The trix format is based on the
 [UCSC trix format](https://genome.ucsc.edu/goldenPath/help/trix.html). Use
-[jbrowse text-index](/docs/cli#jbrowse-text-index) to generate indexes and
-config automatically. Config slots:
+[jbrowse text-index](/docs/cli#jbrowse-text-index) to generate the index files
+and config automatically. The adapter (shown in the examples above) points at
+three files:
 
-```json
-{
-  "textSearchAdapter": {
-    "type": "TrixTextSearchAdapter",
-    "textSearchAdapterId": "gff3tabix_genes-index",
-    "ixFilePath": {
-      "uri": "trix/gff3tabix_genes.ix"
-    },
-    "ixxFilePath": {
-      "uri": "trix/gff3tabix_genes.ixx"
-    },
-    "metaFilePath": {
-      "uri": "trix/gff3tabix_genes_meta.json"
-    }
-  }
-}
-```
+- `ixFilePath` - the trix `.ix` file
+- `ixxFilePath` - the trix `.ixx` file
+- `metaFilePath` - the metadata JSON file for the index
 
-- `ixFilePath` - the location of the trix ix file
-- `ixxFilePath` - the location of the trix ixx file
-- `metaFilePath` - the location of the metadata json file for the trix index
+See the [TrixTextSearchAdapter config docs](/docs/config/trixtextsearchadapter)
+for all options.
 
-### JBrowse1TextSearchAdapter config
+## JBrowse1TextSearchAdapter config
 
-For back-compatibility with a JBrowse1 names index created by
-`generate-names.pl`:
-
-```json
-{
-  "textSearchAdapter": {
-    "type": "JBrowse1TextSearchAdapter",
-    "textSearchAdapterId": "generate-names-index",
-    "namesIndexLocation": {
-      "uri": "/names"
-    }
-  }
-}
-```
-
-- `namesIndexLocation` - the location of the JBrowse1 names index data directory
+A names index created by JBrowse 1's `generate-names.pl` can still be used via
+the `JBrowse1TextSearchAdapter`. Point `namesIndexLocation` at the names
+directory. See the
+[JBrowse1TextSearchAdapter config docs](/docs/config/jbrowse1textsearchadapter)
+for the config slots. To build a custom text-search adapter, see
+[creating a text search adapter](/docs/developer_guides/creating_text_search_adapter).
 
 ## Troubleshooting
 
@@ -128,18 +108,23 @@ run. Fix with `--force` to overwrite them:
 jbrowse text-index --force
 ```
 
-If `/tmp` is low on disk space, indexing can fail silently. Use `TMPDIR` to
-point elsewhere:
-
-```bash
-TMPDIR=~/alt_tmp_dir jbrowse text-index
-```
+If indexing fails because `/tmp` is low on disk space, override the temp
+directory. See
+[Why am I running out of disk space while trix is running](/docs/faq#why-am-i-running-out-of-disk-space-while-trix-is-running)
+in the FAQ.
 
 ### Only some genes are searchable
 
-`text-index` indexes `Name` and `ID` attributes by default. Add others with
-`--attributes`:
+`text-index` indexes `Name`, `ID`, and `symbol` attributes by default. Add
+others with `--attributes`:
 
 ```bash
-jbrowse text-index --attributes=Name,ID,gene_name
+jbrowse text-index --attributes=Name,ID,symbol,gene_name
 ```
+
+## See also
+
+- [Basic usage: the location search box](/docs/user_guides/basic_usage#using-the-location-search-box),
+  searching for gene names and regions once an index is built
+- [Connections](/docs/user_guides/connections), loading track hubs that ship
+  their own indexes

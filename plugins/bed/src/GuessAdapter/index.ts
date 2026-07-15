@@ -31,6 +31,16 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             bedpeLocation: file,
           }
         } else if (
+          adapterHint === 'StarFusionAdapter' ||
+          (!adapterHint &&
+            /(star-?fusion|fusion_predictions)/i.test(fileName) &&
+            /\.tsv(\.gz)?$/i.test(fileName))
+        ) {
+          return {
+            type: 'StarFusionAdapter',
+            starFusionLocation: file,
+          }
+        } else if (
           testAdapter(fileName, /\.bb$/i, adapterHint, 'BigBedAdapter') ||
           testAdapter(fileName, /\.bigbed$/i, adapterHint, 'BigBedAdapter')
         ) {
@@ -106,6 +116,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
         return (
           {
             BedpeAdapter: 'VariantTrack',
+            StarFusionAdapter: 'VariantTrack',
             BedGraphAdapter: 'QuantitativeTrack',
             BedGraphTabixAdapter: 'QuantitativeTrack',
           }[adapterName] || trackTypeGuesser(adapterName, file)

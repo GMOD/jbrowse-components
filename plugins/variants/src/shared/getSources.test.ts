@@ -11,10 +11,10 @@ describe('expandSourcesToHaplotypes', () => {
     const result = expandSourcesToHaplotypes({ sources, sampleInfo })
 
     expect(result).toEqual([
-      { name: 'HG001 HP0', baseName: 'HG001', HP: 0 },
-      { name: 'HG001 HP1', baseName: 'HG001', HP: 1 },
-      { name: 'HG002 HP0', baseName: 'HG002', HP: 0 },
-      { name: 'HG002 HP1', baseName: 'HG002', HP: 1 },
+      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
+      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
     ])
   })
 
@@ -30,12 +30,12 @@ describe('expandSourcesToHaplotypes', () => {
     expect(result).toHaveLength(5)
     expect(result[2]).toMatchObject({
       name: 'HG002 HP0',
-      baseName: 'HG002',
+      sampleName: 'HG002',
       HP: 0,
     })
     expect(result[4]).toMatchObject({
       name: 'HG002 HP2',
-      baseName: 'HG002',
+      sampleName: 'HG002',
       HP: 2,
     })
   })
@@ -47,9 +47,26 @@ describe('expandSourcesToHaplotypes', () => {
     const result = expandSourcesToHaplotypes({ sources, sampleInfo })
 
     expect(result).toEqual([
-      { name: 'HG001 HP0', baseName: 'HG001', HP: 0 },
-      { name: 'HG001 HP1', baseName: 'HG001', HP: 1 },
+      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
     ])
+  })
+
+  // Sources from haplotype clustering already carry HP; they must pass through
+  // unchanged rather than being re-expanded. This branch is shared by the worker
+  // and the model `sources` getter, which previously hand-rolled it.
+  test('passes through sources that already have an HP index', () => {
+    const sources = [
+      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+    ]
+    const sampleInfo = {
+      HG001: { isPhased: true, maxPloidy: 2 },
+    }
+
+    const result = expandSourcesToHaplotypes({ sources, sampleInfo })
+
+    expect(result).toEqual(sources)
   })
 
   test('preserves other source properties', () => {
@@ -62,7 +79,7 @@ describe('expandSourcesToHaplotypes', () => {
 
     expect(result[0]).toMatchObject({
       name: 'HG001 HP0',
-      baseName: 'HG001',
+      sampleName: 'HG001',
       HP: 0,
       color: 'red',
       group: 'family1',
@@ -100,22 +117,22 @@ describe('getSources', () => {
     expect(result).toHaveLength(6)
     expect(result[0]).toMatchObject({
       name: 'HG001 HP0',
-      baseName: 'HG001',
+      sampleName: 'HG001',
       HP: 0,
     })
     expect(result[1]).toMatchObject({
       name: 'HG001 HP1',
-      baseName: 'HG001',
+      sampleName: 'HG001',
       HP: 1,
     })
   })
 
   test('phased mode with haplotype layout preserves order', () => {
     const haplotypeLayout = [
-      { name: 'HG001 HP0', baseName: 'HG001', HP: 0 },
-      { name: 'HG002 HP1', baseName: 'HG002', HP: 1 },
-      { name: 'HG001 HP1', baseName: 'HG001', HP: 1 },
-      { name: 'HG002 HP0', baseName: 'HG002', HP: 0 },
+      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
+      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
     ]
 
     const result = getSources({
@@ -143,10 +160,10 @@ describe('getSources', () => {
     })
 
     expect(result).toHaveLength(4)
-    expect(result[0]).toMatchObject({ name: 'HG002 HP0', baseName: 'HG002' })
-    expect(result[1]).toMatchObject({ name: 'HG002 HP1', baseName: 'HG002' })
-    expect(result[2]).toMatchObject({ name: 'HG001 HP0', baseName: 'HG001' })
-    expect(result[3]).toMatchObject({ name: 'HG001 HP1', baseName: 'HG001' })
+    expect(result[0]).toMatchObject({ name: 'HG002 HP0', sampleName: 'HG002' })
+    expect(result[1]).toMatchObject({ name: 'HG002 HP1', sampleName: 'HG002' })
+    expect(result[2]).toMatchObject({ name: 'HG001 HP0', sampleName: 'HG001' })
+    expect(result[3]).toMatchObject({ name: 'HG001 HP1', sampleName: 'HG001' })
   })
 
   test('filters out samples not in sources', () => {
@@ -164,8 +181,8 @@ describe('getSources', () => {
     expect(result[1]).toMatchObject({ name: 'HG002' })
   })
 
-  test('haplotype entries use baseName for source lookup', () => {
-    const haplotypeLayout = [{ name: 'HG001 HP0', baseName: 'HG001', HP: 0 }]
+  test('haplotype entries use sampleName for source lookup', () => {
+    const haplotypeLayout = [{ name: 'HG001 HP0', sampleName: 'HG001', HP: 0 }]
 
     const result = getSources({
       sources: baseSources,
@@ -177,7 +194,7 @@ describe('getSources', () => {
     expect(result).toHaveLength(1)
     expect(result[0]).toMatchObject({
       name: 'HG001 HP0',
-      baseName: 'HG001',
+      sampleName: 'HG001',
       HP: 0,
     })
   })
@@ -202,12 +219,93 @@ describe('getSources', () => {
     expect(result[2]).toMatchObject({ name: 'HG002', color: 'green' })
   })
 
+  // Regression: ploidy lookup previously used row.name instead of sampleName,
+  // so layout rows whose display name differed from the VCF sample name (the
+  // key sampleInfo is built with) silently produced zero haplotype rows.
+  test('phased mode looks up ploidy via sampleName, not row.name', () => {
+    const layout = [{ name: 'displayLabel', sampleName: 'HG001' }]
+
+    const result = getSources({
+      sources: baseSources,
+      layout,
+      renderingMode: 'phased',
+      sampleInfo,
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.HP)).toEqual([0, 1])
+    expect(result.map(r => r.sampleName)).toEqual(['HG001', 'HG001'])
+  })
+
+  // Regression: previously returned [] when sampleInfo lacked the sample,
+  // dropping the row entirely. `sources` and `expandSourcesToHaplotypes` both
+  // default to ploidy 2, so getSources should match.
+  test('phased mode defaults to ploidy 2 when sampleInfo lacks the sample', () => {
+    const result = getSources({
+      sources: [{ name: 'HG999' }],
+      renderingMode: 'phased',
+      sampleInfo: {},
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.HP)).toEqual([0, 1])
+    expect(result.map(r => r.sampleName)).toEqual(['HG999', 'HG999'])
+  })
+
+  // Regression: without sampleInfo at all, the row should pass through
+  // unexpanded — matches the `sources` getter, which waits for sampleInfo
+  // before expanding rather than dropping rows.
+  test('phased mode without sampleInfo returns samples unexpanded', () => {
+    const result = getSources({
+      sources: [{ name: 'HG001' }, { name: 'HG002' }],
+      renderingMode: 'phased',
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.name)).toEqual(['HG001', 'HG002'])
+    expect(result.every(r => r.HP === undefined)).toBe(true)
+  })
+
+  // Regression: sourcesBase uses alleleCount mode + haplotype layout (from
+  // phased clustering), then applies the subtreeFilter set by clicking a tree
+  // node. Leaf names in the phased tree are HP names ("HG001 HP0"), and base
+  // entries have name="HG001 HP0" / sampleName="HG001". Filtering by s.name
+  // is correct; filtering by s.sampleName would drop everything.
+  test('alleleCount mode with HP layout can be filtered by HP names via s.name', () => {
+    const haplotypeLayout = [
+      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0 },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1 },
+      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0 },
+      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1 },
+    ]
+
+    const base = getSources({
+      sources: baseSources,
+      layout: haplotypeLayout,
+      renderingMode: 'alleleCount',
+    })
+
+    // Simulate the subtreeFilter set when user clicks a phased tree node
+    const subtreeFilter = new Set(['HG001 HP0', 'HG001 HP1'])
+    const filtered = base.filter(s => subtreeFilter.has(s.name))
+
+    expect(filtered).toHaveLength(2)
+    expect(filtered[0]).toMatchObject({
+      name: 'HG001 HP0',
+      sampleName: 'HG001',
+    })
+    expect(filtered[1]).toMatchObject({
+      name: 'HG001 HP1',
+      sampleName: 'HG001',
+    })
+  })
+
   test('layout colors are preserved in phased mode with haplotype layout', () => {
     const haplotypeLayout = [
-      { name: 'HG002 HP0', baseName: 'HG002', HP: 0, color: 'green' },
-      { name: 'HG001 HP1', baseName: 'HG001', HP: 1, color: 'red' },
-      { name: 'HG001 HP0', baseName: 'HG001', HP: 0, color: 'red' },
-      { name: 'HG002 HP1', baseName: 'HG002', HP: 1, color: 'green' },
+      { name: 'HG002 HP0', sampleName: 'HG002', HP: 0, color: 'green' },
+      { name: 'HG001 HP1', sampleName: 'HG001', HP: 1, color: 'red' },
+      { name: 'HG001 HP0', sampleName: 'HG001', HP: 0, color: 'red' },
+      { name: 'HG002 HP1', sampleName: 'HG002', HP: 1, color: 'green' },
     ]
 
     const result = getSources({

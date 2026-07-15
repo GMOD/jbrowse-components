@@ -12,6 +12,11 @@ const useStyles = makeStyles()({
   content: {
     minWidth: 600,
   },
+  grid: {
+    height: 600,
+    width: '100%',
+    overflow: 'auto',
+  },
 })
 
 interface Warning {
@@ -30,19 +35,13 @@ function getTrackWarnings({
 }: {
   trackWarnings: TrackWarning[]
 }) {
-  const rows = [] as {
-    name: string
-    message: string
-    effect: string
-    id: string
-  }[]
-  for (const [i, trackWarning] of trackWarnings.entries()) {
-    const track = trackWarning
+  const rows: { name: string; message: string; effect: string; id: string }[] =
+    []
+  for (const [i, track] of trackWarnings.entries()) {
     const name = getConf(track, 'name')
-    const d = track.displays[0]!
-    for (let j = 0; j < d.warnings.length; j++) {
-      const warning = d.warnings[j]!
-      rows.push({ name, ...warning, id: `${i}_${j}` })
+    const warnings = track.displays[0]!.warnings
+    for (let j = 0; j < warnings.length; j++) {
+      rows.push({ name, ...warnings[j]!, id: `${i}_${j}` })
     }
   }
   return rows
@@ -65,7 +64,9 @@ const WarningDialog = observer(function WarningDialog({
   return (
     <Dialog
       open
-      onClose={handleClose}
+      onClose={() => {
+        handleClose()
+      }}
       maxWidth="xl"
       title="Dotplot rendered with warnings"
     >
@@ -76,7 +77,7 @@ const WarningDialog = observer(function WarningDialog({
           used. Check that the query and target are configured correctly, and
           that the right assemblies are being compared.
         </DialogContentText>
-        <div style={{ height: 600, width: '100%', overflow: 'auto' }}>
+        <div className={classes.grid}>
           <DataGrid
             rows={rows}
             columns={columns}

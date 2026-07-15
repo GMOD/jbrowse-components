@@ -1,7 +1,21 @@
+import type { CytosineContext } from '@jbrowse/modifications-utils'
+
 export interface ModificationData {
   color: string
   name: string
 }
+
+// Cytosine contexts offered wherever methylation is colored (the fill-unmarked
+// view and bisulfite). CpG is the default; CHG/CHH cover plant methylation.
+export const cytosineContextOptions: {
+  value: CytosineContext
+  label: string
+}[] = [
+  { value: 'CG', label: 'CpG' },
+  { value: 'CHG', label: 'CHG' },
+  { value: 'CHH', label: 'CHH' },
+  { value: 'all', label: 'All cytosines' },
+]
 
 // Adapted from IGV
 // https://github.com/igvteam/igv/blob/af07c3b1be8806cfd77343ee04982aeff17d2beb/src/main/resources/org/broad/igv/prefs/preferences.tab#L230-L242

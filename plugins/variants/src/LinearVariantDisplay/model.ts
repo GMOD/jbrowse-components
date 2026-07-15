@@ -1,118 +1,135 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
-import { linearFeatureDisplayModelFactory } from '@jbrowse/plugin-linear-genome-view'
+import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 
-import { createMAFFilterMenuItem } from '../shared/mafFilterUtils.ts'
+import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
+import {
+  CONSEQUENCE_IMPACT_JEXL,
+  IMPACT_TIERS,
+} from '../shared/variantConsequence.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearVariantDisplay
- * Similar to feature display, but provides custom widget on feature click.
- * Does not include gene glyph options since variants are not genes.
- * extends
+ * GPU-accelerated variant display with custom feature widget on click.
  *
- * - [LinearFeatureDisplay](../linearfeaturedisplay)
+ * #example
+ * A complete `VariantTrack` config to paste into `tracks`:
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'variants',
+ *   name: 'Variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/variants.vcf.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearVariantDisplay',
+ *       displayId: 'variants-LinearVariantDisplay',
+ *       height: 150,
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {
-  return types
-    .compose(
-      'LinearVariantDisplay',
-      linearFeatureDisplayModelFactory(configSchema),
-      types.model({
-        /**
-         * #property
-         */
-        type: types.literal('LinearVariantDisplay'),
-        /**
-         * #property
-         */
-        configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * Minor allele frequency filter threshold (0-0.5)
-         * When undefined, falls back to config value
-         */
-        minorAlleleFrequencyFilterSetting: types.maybe(types.number),
-      }),
-    )
-    .views(self => ({
+  return linearCanvasBaseDisplayStateModelFactory(configSchema)
+    .props({
       /**
-       * #getter
-       * Gets the minor allele frequency filter threshold
-       * Falls back to config value if setting is not defined
+       * #property
        */
-      get minorAlleleFrequencyFilter() {
-        return (
-          self.minorAlleleFrequencyFilterSetting ??
-          getConf(self, 'minorAlleleFrequencyFilter')
-        )
-      },
+      type: types.literal('LinearVariantDisplay'),
+    })
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      impactLegendDismissed: false,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setMafFilter(value: number) {
-        self.minorAlleleFrequencyFilterSetting = value
+      setImpactLegendDismissed(arg: boolean) {
+        self.impactLegendDismissed = arg
       },
     }))
-    .views(self => {
-      const {
-        activeFilters: superActiveFilters,
-        filterMenuItems: superFilterMenuItems,
-      } = self
-      return {
-        /**
-         * #getter
-         */
-        get featureWidgetType() {
-          return {
-            type: 'VariantFeatureWidget',
-            id: 'variantFeature',
-          }
-        },
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get featureWidgetType() {
+        return VARIANT_FEATURE_WIDGET
+      },
+      /**
+       * #getter
+       */
+      // True when features are colored by their most severe consequence impact.
+      get colorsByConsequenceImpact() {
+        return self.conf.color === CONSEQUENCE_IMPACT_JEXL
+      },
+      /**
+       * #getter
+       */
+      // Legend rows for the impact color key (one per tier).
+      get impactLegendItems(): LegendItem[] {
+        return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
+      },
+      /**
+       * #getter
+       */
+      // Show the floating impact legend while that coloring is active, unless
+      // the user dismissed it.
+      get showImpactLegend() {
+        return this.colorsByConsequenceImpact && !self.impactLegendDismissed
+      },
 
-        /**
-         * #method
-         * Override to add MAF filter to active filters
-         */
-        activeFilters(): string[] {
-          const filters = [...superActiveFilters()]
-          if (self.minorAlleleFrequencyFilter > 0) {
-            filters.push(
-              `jexl:maf(feature) >= ${self.minorAlleleFrequencyFilter}`,
-            )
-          }
-          return filters
-        },
-        /**
-         * #method
-         */
-        filterMenuItems() {
-          return [...superFilterMenuItems(), createMAFFilterMenuItem(self)]
-        },
-      }
-    })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { minorAlleleFrequencyFilterSetting, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
-      return {
-        ...rest,
-        ...(minorAlleleFrequencyFilterSetting
-          ? { minorAlleleFrequencyFilterSetting }
-          : {}),
-      } as typeof snap
-    })
+      /**
+       * #method
+       */
+      // Variants have no UTRs and no strand, so drop the base's "Strand" radio
+      // and open the solid-color dialog without the gene-oriented UTR row. Add a
+      // one-click "consequence impact" choice (SnpEff ANN / VEP CSQ). The
+      // inherited colorMenuItems() wraps these in the same "Color by..." entry.
+      colorBySubMenuItems() {
+        return [
+          {
+            label: 'Solid color...',
+            type: 'radio' as const,
+            checked: self.colorByMode === 'solid',
+            onClick: () => {
+              self.openSetColorDialog(false)
+            },
+          },
+          {
+            label: 'Consequence impact',
+            type: 'radio' as const,
+            checked: this.colorsByConsequenceImpact,
+            onClick: () => {
+              self.setImpactLegendDismissed(false)
+              self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
+            },
+          },
+          {
+            label: 'Attribute...',
+            type: 'radio' as const,
+            checked:
+              self.colorByMode === 'attribute' &&
+              !this.colorsByConsequenceImpact,
+            onClick: () => {
+              self.openColorByAttributeDialog()
+            },
+          },
+        ]
+      },
+    }))
 }
 
 export type LinearVariantDisplayStateModel = ReturnType<

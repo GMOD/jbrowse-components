@@ -1,8 +1,7 @@
-import isNode from 'detect-node'
 import { BlobFile, LocalFile } from 'generic-filehandle2'
 
 import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache.ts'
-import { isElectron } from '../index.ts'
+import { isElectron, isNode } from '../index.ts'
 import { getBlob, getFileFromCache } from '../tracks.ts'
 import {
   AuthNeededError,
@@ -105,6 +104,23 @@ export function openLocation(
   throw new Error('invalid fileLocation')
 }
 
+/**
+ * Open a tabix-style index (TBI or CSI) and return it under the correct
+ * filehandle key for `new TabixIndexedFile(...)`. Centralizes the CSI-vs-TBI
+ * branch so callers can't mismatch the two — e.g. writing `=== 'CSI'` on both
+ * the csi and tbi lines, which silently yields no index at all.
+ */
+export function openTabixIndexFilehandle(
+  location: FileLocation,
+  indexType: string | undefined,
+  pluginManager?: PluginManager,
+) {
+  const filehandle = openLocation(location, pluginManager)
+  return indexType === 'CSI'
+    ? { csiFilehandle: filehandle }
+    : { tbiFilehandle: filehandle }
+}
+
 export function getFetcher(
   location: FileLocation,
   pluginManager?: PluginManager,
@@ -141,7 +157,7 @@ function getInternetAccount(
     return pluginManager
       .getInternetAccountType(
         location.internetAccountPreAuthorization.internetAccountType,
-      )!
+      )
       .stateModel.create({
         type: location.internetAccountPreAuthorization.internetAccountType,
         configuration:

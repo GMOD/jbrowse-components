@@ -1,8 +1,54 @@
+import { statusMessageText } from '@jbrowse/core/util'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import Adapter from './BamAdapter.ts'
 import configSchema from './configSchema.ts'
+
+// Regression: once the index is cached, a second fetch (after a small pan/zoom)
+// must not re-flash "Downloading index" — it only downloads alignments
+test('emits "Downloading index" on first fetch only, not once cached', async () => {
+  const adapter = new Adapter(
+    configSchema.create({
+      bamLocation: {
+        localPath: require.resolve('../../test_data/volvox-sorted.bam'),
+        locationType: 'LocalPathLocation',
+      },
+      index: {
+        location: {
+          localPath: require.resolve('../../test_data/volvox-sorted.bam.bai'),
+          locationType: 'LocalPathLocation',
+        },
+      },
+    }),
+  )
+  const query = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  }
+  const collect = async () => {
+    const seen: string[] = []
+    await firstValueFrom(
+      adapter
+        .getFeatures(query, {
+          statusCallback: s => {
+            seen.push(statusMessageText(s) ?? '')
+          },
+        })
+        .pipe(toArray()),
+    )
+    return seen
+  }
+
+  const first = await collect()
+  const second = await collect()
+
+  expect(first).toContain('Downloading index')
+  expect(second).not.toContain('Downloading index')
+  expect(second).toContain('Downloading alignments')
+})
 
 test('adapter can fetch features from volvox.bam', async () => {
   const adapter = new Adapter(

@@ -10,6 +10,12 @@ const useStyles = makeStyles()(theme => ({
   input: {
     paddingBottom: 0,
     paddingTop: 2,
+    // long view titles (e.g. a read-vs-ref panel named after a long PacBio
+    // QNAME) truncate with an ellipsis instead of overflowing the header
+    maxWidth: 300,
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
   },
   inputBase: {
     color: theme.palette.secondary.contrastText,
@@ -31,16 +37,15 @@ const ViewContainerTitle = observer(function ViewContainerTitle({
 }) {
   const { classes } = useStyles()
   const { assemblyManager } = getSession(view)
+  const title =
+    view.displayName ??
+    `${view.assemblyNames?.map(r => assemblyManager.getDisplayName(r)).join(',') ?? 'Untitled view'}${
+      view.minimized ? ' (minimized)' : ''
+    }`
   return (
-    <Tooltip title="Rename view" arrow>
+    <Tooltip title={`${title} (click to rename)`} arrow>
       <EditableTypography
-        value={
-          view.displayName ||
-          // @ts-expect-error
-          `${view.assemblyNames?.map(r => assemblyManager.getDisplayName(r)).join(',') || 'Untitled view'}${
-            view.minimized ? ' (minimized)' : ''
-          }`
-        }
+        value={title}
         setValue={val => {
           view.setDisplayName(val)
         }}

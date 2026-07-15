@@ -16,20 +16,26 @@ export type PaintLayerOpts = SvgRasterCanvasOpts & {
 
 /**
  * Paint into either a 2× rasterize canvas (PNG-embedded as <image>) or an
- * SvgCanvas (serialized into a <g>). Returns one ReactNode — callers don't
+ * SvgCanvas (serialized into a <g>). Renders one element — callers don't
  * branch on which mode was picked.
  *
  * Used by every renderSvg.tsx that has a heavy draw path: the same `paint`
  * callback runs on both surfaces, with `paint(ctx)` doing whatever drawing
- * the plugin needs. Width 0 or height 0 falls through to the vector branch
- * (canvas creation rejects 0×0).
+ * the plugin needs in logical coordinates (the raster canvas is pre-scaled, so
+ * callbacks never deal with devicePixelRatio). Width 0 or height 0 falls
+ * through to the vector branch (canvas creation rejects 0×0).
  */
-export function paintLayer(
-  width: number,
-  height: number,
-  opts: PaintLayerOpts | undefined,
-  paint: (ctx: Ctx2D) => void,
-): React.ReactNode {
+export function PaintLayer({
+  width,
+  height,
+  opts,
+  paint,
+}: {
+  width: number
+  height: number
+  opts?: PaintLayerOpts
+  paint: (ctx: Ctx2D) => void
+}): React.ReactNode {
   if (opts?.rasterizeLayers && width > 0 && height > 0) {
     const { canvas, ctx } = createSvgRasterCanvas(width, height, opts)
     paint(ctx)
@@ -43,5 +49,6 @@ export function paintLayer(
   }
   const svg = new SvgCanvas()
   paint(svg)
+  // eslint-disable-next-line @eslint-react/dom-no-dangerously-set-innerhtml
   return <g dangerouslySetInnerHTML={{ __html: svg.getSerializedSvg() }} />
 }

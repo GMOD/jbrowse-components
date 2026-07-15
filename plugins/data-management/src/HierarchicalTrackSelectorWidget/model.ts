@@ -2,8 +2,8 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import {
   dedupe,
   getSession,
-  localStorageGetItem,
-  localStorageSetItem,
+  localStorageGetJSON,
+  localStorageSetJSON,
   notEmpty,
 } from '@jbrowse/core/util'
 import { ElementId } from '@jbrowse/core/util/types/mst'
@@ -17,17 +17,12 @@ import {
   findTopLevelCategories,
   getAllTrackNodes,
 } from './util.ts'
+import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 
 import type { TreeNode } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-
-type MaybeAnyConfigurationModel = AnyConfigurationModel | undefined
-
-type MaybeBoolean = boolean | undefined
-
-type MaybeCollapsedKeys = [string, boolean][] | undefined
 
 const defaultItemHeight = 22
 const categoryItemHeight = 40
@@ -35,18 +30,6 @@ const overscan = 20
 const MAX_RECENTLY_USED = 10
 const sortTrackNamesK = 'sortTrackNames'
 const sortCategoriesK = 'sortCategories'
-
-// for settings that are config dependent
-function keyConfigPostFix() {
-  return typeof window !== 'undefined'
-    ? [
-        window.location.pathname,
-        new URLSearchParams(window.location.search).get('config'),
-      ]
-        .filter(Boolean)
-        .join('-')
-    : 'empty'
-}
 
 export function getItemHeight(item: TreeNode, folderCategories: Set<string>) {
   if (item.type === 'category') {
@@ -58,9 +41,7 @@ export function getItemHeight(item: TreeNode, folderCategories: Set<string>) {
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
-  return ['recentlyUsedTracks', keyConfigPostFix(), assemblyNames.join(',')]
-    .filter(Boolean)
-    .join('-')
+  return configScopedKey('recentlyUsedTracks', assemblyNames)
 }
 
 // this has a extra } at the end because that's how it was initially
@@ -87,15 +68,74 @@ function collapsedK(assemblyNames: string[], viewType: string) {
   ].join('-')
 }
 
-function localStorageGetJSON<T>(key: string, defaultValue: T) {
-  const val = localStorageGetItem(key)
-  return val ? (JSON.parse(val) as T) : defaultValue
+// top-level hierarchy category id for a connection; expanding it lazily loads
+// the connection (see toggleCategory)
+function connectionCategoryId(connectionId: string) {
+  return `connection-${connectionId}`
 }
 
-function localStorageSetJSON(key: string, val: unknown) {
-  if (val !== undefined && val !== null) {
-    localStorageSetItem(key, JSON.stringify(val))
+function sortedTreeChildren(
+  items: TreeNode[],
+  folderCategories: { has(key: string): boolean },
+) {
+  const tracks: TreeNode[] = []
+  const folders: TreeNode[] = []
+  const categories: TreeNode[] = []
+  for (const item of items) {
+    if (item.type === 'track') {
+      tracks.push(item)
+    } else if (folderCategories.has(item.id)) {
+      folders.push(item)
+    } else {
+      categories.push(item)
+    }
   }
+  return [...tracks, ...folders, ...categories]
+}
+
+// Binary search: returns the index of the last item whose offset <= `offset`.
+function findIndexAtOffset(offsets: number[], offset: number) {
+  let lo = 0
+  let hi = offsets.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (offsets[mid]! <= offset) {
+      lo = mid + 1
+    } else {
+      hi = mid
+    }
+  }
+  return Math.max(0, lo - 1)
+}
+
+// a category is collapsed if the user explicitly toggled it, else by its
+// defaultCollapsed (used for dormant connection categories)
+export function isNodeCollapsed(
+  item: TreeNode,
+  collapsed: { get(key: string): boolean | undefined },
+) {
+  const explicit = collapsed.get(item.id)
+  const byDefault = item.type === 'category' ? item.defaultCollapsed : undefined
+  return explicit ?? byDefault ?? false
+}
+
+function flattenTree(
+  items: TreeNode[],
+  folderCategories: { has(key: string): boolean },
+  collapsed: { get(key: string): boolean | undefined },
+  result: TreeNode[] = [],
+) {
+  for (const item of sortedTreeChildren(items, folderCategories)) {
+    result.push(item)
+    if (
+      item.children.length > 0 &&
+      !isNodeCollapsed(item, collapsed) &&
+      !(item.type === 'category' && folderCategories.has(item.id))
+    ) {
+      flattenTree(item.children, folderCategories, collapsed, result)
+    }
+  }
+  return result
 }
 
 /**
@@ -136,14 +176,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #volatile
        */
-      sortTrackNames: localStorageGetJSON<MaybeBoolean>(
+      sortTrackNames: localStorageGetJSON<boolean | undefined>(
         sortTrackNamesK,
         undefined,
       ),
       /**
        * #volatile
        */
-      sortCategories: localStorageGetJSON<MaybeBoolean>(
+      sortCategories: localStorageGetJSON<boolean | undefined>(
         sortCategoriesK,
         undefined,
       ),
@@ -257,7 +297,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       removeFromFavorites(trackId: string) {
-        self.favorites = self.favorites.filter(f => f !== trackId)
+        if (self.favoritesSet.has(trackId)) {
+          self.favoritesCounter = Math.max(0, self.favoritesCounter - 1)
+          self.favorites = self.favorites.filter(f => f !== trackId)
+        }
       },
       /**
        * #action
@@ -278,12 +321,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       setRecentlyUsed(str: string[]) {
         self.recentlyUsed = str
-      },
-      /**
-       * #action
-       */
-      setFavorites(str: string[]) {
-        self.favorites = str
       },
       /**
        * #action
@@ -323,7 +360,28 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleCategory(pathName: string) {
-        self.collapsed.set(pathName, !self.collapsed.get(pathName))
+        const session = getSession(self)
+        const conn = session.connections.find(
+          c => connectionCategoryId(c.connectionId) === pathName,
+        )
+        const isLive = conn
+          ? (session.connectionInstances ?? []).some(
+              c => c.connectionId === conn.connectionId,
+            )
+          : false
+        // account for defaultCollapsed (dormant connections) so the first click
+        // on one expands (and loads) it rather than toggling a phantom state
+        const wasCollapsed =
+          self.collapsed.get(pathName) ?? (conn ? !isLive : false)
+        if (conn && wasCollapsed) {
+          // expanding a connection = load it (no separate "turn on" step). Clear
+          // any explicit collapse so the category follows liveness via
+          // defaultCollapsed and never persists as expanded-but-unloaded
+          self.collapsed.delete(pathName)
+          session.hydrateConnection?.(conn.connectionId)
+        } else {
+          self.collapsed.set(pathName, !wasCollapsed)
+        }
       },
       /**
        * #action
@@ -394,11 +452,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #method
        */
-      getRefSeqTrackConf(assemblyName: string): MaybeAnyConfigurationModel {
+      getRefSeqTrackConf(
+        assemblyName: string,
+      ): AnyConfigurationModel | undefined {
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
-        const viewType = pluginManager.getViewType(self.view.type)!
+        const viewType = pluginManager.getViewType(self.view.type)
         const viewDisplayNames = new Set(viewType.displayTypes.map(d => d.name))
         const matches = trackConf?.displays.some((display: { type: string }) =>
           viewDisplayNames.has(display.type),
@@ -450,9 +510,27 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * unfiltered map of every track (incl. connection tracks for other
+       * assemblies/view types); used by the faceted selector
        */
       get allTrackConfigurationMap() {
         return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
+      },
+
+      /**
+       * #getter
+       * map restricted to tracks the current view can display; connection
+       * tracks go through the same filterTracks() pass as the tree so favorites
+       * and recently-used don't surface tracks the view can't show
+       */
+      get displayableTrackConfigurationMap() {
+        const { connectionInstances = [] } = getSession(self)
+        return new Map(
+          [
+            ...this.configAndSessionTrackConfigurations,
+            ...connectionInstances.flatMap(c => filterTracks(c.tracks, self)),
+          ].map(t => [t.trackId, t]),
+        )
       },
     }))
     .views(self => ({
@@ -462,8 +540,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get favoriteTracks() {
         return self.favorites
-          .filter(t => self.allTrackConfigurationMap.has(t))
-          .map(t => self.allTrackConfigurationMap.get(t)!)
+          .map(t => self.displayableTrackConfigurationMap.get(t))
+          .filter(notEmpty)
       },
 
       /**
@@ -472,8 +550,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get recentlyUsedTracks() {
         return self.recentlyUsed
-          .filter(t => self.allTrackConfigurationMap.has(t))
-          .map(t => self.allTrackConfigurationMap.get(t)!)
+          .map(t => self.displayableTrackConfigurationMap.get(t))
+          .filter(notEmpty)
       },
     }))
     .views(self => ({
@@ -481,18 +559,38 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #getter
        */
       get allTracks() {
-        const { connectionInstances = [] } = getSession(self)
+        const session = getSession(self)
+        const { connectionInstances = [], connections } = session
+        const liveByConnectionId = new Map(
+          connectionInstances.map(c => [c.connectionId, c]),
+        )
+        // one category per connection *config* (not just live instances), so a
+        // connection shows in the tree before it's loaded; expanding it hydrates
+        // the connection (see toggleCategory). Tracks are empty until then.
         return [
           {
             group: 'Tracks',
+            id: 'Tracks',
             tracks: self.configAndSessionTrackConfigurations,
             noCategories: false,
+            defaultCollapsed: false,
+            loading: false,
           },
-          ...connectionInstances.flatMap(c => ({
-            group: getConf(c, 'name'),
-            tracks: filterTracks(c.tracks, self),
-            noCategories: false,
-          })),
+          ...connections.map(conf => {
+            const live = liveByConnectionId.get(conf.connectionId)
+            return {
+              group: readConfObject(conf, 'name') as string,
+              id: connectionCategoryId(conf.connectionId),
+              tracks: live ? filterTracks(live.tracks, self) : [],
+              noCategories: false,
+              // dormant connections collapse by default so expanding loads them;
+              // a loaded one shows its tracks
+              defaultCollapsed: !live,
+              // show a spinner while the connection is fetching. A failed connect
+              // breaks the instance (no longer live), so this clears too
+              loading: live?.loading ?? false,
+            }
+          }),
         ]
       },
     }))
@@ -507,13 +605,15 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           type: 'category' as const,
           children: self.allTracks.map(s => ({
             name: s.group,
-            id: s.group,
+            id: s.id,
             type: 'category' as const,
             nestingLevel: 0,
+            defaultCollapsed: s.defaultCollapsed,
+            loading: s.loading,
             children: generateHierarchy({
               model: self,
               trackConfs: s.tracks,
-              extra: s.group,
+              extra: s.id,
               noCategories: s.noCategories,
             }),
           })),
@@ -522,47 +622,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       get flattenedItems() {
-        const { folderCategories } = self
-        const sortedChildren = (items: TreeNode[]) => {
-          const tracks: TreeNode[] = []
-          const folders: TreeNode[] = []
-          const categories: TreeNode[] = []
-          for (const item of items) {
-            if (item.type === 'track') {
-              tracks.push(item)
-            } else if (folderCategories.has(item.id)) {
-              folders.push(item)
-            } else {
-              categories.push(item)
-            }
-          }
-          return [...tracks, ...folders, ...categories]
-        }
-        const flatten = (items: TreeNode[], result: TreeNode[] = []) => {
-          for (const item of sortedChildren(items)) {
-            result.push(item)
-            const isFolderCategory =
-              item.type === 'category' && folderCategories.has(item.id)
-            if (
-              item.children.length > 0 &&
-              !self.collapsed.get(item.id) &&
-              !isFolderCategory
-            ) {
-              flatten(item.children, result)
-            }
-          }
-          return result
-        }
-
-        return flatten(self.hierarchy.children)
+        return flattenTree(
+          self.hierarchy.children,
+          self.folderCategories,
+          self.collapsed,
+        )
       },
       get flattenedItemOffsets() {
         const items = this.flattenedItems
         const offsets: number[] = []
         let cumulativeHeight = 0
-        for (let i = 0, l = items.length; i < l; i++) {
+        for (const item of items) {
           offsets.push(cumulativeHeight)
-          cumulativeHeight += getItemHeight(items[i]!, self.folderCategories)
+          cumulativeHeight += getItemHeight(item, self.folderCategories)
         }
         return { cumulativeHeight, offsets }
       },
@@ -573,48 +645,22 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         const { cumulativeHeight, offsets } = flattenedItemOffsets
 
         if (offsets.length === 0) {
-          return {
-            startIndex: 0,
-            endIndex: 0,
-            totalHeight: 0,
-            itemOffsets: offsets,
-          }
+          return { startIndex: 0, endIndex: -1, totalHeight: 0 }
         }
 
-        // Binary search to find the index at a given offset
-        const findIndexAtOffset = (offset: number) => {
-          let low = 0
-          let high = offsets.length - 1
-
-          while (low <= high) {
-            const mid = Math.floor((low + high) / 2)
-            if (
-              offsets[mid]! <= offset &&
-              (mid === offsets.length - 1 || offsets[mid + 1]! > offset)
-            ) {
-              return mid
-            } else if (offsets[mid]! < offset) {
-              low = mid + 1
-            } else {
-              high = mid - 1
-            }
-          }
-
-          return 0
-        }
-
-        const start = Math.max(0, findIndexAtOffset(scrollTop) - overscan)
-        const targetHeight = scrollTop + height + overscan * defaultItemHeight
+        const start = Math.max(
+          0,
+          findIndexAtOffset(offsets, scrollTop) - overscan,
+        )
         const end = Math.min(
           offsets.length - 1,
-          findIndexAtOffset(targetHeight) + overscan,
+          findIndexAtOffset(offsets, scrollTop + height) + overscan,
         )
 
         return {
           startIndex: start,
           endIndex: end,
           totalHeight: cumulativeHeight,
-          itemOffsets: offsets,
         }
       },
       get folderCategoryStats() {
@@ -649,10 +695,8 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       collapseTopLevelCategories() {
         for (const trackGroups of self.hierarchy.children) {
-          if (trackGroups.children.length) {
-            for (const path of findTopLevelCategories(trackGroups.children)) {
-              self.setCategoryCollapsed(path, true)
-            }
+          for (const path of findTopLevelCategories(trackGroups.children)) {
+            self.setCategoryCollapsed(path, true)
           }
         }
       },
@@ -669,7 +713,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .actions(self => ({
       afterAttach() {
-        // this should be the first autorun to properly initialize
+        // Ordering matters: this load autorun must register before the persist
+        // autorun below. Both run once immediately on registration; if persist
+        // ran first it would write the model's empty defaults to localStorage,
+        // clobbering saved settings before this autorun could load them.
         addDisposer(
           self,
           autorun(
@@ -679,7 +726,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
               )
               if (view) {
-                const lc = localStorageGetJSON<MaybeCollapsedKeys>(
+                const lc = localStorageGetJSON<[string, boolean][] | undefined>(
                   collapsedK(assemblyNames, view.type),
                   undefined,
                 )
@@ -707,19 +754,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 if (stc) {
                   self.setFolderCategories(stc)
                 } else {
-                  for (const elt of getConf(session, [
-                    'hierarchical',
-                    'defaultFolderCategories',
-                  ])) {
-                    self.toggleFolderCategory(`Tracks-${elt}`)
-                  }
+                  self.setFolderCategories(
+                    getConf(session, [
+                      'hierarchical',
+                      'defaultFolderCategories',
+                    ]).map((elt: string) => `Tracks-${elt}`),
+                  )
                 }
               }
             },
             { name: 'TrackSelectorInit' },
           ),
         )
-        // this should be the second autorun
+        // persist autorun: must stay second (see ordering note above)
         addDisposer(
           self,
           autorun(

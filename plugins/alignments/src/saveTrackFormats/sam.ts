@@ -1,6 +1,6 @@
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
-function qualToPhred(qual: string): string {
+function qualToPhred(qual: string | undefined): string {
   if (!qual) {
     return '*'
   }
@@ -32,21 +32,21 @@ export function stringifySAM({
 
   for (const feature of features) {
     const start = feature.get('start')
-    const nextPos = feature.get('next_pos')
+    const nextPos = feature.get('next_pos') as number | undefined
     // TODO: optional tags not yet output
     lines.push(
       [
-        feature.get('name') || feature.get('id') || '*',
-        feature.get('flag') ?? '0',
+        feature.get('name') || '*',
+        (feature.get('flags') as number | undefined) ?? 0,
         feature.get('refName') || '*',
         String(start + 1),
-        feature.get('mapq') ?? '255',
-        feature.get('CIGAR') || '*',
-        feature.get('next_ref') || '*',
+        feature.get('score') ?? 255,
+        (feature.get('CIGAR') as string | undefined) || '*',
+        (feature.get('next_ref') as string | undefined) || '*',
         typeof nextPos === 'number' ? String(nextPos + 1) : '0',
-        feature.get('template_len') ?? '0',
-        feature.get('seq') || '*',
-        qualToPhred(feature.get('qual')),
+        (feature.get('template_length') as number | undefined) ?? 0,
+        (feature.get('seq') as string | undefined) || '*',
+        qualToPhred(feature.get('qual') as string | undefined),
       ].join('\t'),
     )
   }

@@ -11,7 +11,11 @@ const baseConfig = {
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.cjs',
   },
   transformIgnorePatterns: [
-    '/node_modules/.+\\.(js|jsx)$',
+    // react-msaview (and its ESM-only deps) ship untranspiled ESM, so they must
+    // be run through babel rather than ignored like the rest of node_modules.
+    // The negative lookahead matches these package names anywhere in the pnpm
+    // path (`.pnpm/<pkg>@.../node_modules/<pkg>/...`).
+    '/node_modules/(?!.*(?:react-msaview|msa-parsers|@jbrowse[+/]svgcanvas|flatbush|flatqueue|colord)).+\\.(js|jsx)$',
     '\\.module\\.(css|sass|scss)$',
   ],
   collectCoverageFrom: [
@@ -31,18 +35,33 @@ const baseConfig = {
     '<rootDir>/config/jest/console.js',
     '<rootDir>/config/jest/messagechannel.js',
     '<rootDir>/config/jest/setHTML.js',
+    '<rootDir>/config/jest/resizeObserver.js',
   ],
   testEnvironmentOptions: { url: 'http://localhost' },
   testTimeout: 15000,
 }
 
 export default {
-  maxWorkers: '25%',
+  // '25%' resolves to a single worker on 4-core CI runners, which Jest runs
+  // in-band in the main process. The full-app integration suites each retain
+  // ~140MB (root model + RPC workers + autoruns are not torn down), so a lone
+  // accumulating process climbs to the heap ceiling and OOMs. Using >1 worker
+  // plus workerIdleMemoryLimit recycles a worker once it grows past the limit,
+  // capping memory regardless of the per-suite leak.
+  maxWorkers: '50%',
+  workerIdleMemoryLimit: '1500MB',
   projects: [
     {
       // Root-level integration test
       displayName: 'integration',
       testMatch: ['<rootDir>/integration.test.js'],
+      testEnvironment: 'node',
+      ...baseConfig,
+    },
+    {
+      // Pure helpers behind the docs autogeneration scripts
+      displayName: 'docs',
+      testMatch: ['<rootDir>/docs/**/*.test.ts'],
       testEnvironment: 'node',
       ...baseConfig,
     },

@@ -1,25 +1,15 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import {
-  Accordion,
-  AccordionSummary,
-  Card,
-  CardContent,
-  Typography,
-} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import CurrentJobCard from './CurrentJobCard.tsx'
 import JobCard from './JobCard.tsx'
+import JobsSection from './JobsSection.tsx'
 
-import type { JobsListModel, NewJob } from '../model.ts'
+import type { JobsListModel } from '../model.ts'
 
 const useStyles = makeStyles()(theme => ({
   root: {
     margin: theme.spacing(1),
-  },
-  expandIcon: {
-    color: theme.palette.tertiary.contrastText,
   },
 }))
 
@@ -32,78 +22,36 @@ const JobsListWidget = observer(function JobsListWidget({
   const { jobs, finished, queued, aborted } = model
   return (
     <div className={classes.root}>
-      <Accordion defaultExpanded>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-        >
-          <Typography variant="h5">Running jobs</Typography>
-        </AccordionSummary>
-        {jobs.length ? (
-          jobs.map((job: NewJob, index: number) => (
-            <CurrentJobCard job={job} key={`${JSON.stringify(job)}-${index}`} />
-          ))
-        ) : (
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="body1">No running jobs</Typography>
-            </CardContent>
-          </Card>
-        )}
-      </Accordion>
-      <Accordion defaultExpanded>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-        >
-          <Typography variant="h5">Queued jobs</Typography>
-        </AccordionSummary>
-        {queued.length ? (
-          queued.map((job: NewJob, index: number) => (
-            <JobCard job={job} key={`${JSON.stringify(job)}-${index}`} />
-          ))
-        ) : (
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="body1">No queued jobs</Typography>
-            </CardContent>
-          </Card>
-        )}
-      </Accordion>
-      <Accordion defaultExpanded>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-        >
-          <Typography variant="h5">Completed jobs</Typography>
-        </AccordionSummary>
-        {finished.length ? (
-          finished.map((job: NewJob, index: number) => (
-            <JobCard key={`${JSON.stringify(job)}-${index}`} job={job} />
-          ))
-        ) : (
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="body1">No completed jobs</Typography>
-            </CardContent>
-          </Card>
-        )}
-      </Accordion>
-      <Accordion defaultExpanded>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon className={classes.expandIcon} />}
-        >
-          <Typography variant="h5">Aborted jobs</Typography>
-        </AccordionSummary>
-        {aborted.length ? (
-          aborted.map((job: NewJob, index: number) => (
-            <JobCard key={`${JSON.stringify(job)}-${index}`} job={job} />
-          ))
-        ) : (
-          <Card variant="outlined">
-            <CardContent>
-              <Typography variant="body1">No aborted jobs</Typography>
-            </CardContent>
-          </Card>
-        )}
-      </Accordion>
+      <JobsSection
+        title="Running jobs"
+        jobs={jobs}
+        emptyText="No running jobs"
+        renderCard={job => <CurrentJobCard key={job.name} job={job} />}
+      />
+      <JobsSection
+        title="Queued jobs"
+        jobs={queued}
+        emptyText="No queued jobs"
+        renderCard={job => <JobCard key={job.name} job={job} />}
+      />
+      <JobsSection
+        title="Completed jobs"
+        jobs={finished}
+        emptyText="No completed jobs"
+        renderCard={job => <JobCard key={job.name} job={job} />}
+        onClear={() => {
+          model.clearFinished()
+        }}
+      />
+      <JobsSection
+        title="Aborted jobs"
+        jobs={aborted}
+        emptyText="No aborted jobs"
+        renderCard={job => <JobCard key={job.name} job={job} />}
+        onClear={() => {
+          model.clearAborted()
+        }}
+      />
     </div>
   )
 })

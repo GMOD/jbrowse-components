@@ -1,16 +1,6 @@
-import { adapterLocationKey } from '@jbrowse/text-indexing-core'
-
 import { sanitizeNameForPath } from './config-utils.ts'
 
-import type {
-  LocalPathLocation,
-  TrixTextSearchAdapter,
-  UriLocation,
-} from '../../base.ts'
-
-export function getLoc(elt: UriLocation | LocalPathLocation): string {
-  return elt.locationType === 'LocalPathLocation' ? elt.localPath : elt.uri
-}
+import type { TrixTextSearchAdapter } from '../../base.ts'
 
 export function createTrixAdapter(
   name: string,
@@ -35,15 +25,4 @@ export function createTrixAdapter(
     },
     assemblyNames,
   }
-}
-
-export function getAdapterLocation(
-  adapter: { type?: string; [key: string]: unknown } | undefined,
-): UriLocation | LocalPathLocation | undefined {
-  const key = adapterLocationKey[adapter?.type ?? '']
-  return key
-    ? // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      ((adapter?.[key] as UriLocation | LocalPathLocation) ??
-        (adapter as UriLocation | LocalPathLocation | undefined))
-    : undefined
 }

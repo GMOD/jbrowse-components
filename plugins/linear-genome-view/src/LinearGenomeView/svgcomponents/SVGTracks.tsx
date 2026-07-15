@@ -3,9 +3,10 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { trackSpacing } from './util.ts'
+import { labelOffset, trackBoxHeight } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { TrackLabelMode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 type LGV = LinearGenomeViewModel
@@ -18,7 +19,16 @@ interface DisplayResult {
   result: React.ReactNode
 }
 
-// SVG component, tracks
+function getOffsets(displayResults: DisplayResult[], textOffset: number) {
+  const offsets: number[] = []
+  let total = 0
+  for (const { track } of displayResults) {
+    offsets.push(total)
+    total += trackBoxHeight(track, textOffset)
+  }
+  return offsets
+}
+
 export default function SVGTracks({
   displayResults,
   model,
@@ -27,53 +37,59 @@ export default function SVGTracks({
   trackLabels = 'offset',
   trackLabelOffset = 0,
   leftBuffer = 0,
+  legendWidth = 0,
 }: {
   displayResults: DisplayResult[]
   model: LGV
   textHeight: number
   fontSize: number
-  trackLabels?: string
+  trackLabels?: TrackLabelMode
   trackLabelOffset?: number
   leftBuffer?: number
+  legendWidth?: number
 }) {
   const session = getSession(model)
-  const textOffset = trackLabels === 'offset' ? textHeight : 0
+  const textOffset = labelOffset(trackLabels, textHeight)
   const x = Math.max(-model.offsetPx, 0)
-  const elements: React.ReactElement[] = []
-  let prevOffset = 0
-  for (const { track, result } of displayResults) {
-    const conf = track.configuration
-    const trackName = getTrackName(conf, session)
-    const display = track.displays[0]!
-    const clipId = `track-clip-${conf.trackId}`
-    elements.push(
-      <g key={conf.trackId} transform={`translate(0 ${prevOffset})`}>
-        <defs>
-          <clipPath id={clipId}>
-            <rect
-              x={-leftBuffer}
-              y={textOffset}
-              width={model.width + trackLabelOffset + leftBuffer}
-              height={display.height}
+  const offsets = getOffsets(displayResults, textOffset)
+  return (
+    <>
+      {displayResults.map(({ track, result }, i) => {
+        const conf = track.configuration
+        const trackName = getTrackName(conf, session)
+        const display = track.displays[0]!
+        const clipId = `track-clip-${model.id}-${conf.trackId}`
+        const currentOffset = offsets[i]!
+        return (
+          <g key={conf.trackId} transform={`translate(0 ${currentOffset})`}>
+            <defs>
+              <clipPath id={clipId}>
+                <rect
+                  x={-leftBuffer}
+                  y={textOffset}
+                  width={
+                    model.width + trackLabelOffset + leftBuffer + legendWidth
+                  }
+                  height={display.height}
+                />
+              </clipPath>
+            </defs>
+            <g clipPath={`url(#${clipId})`}>
+              <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
+                {result}
+                <SVGRegionSeparators model={model} height={display.height} />
+              </g>
+            </g>
+            <SVGTrackLabel
+              trackName={trackName}
+              fontSize={fontSize}
+              trackLabels={trackLabels}
+              trackLabelOffset={trackLabelOffset}
+              x={x}
             />
-          </clipPath>
-        </defs>
-        <g clipPath={`url(#${clipId})`}>
-          <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
-            <SVGRegionSeparators model={model} height={display.height} />
-            {result}
           </g>
-        </g>
-        <SVGTrackLabel
-          trackName={trackName}
-          fontSize={fontSize}
-          trackLabels={trackLabels}
-          trackLabelOffset={trackLabelOffset}
-          x={x}
-        />
-      </g>,
-    )
-    prevOffset += display.height + textOffset + trackSpacing
-  }
-  return <>{elements}</>
+        )
+      })}
+    </>
+  )
 }

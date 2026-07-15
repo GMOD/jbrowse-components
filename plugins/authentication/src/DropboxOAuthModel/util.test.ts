@@ -21,10 +21,10 @@ describe('getDescriptiveErrorMessage', () => {
     expect(msg).toContain('unknown_tag')
   })
 
-  it('falls back to HTTP status on non-JSON response', async () => {
+  it('falls back to raw text on non-JSON response', async () => {
     const response = new Response('not json', { status: 500 })
     const msg = await getDescriptiveErrorMessage(response)
-    expect(msg).toBe('HTTP 500')
+    expect(msg).toBe('HTTP 500 - not json')
   })
 
   it('includes optional reason in message', async () => {

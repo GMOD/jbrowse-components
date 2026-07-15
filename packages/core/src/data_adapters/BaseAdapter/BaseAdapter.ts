@@ -5,14 +5,21 @@ import {
 } from '../../configuration/index.ts'
 
 import type PluginManager from '../../PluginManager.ts'
-import type { AnyConfigurationModel } from '../../configuration/index.ts'
+import type {
+  AnyConfigurationModel,
+  ConfigurationSchemaForModel,
+  ConfigurationSlotName,
+  ConfigurationSlotValue,
+} from '../../configuration/index.ts'
 import type { getSubAdapterType } from '../dataAdapterCache.ts'
 
 const EmptyConfig = ConfigurationSchema('empty', {})
 
-export class BaseAdapter {
+export class BaseAdapter<
+  CONF extends AnyConfigurationModel = AnyConfigurationModel,
+> {
   id: string
-  config: AnyConfigurationModel
+  config: CONF
   getSubAdapter?: getSubAdapterType
   pluginManager?: PluginManager
 
@@ -21,7 +28,7 @@ export class BaseAdapter {
   static capabilities: string[] = []
 
   constructor(
-    config: AnyConfigurationModel = EmptyConfig.create(),
+    config: CONF = EmptyConfig.create() as CONF,
     getSubAdapter?: getSubAdapterType,
     pluginManager?: PluginManager,
   ) {
@@ -32,21 +39,30 @@ export class BaseAdapter {
   }
 
   /**
-   * Sets the sequence adapter configuration for adapters that need reference
-   * sequence data (e.g., CRAM adapters). Wrapper adapters like
-   * SNPCoverageAdapter can override this to propagate to their subadapters.
-   *
-   * No-op if a sequence adapter config is already set or the argument is
-   * undefined, so callers don't need to guard.
+   * Stashes the reference-sequence adapter config for adapters that decode
+   * against the reference (e.g. BAM/CRAM). Set once and never cleared: the
+   * adapter is cached per adapterConfig (dataAdapterCache), so a given instance
+   * maps to a single, stable sequence adapter, and an `undefined` from a later
+   * caller must not wipe a config an earlier one already primed. Callers don't
+   * need to guard.
    */
   setSequenceAdapterConfig(config: Record<string, unknown> | undefined) {
-    if (config && !this.sequenceAdapterConfig) {
-      this.sequenceAdapterConfig = config
+    if (config) {
+      this.sequenceAdapterConfig ??= config
     }
   }
 
   /** shorthand for `readConfObject(this.config, arg)` */
-  getConf(arg: string | string[]) {
-    return readConfObject(this.config, arg)
+  getConf<
+    SLOT extends
+      ConfigurationSlotName<ConfigurationSchemaForModel<CONF>> | string[] =
+      ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>,
+  >(
+    arg: SLOT,
+    args?: Record<string, unknown>,
+  ): SLOT extends string
+    ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
+    : any {
+    return readConfObject(this.config, arg, args)
   }
 }

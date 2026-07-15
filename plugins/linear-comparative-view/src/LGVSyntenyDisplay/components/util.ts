@@ -1,42 +1,78 @@
-import { parseCigar } from '@jbrowse/cigar-utils'
+import { parseCigar2 } from '@jbrowse/cigar-utils'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
+import { findPosInCigar } from './findPosInCigar.ts'
+
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-type LSV = LinearSyntenyViewModel
-
-function findPosInCigar(cigar: string[], startX: number) {
-  let featX = 0
-  let mateX = 0
-  for (let i = 0; i < cigar.length; i++) {
-    const len = +cigar[i]!
-    const op = cigar[i + 1]!
-    const min = Math.min(len, startX - featX)
-
-    if (featX >= startX) {
-      break
-    }
-    if (op === 'I') {
-      mateX += len
-    } else if (op === 'D') {
-      featX += min
-    } else if (op === 'M' || op === '=' || op === 'X') {
-      mateX += min
-      featX += min
-    }
-  }
-  return [featX, mateX] as const
-}
-
-export interface SimpleRegion {
+interface SimpleRegion {
   refName: string
   start: number
   end: number
 }
 
-export async function navToSynteny({
+// Synteny-feature `mate` shape. Feature.get returns `unknown` for this
+// non-standard key, so the cast is centralized in one typed accessor rather
+// than repeated (and drifting) at each call site. Mirrors the LinearSyntenyRPC
+// SyntenyMate; `name`/`id` are only present when the source provides them.
+export interface SyntenyMate {
+  start: number
+  end: number
+  refName: string
+  assemblyName: string
+  name?: string
+  id?: string
+}
+
+export function getMate(feature: Feature) {
+  return feature.get('mate') as SyntenyMate
+}
+
+// A synteny view can be launched against any assembly the track spans, i.e. one
+// of the track's declared assemblyNames. This is static config, so it holds
+// whether or not the assembly is loaded yet — an unloaded one resolves on demand
+// (e.g. via a connection) when the view opens. A one-vs-all mate that is only a
+// PanSN sample label rather than a listed assembly is absent from assemblyNames,
+// so the launch option stays hidden for it.
+export function canLaunchSyntenyForMate(
+  trackAssemblyNames: string[],
+  mateAssembly: string | undefined,
+) {
+  return mateAssembly !== undefined && trackAssemblyNames.includes(mateAssembly)
+}
+
+// The visible content block overlapping the clicked feature, used to clip the
+// launched synteny view to the region of interest. Picking the block the
+// feature actually falls in (not contentBlocks[0]) keeps this correct when the
+// view shows multiple regions.
+export function findVisibleBlockForFeature(
+  view: LinearGenomeViewModel,
+  feature: Feature,
+) {
+  const refName = feature.get('refName')
+  const start = feature.get('start')
+  const end = feature.get('end')
+  return view.dynamicBlocks.contentBlocks.find(
+    b => b.refName === refName && b.start <= end && b.end >= start,
+  )
+}
+
+// Given a CIGAR-walked offset `mateX` along the mate axis, place it back on
+// genomic coordinates. The mate's genomic span is mate.start..mate.end. For
+// forward-strand alignments we walk forward from mate.start; for reverse
+// strand we walk backward from mate.end. `strand === undefined` is treated as
+// forward (avoids `* 0` zeroing out the offset).
+function mateOffsetToGenomic(
+  mate: Pick<SyntenyMate, 'start' | 'end'>,
+  mateOffset: number,
+  strand: number | undefined,
+) {
+  return strand === -1 ? mate.end - mateOffset : mate.start + mateOffset
+}
+
+export function navToSynteny({
   feature,
-  windowSize: ws,
+  windowSize,
   session,
   trackId,
   region,
@@ -49,16 +85,14 @@ export async function navToSynteny({
   session: AbstractSessionModel
   region?: SimpleRegion
 }) {
-  const cigar = feature.get('CIGAR')
-  const strand = feature.get('strand')
+  const cigar = feature.get('CIGAR') as string | undefined
+  const strand = feature.get('strand') as number | undefined
 
   const featRef = feature.get('refName')
   const featAsm = feature.get('assemblyName')
   const featStart = feature.get('start')
   const featEnd = feature.get('end')
-  const mate = feature.get('mate')
-  const mateStart = mate.start
-  const mateEnd = mate.end
+  const mate = getMate(feature)
   const mateAsm = mate.assemblyName
   const mateRef = mate.refName
 
@@ -68,61 +102,31 @@ export async function navToSynteny({
   let rFeatEnd: number
 
   if (region && cigar) {
-    const regStart = region.start
-    const regEnd = region.end
-    const p = parseCigar(cigar)
-    const [fStartX, mStartX] = findPosInCigar(p, regStart - featStart)
-    const [fEndX, mEndX] = findPosInCigar(p, regEnd - featStart)
+    const p = parseCigar2(cigar)
+    const [fStartX, mStartX] = findPosInCigar(p, region.start - featStart)
+    const [fEndX, mEndX] = findPosInCigar(p, region.end - featStart)
 
-    // avoid multiply by 0 with strand undefined
-    const flipper = strand === -1 ? -1 : 1
     rFeatStart = featStart + fStartX
     rFeatEnd = featStart + fEndX
-    rMateStart = (strand === -1 ? mateEnd : mateStart) + mStartX * flipper
-    rMateEnd = (strand === -1 ? mateEnd : mateStart) + mEndX * flipper
+    rMateStart = mateOffsetToGenomic(mate, mStartX, strand)
+    rMateEnd = mateOffsetToGenomic(mate, mEndX, strand)
   } else {
     rFeatStart = featStart
     rFeatEnd = featEnd
-    rMateStart = mateStart
-    rMateEnd = mateEnd
+    rMateStart = mate.start
+    rMateEnd = mate.end
   }
-  const l1 = `${featRef}:${Math.floor(rFeatStart - ws)}-${Math.floor(rFeatEnd + ws)}`
   const m1 = Math.min(rMateStart, rMateEnd)
   const m2 = Math.max(rMateStart, rMateEnd)
-  const l2 = `${mateRef}:${Math.floor(m1 - ws)}-${Math.floor(m2 + ws)}${
-    horizontallyFlip ? '[rev]' : ''
-  }`
+  const l1 = `${featRef}:${Math.max(0, Math.floor(rFeatStart - windowSize))}-${Math.floor(rFeatEnd + windowSize)}`
+  const l2 = `${mateRef}:${Math.max(0, Math.floor(m1 - windowSize))}-${Math.floor(m2 + windowSize)}${horizontallyFlip ? '[rev]' : ''}`
   session.addView('LinearSyntenyView', {
-    type: 'LinearSyntenyView',
-    views: [
-      {
-        type: 'LinearGenomeView',
-        hideHeader: true,
-        init: {
-          assembly: featAsm,
-          loc: l1,
-        },
-      },
-      {
-        type: 'LinearGenomeView',
-        hideHeader: true,
-        init: {
-          assembly: mateAsm,
-          loc: l2,
-        },
-      },
-    ],
-    tracks: [
-      {
-        configuration: trackId,
-        type: 'SyntenyTrack',
-        displays: [
-          {
-            type: 'LinearSyntenyDisplay',
-            configuration: `${trackId}-LinearSyntenyDisplay`,
-          },
-        ],
-      },
-    ],
-  }) as LSV
+    init: {
+      views: [
+        { assembly: featAsm, loc: l1 },
+        { assembly: mateAsm, loc: l2 },
+      ],
+      tracks: [[trackId]],
+    },
+  })
 }

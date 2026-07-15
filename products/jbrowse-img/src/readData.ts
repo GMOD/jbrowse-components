@@ -1,22 +1,15 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
-import type { Entry } from './parseArgv.ts'
+import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
+import {
+  makeFastaAssembly,
+  makeMultiWiggleTrackConfig,
+  makeTrackConfig,
+  syntenyTrackTypes,
+} from './makeConfigs.ts'
 
-export interface Opts {
-  noRasterize?: boolean
-  loc?: string
-  width?: number
-  session?: string
-  assembly?: string
-  config?: string
-  fasta?: string
-  aliases?: string
-  cytobands?: string
-  defaultSession?: boolean
-  trackList?: Entry[]
-  tracks?: string
-}
+import type { Assembly, Config, Opts, Track } from './types.ts'
 
 function read(file: string): unknown {
   try {
@@ -29,165 +22,96 @@ function read(file: string): unknown {
   }
 }
 
-export function makeLocation(file: string) {
-  return file.startsWith('http') ? { uri: file } : { localPath: file }
+// The `--multiwig` argument is either a path/URL list (comma-separated BigWig
+// URLs → the `bigWigs` shorthand) or a `.json` file holding an array of BigWig
+// URLs or full subadapter objects. A JSON file's `localPath`s resolve relative
+// to that file, matching how --tracks/--config paths resolve.
+function readMultiWiggleSources(file: string): unknown[] {
+  if (!file.toLowerCase().endsWith('.json')) {
+    return file
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean)
+  }
+  let data: unknown
+  try {
+    data = JSON.parse(fs.readFileSync(file, 'utf8'))
+  } catch (e) {
+    throw new Error(`Failed to parse ${file} as JSON`, { cause: e })
+  }
+  if (!Array.isArray(data)) {
+    throw new Error(
+      `${file}: expected a JSON array of BigWig URLs or subadapter objects`,
+    )
+  }
+  resolveLocalPaths(data, path.dirname(path.resolve(file)))
+  return data
 }
 
-function addRelativePaths(config: Record<string, unknown>, configPath: string) {
-  for (const key of Object.keys(config)) {
-    const val = config[key]
-    if (val !== null && typeof val === 'object') {
-      addRelativePaths(val as Record<string, unknown>, configPath)
-    } else if (key === 'localPath') {
-      config.localPath = path.resolve(configPath, val as string)
+// Resolve every `localPath` nested anywhere in `value` relative to `baseDir`,
+// so paths inside a config/assembly/tracks JSON are relative to that file.
+function resolveLocalPaths(value: unknown, baseDir: string) {
+  if (value !== null && typeof value === 'object') {
+    const obj = value as Record<string, unknown>
+    for (const key of Object.keys(obj)) {
+      const val = obj[key]
+      if (key === 'localPath' && typeof val === 'string') {
+        obj.localPath = path.resolve(baseDir, val)
+      } else {
+        resolveLocalPaths(val, baseDir)
+      }
     }
   }
 }
 
-export interface Assembly {
-  name: string
-  sequence: Record<string, unknown>
-  refNameAliases?: Record<string, unknown>
-  cytobands?: Record<string, unknown>
-}
-
-export interface Track {
-  trackId: string
-  displays?: unknown[]
-  [key: string]: unknown
-}
-
-export interface Config {
-  assemblies: Assembly[]
-  assembly: Assembly
-  tracks: Track[]
-  [key: string]: unknown
-}
-
-const trackTypeMap: Record<string, string> = {
-  bam: 'AlignmentsTrack',
-  cram: 'AlignmentsTrack',
-  bigwig: 'QuantitativeTrack',
-  vcfgz: 'VariantTrack',
-  gffgz: 'FeatureTrack',
-  hic: 'HicTrack',
-  bigbed: 'FeatureTrack',
-  bedgz: 'FeatureTrack',
-}
-
-export const trackTypes = Object.keys(trackTypeMap)
-
-function makeTabixIndex(file: string, index: string | undefined) {
-  return {
-    location: makeLocation(index || `${file}.tbi`),
-    indexType: index?.endsWith('.csi') ? 'CSI' : 'TBI',
-  }
-}
-
-function makeAdapter(
-  type: string,
-  file: string,
-  index: string | undefined,
-  sequenceAdapter: unknown,
+// `configObject` is a config already fetched off the network (from --hub or a
+// URL --config, see resolveHub.ts); when present it stands in for the local
+// --config file read. Its adapters use remote `uri`s, so no localPath rewriting
+// applies.
+export function readData(
+  {
+    assembly: asm,
+    config,
+    session,
+    fasta,
+    aliases,
+    cytobands,
+    defaultSession,
+    tracks,
+    trackList = [],
+    argv = [],
+  }: Opts,
+  configObject?: Config,
 ) {
-  if (type === 'bam') {
-    return {
-      type: 'BamAdapter',
-      bamLocation: makeLocation(file),
-      index: {
-        location: makeLocation(index || `${file}.bai`),
-        indexType: index?.endsWith('.csi') ? 'CSI' : 'BAI',
-      },
-      sequenceAdapter,
-    }
+  let assemblyData: Assembly | undefined
+  if (asm && fs.existsSync(asm)) {
+    assemblyData = read(asm) as Assembly
+    resolveLocalPaths(assemblyData, path.dirname(path.resolve(asm)))
   }
-  if (type === 'cram') {
-    return {
-      type: 'CramAdapter',
-      cramLocation: makeLocation(file),
-      craiLocation: makeLocation(index || `${file}.crai`),
-      sequenceAdapter,
-    }
-  }
-  if (type === 'bigwig') {
-    return { type: 'BigWigAdapter', bigWigLocation: makeLocation(file) }
-  }
-  if (type === 'vcfgz') {
-    return {
-      type: 'VcfTabixAdapter',
-      vcfGzLocation: makeLocation(file),
-      index: makeTabixIndex(file, index),
-    }
-  }
-  if (type === 'gffgz') {
-    return {
-      type: 'Gff3TabixAdapter',
-      gffGzLocation: makeLocation(file),
-      index: makeTabixIndex(file, index),
-    }
-  }
-  if (type === 'hic') {
-    return { type: 'HicAdapter', hicLocation: makeLocation(file) }
-  }
-  if (type === 'bigbed') {
-    return { type: 'BigBedAdapter', bigBedLocation: makeLocation(file) }
-  }
-  if (type === 'bedgz') {
-    return {
-      type: 'BedTabixAdapter',
-      bedGzLocation: makeLocation(file),
-      index: makeTabixIndex(file, index),
-    }
-  }
-  return undefined
-}
 
-export function makeTrackConfig(
-  type: string,
-  file: string,
-  index: string | undefined,
-  assembly: Assembly,
-): Track | undefined {
-  const trackType = trackTypeMap[type]
-  const adapter = makeAdapter(type, file, index, assembly.sequence.adapter)
-  if (!trackType || !adapter) {
-    return undefined
-  }
-  return {
-    type: trackType,
-    trackId: path.basename(file),
-    name: path.basename(file),
-    assemblyNames: [assembly.name],
-    adapter,
-  }
-}
-
-export function readData({
-  assembly: asm,
-  config,
-  session,
-  fasta,
-  aliases,
-  cytobands,
-  defaultSession,
-  tracks,
-  trackList = [],
-}: Opts) {
-  const assemblyData =
-    asm && fs.existsSync(asm) ? (read(asm) as Assembly) : undefined
   const rawTracksData = tracks ? read(tracks) : undefined
   if (rawTracksData !== undefined && !Array.isArray(rawTracksData)) {
     throw new Error(`${tracks}: expected a JSON array of tracks`)
   }
   const tracksData = rawTracksData as Track[] | undefined
-  const configData = config ? (read(config) as Config) : ({} as Config)
+  if (tracksData && tracks) {
+    const baseDir = path.dirname(path.resolve(tracks))
+    for (const track of tracksData) {
+      resolveLocalPaths(track, baseDir)
+    }
+  }
+  const configData: Partial<Config> & Record<string, unknown> = configObject
+    ? configObject
+    : config
+      ? (read(config) as Config)
+      : {}
 
   let sessionData = session
     ? (read(session) as Record<string, unknown>)
     : undefined
 
-  if (config) {
-    addRelativePaths(configData, path.dirname(path.resolve(config)))
+  if (config && !configObject) {
+    resolveLocalPaths(configData, path.dirname(path.resolve(config)))
   }
 
   // the session.json can be a raw session or a json file with a "session"
@@ -197,17 +121,22 @@ export function readData({
     sessionData = sessionData.session as Record<string, unknown>
   }
 
-  // only export first view
-  if (sessionData?.views) {
-    sessionData.view = (sessionData.views as Record<string, unknown>[])[0]
+  // only export first view (react-app2 sessions hold a `views` array). Guard on
+  // a non-empty array so an empty `views: []` isn't rewritten to `[undefined]`,
+  // which would crash createViewState downstream.
+  if (Array.isArray(sessionData?.views) && sessionData.views.length > 0) {
+    sessionData.views = [sessionData.views[0]]
   }
+
+  // The synteny tracks of a comparative view built from CLI args; pushed once
+  // configData.tracks exists below.
+  let syntenyTracks: Track[] = []
 
   // use assembly from file if a file existed
   if (assemblyData) {
     configData.assembly = assemblyData
   }
   // else check if it was an assembly name in a config file
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   else if (configData.assemblies?.length) {
     if (asm) {
       const assembly = configData.assemblies.find(entry => entry.name === asm)
@@ -219,43 +148,19 @@ export function readData({
       configData.assembly = configData.assemblies[0]!
     }
   }
-  // else load fasta from command line
-  else if (fasta) {
-    const bgzip = fasta.endsWith('gz')
-
-    configData.assembly = {
-      name: path.basename(fasta),
-      sequence: {
-        type: 'ReferenceSequenceTrack',
-        trackId: 'refseq',
-        adapter: {
-          type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
-          fastaLocation: makeLocation(fasta),
-          faiLocation: makeLocation(`${fasta}.fai`),
-          gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
-        },
-      },
-    }
-    if (aliases) {
-      configData.assembly.refNameAliases = {
-        adapter: {
-          type: 'RefNameAliasAdapter',
-          location: makeLocation(aliases),
-        },
-      }
-    }
-    if (cytobands) {
-      configData.assembly.cytobands = {
-        adapter: {
-          type: 'CytobandAdapter',
-          location: makeLocation(cytobands),
-        },
-      }
-    }
+  // else build the assemblies from CLI args: a comparative view's stacked
+  // assemblies + per-level synteny tracks (--fasta/--chromSizes/--paf/…), or a
+  // single linear assembly from --fasta (trackId 'refseq' for --refseq + tests).
+  else if (hasComparativeArgs(argv)) {
+    const comparative = buildComparative(argv)
+    configData.assemblies = comparative.assemblies
+    configData.assembly = comparative.assemblies[0]!
+    configData.assemblyLocs = comparative.locs
+    syntenyTracks = comparative.syntenyTracks
+  } else if (fasta) {
+    configData.assembly = makeFastaAssembly(fasta, aliases, cytobands, 'refseq')
   }
 
-  // throw if still no assembly
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!configData.assembly) {
     throw new Error(
       'no assembly specified, use --fasta to supply an indexed FASTA file (generated with samtools faidx yourfile.fa). see README for alternatives with --assembly and --config',
@@ -264,23 +169,40 @@ export function readData({
 
   if (tracksData) {
     configData.tracks = tracksData
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  else if (!configData.tracks) {
+  } else if (!configData.tracks) {
     configData.tracks = []
   }
+  configData.tracks.push(...syntenyTracks)
 
-  for (const track of trackList) {
-    const [type, opts] = track
+  // Regular (non-synteny) tracks attach to the primary assembly; synteny tracks
+  // are built per-level in buildComparative above.
+  for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
     const index = rest.find(r => r.startsWith('index:'))?.slice('index:'.length)
-    if (!file) {
+    if (syntenyTrackTypes.includes(type)) {
+      continue
+    } else if (!file) {
       throw new Error('no file specified')
-    }
-    const trackConfig = makeTrackConfig(type, file, index, configData.assembly)
-    if (trackConfig) {
-      configData.tracks.push(trackConfig)
+    } else if (type === 'multiwig') {
+      const name = rest.find(r => r.startsWith('name:'))?.slice('name:'.length)
+      configData.tracks.push(
+        makeMultiWiggleTrackConfig(
+          readMultiWiggleSources(file),
+          file,
+          configData.assembly,
+          name,
+        ),
+      )
+    } else {
+      const trackConfig = makeTrackConfig(
+        type,
+        file,
+        index,
+        configData.assembly,
+      )
+      if (trackConfig) {
+        configData.tracks.push(trackConfig)
+      }
     }
   }
 
@@ -295,5 +217,12 @@ export function readData({
     configData.defaultSession = sessionData
   }
 
-  return configData
+  // Normalize to a non-empty assemblies array so downstream code (and the
+  // react-app2 config) never has to special-case the single-assembly path.
+  if (!configData.assemblies?.length) {
+    configData.assemblies = [configData.assembly]
+  }
+
+  // assembly and tracks are guaranteed set above (throw otherwise)
+  return configData as Config
 }

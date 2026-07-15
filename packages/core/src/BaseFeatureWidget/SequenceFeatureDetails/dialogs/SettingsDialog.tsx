@@ -1,19 +1,16 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
-  Button,
-  DialogActions,
-  DialogContent,
   FormControl,
   FormControlLabel,
   FormLabel,
   Radio,
   RadioGroup,
-  TextField,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { NumberTextField, SubmitDialog } from '../../../ui/index.ts'
+import { makeStyles } from '../../../util/tss-react/index.ts'
 
 import type { SequenceFeatureDetailsModel } from '../model.ts'
 
@@ -40,42 +37,38 @@ const SequenceFeatureSettingsDialog = observer(
   }) {
     const { classes } = useStyles()
     const { upperCaseCDS } = model
-    const [intronBp, setIntronBp] = useState(`${model.intronBp}`)
-    const [upDownBp, setUpDownBp] = useState(`${model.upDownBp}`)
-    const intronBpValid = !Number.isNaN(+intronBp)
-    const upDownBpValid = !Number.isNaN(+upDownBp)
+    const [intronBp, setIntronBp] = useState<number | undefined>(model.intronBp)
+    const [upDownBp, setUpDownBp] = useState<number | undefined>(model.upDownBp)
     return (
-      <Dialog
+      <SubmitDialog
         maxWidth="xl"
         open
-        onClose={() => {
-          handleClose()
-        }}
         title="Feature sequence settings"
+        submitDisabled={intronBp === undefined || upDownBp === undefined}
+        onCancel={handleClose}
+        onSubmit={() => {
+          if (intronBp !== undefined && upDownBp !== undefined) {
+            model.setIntronBp(intronBp)
+            model.setUpDownBp(upDownBp)
+            handleClose()
+          }
+        }}
       >
-        <DialogContent className={classes.dialogContent}>
+        <div className={classes.dialogContent}>
           <div>
-            <TextField
+            <NumberTextField
               label="Number of intronic bases around splice site to display"
               className={classes.formElt}
-              value={intronBp}
-              helperText={!intronBpValid ? 'Not a number' : ''}
-              error={!intronBpValid}
-              onChange={event => {
-                setIntronBp(event.target.value)
-              }}
+              defaultValue={model.intronBp}
+              onValueChange={setIntronBp}
             />
           </div>
           <div>
-            <TextField
+            <NumberTextField
               label="Number of bases up/down stream of feature to display"
               className={classes.formElt}
-              value={upDownBp}
-              helperText={!upDownBpValid ? 'Not a number' : ''}
-              error={!upDownBpValid}
-              onChange={event => {
-                setUpDownBp(event.target.value)
-              }}
+              defaultValue={model.upDownBp}
+              onValueChange={setUpDownBp}
             />
           </div>
           <div>
@@ -100,33 +93,8 @@ const SequenceFeatureSettingsDialog = observer(
               </RadioGroup>
             </FormControl>
           </div>
-        </DialogContent>
-
-        <DialogActions>
-          <Button
-            onClick={() => {
-              model.setIntronBp(+intronBp)
-              model.setUpDownBp(+upDownBp)
-              handleClose()
-            }}
-            disabled={!intronBpValid || !upDownBpValid}
-            color="primary"
-            variant="contained"
-          >
-            Submit
-          </Button>
-          <Button
-            onClick={() => {
-              handleClose()
-            }}
-            color="secondary"
-            autoFocus
-            variant="contained"
-          >
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </div>
+      </SubmitDialog>
     )
   },
 )

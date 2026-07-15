@@ -66,6 +66,27 @@
       }
     },
     {
+      "name": "volvox-sample01-anchor",
+      "displayName": "volvox (sample01 as anchor)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_sample01_anchor_seq",
+        "adapter": {
+          "type": "FromConfigSequenceAdapter",
+          "adapterId": "volvox-sample01-anchor-seq",
+          "features": [
+            {
+              "uniqueId": "ctgA-sample01",
+              "refName": "ctgA",
+              "start": 0,
+              "end": 45818,
+              "seq": ""
+            }
+          ]
+        }
+      }
+    },
+    {
       "name": "volvox404",
       "sequence": {
         "type": "ReferenceSequenceTrack",
@@ -252,6 +273,126 @@
   },
   "tracks": [
     {
+      "type": "FeatureTrack",
+      "trackId": "volvox_mouse_inheritance_painting",
+      "name": "Mouse inheritance (chromosome painting)",
+      "category": ["Miscellaneous"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox_mouse_inheritance.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox_mouse_inheritance.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "volvox_mouse_inheritance_painting-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+          "rowHeight": 18,
+          "legend": [
+            { "label": "Maternal", "color": "rgb(227,26,28)" },
+            { "label": "Paternal", "color": "rgb(31,120,180)" },
+            { "label": "Unknown", "color": "rgb(170,170,170)" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "volvox_mouse_samples_by_sample",
+      "name": "Mouse samples (parents highlighted)",
+      "category": ["Miscellaneous"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox_mouse_inheritance.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox_mouse_inheritance.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "volvox_mouse_samples_by_sample-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "color": "#bdbdbd",
+          "sampleColorMap": {
+            "mom": "#e41a1c",
+            "dad": "#377eb8"
+          },
+          "rowHeight": 18
+        }
+      ]
+    },
+    {
+      "type": "GWASTrack",
+      "trackId": "volvox_gwas",
+      "name": "Manhattan plot",
+      "category": ["Variants"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "GWASAdapter",
+        "scoreColumn": "neg_log_pvalue",
+        "bedGzLocation": {
+          "uri": "volvox.gwas.tsv.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.gwas.tsv.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "displayId": "volvox_gwas-LinearManhattanDisplay",
+          "type": "LinearManhattanDisplay"
+        }
+      ]
+    },
+    {
       "type": "GCContentTrack",
       "trackId": "volvox_gc",
       "assemblyNames": ["volvox"],
@@ -297,7 +438,16 @@
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "VcfTabixAdapter",
-        "uri": "volvox.dup.renamed.vcf.gz"
+        "vcfGzLocation": {
+          "locationType": "UriLocation",
+          "uri": "volvox.dup.renamed.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox.dup.renamed.vcf.gz.tbi"
+          }
+        }
       }
     },
     {
@@ -469,6 +619,27 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "volvox_alignments_grouped_by_strand",
+      "name": "volvox-sorted.bam (pre-grouped by strand)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox", "volvox2"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "volvox-sorted.bam"
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "height": 600,
+          "displayId": "volvox_alignments_grouped_by_strand_display",
+          "groupBy": {
+            "type": "strand"
+          }
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "volvox_bam_snpcoverage",
       "name": "volvox-sorted.bam (contigA LinearSNPCoverageDisplay)",
       "category": ["Integration test"],
@@ -582,16 +753,7 @@
         {
           "type": "LinearAlignmentsDisplay",
           "displayId": "volvox_bam_small_max_height_alignments",
-          "pileupDisplay": {
-            "type": "LinearPileupDisplay",
-            "displayId": "volvox_bam_small_max_height_alignments_pileup",
-            "renderers": {
-              "PileupRenderer": {
-                "type": "PileupRenderer",
-                "maxHeight": 10
-              }
-            }
-          }
+          "maxHeight": 10
         }
       ]
     },
@@ -694,6 +856,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi2",
       "name": "MultiWig no names",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -729,6 +892,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi",
       "name": "MultiWig",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -770,6 +934,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi_multirowxy",
       "name": "MultiWig (multirowxy)",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -801,6 +966,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi_multirowdensity",
       "name": "MultiWig (multirowdensity)",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -832,6 +998,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "volvox_microarray_multi_multirowline",
       "name": "MultiWig (multirowline)",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -863,6 +1030,7 @@
       "type": "MultiQuantitativeTrack",
       "trackId": "mytrack",
       "name": "MultiWig (w/ colors and default line rendering)",
+      "category": ["MultiWiggle"],
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "MultiWiggleAdapter",
@@ -1043,68 +1211,6 @@
       }
     },
     {
-      "type": "FeatureTrack",
-      "trackId": "lollipop_track",
-      "name": "FromConfig Track (defaults to LinearLollipopDisplay)",
-      "assemblyNames": ["volvox"],
-      "category": ["Miscellaneous"],
-      "adapter": {
-        "type": "FromConfigAdapter",
-        "adapterId": "Xvg1McRUAP",
-        "features": [
-          {
-            "uniqueId": "one",
-            "refName": "ctgA",
-            "start": 190,
-            "end": 191,
-            "type": "foo",
-            "score": 200,
-            "name": "Boris",
-            "note": "note for boris"
-          },
-          {
-            "uniqueId": "two",
-            "refName": "ctgA",
-            "start": 191,
-            "end": 192,
-            "type": "bar",
-            "score": 20,
-            "name": "Theresa",
-            "note": "note for theresa"
-          },
-          {
-            "uniqueId": "three",
-            "refName": "ctgA",
-            "start": 210,
-            "end": 211,
-            "type": "baz",
-            "score": 300,
-            "name": "Nigel",
-            "note": "note for nigel"
-          },
-          {
-            "uniqueId": "four",
-            "refName": "ctgA",
-            "start": 220,
-            "end": 221,
-            "score": 2,
-            "type": "quux",
-            "name": "Geoffray",
-            "note": "note for geoffray"
-          }
-        ]
-      },
-      "displays": [
-        {
-          "type": "LinearLollipopDisplay",
-          "displayId": "lollipop_track_linear",
-          "renderer": {
-            "type": "LollipopRenderer"
-          }
-        }
-      ]
-    },
-    {
       "type": "AlignmentsTrack",
       "trackId": "volvox-long-reads-sv-bam",
       "name": "volvox-long reads with SV",
@@ -1278,6 +1384,174 @@
             "locationType": "UriLocation"
           }
         }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_contigA_alias",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (contigA alias)",
+      "category": ["Miscellaneous"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.contigA.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.contigA.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_jexl_color",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (per-feature jexl color)",
+      "category": ["Miscellaneous"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3tabix_genes_jexl_color_linear",
+          "color": "jexl:feature.type=='CDS'?'#d62728':feature.type=='exon'?'#2ca02c':'#1f77b4'"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_jexl_color_and_label",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (per-feature jexl color + label)",
+      "category": ["Miscellaneous"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "gff3tabix_genes_jexl_color_and_label_linear",
+          "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+          "labels": {
+            "name": "jexl:feature.name+' ['+feature.type+']'"
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_shorthand_color",
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (shorthand color)",
+      "category": ["Shorthand examples"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displayDefaults": {
+        "color": "#6a3d9a"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "gff3tabix_genes_shorthand_jexl",
+      "assemblyNames": ["volvox"],
+      "name": "GFF3Tabix genes (shorthand jexl color + label)",
+      "category": ["Shorthand examples"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displayDefaults": {
+        "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
+        "labels": {
+          "name": "jexl:feature.name+' ['+feature.type+']'"
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_filtered_vcf_shorthand",
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "name": "volvox filtered vcf (shorthand display colors)",
+      "assemblyNames": ["volvox"],
+      "category": ["Shorthand examples"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displayDefaults": {
+        "color": "#1f78b4",
+        "strokeColor": "#e31a1c"
       }
     },
     {
@@ -1712,7 +1986,7 @@
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": {
             "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+            "color1": "jexl:feature.type=='SNV'?'green':'purple'"
           }
         }
       ]
@@ -1987,7 +2261,7 @@
           "displayId": "arc_track_custom_height_linear",
           "renderer": {
             "type": "ArcRenderer",
-            "height": "jexl:log10(get(feature,'end')-get(feature,'start'))*20"
+            "height": "jexl:log10(feature.end-feature.start)*20"
           }
         }
       ]
@@ -2069,6 +2343,40 @@
         "queryAssembly": "volvox_ins",
         "pafLocation": {
           "uri": "volvox_ins.paf"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
+      "trackId": "volvox_all_vs_all",
+      "name": "volvox all-vs-all (ins/volvox/del pangenome)",
+      "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
+      "adapter": {
+        "type": "AllVsAllPAFAdapter",
+        "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
+        "pafLocation": {
+          "uri": "volvox_all_vs_all.paf"
+        }
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "category": ["Synteny"],
+      "trackId": "volvox_all_vs_all_indexed",
+      "name": "volvox all-vs-all indexed (ins/volvox/del pangenome)",
+      "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
+      "adapter": {
+        "type": "AllVsAllIndexedPAFAdapter",
+        "assemblyNames": ["volvox_ins", "volvox", "volvox_del"],
+        "pifGzLocation": {
+          "uri": "volvox_all_vs_all.pif.gz"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "volvox_all_vs_all.pif.gz.tbi"
+          }
         }
       }
     },
@@ -2493,6 +2801,9 @@
       "assemblyNames": ["volvox"],
       "name": "Custom Tooltips (mouseover callback)",
       "category": ["Label Positioning Examples"],
+      "metadata": {
+        "skipTextIndex": true
+      },
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": {
@@ -2512,11 +2823,11 @@
           "displayId": "gff3_custom_tooltips_linear",
           "renderer": {
             "type": "CanvasFeatureRenderer",
-            "mouseover": "jexl:`${get(feature,'name')} [${get(feature,'type')}] at ${get(feature,'start')} - ${get(feature,'end')} (strand: ${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})`",
-            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
+            "mouseover": "jexl:`${feature.name} [${feature.type}] at ${feature.start} - ${feature.end} (strand: ${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})`",
+            "subfeatureMouseover": "jexl:feature.name + ' (' + feature.type + ') - parent: ' + feature.parent.name",
             "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+              "name": "jexl:feature.name || feature.id",
+              "description": "jexl:feature.note || feature.description || ''"
             },
             "showLabels": true,
             "showDescriptions": true,
@@ -2531,6 +2842,9 @@
       "assemblyNames": ["volvox"],
       "name": "_mouseOver Attributes",
       "category": ["Label Positioning Examples"],
+      "metadata": {
+        "skipTextIndex": true
+      },
       "adapter": {
         "type": "Gff3Adapter",
         "gffLocation": {
@@ -2545,8 +2859,8 @@
           "renderer": {
             "type": "CanvasFeatureRenderer",
             "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+              "name": "jexl:feature.name || feature.id",
+              "description": "jexl:feature.note || feature.description || ''"
             },
             "showLabels": true,
             "showDescriptions": false,
@@ -2585,7 +2899,8 @@
       "assemblyNames": ["volvox"],
       "displays": [
         {
-          "type": "MultiLinearVariantDisplay",
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "volvox multi-sample sv-LinearMultiSampleVariantDisplay",
           "showReferenceAlleles": true,
           "colorBy": "population"
         }
@@ -2605,22 +2920,82 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
-          "jexlFilters": ["get(feature,'start')<8000"],
+          "jexlFilters": ["feature.start<8000"],
           "renderer": {
             "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
+            "color1": "jexl:feature.start>5000?'darkgreen':'red'"
           }
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "volvox_variants_vcf",
+      "name": "volvox variants (vg deconstruct -a -u)",
+      "category": ["Synteny"],
+      "assemblyNames": ["volvox"],
+      "metadata": {
+        "skipTextIndex": true
+      },
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.variants.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.variants.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "MafTrack",
+      "trackId": "volvox_maf",
+      "name": "MAF multiple alignment (tabix)",
+      "category": ["Multiple alignment"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "MafTabixAdapter",
+        "samples": [
+          "volvox",
+          "simvolvox",
+          "minivolvox",
+          "microvolvox",
+          "nanovolvox",
+          "megavolvox",
+          "ultravolvox",
+          "picovolvox",
+          "hypervolvox",
+          "metavolvox"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox.maf.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "nhLocation": {
+          "uri": "volvox.maf.nh",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "indexType": "TBI",
+          "location": {
+            "uri": "volvox.maf.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMafDisplay",
+          "displayId": "volvox_maf-LinearMafDisplay"
         }
       ]
     }
   ],
   "plugins": [
-    {
-      "name": "UMDLocPlugin",
-      "umdLoc": {
-        "uri": "umd_plugin.js"
-      }
-    },
     {
       "name": "UMDUrlPlugin",
       "umdUrl": "umd_plugin.js"

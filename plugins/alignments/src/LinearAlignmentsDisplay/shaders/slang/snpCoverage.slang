@@ -1,0 +1,49 @@
+// SNP coverage pass: segments stacked on the coverage bars showing A/C/G/T/N
+// fraction per bin. colorType encodes 1=A 2=C 3=G 4=T 5=N.
+//! targets: wgsl, glsl
+//! layout-out: packages/alignments-core/src/snpCoverageLayout.generated.ts
+
+import alignmentsUniforms;
+import colorPack;
+import hpmath;
+
+
+public static const uint VERTS_PER_INSTANCE = 6u;
+[[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+
+// yOffset/segHeight are fractions of THIS position's coverage bar (not regional).
+// relDepth = totalDepthAtPos / regionMaxDepth feeds the bar-height calculation
+// via normalizeDepth, so each segment is a linear slice of a possibly-log-scaled
+// bar without any per-position un-mixing at draw time.
+struct Instance {
+  uint  position   : ATTR0;
+  float yOffset    : ATTR1;
+  float segHeight  : ATTR2;
+  float colorType  : ATTR3;
+  float relDepth   : ATTR4;
+};
+
+float3 snpColor(float ct, Uniforms u) {
+  // 5=N and any other type hit `default` and use the dedicated N color.
+  switch (int(ct)) {
+    case 1:  return unpackRGBA(u.colorBaseA).xyz;
+    case 2:  return unpackRGBA(u.colorBaseC).xyz;
+    case 3:  return unpackRGBA(u.colorBaseG).xyz;
+    case 4:  return unpackRGBA(u.colorBaseT).xyz;
+    default: return unpackRGBA(u.colorBaseN).xyz;
+  }
+}
+
+[shader("vertex")]
+ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+  ColorVsOut o;
+  o.position = covSegQuad(inst.position, inst.yOffset, inst.segHeight,
+                          inst.relDepth, quadLocal(vid), u);
+  o.color = float4(snpColor(inst.colorType, u), 1.0);
+  return o;
+}
+
+[shader("fragment")]
+float4 fs_main(ColorVsOut fragIn) : SV_Target {
+  return fragIn.color;
+}

@@ -29,11 +29,9 @@
     "prebuild": "pnpm clean",
     "build": "pnpm run /^build:/",
     "prepack": "pnpm build",
-    "build:esm": "tsc -p tsconfig.build.esm.json",
+    "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
-    "clean": "rimraf esm dist *.tsbuildinfo",
-    "storybook": "storybook dev --port 6006",
-    "storybook:build": "storybook build"
+    "clean": "rimraf esm dist *.tsbuildinfo"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -41,7 +39,7 @@
     "@emotion/styled": "^11.14.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/embedded-core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.10.2",
+    "@jbrowse/mobx-state-tree": "^5.12.0",
     "@jbrowse/plugin-authentication": "workspace:^",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-config": "workspace:^",
@@ -50,9 +48,8 @@
     "@jbrowse/plugin-variants": "workspace:^",
     "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/product-core": "workspace:^",
-    "@mui/icons-material": "^9.0.1",
-    "@mui/material": "^9.0.1",
-    "mobx": "^6.15.4",
+    "@mui/material": "^9.2.0",
+    "mobx": "^6.16.1",
     "mobx-react": "^9.2.2"
   },
   "peerDependencies": {

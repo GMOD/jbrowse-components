@@ -1,8 +1,11 @@
 packages:
   - 'packages/*'
   - 'products/*'
+  - 'products/*/examples-site'
   - 'plugins/*'
   - 'website'
+overrides:
+  '@babel/core': '^8.0.1'
 blockExoticSubdeps: true
 allowBuilds:
   canvas: true
@@ -16,7 +19,12 @@ allowBuilds:
 minimumReleaseAge: '1440'
 minimumReleaseAgeExclude:
   - '@gmod/*'
-  - 'g2p_mapper'
   - 'ixixx'
   - 'gff-nostream'
+  - 'electron'
+  - 'generic-filehandle2'
   - '@jbrowse/mobx-state-tree'
+  - 'eslint-plugin-unicorn'
+  - 'typescript'
+  - '@typescript/*'
+  - 'jest-fetch-mock'

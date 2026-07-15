@@ -1,23 +1,21 @@
 ---
-id: creating_addtrack_workflow
-title: Creating custom add-track workflows
+title: Add-track workflows
 description: Custom UI in the Add track dialog for non-standard track types
 guide_category: Creating pluggable elements
 ---
 
 Plugins can register their own React component to display in the "Add track"
 widget for adding tracks that require custom logic. The Multi-wiggle track is an
-example of this, it produces a textbox where you can paste a list of files.
+example: it produces a textbox where you can paste a list of files.
 
 A simple addition to the add track workflow:
 
-```js
-// plugins/wiggle/MultiWiggleAddTrackWidget/index.jsx
+```ts
+// plugins/wiggle/src/MultiWiggleAddTrackWorkflow/index.ts
 
 import PluginManager from '@jbrowse/core/PluginManager'
 import { AddTrackWorkflowType } from '@jbrowse/core/pluggableElementTypes'
 import { types } from '@jbrowse/mobx-state-tree'
-
 
 import MultiWiggleWidget from './AddTrackWorkflow'
 
@@ -37,10 +35,10 @@ export default (pm: PluginManager) => {
 
 ...and ensure you install this component into your larger plugin:
 
-```js
-// plugins/wiggle/index.jsx
+```ts
+// plugins/wiggle/src/index.ts
 
-import MultiWiggleAddTrackWidgetF from './MultiWiggleAddTrackWidget'
+import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow'
 
 // ...
 
@@ -49,8 +47,18 @@ export default class WigglePlugin extends Plugin {
 
   install(pm: PluginManager) {
     // ...
-    MultiWiggleAddTrackWidgetF(pm)
+    MultiWiggleAddTrackWorkflowF(pm)
     // ...
   }
 }
 ```
+
+## See also
+
+- [Creating custom connections](/docs/developer_guides/creating_connection) -
+  another way to add tracks in bulk
+- [Extension points](/docs/developer_guides/extension_points) -
+  `Core-guessAdapterForLocation` and `Core-guessTrackTypeForLocation` are the
+  related add-track inference hooks
+- [Pluggable elements](/docs/developer_guides/pluggable_elements) - overview of
+  all element types a plugin can register, including add-track workflows

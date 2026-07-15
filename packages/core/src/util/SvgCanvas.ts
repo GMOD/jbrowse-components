@@ -22,23 +22,31 @@ interface SavedState {
   groupsToClose: number
 }
 
+const XML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+}
+
 function escapeXml(s: string) {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return s.replaceAll(/[&<>"]/g, c => XML_ESCAPES[c]!)
 }
 
 // Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace"
-// into SVG-compatible font-size and font-family attributes.
+// into SVG-compatible font-size and font-family attributes. The default
+// sans-serif family is left off so feature labels match the raw-JSX <text>
+// elements (ruler, scalebar, etc.), which set no family either; an
+// explicitly-set family (e.g. monospace) is still emitted.
 function fontAttrs(font: string) {
   const m = /(\d+(?:\.\d+)?)px\s+(.+)/.exec(font)
   if (m) {
-    return ` font-size="${m[1]}" font-family="${m[2]}"`
+    const family = m[2] === 'sans-serif' ? '' : ` font-family="${m[2]}"`
+    return ` font-size="${m[1]}"${family}`
   }
   return ` font-size="${Number.parseFloat(font) || 10}"`
 }
+let clipIdCounter = 0
 
 export class SvgCanvas {
   private parts: string[] = []
@@ -61,7 +69,6 @@ export class SvgCanvas {
   private sx = 1
   private sy = 1
   private rotation = 0
-  private clipIdCounter = 0
 
   private transformPoint(x: number, y: number): [number, number] {
     const sx = x * this.sx
@@ -88,15 +95,18 @@ export class SvgCanvas {
 
   // Split rgba(r,g,b,a) into separate color + opacity SVG attributes for
   // compatibility with SVG 1.1 consumers like Inkscape that don't honor the
-  // alpha component of CSS3 rgba() fill/stroke values.
+  // alpha component of CSS3 rgba() fill/stroke values. Whitespace-tolerant so
+  // spaced forms (MUI alpha(), colord toRgbString → "rgba(255, 177, 29, 0.12)")
+  // are separated too, not just the compact "rgba(255,177,29,0.12)".
   private paintAttr(
     name: string,
     style: string | CanvasGradient | CanvasPattern,
   ) {
     const s = `${style}`
-    const m = /^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(s)
+    const m =
+      /^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)$/.exec(s)
     if (m) {
-      const a = parseFloat(m[4]!)
+      const a = Number.parseFloat(m[4]!)
       const base = `${name}="rgb(${m[1]},${m[2]},${m[3]})"`
       return a < 1 ? `${base} ${name}-opacity="${a}"` : base
     }
@@ -196,7 +206,7 @@ export class SvgCanvas {
   setTransform(
     a: number,
     b: number,
-    c: number,
+    _c: number,
     d: number,
     e: number,
     f: number,
@@ -386,7 +396,7 @@ export class SvgCanvas {
     if (!this.pathData) {
       return
     }
-    const id = `svgcanvas-clip-${this.clipIdCounter++}`
+    const id = `svgcanvas-clip-${clipIdCounter++}`
     this.parts.push(
       `<clipPath id="${id}"><path d="${this.pathData}"/></clipPath><g clip-path="url(#${id})">`,
     )

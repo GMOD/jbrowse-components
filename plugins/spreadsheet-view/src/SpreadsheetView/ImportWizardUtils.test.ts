@@ -32,10 +32,10 @@ describe('detectFileType', () => {
 describe('getFileSourceName', () => {
   test('returns uri for UriLocation', () => {
     const loc = {
-      uri: 'http://example.com/file.vcf',
+      uri: 'https://example.com/file.vcf',
       locationType: 'UriLocation',
     } as FileLocation
-    expect(getFileSourceName(loc)).toBe('http://example.com/file.vcf')
+    expect(getFileSourceName(loc)).toBe('https://example.com/file.vcf')
   })
 
   test('returns localPath for LocalPathLocation', () => {

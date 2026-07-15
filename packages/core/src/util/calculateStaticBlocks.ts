@@ -1,9 +1,4 @@
-import {
-  BlockSet,
-  makeContentBlock,
-  makeElidedBlock,
-  makeInterRegionPaddingBlock,
-} from './blockTypes.ts'
+import { BlockSet } from './blockTypes.ts'
 
 import type { Region } from './types/index.ts'
 import type { Region as RegionModel } from './types/mst.ts'
@@ -15,7 +10,6 @@ export interface Base1DViewModel {
   displayedRegions: (Region | Instance<typeof RegionModel>)[]
   bpPerPx: number
   minimumBlockWidth: number
-  interRegionPaddingWidth: number
 }
 
 const blockSizeCssPx = 800
@@ -30,7 +24,6 @@ export default function calculateStaticBlocks(
     displayedRegions,
     bpPerPx,
     minimumBlockWidth,
-    interRegionPaddingWidth,
     width: modelWidth,
   } = model
 
@@ -92,14 +85,13 @@ export default function calculateStaticBlocks(
       const key = `${assemblyName}:${refName}:${start}:${end}:${displayedRegionIndex}${reversed ? ':rev' : ''}`
 
       if (padding && displayedRegionIndex === 0 && blockNum === 0) {
-        blocks.push(
-          makeInterRegionPaddingBlock({
-            key: `${key}-beforeFirstRegion`,
-            widthPx: blockSizeCssPx,
-            offsetPx: blockOffsetPx - blockSizeCssPx,
-            variant: 'boundary',
-          }),
-        )
+        blocks.push({
+          type: 'InterRegionPaddingBlock',
+          key: `${key}-beforeFirstRegion`,
+          widthPx: blockSizeCssPx,
+          offsetPx: blockOffsetPx - blockSizeCssPx,
+          variant: 'boundary',
+        })
       }
 
       const data = {
@@ -117,45 +109,23 @@ export default function calculateStaticBlocks(
       }
       blocks.push(
         elision && regionWidthPx < minimumBlockWidth
-          ? makeElidedBlock(data)
-          : makeContentBlock(data),
+          ? { ...data, type: 'ElidedBlock' }
+          : { ...data, type: 'ContentBlock' },
       )
 
-      if (padding) {
-        if (
-          regionWidthPx >= minimumBlockWidth &&
-          isRightEndOfDisplayedRegion &&
-          displayedRegionIndex < displayedRegions.length - 1
-        ) {
-          blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-rightpad`,
-              widthPx: interRegionPaddingWidth,
-              offsetPx: blockOffsetPx + widthPx,
-            }),
-          )
-        }
-        if (
-          displayedRegionIndex === displayedRegions.length - 1 &&
-          isRightEndOfDisplayedRegion
-        ) {
-          blocks.push(
-            makeInterRegionPaddingBlock({
-              key: `${key}-afterLastRegion`,
-              widthPx: blockSizeCssPx,
-              offsetPx: blockOffsetPx + widthPx,
-              variant: 'boundary',
-            }),
-          )
-        }
+      if (
+        padding &&
+        displayedRegionIndex === displayedRegions.length - 1 &&
+        isRightEndOfDisplayedRegion
+      ) {
+        blocks.push({
+          type: 'InterRegionPaddingBlock',
+          key: `${key}-afterLastRegion`,
+          widthPx: blockSizeCssPx,
+          offsetPx: blockOffsetPx + widthPx,
+          variant: 'boundary',
+        })
       }
-    }
-    if (
-      padding &&
-      regionWidthPx >= minimumBlockWidth &&
-      displayedRegionIndex < displayedRegions.length - 1
-    ) {
-      regionBpOffset += interRegionPaddingWidth * bpPerPx
     }
     regionBpOffset += regionEnd - regionStart
   }

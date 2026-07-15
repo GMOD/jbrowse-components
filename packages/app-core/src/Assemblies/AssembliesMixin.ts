@@ -1,9 +1,13 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
+import { asSession } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type {
+  BaseAssemblyConfigModel,
+  BaseAssemblyConfigSchema,
+} from '@jbrowse/core/assemblyManager'
 import type { AnyConfiguration } from '@jbrowse/core/configuration'
-import type { BaseSession } from '@jbrowse/product-core'
 
 /**
  * #stateModel AssembliesMixin
@@ -21,14 +25,20 @@ export function AssembliesMixin(
       /**
        * #property
        */
-      sessionAssemblies: types.array(assemblyConfigSchemasType),
+      sessionAssemblies: types.stripDefault(
+        types.array(assemblyConfigSchemasType),
+        [],
+      ),
       /**
        * #property
        */
-      temporaryAssemblies: types.array(assemblyConfigSchemasType),
+      temporaryAssemblies: types.stripDefault(
+        types.array(assemblyConfigSchemasType),
+        [],
+      ),
     })
     .actions(s => {
-      const self = s as typeof s & BaseSession
+      const self = asSession(s)
       return {
         /**
          * #action
@@ -100,19 +110,27 @@ export function AssembliesMixin(
         },
       }
     })
-    .postProcessSnapshot(snap => {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { sessionAssemblies, temporaryAssemblies, ...rest } = snap as Omit<
-        typeof snap,
-        symbol
-      >
+    .views(s => {
+      const self = asSession(s)
       return {
-        ...rest,
-        ...(sessionAssemblies.length ? { sessionAssemblies } : {}),
-        ...(temporaryAssemblies.length ? { temporaryAssemblies } : {}),
-      } as typeof snap
+        /**
+         * #getter
+         * sessionAssemblies plus jbrowse config assemblies. Does not include
+         * temporaryAssemblies; this is the list shown in the AssemblySelector
+         * dropdown.
+         */
+        get assemblies(): BaseAssemblyConfigModel[] {
+          return [...self.jbrowse.assemblies, ...self.sessionAssemblies]
+        },
+      }
     })
+    .views(self => ({
+      /**
+       * #getter
+       * names of the assemblies returned by the `assemblies` getter
+       */
+      get assemblyNames(): string[] {
+        return self.assemblies.map(a => readConfObject(a, 'name'))
+      },
+    }))
 }

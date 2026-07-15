@@ -1,21 +1,19 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { Dialog, StatusProgressBar } from '@jbrowse/core/ui'
 import {
-  Button,
-  DialogActions,
-  DialogContent,
-  LinearProgress,
-  Typography,
-} from '@mui/material'
-import { transaction } from 'mobx'
+  getSession,
+  statusFraction,
+  statusProgressLabel,
+} from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { diagonalizeRegions } from '../util/diagonalize.ts'
+import { runDiagonalize } from '../util/runDiagonalize.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
-import type { AlignmentData } from '../util/diagonalize.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 
 const DiagonalizationProgressDialog = observer(
   function DiagonalizationProgressDialog({
@@ -25,146 +23,89 @@ const DiagonalizationProgressDialog = observer(
     handleClose: () => void
     model: LinearSyntenyViewModel
   }) {
-    const [progress, setProgress] = useState(0)
-    const [message, setMessage] = useState('Initializing...')
+    const [done, setDone] = useState(false)
+    const [status, setStatus] = useState<RpcStatus>('Reordering chromosomes...')
     const [error, setError] = useState<string>()
 
     useEffect(() => {
-      // Run diagonalization on mount
-      const runDiagonalization = async () => {
-        const session = getSession(model)
-
+      let cancelled = false
+      const stopToken = createStopToken()
+      const run = async () => {
         try {
-          // Check we have exactly 2 views
-          if (model.views.length !== 2) {
-            setError('Diagonalization requires exactly 2 views')
-            setProgress(100)
-            session.notify(
-              'Diagonalization requires exactly 2 views',
-              'warning',
-            )
+          if (model.views.length < 2) {
+            setError('Diagonalization requires at least 2 views')
+            setDone(true)
             return
           }
 
-          const queryView = model.views[1]!
-
-          setProgress(5)
-          setMessage('Collecting alignment data...')
-
-          // Collect all alignment data from all synteny tracks
-          const alignments: AlignmentData[] = []
-
-          for (const level of model.levels) {
-            for (const track of level.tracks) {
-              for (const display of track.displays) {
-                const { featPositions } = display as {
-                  featPositions: {
-                    f: {
-                      get: (key: string) => unknown
-                    }
-                  }[]
-                }
-
-                for (const { f } of featPositions) {
-                  const mate = f.get('mate') as {
-                    refName: string
-                    start: number
-                    end: number
-                  }
-
-                  alignments.push({
-                    queryRefName: f.get('refName') as string,
-                    refRefName: mate.refName,
-                    queryStart: f.get('start') as number,
-                    queryEnd: f.get('end') as number,
-                    refStart: mate.start,
-                    refEnd: mate.end,
-                    strand: (f.get('strand') as number) || 1,
-                  })
-                }
+          const stats = await runDiagonalize(model, {
+            stopToken,
+            statusCallback: msg => {
+              if (!cancelled) {
+                setStatus(msg)
               }
-            }
-          }
-
-          if (alignments.length === 0) {
-            setError('No alignments found')
-            setProgress(100)
-            session.notify('No alignments found to diagonalize', 'warning')
+            },
+          })
+          if (cancelled) {
             return
           }
 
-          // Call the utility function with progress callback
-          const result = await diagonalizeRegions(
-            alignments,
-            queryView.displayedRegions,
-            async (prog, msg) => {
-              setProgress(prog)
-              setMessage(msg)
-            },
+          setStatus(
+            stats
+              ? `Done: reordered ${stats.totalReordered} regions, reversed ${stats.totalReversed}`
+              : 'No alignments to diagonalize',
           )
-
-          // Apply the new ordering
-          if (result.newRegions.length > 0) {
-            setProgress(95)
-            setMessage('Applying new layout...')
-            transaction(() => {
-              queryView.setDisplayedRegions(result.newRegions)
-            })
-            setProgress(100)
-            setMessage('Diagonalization complete')
-
-            // Auto-close after success
-            setTimeout(() => {
-              handleClose()
-            }, 1500)
-          } else {
-            setError('No regions to reorder')
-            setProgress(100)
-            session.notify('No query regions found to reorder', 'warning')
-          }
+          setDone(true)
         } catch (err) {
+          if (cancelled) {
+            return
+          }
           console.error('Diagonalization error:', err)
-          setError(`Error: ${err}`)
-          setProgress(100)
-          session.notify(`Diagonalization failed: ${err}`, 'error')
+          setError(`${err}`)
+          setDone(true)
+          getSession(model).notify(`Diagonalization failed: ${err}`, 'error')
         }
       }
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      runDiagonalization()
-    }, [model, handleClose])
+      run()
+      return () => {
+        cancelled = true
+        stopStopToken(stopToken)
+      }
+    }, [model])
 
     return (
-      <Dialog open title="Diagonalizing" onClose={handleClose}>
+      <Dialog open title="Re-order chromosomes" onClose={handleClose}>
         <DialogContent style={{ minWidth: 400 }}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Reorders the bottom assembly to match the top, using all alignment
+            data across the currently displayed chromosomes.
+          </Typography>
           <Typography
             variant="body1"
             gutterBottom
             color={error ? 'error' : 'inherit'}
           >
-            {error || message}
+            {error ?? statusProgressLabel(status)}
           </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={progress}
-            style={{ marginTop: 16 }}
-            color={error ? 'error' : 'primary'}
-          />
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            style={{ marginTop: 8, display: 'block' }}
-          >
-            {Math.round(progress)}% complete
-          </Typography>
+          {done ? null : (
+            <StatusProgressBar
+              fraction={statusFraction(status)}
+              style={{ marginTop: 16 }}
+            />
+          )}
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={handleClose}
+            variant="contained"
+            onClick={() => {
+              handleClose()
+            }}
             color="primary"
-            disabled={progress < 100}
+            disabled={!done}
           >
-            {progress < 100 ? 'Processing...' : 'Done'}
+            Close
           </Button>
         </DialogActions>
       </Dialog>

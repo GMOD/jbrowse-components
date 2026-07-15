@@ -1,30 +1,45 @@
+export { buildSpatialIndex } from './spatialIndex.ts'
 export { default as parseNewick } from './newick.ts'
 export type { NewickNode } from './newick.ts'
 export { default as TreeSidebar } from './TreeSidebar.tsx'
+export { treeSidebarRightEdge } from './treeSidebarGeometry.ts'
 export { SvgRowLabels } from './SvgRowLabels.tsx'
 export { SvgTreePath } from './SvgTreePath.tsx'
+export { SvgTreeSidebar } from './SvgTreeSidebar.tsx'
 export { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
+export { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
 export {
+  applySubtreeFilter,
   buildClusteredLayout,
-  clusterTree,
+  buildTree,
+  parseClusterOrder,
   parseClusterTree,
+  pruneNewickToLeaves,
+  reconcileLayout,
 } from './clusterUtils.ts'
+export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
+export type { RpcMethodCaller } from './rpcMethodCaller.ts'
+export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
+export { treeBranchLengthMenuItem } from './treeMenuItems.ts'
 export {
-  assignDepthY,
-  clusterLayout,
-  descendants,
-  eachAfter,
-  hierarchy,
-  leafNameMap,
-  leaves,
-  links,
-  maxLength,
-  renderTreeSVG,
-  setBrLength,
-  sort,
-  sum,
-} from './hierarchy.ts'
+  extraColumns,
+  moveDown,
+  moveUp,
+  updateRows,
+} from './sourcesGridUtils.ts'
+export { applyColorPalette } from './setColorDialog/applyColorPalette.ts'
+export type { Colored } from './setColorDialog/applyColorPalette.ts'
+export { default as SetColorDialog } from './setColorDialog/SetColorDialog.tsx'
+export type {
+  SetColorDialogProps,
+  TreeLayoutModel,
+} from './setColorDialog/SetColorDialog.tsx'
+export type { ColorColumn } from './setColorDialog/SourceGrid.tsx'
+// Only clusterLayout is part of the public surface; hierarchy/leaves/links/sum
+// and the y-assignment/traversal helpers are internal to the layout and draw
+// code (kept in hierarchy.ts, not re-exported).
+export { clusterLayout } from './hierarchy.ts'
 export type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 export type {
   ClusterHierarchyNode,

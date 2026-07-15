@@ -1,10 +1,24 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config PairwiseIndexedPAFAdapter
+ * #trackType SyntenyTrack
+ * a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
+ * auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'PairwiseIndexedPAFAdapter',
+ *   uri: 'https://example.com/aln.pif.gz',
+ *   queryAssembly: 'hg19',
+ *   targetAssembly: 'hg38',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
@@ -15,8 +29,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
           baseUri: snap.baseUri,
         },
         index: {
+          indexType: snap.csi ? 'CSI' : 'TBI',
           location: {
-            uri: `${snap.uri}.tbi`,
+            uri: `${snap.uri}.${snap.csi ? 'csi' : 'tbi'}`,
             baseUri: snap.baseUri,
           },
         },
@@ -65,6 +80,18 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
     },
     /**
      * #slot
+     * bpPerPx threshold at which the reader switches from the per-row
+     * CIGAR tier (lowercase t/q prefix) to the coarse no-CIGAR tier
+     * (uppercase T/Q prefix), when make-pif was run with --coarse.
+     * No coarse tier present in the file = always uses fine tier.
+     */
+    coarseBpPerPxThreshold: {
+      type: 'number',
+      defaultValue: 10000,
+      advanced: true,
+    },
+    /**
+     * #slot
      */
     index: ConfigurationSchema('TabixIndex', {
       /**
@@ -107,5 +134,9 @@ const PairwiseIndexedPAFAdapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type PairwiseIndexedPAFAdapterConfig = Instance<
+  typeof PairwiseIndexedPAFAdapter
+>
 
 export default PairwiseIndexedPAFAdapter

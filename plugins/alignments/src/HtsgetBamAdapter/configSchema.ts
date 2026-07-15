@@ -1,9 +1,20 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
+import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config HtsgetBamAdapter
+ * #trackType AlignmentsTrack
  * Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam library
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'HtsgetBamAdapter',
+ *   htsgetBase: 'https://htsget.example.com/reads/',
+ *   htsgetTrackId: 'NA12878',
+ * }
+ * ```
  */
-function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 const HtsgetBamAdapter = ConfigurationSchema(
   'HtsgetBamAdapter',
@@ -28,4 +39,5 @@ const HtsgetBamAdapter = ConfigurationSchema(
   { explicitlyTyped: true },
 )
 
+export type HtsgetBamAdapterConfig = Instance<typeof HtsgetBamAdapter>
 export default HtsgetBamAdapter

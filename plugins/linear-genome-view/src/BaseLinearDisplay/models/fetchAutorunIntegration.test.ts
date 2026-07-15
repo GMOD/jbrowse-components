@@ -10,7 +10,6 @@ interface DisplayedRegionWithIndex {
 function createMockDisplayModel() {
   const state = observable({
     fetchGeneration: 0,
-
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     error: undefined as unknown,
     regionTooLargeState: false,
@@ -460,7 +459,8 @@ describe('untracked() semantics', () => {
       const state = observable({
         fetchGeneration: 0,
         isLoading: false,
-        error: undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        error: undefined as unknown,
         regionTooLarge: false,
         loadedRegions: new Map<number, Region>(),
       })
@@ -556,7 +556,8 @@ describe('untracked() semantics', () => {
       const state = observable({
         fetchGeneration: 0,
         isLoading: false,
-        error: undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        error: undefined as unknown,
         regionTooLarge: false,
         loadedRegions: new Map<number, Region>(),
       })
@@ -608,7 +609,8 @@ describe('untracked() semantics', () => {
       const state = observable({
         fetchGeneration: 0,
         regionTooLarge: false,
-        error: undefined,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+        error: undefined as unknown,
       })
       // visibleBlocks proxies view.visibleRegions (production only tracks that,
       // not bpPerPx separately — see ClearBlockingStateOnViewportChange autorun)

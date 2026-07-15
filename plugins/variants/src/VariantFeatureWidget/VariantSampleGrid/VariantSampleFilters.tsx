@@ -2,7 +2,7 @@ import { useState, useTransition } from 'react'
 
 import { TextField, Typography } from '@mui/material'
 
-type Filters = Record<string, string>
+import type { Filters } from './types.ts'
 
 export default function VariantSampleFilters({
   columns,
@@ -28,6 +28,7 @@ export default function VariantSampleFilters({
         <TextField
           key={`filter-${field}`}
           placeholder={`Filter ${field}`}
+          slotProps={{ htmlInput: { 'aria-label': `Filter ${field}` } }}
           value={localFilter[field] ?? ''}
           onChange={event => {
             const value = event.target.value

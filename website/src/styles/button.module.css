@@ -7,9 +7,9 @@
   padding: 6px 16px;
   border-radius: 4px;
   text-decoration: none;
-  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  font-family: var(--font-roboto), 'Helvetica', 'Arial', sans-serif;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.75;
   letter-spacing: 0.02857em;
   text-transform: uppercase;
@@ -42,10 +42,21 @@
   background-color: var(--color-primary-dark);
   color: white;
 }
+.btnPrimary:active {
+  transform: scale(0.98);
+}
 .btnSecondary {
   background-color: #cccccc;
   color: rgba(0, 0, 0, 0.87);
 }
 .btnSecondary:hover {
   background-color: #b3b3b3;
+}
+.btnAccent {
+  background-color: var(--color-accent);
+  color: white;
+}
+.btnAccent:hover {
+  background-color: var(--color-accent-dark);
+  color: white;
 }

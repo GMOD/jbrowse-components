@@ -11,6 +11,15 @@ export type ImportFormSyntenyTrack =
   | { type: 'userOpened'; value: Conf }
   | { type: 'none' }
 
+/**
+ * The subset of a synteny/dotplot import-form view model that the shared
+ * import-form components read and write. Both concrete view models satisfy it.
+ */
+export interface ImportFormSyntenyModel {
+  importFormSyntenyTrackSelections: ImportFormSyntenyTrack[]
+  setImportFormSyntenyTrack: (idx: number, val: ImportFormSyntenyTrack) => void
+}
+
 export const helpStrings: Record<string, string> = {
   '.paf': 'minimap2 target.fa query.fa',
   '.pif.gz': 'minimap2 target.fa query.fa',

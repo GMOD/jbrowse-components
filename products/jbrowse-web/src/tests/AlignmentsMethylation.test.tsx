@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import { testAlignmentModificationsDisplay } from './testAlignmentModificationsDisplay.tsx'
 import { doBeforeEach, setup } from './util.tsx'
@@ -13,8 +13,5 @@ beforeEach(() => {
 })
 
 test('color by methylation', async () => {
-  await testAlignmentModificationsDisplay({
-    config,
-    canvasTestId: 'prerendered_canvas_hg38_clip:20:13432:13524:0_done',
-  })
+  await testAlignmentModificationsDisplay({ config })
 }, 60000)

@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Paper, ScopedCssBaseline, useTheme } from '@mui/material'
+import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewTitle from './ViewTitle.tsx'
@@ -10,17 +10,11 @@ import ViewTitle from './ViewTitle.tsx'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
 const useStyles = makeStyles()(theme => ({
-  // avoid parent styles getting into this div
-  // https://css-tricks.com/almanac/properties/a/all/
-  avoidParentStyle: {
-    all: 'initial',
-    display: 'block',
-    width: '100%',
-    height: '100%',
-  },
   viewContainer: {
     width: '100%',
-    overflow: 'hidden',
+    // clip (not hidden) so sticky descendant headers keep working
+    // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
+    overflow: 'clip',
     background: theme.palette.secondary.main,
     margin: theme.spacing(0.5),
     padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
@@ -36,8 +30,7 @@ const ViewContainer = observer(function ViewContainer({
 }) {
   const { classes } = useStyles()
   const session = getSession(view)
-  const theme = useTheme()
-  const ref = useWidthSetter(view, theme.spacing(1))
+  const ref = useWidthSetter(view)
 
   return (
     <Paper elevation={12} ref={ref} className={classes.viewContainer}>
@@ -52,20 +45,4 @@ const ViewContainer = observer(function ViewContainer({
   )
 })
 
-const ViewContainerWrapper = observer(function ViewContainerWrapper({
-  view,
-  children,
-}: {
-  view: IBaseViewModel
-  children: React.ReactNode
-}) {
-  const { classes } = useStyles()
-  return (
-    <div className={classes.avoidParentStyle}>
-      <ScopedCssBaseline>
-        <ViewContainer view={view}>{children}</ViewContainer>
-      </ScopedCssBaseline>
-    </div>
-  )
-})
-export default ViewContainerWrapper
+export default ViewContainer

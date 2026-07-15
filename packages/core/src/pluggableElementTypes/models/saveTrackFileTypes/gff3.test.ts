@@ -188,7 +188,7 @@ describe('GFF3 export', () => {
     })
     const result = stringifyGFF3({ features: [f] })
     // Score of 0 should be output, not replaced with '.'
-    const fields = result.split('\n')[1]!.split('\t')
+    const fields = result.split('\n', 2)[1]!.split('\t')
     expect(fields[5]).toBe('0')
   })
 
@@ -224,6 +224,113 @@ describe('GFF3 export', () => {
     expect(result).toContain('valid_attr=valid')
     expect(result).not.toContain('null_attr')
     expect(result).not.toContain('undefined_attr')
+  })
+
+  it('manufactures an ID for a parent lacking one so children can reference it', () => {
+    // mimics non-GFF3 sources like BigBed aggregated genes: the parent has a
+    // uniqueId but no `id` attribute in its data
+    const f = new SimpleFeature({
+      id: 'synth-parent',
+      data: {
+        refName: 'chr1',
+        start: 100,
+        end: 900,
+        type: 'gene',
+        name: 'gene1',
+        subfeatures: [
+          {
+            id: 'exon1',
+            start: 100,
+            end: 200,
+            type: 'exon',
+          },
+        ],
+      },
+    })
+    const result = stringifyGFF3({ features: [f] })
+    // parent gets ID from its uniqueId, child references the same value
+    expect(result).toContain('ID=synth-parent')
+    expect(result).toContain('Parent=synth-parent')
+  })
+
+  it('does not manufacture an ID for a childless feature lacking one', () => {
+    const f = new SimpleFeature({
+      id: 'leaf-unique',
+      data: {
+        refName: 'chr1',
+        start: 100,
+        end: 200,
+        type: 'gene',
+        name: 'gene1',
+      },
+    })
+    const result = stringifyGFF3({ features: [f] })
+    expect(result).not.toContain('ID=')
+    expect(result).toContain('Name=gene1')
+  })
+
+  it('computes missing CDS phase from cumulative length (+ strand)', () => {
+    const f = createFeature({
+      id: 'mrna1',
+      refName: 'chr1',
+      start: 0,
+      end: 300,
+      type: 'mRNA',
+      strand: 1,
+      subfeatures: [
+        // 100bp CDS → phase 0
+        { id: 'cds1', start: 0, end: 100, type: 'CDS' },
+        // cumulative 100, (3 - 100%3)%3 = 2
+        { id: 'cds2', start: 200, end: 280, type: 'CDS' },
+      ],
+    })
+    const result = stringifyGFF3({ features: [f] })
+    const cdsLines = result.split('\n').filter(l => l.includes('\tCDS\t'))
+    expect(cdsLines[0]).toContain('\t0\tID=cds1')
+    expect(cdsLines[1]).toContain('\t2\tID=cds2')
+  })
+
+  it('computes missing CDS phase in translation order (- strand)', () => {
+    const f = createFeature({
+      id: 'mrna1',
+      refName: 'chr1',
+      start: 0,
+      end: 300,
+      type: 'mRNA',
+      strand: -1,
+      subfeatures: [
+        // on - strand the 3'-most (rightmost) CDS translates first → phase 0
+        { id: 'cds1', start: 0, end: 80, type: 'CDS' },
+        { id: 'cds2', start: 200, end: 300, type: 'CDS' },
+      ],
+    })
+    const result = stringifyGFF3({ features: [f] })
+    const byId = (id: string) =>
+      result.split('\n').find(l => l.includes(`ID=${id}`))!
+    // cds2 (100bp) translates first → phase 0; cds1 → (3 - 100%3)%3 = 2
+    expect(byId('cds2')).toContain('\t0\tID=cds2')
+    expect(byId('cds1')).toContain('\t2\tID=cds1')
+  })
+
+  it('does not override a CDS phase that is already present', () => {
+    const f = createFeature({
+      id: 'mrna1',
+      refName: 'chr1',
+      start: 0,
+      end: 300,
+      type: 'mRNA',
+      strand: 1,
+      subfeatures: [
+        { id: 'cds1', start: 0, end: 100, type: 'CDS', phase: 1 },
+        { id: 'cds2', start: 200, end: 280, type: 'CDS' },
+      ],
+    })
+    const result = stringifyGFF3({ features: [f] })
+    const byId = (id: string) =>
+      result.split('\n').find(l => l.includes(`ID=${id}`))!
+    // present phase preserved, missing one still filled
+    expect(byId('cds1')).toContain('\t1\tID=cds1')
+    expect(byId('cds2')).toContain('\t2\tID=cds2')
   })
 
   it('handles deeply nested subfeatures', () => {

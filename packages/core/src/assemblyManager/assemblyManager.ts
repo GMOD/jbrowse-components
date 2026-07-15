@@ -9,15 +9,27 @@ import type { Assembly } from './assembly.ts'
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
+import type { StatusCallback } from '../util/progress.ts'
 import type { StopToken } from '../util/stopToken.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
 
+// the root the assemblyManager is parented under (the session/root model),
+// covering only the fields read here
+interface AssemblyManagerParent {
+  rpcManager: RpcManager
+  jbrowse: { assemblies: AnyConfigurationModel[] }
+  session?: {
+    sessionAssemblies?: AnyConfigurationModel[]
+    temporaryAssemblies?: AnyConfigurationModel[]
+  }
+}
+
 export interface AssemblyBaseOpts {
   stopToken?: StopToken
   sessionId: string
-  statusCallback?: (arg: string) => void
+  statusCallback?: StatusCallback
 }
 
 /**
@@ -79,11 +91,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             // eventually trigger assemblies to be loaded and new evaluations
             // via observable behavior
             pm.evaluateExtensionPoint(
+              /** #extensionPoint Core-handleUnrecognizedAssembly | sync | Supply an assembly config when a referenced assembly is unknown */
               'Core-handleUnrecognizedAssembly',
               undefined,
               {
                 assemblyName: asmName,
-                session: getParent<any>(self).session,
+                session: getParent<AssemblyManagerParent>(self).session,
               },
             )
           }
@@ -108,16 +121,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         const {
           jbrowse: { assemblies },
           session: { sessionAssemblies = [], temporaryAssemblies = [] } = {},
-        } = getParent<any>(self)
-        return [
-          ...assemblies,
-          ...sessionAssemblies,
-          ...temporaryAssemblies,
-        ] as AnyConfigurationModel[]
+        } = getParent<AssemblyManagerParent>(self)
+        return [...assemblies, ...sessionAssemblies, ...temporaryAssemblies]
       },
 
       get rpcManager(): RpcManager {
-        return getParent<any>(self).rpcManager
+        return getParent<AssemblyManagerParent>(self).rpcManager
       },
     }))
     .views(self => ({
@@ -145,11 +154,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         if (!assembly) {
           return undefined
         }
+        // load() resolves only after setLoaded (regions + refNameAliases) or
+        // setError has run, so awaiting the promise is enough: no extra
+        // reactive wait needed
         await assembly.load()
-        await when(
-          () =>
-            !!(assembly.regions && assembly.refNameAliases) || !!assembly.error,
-        )
         if (assembly.error) {
           // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw assembly.error
@@ -167,22 +175,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
-          return asm?.getRefNameMapForAdapter(adapterConf, opts)
-        }
-        return {}
-      },
-
-      /**
-       * #method
-       */
-      async getReverseRefNameMapForAdapter(
-        adapterConf: AdapterConf,
-        assemblyName: string | undefined,
-        opts: AssemblyBaseOpts,
-      ) {
-        if (assemblyName) {
-          const asm = await this.waitForAssembly(assemblyName)
-          return asm?.getReverseRefNameMapForAdapter(adapterConf, opts)
+          return asm?.getRefNameMapForAdapter(adapterConf, opts) ?? {}
         }
         return {}
       },
@@ -208,10 +201,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             () => {
               const assemblyConfs = self.assemblyList
               untracked(() => {
-                for (const asm of self.assemblies) {
-                  if (!asm.configuration) {
-                    this.removeAssembly(asm)
-                  }
+                // filter() returns a new plain array, so removing from
+                // self.assemblies in the loop below does not skip elements
+                // (removeAssembly splices the live observable array)
+                const orphaned = self.assemblies.filter(a => !a.configuration)
+                for (const asm of orphaned) {
+                  this.removeAssembly(asm)
                 }
                 for (const conf of assemblyConfs) {
                   const name = readConfObject(conf, 'name')

@@ -1,17 +1,31 @@
-import { useEffect } from 'react'
-
-import { useWidthSetter } from '@jbrowse/core/util'
+import { useFocusOnInteraction, useWidthSetter } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { Paper, useTheme } from '@mui/material'
+import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewHeader from './ViewHeader.tsx'
 import ViewWrapper from './ViewWrapper.tsx'
+import { useViewVisibility } from './useViewVisibility.ts'
 
 import type {
   AbstractViewModel,
   SessionWithFocusedViewAndDrawerWidgets,
 } from '@jbrowse/core/util'
+
+// Keep views mounted within ~1.5 viewport-heights of the visible band so normal
+// scrolling reveals already-drawn content rather than a blank-then-redraw.
+const VIEW_VISIBILITY_ROOT_MARGIN = '150% 0px'
+
+// Scroll-space reserved for a view that has never been measured yet, so a fresh
+// load spreads views down the page instead of stacking them all in the viewport
+// (which would mark them all visible and defeat the lazy mount).
+const ESTIMATED_VIEW_HEIGHT = 400
+
+function viewHeight(view: AbstractViewModel) {
+  return 'height' in view && typeof view.height === 'number'
+    ? view.height
+    : ESTIMATED_VIEW_HEIGHT
+}
 
 const useStyles = makeStyles()(theme => ({
   viewContainer: {
@@ -32,28 +46,23 @@ const useStyles = makeStyles()(theme => ({
 const ViewContainer = observer(function ViewContainer({
   view,
   session,
+  scrollOnMount,
 }: {
   view: AbstractViewModel
   session: SessionWithFocusedViewAndDrawerWidgets
+  scrollOnMount?: boolean
 }) {
-  const theme = useTheme()
-  const ref = useWidthSetter(view, theme.spacing(1))
+  const ref = useWidthSetter(view)
   const { classes } = useStyles()
+  const {
+    ref: bodyRef,
+    visible,
+    placeholderHeight,
+  } = useViewVisibility(VIEW_VISIBILITY_ROOT_MARGIN, viewHeight(view))
 
-  useEffect(() => {
-    function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref.current?.contains(e.target)) {
-        session.setFocusedViewId(view.id)
-      }
-    }
-
-    document.addEventListener('mousedown', handleSelectView)
-    document.addEventListener('keydown', handleSelectView)
-    return () => {
-      document.removeEventListener('mousedown', handleSelectView)
-      document.removeEventListener('keydown', handleSelectView)
-    }
-  }, [ref, session, view])
+  useFocusOnInteraction(ref, () => {
+    session.setFocusedViewId(view.id)
+  })
 
   const backgroundColorClassName =
     session.focusedViewId === view.id
@@ -80,9 +89,15 @@ const ViewContainer = observer(function ViewContainer({
           view.setMinimized(!view.minimized)
         }}
         className={backgroundColorClassName}
+        scrollOnMount={scrollOnMount}
       />
       <Paper elevation={0}>
-        <ViewWrapper view={view} session={session} />
+        <div
+          ref={bodyRef}
+          style={visible ? undefined : { height: placeholderHeight }}
+        >
+          {visible ? <ViewWrapper view={view} session={session} /> : null}
+        </div>
       </Paper>
     </Paper>
   )

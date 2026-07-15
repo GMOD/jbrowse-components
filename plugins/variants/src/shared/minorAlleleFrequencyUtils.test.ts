@@ -1,8 +1,14 @@
+import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import createJexlInstance from '@jbrowse/core/util/jexl'
+
+import { calculateAlleleCounts } from './alleleCounts.ts'
 import {
-  calculateAlleleCounts,
   calculateMinorAlleleFrequency,
-  getFeaturesThatPassMinorAlleleFrequencyFilter,
+  calculateMissingnessFrequency,
+  getFilteredVariants,
 } from './minorAlleleFrequencyUtils.ts'
+
+import type { Feature } from '@jbrowse/core/util'
 
 // Mock feature for testing
 function createMockFeature(
@@ -10,7 +16,7 @@ function createMockFeature(
   start: number,
   end: number,
   genotypes: Record<string, string>,
-) {
+): Feature {
   return {
     id: () => id,
     get: (key: string) => {
@@ -25,7 +31,7 @@ function createMockFeature(
       }
       return undefined
     },
-  }
+  } as unknown as Feature
 }
 
 describe('calculateAlleleCounts', () => {
@@ -35,7 +41,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/0',
       sample3: '0/0',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 6 })
   })
 
@@ -45,7 +51,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/1',
       sample3: '0/1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 3, '1': 3 })
   })
 
@@ -55,7 +61,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '1/1',
       sample3: '1/1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '1': 6 })
   })
 
@@ -65,7 +71,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/1',
       sample3: '1/1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 3, '1': 3 })
   })
 
@@ -75,7 +81,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0|1',
       sample3: '1|1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 3, '1': 3 })
   })
 
@@ -85,7 +91,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/1',
       sample3: '1/1',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '.': 2, '0': 1, '1': 3 })
   })
 
@@ -95,7 +101,7 @@ describe('calculateAlleleCounts', () => {
       sample2: '0/2',
       sample3: '1/2',
     }
-    const result = calculateAlleleCounts(genotypes, {})
+    const result = calculateAlleleCounts(genotypes)
     expect(result).toEqual({ '0': 2, '1': 2, '2': 2 })
   })
 })
@@ -141,12 +147,21 @@ describe('calculateMinorAlleleFrequency', () => {
     expect(maf).toBeCloseTo(5 / 18)
   })
 
-  it('handles missing alleles correctly', () => {
-    // Missing alleles (.) should be counted but typically aren't the minor allele
+  it('excludes no-call alleles from the denominator', () => {
+    // No-call (.) is not an allele: MAF is over called alleles only.
     const alleleCounts = { '0': 6, '1': 2, '.': 2 }
     const maf = calculateMinorAlleleFrequency(alleleCounts)
-    // Total = 10, firstMax = 6, secondMax = 2, MAF = 2/10 = 0.2
-    expect(maf).toBe(0.2)
+    // Called total = 8, firstMax = 6, secondMax = 2, MAF = 2/8 = 0.25
+    expect(maf).toBe(0.25)
+  })
+
+  it('does not report missingness as the minor allele frequency', () => {
+    // No-calls (30) outnumber the true minor allele (1 -> 20). If '.' were
+    // treated as an allele, secondMax would be the no-calls (0.30). It must be
+    // the real minor allele over called alleles: 20 / (50 + 20) = 0.2857.
+    const alleleCounts = { '0': 50, '1': 20, '.': 30 }
+    const maf = calculateMinorAlleleFrequency(alleleCounts)
+    expect(maf).toBeCloseTo(20 / 70)
   })
 
   it('returns 0 for empty allele counts', () => {
@@ -166,7 +181,7 @@ describe('MAF filter integration', () => {
       sample4: '0/0',
       sample5: '0/1', // Only one het = 1 alt allele out of 10 total
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     const maf = calculateMinorAlleleFrequency(alleleCounts)
     expect(maf).toBe(0.1)
     expect(maf >= 0.2).toBe(false) // Should be filtered out
@@ -184,7 +199,7 @@ describe('MAF filter integration', () => {
       sample4: '0/1',
       sample5: '1/1',
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     const maf = calculateMinorAlleleFrequency(alleleCounts)
     expect(maf).toBe(0.4)
     expect(maf >= 0.2).toBe(true) // Should pass
@@ -221,7 +236,7 @@ describe('calculateMinorAlleleFrequency edge cases', () => {
       sample3: '1',
       sample4: '1',
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     expect(alleleCounts).toEqual({ '0': 2, '1': 2 })
     const maf = calculateMinorAlleleFrequency(alleleCounts)
     expect(maf).toBe(0.5)
@@ -233,7 +248,7 @@ describe('calculateMinorAlleleFrequency edge cases', () => {
       sample2: '0/0/0/1',
       sample3: '0/0/1/1',
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     // 4 + 3 + 2 = 9 ref, 0 + 1 + 2 = 3 alt
     expect(alleleCounts).toEqual({ '0': 9, '1': 3 })
     const maf = calculateMinorAlleleFrequency(alleleCounts)
@@ -246,12 +261,12 @@ describe('calculateMinorAlleleFrequency edge cases', () => {
       sample2: './1',
       sample3: '0/1',
     }
-    const alleleCounts = calculateAlleleCounts(genotypes, {})
+    const alleleCounts = calculateAlleleCounts(genotypes)
     expect(alleleCounts).toEqual({ '0': 2, '.': 2, '1': 2 })
   })
 })
 
-describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
+describe('getFilteredVariants', () => {
   it('filters out variants below MAF threshold', () => {
     const features = [
       // MAF = 0.1 (should be filtered with threshold 0.2)
@@ -272,40 +287,30 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+    const result = getFilteredVariants({
+      features,
       minorAlleleFrequencyFilter: 0.2,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(1)
     expect(result[0]!.feature.id()).toBe('snp2')
   })
 
-  it('filters out variants exceeding length cutoff', () => {
+  it('applies a jexl filter chain (e.g. length filtering via jexl)', () => {
     const features = [
-      // Length = 1 (should pass with cutoff 10)
-      createMockFeature('snp1', 100, 101, {
-        s1: '0/1',
-        s2: '0/1',
-        s3: '0/1',
-        s4: '0/1',
-        s5: '0/1',
-      }),
-      // Length = 50 (should be filtered with cutoff 10)
-      createMockFeature('indel1', 200, 250, {
-        s1: '0/1',
-        s2: '0/1',
-        s3: '0/1',
-        s4: '0/1',
-        s5: '0/1',
-      }),
+      // Length 1 — passes the jexl length filter below
+      createMockFeature('snp1', 100, 101, { s1: '0/1', s2: '0/1' }),
+      // Length 50 — filtered out by the jexl length filter
+      createMockFeature('indel1', 200, 250, { s1: '0/1', s2: '0/1' }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+    const result = getFilteredVariants({
+      features,
       minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: 10,
+      filterChain: new SerializableFilterChain({
+        filters: ["jexl:get(feature,'end')-get(feature,'start')<10"],
+        jexl: createJexlInstance(),
+      }),
     })
 
     expect(result).toHaveLength(1)
@@ -323,10 +328,9 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+    const result = getFilteredVariants({
+      features,
       minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(1)
@@ -344,10 +348,9 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+    const result = getFilteredVariants({
+      features,
       minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(1)
@@ -366,10 +369,9 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+    const result = getFilteredVariants({
+      features,
       minorAlleleFrequencyFilter: 0.01,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(0)
@@ -388,20 +390,18 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       }),
     ]
 
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features2 as any,
+    const result = getFilteredVariants({
+      features: features2,
       minorAlleleFrequencyFilter: 0.2,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(1)
   })
 
   it('handles empty feature list', () => {
-    const result = getFeaturesThatPassMinorAlleleFrequencyFilter({
+    const result = getFilteredVariants({
       features: [],
       minorAlleleFrequencyFilter: 0.01,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
     })
 
     expect(result).toHaveLength(0)
@@ -413,14 +413,110 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
 
     const features = [createMockFeature('snp1', 100, 101, genotypes)]
 
-    getFeaturesThatPassMinorAlleleFrequencyFilter({
-      features: features as any,
+    getFilteredVariants({
+      features,
       minorAlleleFrequencyFilter: 0,
-      lengthCutoffFilter: Number.MAX_SAFE_INTEGER,
       genotypesCache,
     })
 
     // Cache should now contain the genotypes
     expect(genotypesCache.get('snp1')).toEqual(genotypes)
+  })
+
+  it('filters out variants above the missingness ceiling', () => {
+    const features = [
+      // 3/5 samples no-call => missingness 0.6
+      createMockFeature('sparse', 100, 101, {
+        s1: './.',
+        s2: './.',
+        s3: './.',
+        s4: '0/1',
+        s5: '1/1',
+      }),
+      // no missing calls => missingness 0
+      createMockFeature('dense', 200, 201, {
+        s1: '0/0',
+        s2: '0/1',
+        s3: '0/1',
+        s4: '1/1',
+        s5: '1/1',
+      }),
+    ]
+
+    const result = getFilteredVariants({
+      features,
+      minorAlleleFrequencyFilter: 0,
+      maxMissingnessFilter: 0.5,
+    })
+
+    expect(result).toHaveLength(1)
+    expect(result[0]!.feature.id()).toBe('dense')
+  })
+
+  it('keeps every variant when the missingness ceiling is 1 (default)', () => {
+    const features = [
+      createMockFeature('sparse', 100, 101, {
+        s1: './.',
+        s2: './.',
+        s3: './.',
+        s4: '0/1',
+        s5: '1/1',
+      }),
+    ]
+
+    expect(
+      getFilteredVariants({
+        features,
+        minorAlleleFrequencyFilter: 0,
+        maxMissingnessFilter: 1,
+      }),
+    ).toHaveLength(1)
+    // undefined behaves the same as the no-filter ceiling
+    expect(
+      getFilteredVariants({
+        features,
+        minorAlleleFrequencyFilter: 0,
+      }),
+    ).toHaveLength(1)
+  })
+
+  it('keeps a variant at the exact missingness ceiling', () => {
+    const features = [
+      // 2/5 samples no-call => missingness exactly 0.4
+      createMockFeature('snp1', 100, 101, {
+        s1: './.',
+        s2: './.',
+        s3: '0/1',
+        s4: '0/1',
+        s5: '1/1',
+      }),
+    ]
+
+    expect(
+      getFilteredVariants({
+        features,
+        minorAlleleFrequencyFilter: 0,
+        maxMissingnessFilter: 0.4,
+      }),
+    ).toHaveLength(1)
+  })
+})
+
+describe('calculateMissingnessFrequency', () => {
+  it('returns 0 when nothing is missing', () => {
+    expect(calculateMissingnessFrequency({ '0': 6, '1': 4 })).toBe(0)
+  })
+
+  it('returns the no-call fraction of all alleles', () => {
+    // 2 no-call alleles out of 10 total
+    expect(calculateMissingnessFrequency({ '.': 2, '0': 4, '1': 4 })).toBe(0.2)
+  })
+
+  it('returns 1 when every allele is missing', () => {
+    expect(calculateMissingnessFrequency({ '.': 8 })).toBe(1)
+  })
+
+  it('returns 0 for empty allele counts', () => {
+    expect(calculateMissingnessFrequency({})).toBe(0)
   })
 })

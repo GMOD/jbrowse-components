@@ -1,3 +1,5 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import { getConfSnapshot, readConfObject, readConfigValue } from './util.ts'
@@ -118,6 +120,32 @@ describe('getConfSnapshot', () => {
     const labels = snap.labels as Record<string, unknown>
     expect(labels.name).toBe("jexl:get(feature,'name')")
   })
+
+  it('drops arrays/maps of sub-schemas and string/number constants', () => {
+    // Only scalars + direct sub-configs survive. An array/map of sub-schemas
+    // would otherwise recurse to a meaningless `{}` (its MST node reports as a
+    // config model but the array/map type has no slot table); constants are
+    // editor metadata, not config the worker reads.
+    const schema = ConfigurationSchema('WithCollections', {
+      scalar: { type: 'number', defaultValue: 7 },
+      sub: ConfigurationSchema('Sub', {
+        x: { type: 'number', defaultValue: 1 },
+      }),
+      arr: types.array(
+        ConfigurationSchema('Arr', { y: { type: 'number', defaultValue: 2 } }),
+      ),
+      mp: types.map(
+        ConfigurationSchema('Mp', { z: { type: 'number', defaultValue: 3 } }),
+      ),
+      label: 'constant',
+    })
+    const node = schema.create(
+      { arr: [{ y: 9 }], mp: { k: { z: 4 } } },
+      { pluginManager: pm },
+    )
+
+    expect(getConfSnapshot(node)).toEqual({ scalar: 7, sub: { x: 1 } })
+  })
 })
 
 function mockFeature(data: Record<string, unknown> = {}) {
@@ -132,11 +160,13 @@ const anyFeature = mockFeature()
 
 describe('readConfigValue', () => {
   it('returns value when present', () => {
-    expect(readConfigValue({ color1: 'red' }, 'color1', anyFeature)).toBe('red')
+    expect(
+      readConfigValue({ color1: 'red' }, 'color1', anyFeature, pm.jexl),
+    ).toBe('red')
   })
 
   it('returns undefined when key is missing', () => {
-    expect(readConfigValue({}, 'color1', anyFeature)).toBeUndefined()
+    expect(readConfigValue({}, 'color1', anyFeature, pm.jexl)).toBeUndefined()
   })
 
   it('evaluates JEXL expression per-feature', () => {
@@ -144,10 +174,15 @@ describe('readConfigValue', () => {
       color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
     }
     expect(
-      readConfigValue(config, 'color1', mockFeature({ type: 'SNV' })),
+      readConfigValue(config, 'color1', mockFeature({ type: 'SNV' }), pm.jexl),
     ).toBe('green')
     expect(
-      readConfigValue(config, 'color1', mockFeature({ type: 'insertion' })),
+      readConfigValue(
+        config,
+        'color1',
+        mockFeature({ type: 'insertion' }),
+        pm.jexl,
+      ),
     ).toBe('purple')
   })
 
@@ -157,6 +192,7 @@ describe('readConfigValue', () => {
         { labels: { fontSize: 14 } },
         ['labels', 'fontSize'],
         anyFeature,
+        pm.jexl,
       ),
     ).toBe(14)
   })
@@ -169,9 +205,9 @@ describe('readConfigValue', () => {
     )
     const snap = getConfSnapshot(config)
 
-    expect(readConfigValue(snap, 'color1', mockFeature({ type: 'SNV' }))).toBe(
-      'green',
-    )
+    expect(
+      readConfigValue(snap, 'color1', mockFeature({ type: 'SNV' }), pm.jexl),
+    ).toBe('green')
     expect(snap.featureHeight).toBe(10)
   })
 })

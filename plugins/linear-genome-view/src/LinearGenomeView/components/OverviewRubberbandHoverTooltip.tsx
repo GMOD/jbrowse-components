@@ -1,10 +1,11 @@
 import { getSession, stringify } from '@jbrowse/core/util'
+import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 type LGV = LinearGenomeViewModel
 
@@ -21,20 +22,18 @@ const useStyles = makeStyles()({
 const OverviewRubberbandHoverTooltip = observer(
   function OverviewRubberbandHoverTooltip({
     model,
-    open,
     guideX,
     overview,
   }: {
     model: LGV
-    open: boolean
     guideX: number
-    overview: Base1DViewModel
+    overview: ViewLayout
   }) {
     const { classes } = useStyles()
     const { cytobandOffset } = model
     const { assemblyManager } = getSession(model)
 
-    const px = overview.pxToBp(guideX - cytobandOffset)
+    const px = pxToBp(overview, guideX - cytobandOffset)
     const assembly = assemblyManager.get(px.assemblyName)
     const cytoband = assembly?.cytobands?.find(
       f =>
@@ -45,13 +44,11 @@ const OverviewRubberbandHoverTooltip = observer(
 
     return (
       <Tooltip
-        open={open}
+        open
         placement="top"
-        title={[
-          stringify(px),
-          cytoband?.get('name'),
-          cytoband?.get('type'),
-        ].join(' ')}
+        title={[stringify(px), cytoband?.get('name'), cytoband?.get('type')]
+          .filter(Boolean)
+          .join(' ')}
         arrow
       >
         <div

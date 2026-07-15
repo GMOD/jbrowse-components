@@ -1,3 +1,14 @@
+// stroke for tree branch lines, shared by the canvas and SVG draw paths
+export const TREE_STROKE = '#0008'
+
+// Left inset (CSS px) for the root branch line. The root sits at the smallest y
+// (leftmost node in the left-to-right dendrogram); at y=0 its 1px-wide vertical
+// stroke is centered on the canvas edge, so half of it is clipped off. Nudging
+// the whole y-domain right keeps the root line fully on-screen — pad 2 (not 1)
+// leaves the stroke a clear pixel off the edge so it doesn't read as clipped
+// (reviewer: the tree's top level looked ~1px offscreen at pad 1).
+export const TREE_LEFT_PAD = 2
+
 export interface HierarchyNode<T> {
   data: T
   children: HierarchyNode<T>[] | null
@@ -7,8 +18,6 @@ export interface HierarchyNode<T> {
   value?: number
   x?: number
   y?: number
-  // position derived from cumulative branch lengths (see setBrLength)
-  len?: number
 }
 
 export interface PositionedHierarchyNode<T> extends HierarchyNode<T> {
@@ -129,10 +138,11 @@ export function links<N extends { children: N[] | null }>(
   return result
 }
 
-export function clusterLayout<T>(
+export function clusterLayout<T extends { length?: number }>(
   root: HierarchyNode<T>,
   sizeX: number,
   sizeY: number,
+  showBranchLength = false,
 ): PositionedHierarchyNode<T> {
   const leafNodes = leaves(root)
   const n = leafNodes.length
@@ -149,7 +159,13 @@ export function clusterLayout<T>(
       node.x = totalX / node.children.length
     }
   })
-  assignDepthY(root, sizeY)
+  // A dendrogram with no merge heights (e.g. a topology-only tree) can't show a
+  // meaningful phylogram, so fall back to the cladogram layout in that case.
+  if (showBranchLength && maxNodeHeight(root) > 0) {
+    assignBranchLengthY(root, sizeY)
+  } else {
+    assignDepthY(root, sizeY)
+  }
   return root as unknown as PositionedHierarchyNode<T>
 }
 
@@ -166,79 +182,100 @@ export function eachAfter<T>(
   fn(node)
 }
 
-// Assigns y positions based on depth — root at 0, leaves at sizeY
+// Assigns y positions by topological depth-to-leaf — root at 0, every leaf at
+// sizeY. `node.height` is already the distance from a node to its farthest
+// descendant leaf, so positioning by `(rootHeight - height)` aligns all leaves
+// at the right edge regardless of tree balance, matching ape::plot.phylo.
+// Positioning by depth-from-root instead would leave shallow leaves dangling
+// short of the row labels.
 export function assignDepthY<T>(node: HierarchyNode<T>, sizeY: number) {
   const rootHeight = node.height
-  function visit(n: HierarchyNode<T>, depth: number) {
-    n.y = rootHeight === 0 ? sizeY : (depth / rootHeight) * sizeY
+  function visit(n: HierarchyNode<T>) {
+    n.y = insetY(
+      rootHeight === 0 ? 1 : (rootHeight - n.height) / rootHeight,
+      sizeY,
+    )
     if (n.children) {
       for (const child of n.children) {
-        visit(child, depth + 1)
+        visit(child)
       }
     }
   }
-  visit(node, 0)
+  visit(node)
 }
 
-// Largest root-to-leaf cumulative branch length
-export function maxLength<T extends { length?: number }>(
-  d: HierarchyNode<T>,
+// Maps a 0..1 fraction (0 = root, 1 = leaf) onto the tree's horizontal band,
+// left-inset by TREE_LEFT_PAD so the root branch stroke isn't clipped.
+function insetY(fraction: number, sizeY: number) {
+  return TREE_LEFT_PAD + fraction * (sizeY - TREE_LEFT_PAD)
+}
+
+// Largest merge height in the subtree. For an hclust dendrogram the `length`
+// field on an internal node is its absolute merge height (the `(A,B)1.5` Newick
+// form), so the root usually holds the max — but a subtree-filtered root does
+// not, hence the full traversal.
+export function maxNodeHeight<T extends { length?: number }>(
+  node: HierarchyNode<T>,
 ): number {
-  return (
-    (d.data.length ?? 0) +
-    (d.children ? d.children.reduce((m, c) => Math.max(m, maxLength(c)), 0) : 0)
-  )
-}
-
-// Assigns `len` (x position scaled by `k`) from cumulative branch lengths
-export function setBrLength<T extends { length?: number }>(
-  d: HierarchyNode<T>,
-  y0: number,
-  k: number,
-) {
-  const newY0 = y0 + Math.max(d.data.length ?? 0, 0)
-  d.len = newY0 * k
-  if (d.children) {
-    for (const child of d.children) {
-      setBrLength(child, newY0, k)
+  let max = node.data.length ?? 0
+  if (node.children) {
+    for (const child of node.children) {
+      max = Math.max(max, maxNodeHeight(child))
     }
   }
+  return max
 }
 
-// Single post-order pass building a Map from every node to the array of
-// leaf names below it. Useful when callers need leaf names for many nodes —
-// repeated `getLeafNames(node)` calls are O(n²) over a tree.
-export function leafNameMap<T extends { name?: string }>(
-  root: HierarchyNode<T>,
-): Map<HierarchyNode<T>, string[]> {
-  const map = new Map<HierarchyNode<T>, string[]>()
-  function visit(node: HierarchyNode<T>): string[] {
-    if (!node.children?.length) {
-      const names = node.data.name === undefined ? [] : [node.data.name]
-      map.set(node, names)
-      return names
-    }
-    const names: string[] = []
-    for (const child of node.children) {
-      for (const name of visit(child)) {
-        names.push(name)
+// Phylogram (dendrogram) y positions from absolute merge heights: root (max
+// height) at 0, every leaf (height 0) at sizeY, internal nodes proportional to
+// where their cluster merged. Unlike a cumulative branch-length sum, this reads
+// each node's height directly, matching the hclust `(A,B)1.5` encoding where the
+// number is an absolute height, not an incremental branch length.
+export function assignBranchLengthY<T extends { length?: number }>(
+  node: HierarchyNode<T>,
+  sizeY: number,
+) {
+  const max = maxNodeHeight(node)
+  function visit(n: HierarchyNode<T>) {
+    const h = n.data.length ?? 0
+    n.y = insetY(max === 0 ? 1 : 1 - h / max, sizeY)
+    if (n.children) {
+      for (const child of n.children) {
+        visit(child)
       }
     }
-    map.set(node, names)
-    return names
   }
-  visit(root)
-  return map
+  visit(node)
+}
+
+// The two orthogonal segments of a parent→child dendrogram connector, in
+// draw-space coordinates (node.y = depth/horizontal axis, node.x = row/vertical
+// axis). Single source of truth for the elbow geometry, shared by the canvas
+// draw path and the SVG export so the two can never drift.
+export function treeLinkSegments<N extends { x: number; y: number }>(
+  source: N,
+  target: N,
+): [[number, number], [number, number]][] {
+  return [
+    // vertical: down the parent's depth line from its row to the child's row
+    [
+      [source.y, source.x],
+      [source.y, target.x],
+    ],
+    // horizontal: across the child's row from the parent depth to the child
+    [
+      [source.y, target.x],
+      [target.y, target.x],
+    ],
+  ]
 }
 
 export function renderTreeSVG<T>(hierarchy: PositionedHierarchyNode<T>) {
   const parts: string[] = []
-  for (const link of links(hierarchy)) {
-    const sx = link.source.y
-    const sy = link.source.x
-    const tx = link.target.y
-    const ty = link.target.x
-    parts.push(`M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`)
+  for (const { source, target } of links(hierarchy)) {
+    for (const [[x0, y0], [x1, y1]] of treeLinkSegments(source, target)) {
+      parts.push(`M${x0},${y0}L${x1},${y1}`)
+    }
   }
   return parts.join('')
 }

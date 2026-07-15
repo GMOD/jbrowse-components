@@ -1,25 +1,28 @@
-import Flatbush from '@jbrowse/core/util/flatbush'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 
-import { parseClusterTree } from './clusterUtils.ts'
-import { descendants } from './hierarchy.ts'
+import { applySubtreeFilter, buildTree } from './clusterUtils.ts'
+import { maxNodeHeight } from './hierarchy.ts'
 
-import type { ClusterHierarchyNode, HoveredTreeNode } from './types.ts'
+import type { HoveredTreeNode } from './types.ts'
 
-interface HierarchySelf {
-  hierarchy: ClusterHierarchyNode | undefined
-  totalHeight?: number
-}
-
+/**
+ * #stateModel TreeSidebarMixin
+ * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
+ * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
+ * used while drawing the tree.
+ */
 export function TreeSidebarMixin<
   S extends { name: string } = { name: string },
 >() {
   return types
     .model({
-      layout: types.optional(types.frozen<S[]>(), []),
-      clusterTree: types.maybe(types.string),
-      treeAreaWidth: types.optional(types.number, 80),
-      subtreeFilter: types.maybe(types.array(types.string)),
+      layout: types.stripDefault(types.frozen<S[]>(), []),
+      clusterTree: types.stripDefault(types.maybe(types.string), undefined),
+      treeAreaWidth: types.stripDefault(types.number, 80),
+      subtreeFilter: types.stripDefault(
+        types.maybe(types.array(types.string)),
+        undefined,
+      ),
     })
     .volatile(() => ({
       hoveredTreeNode: undefined as HoveredTreeNode | undefined,
@@ -27,55 +30,42 @@ export function TreeSidebarMixin<
       mouseoverCanvas: null as HTMLCanvasElement | null,
     }))
     .views(self => ({
-      get root() {
-        const { clusterTree } = self
-        if (!clusterTree) {
-          return undefined
-        }
-        return parseClusterTree(clusterTree, self.subtreeFilter)
+      get parsedTree() {
+        return self.clusterTree ? buildTree(self.clusterTree) : undefined
       },
     }))
     .views(self => ({
-      get spatialIndex() {
-        const extended = self as typeof self & HierarchySelf
-        const h = extended.hierarchy
-        // touch treeAreaWidth and totalHeight so MobX tracks them as dependencies
-        void self.treeAreaWidth
-        void extended.totalHeight
-        if (h) {
-          const nodes = descendants(h).filter(node => node.children?.length)
-          const index = new Flatbush(nodes.length)
-          const hitRadius = 8
-          for (const node of nodes) {
-            const x = node.y
-            const y = node.x
-            index.add(
-              x - hitRadius,
-              y - hitRadius,
-              x + hitRadius,
-              y + hitRadius,
-            )
-          }
-          index.finish()
-          return { index, nodes }
-        }
-        return undefined
+      get root() {
+        return self.parsedTree
+          ? applySubtreeFilter(self.parsedTree, self.subtreeFilter)
+          : undefined
+      },
+    }))
+    .views(self => ({
+      // True when the tree carries cluster merge heights, i.e. a branch-length
+      // (dendrogram) layout would actually differ from the cladogram. Gates the
+      // "Tree branch lengths" toggle so it isn't a no-op on a height-less tree.
+      get treeHasBranchLengths() {
+        return !!self.root && maxNodeHeight(self.root) > 0
+      },
+
+      // True when persisting `next` would invalidate the cluster tree: the tree
+      // was built from the current `layout`, so any membership/order change
+      // (with a tree loaded) makes it stale. Single source of truth shared by
+      // `setLayout` and the color dialog's pre-submit warning.
+      willClearTree(next: S[]) {
+        return (
+          !!self.clusterTree &&
+          (self.layout.length !== next.length ||
+            self.layout.some((source, idx) => source.name !== next[idx]?.name))
+        )
       },
     }))
     .actions(self => ({
-      setLayout(layout: S[], clearTree = true) {
-        // Clear the cached cluster tree whenever the set of sample names
-        // changes (membership or order) — the tree was built from the prior
-        // layout and is no longer valid.
-        const namesChanged =
-          clearTree &&
-          !!self.clusterTree &&
-          (self.layout.length !== layout.length ||
-            self.layout.some(
-              (source, idx) => source.name !== layout[idx]?.name,
-            ))
+      setLayout(layout: S[]) {
+        const clearTree = self.willClearTree(layout)
         self.layout = layout
-        if (namesChanged) {
+        if (clearTree) {
           self.clusterTree = undefined
         }
       },
@@ -94,7 +84,8 @@ export function TreeSidebarMixin<
         self.treeAreaWidth = width
       },
       setSubtreeFilter(names?: string[]) {
-        self.subtreeFilter = names ? cast(names) : undefined
+        // normalize empty to undefined so the field has a single stripped state
+        self.subtreeFilter = names?.length ? cast(names) : undefined
       },
       setHoveredTreeNode(node?: HoveredTreeNode) {
         self.hoveredTreeNode = node

@@ -1,33 +1,58 @@
 ---
 id: dotplotdisplay
 title: DotplotDisplay
+sidebar_label: Display -> DotplotDisplay
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `dotplot-view`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
+The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
+(rather than the two-row `LinearSyntenyDisplay` or the plain-LGV
+`LGVSyntenyDisplay`) — same track config, different display type:
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotDisplay/index.ts)
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'hg38_vs_mm10',
+  name: 'hg38 vs mm10',
+  assemblyNames: ['hg38', 'mm10'],
+  adapter: {
+    type: 'PAFAdapter',
+    uri: 'https://example.com/hg38_vs_mm10.paf',
+    queryAssembly: 'hg38',
+    targetAssembly: 'mm10',
+  },
+  displays: [
+    {
+      type: 'DotplotDisplay',
+      displayId: 'hg38_vs_mm10-DotplotDisplay',
+    },
+  ],
+}
+```
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/DotplotDisplay.md)
-
-## Docs
+## Overview
 
 ### DotplotDisplay - Identifier
 
-#### slot: explicitIdentifier
+Every DotplotDisplay has a unique `displayId`, a required top-level field that
+identifies it (not one of the config slots below).
 
-### DotplotDisplay - Slots
+## Related links
 
-#### slot: renderer
-
-```js
-renderer: types.optional(pm.pluggableConfigSchemaType('renderer'), {
-  type: 'DotplotRenderer',
-})
-```
+- **Adapter:** [AllVsAllIndexedPAFAdapter](../allvsallindexedpafadapter)
+- **Adapter:** [AllVsAllPAFAdapter](../allvsallpafadapter)
+- **Adapter:** [ChainAdapter](../chainadapter)
+- **Adapter:** [DeltaAdapter](../deltaadapter)
+- **Adapter:** [MCScanAnchorsAdapter](../mcscananchorsadapter)
+- **Adapter:** [MCScanBlocksAdapter](../mcscanblocksadapter)
+- **Adapter:** [MCScanSimpleAnchorsAdapter](../mcscansimpleanchorsadapter)
+- **Adapter:** [MashMapAdapter](../mashmapadapter)
+- **Adapter:** [PAFAdapter](../pafadapter)
+- **Adapter:** [PairwiseIndexedPAFAdapter](../pairwiseindexedpafadapter)
+- **State model:** [runtime API](../../models/dotplotdisplay)

@@ -10,7 +10,10 @@ test('getModPositions', () => {
     type: 'm',
     base: 'C',
     strand: '+',
+    unknownSkip: false,
     positions: [6, 17, 20, 31, 34],
+    probStart: 0,
+    probStride: 1,
   })
 })
 
@@ -25,7 +28,10 @@ test('getModPositions with unknown (?)', () => {
     type: 'm',
     base: 'C',
     strand: '+',
+    unknownSkip: true,
     positions: [6, 17, 20, 31, 34],
+    probStart: 0,
+    probStride: 1,
   })
 })
 
@@ -40,7 +46,10 @@ test('getModPositions with uppercase mod code', () => {
     type: 'C',
     base: 'C',
     strand: '+',
+    unknownSkip: true,
     positions: [6, 17, 20, 31, 34],
+    probStart: 0,
+    probStride: 1,
   })
 })
 
@@ -67,6 +76,39 @@ test('getModPositions with unknown (.)', () => {
     base: 'C',
     strand: '+',
     type: 'm',
+    unknownSkip: false,
     positions: [6, 17, 20, 31, 34],
+    probStart: 0,
+    probStride: 1,
   })
+})
+
+// combined code 'C+mh' shares one set of positions across two types, and the
+// ML probabilities are interleaved per position (m,h,m,h,...): 'm' reads ML at
+// stride 2 from offset 0, 'h' at stride 2 from offset 1.
+test('getModPositions combined code mh interleaves ML offsets', () => {
+  const positions = getModPositions('C+mh,2,2,1', 'AGCTCTCCAGAGTCGNACGCC', 1)
+  expect(positions[0]).toMatchObject({
+    type: 'm',
+    base: 'C',
+    probStart: 0,
+    probStride: 2,
+  })
+  expect(positions[1]).toMatchObject({
+    type: 'h',
+    base: 'C',
+    probStart: 1,
+    probStride: 2,
+  })
+  // both types map to the same read positions
+  expect(positions[0]!.positions).toEqual(positions[1]!.positions)
+})
+
+// a second group's ML offset starts after the first group consumes
+// numPositions * numTypes values (here C+mh,2,2 = 2 positions * 2 types = 4)
+test('getModPositions second group ML offset accounts for combined first group', () => {
+  const positions = getModPositions('C+mh,0,0;A+a,0', 'CGCGAA', 1)
+  const a = positions.find(p => p.type === 'a')!
+  expect(a.probStart).toBe(4)
+  expect(a.probStride).toBe(1)
 })

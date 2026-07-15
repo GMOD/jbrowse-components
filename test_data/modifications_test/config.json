@@ -60,43 +60,14 @@
               {
                 "id": "A5CESIgpSu",
                 "type": "LinearAlignmentsDisplay",
-                "PileupDisplay": {
-                  "id": "5kM9mT-Z47",
-                  "type": "LinearPileupDisplay",
-                  "heightPreConfig": 205,
-                  "configuration": {
-                    "type": "LinearPileupDisplay",
-                    "displayId": "methylation_clip-LinearAlignmentsDisplay_LinearPileupDisplay_xyz"
-                  },
-                  "colorBySetting": {
-                    "type": "modifications"
-                  },
-                  "filterBySetting": {
-                    "flagInclude": 0,
-                    "flagExclude": 1540
-                  },
-                  "jexlFilters": [],
-                  "showSoftClipping": false
-                },
-                "SNPCoverageDisplay": {
-                  "id": "jheuExHPg_",
-                  "type": "LinearSNPCoverageDisplay",
-                  "heightPreConfig": 45,
-                  "configuration": {
-                    "type": "LinearSNPCoverageDisplay",
-                    "displayId": "methylation_clip-LinearAlignmentsDisplay_snpcoverage_xyz"
-                  },
-                  "selectedRendering": "",
-                  "resolution": 1,
-                  "constraints": {},
-                  "colorBySetting": {
-                    "type": "modifications"
-                  },
-                  "jexlFilters": []
-                },
-                "snpCovHeight": 45,
                 "configuration": "methylation_clip-LinearAlignmentsDisplay",
-                "lowerPanelType": "LinearPileupDisplay"
+                "colorBySetting": {
+                  "type": "modifications"
+                },
+                "filterBySetting": {
+                  "flagInclude": 0,
+                  "flagExclude": 1540
+                }
               }
             ]
           }
@@ -106,7 +77,7 @@
         "hideNoTracksActive": false,
         "trackSelectorType": "hierarchical",
         "showCenterLine": false,
-        "showCytobandsSetting": true,
+        "showCytobands": true,
         "trackLabels": "offset",
         "showGridlines": true,
         "highlight": [],
@@ -142,20 +113,12 @@
             "locationType": "UriLocation"
           },
           "indexType": "BAI"
-        },
-        "sequenceAdapter": {
-          "type": "IndexedFastaAdapter",
-          "fastaLocation": {
-            "uri": "hg38_clip.fa",
-            "locationType": "UriLocation"
-          },
-          "faiLocation": {
-            "uri": "hg38_clip.fa.fai",
-            "locationType": "UriLocation"
-          }
         }
       },
       "assemblyNames": ["hg38_clip"]
     }
-  ]
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  }
 }

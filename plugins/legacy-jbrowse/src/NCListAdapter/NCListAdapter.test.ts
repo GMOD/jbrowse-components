@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
@@ -19,10 +19,8 @@ function generateReadBuffer(
 }
 
 beforeEach(() => {
-  // @ts-expect-error
-  fetch.resetMocks()
-  // @ts-expect-error
-  fetch.mockResponse(
+  fetchMock.resetMocks()
+  fetchMock.mockResponse(
     generateReadBuffer(
       (url: string) =>
         new LocalFile(path.join(__dirname, `../../test_data/${url}`)),

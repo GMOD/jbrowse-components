@@ -1,5 +1,5 @@
-import { GpuLifecycleMixin } from '@jbrowse/core/gpu/GpuLifecycleMixin'
 import { types } from '@jbrowse/mobx-state-tree'
+import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
 import FetchMixin from './FetchMixin.ts'
 
@@ -7,7 +7,7 @@ import FetchMixin from './FetchMixin.ts'
 // That mixin can't be instantiated standalone (afterAttach calls getContainingView),
 // so we compose the two source mixins here and mirror the one-liner getter.
 const TestModel = types
-  .compose('TestModel', GpuLifecycleMixin(), FetchMixin(), types.model({}))
+  .compose('TestModel', RenderLifecycleMixin(), FetchMixin(), types.model({}))
   .views(self => ({
     get isReady() {
       return self.canvasDrawn && !self.isLoading
@@ -54,7 +54,7 @@ describe('isReady: loading overlay invariant', () => {
 
   test('true only after canvas drawn AND no active fetch', () => {
     const m = TestModel.create()
-    m.attachBackend(
+    m.attachRenderingBackend(
       { renders: 0 },
       {
         upload: () => {},
@@ -71,7 +71,7 @@ describe('isReady: loading overlay invariant', () => {
 
   test('resets to false after resetCanvasDrawn (simulates clearAllRpcData)', () => {
     const m = TestModel.create()
-    m.attachBackend(
+    m.attachRenderingBackend(
       { renders: 0 },
       {
         upload: () => {},
@@ -106,7 +106,7 @@ describe('isReady: loading overlay invariant', () => {
     expect(m.isReady).toBe(false)
 
     // Phase 4: GPU backend installs and renders first frame
-    m.attachBackend(
+    m.attachRenderingBackend(
       { renders: 0 },
       {
         upload: () => {},

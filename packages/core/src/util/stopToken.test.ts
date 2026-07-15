@@ -72,7 +72,7 @@ describe('stopToken', () => {
     it('leaves sabView undefined for string tokens', () => {
       const checker = createStopTokenChecker('blob:test')
       expect(checker.sabView).toBeUndefined()
-      expect(checker.checkIters).toBe(100)
+      expect(checker.checkInterval).toBe(50)
     })
 
     it('handles undefined token', () => {
@@ -169,32 +169,36 @@ describe('stopToken', () => {
       })
     })
 
-    describe('XHR throttling', () => {
-      it('respects checkIters gate for string tokens', () => {
+    describe('XHR throttling (time-gated, not iteration-gated)', () => {
+      it('increments iters on every call for string tokens', () => {
         const checker = createStopTokenChecker('blob:test')
-        expect(checker.checkIters).toBe(100)
-
-        // In Jest (not a web worker), checkStopToken is a no-op for strings,
-        // so we just verify the iteration counting works
         for (let i = 0; i < 200; i++) {
           checkStopToken2(checker)
         }
         expect(checker.iters).toBe(200)
       })
 
-      it('applies linear backoff to checkInterval', () => {
+      it('checks on a low-iteration call when the time gate is open', () => {
+        // Regression for the low-count freeze: an iteration mask could starve
+        // the XHR check on a loop with few but heavy iterations, making it
+        // uncancellable. The check now depends only on wall-clock time. Open
+        // the time gate, then a single call (iters === 1) must run the check —
+        // observable via backoff advancing.
         const checker = createStopTokenChecker('blob:test')
-        const initial = checker.checkInterval
-        expect(initial).toBe(50)
-
-        // Force past the iteration gate and time gate by backdating
-        checker.iters = 99
         checker.time = 0
         checkStopToken2(checker)
+        expect(checker.iters).toBe(1)
+        expect(checker.checkInterval).toBe(50 + 50)
+      })
 
-        // In Jest the XHR check is a no-op, but backoff should still apply
-        // (checkStopToken doesn't throw in non-worker, so backoff executes)
-        expect(checker.checkInterval).toBe(initial + 50)
+      it('caps linear backoff so cancel latency stays bounded', () => {
+        const checker = createStopTokenChecker('blob:test')
+        for (let i = 0; i < 100; i++) {
+          // reopen the time gate each iteration so backoff advances every call
+          checker.time = 0
+          checkStopToken2(checker)
+        }
+        expect(checker.checkInterval).toBe(500)
       })
     })
   })

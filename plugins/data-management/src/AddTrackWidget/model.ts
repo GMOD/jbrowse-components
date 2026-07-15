@@ -1,13 +1,20 @@
-import { getSession, isUriLocation } from '@jbrowse/core/util'
+import { getSession, isUriLocation, makeTrackId } from '@jbrowse/core/util'
 import {
-  UNSUPPORTED,
+  UNKNOWN,
   getFileName,
   guessAdapter,
   guessTrackType,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
+import { reaction } from 'mobx'
+
+import {
+  isBlockedHttpUrl,
+  isFtpUrl,
+  isRelativeUrl as isRelativeUrlString,
+} from './urlWarnings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -17,34 +24,31 @@ function getUri(location: FileLocation | undefined) {
   return isUriLocation(location) ? location.uri : undefined
 }
 
-function isRelativeUrl(url = '') {
-  try {
-    new URL(url)
-    return false
-  } catch {
-    return !url.startsWith('/')
-  }
-}
-
 export interface IndexingAttr {
   attributes: string[]
   exclude: string[]
 }
 
-const defaultVolatileState = {
-  trackData: undefined as FileLocation | undefined,
-  indexTrackData: undefined as FileLocation | undefined,
-  altAssemblyName: '',
-  altTrackName: '',
-  altTrackType: '',
-  adapterHint: '',
-  textIndexTrack: true,
-  textIndexingConf: undefined as IndexingAttr | undefined,
-  mixinData: {} as Record<string, unknown>,
+// A factory (not a shared const) so each model instance — and each clearData
+// call — gets its own fresh mixinData object rather than aliasing one shared
+// reference.
+function createVolatileState() {
+  return {
+    trackData: undefined as FileLocation | undefined,
+    indexTrackData: undefined as FileLocation | undefined,
+    altAssemblyName: '',
+    altTrackName: '',
+    altTrackType: '',
+    adapterHint: '',
+    textIndexTrack: true,
+    textIndexingConf: undefined as IndexingAttr | undefined,
+    mixinData: {} as Record<string, unknown>,
+  }
 }
 
 /**
  * #stateModel AddTrackModel
+ * #category widget
  */
 export default function f(pluginManager: PluginManager) {
   return types
@@ -64,8 +68,11 @@ export default function f(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
     })
-    .volatile(() => ({ ...defaultVolatileState }))
+    .volatile(() => createVolatileState())
     .actions(self => ({
+      /**
+       * #action
+       */
       setMixinData(arg: Record<string, unknown>) {
         self.mixinData = arg
       },
@@ -125,15 +132,30 @@ export default function f(pluginManager: PluginManager) {
        * #action
        */
       clearData() {
-        self.altTrackName = defaultVolatileState.altTrackName
-        self.altTrackType = defaultVolatileState.altTrackType
-        self.altAssemblyName = defaultVolatileState.altAssemblyName
-        self.adapterHint = defaultVolatileState.adapterHint
-        self.indexTrackData = defaultVolatileState.indexTrackData
-        self.trackData = defaultVolatileState.trackData
-        self.textIndexingConf = defaultVolatileState.textIndexingConf
-        self.textIndexTrack = defaultVolatileState.textIndexTrack
-        self.mixinData = {}
+        Object.assign(self, createVolatileState())
+      },
+    }))
+    .actions(self => ({
+      afterAttach() {
+        // The widget instance is reused (reconciled) across opens because it
+        // is keyed by a fixed id in session.widgets. Reopening it for a
+        // different view updates self.view but leaves the previously entered
+        // form data — including altAssemblyName — in place, which would add
+        // the track to the wrong assembly. Reset the form when the target
+        // view changes.
+        //
+        // Intentionally a reaction, not an autorun: it must fire ONLY on a
+        // view change, never on mount. An autorun (or fireImmediately) would
+        // clearData() on first open and wipe legitimately-restored form state.
+        addDisposer(
+          self,
+          reaction(
+            () => self.view?.id,
+            () => {
+              self.clearData()
+            },
+          ),
+        )
       },
     }))
     .views(self => ({
@@ -161,64 +183,30 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #getter
        */
+      get uris() {
+        return [getUri(self.trackData), getUri(self.indexTrackData)]
+      },
+      /**
+       * #getter
+       */
       get isFtp() {
-        const trackUri = getUri(self.trackData)
-        const indexUri = getUri(self.indexTrackData)
-        return (
-          indexUri?.startsWith('ftp://') === true ||
-          trackUri?.startsWith('ftp://') === true
-        )
+        return this.uris.some(isFtpUrl)
       },
 
-      /**
-       * #getter
-       */
-      get isRelativeTrackUrl() {
-        const uri = getUri(self.trackData)
-        return uri ? isRelativeUrl(uri) : false
-      },
-      /**
-       * #getter
-       */
-      get isRelativeIndexUrl() {
-        const uri = getUri(self.indexTrackData)
-        return uri ? isRelativeUrl(uri) : false
-      },
       /**
        * #getter
        */
       get isRelativeUrl() {
-        return this.isRelativeIndexUrl || this.isRelativeTrackUrl
-      },
-
-      /**
-       * #getter
-       */
-      get trackHttp() {
-        return getUri(self.trackData)?.startsWith('http://')
-      },
-      /**
-       * #getter
-       */
-      get indexHttp() {
-        return getUri(self.indexTrackData)?.startsWith('http://')
+        // isRelativeUrlString('') is true, so skip empty/undefined uris that
+        // getUri returns for non-URI (e.g. local file) locations
+        return this.uris.some(uri => !!uri && isRelativeUrlString(uri))
       },
 
       /**
        * #getter
        */
       get wrongProtocol() {
-        return (
-          window.location.protocol === 'https:' &&
-          (this.trackHttp ?? this.indexHttp)
-        )
-      },
-
-      /**
-       * #getter
-       */
-      get unsupported() {
-        return this.trackAdapter?.type === UNSUPPORTED
+        return this.uris.some(isBlockedHttpUrl)
       },
 
       /**
@@ -228,13 +216,7 @@ export default function f(pluginManager: PluginManager) {
        */
       get adapterHintNotConfigurable() {
         const { adapterHint } = self
-        const adapterType = this.trackAdapter?.type
-        return !!(
-          adapterHint &&
-          (!adapterType ||
-            adapterType === 'UNKNOWN' ||
-            adapterType !== adapterHint)
-        )
+        return !!(adapterHint && this.trackAdapter?.type !== adapterHint)
       },
 
       /**
@@ -264,34 +246,29 @@ export default function f(pluginManager: PluginManager) {
     }))
     .views(self => ({
       /**
-       * #getter
+       * #method
        */
       getTrackConfig(timestamp: number) {
         const session = getSession(self)
         const assemblyInstance = session.assemblyManager.get(self.assembly)
-        const defaultAsm = session.assemblies[0]?.name ?? ''
 
         return assemblyInstance &&
           self.trackAdapter &&
-          self.trackAdapter.type !== 'UNKNOWN'
+          self.trackAdapter.type !== UNKNOWN
           ? deepmerge(
               {
-                trackId: [
-                  `${self.trackName.toLowerCase().replaceAll(' ', '_')}-${timestamp}`,
-                  session.adminMode ? '' : '-sessionTrack',
-                ].join(''),
+                trackId: makeTrackId({
+                  name: self.trackName,
+                  timestamp,
+                }),
                 type: self.trackType,
                 name: self.trackName,
                 assemblyNames: [self.assembly],
-                // Spread default assembly names so comparative-adapter mixin
-                // components don't need to initialize mixinData on mount.
-                // mixinData.adapter overrides these if the user changed them.
-                adapter: {
-                  queryAssembly: defaultAsm,
-                  targetAssembly: defaultAsm,
-                  ...self.trackAdapter,
-                },
+                adapter: { ...self.trackAdapter },
               },
+              // Synteny add-track components seed mixinData.adapter with the
+              // query/target assemblies; non-synteny tracks leave it empty so
+              // their adapter config isn't polluted with assembly-pair fields.
               self.mixinData,
             )
           : undefined

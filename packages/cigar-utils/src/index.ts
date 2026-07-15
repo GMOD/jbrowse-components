@@ -3,6 +3,7 @@ export {
   CIGAR_EQ,
   CIGAR_H,
   CIGAR_I,
+  CIGAR_INDEL_MASK,
   CIGAR_M,
   CIGAR_M_EQ_MASK,
   CIGAR_N,
@@ -16,6 +17,8 @@ export {
   SEQRET_NUMERIC_DECODER,
 } from './bamSeqDecoder.ts'
 export { forEachMismatchNumeric } from './forEachMismatchNumeric.ts'
+export { flipCigar, swapIndelCigar } from './cigarReorient.ts'
+export { csToCigar } from './csToCigar.ts'
 export {
   DELETION_TYPE,
   HARDCLIP_TYPE,
@@ -34,7 +37,14 @@ export type { CigarOpsVisitor } from './cigarOpsVisitor.ts'
 export { cigarToMismatches2 } from './cigarToMismatches2.ts'
 export { mdToMismatches2 } from './mdToMismatches2.ts'
 export { getNextRefPos } from './getNextRefPos.ts'
+export { numericCigarToString } from './numericCigarToString.ts'
 export {
+  connectionEndpointBps,
+  readLeadingBp,
+  readTrailingBp,
+} from './readEndpoints.ts'
+export {
+  clipLengthAtStartOfReadNumeric,
   featurizeSA,
   getClip,
   getLength,

@@ -1,33 +1,27 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
 import { Image, createCanvas } from 'canvas'
-import { LocalFile } from 'generic-filehandle2'
 
-import { handleRequest } from './generateReadBuffer.ts'
+import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 
-// @ts-ignore
+// @ts-expect-error
 global.nodeImage = Image
-// @ts-ignore
+// @ts-expect-error
 global.nodeCreateCanvas = createCanvas
 
-const getFile = (url: string) =>
-  new LocalFile(
-    require.resolve(`../../${url.replace(/http:\/\/localhost\//, '')}`),
-  )
-
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  if (/plugin-store/.exec(`${url}`)) {
+  if (`${url}`.includes('plugin-store')) {
     return new Response(JSON.stringify({ plugins: [] }))
   }
   if (`${url}`.includes('jb2=true')) {
     return new Response('{}')
   }
-  return handleRequest(() => getFile(`${url}`), args)
+  return handleRequest(() => volvoxGetFile(`${url}`), args)
 })
 
 afterEach(() => {

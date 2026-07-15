@@ -6,10 +6,12 @@ import {
 } from '@jbrowse/core/util'
 
 import JobsListWidgetF from './JobsListWidget/index.ts'
+import { getOrCreateJobsListWidget } from './getOrCreateJobsListWidget.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SessionWithWidgets } from '@jbrowse/core/util'
 
+export { getOrCreateJobsListWidget } from './getOrCreateJobsListWidget.ts'
 export type { JobsListModel } from './JobsListWidget/model.ts'
 
 export default class JobsManagementPlugin extends Plugin {
@@ -25,14 +27,7 @@ export default class JobsManagementPlugin extends Plugin {
         icon: Indexing, // TODO: pick a better icon
         onClick: (session: SessionWithWidgets) => {
           if (isSessionModelWithWidgets(session)) {
-            const { widgets } = session
-            let jobStatusWidget = widgets.get('JobsList')
-            if (!jobStatusWidget) {
-              jobStatusWidget = session.addWidget('JobsListWidget', 'JobsList')
-              session.showWidget(jobStatusWidget)
-            } else {
-              session.showWidget(jobStatusWidget)
-            }
+            session.showWidget(getOrCreateJobsListWidget(session))
           }
         },
       })

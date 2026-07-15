@@ -10,14 +10,15 @@ export function isBedMethylFeature({
   start: number
   end: number
 }) {
+  // columns 9-17 are the nine numeric methylation stats
+  const nums = splitLine.slice(9, 18)
   return (
     splitLine[6] !== undefined &&
     +splitLine[6] === start &&
     splitLine[7] !== undefined &&
     +splitLine[7] === end &&
-    [9, 10, 11, 12, 13, 14, 15, 16, 17].every(
-      r => splitLine[r] && !Number.isNaN(+splitLine[r]),
-    )
+    nums.length === 9 &&
+    nums.every(x => x && !Number.isNaN(+x))
   )
 }
 
@@ -36,16 +37,10 @@ export function generateBedMethylFeature({
 }) {
   // see
   // https://github.com/nanoporetech/modkit?tab=readme-ov-file#description-of-bedmethyl-output
+  const code = splitLine[3]
+  const strandRaw = splitLine[5]
+  const color = splitLine[8]
   const [
-    ,
-    ,
-    ,
-    code,
-    ,
-    strandRaw,
-    ,
-    ,
-    color,
     n_valid_cov,
     fraction_modified,
     n_mod,
@@ -55,7 +50,7 @@ export function generateBedMethylFeature({
     n_fail,
     n_diff,
     n_nocall,
-  ] = splitLine
+  ] = splitLine.slice(9)
 
   return {
     uniqueId,
@@ -66,6 +61,7 @@ export function generateBedMethylFeature({
     score: +fraction_modified!,
     strand: parseStrand(strandRaw),
     color,
+    // source mirrors code so MultiQuantitativeTrack groups by modification code
     source: code,
     n_valid_cov,
     fraction_modified,

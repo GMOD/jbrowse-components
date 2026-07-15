@@ -1,37 +1,77 @@
 ---
 id: referencesequencetrack
 title: ReferenceSequenceTrack
+sidebar_label: Track -> ReferenceSequenceTrack
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the `sequence`
+plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts).
 
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
+## Example usage
 
-## Links
+Usually authored as the `sequence` member of an assembly rather than a top-level
+track:
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/sequence/src/ReferenceSequenceTrack/configSchema.ts)
+```js
+sequence: {
+  type: 'ReferenceSequenceTrack',
+  trackId: 'hg38-ref',
+  adapter: {
+    type: 'IndexedFastaAdapter',
+    uri: 'https://example.com/hg38.fa',
+  },
+}
+```
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/ReferenceSequenceTrack.md)
+_See the **Config slots** section below for all available configuration fields._
 
-## Docs
+## Overview
 
 used to display base level DNA sequence tracks
 
 ### ReferenceSequenceTrack - Identifier
 
-#### slot: explicitIdentifier
+Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field
+that identifies it (not one of the config slots below).
 
-### ReferenceSequenceTrack - Slots
+## Related links
+
+- **Display:**
+  [LinearReferenceSequenceDisplay](../linearreferencesequencedisplay)
+  ([state model](../../models/linearreferencesequencedisplay))
+- **Adapter:** [BgzipFastaAdapter](../bgzipfastaadapter)
+- **Adapter:** [ChromSizesAdapter](../chromsizesadapter)
+- **Adapter:** [IndexedFastaAdapter](../indexedfastaadapter)
+- **Adapter:** [TwoBitAdapter](../twobitadapter)
+- **Adapter:** [UnindexedFastaAdapter](../unindexedfastaadapter)
+
+## Config slots
+
+Slot types (`fileLocation`, `frozen`, ...) are explained in the
+[config slot types reference](/docs/config_guides/slot_types).
+
+| Slot                                              | Type      | Description                                                                 |
+| ------------------------------------------------- | --------- | --------------------------------------------------------------------------- |
+| [adapter](#slot-adapter)                          |           | configuration for track adapter                                             |
+| [displays](#slot-displays)                        |           | configuration for the displays e.g. LinearReferenceSequenceDisplay          |
+| [name](#slot-name)                                | `string`  | optional track name, otherwise uses the "Reference sequence (assemblyName)" |
+| [sequenceType](#slot-sequencetype)                | `string`  | either dna or pep                                                           |
+| [description](#slot-description)                  | `string`  | a description of the track                                                  |
+| [metadata](#slot-metadata)                        | `frozen`  | anything to add about this track                                            |
+| [formatAbout.config](#slot-formataboutconfig)     | `frozen`  | formats configuration in about dialog                                       |
+| [formatAbout.hideUris](#slot-formatabouthideuris) | `boolean` |                                                                             |
+
+<details>
+<summary>ReferenceSequenceTrack - Slots</summary>
 
 #### slot: adapter
 
 configuration for track adapter
 
 ```js
-adapter: pluginManager.pluggableConfigSchemaType('adapter')
+pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
 #### slot: displays
@@ -39,66 +79,52 @@ adapter: pluginManager.pluggableConfigSchemaType('adapter')
 configuration for the displays e.g. LinearReferenceSequenceDisplay
 
 ```js
-displays: types.array(pluginManager.pluggableConfigSchemaType('display'))
+types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
 #### slot: name
 
-```js
-name: {
-        type: 'string',
-        description:
-          'optional track name, otherwise uses the "Reference sequence (assemblyName)"',
-        defaultValue: '',
-      }
-```
+optional track name, otherwise uses the "Reference sequence (assemblyName)"
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: sequenceType
 
-```js
-sequenceType: {
-        type: 'string',
-        description: 'either dna or pep',
-        defaultValue: 'dna',
-      }
-```
+either dna or pep
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
+`'dna'`
 
 #### slot: description
 
-```js
-description: {
-        description: 'a description of the track',
-        type: 'string',
-        defaultValue: '',
-      }
-```
+a description of the track
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
 #### slot: metadata
 
-```js
-metadata: {
-        type: 'frozen',
-        description: 'anything to add about this track',
-        defaultValue: {},
-      }
-```
+anything to add about this track
+
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
 
 #### slot: formatAbout.config
 
+formats configuration in about dialog
+
+**Type:** [`frozen`](/docs/config_guides/slot_types#frozen) · **Default:** `{}`
+
 ```js
-config: {
-          type: 'frozen',
-          description: 'formats configuration in about dialog',
-          defaultValue: {},
-          contextVariable: ['config'],
-        }
+{
+  type: 'frozen',
+  description: 'formats configuration in about dialog',
+  defaultValue: {},
+  contextVariable: ['config'],
+}
 ```
 
 #### slot: formatAbout.hideUris
 
-```js
-hideUris: {
-          type: 'boolean',
-          defaultValue: false,
-        }
-```
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false`
+
+</details>

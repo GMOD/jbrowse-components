@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useRef } from 'react'
 
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
+import { getSession, useFocusOnInteraction } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import Paper from '@mui/material/Paper'
 import { observer } from 'mobx-react'
@@ -26,6 +26,10 @@ const useStyles = makeStyles()(theme => ({
   pinnedTracks: {
     position: 'sticky',
     zIndex: 3,
+    // cap the sticky block at the viewport space below its top offset so
+    // pinning many/tall tracks scrolls within the block instead of burying
+    // the unpinned tracks underneath it
+    overflowY: 'auto',
   },
   rel: {
     position: 'relative',
@@ -48,25 +52,34 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
   const { classes } = useStyles()
   const session = getSession(model)
   const ref = useRef<HTMLDivElement>(null)
+  // cached left edge of the view, refreshed on resize, so the mousemove hover
+  // handler doesn't call getBoundingClientRect() (a layout reflow) every move
+  const rectLeftRef = useRef(0)
   const MiniControlsComponent = model.MiniControlsComponent()
   const HeaderComponent = model.HeaderComponent()
   useWheelScroll(ref, model)
   useEffect(() => {
-    // sets the focused view id based on a click within the LGV;
-    // necessary for subviews to be focused properly
-    function handleSelectView(e: Event) {
-      if (e.target instanceof Element && ref.current?.contains(e.target)) {
-        session.setFocusedViewId?.(model.id)
-      }
+    const curr = ref.current
+    if (!curr) {
+      return
     }
-
-    document.addEventListener('mousedown', handleSelectView)
-    document.addEventListener('keydown', handleSelectView)
+    rectLeftRef.current = curr.getBoundingClientRect().left
+    const observer =
+      'ResizeObserver' in window
+        ? new ResizeObserver(() => {
+            rectLeftRef.current = curr.getBoundingClientRect().left
+          })
+        : undefined
+    observer?.observe(curr)
     return () => {
-      document.removeEventListener('mousedown', handleSelectView)
-      document.removeEventListener('keydown', handleSelectView)
+      observer?.disconnect()
     }
-  }, [session, model])
+  }, [])
+  // sets the focused view id based on a click within the LGV; necessary for
+  // subviews to be focused properly
+  useFocusOnInteraction(ref, () => {
+    session.setFocusedViewId?.(model.id)
+  })
 
   return (
     <div
@@ -76,12 +89,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         session.setHovered(undefined)
       }}
       onMouseMove={event => {
-        const c = ref.current
-        if (!c) {
-          return
-        }
-        const { tracks } = model
-        const leftPx = event.clientX - c.getBoundingClientRect().left
+        const leftPx = event.clientX - rectLeftRef.current
         const hoverPosition = model.pxToBp(leftPx)
         const hoverFeature = tracks.find(t => t.displays[0].featureUnderMouse)
         session.setHovered({ hoverPosition, hoverFeature })
@@ -111,7 +119,10 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
                 <Paper
                   elevation={6}
                   className={classes.pinnedTracks}
-                  style={{ top: pinnedTracksTop }}
+                  style={{
+                    top: pinnedTracksTop,
+                    maxHeight: `calc(100vh - ${pinnedTracksTop}px)`,
+                  }}
                 >
                   {pinnedTracks.map(track => (
                     <TrackContainer

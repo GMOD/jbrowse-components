@@ -16,16 +16,18 @@ const Wrapper = observer(function Wrapper({
   yOffset?: number
 }) {
   const { height } = model
-  const { width, offsetPx } = getContainingView(model) as LinearGenomeViewModel
-  const left = Math.max(0, -offsetPx)
+  const { width } = getContainingView(model) as LinearGenomeViewModel
+  // No horizontal shift: both live (svg at container-x 0) and export place the
+  // overlay in the same x=0 frame as the LD matrix canvas. When offsetPx < 0 the
+  // gap is carried by renderTransform.viewOffsetX (which the matrix render and
+  // the connector/label genomic-x share), not by translating this group.
   return exportSVG ? (
-    <g transform={`translate(${left} ${yOffset})`}>{children}</g>
+    <g transform={`translate(0 ${yOffset})`}>{children}</g>
   ) : (
     <svg
       style={{
         position: 'absolute',
         top: 0,
-        left,
         height,
         width,
       }}

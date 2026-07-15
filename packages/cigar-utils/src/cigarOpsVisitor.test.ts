@@ -29,7 +29,7 @@ function collect(cigar: number[], bpPerPx0: number, bpPerPx1: number) {
 
 describe('visitCigarRenderedSegments', () => {
   // bpPerPx0=2 (ref: 2bp/px), bpPerPx1=20 (query: 20bp/px)
-  // 10D → ref advances 10bp (>= 2bp threshold, visible); query unchanged
+  // 10D → ref advances 10bp (5px wide, > 1px threshold), visible; query unchanged
   it('emits CIGAR_D for a deletion visible on the ref track', () => {
     const [seg] = collect([pack(10, CIGAR_D)], 2, 20)
     expect(seg!.op).toBe(CIGAR_D)
@@ -48,7 +48,7 @@ describe('visitCigarRenderedSegments', () => {
   })
 
   // bpPerPx0=20 (ref: 20bp/px), bpPerPx1=2 (query: 2bp/px)
-  // 10I → query advances 10bp (>= 2bp threshold, visible); ref unchanged
+  // 10I → query advances 10bp (>= 1px threshold, visible); ref unchanged
   it('emits CIGAR_I for an insertion visible on the query track', () => {
     const [seg] = collect([pack(10, CIGAR_I)], 20, 2)
     expect(seg!.op).toBe(CIGAR_I)
@@ -65,5 +65,20 @@ describe('visitCigarRenderedSegments', () => {
     const cigar = [pack(1, CIGAR_D), pack(30, CIGAR_M)]
     const segs = collect(cigar, 20, 20)
     expect(segs.every(s => s.op === CIGAR_M)).toBe(true)
+  })
+
+  // MIN_INDEL_PX=1 threshold: 1bp indel at bpPerPx=2 is 0.5px wide — merged
+  it('merges a 1bp indel that would be < 1px wide', () => {
+    const cigar = [pack(30, CIGAR_M), pack(1, CIGAR_I), pack(30, CIGAR_M)]
+    const segs = collect(cigar, 2, 2)
+    expect(segs.every(s => s.op === CIGAR_M)).toBe(true)
+  })
+
+  // 3bp indel at bpPerPx=2 is 1.5px wide — now kept (frission from ~1px
+  // detail); the old 2px floor (MIN_INDEL_PX=2) merged anything under 4bp here
+  it('keeps a 1.5px indel that the old 2px floor would have merged', () => {
+    const cigar = [pack(30, CIGAR_M), pack(3, CIGAR_I), pack(30, CIGAR_M)]
+    const segs = collect(cigar, 2, 2)
+    expect(segs.some(s => s.op === CIGAR_I)).toBe(true)
   })
 })

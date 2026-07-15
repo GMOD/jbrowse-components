@@ -1,16 +1,26 @@
 import { BaseExportSvgDialog, useExportSvgPreference } from '@jbrowse/core/ui'
 import { Checkbox, FormControlLabel, MenuItem, TextField } from '@mui/material'
 
-import type { ExportSvgOptions } from '../types.ts'
+import type { TrackLabelMode } from '../types.ts'
+import type { BaseExportSvgOptions } from '@jbrowse/core/ui'
 
+// Shared track-label + gridlines export dialog. Used by LGV, linear-synteny and
+// breakpoint-split views (their lazyDialogs re-export this).
 export default function ExportSvgDialog({
   model,
   handleClose,
 }: {
-  model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
+  model: {
+    exportSvg(
+      opts: BaseExportSvgOptions & {
+        trackLabels: TrackLabelMode
+        showGridlines: boolean
+      },
+    ): Promise<void>
+  }
   handleClose: () => void
 }) {
-  const [trackLabels, setTrackLabels] = useExportSvgPreference(
+  const [trackLabels, setTrackLabels] = useExportSvgPreference<TrackLabelMode>(
     'tracklabels',
     'offset',
   )
@@ -25,35 +35,35 @@ export default function ExportSvgDialog({
       exportSvg={opts =>
         model.exportSvg({ ...opts, trackLabels, showGridlines })
       }
+      checkboxes={
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showGridlines}
+              onChange={() => {
+                setShowGridlines(val => !val)
+              }}
+            />
+          }
+          label="Show gridlines"
+        />
+      }
     >
-      <div>
-        <TextField
-          select
-          label="Track label positioning"
-          variant="outlined"
-          style={{ width: 150 }}
-          value={trackLabels}
-          onChange={event => {
-            setTrackLabels(event.target.value)
-          }}
-        >
-          <MenuItem value="offset">Offset</MenuItem>
-          <MenuItem value="overlay">Overlay</MenuItem>
-          <MenuItem value="left">Left</MenuItem>
-          <MenuItem value="none">None</MenuItem>
-        </TextField>
-      </div>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={showGridlines}
-            onChange={() => {
-              setShowGridlines(val => !val)
-            }}
-          />
-        }
-        label="Show gridlines"
-      />
+      <TextField
+        select
+        label="Track label positioning"
+        variant="outlined"
+        style={{ minWidth: 200 }}
+        value={trackLabels}
+        onChange={event => {
+          setTrackLabels(event.target.value as TrackLabelMode)
+        }}
+      >
+        <MenuItem value="offset">Offset</MenuItem>
+        <MenuItem value="overlay">Overlay</MenuItem>
+        <MenuItem value="left">Left</MenuItem>
+        <MenuItem value="none">None</MenuItem>
+      </TextField>
     </BaseExportSvgDialog>
   )
 }

@@ -98,13 +98,13 @@ async function mismatchesCheck(f: string) {
   const cramMap = Object.fromEntries(
     cramFeaturesArray.map(f => [
       f.get('name'),
-      f.get('mismatches').sort((a: M, b: M) => b.start - a.start),
+      (f.get('mismatches') as M[]).sort((a, b) => b.start - a.start),
     ]),
   )
   const bamMap = Object.fromEntries(
     bamFeaturesArray.map(f => [
       f.get('name'),
-      f.get('mismatches').sort((a: M, b: M) => b.start - a.start),
+      (f.get('mismatches') as M[]).sort((a, b) => b.start - a.start),
     ]),
   )
   expect(bamMap).toEqual(cramMap)

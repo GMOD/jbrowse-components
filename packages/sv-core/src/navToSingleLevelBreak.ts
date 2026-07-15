@@ -1,36 +1,33 @@
-import { gatherOverlaps, getSession, when } from '@jbrowse/core/util'
+import {
+  gatherOverlaps,
+  getSession,
+  stripTrackIds,
+  when,
+} from '@jbrowse/core/util'
 
-import { getBreakendCoveringRegions, makeTitle, stripIds } from './util.ts'
+import {
+  breakpointBpPerPx,
+  getBreakendAssemblyRegions,
+  makeTitle,
+} from './util.ts'
 
 import type { BreakpointSplitView, Track } from './types.ts'
-import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 
-function getAssemblyRegions(
-  feature: Feature,
-  session: AbstractSessionModel,
-  assemblyName: string,
-) {
-  const { assemblyManager } = session
-  const assembly = assemblyManager.get(assemblyName)
-  if (!assembly) {
-    throw new Error(`assembly ${assemblyName} not found`)
+function singleLevelSnap(feature: Feature, regions: Region[]) {
+  return {
+    type: 'BreakpointSplitView',
+    views: [
+      {
+        type: 'LinearGenomeView',
+        displayedRegions: gatherOverlaps(regions),
+      },
+    ],
+    displayName: makeTitle(feature),
   }
-  if (!assembly.regions) {
-    throw new Error(`assembly ${assemblyName} regions not loaded`)
-  }
-  const coverage = getBreakendCoveringRegions({ feature, assembly })
-  const { refName, mateRefName } = coverage
-  const topRegion = assembly.regions.find(f => f.refName === refName)
-  const bottomRegion = assembly.regions.find(f => f.refName === mateRefName)
-  if (!topRegion || !bottomRegion) {
-    throw new Error(
-      `regions ${refName}, ${mateRefName} not found in assembly ${assemblyName}`,
-    )
-  }
-  return { coverage, topRegion, bottomRegion }
 }
 
-export function singleLevelFocusedSnapshotFromBreakendFeature({
+export async function singleLevelFocusedSnapshotFromBreakendFeature({
   feature,
   session,
   assemblyName,
@@ -41,38 +38,29 @@ export function singleLevelFocusedSnapshotFromBreakendFeature({
   assemblyName: string
   windowSize?: number
 }) {
-  const { coverage, topRegion, bottomRegion } = getAssemblyRegions(
+  const { coverage, region, mateRegion } = await getBreakendAssemblyRegions({
     feature,
     session,
     assemblyName,
-  )
+  })
   return {
     coverage,
-    snap: {
-      type: 'BreakpointSplitView',
-      views: [
-        {
-          type: 'LinearGenomeView',
-          displayedRegions: gatherOverlaps([
-            {
-              ...topRegion,
-              end: coverage.pos + 1 + windowSize,
-              assemblyName,
-            },
-            {
-              ...bottomRegion,
-              start: coverage.matePos - windowSize,
-              assemblyName,
-            },
-          ]),
-        },
-      ],
-      displayName: makeTitle(feature),
-    },
+    snap: singleLevelSnap(feature, [
+      {
+        ...region,
+        end: Math.min(region.end, coverage.pos + 1 + windowSize),
+        assemblyName,
+      },
+      {
+        ...mateRegion,
+        start: Math.max(0, coverage.matePos - windowSize),
+        assemblyName,
+      },
+    ]),
   }
 }
 
-export function singleLevelEncompassingSnapshotFromBreakendFeature({
+export async function singleLevelEncompassingSnapshotFromBreakendFeature({
   feature,
   session,
   assemblyName,
@@ -81,26 +69,17 @@ export function singleLevelEncompassingSnapshotFromBreakendFeature({
   session: AbstractSessionModel
   assemblyName: string
 }) {
-  const { coverage, topRegion, bottomRegion } = getAssemblyRegions(
+  const { coverage, region, mateRegion } = await getBreakendAssemblyRegions({
     feature,
     session,
     assemblyName,
-  )
+  })
   return {
     coverage,
-    snap: {
-      type: 'BreakpointSplitView',
-      views: [
-        {
-          type: 'LinearGenomeView',
-          displayedRegions: gatherOverlaps([
-            { ...topRegion, assemblyName },
-            { ...bottomRegion, assemblyName },
-          ]),
-        },
-      ],
-      displayName: makeTitle(feature),
-    },
+    snap: singleLevelSnap(feature, [
+      { ...region, assemblyName },
+      { ...mateRegion, assemblyName },
+    ]),
   }
 }
 
@@ -121,7 +100,7 @@ export async function navToSingleLevelBreak({
   tracks?: Track[]
   focusOnBreakends?: boolean
 }) {
-  const { snap, coverage } = focusOnBreakends
+  const { snap, coverage } = await (focusOnBreakends === true
     ? singleLevelFocusedSnapshotFromBreakendFeature({
         feature,
         assemblyName,
@@ -132,18 +111,18 @@ export async function navToSingleLevelBreak({
         feature,
         assemblyName,
         session,
-      })
+      }))
   const { refName, pos: startPos, mateRefName, matePos: endPos } = coverage
   let view = session.views.find(f => f.id === stableViewId) as
-    | BreakpointSplitView
-    | undefined
+    BreakpointSplitView | undefined
   if (!view) {
     view = session.addView('BreakpointSplitView', {
       ...snap,
+      id: stableViewId,
       views: [
         {
           ...snap.views[0],
-          tracks: tracks ? stripIds(tracks) : [],
+          tracks: tracks ? stripTrackIds(tracks) : [],
         },
       ],
     }) as unknown as BreakpointSplitView
@@ -154,11 +133,13 @@ export async function navToSingleLevelBreak({
   const lgv = view.views[0]!
   await when(() => lgv.initialized)
 
-  if (focusOnBreakends) {
-    // zoom to show the breakpoints with windowSize padding, centered between them
-    lgv.zoomTo(10)
+  if (focusOnBreakends === true) {
+    // zoom to show the breakpoints with windowSize padding, centered between
+    // them (matches navToMultiLevelBreak: windowSize bp on each side across the
+    // view width)
+    lgv.zoomTo(breakpointBpPerPx(windowSize, lgv.width))
 
-    // find midpoint between the two breakpoints in the displayed regions
+    // center between the two breakpoints in the displayed regions
     const l0 = lgv.bpToPx({ coord: startPos, refName })
     const r0 = lgv.bpToPx({ coord: endPos, refName: mateRefName })
     if (l0 && r0) {
@@ -173,10 +154,7 @@ export async function navToSingleLevelBreak({
       coord: Math.max(0, startPos - windowSize),
       refName,
     })
-    const r0 = lgv.bpToPx({
-      coord: endPos + windowSize,
-      refName: mateRefName,
-    })
+    const r0 = lgv.bpToPx({ coord: endPos + windowSize, refName: mateRefName })
     if (l0 && r0) {
       lgv.moveTo({ ...l0, offset: l0.offsetPx }, { ...r0, offset: r0.offsetPx })
     } else {

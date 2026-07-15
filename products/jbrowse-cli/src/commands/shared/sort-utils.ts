@@ -1,13 +1,13 @@
-import { spawn } from 'child_process'
-import { parseArgs } from 'util'
+import { spawn } from 'node:child_process'
+import { parseArgs } from 'node:util'
 
-import tmp from 'tmp'
+import { fileSync } from 'tmp'
 
 import { printHelp } from '../../utils.ts'
 import { waitForProcessClose } from '../process-utils.ts'
 import { validateFileArgument, validateRequiredCommands } from './validators.ts'
 
-import type { ChildProcess } from 'child_process'
+import type { ChildProcess } from 'node:child_process'
 
 export interface SortConfig {
   description: string
@@ -32,7 +32,7 @@ export const BED_CONFIG: SortConfig = {
 
 export const GFF_CONFIG: SortConfig = {
   description:
-    'Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep',
+    'Helper utility to sort GFF (and GTF, which shares the same refname/start column layout) files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep',
   examples: [
     '# sort gff and pipe to bgzip',
     '$ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz',
@@ -40,6 +40,10 @@ export const GFF_CONFIG: SortConfig = {
     '',
     '# sort gff from stdin',
     '$ cat input.gff | jbrowse sort-gff | bgzip > sorted.gff.gz',
+    '',
+    '# also works on GTF',
+    '$ jbrowse sort-gff input.gtf | bgzip > sorted.gtf.gz',
+    '$ tabix -p gff sorted.gtf.gz',
   ],
   sortColumn: 4,
   fileType: 'gff',
@@ -52,25 +56,44 @@ function getMinimalEnvironment(): NodeJS.ProcessEnv {
   }
 }
 
-function createSortCommandForStdin(sortColumn: number): string {
-  const tmpFile = tmp.fileSync({ prefix: 'jbrowse-sort' }).name
-  const sortCmd = `sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n`
-  return `cat > ${tmpFile} && (grep "^#" ${tmpFile}; grep -v "^#" ${tmpFile} | ${sortCmd}) && rm -f ${tmpFile}`
+// The file path is passed to the shell as the positional argument "$1" rather
+// than interpolated into the command string, so a path containing shell
+// metacharacters (`"`, `$(...)`, backticks) cannot break out and execute. Only
+// sortColumn, an integer from the BED/GFF configs, is interpolated.
+function sortPipeline(sortColumn: number): string {
+  return `grep "^#" "$1"; grep -v "^#" "$1" | sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n`
 }
 
-function createSortCommandForFile(file: string, sortColumn: number): string {
-  return `(grep "^#" "${file}"; grep -v "^#" "${file}" | sort -t"\`printf '\\t'\`" -k1,1 -k${sortColumn},${sortColumn}n)`
+function createSortCommandForStdin(sortColumn: number): {
+  command: string
+  pathArg: string
+} {
+  const tmpFile = fileSync({ prefix: 'jbrowse-sort' }).name
+  // trap on EXIT removes the temp file whether or not the sort pipeline
+  // succeeds (a bare `&& rm` leaks the file when the pipeline fails)
+  return {
+    command: `trap 'rm -f "$1"' EXIT; cat > "$1" && (${sortPipeline(sortColumn)})`,
+    pathArg: tmpFile,
+  }
+}
+
+function createSortCommandForFile(
+  file: string,
+  sortColumn: number,
+): { command: string; pathArg: string } {
+  return { command: `(${sortPipeline(sortColumn)})`, pathArg: file }
 }
 
 export function spawnSortProcess(
   file: string | undefined,
   sortColumn: number,
 ): ChildProcess {
-  const command = file
+  const { command, pathArg } = file
     ? createSortCommandForFile(file, sortColumn)
     : createSortCommandForStdin(sortColumn)
 
-  return spawn('sh', ['-c', command], {
+  // 'sh' becomes $0, pathArg becomes $1 inside the command
+  return spawn('sh', ['-c', command, 'sh', pathArg], {
     env: getMinimalEnvironment(),
     stdio: 'inherit',
   })

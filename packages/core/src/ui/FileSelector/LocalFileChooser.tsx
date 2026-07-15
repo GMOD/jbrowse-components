@@ -1,4 +1,11 @@
 import { Box, Button, FormControl, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+
+declare global {
+  interface Window {
+    showOpenFilePicker(): Promise<FileSystemFileHandle[]>
+  }
+}
 
 import { dirFromPath } from './util.ts'
 import { isFileSystemAccessSupported } from '../../util/fileHandleStore.ts'
@@ -49,25 +56,16 @@ function setLastLocalFileDir(filePath: string) {
 }
 
 function getFilename(location?: FileLocation) {
-  if (!location) {
-    return undefined
-  }
-  if (isBlobLocation(location)) {
+  if (isBlobLocation(location) || isFileHandleLocation(location)) {
     return location.name
   }
   if (isLocalPathLocation(location)) {
     return location.localPath
   }
-  if (isFileHandleLocation(location)) {
-    return location.name
-  }
   return undefined
 }
 
 function needsReload(location?: FileLocation) {
-  if (!location) {
-    return false
-  }
   if (isBlobLocation(location)) {
     return !getBlob(location.blobId)
   }
@@ -77,10 +75,21 @@ function needsReload(location?: FileLocation) {
   return false
 }
 
-async function openFileSystemAccessPicker() {
-  // @ts-expect-error
-  const [handle] = await window.showOpenFilePicker()
-  return storeFileHandleLocation(handle)
+// resolves the chosen file's location, or undefined if the user cancelled the
+// native picker (which surfaces as a DOMException AbortError)
+async function pickFileHandleLocation() {
+  try {
+    const [handle] = await window.showOpenFilePicker()
+    // showOpenFilePicker resolves with ≥1 handle on success. await before
+    // returning so a rejection unwinds through this try/catch (letting the
+    // AbortError check below see it) rather than escaping to the caller
+    return await storeFileHandleLocation(handle!)
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      return undefined
+    }
+    throw e
+  }
 }
 
 function FilePickerButton({
@@ -93,13 +102,9 @@ function FilePickerButton({
       <Button
         variant="outlined"
         onClick={async () => {
-          try {
-            setLocation(await openFileSystemAccessPicker())
-          } catch (e) {
-            // User cancelled the picker
-            if (!(e instanceof DOMException) || e.name !== 'AbortError') {
-              throw e
-            }
+          const loc = await pickFileHandleLocation()
+          if (loc) {
+            setLocation(loc)
           }
         }}
       >
@@ -122,7 +127,10 @@ function FilePickerButton({
           const filePath = typeof result === 'string' ? result : undefined
           if (filePath) {
             setLastLocalFileDir(filePath)
-            setLocation({ localPath: filePath, locationType: 'LocalPathLocation' })
+            setLocation({
+              localPath: filePath,
+              locationType: 'LocalPathLocation',
+            })
           }
         }}
       >
@@ -164,12 +172,9 @@ function ReloadPrompt({
         await ensureFileHandleReady(location.handleId, true)
         setLocation({ ...location })
       } catch {
-        try {
-          setLocation(await openFileSystemAccessPicker())
-        } catch (e) {
-          if (!(e instanceof DOMException) || e.name !== 'AbortError') {
-            throw e
-          }
+        const loc = await pickFileHandleLocation()
+        if (loc) {
+          setLocation(loc)
         }
       }
     }
@@ -192,7 +197,7 @@ function ReloadPrompt({
   )
 }
 
-function LocalFileChooser({
+const LocalFileChooser = observer(function LocalFileChooser({
   location,
   setLocation,
 }: {
@@ -223,6 +228,6 @@ function LocalFileChooser({
       </Box>
     </Box>
   )
-}
+})
 
 export default LocalFileChooser
