@@ -98,6 +98,52 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
+  test('chain-mode split reads read as "Split read" under any non-strand scheme', () => {
+    // In linked-reads mode only the split segments pick up a fwd/rev color while
+    // ordinary reads stay grey; a fwd/rev bucket here can only be a split, so it
+    // must not read as a plain "Forward strand".
+    expect(labels('normal', ['plain', 'fwdStrand', 'revStrand'])).toEqual([
+      'Reads',
+      'Split read (forward)',
+      'Split read (reverse)',
+    ])
+    // swatches follow CATEGORY_LEGEND order (strand buckets precede insert ones)
+    expect(labels('insertSize', ['normalInsert', 'fwdStrand'])).toEqual([
+      'Split read (forward)',
+      'Normal',
+    ])
+    expect(labels('mappingQuality', ['fwdStrand'])).toEqual([
+      'MAPQ 0',
+      'MAPQ 30',
+      'MAPQ ≥60',
+      'Split read (forward)',
+    ])
+  })
+
+  test('strand-based schemes keep the plain wording (fwd/rev is their primary key)', () => {
+    // Under strand / first-of-pair-strand every read is colored by its own
+    // strand, so a fwd/rev bucket is the key itself, not a split-read exception.
+    expect(labels('strand', ['fwdStrand', 'revStrand'])).toEqual([
+      'Forward strand',
+      'Reverse strand',
+    ])
+    expect(labels('firstOfPairStrand', ['fwdStrand', 'revStrand'])).toEqual([
+      'Forward strand',
+      'Reverse strand',
+    ])
+  })
+
+  test('modifications view surfaces chain-mode split reads after the mod-type key', () => {
+    const mods = new Map([
+      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
+    ])
+    expect(labels('modifications', ['fwdStrand', 'revStrand'], mods)).toEqual([
+      '5mC',
+      'Split read (forward)',
+      'Split read (reverse)',
+    ])
+  })
+
   test('value tag scheme lists discovered tag values sorted, colored from the map', () => {
     expect(
       tagLabels({ type: 'tag', tag: 'HP' }, { '2': 'blue', '1': 'red' }),

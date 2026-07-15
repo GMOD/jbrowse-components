@@ -14,6 +14,7 @@ import {
 
 import type {
   ColorBy,
+  ColorSchemeType,
   ModificationColorBy,
   ModificationTypeWithColor,
 } from './types.ts'
@@ -61,13 +62,28 @@ const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
   { category: 'supplementary', label: 'Supplementary/split' },
 ]
 
-// Under the pair-orientation scheme, fwd/rev-strand buckets can only come from
-// split-read (chained-supplementary) segments, so the legend names them as such
-// rather than by the plain-strand wording.
-const PAIR_ORIENTATION_LABELS: Partial<Record<SwatchCategory, string>> = {
+// Under any scheme that colors ordinary reads by something OTHER than their own
+// strand (normal, insert size, pair orientation, mapq, modifications, tag …), a
+// fwd/rev-strand bucket can only have been produced by the split-read
+// (chained-supplementary) branch of readColorCategory — the scheme's own
+// classifier yields a different category (plain/mapq/insert/pair/…) for a
+// non-split read. Naming these as split reads is what distinguishes the colored
+// split segments from the scheme's grey/base-colored non-split reads in
+// linked-reads (chain) mode, where only the splits pick up a color. Strand
+// schemes color every read by its own strand, so they keep the plain wording
+// (see STRAND_PRIMARY_SCHEMES).
+const SPLIT_STRAND_LABELS: Partial<Record<SwatchCategory, string>> = {
   fwdStrand: 'Split read (forward)',
   revStrand: 'Split read (reverse)',
 }
+
+// Schemes whose primary coloring IS the read's own strand, so a fwd/rev bucket
+// is the key itself rather than a split-read exception to relabel.
+const STRAND_PRIMARY_SCHEMES = new Set<ColorSchemeType>([
+  'strand',
+  'firstOfPairStrand',
+  'stranded',
+])
 
 // Per-base nucleotide swatches, colored from the live palette base colors.
 const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
@@ -108,6 +124,28 @@ function fillUnmarkedLegend(
   return items
 }
 
+// The fixed-swatch buckets actually present in the reads, in CATEGORY_LEGEND
+// order. These are cross-cutting: under most schemes they mark exceptions
+// layered over the scheme's primary coloring — unmapped mate, inter-chromosomal,
+// supplementary, and (in chain mode) the split-read strand framing — so every
+// scheme appends them after its own key rather than any one branch owning them.
+// fwd/rev get the split-read wording unless the active scheme is itself
+// strand-based (see SPLIT_STRAND_LABELS / STRAND_PRIMARY_SCHEMES).
+function crossCuttingBuckets(
+  presentCategories: ReadonlySet<ReadColorCategory>,
+  palette: ColorPalette,
+  colorType: ColorSchemeType | undefined,
+): LegendItem[] {
+  const splitFraming =
+    colorType === undefined || !STRAND_PRIMARY_SCHEMES.has(colorType)
+  return CATEGORY_LEGEND.filter(({ category }) =>
+    presentCategories.has(category),
+  ).map(({ category, label }) => ({
+    color: categorySwatchColor(category, palette),
+    label: splitFraming ? (SPLIT_STRAND_LABELS[category] ?? label) : label,
+  }))
+}
+
 /**
  * Legend items for the alignments display. `presentCategories` is the set of
  * read buckets actually seen in the rendered reads (from readColorCategory), so
@@ -123,6 +161,7 @@ export function getReadDisplayLegendItems(
   colorTagMap?: Record<string, string>,
 ): LegendItem[] {
   const colorType = colorBy?.type
+  const buckets = crossCuttingBuckets(presentCategories, palette, colorType)
 
   if (colorType === 'tag') {
     const tag = colorBy?.tag
@@ -137,32 +176,42 @@ export function getReadDisplayLegendItems(
     // (colorTagMap holds the palette color baked into readTagColors). Sorted by
     // value so the legend order stays stable as reads stream in rather than
     // reordering by discovery. Empty until reads with the tag load.
-    return Object.entries(colorTagMap ?? {})
+    const values = Object.entries(colorTagMap ?? {})
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([value, color]) => ({ color, label: value }))
+    return [...values, ...buckets]
   }
 
   if (colorType === 'mappingQuality') {
-    return hslRamp(50, [
-      { hue: 0, label: 'MAPQ 0' },
-      { hue: 30, label: 'MAPQ 30' },
-      { hue: 60, label: 'MAPQ ≥60' },
-    ])
+    return [
+      ...hslRamp(50, [
+        { hue: 0, label: 'MAPQ 0' },
+        { hue: 30, label: 'MAPQ 30' },
+        { hue: 60, label: 'MAPQ ≥60' },
+      ]),
+      ...buckets,
+    ]
   }
   if (colorType === 'perBaseQuality') {
-    return hslRamp(55, [
-      { hue: 0, label: 'BQ 0' },
-      { hue: 15, label: 'BQ 10' },
-      { hue: 30, label: 'BQ 20' },
-      { hue: 45, label: 'BQ 30' },
-      { hue: 60, label: 'BQ 40' },
-    ])
+    return [
+      ...hslRamp(55, [
+        { hue: 0, label: 'BQ 0' },
+        { hue: 15, label: 'BQ 10' },
+        { hue: 30, label: 'BQ 20' },
+        { hue: 45, label: 'BQ 30' },
+        { hue: 60, label: 'BQ 40' },
+      ]),
+      ...buckets,
+    ]
   }
   if (colorType === 'perBaseLetter') {
-    return BASE_LEGEND.map(({ key, label }) => ({
-      color: rgb255(palette[key]),
-      label,
-    }))
+    return [
+      ...BASE_LEGEND.map(({ key, label }) => ({
+        color: rgb255(palette[key]),
+        label,
+      })),
+      ...buckets,
+    ]
   }
   if (colorType && isModificationScheme(colorType) && visibleModifications) {
     // The methylation (fill-unmarked) view paints the three states
@@ -178,37 +227,20 @@ export function getReadDisplayLegendItems(
             color: mod.color,
             label: getModificationName(type),
           }))
-    if (presentCategories.has('supplementary')) {
-      items.push({
-        color: categorySwatchColor('supplementary', palette),
-        label: 'Supplementary/split',
-      })
-    }
-    return items
+    // Split reads (chain mode) and supplementary/unmapped-mate exceptions carry
+    // their own fixed swatches, appended after the modification-type key.
+    return [...items, ...buckets]
   }
-
-  // Every remaining scheme (strand, insert size, orientation, tag, …) is
-  // described entirely by which fixed-swatch buckets occurred. Under the
-  // pair-orientation scheme the only source of fwd/rev-strand buckets is the
-  // split-read (chained-supplementary) branch, so relabel them from the plain
-  // strand wording to the split-read framing that scheme actually shows.
-  const buckets = CATEGORY_LEGEND.filter(({ category }) =>
-    presentCategories.has(category),
-  ).map(({ category, label }) => ({
-    color: categorySwatchColor(category, palette),
-    label:
-      colorType === 'pairOrientation'
-        ? (PAIR_ORIENTATION_LABELS[category] ?? label)
-        : label,
-  }))
 
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),
   // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
   // legend would be empty and "Show legend" would render nothing. Prepend a
   // base-reads swatch so the toggle always shows something, keeping any
-  // cross-cutting buckets (unmapped mate, supplementary in chain mode) after it.
+  // cross-cutting buckets (unmapped mate, split reads in chain mode) after it.
   if (colorType === undefined || colorType === 'normal') {
     return [{ color: rgb255(palette.colorPairLR), label: 'Reads' }, ...buckets]
   }
+  // The strand / insert-size / orientation schemes are described entirely by
+  // which fixed-swatch buckets occurred.
   return buckets
 }
