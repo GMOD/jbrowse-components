@@ -69,15 +69,19 @@ export default function OverlayColorLegend({
   sources,
   fallbackColor,
   canvasWidth,
+  maxHeight,
 }: {
   sources: LegendSource[]
   fallbackColor: string
   canvasWidth: number
+  // the display height — caps the legend so it never overflows the track
+  maxHeight: number
 }) {
   const entries = buildLegendEntries(sources)
   return (
     <SvgColorLegend
       canvasWidth={canvasWidth}
+      maxHeight={maxHeight}
       entries={entries.map(e => ({
         key: e.key,
         label: e.label,

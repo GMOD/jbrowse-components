@@ -106,6 +106,7 @@ function MultiRowSvgBody({
         <MultiRowColorLegend
           entries={self.colorLegend}
           canvasWidth={view.width}
+          maxHeight={height}
           hiddenLabels={self.hiddenCategorySet}
         />
       ) : null}

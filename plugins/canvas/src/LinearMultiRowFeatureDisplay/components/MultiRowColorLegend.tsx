@@ -9,10 +9,13 @@ import type { LegendEntry } from '../rendering/colorLegend.ts'
 export default function MultiRowColorLegend({
   entries,
   canvasWidth,
+  maxHeight,
   hiddenLabels,
 }: {
   entries: LegendEntry[]
   canvasWidth: number
+  // the display height — caps the legend so it never overflows the track
+  maxHeight: number
   // labels toggled off — rendered dimmed (the row-filter itself lives in the
   // model; this is just the visual cue)
   hiddenLabels: ReadonlySet<string>
@@ -20,6 +23,7 @@ export default function MultiRowColorLegend({
   return (
     <SvgColorLegend
       canvasWidth={canvasWidth}
+      maxHeight={maxHeight}
       entries={entries.map(e => ({
         key: e.label,
         label: e.label,

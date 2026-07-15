@@ -109,6 +109,7 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             <MultiRowColorLegend
               entries={colorLegend}
               canvasWidth={view.width}
+              maxHeight={height}
               hiddenLabels={hiddenCategorySet}
             />
           ) : null}

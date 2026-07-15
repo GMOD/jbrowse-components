@@ -62,6 +62,24 @@ test('children render inside the positioned box', () => {
   expect(getByText('custom footer')).toBeTruthy()
 })
 
+test('maxHeight collapses overflow into a "+N more" row and never exceeds it', () => {
+  const entries = Array.from({ length: 10 }, (_, i) => ({
+    key: `k${i}`,
+    label: `cat${i}`,
+    color: 'red',
+  }))
+  // room for 4 rows (4 * 14 = 56) -> 3 entries shown + a "+7 more" summary
+  const { getByText, queryByText, container } = renderSvg(
+    <SvgColorLegend canvasWidth={500} maxHeight={56} entries={entries} />,
+  )
+  expect(getByText('cat0')).toBeTruthy()
+  expect(getByText('cat2')).toBeTruthy()
+  expect(queryByText('cat3')).toBeNull()
+  expect(getByText('+7 more')).toBeTruthy()
+  // capped at 4 rows: 3 category labels + the summary, never the full 10
+  expect(container.querySelectorAll('text')).toHaveLength(4)
+})
+
 test('draws nothing with no entries and no children', () => {
   const { container } = renderSvg(
     <SvgColorLegend canvasWidth={500} entries={[]} />,

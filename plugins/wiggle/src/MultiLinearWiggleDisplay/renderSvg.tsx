@@ -128,6 +128,7 @@ function MultiWiggleSvgBody({
           sources={model.sources}
           fallbackColor={model.posColor}
           canvasWidth={view.width}
+          maxHeight={height}
         />
       ) : null}
       {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}

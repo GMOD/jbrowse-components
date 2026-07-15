@@ -43,6 +43,7 @@ const MultiWiggleLegendOverlay = observer(function MultiWiggleLegendOverlay({
             sources={model.sources}
             fallbackColor={model.posColor}
             canvasWidth={legendWidth}
+            maxHeight={model.height}
           />
         </g>
       </svg>

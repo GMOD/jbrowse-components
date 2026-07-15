@@ -38,29 +38,46 @@ export const LEGEND_SWATCH = 10
 // Two escape hatches keep it usable for less-uniform legends without a second
 // component: a per-entry `marker` overrides the color square, and `children`
 // render inside the positioned box below the rows (from the box's top-left; the
-// rows occupy `entries.length * LEGEND_ROW_HEIGHT`). Draws nothing when there's
+// rows occupy `shownEntryCount * LEGEND_ROW_HEIGHT`). Draws nothing when there's
 // neither an entry nor a child.
+//
+// `maxHeight` (e.g. the display height) caps the box: entries past what fits
+// collapse into a trailing "+N more" summary row, so the legend never overflows
+// its display — the full list stays reachable via the track menu.
 export default function SvgColorLegend({
   entries,
   canvasWidth,
+  maxHeight,
   children,
 }: {
   entries: ColorLegendEntry[]
   canvasWidth: number
+  maxHeight?: number
   children?: ReactNode
 }) {
+  const fit =
+    maxHeight === undefined
+      ? entries.length
+      : Math.max(1, Math.floor(maxHeight / LEGEND_ROW_HEIGHT))
+  // reserve the last fitting row for the summary when truncating
+  const shown = entries.length > fit ? entries.slice(0, fit - 1) : entries
+  const overflowLabel =
+    entries.length > fit ? `+${entries.length - shown.length} more` : undefined
+
   let maxLabelWidth = 0
-  for (const e of entries) {
-    const w = measureText(e.label, FONT_SIZE) * APP_FONT_WIDTH_RATIO
+  for (const label of overflowLabel === undefined
+    ? shown.map(e => e.label)
+    : [...shown.map(e => e.label), overflowLabel]) {
+    const w = measureText(label, FONT_SIZE) * APP_FONT_WIDTH_RATIO
     if (w > maxLabelWidth) {
       maxLabelWidth = w
     }
   }
   const totalWidth = TEXT_LEFT + maxLabelWidth + 6
   const x = Math.max(0, canvasWidth - totalWidth - 4)
-  return entries.length || children ? (
+  return shown.length || overflowLabel || children ? (
     <g transform={`translate(${x} 0)`}>
-      {entries.map((entry, idx) => (
+      {shown.map((entry, idx) => (
         <g
           key={entry.key}
           transform={`translate(0 ${idx * LEGEND_ROW_HEIGHT})`}
@@ -94,6 +111,20 @@ export default function SvgColorLegend({
           </text>
         </g>
       ))}
+      {overflowLabel === undefined ? null : (
+        <g transform={`translate(0 ${shown.length * LEGEND_ROW_HEIGHT})`}>
+          <rect
+            x={0}
+            y={0}
+            width={totalWidth}
+            height={LEGEND_ROW_HEIGHT}
+            fill="rgba(255,255,255,0.8)"
+          />
+          <text x={TEXT_LEFT} y={11} fontSize={FONT_SIZE} fill="#555">
+            {overflowLabel}
+          </text>
+        </g>
+      )}
       {children}
     </g>
   ) : null
