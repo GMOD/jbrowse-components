@@ -1,5 +1,6 @@
+import { getStrokeProps } from '@jbrowse/core/util'
 import { CrossHatchLines } from '@jbrowse/wiggle-core'
-import { useTheme } from '@mui/material'
+import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
@@ -39,13 +40,12 @@ export default observer(function MultiWiggleOverlayLines({
   } = model
   const theme = useTheme()
 
-  // A crisp 1px hairline in the theme foreground reads clearly over the light
-  // paper background of xyplot rows and stays clean over the saturated density
-  // blocks (where the old translucent-gray line muddied the color). Density
-  // rows are edge-to-edge fill, so the divider is dialed back there to sit
-  // between blocks without competing with them. Opacity rides on a separate
-  // stroke-opacity attribute so it survives the SVG export (renderToStaticMarkup
-  // strips rgba() alpha) — see CrossHatches.
+  // A subtle 1px hairline in the theme's divider color. Density rows are
+  // edge-to-edge fill, so the line is dialed up there to stay visible over the
+  // saturated blocks; xyplot rows sit on paper, so it can be fainter.
+  // getStrokeProps splits the alpha onto a separate stroke-opacity attribute so
+  // it survives the SVG export (renderToStaticMarkup strips rgba() alpha),
+  // keeping the live view and export identical. See CrossHatches.
   const separators =
     !isOverlay && showRowSeparators && numSources > 1
       ? Array.from({ length: numSources - 1 }).map((_, idx) => {
@@ -60,8 +60,9 @@ export default observer(function MultiWiggleOverlayLines({
               y1={y}
               x2={width}
               y2={y}
-              stroke={theme.palette.text.primary}
-              strokeOpacity={isDensityMode ? 0.4 : 0.6}
+              {...getStrokeProps(
+                alpha(theme.palette.divider, isDensityMode ? 0.3 : 0.15),
+              )}
               strokeWidth={1}
             />
           )

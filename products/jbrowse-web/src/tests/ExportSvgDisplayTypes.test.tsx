@@ -212,7 +212,11 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
 
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
-  expect(svg).toContain('stroke="#8888"') // inter-row separators
+  // inter-row separators: theme divider hue with its alpha split onto a
+  // stroke-opacity attribute by getStrokeProps (colord quantizes to n/255, so
+  // ~0.15 renders as 0.149). No other exported element pairs #000000 with a
+  // sub-1 stroke-opacity, so this uniquely identifies the separators.
+  expect(svg).toMatch(/stroke-opacity="0\.1\d+" stroke="#000000"/)
   expect(svg).toContain('stroke="rgb(200,200,200)"') // cross-hatches
   expect(svg).toContain('stroke-opacity="0.18"')
 }, 45000)
