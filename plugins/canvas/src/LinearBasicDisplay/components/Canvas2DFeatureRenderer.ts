@@ -139,25 +139,22 @@ function drawRects(
     const h = Math.floor(region.rectHeights[i]! + 0.5)
     // Pixel-snap the endpoints (matching the GPU shader's snapToPixelX) so a
     // min-width box is a crisp >=2px column instead of an anti-aliased sub-2px
-    // blur. The pre-snap real width still drives the density decision below. On
-    // reversed blocks bpToScreenPx flips so x1 > x2, hence abs + min.
-    const realWidth = Math.abs(x2 - x1)
+    // blur. On reversed blocks bpToScreenPx flips so x1 > x2, hence abs + min.
     const sx1 = Math.round(x1)
     const sx2 = Math.round(x2)
     const xLeft = Math.min(sx1, sx2)
     const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
 
-    // Collapsed whole-feature box glyphs (variants, plain BED) draw
-    // semi-transparent so src-over accumulation makes dense regions read as a
-    // density texture instead of a flat block (mirrors rect.slang's
+    // Whole-feature box glyphs (variants, plain BED) that layout collapsed onto
+    // row 0 draw semi-transparent so src-over accumulation makes dense regions
+    // read as a density texture instead of a flat block (mirrors rect.slang's
     // densityAlpha); gene subfeature rects and non-collapsed features stay fully
-    // opaque. Fold the factor into the fill color's alpha so it also applies on
-    // the SVG-export path (SvgCanvas has no globalAlpha).
+    // opaque. rectDensityFade is the collapse decision (already implies
+    // sub-pixel), so it alone gates the fade. Fold the factor into the fill
+    // color's alpha so it also applies on the SVG-export path (SvgCanvas has no
+    // globalAlpha).
     const c = region.rectColors[i]!
-    const densityAlpha =
-      region.rectDensityFade[i] && realWidth < MIN_RECT_WIDTH_PX
-        ? MIN_DENSITY_ALPHA
-        : 1
+    const densityAlpha = region.rectDensityFade[i] ? MIN_DENSITY_ALPHA : 1
     const a = (abgrAlpha(c) / 255) * densityAlpha
     ctx.fillStyle = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
     ctx.fillRect(xLeft, y, w, h)

@@ -15,12 +15,13 @@ import featureGlyphUniforms;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 static const float MIN_RECT_WIDTH_PX = 2.0;
-// Collapsed features (narrower than MIN_RECT_WIDTH_PX, so they get widened by
-// the clamp and abut their neighbors) fuse into one flat block (e.g. a dense
-// variant track collapsing to solid orange). Drawing only those semi-transparent
-// lets the standard src-alpha blend accumulate where features overlap, so
-// density reads as opacity/texture instead of a flat fill. Non-collapsed
-// features stay fully opaque.
+// Features the layout collapsed onto row 0 (densityFade flag set) fuse into one
+// flat block — each is sub-pixel and the min-width clamp widens it to abut its
+// neighbors (e.g. a dense variant track collapsing to solid orange). Drawing
+// only those semi-transparent lets the standard src-alpha blend accumulate where
+// features overlap, so density reads as opacity/texture instead of a flat fill.
+// Everything else — including a sub-pixel box that stacked on its own row rather
+// than collapsing — stays fully opaque.
 //
 // Kept low so the accumulated opacity 1-(1-a)^count stays proportional to the
 // number of variants stacked at a pixel over a useful range (a=0.3: 1→.30,
@@ -34,8 +35,9 @@ struct RectInstance {
   float y        : ATTR1;
   float height   : ATTR2;
   uint  color    : ATTR3;
-  // 1 = whole-feature box glyph eligible for the collapsed density fade;
-  // 0 = gene subfeature rect (CDS/exon/UTR/codon) that must stay opaque.
+  // 1 = whole-feature box that layout collapsed onto row 0 for density (only
+  // these fade); 0 = anything else — a gene subfeature rect (CDS/exon/UTR/codon)
+  // or a fade-eligible box that stacked on its own row — which stays opaque.
   uint  densityFade : ATTR4;
 };
 
@@ -59,9 +61,6 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float cx1 = bpToClipX(inst.startEnd.x, u);
   float cx2 = bpToClipX(inst.startEnd.y, u);
 
-  // Real (pre-clamp) on-screen width drives density alpha below.
-  float realWidthPx = abs(cx2 - cx1) * u.canvasWidth * 0.5;
-
   float sx1 = snapToPixelX(cx1, u.canvasWidth);
   float sx2 = snapToPixelX(cx2, u.canvasWidth);
 
@@ -81,10 +80,9 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float widthPx  = abs(sx2 - sx1) * u.canvasWidth * 0.5;
   float heightPx = abs(yBotPx - yTopPx);
 
-  float densityAlpha =
-    inst.densityFade != 0u && realWidthPx < MIN_RECT_WIDTH_PX
-      ? MIN_DENSITY_ALPHA
-      : 1.0;
+  // densityFade is already the layout's collapse decision (row-0 pinned, which
+  // implies sub-pixel), so it alone gates the fade — no width re-test.
+  float densityAlpha = inst.densityFade != 0u ? MIN_DENSITY_ALPHA : 1.0;
 
   VsOut o;
   o.position   = float4(sx, sy, 0.0, 1.0);

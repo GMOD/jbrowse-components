@@ -93,8 +93,11 @@ export interface FeatureDataResult {
   // unpacks with bit shifts.
   rectColors: Uint32Array
   rectStrands: Float32Array // strand direction per rect: -1, 0, or +1
-  // 1 = whole-feature box glyph that fades to a density texture when collapsed
-  // sub-pixel (variants, plain BED); 0 = gene subfeature rect that never fades
+  // Worker output is fade-*eligibility*: 1 = whole-feature box glyph (variants,
+  // plain BED) that MAY fade; 0 = gene subfeature rect that never fades. Layout
+  // (applyLayoutToRegion) narrows it in place to the actual density decision — 1
+  // only where the box was collapsed onto row 0, 0 otherwise — so the renderers
+  // fade a box iff it truly collapsed, not merely because it's sub-pixel.
   rectDensityFade: Uint32Array
 
   // Connecting lines (introns) with strand info for dynamic chevron generation

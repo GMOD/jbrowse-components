@@ -207,22 +207,29 @@ export function computeLaidOutData(
   }
 
   for (const [, regions] of refGroups) {
-    const { layoutMap, layoutHeights, droppedLabelIds } = packRef(
-      regions,
-      bpPerPx,
-      showLabels,
-      showDescriptions,
-      reversedRegions,
-      pinnedFeatureIds,
-      labelDecimation,
-      labelRoomFactor,
-      heightMultiplier,
-      labelFontPx,
-      rowPadding,
-      prevYByFeatureId,
-    )
+    const { layoutMap, layoutHeights, droppedLabelIds, collapsedFeatureIds } =
+      packRef(
+        regions,
+        bpPerPx,
+        showLabels,
+        showDescriptions,
+        reversedRegions,
+        pinnedFeatureIds,
+        labelDecimation,
+        labelRoomFactor,
+        heightMultiplier,
+        labelFontPx,
+        rowPadding,
+        prevYByFeatureId,
+      )
     for (const [, data] of regions) {
-      applyLayoutToRegion(data, layoutMap, layoutHeights, droppedLabelIds)
+      applyLayoutToRegion(
+        data,
+        layoutMap,
+        layoutHeights,
+        droppedLabelIds,
+        collapsedFeatureIds,
+      )
     }
   }
 
@@ -409,6 +416,9 @@ function cloneMutableFields(raw: FeatureDataResult) {
     ...raw,
     rectYs: new Float32Array(raw.rectYs),
     rectHeights: new Float32Array(raw.rectHeights),
+    // Cloned because applyLayoutToRegion narrows it from the worker's
+    // fade-eligibility flag to the actual density-collapse decision.
+    rectDensityFade: new Uint32Array(raw.rectDensityFade),
     lineYs: new Float32Array(raw.lineYs),
     lineHeights: new Float32Array(raw.lineHeights),
     arrowYs: new Float32Array(raw.arrowYs),
@@ -581,6 +591,10 @@ function packRef(
   })
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
+  // Features actually pinned to row 0 by the density-collapse path below. Only
+  // these fade in the renderers — a sub-pixel fade-eligible box that stacked on
+  // its own row (labeled, or overlapping a visible feature) stays opaque.
+  const collapsedFeatureIds = new Set<string>()
 
   const labelInfoByFeatureId = new Map<
     string,
@@ -818,6 +832,7 @@ function packRef(
       !intersectsMerged(boxStartPx, boxEndPx, solidSpansPx)
     if (collapses) {
       layoutMap.set(id, 0)
+      collapsedFeatureIds.add(id)
     } else {
       const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
       const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
@@ -831,7 +846,7 @@ function packRef(
     layoutHeights.set(id, ext.height)
   }
 
-  return { layoutMap, layoutHeights, droppedLabelIds }
+  return { layoutMap, layoutHeights, droppedLabelIds, collapsedFeatureIds }
 }
 
 // Mutates the cloned region in place. Raw data has topPx=0 everywhere, so we
@@ -844,10 +859,19 @@ function applyLayoutToRegion(
   // Feature ids whose name was decimated away: their floatingLabelsData entry is
   // deleted below so no renderer/hit-test draws a name the packer didn't reserve.
   droppedLabelIds: ReadonlySet<string>,
+  // Feature ids the packer collapsed onto row 0 for density. Only these keep the
+  // density-fade flag; a sub-pixel fade-eligible box that stacked on its own row
+  // is rewritten to 0 so the renderers draw it opaque.
+  collapsedFeatureIds: ReadonlySet<string>,
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
   for (let i = 0; i < data.flatbushItems.length; i++) {
     featureOffsets[i] = layoutMap.get(data.flatbushItems[i]!.featureId) ?? 0
+  }
+
+  for (let i = 0; i < data.rectDensityFade.length; i++) {
+    const featureId = data.flatbushItems[data.rectFeatureIndices[i]!]!.featureId
+    data.rectDensityFade[i] = collapsedFeatureIds.has(featureId) ? 1 : 0
   }
 
   for (let i = 0; i < data.rectYs.length; i++) {
