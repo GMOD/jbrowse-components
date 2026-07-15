@@ -67,6 +67,7 @@ import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
+import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
 import { featureMatchesHighlight } from './featureHighlight.ts'
 import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
 import {
@@ -508,6 +509,18 @@ export default function baseStateModelFactory(
             canvasWidth: view.trackWidthPx,
             canvasHeight: self.height,
           }
+        },
+
+        /**
+         * #getter
+         */
+        // Quantized scroll position for the floating-label vertical cull (see
+        // labelCullBand). Deliberately a coarse bucket, not raw scrollTop: the
+        // label overlay observes THIS so a scroll tick within the same bucket
+        // leaves the value unchanged and MobX skips the (expensive) label
+        // rebuild — labels only re-emit once the user scrolls a full bucket.
+        get labelScrollBucket() {
+          return Math.floor(self.scrollTop / LABEL_CULL_BUCKET_PX)
         },
 
         /**

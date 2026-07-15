@@ -84,6 +84,7 @@ export interface LinearBasicDisplayModel {
   renderedShowLabels: boolean
   displayMode: string
   labelFontSize: number
+  labelScrollBucket: number
   regionTooLarge: boolean
   regionTooLargeReason: string
   showGeneGlyphControl: boolean
@@ -256,7 +257,7 @@ const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
 
   return (
     <>
-      <OverlayLayer>{floatingLabelElements}</OverlayLayer>
+      {floatingLabelElements}
       <PeptideCanvas
         renderDataMap={renderDataMap}
         visibleRegions={visibleRegions}

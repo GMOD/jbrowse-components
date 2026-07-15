@@ -10,6 +10,38 @@ import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 // Gap (px) between a feature's bottom and its floating name/description row.
 const LABEL_TOP_GAP_PX = 2
 
+// Vertical virtualization for the DOM floating-label overlay: labels whose
+// feature sits outside the visible viewport (± overscan) are never emitted as
+// DOM nodes. The band is quantized to LABEL_CULL_BUCKET_PX so the label build
+// stays decoupled from per-frame scrolling — a scroll tick must NOT rebuild the
+// label DOM (that decoupling is why the overlay reads a bucket index, not raw
+// scrollTop). Labels only rebuild once the user scrolls a full bucket, and the
+// one-bucket overscan on each side keeps the whole viewport covered for every
+// scrollTop within a bucket. The SVG export renders the full track and passes no
+// band, so it's unaffected.
+export const LABEL_CULL_BUCKET_PX = 400
+
+export interface LabelCullBand {
+  top: number
+  bottom: number
+}
+
+// The content-coordinate band to keep, given a quantized scroll bucket
+// (Math.floor(scrollTop / LABEL_CULL_BUCKET_PX)) and the viewport height. For
+// any scrollTop in [bucket·B, (bucket+1)·B) the visible range is
+// [scrollTop, scrollTop + viewportHeight] ⊆ [bucket·B, bucket·B + B + vh], which
+// this band covers with a full bucket of margin on each side.
+export function labelCullBand(
+  scrollBucket: number,
+  viewportHeight: number,
+): LabelCullBand {
+  const bucketTop = scrollBucket * LABEL_CULL_BUCKET_PX
+  return {
+    top: bucketTop - LABEL_CULL_BUCKET_PX,
+    bottom: bucketTop + viewportHeight + 2 * LABEL_CULL_BUCKET_PX,
+  }
+}
+
 export interface FeatureBoundsPx {
   featureLeftPx: number
   featureRightPx: number
@@ -129,6 +161,7 @@ export function forEachRenderedLabel(
   context: LabelRenderContext,
   emit: (featureId: string, labels: ResolvedLabel[]) => void,
   skip?: Set<string>,
+  cullBand?: LabelCullBand,
 ) {
   const { showLabels, showDescriptions } = context
   let toScreen: ((bp: number) => number) | undefined
@@ -142,6 +175,18 @@ export function forEachRenderedLabel(
     const labelData = data.floatingLabelsData[featureId]!
     if (labelData.maxX < vr.start || labelData.minX > vr.end) {
       continue
+    }
+    // Vertical virtualization (DOM overlay only): skip features whose label row
+    // is outside the visible band. Every label of a feature sits within a couple
+    // line-heights of featureBottomPx, well inside the band's one-bucket margin,
+    // so testing that single Y is enough. The cull is consistent across regions
+    // for a span-crossing feature (topY/featureHeight are region-independent), so
+    // it can't reintroduce the double-paint the cross-region dedup prevents.
+    if (cullBand) {
+      const featureBottomPx = labelData.topY + labelData.featureHeight
+      if (featureBottomPx < cullBand.top || featureBottomPx > cullBand.bottom) {
+        continue
+      }
     }
     const wantName = showLabels && !!labelData.nameLabel
     const wantDesc = showDescriptions && !!labelData.descriptionLabel
@@ -178,6 +223,7 @@ export function forEachDisplayLabel(
     labels: ResolvedLabel[],
     region: RegionWithData,
   ) => void,
+  cullBand?: LabelCullBand,
 ) {
   const rendered = new Set<string>()
   for (const region of regions) {
@@ -192,6 +238,7 @@ export function forEachDisplayLabel(
           emit(featureId, labels, region)
         },
         rendered,
+        cullBand,
       )
     }
   }

@@ -4,7 +4,7 @@ import { alpha } from '@mui/material'
 
 import { computeLabelExtraWidth, computeOverlayRect } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
-import { forEachDisplayLabel } from './labelPositioning.ts'
+import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
@@ -18,6 +18,11 @@ interface OverlayModel {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   labelFontSize: number
+  // viewport height + quantized scroll bucket drive the label vertical cull
+  // (labelCullBand). The bucket, not raw scrollTop, keeps a scroll tick within
+  // one bucket from rebuilding the label DOM.
+  height: number
+  labelScrollBucket: number
   selectedFeatureId: string | undefined
   selectFeatureById: (
     featureId: string,
@@ -55,6 +60,21 @@ function overlaysReady(
 }
 
 const useStyles = makeStyles()(theme => ({
+  // Absolute layer holding every floating label. It owns ONE delegated
+  // click/contextmenu/mousemove handler (see useFloatingLabels) rather than a
+  // per-label closure, so repositioning during zoom/pan — which rebuilds all
+  // labels each frame — allocates no per-feature handlers. pointerEvents:none
+  // lets mouse events fall through to the canvas everywhere except over a
+  // clickable label (which re-enables them and bubbles up to this layer's
+  // delegated handler).
+  labelLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+  },
   // Color is applied inline per-label from the worker-baked label.color (the
   // single source of truth the SVG export also consumes), so the DOM overlay
   // and the export can't drift. It's safe to read here rather than re-deriving
@@ -131,6 +151,8 @@ export function useFloatingLabels(
     renderedShowLabels,
     renderedShowDescriptions,
     labelFontSize,
+    height,
+    labelScrollBucket,
     selectFeatureById,
   } = model
 
@@ -144,6 +166,7 @@ export function useFloatingLabels(
     showDescriptions: renderedShowDescriptions,
     fontSize: labelFontSize,
   }
+  const cullBand = labelCullBand(labelScrollBucket, height)
 
   forEachDisplayLabel(
     visibleRegions,
@@ -151,42 +174,22 @@ export function useFloatingLabels(
     context,
     (featureId, labels, vr) => {
       const displayedRegionIndex = vr.displayedRegionIndex
-      const entry = featureItemMap.get(featureId)
-      const item = entry?.kind === 'feature' ? entry.item : undefined
-      // Allocate handler closures once per feature (not per-label); skip
-      // entirely when there's no clickable item.
-      const handleLabelClick = item
-        ? () => {
-            selectFeatureById(item.featureId, undefined, displayedRegionIndex)
-          }
-        : undefined
-      const handleLabelContextMenu = item
-        ? (e: React.MouseEvent) => {
-            e.preventDefault()
-            openContextMenu(item, displayedRegionIndex, e.clientX, e.clientY)
-          }
-        : undefined
-      const handleLabelMouseMove =
-        item && onLabelMouseOver
-          ? (e: React.MouseEvent) => {
-              onLabelMouseOver(item, displayedRegionIndex, e)
-            }
-          : undefined
-
+      // A label is clickable iff it resolves to a top-level feature we can
+      // open. Description labels are included: for variants with no ID the
+      // description ("C -> T") is the only visible label, and a user clicking
+      // it expects the feature details. The label carries its ids as data
+      // attributes; the layer's delegated handler (below) resolves them at
+      // event time, so rebuilding a label allocates no handler.
+      const clickable = featureItemMap.get(featureId)?.kind === 'feature'
       for (const { label, labelX, labelY, kind } of labels) {
-        // A label is clickable iff it resolves to a top-level feature we can
-        // open. Description labels are included: for variants with no ID the
-        // description ("C -> T") is the only visible label, and a user
-        // clicking it expects the feature details. Keying off the handler
-        // (not the kind) also avoids rendering an inert pointer-cursor label
-        // whose onClick is undefined.
-        const clickable = !!handleLabelClick
         elements.push(
           <div
             key={`${displayedRegionIndex}-${featureId}-${kind}`}
             data-testid={
               clickable ? `feature-${kind}-${label.text}` : undefined
             }
+            data-feature-id={clickable ? featureId : undefined}
+            data-region-index={clickable ? displayedRegionIndex : undefined}
             className={cx(
               classes.floatingLabel,
               clickable
@@ -194,9 +197,6 @@ export function useFloatingLabels(
                 : classes.floatingLabelStatic,
               label.isOverlay && classes.floatingLabelOverlay,
             )}
-            onClick={clickable ? handleLabelClick : undefined}
-            onContextMenu={clickable ? handleLabelContextMenu : undefined}
-            onMouseMove={clickable ? handleLabelMouseMove : undefined}
             style={{
               color: label.color,
               fontSize: labelFontSize,
@@ -208,9 +208,54 @@ export function useFloatingLabels(
         )
       }
     },
+    cullBand,
   )
 
-  return elements.length > 0 ? elements : null
+  if (elements.length === 0) {
+    return null
+  }
+
+  // One delegated handler set for the whole layer, resolving the label under
+  // the cursor via its data-feature-id (see the label divs above). Feature
+  // lookup happens at event time (rare) against the current featureItemMap, so
+  // no per-label closure is created on the per-frame rebuild path.
+  const resolveTarget = (e: React.MouseEvent) => {
+    const el =
+      e.target instanceof HTMLElement
+        ? e.target.closest<HTMLElement>('[data-feature-id]')
+        : null
+    const featureId = el?.dataset.featureId
+    const entry = featureId ? featureItemMap.get(featureId) : undefined
+    return el && entry?.kind === 'feature'
+      ? { item: entry.item, displayedRegionIndex: Number(el.dataset.regionIndex) }
+      : undefined
+  }
+  return (
+    <div
+      className={classes.labelLayer}
+      onClick={e => {
+        const t = resolveTarget(e)
+        if (t) {
+          selectFeatureById(t.item.featureId, undefined, t.displayedRegionIndex)
+        }
+      }}
+      onContextMenu={e => {
+        const t = resolveTarget(e)
+        if (t) {
+          e.preventDefault()
+          openContextMenu(t.item, t.displayedRegionIndex, e.clientX, e.clientY)
+        }
+      }}
+      onMouseMove={e => {
+        const t = resolveTarget(e)
+        if (t && onLabelMouseOver) {
+          onLabelMouseOver(t.item, t.displayedRegionIndex, e)
+        }
+      }}
+    >
+      {elements}
+    </div>
+  )
 }
 
 export function useHighlightOverlays(

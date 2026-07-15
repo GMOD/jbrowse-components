@@ -1,9 +1,15 @@
 import {
+  LABEL_CULL_BUCKET_PX,
   forEachDisplayLabel,
   forEachRenderedLabel,
+  labelCullBand,
 } from './labelPositioning.ts'
 
-import type { RegionWithData, ResolvedLabel } from './labelPositioning.ts'
+import type {
+  LabelCullBand,
+  RegionWithData,
+  ResolvedLabel,
+} from './labelPositioning.ts'
 import type {
   FeatureDataResult,
   FeatureLabelData,
@@ -52,6 +58,7 @@ function collect(
   data: FeatureDataResult,
   vr: BpRegionBounds,
   visibility: { showLabels: boolean; showDescriptions: boolean },
+  cullBand?: LabelCullBand,
 ) {
   const out: { featureId: string; labels: ResolvedLabel[] }[] = []
   forEachRenderedLabel(
@@ -61,6 +68,8 @@ function collect(
     (featureId, labels) => {
       out.push({ featureId, labels })
     },
+    undefined,
+    cullBand,
   )
   return out
 }
@@ -178,6 +187,61 @@ describe('forEachRenderedLabel', () => {
       { showLabels: true, showDescriptions: true },
     )
     expect(emitted!.labels[0]!.labelX).toBeGreaterThanOrEqual(50)
+  })
+
+  test('culls a feature whose row is outside the cull band', () => {
+    const data = makeData({
+      near: makeLabelData('near', {
+        topY: 100,
+        nameLabel: makeLabel({ text: 'near' }),
+      }),
+      far: makeLabelData('far', {
+        topY: 5000,
+        nameLabel: makeLabel({ text: 'far' }),
+      }),
+    })
+    const result = collect(
+      data,
+      FULL_REGION,
+      { showLabels: true, showDescriptions: true },
+      { top: 0, bottom: 400 },
+    )
+    expect(result.map(r => r.featureId)).toEqual(['near'])
+  })
+
+  test('keeps a feature within the cull band', () => {
+    const data = makeData({
+      f1: makeLabelData('f1', {
+        topY: 300,
+        nameLabel: makeLabel(),
+      }),
+    })
+    const result = collect(
+      data,
+      FULL_REGION,
+      { showLabels: true, showDescriptions: true },
+      { top: 200, bottom: 700 },
+    )
+    expect(result).toHaveLength(1)
+  })
+})
+
+describe('labelCullBand', () => {
+  test('spans one bucket of margin on each side of the viewport', () => {
+    const band = labelCullBand(0, 800)
+    expect(band.top).toBe(-LABEL_CULL_BUCKET_PX)
+    expect(band.bottom).toBe(800 + 2 * LABEL_CULL_BUCKET_PX)
+  })
+
+  test('covers the visible viewport for every scrollTop within a bucket', () => {
+    const viewportHeight = 700
+    const bucket = 3
+    const band = labelCullBand(bucket, viewportHeight)
+    // extremes of scrollTop that still map to this bucket
+    const minScroll = bucket * LABEL_CULL_BUCKET_PX
+    const maxScroll = (bucket + 1) * LABEL_CULL_BUCKET_PX
+    expect(band.top).toBeLessThanOrEqual(minScroll)
+    expect(band.bottom).toBeGreaterThanOrEqual(maxScroll + viewportHeight)
   })
 })
 
