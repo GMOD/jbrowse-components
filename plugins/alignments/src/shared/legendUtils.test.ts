@@ -46,10 +46,12 @@ describe('getReadDisplayLegendItems', () => {
     expect(labels('strand', ['fwdStrand'])).toEqual(['Forward strand'])
   })
 
-  test('lists "No strand" reads (strand 0) in the strand scheme', () => {
-    expect(labels('strand', ['fwdStrand', 'noStrand'])).toEqual([
+  test('strand scheme lists only forward/reverse — a read always has a strand', () => {
+    // noStrand is never a real read bucket (strand is derived from the 0x10 flag,
+    // always ±1), so the legend never advertises a "No strand" swatch.
+    expect(labels('strand', ['fwdStrand', 'revStrand'])).toEqual([
       'Forward strand',
-      'No strand',
+      'Reverse strand',
     ])
   })
 
@@ -123,10 +125,9 @@ describe('getReadDisplayLegendItems', () => {
   test('the plain strand scheme keeps the plain wording (fwd/rev is its primary key)', () => {
     // Under strand, every read is colored by its own strand, so a fwd/rev bucket
     // is the key itself, not a split-read exception.
-    expect(labels('strand', ['fwdStrand', 'revStrand', 'noStrand'])).toEqual([
+    expect(labels('strand', ['fwdStrand', 'revStrand'])).toEqual([
       'Forward strand',
       'Reverse strand',
-      'No strand',
     ])
   })
 
@@ -174,15 +175,15 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('strand-encoding tags (XS/TS/ts) show the strand key, not a value list', () => {
+    // just the two strand keys; untagged reads fall back to the neutral color
+    // with no legend swatch of its own
     expect(tagLabels({ type: 'tag', tag: 'ts' }, { foo: 'red' })).toEqual([
       'Forward strand',
       'Reverse strand',
-      'No strand',
     ])
     expect(tagLabels({ type: 'tag', tag: 'XS' })).toEqual([
       'Forward strand',
       'Reverse strand',
-      'No strand',
     ])
   })
 

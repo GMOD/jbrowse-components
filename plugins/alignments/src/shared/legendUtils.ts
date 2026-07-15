@@ -46,7 +46,6 @@ function hslRamp(
 const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
   { category: 'fwdStrand', label: 'Forward strand' },
   { category: 'revStrand', label: 'Reverse strand' },
-  { category: 'noStrand', label: 'No strand' },
   { category: 'nonSplit', label: 'Unsplit read' },
   { category: 'pairLR', label: 'LR - Normal pair orientation' },
   { category: 'pairRL', label: 'RL - Mates point outward' },
@@ -177,10 +176,12 @@ export function getReadDisplayLegendItems(
   if (colorType === 'tag') {
     const tag = colorBy?.tag
     if (tag && STRAND_TAGS.has(tag)) {
+      // Just the two strand keys; reads with no resolvable XS/TS/ts value fall
+      // back to the neutral color (see buildReadTagColors), which needs no
+      // legend entry of its own.
       return [
         { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
         { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
-        { color: rgb255(palette.colorNostrand), label: 'No strand' },
       ]
     }
     // One swatch per discovered tag value, colored exactly as painted
