@@ -18,7 +18,6 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
-  AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   onDisplayedRegionsChange,
@@ -460,10 +459,6 @@ export default function MultiSampleVariantBaseModelF(
 
         get featureWidgetType() {
           return VARIANT_FEATURE_WIDGET
-        },
-
-        get fetchSizeLimit(): number {
-          return self.userByteSizeLimit ?? getConf(self, 'fetchSizeLimit')
         },
       }))
       // Opt into RegionTooLargeMixin's shared derived byte gate: the too-large
@@ -1136,16 +1131,11 @@ export default function MultiSampleVariantBaseModelF(
           return view.bpPerPx === self.loadedBpPerPx
         },
 
-        getByteEstimateConfig(): ByteEstimateConfig | null {
-          const view = getContainingView(self) as LinearGenomeViewModel
-          if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
-            return null
-          }
+        getByteEstimateConfig(): ByteEstimateConfig {
           return {
             adapterConfig: self.adapterConfig,
-            fetchSizeLimit: getConf(self, 'fetchSizeLimit'),
-            userByteSizeLimit: self.userByteSizeLimit,
-            visibleBp: view.visibleBp,
+            visibleBp: (getContainingView(self) as LinearGenomeViewModel)
+              .visibleBp,
           }
         },
 

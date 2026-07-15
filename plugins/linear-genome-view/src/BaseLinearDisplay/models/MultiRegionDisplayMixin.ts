@@ -29,7 +29,7 @@ import type { IAutorunOptions } from 'mobx'
 declare const process: { env: { NODE_ENV?: string } }
 
 export { checkByteEstimate } from './fetchHelpers.ts'
-export type { ByteEstimateConfig, ByteEstimateResult } from './fetchHelpers.ts'
+export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
 
 /**
@@ -279,7 +279,7 @@ export default function MultiRegionDisplayMixin() {
           const byteEstimateConfig = self.getByteEstimateConfig()
           if (byteEstimateConfig) {
             const session = getSession(self)
-            const result = await checkByteEstimate(
+            const stats = await checkByteEstimate(
               session.rpcManager,
               getRpcSessionId(self),
               needed.map(r => r.region),
@@ -289,12 +289,12 @@ export default function MultiRegionDisplayMixin() {
             if (ctx.isStale()) {
               return
             }
-            if (result) {
-              self.setFeatureDensityStats(result.stats)
+            if (stats) {
+              self.setFeatureDensityStats(stats)
               // The derived regionTooLarge getter reflects the just-captured
               // estimate (setFeatureDensityStats recorded the current viewport as
               // its capture span), so short-circuit the download when it's over
-              // budget instead of writing an imperative flag.
+              // budget.
               if (self.regionTooLarge) {
                 return
               }

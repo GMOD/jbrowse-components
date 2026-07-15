@@ -1585,12 +1585,9 @@ export default function stateModelFactory(
         if (self.showSummary) {
           return null
         }
-        const view = self.lgv
         return {
           adapterConfig: self.adapterConfig,
-          fetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),
-          userByteSizeLimit: self.userByteSizeLimit,
-          visibleBp: view.visibleBp,
+          visibleBp: self.lgv.visibleBp,
         }
       },
     }))

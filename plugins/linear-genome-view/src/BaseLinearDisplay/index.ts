@@ -37,7 +37,6 @@ export type { HeightModeMenuModel } from './models/heightModeMenu.ts'
 export { default as RegionTooLargeMixin } from '../shared/RegionTooLargeMixin.tsx'
 export {
   type ByteEstimateConfig,
-  type ByteEstimateResult,
   type FetchContext,
   type MultiRegionDisplayMixinType,
   autorunOnReadyView,

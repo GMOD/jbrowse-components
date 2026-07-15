@@ -1,25 +1,21 @@
 import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
-import {
-  evaluateRegionTooLarge,
-  resolveByteLimit,
-} from '../../shared/featureDensityUtils.ts'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 export interface ByteEstimateConfig {
   adapterConfig: Record<string, unknown>
-  fetchSizeLimit: number
-  userByteSizeLimit?: number
   visibleBp: number
 }
 
-export interface ByteEstimateResult {
-  stats: FeatureDensityStats
-  tooLarge: boolean
-  reason?: string
-}
-
+/**
+ * Pre-flight byte estimate for a region set. Returns the adapter's feature-
+ * density stats — which feed `RegionTooLargeMixin`'s derived region-too-large
+ * gate — or undefined below the `AUTO_FORCE_LOAD_BP` force-load floor or when the
+ * fetch went stale. The too-large *verdict* is derived from these stats by the
+ * gate (`tooLargeStatus`), not computed here; this is purely the estimate RPC
+ * plus the force-load-floor short-circuit.
+ */
 export async function checkByteEstimate(
   rpcManager: Pick<RpcManager, 'call'>,
   sessionId: string,
@@ -31,33 +27,13 @@ export async function checkByteEstimate(
   }[],
   config: ByteEstimateConfig,
   ctx: { isStale: () => boolean },
-): Promise<ByteEstimateResult | null> {
+): Promise<FeatureDensityStats | undefined> {
   if (config.visibleBp < AUTO_FORCE_LOAD_BP) {
-    return null
+    return undefined
   }
-
   const stats = await rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
     regions,
     adapterConfig: config.adapterConfig,
   })
-
-  if (ctx.isStale()) {
-    return null
-  }
-
-  // Same verdict helper as the arc and canvas paths, so the too-large decision
-  // and banner text can't drift between gating paths. This path measures bytes
-  // only (no density sample), so densityTooLarge is left unset.
-  const { tooLarge, reason } = evaluateRegionTooLarge({
-    visibleBp: config.visibleBp,
-    bytes: stats.bytes,
-    byteLimit: resolveByteLimit({
-      userByteSizeLimit: config.userByteSizeLimit,
-      adapterFetchSizeLimit: stats.fetchSizeLimit,
-      configFetchSizeLimit: config.fetchSizeLimit,
-    }),
-    alwaysRender: stats.alwaysRender,
-  })
-
-  return { stats, tooLarge, reason }
+  return ctx.isStale() ? undefined : stats
 }

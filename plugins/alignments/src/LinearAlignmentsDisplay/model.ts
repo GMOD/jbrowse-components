@@ -2933,12 +2933,9 @@ export default function stateModelFactory(
            * #action
            */
           getByteEstimateConfig() {
-            const view = getContainingView(self) as LGV
             return {
               adapterConfig: self.adapterConfig,
-              fetchSizeLimit: getConf(self, 'fetchSizeLimit'),
-              userByteSizeLimit: self.userByteSizeLimit,
-              visibleBp: view.visibleBp,
+              visibleBp: (getContainingView(self) as LGV).visibleBp,
             }
           },
 
