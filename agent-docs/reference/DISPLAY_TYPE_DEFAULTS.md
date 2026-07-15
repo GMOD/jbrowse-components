@@ -1,6 +1,6 @@
 ---
 name: display-type-defaults
-description: Session-wide per-display-type slot defaults via promotable slots and CSS-cascade resolution. Read when adding a make-default-for-all-tracks setting or touching getConfResolved.
+description: Session-wide per-display-type slot defaults via promotable slots and CSS-cascade resolution. Read when adding a make-default-for-all-tracks setting, touching getConfResolved, or serializing a session for sharing/export/worker.
 ---
 
 # Display-type defaults (promotable config slots)
@@ -32,6 +32,8 @@ read one section, read [The cascade](#the-cascade).
 | Resolver + exported API | `packages/core/src/configuration/promotableDefaults.ts` |
 | `promotable` / `promotedBase` slot metadata | `packages/core/src/configuration/configurationSlot.ts` |
 | Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
+| Share/export bake (`bakePromotedDefaultsIntoSnapshot`) | `packages/product-core/src/Session/shareableSnapshot.ts` |
+| Received-session opt-out (`ignorePromotedDefaults`) | `packages/core/src/pluggableElementTypes/models/BaseDisplayModel.tsx` |
 | Session/display type surface | `packages/core/src/util/types/index.ts` |
 | Badge hooks mixin | `plugins/linear-genome-view/src/BaseLinearDisplay/models/PromotableDefaultsMixin.tsx` |
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
@@ -45,7 +47,8 @@ Tests: `promotableDefaults.test.ts` (resolver + control builders),
 `showSoftClipping.test.ts` (plain + sentinel adopters end-to-end),
 `colorBy.test.tsx` / `readConnections.test.tsx` / `sashimi.test.ts` (per-row
 pins), `DefaultForAllAdornment.test.tsx` (the pin), `OverrideBadge.test.tsx`
-(badge).
+(badge), `ShareablePromotedDefaults.test.ts` (the share/export bake +
+`ignorePromotedDefaults` round-trip, jbrowse-web).
 
 ## The cascade
 
@@ -125,7 +128,11 @@ function resolveSlot(self, slot): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
-  const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
+  // a display that arrived in a received session skips the session-wide tier
+  // entirely (see "Received sessions" below), collapsing to "own value, else base"
+  const promoted = self.ignorePromotedDefaults
+    ? undefined
+    : getSession(self).getDisplayTypeDefault?.(self.type, slot)
   // a track is customized only when it holds a *usable* value other than the
   // default — the same `isUsableValue` gate a promoted default passes, so a
   // malformed or stale own value reads as not-customized and degrades to the
@@ -210,10 +217,83 @@ to the same `===` value, so nothing downstream re-runs.
 Persists for free via the preferences mixin → localStorage; embedded products
 without that mixin resolve admin-only. Both are **optional** methods on
 `AbstractSessionModel` (`getDisplayTypeDefault?`) so a session that lacks them
-degrades to "no promoted defaults", never throws. Kept off the session snapshot
-deliberately — it's a local, per-browser UI preference, not shared-session
-state. (Admin-baked shared defaults ship separately via
-`configuration.preferences`.)
+degrades to "no promoted defaults", never throws. `preferencesOverrides` is
+`.volatile()`, so it's **kept off the session snapshot** deliberately — it's a
+local, per-browser UI preference, not shared-session state. (Admin-baked shared
+defaults ship separately via `configuration.preferences`.)
+
+The catch this creates: a track *following* a promoted default holds no value of
+its own, so a raw snapshot records it as at-default and a recipient — who lacks
+the sender's `preferencesOverrides` — resolves it differently. That's what the
+[serialization boundaries](#serialization-boundaries-getcomputedstyle) section
+below handles: the preference stays local, but its *resolved effect* is baked
+into the outgoing document.
+
+## Serialization boundaries (getComputedStyle)
+
+The cascade is **live, personal, and local** — like a CSS stylesheet. It stays
+that way inside the running session (clearing a promoted default retroactively
+reverts every follower; nothing is ever written into a following track). But the
+moment the session crosses a boundary to a context that *doesn't have the
+stylesheet* — a worker, a share recipient, an exported file — you must **flatten
+the cascade to concrete values**, exactly as `getComputedStyle` flattens CSS.
+The live session is never mutated; only the outgoing copy is flattened.
+
+This is a **standing rule, not a per-feature patch**: any code that serializes a
+display's config for consumption elsewhere must route through a resolver, never
+emit a raw promotable slot (which serializes as its inherit sentinel or a
+stripped at-default). There is one resolver per boundary shape, and adding a new
+boundary means *calling* one — not writing bespoke resolution:
+
+| Boundary | Resolver | Why |
+| --- | --- | --- |
+| Worker RPC payload | `resolvePromotableConfigSnapshot(display)` | worker has no session/`preferencesOverrides` to resolve against |
+| Session share / desktop→web export | `bakePromotedDefaultsIntoSnapshot(session, snapshot)` | recipient lacks the sender's local defaults |
+
+`bakePromotedDefaultsIntoSnapshot` (`shareableSnapshot.ts`, wired into
+jbrowse-web `ShareDialog` and jbrowse-desktop `ExportToWebDialog`) returns a deep
+copy of the snapshot in which, for every **open** display:
+
+- each slot it *inherits* from a promoted default (`getDisplayTypeDefaultChanges`
+  — non-customized, differs from base) is written into the track config layer: a
+  user-added track's `sessionTracks` config, else a `trackConfigDeltas` entry
+  against the admin base. Only genuinely-inherited non-base values are baked —
+  customized slots already live in the config, at-base slots need nothing — so no
+  spurious "edited" badge appears on the recipient side for an untouched slot.
+- the display state is marked `ignorePromotedDefaults` (see below).
+
+Tracks the sender never opened carry no display state to resolve, so they're
+left to pick up the recipient's own defaults when opened — matching "export the
+actual state of the *open* tracks".
+
+### Received sessions (`ignorePromotedDefaults`)
+
+A `#property` on `BaseDisplay` (`stripDefault(boolean, false)`, so absent from
+snapshots until set). When `true`, `resolveSlot` skips the session-wide tier
+entirely — the display resolves from its own config only, ignoring *this*
+browser's promoted defaults.
+
+It exists because baking the values isn't sufficient on its own. Two cases:
+
+- **Sender saw a non-base value** → baked into the config; the recipient's
+  display now reads as *customized* and ignores their cascade anyway.
+- **Sender saw the base value while the recipient has promoted a different one**
+  → nothing is baked (the value equals base), so without the flag the recipient's
+  cascade would repaint it. The flag is the only thing that forces the received
+  track to stay at what the sender saw. (For a *plain* slot it's the sole
+  mechanism that can neutralize a promoted default at all — no baked value can
+  read as customized there.)
+
+So the bake sets the flag on **every** open display, making the shared session a
+faithful frozen picture, immune to the recipient's local preferences. The flag
+is **cleared** by `resetSlotsToInherit` — i.e. the moment the recipient
+deliberately clicks "use this default", the display rejoins the cascade. A track
+the recipient opens *fresh* in a received session never gets the flag, so it
+picks up their defaults normally.
+
+Note the About-track dialog needs **no** flattening: every promotable slot is
+display-level and the dialog intentionally hides the `displays` array, so there
+is no track-level fidelity gap to close there.
 
 ## UI surface
 
@@ -283,12 +363,17 @@ for free (no per-display passthroughs).
    with the fitting `make*Control` builder, and pass it as `displayTypeDefault`
    to `promotableToggleItem` / `promotableRadioItem`. Group slots that move
    together into one control.
-5. **Worker boundary:** promotable slots resolve on the **main thread**. If the
-   worker needs the value, send `resolvePromotableConfigSnapshot(self)` (or read
-   the display's resolved getter into `rpcProps()`) rather than a raw
-   `getConfSnapshot` — a raw promotable slot serializes as its inherit sentinel,
-   which the worker can't interpret. `displayMode` is excluded from the canvas
-   worker payload entirely (compact scaling is main-thread).
+5. **Serialization boundaries** (see
+   [that section](#serialization-boundaries-getcomputedstyle)): promotable slots
+   resolve on the **main thread**, so anything that ships the config elsewhere
+   must flatten. If the worker needs the value, send
+   `resolvePromotableConfigSnapshot(self)` (or read the display's resolved getter
+   into `rpcProps()`) rather than a raw `getConfSnapshot` — a raw promotable slot
+   serializes as its inherit sentinel, which the worker can't interpret.
+   `displayMode` is excluded from the canvas worker payload entirely (compact
+   scaling is main-thread). The **share/export** boundary needs nothing per-slot:
+   `bakePromotedDefaultsIntoSnapshot` walks every promotable slot via
+   `getDisplayTypeDefaultChanges`, so a new slot is covered automatically.
 
 ## Historical note
 

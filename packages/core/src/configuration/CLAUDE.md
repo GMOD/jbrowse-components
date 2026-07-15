@@ -1,5 +1,15 @@
 # Configuration package
 
+## Promotable / display-type defaults (`promotableDefaults.ts`)
+
+A `promotable` slot resolves through a live read-time CSS-cascade (track value →
+session-wide promoted default → base) via `getConfResolved`, never raw `getConf`.
+The promoted default lives in a personal, un-shared store, so **every boundary
+that serializes a display's config for elsewhere must flatten** — the worker via
+`resolvePromotableConfigSnapshot`, a shared/exported session via
+`bakePromotedDefaultsIntoSnapshot`. Full model + the `ignorePromotedDefaults`
+opt-out: `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
+
 ## `getConf` vs `readConfObject`
 
 Two reader functions, intentionally distinct:
