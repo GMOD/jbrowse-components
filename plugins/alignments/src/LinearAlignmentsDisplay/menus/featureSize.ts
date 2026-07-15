@@ -30,6 +30,22 @@ export const COMPACTNESS_PRESETS = {
   'super-compact': { label: 'Super-compact', featureHeight: 1 },
 } as const
 
+// The one rule turning a read size into its inter-read gap: a 1px gap once
+// there's room for a >2px body, else flush. Spacing is derived, never stored, so
+// this is the single source both the `featureSpacing` getter (fixed body / fit
+// pitch) and the fit cap (`normal pitch = body + gap`) key off — encoding it once
+// keeps the presets and the fit squeeze from disagreeing.
+export function featureSpacingForHeight(height: number) {
+  return height > 3 ? 1 : 0
+}
+
+// The pitch a Normal read occupies (body + its derived gap). The fit squeeze
+// caps here so choosing "fit" only ever shrinks reads below Normal, never
+// balloons a handful past it.
+export const NORMAL_PITCH =
+  COMPACTNESS_PRESETS.normal.featureHeight +
+  featureSpacingForHeight(COMPACTNESS_PRESETS.normal.featureHeight)
+
 // One menu, two independent radio groups: the pixel-size presets (+ Custom) and
 // the fixed/grow/fit track-sizing modes. They're orthogonal axes — the size is
 // what each read is drawn at (used in fixed and grow), the mode is how the track

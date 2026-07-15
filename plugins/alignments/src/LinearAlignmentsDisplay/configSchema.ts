@@ -76,8 +76,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       // The single "compactness" axis. Spacing between reads is derived from
-      // this (`featureSpacing` getter: height > 3 ? 1 : 0), not stored — the
-      // presets (7/3/1) and the fit-mode squeeze all key off this one value.
+      // this (`featureSpacingForHeight`), not stored — the presets (7/3/1) and
+      // the fit-mode squeeze all key off this one value.
       featureHeight: {
         type: 'maybeNumber',
         description:

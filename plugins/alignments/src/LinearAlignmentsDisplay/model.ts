@@ -65,7 +65,8 @@ import {
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
-  COMPACTNESS_PRESETS,
+  NORMAL_PITCH,
+  featureSpacingForHeight,
   getColorByMenuItem,
   getContextMenuItems,
   getCoverageMenuItem,
@@ -817,10 +818,9 @@ export default function stateModelFactory(
         // presets (7->1, 3->0, 1->0) and the fit-mode squeeze, so the two paths
         // can't disagree.
         get featureSpacing(): number {
-          const h = this.isFitting
-            ? self.fittedHeightPx
-            : this.configuredFeatureHeight
-          return h > 3 ? 1 : 0
+          return featureSpacingForHeight(
+            this.isFitting ? self.fittedHeightPx : this.configuredFeatureHeight,
+          )
         },
 
         /**
@@ -1873,15 +1873,14 @@ export default function stateModelFactory(
           const pileupSpace =
             self.fitTargetHeight -
             self.groupOrder.length * self.coverageDisplayHeight
-          // Cap at the pitch a NORMAL read renders at (body + its 1px spacing),
+          // Cap at the pitch a NORMAL read renders at (body + its derived gap),
           // never the configured Compact/Super-compact size: choosing "fit"
           // overrides the compactness preset, so a small configured height must
           // not clamp the fit — otherwise Compact would override fit instead of
           // the reverse. The cap only stops a handful of reads ballooning past
           // normal in a tall display; below normal, fit squeezes freely.
-          const maxPitch = COMPACTNESS_PRESETS.normal.featureHeight + 1
           return rows > 0 && pileupSpace > 0
-            ? Math.min(maxPitch, Math.max(1, pileupSpace / rows))
+            ? Math.min(NORMAL_PITCH, Math.max(1, pileupSpace / rows))
             : 0
         },
 

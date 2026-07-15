@@ -41,8 +41,8 @@ const SetFeatureHeightDialog = observer(function SetFeatureHeightDialog(props: {
         onValueChange={setHeight}
         label="Feature height (px)"
         autoFocus
-        min={0}
-        errorText="Must be a non-negative number"
+        min={1}
+        errorText="Must be at least 1px"
       />
     </SubmitDialog>
   )
