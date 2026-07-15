@@ -96,7 +96,8 @@ export function ArcFetchModel() {
         return scaleByteEstimate({
           bytes: self.featureDensityStats?.bytes,
           captureBp: self.byteEstimateVisibleBp,
-          visibleBp: (getContainingView(self) as LinearGenomeViewModel).visibleBp,
+          visibleBp: (getContainingView(self) as LinearGenomeViewModel)
+            .visibleBp,
         })
       },
     }))
@@ -108,7 +109,8 @@ export function ArcFetchModel() {
        */
       get tooLargeStatus() {
         return evaluateRegionTooLarge({
-          visibleBp: (getContainingView(self) as LinearGenomeViewModel).visibleBp,
+          visibleBp: (getContainingView(self) as LinearGenomeViewModel)
+            .visibleBp,
           bytes: self.estimatedVisibleBytes,
           byteLimit: resolveByteLimit({
             userByteSizeLimit: self.userByteSizeLimit,

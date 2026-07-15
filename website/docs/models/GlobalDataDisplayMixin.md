@@ -14,30 +14,27 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 Mixin for GPU displays that hold a single global (non-regional) dataset — HiC
 contact matrix, LD triangle, variant matrix, etc.
 
-Composes:
+`GlobalFetchMixin` (the rendering-agnostic fetch foundation) +
+RenderLifecycleMixin (attachRenderingBackend, renderNow, renderError, …) + the
+GPU `displayPhase`.
 
-- RenderLifecycleMixin (attachRenderingBackend, renderNow, …)
-- RegionTooLargeMixin (regionTooLarge, regionCannotBeRendered, …)
-- FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
-  fetchGeneration)
-
-Unlike MultiRegionDisplayMixin, this mixin owns no per-region state and installs
-no autoruns. Fetch triggering is left to the display's own afterAttach autorun
-so each display can express its own trigger conditions (HiC: viewport change;
-LD: viewport + showLDTriangle + etc). The shared skeleton of that autorun lives
-in `installGlobalFetchAutorun` (below) — a display supplies only its own
+Unlike MultiRegionDisplayMixin, it owns no per-region state and installs no
+autoruns. Fetch triggering is left to the display's own afterAttach autorun so
+each display can express its own trigger conditions (HiC: viewport change; LD:
+viewport + showLDTriangle + etc). The shared skeleton of that autorun lives in
+`installGlobalFetchAutorun` (below) — a display supplies only its own
 `shouldFetch` gate + `fetch` action.
 
 ## Members
 
 | Member                                                             | Kind       | Defined by                                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ------------------------------------------------------------------ | ---------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [reloadCounter](#volatile-reloadcounter)                           | Volatiles  | GlobalDataDisplayMixin                          | Bumped by `reload()` to retrigger a global display's fetch autorun. Each display reads `void self.reloadCounter` in its `afterAttach` fetch autorun so a user-initiated reload re-runs the fetch even when no viewport/setting changed.                                                                                                                                                                                                                                                                                                                                                                         |
-| [displayPhase](#getter-displayphase)                               | Getters    | GlobalDataDisplayMixin                          | Same precedence as MultiRegionDisplayMixin (single-sourced in `computeDisplayPhase`). A global display has no per-region staleness axis — it either has its one dataset or is fetching it — so its `loading` axis is simply "fetch in flight".                                                                                                                                                                                                                                                                                                                                                                  |
-| [dataLoaded](#getter-dataloaded)                                   | Getters    | GlobalDataDisplayMixin                          | Overridable hook (default false): a subclass returns true once its single global dataset has actually been fetched — even when the fetch committed an empty result. The mixin owns no data state, so a global display must express this; it is the global-display analog of `MultiRegionDisplayMixin.viewportWithinLoadedData`.                                                                                                                                                                                                                                                                                 |
-| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)             | Getters    | GlobalDataDisplayMixin                          | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                                                                                                                                                                                                                                                                                                                                                                                    |
-| [svgReady](#getter-svgready)                                       | Getters    | GlobalDataDisplayMixin                          | Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an off-screen (SVG) export can read final data. Like that mixin it requires the dataset to actually be loaded (or a terminal error / too-large / extra state), NOT merely "not currently fetching": the fetch trigger is a debounced `afterAttach` autorun, so at export time `isLoading` can still be false with no data yet — a `displayPhase !== 'loading'` test would then capture an empty render. Never gates on `canvasDrawn`, which an off-screen export never sets. Off-screen renderers gate on it via `awaitSvgReady(model)`. |
-| [reload](#action-reload)                                           | Actions    | GlobalDataDisplayMixin                          | Satisfies the `reload` contract `DisplayChrome` requires of every display (the per-region foundation provides its own). Clears any error and bumps `reloadCounter` so the display's fetch autorun re-runs. A subclass whose reload needs extra teardown can override and chain.                                                                                                                                                                                                                                                                                                                                 |
+| [displayPhase](#getter-displayphase)                               | Getters    | GlobalDataDisplayMixin                          | Same precedence as MultiRegionDisplayMixin (single-sourced in `computeDisplayPhase`). A global display has no per-region staleness axis — it either has its one dataset or is fetching it — so its `loading` axis is simply "fetch in flight". Reads `renderError` (RenderLifecycleMixin), which is why it lives here, not in GlobalFetchMixin.                                                                                                                                                                                                                                                                 |
+| [reloadCounter](#volatile-reloadcounter)                           | Volatiles  | [GlobalFetchMixin](../globalfetchmixin)         | Bumped by `reload()` to retrigger a global display's fetch autorun. Each display reads `void self.reloadCounter` in its `afterAttach` fetch autorun so a user-initiated reload re-runs the fetch even when no viewport/setting changed.                                                                                                                                                                                                                                                                                                                                                                         |
+| [dataLoaded](#getter-dataloaded)                                   | Getters    | [GlobalFetchMixin](../globalfetchmixin)         | Overridable hook (default false): a subclass returns true once its single global dataset has actually been fetched — even when the fetch committed an empty result. The mixin owns no data state, so a global display must express this; it is the global-display analog of `MultiRegionDisplayMixin.viewportWithinLoadedData`.                                                                                                                                                                                                                                                                                 |
+| [svgReadyExtraTerminal](#getter-svgreadyextraterminal)             | Getters    | [GlobalFetchMixin](../globalfetchmixin)         | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [svgReady](#getter-svgready)                                       | Getters    | [GlobalFetchMixin](../globalfetchmixin)         | Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an off-screen (SVG) export can read final data. Like that mixin it requires the dataset to actually be loaded (or a terminal error / too-large / extra state), NOT merely "not currently fetching": the fetch trigger is a debounced `afterAttach` autorun, so at export time `isLoading` can still be false with no data yet — a `displayPhase !== 'loading'` test would then capture an empty render. Never gates on `canvasDrawn`, which an off-screen export never sets. Off-screen renderers gate on it via `awaitSvgReady(model)`. |
+| [reload](#action-reload)                                           | Actions    | [GlobalFetchMixin](../globalfetchmixin)         | Satisfies the `reload` contract `DisplayChrome` (and the arc SVG chrome) require of every display. Clears any error and bumps `reloadCounter` so the display's fetch autorun re-runs. A subclass whose reload needs extra teardown can override and chain.                                                                                                                                                                                                                                                                                                                                                      |
 | [userByteSizeLimit](#property-userbytesizelimit)                   | Properties | [RegionTooLargeMixin](../regiontoolargemixin)   | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [regionTooLargeState](#volatile-regiontoolargestate)               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [regionTooLargeReasonState](#volatile-regiontoolargereasonstate)   | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -49,17 +46,6 @@ in `installGlobalFetchAutorun` (below) — a display supplies only its own
 | [setFeatureDensityStats](#action-setfeaturedensitystats)           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)   |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit) | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)   | force-load: raise the byte limit past the current request and clear the too-large banner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | [forceLoad](#action-forceload)                                     | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)   | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch.                                                                                                                                                                                                                                                                                                                                                                                          |
-| [canvasDrawn](#volatile-canvasdrawn)                               | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [currentRenderingBackend](#volatile-currentrenderingbackend)       | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.                                                                                                                                                                                                                                                           |
-| [renderTick](#volatile-rendertick)                                 | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [autorunsInstalled](#volatile-autorunsinstalled)                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [renderError](#volatile-rendererror)                               | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay).                                                                                                                                                                                     |
-| [markCanvasDrawn](#action-markcanvasdrawn)                         | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [resetCanvasDrawn](#action-resetcanvasdrawn)                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [stopRenderingBackend](#action-stoprenderingbackend)               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [renderNow](#action-rendernow)                                     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [setRenderError](#action-setrendererror)                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.                                                                                                                                                                                                                                                                                                                                                                                                  |
-| [attachRenderingBackend](#action-attachrenderingbackend)           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [activeStopToken](#volatile-activestoptoken)                       | Volatiles  | [FetchMixin](../fetchmixin)                     | stop token of the in-flight fetch, or undefined when idle                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [fetchGeneration](#volatile-fetchgeneration)                       | Volatiles  | [FetchMixin](../fetchmixin)                     | bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the staleness epoch inside runFetch                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [error](#volatile-error)                                           | Volatiles  | [FetchMixin](../fetchmixin)                     | last non-abort fetch error, or undefined                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -80,9 +66,47 @@ in `installGlobalFetchAutorun` (below) — a display supplies only its own
 | [cancelFetch](#action-cancelfetch)                                 | Actions    | [FetchMixin](../fetchmixin)                     | cancel any in-flight fetch and bump fetchGeneration (always bumps, so callers can retrigger fetch autoruns even when nothing was in flight). This is the _internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any user-cancel flag so the retrigger actually re-fetches.                                                                                                                                                                                                                                                                                                                |
 | [cancelFetchByUser](#action-cancelfetchbyuser)                     | Actions    | [FetchMixin](../fetchmixin)                     | User-initiated cancel from the loading overlay. Stops the in-flight fetch and lands in a durable `fetchCanceled` state. Unlike `cancelFetch`, it does NOT bump fetchGeneration — so the fetch autoruns don't immediately restart the load. The user retries via `reload` (the overlay's retry button), or it clears on the next viewport change.                                                                                                                                                                                                                                                                |
 | [runFetch](#action-runfetch)                                       | Actions    | [FetchMixin](../fetchmixin)                     | Run a cancel-safe fetch (cancels any prior). The work callback gets a FetchContext with a stopToken to forward to the RPC and an isStale() check to short-circuit commits once the user has moved on. Abort errors are swallowed; others are stored in `error` if not stale.                                                                                                                                                                                                                                                                                                                                    |
+| [canvasDrawn](#volatile-canvasdrawn)                               | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [currentRenderingBackend](#volatile-currentrenderingbackend)       | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.                                                                                                                                                                                                                                                           |
+| [renderTick](#volatile-rendertick)                                 | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | counter the render autorun observes; bumped to force a re-render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [autorunsInstalled](#volatile-autorunsinstalled)                   | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | guards attachRenderingBackend so the autorun pair spawns once per instance                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [renderError](#volatile-rendererror)                               | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin) | the render-backend (GPU/Canvas2D init or context-loss) error, or undefined. Single source of truth for the render-error terminal state: `useRenderingBackend` writes it from the canvas-init mechanism so the model — not React-local hook state — owns every terminal state. Read by `displayPhase` (whose `renderError` term outranks `loading`, suppressing the scrim) and by `DisplayChrome` (shows the retry overlay).                                                                                                                                                                                     |
+| [markCanvasDrawn](#action-markcanvasdrawn)                         | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [resetCanvasDrawn](#action-resetcanvasdrawn)                       | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [stopRenderingBackend](#action-stoprenderingbackend)               | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [renderNow](#action-rendernow)                                     | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [setRenderError](#action-setrendererror)                           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | set/clear the render-backend error. Called by `useRenderingBackend`: with the error when the canvas factory rejects (or context-loss re-init fails), and with `undefined` on successful (re)init and on retry.                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [attachRenderingBackend](#action-attachrenderingbackend)           | Actions    | [RenderLifecycleMixin](../renderlifecyclemixin) | attach a GPU/Canvas2D backend and install the upload + render autorun pair (idempotent — re-calling only swaps the backend)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
 <details>
-<summary>GlobalDataDisplayMixin - Volatiles</summary>
+<summary>GlobalDataDisplayMixin - Getters</summary>
+
+#### getter: displayPhase
+
+Same precedence as MultiRegionDisplayMixin (single-sourced in
+`computeDisplayPhase`). A global display has no per-region staleness axis — it
+either has its one dataset or is fetching it — so its `loading` axis is simply
+"fetch in flight". Reads `renderError` (RenderLifecycleMixin), which is why it
+lives here, not in GlobalFetchMixin.
+
+```ts
+type displayPhase = DisplayPhase
+```
+
+</details>
+
+## Inherited members
+
+Members available on this model via composition, shown in full so this page is
+self-contained. A member redeclared by a more specific model is shown once, at
+its most-specific definition.
+
+<details>
+<summary>Derived from GlobalFetchMixin</summary>
+
+[GlobalFetchMixin →](../globalfetchmixin)
+
+**Volatiles**
 
 #### volatile: reloadCounter
 
@@ -97,21 +121,7 @@ type reloadCounter = number
 reloadCounter: 0
 ```
 
-</details>
-
-<details>
-<summary>GlobalDataDisplayMixin - Getters</summary>
-
-#### getter: displayPhase
-
-Same precedence as MultiRegionDisplayMixin (single-sourced in
-`computeDisplayPhase`). A global display has no per-region staleness axis — it
-either has its one dataset or is fetching it — so its `loading` axis is simply
-"fetch in flight".
-
-```ts
-type displayPhase = DisplayPhase
-```
+**Getters**
 
 #### getter: dataLoaded
 
@@ -150,29 +160,20 @@ Off-screen renderers gate on it via `awaitSvgReady(model)`.
 type svgReady = boolean
 ```
 
-</details>
-
-<details>
-<summary>GlobalDataDisplayMixin - Actions</summary>
+**Actions**
 
 #### action: reload
 
-Satisfies the `reload` contract `DisplayChrome` requires of every display (the
-per-region foundation provides its own). Clears any error and bumps
-`reloadCounter` so the display's fetch autorun re-runs. A subclass whose reload
-needs extra teardown can override and chain.
+Satisfies the `reload` contract `DisplayChrome` (and the arc SVG chrome) require
+of every display. Clears any error and bumps `reloadCounter` so the display's
+fetch autorun re-runs. A subclass whose reload needs extra teardown can override
+and chain.
 
 ```ts
 type reload = () => void
 ```
 
 </details>
-
-## Inherited members
-
-Members available on this model via composition, shown in full so this page is
-self-contained. A member redeclared by a more specific model is shown once, at
-its most-specific definition.
 
 <details>
 <summary>Derived from RegionTooLargeMixin</summary>
@@ -279,127 +280,6 @@ display models override reload() to do the actual refetch.
 
 ```ts
 type forceLoad = () => void
-```
-
-</details>
-
-<details>
-<summary>Derived from RenderLifecycleMixin</summary>
-
-[RenderLifecycleMixin →](../renderlifecyclemixin)
-
-**Volatiles**
-
-#### volatile: canvasDrawn
-
-flips true on first paint; read by test selectors to detect render
-
-```ts
-// type signature
-type canvasDrawn = false
-// code
-canvasDrawn: false
-```
-
-#### volatile: currentRenderingBackend
-
-current backend reference, updated on context-loss recovery. Typed `unknown`
-(not generic `B`) on purpose: this mixin is composed by every display via a
-non-generic factory, so the per-display backend type `B` isn't known here — it's
-supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
-autoruns. Don't "fix" the cast.
-
-```ts
-// type signature
-type currentRenderingBackend = undefined
-// code
-currentRenderingBackend: undefined
-```
-
-#### volatile: renderTick
-
-counter the render autorun observes; bumped to force a re-render
-
-```ts
-// type signature
-type renderTick = number
-// code
-renderTick: 0
-```
-
-#### volatile: autorunsInstalled
-
-guards attachRenderingBackend so the autorun pair spawns once per instance
-
-```ts
-// type signature
-type autorunsInstalled = false
-// code
-autorunsInstalled: false
-```
-
-#### volatile: renderError
-
-the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
-Single source of truth for the render-error terminal state:
-`useRenderingBackend` writes it from the canvas-init mechanism so the model —
-not React-local hook state — owns every terminal state. Read by `displayPhase`
-(whose `renderError` term outranks `loading`, suppressing the scrim) and by
-`DisplayChrome` (shows the retry overlay).
-
-```ts
-// type signature
-type renderError = undefined
-// code
-renderError: undefined
-```
-
-**Actions**
-
-#### action: markCanvasDrawn
-
-```ts
-type markCanvasDrawn = () => void
-```
-
-#### action: resetCanvasDrawn
-
-```ts
-type resetCanvasDrawn = () => void
-```
-
-#### action: stopRenderingBackend
-
-```ts
-type stopRenderingBackend = () => void
-```
-
-#### action: renderNow
-
-```ts
-type renderNow = () => void
-```
-
-#### action: setRenderError
-
-set/clear the render-backend error. Called by `useRenderingBackend`: with the
-error when the canvas factory rejects (or context-loss re-init fails), and with
-`undefined` on successful (re)init and on retry.
-
-```ts
-type setRenderError = (error: unknown) => void
-```
-
-#### action: attachRenderingBackend
-
-attach a GPU/Canvas2D backend and install the upload + render autorun pair
-(idempotent — re-calling only swaps the backend)
-
-```ts
-type attachRenderingBackend = <B>(
-  backend: B,
-  cbs: RenderingBackendCallbacks<B>,
-) => void
 ```
 
 </details>
@@ -632,6 +512,127 @@ others are stored in `error` if not stale.
 
 ```ts
 type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+```
+
+</details>
+
+<details>
+<summary>Derived from RenderLifecycleMixin</summary>
+
+[RenderLifecycleMixin →](../renderlifecyclemixin)
+
+**Volatiles**
+
+#### volatile: canvasDrawn
+
+flips true on first paint; read by test selectors to detect render
+
+```ts
+// type signature
+type canvasDrawn = false
+// code
+canvasDrawn: false
+```
+
+#### volatile: currentRenderingBackend
+
+current backend reference, updated on context-loss recovery. Typed `unknown`
+(not generic `B`) on purpose: this mixin is composed by every display via a
+non-generic factory, so the per-display backend type `B` isn't known here — it's
+supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
+autoruns. Don't "fix" the cast.
+
+```ts
+// type signature
+type currentRenderingBackend = undefined
+// code
+currentRenderingBackend: undefined
+```
+
+#### volatile: renderTick
+
+counter the render autorun observes; bumped to force a re-render
+
+```ts
+// type signature
+type renderTick = number
+// code
+renderTick: 0
+```
+
+#### volatile: autorunsInstalled
+
+guards attachRenderingBackend so the autorun pair spawns once per instance
+
+```ts
+// type signature
+type autorunsInstalled = false
+// code
+autorunsInstalled: false
+```
+
+#### volatile: renderError
+
+the render-backend (GPU/Canvas2D init or context-loss) error, or undefined.
+Single source of truth for the render-error terminal state:
+`useRenderingBackend` writes it from the canvas-init mechanism so the model —
+not React-local hook state — owns every terminal state. Read by `displayPhase`
+(whose `renderError` term outranks `loading`, suppressing the scrim) and by
+`DisplayChrome` (shows the retry overlay).
+
+```ts
+// type signature
+type renderError = undefined
+// code
+renderError: undefined
+```
+
+**Actions**
+
+#### action: markCanvasDrawn
+
+```ts
+type markCanvasDrawn = () => void
+```
+
+#### action: resetCanvasDrawn
+
+```ts
+type resetCanvasDrawn = () => void
+```
+
+#### action: stopRenderingBackend
+
+```ts
+type stopRenderingBackend = () => void
+```
+
+#### action: renderNow
+
+```ts
+type renderNow = () => void
+```
+
+#### action: setRenderError
+
+set/clear the render-backend error. Called by `useRenderingBackend`: with the
+error when the canvas factory rejects (or context-loss re-init fails), and with
+`undefined` on successful (re)init and on retry.
+
+```ts
+type setRenderError = (error: unknown) => void
+```
+
+#### action: attachRenderingBackend
+
+attach a GPU/Canvas2D backend and install the upload + render autorun pair
+(idempotent — re-calling only swaps the backend)
+
+```ts
+type attachRenderingBackend = <B>(
+  backend: B,
+  cbs: RenderingBackendCallbacks<B>,
+) => void
 ```
 
 </details>
