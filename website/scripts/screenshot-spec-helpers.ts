@@ -1035,7 +1035,9 @@ export const jbrowseImgSpecs: CliSpec[] = [
     // arcs.
     'linkedReads:normal',
     'coverageHeight:80',
-    'height:440',
+    // deep enough that the whole pileup renders rather than running off the
+    // bottom of the image (reviewer)
+    'height:820',
     '--loc',
     'chr1:197,786,900-197,789,700',
     '--width',

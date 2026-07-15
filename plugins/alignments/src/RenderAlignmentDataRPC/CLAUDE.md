@@ -5,9 +5,9 @@
 `RenderAlignmentData` (`executeRenderAlignmentData.ts`) serves both displays,
 branching on `args.linkedReads` (`'off'` → pileup, else chain). Shared spine
 (fetch → arrays → coverage → assembly); only pre-processing differs — both run
-`filterChainFeatures` (dedupe + singleton/proper-pair/split-only filter,
-grouped by read name, so it applies in pileup too); chain additionally builds
-chain metadata, pileup additionally does ref-sequence fetch + sort-tag values.
+`filterChainFeatures` (dedupe + singleton/proper-pair/split-only filter, grouped
+by read name, so it applies in pileup too); chain additionally builds chain
+metadata, pileup additionally does ref-sequence fetch + sort-tag values.
 Chain-only result fields are optional on `PileupDataResult`.
 
 ## Two feature categories: row-instanced vs position-aggregate
@@ -77,6 +77,18 @@ opposite strand keys differently than the primary — so a chain spanning region
 whose far end is a strand-flipped supplement can land in two sections. Both are
 accepted limitations of per-region partitioning, not bugs to fix.
 
+## `computeMultiRegionLayout`: the placement axis is segmented per refName
+
+Reads are placed by genomic coordinate, and refNames share that coordinate
+space — `ctgA:1-50,000` and `ctgB:1-6,000` both start at 1 — while occupying
+disjoint screen space. Placing every region's reads on one axis therefore
+collided regions that never overlap on screen: each ctgB read was pushed below
+every ctgA read covering the same bp, so ctgB's pileup started well below row 0
+with a wedge of whitespace above it. `segmentExtentsByRefName` shifts each
+refName onto its own disjoint span of the axis before placement (a read only
+ever spans regions of one refName, so its unioned extent moves as a unit). It
+is a no-op for single-refName views, which includes collapse-introns.
+
 ## `computeMultiRegionLayout` sort/softclip: same-refName only
 
 `computeMultiRegionLayout` (in `sortLayout.ts`) honors `showSoftClipping`
@@ -90,8 +102,9 @@ the arcs `regionInfos` path) → `buildLaidOutPileupMap` → here.
 
 Mixed-refName multi-region views (e.g. "view mate" jumping to another
 chromosome) keep plain dedup order for the sort — the sort is skipped rather
-than risk a cross-chromosome false-match. Not a fundamental limit, just unbuilt:
-it would need a per-refName-segmented placement axis.
+than risk a cross-chromosome false-match. Not a fundamental limit, just unbuilt;
+the placement axis it would need is now segmented (see above), so what remains
+is choosing which region's reads a localized sort should order.
 
 ## `showSoftClipping` belongs in `rpcProps`
 

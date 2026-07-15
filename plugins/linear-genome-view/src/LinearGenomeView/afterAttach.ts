@@ -163,7 +163,7 @@ function parseJsonHighlight(
   s: string,
   defaultAssembly: string,
 ): HighlightType | undefined {
-  const json = s.trim().startsWith('{') ? tryParseJson(s) : undefined
+  const json = s.trimStart().startsWith('{') ? tryParseJson(s) : undefined
   return json &&
     typeof json.refName === 'string' &&
     typeof json.start === 'number' &&

@@ -57,7 +57,12 @@ describe('getReadDisplayLegendItems', () => {
     // fwd/rev come only from split segments here, and po=0 non-split reads are
     // their own grey bucket.
     expect(
-      labels('pairOrientation', ['fwdStrand', 'revStrand', 'nonSplit', 'pairLR']),
+      labels('pairOrientation', [
+        'fwdStrand',
+        'revStrand',
+        'nonSplit',
+        'pairLR',
+      ]),
     ).toEqual([
       'Split read (forward)',
       'Split read (reverse)',

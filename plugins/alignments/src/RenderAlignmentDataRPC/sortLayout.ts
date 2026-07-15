@@ -489,6 +489,59 @@ export interface RegionBounds {
   end: number
 }
 
+interface ReadExtent {
+  start: number
+  end: number
+  refName: string | undefined
+}
+
+/**
+ * Shift each refName's reads onto its own disjoint span of the placement axis.
+ *
+ * Regions on different refNames share the genomic coordinate axis — ctgA:1-50,000
+ * and ctgB:1-6,000 both start at 1 — while occupying disjoint screen space, so
+ * laying them out on that one axis wrongly collides them: each ctgB read is
+ * pushed below every ctgA read covering the same bp, emptying the top rows of
+ * ctgB's pileup. A read only ever spans regions of one refName, so its unioned
+ * extent shifts as a unit. A no-op when every region shares a refName (the
+ * single-region and collapse-introns cases).
+ */
+function segmentExtentsByRefName(extents: Map<string, ReadExtent>) {
+  const spans = new Map<
+    string | undefined,
+    { min: number; max: number; offset: number }
+  >()
+  for (const { start, end, refName } of extents.values()) {
+    const span = spans.get(refName)
+    if (span) {
+      if (start < span.min) {
+        span.min = start
+      }
+      if (end > span.max) {
+        span.max = end
+      }
+    } else {
+      spans.set(refName, { min: start, max: end, offset: 0 })
+    }
+  }
+  if (spans.size > 1) {
+    // Lay the spans end to end in first-seen (≈ view) order, so placement stays
+    // start-ascending overall and keeps placeRect's O(1) append fast path. The
+    // 4bp gap clears placeRect's own 2bp end padding, so no read of one refName
+    // can ever collide with a read of the next.
+    let cursor = 0
+    for (const span of spans.values()) {
+      span.offset = cursor - span.min
+      cursor += span.max - span.min + 4
+    }
+    for (const extent of extents.values()) {
+      const { offset } = spans.get(extent.refName)!
+      extent.start += offset
+      extent.end += offset
+    }
+  }
+}
+
 /**
  * Compute layout across multiple regions, deduplicating reads that span
  * region boundaries by featureId. Returns rowMap<featureId, row> for
@@ -520,10 +573,11 @@ export function computeMultiRegionLayout({
   // in, including soft-clip expansion — a read spanning a boundary gets one
   // extent, so it lands on one row. `orderedIds` keeps first-seen (≈ genomic)
   // order for the default placement.
-  const extents = new Map<string, { start: number; end: number }>()
+  const extents = new Map<string, ReadExtent>()
   const orderedIds: string[] = []
-  for (const [, data] of entries) {
+  for (const [idx, data] of entries) {
     const exp = showSoftClipping ? buildSoftclipExpansions(data) : undefined
+    const refName = regions?.get(idx)?.refName
     for (let i = 0; i < data.readIds.length; i++) {
       const id = data.readIds[i]!
       const { start, end } = readExtent(data, i, exp)
@@ -536,11 +590,12 @@ export function computeMultiRegionLayout({
           cur.end = end
         }
       } else {
-        extents.set(id, { start, end })
+        extents.set(id, { start, end, refName })
         orderedIds.push(id)
       }
     }
   }
+  segmentExtentsByRefName(extents)
 
   const refNames = regions
     ? [...new Set(entries.map(([idx]) => regions.get(idx)?.refName))]

@@ -477,7 +477,7 @@ export const svSpecs: ScreenshotSpec[] = [
               drawInter: false,
               drawLongRange: false,
               readConnectionsHeight: 130,
-              height: 640,
+              height: 800,
               coverageHeight: 70,
               colorBy: { type: 'pairOrientation' },
             },
@@ -487,7 +487,9 @@ export const svSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG00151 Nanopore',
     readyTimeout: 90000,
-    viewportHeight: 800,
+    // tall enough to clear the whole 800px track (the pileup used to run off the
+    // bottom edge — reviewer: increase browser height)
+    viewportHeight: 1010,
     settleMs: 40000,
     // ordered top-to-bottom to match the layout: arcs sit above the pileup, the
     // colored split reads below, so each callout reads next to what it describes
@@ -507,69 +509,6 @@ export const svSpecs: ScreenshotSpec[] = [
         y: 520,
         text: 'Split-aligned reads: red forward-strand segments on either side of a blue reverse-strand core. Reads that cross without a flip stay one solid strand color.',
         maxWidth: 470,
-      },
-    ],
-  },
-
-  // sv_multisamples.md: the chr19 HGSV_72999 inversion read at single-read
-  // resolution in ONT long reads. HG00637 is one of the 72 ONT-Vienna samples
-  // that carry the het inversion; its long reads read straight through the left
-  // breakpoint (chr19:41,797,752), so the segment before the junction aligns
-  // forward and the segment after aligns reverse — drawn as a supplementary/split
-  // alignment, chained by linkedReads:'normal' (so the reverse piece paints the
-  // flipped-strand pair-orientation color and the split junctions arc), directly
-  // reading out the strand flip that short-read pair orientation can only imply.
-  // The ONT track is now part of the deployed 1KGP config, so it loads by
-  // trackId and the live link resolves for readers (CORS-enabled EBI CRAMs).
-  {
-    mode: 'url',
-    name: 'multisv_ont_inversion',
-    url: kgUrl({
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          // ~35kb centered on the left breakpoint (chr19:41,797,752): reads from
-          // the inverted haplotype clip at the junction and continue as a
-          // reverse-strand supplementary segment, so the strand flip lands mid-view
-          // with more flanking context (reviewer: zoom out more)
-          loc: 'chr19:41,780,000-41,815,000',
-          tracks: [
-            {
-              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
-              type: 'LinearVariantDisplay',
-              // compact the callset lane so the read pileup dominates (reviewer)
-              height: 40,
-            },
-            {
-              trackId: 'HG00637.ont.vienna.hg38',
-              type: 'LinearAlignmentsDisplay',
-              // link supplementary alignments so each read's split segments chain
-              // onto one row: the reverse-strand piece paints the flipped-strand
-              // color and the junctions arc, instead of an uncolored pileup
-              linkedReads: 'normal',
-              readConnections: 'arc',
-              height: 560,
-              coverageHeight: 70,
-              colorBy: { type: 'pairOrientation' },
-              // lift the force-load byte gate so the reads auto-load headless
-              userByteSizeLimit: 200_000_000,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'HG00637',
-    readyTimeout: 120000,
-    viewportHeight: 780,
-    settleMs: 40000,
-    annotations: [
-      {
-        type: 'text',
-        x: 70,
-        y: 430,
-        text: 'Each inversion-spanning read flips forward (red) → reverse (blue) at the breakpoint. Reads that cross without a flip stay one solid strand color.',
-        maxWidth: 400,
       },
     ],
   },

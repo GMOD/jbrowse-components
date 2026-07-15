@@ -83,7 +83,7 @@ See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
 
 <Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a CpG island on chr20." src="/img/alignments/modifications1.png" />
-<Figure caption="The same track colored by type (top) and by probability (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls, so the region looks empty; by-probability mode scans each read for CpG dinucleotides and paints every one — red where the MM tag calls it methylated, blue for the CpGs it leaves unmodified — filling the hypomethylated island blue." src="/img/alignments/modifications2.png" />
+<Figure caption="The same track colored by type (top) and by probability (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls, so the region looks empty; by-probability mode paints every CpG — red for methylated, blue for the low-probability or unmarked ones — filling the hypomethylated island blue." src="/img/alignments/modifications2.png" />
 
 ### Pair orientation and insert size
 

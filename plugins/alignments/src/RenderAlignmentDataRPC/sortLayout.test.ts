@@ -1000,4 +1000,42 @@ describe('computeMultiRegionLayout', () => {
     const unsorted = args(undefined)
     expect([...sorted.rowMap]).toEqual([...unsorted.rowMap])
   })
+
+  test('reads on different refNames do not collide on the placement axis', () => {
+    // ctgA:1-1000 and ctgB:1-1000 share the genomic coordinate axis, so a naive
+    // single-axis placement stacks ctgB's reads *below* ctgA's — each ctgB read
+    // pushed down past every ctgA read covering the same bp, leaving the top
+    // rows of ctgB empty (the read_cloud figure's whitespace).
+    const ctgAReads = makePileupData({
+      regionStart: 0,
+      idPrefix: 'a',
+      reads: [
+        { start: 100, end: 200 },
+        { start: 110, end: 210 },
+        { start: 120, end: 220 },
+      ],
+    })
+    const ctgBReads = makePileupData({
+      regionStart: 0,
+      idPrefix: 'b',
+      reads: [{ start: 100, end: 200 }],
+    })
+    const { rowMap, maxY } = computeMultiRegionLayout({
+      entries: [
+        [0, ctgAReads],
+        [1, ctgBReads],
+      ],
+      regions: new Map([
+        [0, { refName: 'ctgA', start: 0, end: 1000 }],
+        [1, { refName: 'ctgB', start: 0, end: 1000 }],
+      ]),
+    })
+    // ctgA's three mutually-overlapping reads need rows 0,1,2. ctgB's lone read
+    // shares no screen space with any of them, so it belongs on row 0.
+    expect(rowMap.get('a0')).toBe(0)
+    expect(rowMap.get('a1')).toBe(1)
+    expect(rowMap.get('a2')).toBe(2)
+    expect(rowMap.get('b0')).toBe(0)
+    expect(maxY).toBe(3)
+  })
 })

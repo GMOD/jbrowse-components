@@ -114,8 +114,8 @@
     "name": "bigwig/whole_genome_coverage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T03:40:35.415Z",
-    "hash": "4cb7456aff51a12b43ad173df15deba1322d29fa"
+    "reviewedAt": "2026-07-15T02:36:57.740Z",
+    "hash": "8f80f17e019970c5562e823cc43cce2cc34a9795"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -153,8 +153,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-12T04:52:44.488Z",
-    "hash": "c228e177eceb7b853d8bb9145852d1d51fc90d9e"
+    "reviewedAt": "2026-07-15T02:38:00.337Z",
+    "hash": "501b445ded6f8c7d34c3e0bd8a77ceadf6c8cc4e"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -194,8 +194,8 @@
     "name": "sv_cgiab/cnv_show_all_regions",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T18:36:13.821Z",
-    "hash": "659c1ccfbbc849e883b58a1eb14d11c39ef87d1e"
+    "reviewedAt": "2026-07-15T02:40:40.754Z",
+    "hash": "bb9718e4245439c2cb3a0c6cce5d09b3a6966ac2"
   },
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
@@ -206,10 +206,10 @@
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
-    "status": "bad",
+    "status": "good",
     "note": "DEFERRED (data-blocked): this is the intentional raw-coverage sanity-check figure in the walkthrough. Real normalized depth (not indexcov) needs mosdepth per-sample coverage normalized to median, which requires labserver compute; only indexcov (normal) + mismatched raw bigwigs are hosted. Reviewer said skip for now.",
-    "reviewedAt": "2026-07-11T19:23:26Z",
-    "hash": "d8634221ed031dfd15a0b031331813face20f827"
+    "reviewedAt": "2026-07-15T02:38:59.082Z",
+    "hash": "c6163a72ea1e95f35b5713b1ac7d3293f901081c"
   },
   "sv_cgiab/dotplot_result": {
     "name": "sv_cgiab/dotplot_result",
@@ -260,9 +260,9 @@
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
     "status": "good",
-    "note": "the second sc",
-    "reviewedAt": "2026-07-14T20:15:43.660Z",
-    "hash": "e1ef738434f091da962643a5d8865b0137f08947"
+    "note": "",
+    "reviewedAt": "2026-07-15T02:33:46.343Z",
+    "hash": "57ba195b3a169f2846c370d362f5ecba9321d4d5"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -273,10 +273,10 @@
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
-    "status": "bad",
-    "note": "we may want to consider adopting the 'one color' vs 'two color'  concept. also, i dont even know what two color would imply with multiple modifications. i'm really confused by recent changes we've made to this also and i tnk we need to achieve clarity. we may want to undo the movement of setttings into the advanced  dialog also",
-    "reviewedAt": "2026-07-14T03:48:55.098Z",
-    "hash": "6f69b4444f137f759ace50df578171a32ff99d39"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-15T02:33:55.600Z",
+    "hash": "813ce60a56822522635fbc0ca1d67ae7fb228b42"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
@@ -686,9 +686,10 @@
   },
   "multi-sv-trio": {
     "name": "multi-sv-trio",
-    "status": "good",
-    "note": "fixed: enabled read-connection arcs (readConnections:'arc') directly on all three trio tracks (reviewer). Each member now draws a prominent arc spanning the central SV breakpoint where coverage drops, so the discordant-pair SV signal reads at a glance across child/mother/father. Regenerated + verified the arcs span the deletion in all three tracks.",
-    "reviewedAt": "2026-06-22T12:00:00.000Z"
+    "status": "bad",
+    "note": "increase browser height",
+    "reviewedAt": "2026-07-15T02:42:47.337Z",
+    "hash": "c29e9e36692fb05a475800bae752eeda2e3ad343"
   },
   "product_architecture": {
     "name": "product_architecture",
@@ -852,23 +853,23 @@
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "good",
-    "note": "FIXED: on-image methylation-mode annotation now reads 'Methylation mode: scans each read for CpG sites - red = methylated, blue = CpGs the MM tag left unmodified'; also strengthened the doc caption in alignments_track.md to describe the CpG-dinucleotide scan. Regenerated.",
-    "reviewedAt": "2026-07-13T05:00:00.000Z",
-    "hash": "b4063e1c3ba050d5ca4a2e347416f3808cbc9a2d"
+    "status": "bad",
+    "note": "the 'annotation' text for probability mode is (a) too long and (b) incaccurate. it implies blue is only 'cpg the mm tag left unmodified' but that does not address low probability MM tag modifications that are colored blue. instead of explaining this in detail though, it may be worth just providing easy-to-understand succinct sentence, even if glossing over details. also, at this stage, the track menu is not showing the colored boixes, but to do so, we'd have to open a third layer of track menu...which is just a sign of how complicated our colorby system is...sigh. could consider removing the track menu  from screenshot entirely. ",
+    "reviewedAt": "2026-07-15T02:36:57.683Z",
+    "hash": "6bf9b644dec3361ed4cce68a6ecba64683f30e67"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
-    "status": "good",
-    "note": "the first stage ",
-    "reviewedAt": "2026-07-14T11:09:03.499Z",
+    "status": "bad",
+    "note": "the first stage of this screenshot is kind of messy. we might just 'zoom out' in the first screenshot so the arcs take up less broad screen real estate, skip the second sceenshot, and just show first and third screenshot as a result",
+    "reviewedAt": "2026-07-15T02:42:13.104Z",
     "hash": "c6fbe2f62d124fe2b531cfe5cbeb193554988181"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-12T04:52:02.478Z",
+    "reviewedAt": "2026-07-15T02:42:15.737Z",
     "hash": "89df5de74f7f900f76c019812a5a9697e0e67c5d"
   },
   "gene_track_mature_peptides": {
@@ -1114,8 +1115,8 @@
     "name": "jbrowse-img/multisample_variants",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T18:34:28.670Z",
-    "hash": "afe4ed3738c459399f74f7e9c8b95e530e4b957d"
+    "reviewedAt": "2026-07-15T02:37:43.113Z",
+    "hash": "5fbe1927db67149fda2feb6fb5bd003b10355c18"
   },
   "chromhmm": {
     "name": "chromhmm",
@@ -1168,9 +1169,9 @@
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-14T11:13:08.295Z",
+    "status": "bad",
+    "note": "might consider highlighting cdkn2a, and increasing height of the alignments track",
+    "reviewedAt": "2026-07-15T02:45:22.380Z",
     "hash": "e7278e0bd5c35bed1848f4de5aa0705afb012038"
   },
   "maf_codon_tooltip": {
@@ -1198,8 +1199,8 @@
     "name": "variants/consequence_impact_1000g",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T18:30:48.536Z",
-    "hash": "c3a0f3d8aa525df367ce6c02b5f3ee318fcb8eb7"
+    "reviewedAt": "2026-07-15T02:38:56.833Z",
+    "hash": "e17c889ef154f40b1f3bf7356751f272447ef1c1"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
@@ -1326,10 +1327,10 @@
   },
   "inversion_long_read": {
     "name": "inversion_long_read",
-    "status": "good",
-    "note": "no, we dont want to use 'colorby;strand'. our 'colorby;normal' uses i guess 'color_nostrand' but this is inaccurate to say the reads have no strand. FIXED: on-image annotation no longer uses \"flanks\" (now \"red forward-strand segments on either side of a blue reverse-strand core\"). Also fixed the root pairOrientation coloring so single-end ONT reads color by strand instead of grey \"no strand\" — annotation updated to match, misleading showLegend:false removed. Regenerated.",
-    "reviewedAt": "2026-07-14T03:26:00.951Z",
-    "hash": "79f736ad351600797dd7f0acdc917f93480f35b4"
+    "status": "bad",
+    "note": "increase browser height",
+    "reviewedAt": "2026-07-15T02:37:39.854Z",
+    "hash": "0097edfcf02d6085f101f5df4f094a3061b26c44"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1395,9 +1396,9 @@
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
-    "status": "good",
-    "note": "FIXED: viewportHeight 820->980 so the full 198-strain chromosome-painting track clears the bottom crop instead of running off-frame.",
-    "reviewedAt": "2026-07-13T18:34:46.798Z",
+    "status": "bad",
+    "note": "there is a weird white 'gap' (~40px wide) on the left side of the multirow canvas.  is this where labels would be drawn? if labels are hidden, likely should not have any gap",
+    "reviewedAt": "2026-07-15T02:43:46.307Z",
     "hash": "96fd0328f22253cde3ee29610cf3e329553693b8"
   },
   "qtl/bxd_tyrp1_locus": {
@@ -1448,9 +1449,9 @@
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
     "status": "bad",
-    "note": "we may want to audit whether the 'orange' arcs seen in this image are valid. it might be plotting a purple arc wrong",
-    "reviewedAt": "2026-07-14T11:10:08.678Z",
-    "hash": "babde82c2f7e3fb4a8873046439977fe0b3df34e"
+    "note": "increase track height of alignments track, so it shows more of the reads",
+    "reviewedAt": "2026-07-15T02:37:57.167Z",
+    "hash": "648ff8cba30e627f9db5f729aadca05e18dd4ff6"
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
@@ -1523,16 +1524,16 @@
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
-    "status": "good",
+    "status": "bad",
     "note": "unclear to me why this is not a normal 'two stage' spec, we dont want figures that arent referenced in any doc / page. previous agent notes; KEEP: this is the \"Input order\" (before) part of the two-part compose figure qtl/bxd_sort_before_after used in bxd_qtl.md — already a normal two-part before/after figure. The review tool just surfaces compose parts individually.",
-    "reviewedAt": "2026-07-14T01:50:31.547Z",
+    "reviewedAt": "2026-07-15T02:43:53.347Z",
     "hash": "9099181b3011796f6d01a1cd0b59285a1dc8fc41"
   },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
     "status": "good",
-    "note": "RESOLVED (not a defect): this IS the \"Sorted at peak\" (after) panel of the two-part compose figure qtl/bxd_sort_before_after, referenced in bxd_qtl.md via a <Figure links=...>. The review tool just surfaces compose parts individually; the figure is properly used and openable live.",
-    "reviewedAt": "2026-07-14T03:14:08.914Z",
+    "note": "",
+    "reviewedAt": "2026-07-15T02:44:33.630Z",
     "hash": "dddf897998e9600b7d5460bf8db538c49a48f7af"
   },
   "qtl/bxd_sort_before_after": {
@@ -1573,9 +1574,9 @@
   "multisv_ont_inversion": {
     "name": "multisv_ont_inversion",
     "status": "bad",
-    "note": "previous agents note: \"pairOrientation coloring now falls back to the read strand for single-end/unpaired reads\" <-- no we want only split alignments should show strand coloring",
-    "reviewedAt": "2026-07-14T11:11:11.802Z",
-    "hash": "8dbe7a78ce21c8632911ee2615fce0a9ac1c3acf"
+    "note": "this is not a very interesting screenshot. we could consider looking for a 'better sv' but i dont think we need it. can delete probably. this was just to show the ONT vienna reads but we already have good sv demos",
+    "reviewedAt": "2026-07-15T02:38:36.313Z",
+    "hash": "187dc9c9dde380d2da1cdbbee24d27ab0dedaf38"
   },
   "multiway_synteny/grape_peach_cacao_conserved_block": {
     "name": "multiway_synteny/grape_peach_cacao_conserved_block",
@@ -1599,9 +1600,9 @@
   },
   "feature_height_default": {
     "name": "feature_height_default",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-13T16:50:41.229Z",
-    "hash": "84836634de08cdac849e09f519e39ec80cb590bb"
+    "status": "bad",
+    "note": "could be worth making both top and bottom about 100px less tall",
+    "reviewedAt": "2026-07-15T02:37:29.358Z",
+    "hash": "46c28a575604e586d7f9f7629744ba3b7550442c"
   }
 }

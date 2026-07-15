@@ -435,9 +435,8 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // The same modifications CRAM shown twice in ONE ultra-wide frame — top row in
   // modifications mode (each call drawn at its MM-tag position), bottom row in
   // methylation mode (both modified and reference-CpG-inferred unmodified
-  // positions) — over a UCSC CpG island on chr20. The live "Color by..." menu is
-  // left open on the modifications-mode track; red boxes mark the two colour
-  // modes and each row is labeled with the mode it is rendered in. The config
+  // positions) — over a UCSC CpG island on chr20. Each row is labeled with the
+  // mode it is rendered in. The config
   // track (human_chr20_mod_call_5mC_5hmC_CG_cram) supplies the methylation-mode
   // row; a sessionTrack copy with its own trackId supplies the modifications-mode
   // row (the same trackId can't appear twice in a view). The island is
@@ -519,31 +518,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 35000,
     hideTooltip: true,
-    // wide single frame: the open menu covers the left portion, so both rows'
-    // data stay clear to the right where the mode labels sit. The annotation SVG
-    // overlay is pinned to the live viewport (100vh), so the viewport must be
-    // tall enough to contain the open menu below the two rows.
+    // no track menu in this frame: the mode radios carry no color swatches at
+    // that level, so the open menu covered half the reads to show nothing the
+    // row labels don't already say (reviewer). Wide single frame, both rows'
+    // full width visible.
     viewportWidth: 2000,
     viewportHeight: 760,
-    actions: [
-      {
-        type: 'click',
-        selector:
-          '[data-testid="track_menu_icon"][data-trackid="human_chr20_mod_call_5mC_5hmC_CG_cram_modifications"]',
-      },
-      // open "Color by... → Modifications" and leave the submenu up
-      // (wait on its two radios rather than clicking anything). The former
-      // top-level "Color by methylation" / "Color by modification type" items are
-      // now the two radios "Color by type" and "Color by probability" inside this
-      // submenu.
-      ...menuCascade(['Color by...', 'Modifications']),
-    ],
     annotations: [
-      // box the two colour modes in the open submenu; each row is labeled with
-      // its mode name, so the boxed item maps to its row by name (no arrows —
-      // they crossed and floated off the menu items, reviewer)
-      { type: 'box', anchor: { text: 'Color by probability' } },
-      { type: 'box', anchor: { text: 'Color by type' } },
       {
         type: 'text',
         anchor: {
@@ -554,9 +535,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 260,
         fontSize: 16,
-        text: 'Type mode: only bases flagged modified (MM/ML tags).',
+        text: 'Type mode: only bases called modified.',
       },
       {
+        // blue is every CpG whose most likely state is unmodified: both the ones
+        // the MM tag never called and the ones it called with low probability
+        // (reviewer) — the old "CpGs the MM tag left unmodified" claimed only
+        // the first.
         type: 'text',
         anchor: {
           selector:
@@ -566,7 +551,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -60,
         maxWidth: 260,
         fontSize: 16,
-        text: 'Probability mode: fills every CpG — red = methylated, blue = CpGs the MM tag left unmodified.',
+        text: 'Probability mode: every CpG painted — red = methylated, blue = low probability or unmarked.',
       },
     ],
   },

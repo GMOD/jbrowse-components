@@ -177,8 +177,6 @@ junction aligns forward and the part after aligns to the reverse strand (shown
 as a supplementary/split alignment), so one read directly records the strand
 flip that defines the inversion.
 
-<Figure caption="HG00637 ONT (Vienna) long reads at the left breakpoint of the chr19 inversion (chr19:41,797,752), below the 1KGP ensemble SV calls (HGSV_72998/72999 begin at the junction). Reads from the inverted haplotype clip at the breakpoint and continue as a reverse-strand (blue) supplementary alignment, so a single long read records the strand flip that short-read pair orientation can only infer." src="/img/multisv_ont_inversion.png" />
-
 ### Breakpoint split view
 
 Click the inversion bar in the variant track to open feature details. In the

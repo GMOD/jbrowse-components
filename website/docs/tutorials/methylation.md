@@ -58,7 +58,7 @@ MM tag left uncalled (the difference is exactly what the figure below shows). In
 by-type mode each modification renders in its own color, with intensity
 reflecting the modification probability (ML tag value).
 
-<Figure caption="The same nanopore track colored by type (top) and by probability (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls in the MM tag, so the region looks nearly empty; by-probability mode scans the read for CpG dinucleotides and paints any the MM tag left uncalled in blue, filling the region." src="/img/alignments/modifications2.png" />
+<Figure caption="The same nanopore track colored by type (top) and by probability (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls in the MM tag, so the region looks nearly empty; by-probability mode paints every CpG, filling the region with the blue of the low-probability and unmarked ones." src="/img/alignments/modifications2.png" />
 
 ## Aggregate methylation with modkit bedMethyl
 

@@ -49,7 +49,10 @@ export const featuresSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     viewportWidth: 1100,
-    viewportHeight: 760,
+    // trimmed 100px off both frames (reviewer); MUI reflows the Read-height
+    // submenu upward to stay inside the shorter viewport, and the pin circle
+    // anchors to the live element, so it follows
+    viewportHeight: 660,
     // alignments pileups keep re-laying-out while reads stream in; wait long
     // enough that the menu geometry is stable before the click sequence
     settleMs: 8000,
@@ -293,7 +296,12 @@ export const featuresSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr10:87,863,113-87,971,930',
+          // ~255kb rather than PTEN's own 109kb extent: zoomed out, the gene and
+          // its sashimi arcs occupy the middle ~40% of the frame instead of
+          // sprawling edge to edge behind the context menu (reviewer). The
+          // alignments track gates on fetch size, not zoom, and the RNA BAM is a
+          // PTEN-only slice, so the reads and arcs still render here.
+          loc: 'chr10:87,790,000-88,045,000',
           // offset labels so they overlay the tracks
           trackLabels: 'offset',
           tracks: [
@@ -328,9 +336,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
     settleMs: 6000,
     viewportHeight: 480,
     hideTooltip: true,
-    // Three-stage walkthrough (reviewer): (1) right-click the gene to reveal the
-    // Collapse introns menu item, (2) the confirmation dialog, (3) the reshaped
-    // view with introns collapsed and the sashimi arcs connecting adjacent exons.
+    // Two-stage walkthrough: (1) right-click the gene to reveal the Collapse
+    // introns menu item, (2) the reshaped view with introns collapsed and the
+    // sashimi arcs connecting adjacent exons. The confirmation dialog had its own
+    // frame; it is now just driven through, since a stock dialog of prose and
+    // defaults taught nothing the surrounding two frames don't (reviewer).
     actions: [
       // `readyText: 'NCBI RefSeq'` matches the track *name*, which appears before
       // the remote GFF finishes loading — so wait for the PTEN label itself to
@@ -349,20 +359,15 @@ export const featuresSpecs: ScreenshotSpec[] = [
         annotations: [{ type: 'box', anchor: { text: 'Collapse introns' } }],
       },
       {
-        // stage 2: click Collapse introns → the confirmation dialog; box it
+        // stage 2: click through the confirmation dialog (uncaptured) → the
+        // reshaped view with introns collapsed. The dialog's help paragraph also
+        // contains the literal phrase "Replace current view", so a bare text
+        // click resolves to that (unclickable) prose first and the dialog never
+        // closes — scope to the actual button.
         actions: [
           { type: 'click', text: 'Collapse introns' },
           { type: 'waitForText', text: 'Replace current view' },
           { type: 'delay', ms: 600 },
-        ],
-        annotations: [{ type: 'box', anchor: { selector: '[role="dialog"]' } }],
-      },
-      {
-        // stage 3: confirm → the reshaped view with introns collapsed. The
-        // dialog's help paragraph also contains the literal phrase "Replace
-        // current view", so a bare text click resolves to that (unclickable)
-        // prose first and the dialog never closes — scope to the actual button.
-        actions: [
           { type: 'click', selector: 'button::-p-text(Replace current view)' },
           { type: 'waitForText', text: 'Replace current view', hidden: true },
           // let the reshaped view refetch, then wait for the (tiny, sliced) RNA

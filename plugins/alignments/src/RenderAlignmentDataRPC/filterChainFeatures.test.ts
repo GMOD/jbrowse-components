@@ -87,9 +87,7 @@ describe('filterChainFeatures drawProperPairs=false', () => {
 describe('filterChainFeatures showOnlySplitAlignments=true', () => {
   test('hides chains with no supplementary segment', () => {
     const features = pair('plain', 'F1R2', 0)
-    expect(
-      filterChainFeatures(features, true, true, true),
-    ).toHaveLength(0)
+    expect(filterChainFeatures(features, true, true, true)).toHaveLength(0)
   })
 
   test('keeps chains containing a supplementary segment', () => {

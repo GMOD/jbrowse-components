@@ -45,7 +45,7 @@ export function parseInitHighlights(
 ): HighlightType[] {
   const out: HighlightType[] = []
   for (const h of entries) {
-    const json = h.trim().startsWith('{') && tryParseJson(h)
+    const json = h.trimStart().startsWith('{') && tryParseJson(h)
     if (
       json &&
       typeof json.refName === 'string' &&

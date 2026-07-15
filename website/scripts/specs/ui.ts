@@ -324,7 +324,8 @@ export const uiSpecs: ScreenshotSpec[] = [
   // intermittently (reviewer saw an error), so each is sliced to this locus
   // (chr1:40,476,000-40,530,000, ~12-14k reads, <1MB BAM) and rehosted on
   // jbrowse.org/demos/kgp-trio so the reads auto-load fast and reliably.
-  // Per-track heights capped so all four tracks fit one viewport.
+  // Per-track heights sized so all four tracks fit one viewport with enough of
+  // each pileup showing to read the SV signal (reviewer: increase the height).
   {
     mode: 'url',
     name: 'multi-sv-trio',
@@ -403,17 +404,17 @@ export const uiSpecs: ScreenshotSpec[] = [
             // present (or absent) in child vs parents reads at a glance
             {
               trackId: 'HG02030_trio_slice',
-              height: 180,
+              height: 280,
               readConnections: 'arc',
             },
             {
               trackId: 'HG02031_trio_slice',
-              height: 180,
+              height: 280,
               readConnections: 'arc',
             },
             {
               trackId: 'HG02032_trio_slice',
-              height: 180,
+              height: 280,
               readConnections: 'arc',
             },
           ],
@@ -422,7 +423,7 @@ export const uiSpecs: ScreenshotSpec[] = [
     }),
     readyText: 'HG02030',
     readyTimeout: 90000,
-    viewportHeight: 900,
+    viewportHeight: 1200,
     settleMs: 25000,
   },
 
