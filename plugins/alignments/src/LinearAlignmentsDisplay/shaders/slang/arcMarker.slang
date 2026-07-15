@@ -1,4 +1,4 @@
-// Read-cloud (samplot) endpoint markers: a small colored square at each flat
+// Read-cloud endpoint markers: a small colored square at each flat
 // arc endpoint. The flat connector line itself draws black (see arc.slang); the
 // squares carry the insert-size / orientation color, mirroring samplot.py's
 // per-read colored markers joined by a neutral line. Runs in the arc-band

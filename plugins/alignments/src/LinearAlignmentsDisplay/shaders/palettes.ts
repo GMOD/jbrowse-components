@@ -38,7 +38,7 @@ export const arcColorPalette: RGBColor[] = [
   rgb(colorSupplementary), // 8 split-read deletion (same-strand) — matches yellow deletion fill
 ]
 
-// Read-cloud (samplot) endpoint-square palette. The squares are filled opaque
+// Read-cloud endpoint-square palette. The squares are filled opaque
 // marks (like pileup rectangles), so short-insert uses the pale pileup-fill
 // color (colorShortInsert #ffc0cb) to match the legend + pileup — not the
 // saturated stroke variant (colorShortInsertArc #ff3a8c) the arc *curves* use so

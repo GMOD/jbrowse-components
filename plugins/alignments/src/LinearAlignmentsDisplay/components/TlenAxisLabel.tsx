@@ -1,6 +1,6 @@
 import type React from 'react'
 
-// Vertical "TLEN" label drawn alongside the insert-size scalebar in samplot
+// Vertical "TLEN" label drawn alongside the insert-size scalebar in read cloud
 // mode. Centered between the band's yTop/yBottom and rotated -90°. Shared
 // between the on-screen overlay and the SVG export so they stay in sync.
 export default function TlenAxisLabel({

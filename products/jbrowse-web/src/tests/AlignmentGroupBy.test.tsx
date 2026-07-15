@@ -96,11 +96,11 @@ test('group draws per-section paired-end arcs', async () => {
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
-// Samplot (read cloud) is in scope alongside arcs and shares the per-section
+// Read cloud is in scope alongside arcs and shares the per-section
 // path, but additionally exercises the shared cross-group arcsYDomainBp: the
 // flat |tlen| lines in every section map against one Y-domain so sections stay
 // comparable. firstOfPairStrand keeps mates together so each section has pairs.
-test('group draws per-section read-cloud (samplot) lines', async () => {
+test('group draws per-section read-cloud lines', async () => {
   const user = userEvent.setup()
   const { view } = await createView()
   await view.navToLocString('ctgA:1-50000')
@@ -108,14 +108,14 @@ test('group draws per-section read-cloud (samplot) lines', async () => {
   await screen.findByTestId('pileup-display-done', ...opts)
 
   const display = view.tracks[0]?.displays[0]
-  display.setReadConnections('samplot')
+  display.setReadConnections('cloud')
   display.setGroupBy({ type: 'firstOfPairStrand' })
 
   await waitFor(
     () => {
       expect(display.isGrouped).toBe(true)
       expect(display.groupOrder.length).toBe(2)
-      // samplot sets a shared, cross-group Y-domain (undefined only in arc mode).
+      // cloud sets a shared, cross-group Y-domain (undefined only in arc mode).
       expect(display.arcsYDomainBp).toBeGreaterThan(0)
       let totalArcs = 0
       for (const section of display.sourceSections) {

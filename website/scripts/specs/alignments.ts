@@ -78,11 +78,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // Read cloud (samplot-style) display on the volvox synthetic-SV CRAM: mates are
+  // Read cloud display on the volvox synthetic-SV CRAM: mates are
   // laid out on the Y axis by the log distance between them, so insertion pairs
   // (drawn pink) separate from background. Each pair renders as two colored
   // squares at the read positions joined by a black connector line (the
-  // arcMarker pass; see arc.slang / drawCanvas.ts) — the classic samplot look.
+  // arcMarker pass; see arc.slang / drawCanvas.ts) — the classic read-cloud look.
   // Drawn below the coverage band (readConnectionsDown) so the cloud doesn't
   // overlap the coverage histogram. Read arcs in an SV context are shown by the
   // multi-sv-trio spec.
@@ -91,7 +91,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // `samtools view -T volvox.fa volvox-sv.cram <ctg>`):
   //   ctgA — a normal FR band (~450 bp insert) plus a cluster of long-insert
   //     (~32 kb TLEN) deletion pairs and short-insert pairs, so its cloud spreads
-  //     from the y=0 baseline up to the deletion signal — the rich samplot story.
+  //     from the y=0 baseline up to the deletion signal — the rich read-cloud story.
   //   ctgB — ALL pairs are RL/outward-facing (mates point outward, the teal
   //     "RL" class) at a narrow 300-550 bp insert, an inversion-style signature.
   //     There are zero normal small-insert pairs, so the ctgB cloud is one flat
@@ -116,7 +116,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           assembly: 'volvox',
           // whole-genome zoom-out (both ctgA + ctgB): no `loc`, so afterAttach's
           // showAllRegionsInAssembly lays out the entire assembly — a wider zoom
-          // than the single ctgA contig, so the samplot cloud reads as a compact
+          // than the single ctgA contig, so the read cloud reads as a compact
           // cluster with room around it (reviewer wanted to see it zoomed out past
           // the data's own extent). Local volvox assembly loads instantly, so the
           // showAllRegions call doesn't race a remote fetch.
@@ -124,7 +124,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             {
               trackId: 'volvox_sv_cram_linked',
               type: 'LinearAlignmentsDisplay',
-              readConnections: 'samplot',
+              readConnections: 'cloud',
               readConnectionsDown: true,
               // color the cloud by both insert size and orientation:
               // short-insert pairs always paint pink (overriding orientation,

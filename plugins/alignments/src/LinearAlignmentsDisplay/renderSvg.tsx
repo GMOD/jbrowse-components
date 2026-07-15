@@ -198,7 +198,7 @@ function CoverageScaleBars({
   )
 }
 
-// Insert-size (TLEN) scale bar, samplot mode only. Down mode puts it on the
+// Insert-size (TLEN) scale bar, read-cloud mode only. Down mode puts it on the
 // left, up mode on the right, mirroring PileupComponent's InsertSizeAxisHost.
 // Down mode nests only the axis (left-orientation labels grow leftward from
 // x=40) so the TLEN label stays at x=11 to the left of them, matching on-screen;

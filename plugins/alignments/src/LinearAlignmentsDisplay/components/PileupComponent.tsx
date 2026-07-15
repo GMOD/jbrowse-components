@@ -558,7 +558,7 @@ const CoverageAxisHost = observer(function CoverageAxisHost({
   )
 })
 
-// Only rendered in samplot mode (insertSizeTicks is null otherwise). Shared
+// Only rendered in read-cloud mode (insertSizeTicks is null otherwise). Shared
 // Y-domain means one bar is value-correct for all sections; in grouped mode
 // it scrolls with the first section.
 const InsertSizeAxisHost = observer(function InsertSizeAxisHost({

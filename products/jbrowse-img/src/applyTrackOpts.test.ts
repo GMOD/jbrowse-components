@@ -19,10 +19,10 @@ describe('alignments modifiers', () => {
     expect(snap.height).toBe(400)
   })
 
-  test('arcs:samplot and arcs:down map to readConnections fields', () => {
+  test('arcs:cloud and arcs:down map to readConnections fields', () => {
     expect(
-      buildDisplaySnapshot('alignments', ['arcs:samplot']).snap,
-    ).toMatchObject({ readConnections: 'samplot' })
+      buildDisplaySnapshot('alignments', ['arcs:cloud']).snap,
+    ).toMatchObject({ readConnections: 'cloud' })
     expect(
       buildDisplaySnapshot('alignments', ['arcs:down']).snap,
     ).toMatchObject({ readConnections: 'arc', readConnectionsDown: true })

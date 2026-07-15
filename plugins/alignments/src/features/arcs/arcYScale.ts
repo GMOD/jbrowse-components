@@ -5,7 +5,7 @@
 // evalArcPoint (the GPU path). Returns a fraction in [0, ∞); callers clamp to
 // the band height.
 //
-//   samplot (log):  base-2 log scale, matching origin/main's
+//   read cloud (log):  base-2 log scale, matching origin/main's
 //                   d3.scaleLog().base(2).domain([1, max(2, domain)]) — small
 //                   inserts spread out near the baseline instead of collapsing.
 //   arc mode (lin): yBp is a genomic radius, mapped linearly.

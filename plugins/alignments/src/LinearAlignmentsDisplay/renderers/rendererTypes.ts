@@ -60,7 +60,7 @@ export interface RenderState {
   colorSupplementaryChains: boolean
   readConnectionsLineWidth: number
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
-  // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
+  // passes availH/pxPerBp (zoom-proportional); read-cloud mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
   arcsYDomainBp?: number
   readConnections: ReadConnectionsMode

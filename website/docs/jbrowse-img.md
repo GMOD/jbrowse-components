@@ -310,10 +310,10 @@ jb2export --fasta ref.fa --bam reads.bam color:modifications featureHeight:super
 ## color by insert size + orientation to highlight structural variants
 jb2export --fasta ref.fa --bam reads.bam color:insertSizeAndOrientation --loc chr1:1-10000
 
-## samplot-style SV view — samplot overlays the coverage band, so use
+## read-cloud SV view — the read cloud overlays the coverage band, so use
 ## coverageHeight to make the panel tall (NOT readConnectionsHeight, which only sizes
-## the regular up/down arcs panel). Samplot disappears if coverage:false.
-jb2export --fasta ref.fa --bam reads.bam arcs:samplot coverageHeight:300 \
+## the regular up/down arcs panel). The read cloud disappears if coverage:false.
+jb2export --fasta ref.fa --bam reads.bam arcs:cloud coverageHeight:300 \
   readConnectionsLineWidth:2 height:600 --loc chr1:1-50000
 
 ## 10x linked-read chains (bezier mode)
@@ -496,20 +496,20 @@ Reads & coloring:
 
 Overlays & subtracks:
 
-| Modifier               | Example              | Description                                                           |
-| ---------------------- | -------------------- | --------------------------------------------------------------------- |
-| `arcs:mode`            | `arcs:samplot`       | Read-connection arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
-| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                        |
-| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)            |
-| `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                              |
-| `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track      |
+| Modifier               | Example              | Description                                                            |
+| ---------------------- | -------------------- | ---------------------------------------------------------------------- |
+| `arcs:mode`            | `arcs:cloud`         | Read-connection arcs / read-cloud panel (`off`, `up`, `down`, `cloud`) |
+| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                         |
+| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)             |
+| `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                               |
+| `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track       |
 
 Layout & sizing:
 
 | Modifier                     | Example                                          | Description                                                                                                                 |
 | ---------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | `featureHeight:preset\|N`    | `featureHeight:super-compact`, `featureHeight:4` | Per-read height (spacing between reads is derived from it). Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
-| `coverageHeight:N`           | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)                                                    |
+| `coverageHeight:N`           | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the read-cloud overlay)                                                 |
 | `readConnectionsHeight:N`    | `readConnectionsHeight:120`                      | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`                                                   |
 | `readConnectionsLineWidth:N` | `readConnectionsLineWidth:2`                     | Stroke width for read-connection arcs/lines in pixels                                                                       |
 

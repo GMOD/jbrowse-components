@@ -250,7 +250,7 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   // device px, so the floor is below it and the look is unchanged.
   f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth, 1.5 / dpr)
   f[U.pairedArcsDown] = state.readConnectionsDown ? 1 : 0
-  // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
+  // Read cloud picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior
   // `yBp * pxPerBp` math.
   const availH = arcBandH - ARC_HEIGHT_MARGIN
@@ -258,7 +258,7 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   f[U.pxPerBp] = pxPerBp
   f[U.arcsYDomainBp] =
     state.arcsYDomainBp ?? (pxPerBp > 0 ? availH / pxPerBp : 1)
-  // Samplot (read cloud) is the only mode that sets arcsYDomainBp; it maps
+  // Read cloud is the only mode that sets arcsYDomainBp; it maps
   // yBp=|tlen| with a base-2 log scale. Arc mode stays linear.
   f[U.arcsYLog] = state.arcsYDomainBp !== undefined ? 1 : 0
 }
@@ -744,7 +744,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
 
   // Draw one stacked section of one block. Returns whether any band painted, so
   // the caller can flip `canvasDrawn`. A coverage- or arcs-only section (empty
-  // pileup band, e.g. read-cloud/samplot) still counts as a paint — gating this
+  // pileup band, e.g. read-cloud) still counts as a paint — gating this
   // on the pileup band once left read-cloud stuck on "Loading".
   private drawSection(
     block: RenderBlock,
@@ -786,7 +786,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     }
 
     // Pileup passes are skipped when the band collapses to zero height
-    // (read-cloud/samplot draws no stacked pileup); the arc band below is
+    // (read-cloud draws no stacked pileup); the arc band below is
     // decoupled and still draws.
     const pileup = devBand(sec.pileupClipTop, sec.pileupClipHeight, dpr, bufH)
     const drewPileup = pileup.height > 0
@@ -804,7 +804,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     // band: the band never overlaps the pileup, so a single pass suffices and
     // up-mode arcs still land in front of the coverage histogram (drawn
     // earlier). Decoupled from the pileup, so it draws even when the pileup band
-    // is empty (read-cloud/samplot, where the cloud IS the visualization). Each
+    // is empty (read-cloud, where the cloud IS the visualization). Each
     // section carries its own (scrolled) band; undefined when arcs are off.
     if (sec.arcBand) {
       this.drawArcsPass(

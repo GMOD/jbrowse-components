@@ -195,7 +195,7 @@ public barrel. Consume the three `make*Control` builders, not these.
 - **`makeDisplayTypeDefaultControl` (per-value, fixed)** — the meaning is "make
   *this specific value* the default", independent of the track's current value.
   Use for an always-visible pin so it never promotes a meaningless value, and so
-  two toggles sharing one slot (arcs `'arc'` vs read cloud `'samplot'`; sashimi
+  two toggles sharing one slot (arcs `'arc'` vs read cloud `'cloud'`; sashimi
   `'down'` vs `'auto'`) stay independent.
 - **`makeSlotsValueDisplayTypeDefaultControl` (per-value, grouped)** — same, but
   a group of slots moves behind one pin (feature-height presets = `featureHeight`

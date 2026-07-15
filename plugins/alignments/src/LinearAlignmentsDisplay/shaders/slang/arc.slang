@@ -7,11 +7,11 @@
 //       pair spans more than ARC_FAR_SCREEN_WIDTHS the radius grows so large the
 //       band clips the apex away, leaving near-vertical lines rising from each
 //       real endpoint. Endpoints always sit at the true bp coordinates.
-//   1 = flat horizontal line at Y = destY (samplot paired, solid, alpha 0.25)
-//   2 = flat horizontal line at Y = destY (samplot split read, dashed, alpha 0.25)
+//   1 = flat horizontal line at Y = destY (read cloud paired, solid, alpha 0.25)
+//   2 = flat horizontal line at Y = destY (read cloud split read, dashed, alpha 0.25)
 //
 // yBp is the target Y position in genomic bp — for the arc this is the apex
-// height; for flat it is the line's Y. Samplot sets yBp = |tlen|; arc mode sets
+// height; for flat it is the line's Y. Read cloud sets yBp = |tlen|; arc mode sets
 // yBp = |x2-x1|/2 (the genomic radius).
 //! targets: wgsl, glsl
 //! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_FLAT_MIN_PX
@@ -34,7 +34,7 @@ static const float PI = 3.14159265359;
 // dome to a full-size circle (so the band clips it down to near-vertical lines
 // at each endpoint). Mirrored in drawCanvas.ts.
 static const float ARC_FAR_SCREEN_WIDTHS = 1.0;
-// Minimum drawn width (CSS px) of a flat samplot line. Short-insert pairs span
+// Minimum drawn width (CSS px) of a flat read-cloud line. Short-insert pairs span
 // far less than a pixel, so without a floor the line collapses to an invisible
 // zero-length stroke. Mirrored in drawCanvas.ts.
 static const float ARC_FLAT_MIN_PX = 2.5;
@@ -81,13 +81,13 @@ ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
 
   // Y position of the apex (arc) / flat line: availH px maps arcsYDomainBp bp,
   // the CPU-chosen domain (zoom-proportional for arcs, autoscaled |tlen| for
-  // samplot). arcBandDestY (alignmentsUniforms) is the shared formula — the same
+  // read cloud). arcBandDestY (alignmentsUniforms) is the shared formula — the same
   // one arcMarker.slang uses so the endpoint squares land on the flat line.
   float destY = arcBandDestY(inst.yBp, availH, u);
 
   ArcPoint ap;
   if (inst.shapeType > 0.5) {
-    // Flat line (samplot): x interpolates from x1 to x2, y is constant at destY.
+    // Flat line (read cloud): x interpolates from x1 to x2, y is constant at destY.
     // Clamp the span to ARC_FLAT_MIN_PX (centered on the midpoint). The line is
     // horizontal, so its stroke normal is vertical and the span sign is moot.
     float mid = u.blockStartPx + (x1Norm + x2Norm) * 0.5 * u.blockWidth;
@@ -151,7 +151,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float clipY = 1.0 - ((off.y + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
   o.dist = side * hw;
-  // Samplot flat shapes (1, 2): the connector line itself is neutral black —
+  // Read cloud flat shapes (1, 2): the connector line itself is neutral black —
   // the insert-size / orientation color lives in the endpoint squares drawn by
   // the arcMarker pass (mirrors samplot.py's per-read colored markers joined by
   // a plain line). Translucent so dense overlapping pairs read as a band (cf.

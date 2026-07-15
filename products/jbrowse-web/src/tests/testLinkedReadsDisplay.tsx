@@ -2,16 +2,17 @@ import { userEvent } from '@testing-library/user-event'
 
 import { createView, expectCanvasMatch, findCanvasIn, hts } from './util.tsx'
 
-type DisplayMode = 'arc' | 'samplot' | 'cloud' | 'bezier' | 'stack'
+type DisplayMode = 'arc' | 'cloud' | 'bezier' | 'linked' | 'stack'
 
 // Menu path from track menu → submenu → final click, per displayMode.
-// 'stack' / 'cloud' enable linked reads via the "View as pairs / link
-// supplementary alignments" checkbox.
+// 'arc' / 'cloud' / 'bezier' pick how read connections are drawn; 'linked' and
+// 'stack' instead enable linked reads via the "View as pairs / link
+// supplementary alignments" checkbox, and differ only in the caller's snapshot.
 const MENU_PATHS: Record<DisplayMode, string[]> = {
   arc: ['Read connections', 'Show read arcs'],
-  samplot: ['Read connections', 'Show read cloud'],
+  cloud: ['Read connections', 'Show read cloud'],
   bezier: ['Read connections', 'Use curved connectors'],
-  cloud: ['Read connections', 'View as pairs / link supplementary alignments'],
+  linked: ['Read connections', 'View as pairs / link supplementary alignments'],
   stack: ['Read connections', 'View as pairs / link supplementary alignments'],
 }
 

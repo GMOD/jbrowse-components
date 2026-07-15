@@ -166,7 +166,7 @@ interface DisplaySnapshot {
     assemblyName: string
     tag?: string
   }
-  readConnections?: 'off' | 'arc' | 'samplot'
+  readConnections?: 'off' | 'arc' | 'cloud'
   readConnectionsDown?: boolean
   readConnectionsHeight?: number
   readConnectionsLineWidth?: number
@@ -305,8 +305,8 @@ function applyModifier(
     }
     case 'arcs': {
       if (isAlignments) {
-        if (val1 === 'samplot') {
-          snap.readConnections = 'samplot'
+        if (val1 === 'cloud') {
+          snap.readConnections = 'cloud'
         } else if (val1 === 'up' || val1 === 'down') {
           snap.readConnections = 'arc'
           snap.readConnectionsDown = val1 === 'down'
@@ -316,7 +316,7 @@ function applyModifier(
           // A typo (arcs:upp) previously silently turned arcs off; warn so the
           // mistake is visible instead of producing a plot without arcs.
           console.warn(
-            `Warning: unknown arcs mode "${val1}" (expected off, up, down, samplot); ignoring`,
+            `Warning: unknown arcs mode "${val1}" (expected off, up, down, cloud); ignoring`,
           )
         }
       }

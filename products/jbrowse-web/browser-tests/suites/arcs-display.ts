@@ -61,30 +61,30 @@ const suite: TestSuite = {
       doneTestId: pileup,
     }),
     lgvSnapshotTest({
-      name: 'samplot mode (paired-end SV)',
-      snapshot: 'arcs-samplot',
+      name: 'cloud mode (paired-end SV)',
+      snapshot: 'arcs-cloud',
       loc: 'ctgA:1-50000',
       tracks: [
         {
           trackId: 'volvox_sv_cram',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: 'samplot',
+            readConnections: 'cloud',
           },
         },
       ],
       doneTestId: pileup,
     }),
     lgvSnapshotTest({
-      name: 'samplot down mode (paired-end SV, scalebar left)',
-      snapshot: 'arcs-samplot-down',
+      name: 'cloud down mode (paired-end SV, scalebar left)',
+      snapshot: 'arcs-cloud-down',
       loc: 'ctgA:1-50000',
       tracks: [
         {
           trackId: 'volvox_sv_cram',
           displaySnapshot: {
             type: 'LinearAlignmentsDisplay',
-            readConnections: 'samplot',
+            readConnections: 'cloud',
             readConnectionsDown: true,
           },
         },

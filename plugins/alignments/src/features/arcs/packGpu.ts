@@ -54,7 +54,7 @@ export function packArcLines(data: ArcsUploadData): ArrayBuffer {
   )
 }
 
-// Two endpoint-square markers per flat (samplot) arc — one at each end. Regular
+// Two endpoint-square markers per flat (read-cloud) arc — one at each end. Regular
 // curved arcs carry no markers (their endpoints sit on the baseline). Allocates
 // the worst case (2 per arc) and fills+counts in a single pass; `packInstances`
 // only reads the first `count` entries, so the tail is ignored. `count` is 0

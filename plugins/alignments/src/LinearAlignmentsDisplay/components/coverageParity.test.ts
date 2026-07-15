@@ -511,7 +511,7 @@ describe('GPU sync rebuild transaction', () => {
 
 // `renderBlocks` returns whether anything painted; the model feeds that into
 // `canvasDrawn`. A coverage- or arcs-only section (empty pileup band, e.g.
-// read-cloud/samplot) still paints real content — gating the return on the
+// read-cloud) still paints real content — gating the return on the
 // pileup band once left read-cloud stuck on "Loading". Lock that in.
 describe('GPU renderBlocks canvasDrawn gating', () => {
   const triple: [number, number, number] = [0, 0, 0]

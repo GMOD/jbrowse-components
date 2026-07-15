@@ -46,11 +46,11 @@ function logTickValues(domain: number, maxTicks: number) {
   return [...new Set(out)]
 }
 
-// Ruler for the samplot insert-size arcs. Geometry is derived from the same
+// Ruler for the read-cloud insert-size arcs. Geometry is derived from the same
 // `ArcBand` + `ARC_HEIGHT_MARGIN` + `arcYFraction` the arcs themselves use (see
 // features/arcs/drawCanvas.ts / arcYScale.ts), so a tick at insert size `v`
 // lands exactly on the apex of the arc plotting that value — the two paths
-// can't drift. Samplot uses a base-2 log scale, so ticks are log-positioned.
+// can't drift. Read cloud uses a base-2 log scale, so ticks are log-positioned.
 // Anchor (insert size 0): band top in down mode (ticks descend), band bottom in
 // up mode (ticks ascend).
 export function computeInsertSizeTicks({

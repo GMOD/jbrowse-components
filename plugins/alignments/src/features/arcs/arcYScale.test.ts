@@ -26,13 +26,13 @@ describe('arc palette parity (JS ↔ GPU uniform slots)', () => {
   })
 })
 
-// The samplot read-cloud endpoint squares are opaque fills, so they use the pale
+// The read-cloud endpoint squares are opaque fills, so they use the pale
 // pileup-fill short-insert (matching the legend + pileup) rather than the
 // saturated stroke variant the arc curves use — otherwise the squares read a
 // different pink from the legend swatch. arcMarkerColorPalette is the GPU
 // arcMarkerColorByIndex twin; pin the one substituted slot and confirm the rest
 // is the arc palette unchanged.
-describe('arcMarkerColorPalette (samplot endpoint squares)', () => {
+describe('arcMarkerColorPalette (read-cloud endpoint squares)', () => {
   it('substitutes the pale short-insert fill at the short-insert slot', () => {
     expect(arcMarkerColorPalette[2]).toEqual(
       cssColorToNormalizedRgb(colorShortInsert),
@@ -70,7 +70,7 @@ describe('arcYFraction', () => {
     })
   })
 
-  describe('log (samplot mode, base-2)', () => {
+  describe('log (read-cloud mode, base-2)', () => {
     it('spreads small inserts and normalizes the domain max to 1', () => {
       expect(arcYFraction(1, 1024, true)).toBeCloseTo(0) // log2(1)=0
       expect(arcYFraction(32, 1024, true)).toBeCloseTo(0.5) // log2(32)/log2(1024)=5/10

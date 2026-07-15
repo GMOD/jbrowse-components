@@ -7,7 +7,7 @@ export interface ArcsUploadData {
   arcShapeTypes: Uint8Array
   arcYBp: Uint32Array
   numArcs: number
-  // Max `arcYBp` across flat (samplot) arcs. Precomputed so the `arcsYDomainBp`
+  // Max `arcYBp` across flat (read-cloud) arcs. Precomputed so the `arcsYDomainBp`
   // view reduces over regions, not over every arc.
   maxFlatArcYBp: number
   // One entry per connector tick (interchromosomal breakpoint marker). The tick

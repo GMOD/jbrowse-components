@@ -10,7 +10,7 @@ beforeEach(() => {
 const timeout = 100000
 
 const testLinked = (loc: string, track: string) =>
-  testLinkedReadsDisplay({ loc, track, displayMode: 'cloud', timeout })
+  testLinkedReadsDisplay({ loc, track, displayMode: 'linked', timeout })
 
 const testBezier = (loc: string, track: string) =>
   testLinkedReadsDisplay({ loc, track, displayMode: 'bezier', timeout })

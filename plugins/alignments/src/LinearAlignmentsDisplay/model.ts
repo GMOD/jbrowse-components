@@ -37,6 +37,7 @@ import {
   PromotableDefaultsMixin,
   TrackHeightMixin,
   installGrowExitBake,
+  onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import { autorun, observable, reaction } from 'mobx'
@@ -1340,7 +1341,7 @@ export default function stateModelFactory(
           )
           const settings = {
             colorByType: self.arcColorByType,
-            samplot: self.readConnections === 'cloud',
+            cloud: self.readConnections === 'cloud',
             drawInter: self.drawInter,
             drawLongRange: self.drawLongRange,
             // gate on `initialized` (== refNameAliases loaded): getCanonicalRefName
@@ -2034,7 +2035,7 @@ export default function stateModelFactory(
           if (domain === undefined) {
             return undefined
           }
-          // arcsYDomainBp is only set in samplot mode, so this runs only then.
+          // arcsYDomainBp is only set in read-cloud mode, so this runs only then.
           // The ruler reuses the arcs' own band geometry so ticks land on the
           // arc apexes (see insertSizeTicks.ts / features/arcs/drawCanvas.ts).
           const band = computeArcBand({
@@ -2079,7 +2080,6 @@ export default function stateModelFactory(
       }))
       .actions(self => {
         const superSetError = self.setError
-        const superSetRegionTooLarge = self.setRegionTooLarge
         function addModification(modType: string) {
           if (!self.visibleModifications.has(modType)) {
             self.visibleModifications.set(modType, {
@@ -2126,12 +2126,13 @@ export default function stateModelFactory(
 
           /**
            * #action
+           * Clear the hover/tooltip when the region goes too large (the banner
+           * replaces the pileup). Called by MultiRegionDisplayMixin's
+           * `ClearHoverOnRegionTooLarge` autorun, so it fires on the derived
+           * gate's `regionTooLarge` transition without an imperative setter.
            */
-          setRegionTooLarge(val: boolean, reason?: string) {
-            superSetRegionTooLarge(val, reason)
-            if (val) {
-              clearMouseoverState()
-            }
+          onRegionTooLarge() {
+            clearMouseoverState()
           },
 
           /**
@@ -2159,7 +2160,6 @@ export default function stateModelFactory(
           clearDisplaySpecificData() {
             self.rpcDataMap.clear()
             self.scrollTop = 0
-            self.setRegionTooLarge(false)
           },
 
           /**
@@ -3043,6 +3043,27 @@ export default function stateModelFactory(
           return getContextMenuItems(self)
         },
       }))
+      // Opt into RegionTooLargeMixin's shared derived byte gate: the too-large
+      // banner becomes a pure function of the cached estimate scaled to the
+      // current viewport (self-releases on zoom-in, no flicker on pan). The
+      // mixin's pre-flight (getByteEstimateConfig) still captures the estimate
+      // and short-circuits the download server-side; afterAttach clears the
+      // estimate on chromosome nav, and onRegionTooLarge clears the hover.
+      // Byte-only — no density axis.
+      .views(self => ({
+        /**
+         * #getter
+         */
+        get derivedRegionTooLargeEnabled() {
+          return true
+        },
+        /**
+         * #getter
+         */
+        get configuredFetchSizeLimit(): number {
+          return getConf(self, 'fetchSizeLimit')
+        },
+      }))
       .actions(self => ({
         /**
          * #action
@@ -3053,6 +3074,15 @@ export default function stateModelFactory(
         },
 
         afterAttach() {
+          // Drop the cached byte estimate on chromosome navigation:
+          // displayedRegionIndex is reused across chromosomes, so a stale
+          // estimate would gate the new region against the wrong stats and, since
+          // FetchVisibleRegions gates on !regionTooLarge, wedge the banner. The
+          // estimate intentionally survives viewport-change clears (no flicker on
+          // pan); this hook is the one path that clears it. Mirrors canvas/maf.
+          onDisplayedRegionsChange(self, () => {
+            self.setFeatureDensityStats(undefined)
+          })
           // Keep the fitted-height cache in sync while in "fit to display height"
           // mode — re-fits as the display resizes, data loads, or groups collapse.
           // `fittedFeatureHeight` ignores featureHeight, so caching it (which the

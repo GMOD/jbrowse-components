@@ -24,11 +24,11 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 interface DrawArcsOpts {
   bpToScreenX: (bp: number) => number
   // Genomic bp that map to the full arcs band height (availH). Arc/bezier
-  // mode passes availH/pxPerBp (zoom-proportional); samplot mode passes the
+  // mode passes availH/pxPerBp (zoom-proportional); read-cloud mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. Mirrors arc.slang's
   // `arcsYDomainBp` uniform — one code path, caller-chosen value.
   arcsYDomainBp: number
-  // Samplot maps yBp=|tlen| with a base-2 log scale (small inserts spread near
+  // Read cloud maps yBp=|tlen| with a base-2 log scale (small inserts spread near
   // the baseline, matching origin/main's d3.scaleLog().base(2)); arc mode stays
   // linear. Mirrors arc.slang's `arcsYLog` uniform.
   arcsYLog: boolean
@@ -37,7 +37,7 @@ interface DrawArcsOpts {
   pairedArcsDown: boolean
   lineWidth: number
   palette: RGBColor[]
-  // Palette for the samplot endpoint squares. Same as `palette` except the
+  // Palette for the read-cloud endpoint squares. Same as `palette` except the
   // filled short-insert square is pale (matching pileup + legend) rather than
   // the saturated stroke color the arc curves use. Mirrors the GPU
   // arcMarkerColorByIndex split.
@@ -92,11 +92,11 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   } = opts
   // Pre-stringify the palettes once per draw — saves N Math.round + string
   // allocations per frame (N = numArcs, often thousands). The stroke palette
-  // colors the curves; the marker palette colors the samplot endpoint squares.
+  // colors the curves; the marker palette colors the read-cloud endpoint squares.
   const cssPalette = palette.map(c => rgb255(c))
   const cssMarkerPalette = markerPalette.map(c => rgb255(c))
   const paletteLen = cssPalette.length
-  // Flat (samplot) connector lines are neutral black; the category color lives
+  // Flat (read cloud) connector lines are neutral black; the category color lives
   // in the endpoint squares. Alpha kept well above samplot.py's 0.25 so an
   // isolated thin short-insert pair stays legible — mirrors arc.slang's
   // flat-line color/alpha and the arcMarker pass.
@@ -166,7 +166,7 @@ export function drawArcs(
   pairedArcsDown: boolean,
   screenWidthPx: number,
 ) {
-  // Samplot autoscales via state.arcsYDomainBp; arc mode falls back to the
+  // Read cloud autoscales via state.arcsYDomainBp; arc mode falls back to the
   // bp-span that fits availH at the current zoom. availH must match the value
   // used in drawArcsToCtx (and the GPU's fillArcUniforms) or the fallback
   // domain scales arcs to a different height than they're plotted into.

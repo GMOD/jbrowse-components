@@ -58,10 +58,10 @@ public struct Uniforms {
   public float pairedArcsDown;
   // Domain in bp that maps to the arcs band's vertical extent (availH).
   // Arc/bezier mode sets this to availH/pxPerBp so the apex tracks genomic
-  // zoom; samplot mode sets it to the autoscaled max |insert size| so the
+  // zoom; read-cloud mode sets it to the autoscaled max |insert size| so the
   // line Y is zoom-stable. One code path, mode-dependent value.
   public float arcsYDomainBp;
-  // 1 = map yBp→Y with a base-2 log scale (samplot read cloud), 0 = linear
+  // 1 = map yBp→Y with a base-2 log scale (read cloud), 0 = linear
   // (arc/bezier mode). Float-as-bool to stay in the float block.
   public float arcsYLog;
 
@@ -219,7 +219,7 @@ public float3 arcColorByIndex(uint idx, Uniforms u) {
   return unpackRGBA(colors[min(idx, 8u)]).xyz;
 }
 
-// Read-cloud (samplot) endpoint-square palette. The squares are filled opaque
+// Read-cloud endpoint-square palette. The squares are filled opaque
 // marks, so they read fine with the pale pileup-fill short-insert (colorShortInsert
 // #ffc0cb) and must match it — index 2 in the arc palette is the *saturated*
 // stroke variant (colorShortInsertArc #ff3a8c), chosen so a thin translucent arc
@@ -231,11 +231,11 @@ public float3 arcMarkerColorByIndex(uint idx, Uniforms u) {
   return arcColorByIndex(idx, u);
 }
 
-// Samplot/arc flat-line Y offset (unsigned px) within an `availH`-tall band.
-// arcsYLog picks a base-2 log scale (samplot read cloud, so small inserts spread
+// Read cloud/arc flat-line Y offset (unsigned px) within an `availH`-tall band.
+// arcsYLog picks a base-2 log scale (read cloud, so small inserts spread
 // near the baseline instead of collapsing) vs linear (arc mode, yBp is a genomic
 // radius); the linear branch guards a zero domain so it yields 0, not +inf.
-// Shared by arc.slang (flat line + dome apex) and arcMarker.slang so a samplot
+// Shared by arc.slang (flat line + dome apex) and arcMarker.slang so a read cloud
 // endpoint square lands exactly on its flat line. SYNC: must stay byte-identical
 // to arcYFraction() in arcYScale.ts (the JS/Canvas2D path) — the golden values
 // in arcYScale.test.ts pin this formula on both sides.

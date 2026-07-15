@@ -412,7 +412,7 @@ function arcColorSection(arcColor: ColorByMenuOptions['arcColor']): MenuItem[] {
           arcColorOptions,
           arcColor.current,
           arcColor.setColor,
-          'How paired-end arcs and the read-cloud (samplot) overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
+          'How paired-end arcs and the read cloud overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
         ),
       ]
     : []

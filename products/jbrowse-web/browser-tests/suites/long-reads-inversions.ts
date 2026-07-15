@@ -111,14 +111,14 @@ const suite: TestSuite = {
       doneTestId: pileup,
     }),
     lgvSnapshotTest({
-      name: 'simple inversion paired BAM samplot',
-      snapshot: 'inversion-paired-samplot',
+      name: 'simple inversion paired BAM read cloud',
+      snapshot: 'inversion-paired-cloud',
       loc: 'ctgA:1-50000',
       tracks: [
         {
           trackId: 'volvox-simple-inv-paired.bam',
           displaySnapshot: {
-            readConnections: 'samplot',
+            readConnections: 'cloud',
             colorBy: { type: 'pairOrientation' },
           },
         },

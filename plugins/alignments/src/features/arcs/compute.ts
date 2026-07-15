@@ -35,12 +35,12 @@ import type { ArcColorByType } from '../../shared/types.ts'
 // than the screen (the circle gets so big the band clips its apex). The
 // endpoints always sit at the true genomic coordinates. See arc.slang.
 export const ARC_SHAPE_ARC = 0
-// samplot read-cloud flat line at Y=|tlen|; the split variant is drawn dashed
+// read-cloud flat line at Y=|tlen|; the split variant is drawn dashed
 // (matching samplot.py's plot_split_plan dotted-line style).
 export const ARC_SHAPE_FLAT = 1
 export const ARC_SHAPE_FLAT_SPLIT = 2
 
-// Both flat variants (solid samplot line + dashed split line) plot as a
+// Both flat variants (solid read-cloud line + dashed split line) plot as a
 // horizontal line with endpoint-square markers, unlike the curved ARC shape.
 export function isFlatArcShape(shape: number) {
   return shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT
@@ -48,7 +48,7 @@ export function isFlatArcShape(shape: number) {
 
 // Matches samplot.py --jitter const default (0.08). Applied multiplicatively
 // to |tlen| so lines at the same insert size are visually separated.
-const SAMPLOT_JITTER_BOUNDS = 0.08
+const CLOUD_JITTER_BOUNDS = 0.08
 
 interface RegionInfo {
   refName: string
@@ -59,10 +59,10 @@ interface RegionInfo {
 
 interface ArcSettings {
   colorByType: ArcColorByType
-  // samplot (read cloud) mode: flat lines at Y=|tlen|, concordant FR pairs
+  // read cloud mode: flat lines at Y=|tlen|, concordant FR pairs
   // filtered out so only discordant pairs remain. Coloring follows colorByType
   // (same palette as arcs), not a separate DEL/DUP/INV scheme.
-  samplot?: boolean
+  cloud?: boolean
   drawInter: boolean
   drawLongRange: boolean
   // Normalize a raw BAM refName (from an SA tag or RNEXT — which use the file's
@@ -80,7 +80,7 @@ const LARGE_INSERT_THRESHOLD = 10_000
 const LONG_RANGE_STDDEV_THRESHOLD = 3
 
 // A pair is concordant FR (the modal, "normal" insert) when its tlen sits
-// inside the insert-size stats band AND it is LR orientation. Samplot drops
+// inside the insert-size stats band AND it is LR orientation. Read cloud drops
 // these to surface SV signals (mirrors samplot.py's --max_depth 1 default).
 function isConcordantFRPair(
   pairOrientationNum: number | undefined,
@@ -111,7 +111,7 @@ const COLOR_SPLIT_INVERSION = 7
 // supplementary yellow, matching the read-fill + connector deletion color.
 const COLOR_SPLIT_DELETION = 8
 
-// Legend category for a samplot/read-cloud endpoint-square color slot. The read
+// Legend category for a read-cloud endpoint-square color slot. The read
 // legend is otherwise driven purely by read-fill categories (readColorCategory),
 // so cloud-only buckets — split junctions especially, which no read fill
 // produces outside chain mode — would be missing. Mapping the arc color slots
@@ -190,7 +190,7 @@ function insertSizeColor(tlen: number, stats: InsertSizeBand | undefined) {
 }
 
 // Same-chromosome color classifier (interchromosomal ticks are colored
-// separately, always COLOR_INTERCHROM). Read cloud (samplot) shares this so its
+// separately, always COLOR_INTERCHROM). Read cloud shares this so its
 // flat lines color the same as arcs — red/green/teal/navy by insert size +
 // orientation.
 function getArcColorType(args: {
@@ -305,7 +305,7 @@ function pairJitter01(p1Bp: number, p2Bp: number) {
 }
 
 // Pick the shape constant and target Y (in genomic bp) for a single arc.
-// Samplot: flat line with ±8% multiplicative jitter so coincident reads separate
+// Read cloud: flat line with ±8% multiplicative jitter so coincident reads separate
 // visually. Y is the pair's genomic span on the shared insert-size axis: a mate
 // link plots at Y=|tlen|; a split junction (no tlen) at the full breakpoint gap
 // |p2Bp−p1Bp| — NOT half of it, so a split-supported SV lands on the same
@@ -313,24 +313,23 @@ function pairJitter01(p1Bp: number, p2Bp: number) {
 // mislabeled at half its real size). Otherwise it's the single curved ARC shape
 // (the renderer chooses dome vs vertical-lines by zoom); Y is the genomic radius.
 function computeArcShape({
-  samplot,
+  cloud,
   isSplit,
   absrad,
   tlen,
   p1Bp,
   p2Bp,
 }: {
-  samplot: boolean
+  cloud: boolean
   isSplit: boolean
   absrad: number
   tlen: number | undefined
   p1Bp: number
   p2Bp: number
 }) {
-  if (samplot) {
+  if (cloud) {
     const baseY = tlen !== undefined ? Math.abs(tlen) : Math.abs(p2Bp - p1Bp)
-    const jitter =
-      1 + SAMPLOT_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
+    const jitter = 1 + CLOUD_JITTER_BOUNDS * (pairJitter01(p1Bp, p2Bp) * 2 - 1)
     return {
       shapeType: isSplit ? ARC_SHAPE_FLAT_SPLIT : ARC_SHAPE_FLAT,
       yBp: Math.round(baseY * jitter),
@@ -557,7 +556,7 @@ function unpairedChainArcs(
 }
 
 // Build a pending arc from one resolved connection. Split junctions carry no
-// template length / pair orientation (so samplot draws a dashed line at the gap
+// template length / pair orientation (so read cloud draws a dashed line at the gap
 // span rather than collapsing |0| to the baseline); the mate link sources both
 // from its first read's primary. Endpoints: a split junction joins the first
 // segment's read-trailing (3') edge to the next segment's read-leading (5')
@@ -655,7 +654,7 @@ export function computeArcsFromPileupData(
   regions: RegionInfo[],
   settings: ArcSettings,
 ) {
-  const { colorByType, samplot = false, drawInter, drawLongRange } = settings
+  const { colorByType, cloud = false, drawInter, drawLongRange } = settings
   const readsByName = groupReadsByName(rpcDataMap, regions)
   const { hasPaired, stats } = computePairingInfo(rpcDataMap)
   const pendingArcs = collectPendingArcs(readsByName, {
@@ -686,10 +685,10 @@ export function computeArcsFromPileupData(
       continue
     }
 
-    // Samplot suppresses the modal-insert FR pairs so SV signals stand out.
+    // Read cloud suppresses the modal-insert FR pairs so SV signals stand out.
     // Split junctions have no template length, so they never qualify.
     if (
-      samplot &&
+      cloud &&
       !arc.isSplit &&
       isConcordantFRPair(arc.pairOrientationNum, arc.tlen, stats)
     ) {
@@ -715,7 +714,7 @@ export function computeArcsFromPileupData(
       stats,
     })
     const { shapeType, yBp } = computeArcShape({
-      samplot,
+      cloud,
       isSplit: arc.isSplit,
       absrad,
       tlen: arc.isSplit ? undefined : arc.tlen,

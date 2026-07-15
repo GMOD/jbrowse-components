@@ -57,12 +57,12 @@ test(
 )
 
 test(
-  'samplot mode draws flat |tlen| lines over coverage',
+  'cloud mode draws flat |tlen| lines over coverage',
   async () => {
     await testLinkedReadsDisplay({
       loc: 'ctgA:1-50000',
       track: 'volvox_sv_cram',
-      displayMode: 'samplot',
+      displayMode: 'cloud',
       timeout: timeout - 5000,
     })
   },

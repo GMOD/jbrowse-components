@@ -594,7 +594,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const opts = {
       colorByType: 'insertSizeAndOrientation' as const,
-      samplot: true,
+      cloud: true,
       drawInter: false,
       drawLongRange: true,
     }
@@ -605,7 +605,7 @@ describe('computeArcsFromPileupData', () => {
     const lr = run(1)
     expect(lr.arcs).toHaveLength(1)
     expect(lr.arcs[0]!.colorType).toBe(0)
-    // Flat shape + Y ≈ |tlen| (samplot applies ±8% jitter)
+    // Flat shape + Y ≈ |tlen| (read cloud applies ±8% jitter)
     expect(lr.arcs[0]!.shapeType).toBe(ARC_SHAPE_FLAT)
     expect(lr.arcs[0]!.yBp).toBeGreaterThanOrEqual(460)
     expect(lr.arcs[0]!.yBp).toBeLessThanOrEqual(540)
@@ -635,16 +635,16 @@ describe('computeArcsFromPileupData', () => {
     ]
     const result = computeArcsFromPileupData(new Map([[0, data]]), regions, {
       colorByType: 'insertSizeAndOrientation' as const,
-      samplot: true,
+      cloud: true,
       drawInter: false,
       drawLongRange: true,
     })
-    // tlen 10000 > upper 500 → long-insert slot 1 (red), not a samplot DUP color
+    // tlen 10000 > upper 500 → long-insert slot 1 (red), not a read-cloud DUP color
     expect(result.arcs).toHaveLength(1)
     expect(result.arcs[0]!.colorType).toBe(1)
   })
 
-  test('samplot drops concordant FR pairs within insert-size stats band', () => {
+  test('read cloud drops concordant FR pairs within insert-size stats band', () => {
     const mkPair = (tlen: number) =>
       makePileupData({
         regionStart: 0,
@@ -663,7 +663,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const opts = {
       colorByType: 'insertSizeAndOrientation' as const,
-      samplot: true,
+      cloud: true,
       drawInter: false,
       drawLongRange: true,
     }
@@ -696,7 +696,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const opts = {
       colorByType: 'insertSizeAndOrientation' as const,
-      samplot: true,
+      cloud: true,
       drawInter: false,
       drawLongRange: true,
     }
@@ -712,7 +712,7 @@ describe('computeArcsFromPileupData', () => {
     ).toBe(7)
   })
 
-  test('samplot in-view split read (primary + supplementary entries) is dashed at the gap span', () => {
+  test('read cloud in-view split read (primary + supplementary entries) is dashed at the gap span', () => {
     // The default flag filter does not exclude SUPPLEMENTARY (2048), so an
     // in-view split read arrives as two entries sharing a name — the
     // multi-entry path, not the single-entry SA-tag path. It must render
@@ -733,7 +733,7 @@ describe('computeArcsFromPileupData', () => {
     ]
     const opts = {
       colorByType: 'insertSizeAndOrientation' as const,
-      samplot: true,
+      cloud: true,
       drawInter: false,
       drawLongRange: true,
     }
