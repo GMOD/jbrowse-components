@@ -123,6 +123,7 @@ import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
+import type { ModificationHitResult } from '../features/modification/hitTest.ts'
 import type {
   ArcColorByType,
   ColorBy,
@@ -539,6 +540,13 @@ export default function stateModelFactory(
            * #volatile
            */
           contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined,
+          /**
+           * #volatile
+           * Per-read base modification under a right-click, so "Open modification
+           * details" is reachable from the menu (not just left-click). Set with
+           * the block/hits as a unit.
+           */
+          contextMenuModHit: undefined as ModificationHitResult | undefined,
           /**
            * #volatile
            * Genomic column under a right-click, anchoring the read menu's "sort
@@ -2468,6 +2476,18 @@ export default function stateModelFactory(
             if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()
               self.scrollTop = 0
+            }
+            // Seed the fitted pitch in the SAME transaction as the mode flip, so
+            // the first render already draws reads at the fit height. Otherwise
+            // `fittedHeightPx` stays stale (isFitting false → reads paint at the
+            // configured height) until the AlignmentsFitHeight autorun ticks a
+            // step later, and the display visibly snaps configured->fitted. The
+            // autorun still keeps it fresh as the display resizes / data loads /
+            // groups collapse, and covers cascade-driven fit entry (no
+            // setHeightMode call) — this only removes the one-step lag on the
+            // direct action.
+            if (mode === 'fit') {
+              self.fittedHeightPx = self.fittedFeatureHeight
             }
           },
 
