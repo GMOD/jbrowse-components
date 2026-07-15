@@ -326,6 +326,17 @@ export const featuresSpecs: ScreenshotSpec[] = [
               // minimize crossings (vs the default 'up', which stacks them all
               // above)
               sashimiArcsMode: 'auto',
+              // The unfiltered pileup draws 159 distinct junctions, and 122 of
+              // them carry 1-2 reads — nanopore aligner noise, much of it splice
+              // sites shifted a few bp off a real one (e.g. 87958024 vs the true
+              // 87958020). Crossing arcs everywhere (reviewer: chaotic).
+              // Counted from the CIGAR N-ops of the (fixed, re-hosted) slice:
+              // PTEN's 9 exons give exactly 8 real introns, each with 446-717
+              // reads, while the loudest noise junction has 99 — so any cutoff
+              // in that gap leaves precisely the 8 canonical introns. 200 sits
+              // mid-gap (2.2x under the weakest real junction, 2x over the
+              // loudest noise) rather than hugging either edge.
+              minSashimiScore: 200,
             },
           ],
         },
