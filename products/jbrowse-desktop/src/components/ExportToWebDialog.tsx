@@ -5,6 +5,7 @@ import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { encodeSessionParam, fetchJson, useFetch } from '@jbrowse/core/util'
 import {
   DEFAULT_WEB_BASE_URL,
+  bakePromotedDefaultsIntoSnapshot,
   buildWebExportUrl,
   planWebExport,
 } from '@jbrowse/product-core'
@@ -39,6 +40,7 @@ async function buildExport(
   snapshot: WebExportInput,
   shareURL: string,
   mode: SessionShareMode,
+  session: AbstractSessionModel,
 ) {
   const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
   // If the hosted base config can't be fetched (hub down, offline), fall back
@@ -51,9 +53,14 @@ async function buildExport(
       })
     : undefined
   const plan = planWebExport(snapshot, baseConfig)
+  // Flatten the live promotable-default cascade into concrete track values, the
+  // same as jbrowse-web's ShareDialog — a self-contained track is baked into its
+  // sessionTracks config, a hosted-base track into a trackConfigDeltas entry the
+  // web recipient merges — so the exported session shows what the sender saw.
+  const bakedSession = bakePromotedDefaultsIntoSnapshot(session, plan.session)
   const { sessionParam, password, plaintext } = await encodeSessionParam(
     mode,
-    plan.session,
+    bakedSession,
     { shareURL, referer: DEFAULT_WEB_BASE_URL },
   )
   return {
@@ -109,7 +116,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
     isLoading: loading,
     mutate,
   } = useFetch(['exportToWeb', mode], () =>
-    buildExport(snapshot, shareURL, mode),
+    buildExport(snapshot, shareURL, mode, session),
   )
   const url = data?.url ?? ''
   const plaintext = data?.plaintext

@@ -43,6 +43,13 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 export type PromotableDisplay = IAnyStateTreeNode & {
   type: string
   configuration: AnyConfigurationModel
+  /**
+   * set on a display that arrived in a session received from someone else, to
+   * opt it out of the session-wide tier of the cascade. Declared by
+   * BaseDisplay, which every real display composes.
+   */
+  ignorePromotedDefaults: boolean
+  setIgnorePromotedDefaults: (flag: boolean) => void
 }
 
 // The names of every promotable slot on a display's config schema (includes
@@ -142,7 +149,16 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
-  const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
+  // A display that arrived in a received session skips the session-wide tier
+  // entirely, collapsing the cascade to "own value, else base". This is the
+  // only mechanism that can neutralize a promoted default on a *plain*
+  // promotable slot (one with no `promotedBase`, where `defaultValue` is both
+  // the base and the inherit signal): there, no baked-in value can read as
+  // customized, so an explicit opt-out is the sole way the sender's `false`
+  // survives the recipient's promoted `true`.
+  const promoted = self.ignorePromotedDefaults
+    ? undefined
+    : getSession(self).getDisplayTypeDefault?.(self.type, slot)
   // A track is customized only when it holds a *usable* value other than the
   // default. Routing `own` through the same `isUsableValue` gate as a promoted
   // default means an own value that's malformed or fails `validate` (e.g. a saved
@@ -258,12 +274,20 @@ function openDisplaysOfType(self: PromotableDisplay): PromotableDisplay[] {
  * track a later default change. Backs the snackbar's "apply to open tracks"
  * action. Displays already at the default are skipped. Takes the display set
  * explicitly so it's unit-testable.
+ *
+ * Also lifts `ignorePromotedDefaults` on a display that arrived in a received
+ * session: every caller reaches here from a deliberate "use this default"
+ * click, and that opt-out only exists to stop defaults applying *silently*.
+ * Without this the reset would strand such a display on its base value —
+ * cleared of its own value, yet still refusing the default it was just told to
+ * follow.
  */
 export function resetSlotsToInherit(
   displays: PromotableDisplay[],
   slots: string[],
 ): void {
   for (const display of displays) {
+    display.setIgnorePromotedDefaults(false)
     for (const slot of slots) {
       const def = getSlotDefinition(display.configuration, slot)
       if (!deepEqual(getConf(display, slot), def.defaultValue)) {

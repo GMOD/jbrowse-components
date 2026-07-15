@@ -4,6 +4,7 @@ import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
 import {
   getConfResolved,
+  getDisplayTypeDefaultChanges,
   isPromotableDefault,
   isSlotCustomized,
   makeCurrentValueDisplayTypeDefaultControl,
@@ -16,6 +17,23 @@ import {
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
+// The display shim the cascade operates on: the `type` + `configuration` it
+// reads, plus the received-session opt-out (`ignorePromotedDefaults`) that
+// BaseDisplay contributes to every real display.
+function testDisplayModel(configSchema: ReturnType<typeof ConfigurationSchema>) {
+  return types
+    .model('TestDisplay', {
+      type: types.literal('TestDisplay'),
+      configuration: configSchema,
+      ignorePromotedDefaults: types.optional(types.boolean, false),
+    })
+    .actions(self => ({
+      setIgnorePromotedDefaults(flag: boolean) {
+        self.ignorePromotedDefaults = flag
+      },
+    }))
+}
+
 // Minimal session + display shim (see configurationSchema.test.ts's
 // "ConfigurationReference" describe block): isSessionModel only needs
 // `rpcManager` + `configuration`; promotableDefaults reads/writes
@@ -24,10 +42,7 @@ function createDisplay(
   configSchema: ReturnType<typeof ConfigurationSchema>,
   displayConfig: Record<string, unknown> = {},
 ) {
-  const Display = types.model('TestDisplay', {
-    type: types.literal('TestDisplay'),
-    configuration: configSchema,
-  })
+  const Display = testDisplayModel(configSchema)
   const Session = types
     .model('TestSession', {
       rpcManager: types.frozen({}),
@@ -72,10 +87,7 @@ function createDisplays(
   configSchema: ReturnType<typeof ConfigurationSchema>,
   displayConfigs: Record<string, unknown>[],
 ) {
-  const Display = types.model('TestDisplay', {
-    type: types.literal('TestDisplay'),
-    configuration: configSchema,
-  })
+  const Display = testDisplayModel(configSchema)
   const Session = types
     .model('TestSession', {
       rpcManager: types.frozen({}),
@@ -157,10 +169,7 @@ describe('apply a promoted default to open tracks', () => {
   // Session shaped as the real one is (isViewContainer + tracks-with-displays),
   // so the dialog helpers exercise the full path across EVERY open view.
   function createViews(displayConfigsPerView: Record<string, unknown>[][]) {
-    const Display = types.model('TestDisplay', {
-      type: types.literal('TestDisplay'),
-      configuration: configSchema,
-    })
+    const Display = testDisplayModel(configSchema)
     const Track = types.model('TestTrack', { displays: types.array(Display) })
     const View = types.model('TestView', { tracks: types.array(Track) })
     const Session = types
@@ -661,6 +670,83 @@ describe('promotable sentinel slot', () => {
   test('a promoted non-enum value is rejected and falls back to promotedBase', () => {
     const { session, display } = createDisplay(configSchema)
     session.setDisplayTypeDefault('TestDisplay', 'mode', 'bogus')
+    expect(getConfResolved(display, 'mode')).toBe('normal')
+  })
+})
+
+// A display that arrived in a session received from someone else opts out of
+// the session-wide tier, so this browser's promoted defaults can't repaint what
+// the sender saw. See BaseDisplay's `ignorePromotedDefaults` property.
+describe('a display from a received session', () => {
+  const sentinelSchema = ConfigurationSchema('ReceivedSentinel', {
+    mode: {
+      type: 'stringEnum',
+      model: types.enumeration('Mode', ['inherit', 'normal', 'compact']),
+      defaultValue: 'inherit',
+      promotedBase: 'normal',
+      promotable: true,
+    },
+  })
+  // no promotedBase: `defaultValue` is both the base value and the inherit
+  // signal, so no value written into the config can read as customized here.
+  // The opt-out is the only thing that can hold this slot at the sender's value.
+  const plainSchema = ConfigurationSchema('ReceivedPlain', {
+    showLabels: {
+      type: 'boolean',
+      defaultValue: false,
+      promotable: true,
+    },
+  })
+
+  test('ignores a promoted default on a sentinel slot', () => {
+    const { session, display } = createDisplay(sentinelSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
+    expect(getConfResolved(display, 'mode')).toBe('compact')
+
+    display.setIgnorePromotedDefaults(true)
+    expect(getConfResolved(display, 'mode')).toBe('normal')
+  })
+
+  test('ignores a promoted default on a plain slot, which baking cannot do', () => {
+    const { session, display } = createDisplay(plainSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'showLabels', true)
+    // the sender's own value *is* the slot default, so writing it into the
+    // config leaves it indistinguishable from "inherit" — the promoted true wins
+    expect(getConfResolved(display, 'showLabels')).toBe(true)
+
+    display.setIgnorePromotedDefaults(true)
+    expect(getConfResolved(display, 'showLabels')).toBe(false)
+  })
+
+  test('keeps its own baked-in value', () => {
+    const { session, display } = createDisplay(sentinelSchema, {
+      mode: 'compact',
+    })
+    display.setIgnorePromotedDefaults(true)
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'normal')
+    expect(getConfResolved(display, 'mode')).toBe('compact')
+  })
+
+  test('reports no session-default changes for the affected-by-a-default badge', () => {
+    const { session, display } = createDisplay(sentinelSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([
+      { path: ['mode'], from: 'normal', to: 'compact' },
+    ])
+
+    display.setIgnorePromotedDefaults(true)
+    expect(getDisplayTypeDefaultChanges(display)).toEqual([])
+  })
+
+  test('follows the default once the user deliberately opts it back in', () => {
+    const { session, display } = createDisplay(sentinelSchema, {
+      mode: 'compact',
+    })
+    display.setIgnorePromotedDefaults(true)
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'normal')
+
+    resetSlotsToInherit([display], ['mode'])
+    expect(display.ignorePromotedDefaults).toBe(false)
     expect(getConfResolved(display, 'mode')).toBe('normal')
   })
 })

@@ -35,6 +35,20 @@ function stateModelFactory() {
        * #property
        */
       rpcDriverName: types.maybe(types.string),
+      /**
+       * #property
+       * true for a display that arrived inside a session received from someone
+       * else (a share link, an encoded/json session, a `spec-` URL). Such a
+       * display resolves its `promotable` config slots from its own config
+       * only, never from this browser's promoted display-type defaults (see
+       * `configuration/promotableDefaults.ts`) — the received session is a
+       * record of what the sender saw, and a local preference silently
+       * repainting it would make it a lie. A track opened *afterwards* in that
+       * same session is a fresh track of this user's, so it never gets the flag
+       * and picks up their defaults normally. Cleared by `resetSlotsToInherit`
+       * when the user deliberately makes the display follow a default.
+       */
+      ignorePromotedDefaults: types.stripDefault(types.boolean, false),
     })
     .volatile(() => ({
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
@@ -182,6 +196,13 @@ function stateModelFactory() {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       * see the `ignorePromotedDefaults` property
+       */
+      setIgnorePromotedDefaults(flag: boolean) {
+        self.ignorePromotedDefaults = flag
+      },
       /**
        * #action
        */

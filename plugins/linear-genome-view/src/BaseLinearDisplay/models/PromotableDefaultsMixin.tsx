@@ -19,9 +19,10 @@ import type { TrackConfigChange } from '@jbrowse/core/util'
  * this so the "affected by a session default" badge and its "clear default"
  * action work without re-implementing the two delegations per display type.
  *
- * It re-declares the `type`/`configuration` props it reads (`compose` merges
- * them last-wins with the concrete display's own declarations) so `self` is
- * typed as a promotable display and the two delegations stay cast-free.
+ * It re-declares the `type`/`configuration`/`ignorePromotedDefaults` members it
+ * reads (`compose` merges them last-wins with the concrete display's own
+ * declarations, all originating in BaseDisplay) so `self` is typed as a
+ * promotable display and the two delegations stay cast-free.
  */
 export default function PromotableDefaultsMixin(
   configSchema: AnyConfigurationSchemaType,
@@ -30,7 +31,13 @@ export default function PromotableDefaultsMixin(
     .model({
       type: types.string,
       configuration: ConfigurationReference(configSchema),
+      ignorePromotedDefaults: types.stripDefault(types.boolean, false),
     })
+    .actions(self => ({
+      setIgnorePromotedDefaults(flag: boolean) {
+        self.ignorePromotedDefaults = flag
+      },
+    }))
     .views(self => ({
       /**
        * #method
