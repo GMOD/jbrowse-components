@@ -71,9 +71,9 @@ machine, can open local files directly, and does not require a server.
 
 ### What are new features in JBrowse 2
 
-See the [features page](/features/) for a full overview.
-Highlights include multi-assembly comparison, synteny/dotplot views, a circular
-genome view, Hi-C display, and an SV inspector.
+See the [features page](/features/) for a full overview. Highlights include
+multi-assembly comparison, synteny/dotplot views, a circular genome view, Hi-C
+display, and an SV inspector.
 
 ### How do I convert my JBrowse 1 configuration to JBrowse 2
 

@@ -434,7 +434,7 @@ How to color read-connection arcs
 Read-connection rendering mode (mate pairs + split reads)
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `off`, `arc`, `samplot`) · **Default:** `'inherit'` · _promotable_
+`inherit`, `off`, `arc`, `cloud`) · **Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -443,7 +443,7 @@ Read-connection rendering mode (mate pairs + split reads)
     'inherit',
     'off',
     'arc',
-    'samplot',
+    'cloud',
   ]),
 
 

@@ -414,7 +414,7 @@ export default function stateModelFactory(
         },
         /** #getter */
         // Resolved through the promotable-slot tiers: a track pins
-        // 'off'/'arc'/'samplot' explicitly, else follows the session-wide
+        // 'off'/'arc'/'cloud' explicitly, else follows the session-wide
         // default, falling back to 'off'. getConfResolved never returns the
         // 'inherit' sentinel. See promotableDefaults.ts.
         get readConnections(): ReadConnectionsMode {
@@ -429,13 +429,9 @@ export default function stateModelFactory(
         },
         /** #getter */
         // "make read cloud the default for all tracks" control (pin): active when
-        // 'samplot' is the session default
+        // 'cloud' is the session default
         get readCloudDisplayTypeDefault() {
-          return makeDisplayTypeDefaultControl(
-            self,
-            'readConnections',
-            'samplot',
-          )
+          return makeDisplayTypeDefaultControl(self, 'readConnections', 'cloud')
         },
         /** #getter */
         // Resolved through the promotable-slot tiers (getConfResolved): a plain
@@ -1077,15 +1073,15 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Legend categories contributed by the read-cloud (samplot) endpoint
+         * Legend categories contributed by the read-cloud endpoint
          * squares — the arc color slots actually plotted, mapped to legend
          * buckets. Read-fill categories miss the cloud-only buckets (split
          * junctions especially), so these are merged into the legend. Empty
-         * unless in samplot mode with the legend shown.
+         * unless in read-cloud mode with the legend shown.
          */
         get readCloudLegendCategories(): Set<ReadColorCategory> {
           const present = new Set<ReadColorCategory>()
-          if (this.showLegend && self.readConnections === 'samplot') {
+          if (this.showLegend && self.readConnections === 'cloud') {
             for (const regionMap of this.arcsByGroup.values()) {
               for (const data of regionMap.values()) {
                 for (const ct of data.arcColorTypes) {
@@ -1326,7 +1322,7 @@ export default function stateModelFactory(
           )
           const settings = {
             colorByType: self.arcColorByType,
-            samplot: self.readConnections === 'samplot',
+            samplot: self.readConnections === 'cloud',
             drawInter: self.drawInter,
             drawLongRange: self.drawLongRange,
             // gate on `initialized` (== refNameAliases loaded): getCanonicalRefName
@@ -1996,7 +1992,7 @@ export default function stateModelFactory(
          * #getter
          */
         get arcsYDomainBp() {
-          if (self.readConnections !== 'samplot') {
+          if (self.readConnections !== 'cloud') {
             return undefined
           }
           // Max across every group so all sections share one Y-domain (the same

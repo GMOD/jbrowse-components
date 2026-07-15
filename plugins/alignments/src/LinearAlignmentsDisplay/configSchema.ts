@@ -455,7 +455,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
           'inherit',
           'off',
           'arc',
-          'samplot',
+          'cloud',
         ]),
         // Sentinel promotable slot: `inherit` follows the session-wide default
         // (else `promotedBase` 'off'), and a track can pin `off` back over a

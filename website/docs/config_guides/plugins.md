@@ -27,8 +27,8 @@ to load. The `url` (or one of the location fields below) points at the built
 plugin bundle.
 
 Our plugin store lists unpkg URLs for published plugins at
-[the plugin store](/plugin_store/). You can also download plugin files from those
-URLs to your own server.
+[the plugin store](/plugin_store/). You can also download plugin files from
+those URLs to your own server.
 
 The `url` field shown above is the simplest option and is equivalent to
 `umdUrl`. There are additional fields available for different situations:

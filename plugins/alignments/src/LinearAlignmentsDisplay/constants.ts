@@ -56,9 +56,9 @@ export type LinkedReadsMode = 'off' | 'normal'
 
 // How read connections (mate pairs + split/chimeric reads) are rendered.
 // Orthogonal to direction (readConnectionsDown): 'arc' draws regular arcs;
-// 'samplot' (read cloud) draws flat lines at Y=|tlen|, discordant pairs only.
+// 'cloud' (read cloud) draws flat lines at Y=|tlen|, discordant pairs only.
 // Both color by arcColorByType (red/green/teal/navy by insert size + orientation).
-export type ReadConnectionsMode = 'off' | 'arc' | 'samplot'
+export type ReadConnectionsMode = 'off' | 'arc' | 'cloud'
 
 // Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
 // paired-end `readConnectionsDown`). Defined in the compute layer (it drives the

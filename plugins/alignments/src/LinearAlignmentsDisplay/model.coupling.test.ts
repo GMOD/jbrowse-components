@@ -231,9 +231,9 @@ describe('Arc color menu visibility', () => {
     expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(true)
   })
 
-  test('shown for read cloud (samplot)', () => {
+  test('shown for read cloud', () => {
     const display = createDisplay()
-    display.setReadConnections('samplot')
+    display.setReadConnections('cloud')
     expect(hasMenuLabel(display.trackMenuItems(), 'Arc color')).toBe(true)
   })
 })

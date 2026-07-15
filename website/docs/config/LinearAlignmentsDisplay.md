@@ -106,7 +106,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [drawInter](#slot-drawinter)                               | `boolean`                                                        | Draw inter-chromosomal read-connection arcs                                                                                                                                |
 | [drawLongRange](#slot-drawlongrange)                       | `boolean`                                                        | Draw long-range read-connection arcs                                                                                                                                       |
 | [arcColorByType](#slot-arccolorbytype)                     | `stringEnum` (insertSizeAndOrientation, insertSize, orientation) | How to color read-connection arcs                                                                                                                                          |
-| [readConnections](#slot-readconnections)                   | `stringEnum` (inherit, off, arc, samplot)                        | Read-connection rendering mode (mate pairs + split reads)                                                                                                                  |
+| [readConnections](#slot-readconnections)                   | `stringEnum` (inherit, off, arc, cloud)                          | Read-connection rendering mode (mate pairs + split reads)                                                                                                                  |
 | [readConnectionsDown](#slot-readconnectionsdown)           | `boolean`                                                        | Draw read connections below the coverage band                                                                                                                              |
 | [showSashimiArcs](#slot-showsashimiarcs)                   | `boolean`                                                        | Draw sashimi (splice-junction) arcs                                                                                                                                        |
 | [sashimiArcsMode](#slot-sashimiarcsmode)                   | `stringEnum` (inherit, up, down, auto)                           | Sashimi junction-arc placement                                                                                                                                             |
@@ -498,7 +498,7 @@ How to color read-connection arcs
 Read-connection rendering mode (mate pairs + split reads)
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `off`, `arc`, `samplot`) · **Default:** `'inherit'` · _promotable_
+`inherit`, `off`, `arc`, `cloud`) · **Default:** `'inherit'` · _promotable_
 
 ```js
 {
@@ -507,7 +507,7 @@ Read-connection rendering mode (mate pairs + split reads)
     'inherit',
     'off',
     'arc',
-    'samplot',
+    'cloud',
   ]),
 
 

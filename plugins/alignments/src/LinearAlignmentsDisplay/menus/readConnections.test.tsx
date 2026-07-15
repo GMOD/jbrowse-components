@@ -22,8 +22,8 @@ function makeModel() {
       this.linkedReads = mode
     },
     pairsDisplayTypeDefault: control(),
-    readConnections: 'off' as 'off' | 'arc' | 'samplot',
-    setReadConnections(mode: 'off' | 'arc' | 'samplot') {
+    readConnections: 'off' as 'off' | 'arc' | 'cloud',
+    setReadConnections(mode: 'off' | 'arc' | 'cloud') {
       this.readConnections = mode
     },
     arcsDisplayTypeDefault: control(),
@@ -116,10 +116,10 @@ describe('read connections menu', () => {
     expect(model.readConnections).toBe('off')
   })
 
-  test('"Show read cloud" row toggles samplot mode on/off', () => {
+  test('"Show read cloud" row toggles read cloud mode on/off', () => {
     const model = makeModel()
     checkboxByLabel(model, 'Show read cloud').onClick()
-    expect(model.readConnections).toBe('samplot')
+    expect(model.readConnections).toBe('cloud')
     checkboxByLabel(model, 'Show read cloud').onClick()
     expect(model.readConnections).toBe('off')
   })
@@ -130,7 +130,7 @@ describe('read connections menu', () => {
     expect(model.readConnections).toBe('arc')
     // enabling read cloud while arcs are on switches mode (turns arcs off)
     checkboxByLabel(model, 'Show read cloud').onClick()
-    expect(model.readConnections).toBe('samplot')
+    expect(model.readConnections).toBe('cloud')
     expect(checkboxByLabel(model, 'Show read arcs').checked).toBe(false)
   })
 

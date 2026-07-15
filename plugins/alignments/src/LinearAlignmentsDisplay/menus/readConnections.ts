@@ -13,7 +13,7 @@ export const PAIR_OVERLAY_OPTIONS: {
 }[] = [
   { value: 'off', label: 'Off' },
   { value: 'arc', label: 'Arcs' },
-  { value: 'samplot', label: 'Read cloud' },
+  { value: 'cloud', label: 'Read cloud' },
 ]
 
 interface ReadConnectionsModel {
@@ -57,7 +57,7 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
     // Arcs and read cloud share one band and the read cloud repurposes the
     // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
     // overlays are mutually exclusive — enabling one disables the other. Their
-    // "default for all" pins target distinct on-values ('arc' vs 'samplot'), so
+    // "default for all" pins target distinct on-values ('arc' vs 'cloud'), so
     // they stay independent even though they share the readConnections slot.
     promotableToggleItem({
       label: 'Show read arcs',
@@ -71,10 +71,10 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
     }),
     promotableToggleItem({
       label: 'Show read cloud',
-      checked: model.readConnections === 'samplot',
+      checked: model.readConnections === 'cloud',
       onToggle: () => {
         model.setReadConnections(
-          model.readConnections === 'samplot' ? 'off' : 'samplot',
+          model.readConnections === 'cloud' ? 'off' : 'cloud',
         )
       },
       displayTypeDefault: model.readCloudDisplayTypeDefault,
