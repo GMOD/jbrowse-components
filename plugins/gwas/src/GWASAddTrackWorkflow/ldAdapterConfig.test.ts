@@ -26,10 +26,29 @@ test('explicit index location wins over the derived one', () => {
   })
 })
 
-test('.gz local file with no index → tabix adapter, index left undefined', () => {
+test('.gz local path with no index → tabix adapter, derives sibling .tbi', () => {
   const ld = {
     localPath: '/data/plink.ld.gz',
     locationType: 'LocalPathLocation' as const,
+  }
+  expect(buildLdAdapterConfig(ld)).toEqual({
+    type: 'PlinkLDTabixAdapter',
+    ldLocation: ld,
+    index: {
+      indexType: 'TBI',
+      location: {
+        localPath: '/data/plink.ld.gz.tbi',
+        locationType: 'LocalPathLocation',
+      },
+    },
+  })
+})
+
+test('.gz blob upload with no index → tabix adapter, index left undefined', () => {
+  const ld = {
+    blobId: 'b1',
+    name: 'plink.ld.gz',
+    locationType: 'BlobLocation' as const,
   }
   expect(buildLdAdapterConfig(ld)).toEqual({
     type: 'PlinkLDTabixAdapter',

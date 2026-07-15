@@ -55,8 +55,8 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
 
   const { assembly } = model
   const ldIsTabix = !!ldLocation && isTabixLocation(ldLocation)
-  // Local (blob/localPath) tabix files can't derive `<file>.tbi`, so the index
-  // must be supplied by hand; a URL derives it.
+  // Uploaded (blob/file-handle) tabix files have no derivable `<file>.tbi`, so
+  // the index must be supplied by hand; a URL or local path derives it.
   const gwasIndexRequired = !!gwasLocation && needsExplicitIndex(gwasLocation)
   const ldIndexRequired =
     !!ldLocation && ldIsTabix && needsExplicitIndex(ldLocation)
@@ -114,7 +114,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
         <FileSelector
           name={
             gwasIndexRequired
-              ? 'GWAS tabix index (.tbi, required for local files)'
+              ? 'GWAS tabix index (.tbi, required for uploaded files)'
               : 'GWAS tabix index (.tbi, optional — defaults to <file>.tbi)'
           }
           location={gwasIndexLocation}
@@ -149,7 +149,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           <FileSelector
             name={
               ldIndexRequired
-                ? 'LD tabix index (.tbi, required for local files)'
+                ? 'LD tabix index (.tbi, required for uploaded files)'
                 : 'LD tabix index (.tbi, optional — defaults to <file>.tbi)'
             }
             location={ldIndexLocation}

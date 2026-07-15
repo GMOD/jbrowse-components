@@ -23,19 +23,27 @@ export function isTabixLocation(loc: FileLocation): boolean {
   return locationName(loc).endsWith('.gz')
 }
 
-// A tabix file needs its index supplied explicitly when it's a non-URL location
-// (blob/localPath): we can only derive `<uri>.tbi` for a URL. Pairs with
-// deriveTbiLocation, which returns undefined in exactly this case.
-export function needsExplicitIndex(loc: FileLocation): boolean {
-  return !isUriLocation(loc)
+// Sibling `.tbi` for a location we can derive one for — a URL or a localPath
+// (matching core's makeIndex, which appends the suffix to both). A blob /
+// file-handle upload has no derivable sibling path, so it returns undefined and
+// its index must be supplied explicitly.
+export function deriveTbiLocation(loc: FileLocation): FileLocation | undefined {
+  if (isUriLocation(loc)) {
+    return { uri: `${loc.uri}.tbi`, locationType: 'UriLocation' }
+  } else if ('localPath' in loc) {
+    return {
+      localPath: `${loc.localPath}.tbi`,
+      locationType: 'LocalPathLocation',
+    }
+  } else {
+    return undefined
+  }
 }
 
-// `<uri>.tbi` for a URL location, undefined otherwise (blob/localPath indexes
-// must be supplied explicitly).
-export function deriveTbiLocation(loc: FileLocation): FileLocation | undefined {
-  return isUriLocation(loc)
-    ? { uri: `${loc.uri}.tbi`, locationType: 'UriLocation' }
-    : undefined
+// A tabix file needs its index supplied by hand exactly when we can't derive a
+// sibling for it (a blob / file-handle upload, not a URL or local path).
+export function needsExplicitIndex(loc: FileLocation): boolean {
+  return deriveTbiLocation(loc) === undefined
 }
 
 // Build the PLINK .ld adapter config for the `GWASAdapter`'s `ldAdapter`

@@ -7,8 +7,9 @@ import {
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-// A GWAS file is always a tabix BED, so a non-URL location must carry an
-// explicit index; the LD file only when it's the bgzipped (.gz) variant.
+// A GWAS file is always a tabix BED, so an upload with no derivable `.tbi`
+// (blob/file-handle) must carry an explicit index; the LD file only when it's
+// the bgzipped (.gz) variant.
 export function canSubmit({
   gwasLocation,
   gwasIndexLocation,
