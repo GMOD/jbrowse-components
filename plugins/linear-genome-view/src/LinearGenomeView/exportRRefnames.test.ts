@@ -31,10 +31,9 @@ function bigwigFragment(uri: string, refNameMap?: Record<string, string>) {
 
 describe('refname alias codegen', () => {
   test('no refNameMap emits no aliasing code', () => {
-    const script = assembleRScript(
-      { refName: 'ctgA', start: 0, end: 1000 },
-      [bigwigFragment('x.bw')],
-    )
+    const script = assembleRScript({ refName: 'ctgA', start: 0, end: 1000 }, [
+      bigwigFragment('x.bw'),
+    ])
     expect(script).not.toContain('resolve_chrom')
     expect(script).not.toContain('_refnames')
     // the panel reads chrom directly
@@ -42,10 +41,9 @@ describe('refname alias codegen', () => {
   })
 
   test('refNameMap emits the helper, per-track vector, and local() wrap', () => {
-    const script = assembleRScript(
-      { refName: 'ctgA', start: 0, end: 1000 },
-      [bigwigFragment('x.bw', { ctgA: 'contigA', ctgB: 'contigB' })],
-    )
+    const script = assembleRScript({ refName: 'ctgA', start: 0, end: 1000 }, [
+      bigwigFragment('x.bw', { ctgA: 'contigA', ctgB: 'contigB' }),
+    ])
     expect(script).toContain('resolve_chrom <- function(chrom, aliases)')
     expect(script).toContain(
       'micro_array_refnames <- c(`ctgA` = "contigA", `ctgB` = "contigB")',
@@ -108,12 +106,14 @@ maybe('alias translation makes the canonical name read real data', () => {
 
   // without the map the canonical "ctgA" isn't in the file, so zero rows: this
   // is the failure the alias system fixes
-  const noAlias = assembleRScript(
-    { refName: 'ctgA', start: 0, end: 50000 },
-    [bigwigFragment(bw)],
-  )
+  const noAlias = assembleRScript({ refName: 'ctgA', start: 0, end: 50000 }, [
+    bigwigFragment(bw),
+  ])
   const noPath = join(dir, 'no.R')
-  writeFileSync(noPath, `${noAlias}\ncat("ROWS", nrow(read_bigwig(bw, "ctgA", 0, 50000)), "\\n")`)
+  writeFileSync(
+    noPath,
+    `${noAlias}\ncat("ROWS", nrow(read_bigwig(bw, "ctgA", 0, 50000)), "\\n")`,
+  )
   const noOut = execFileSync('Rscript', [noPath], {
     cwd: dir,
     encoding: 'utf8',

@@ -29,7 +29,13 @@ export default function ExportRDialog({
   )
 
   return (
-    <Dialog open onClose={() => { handleClose() }} title="Export R script">
+    <Dialog
+      open
+      onClose={() => {
+        handleClose()
+      }}
+      title="Export R script"
+    >
       <DialogContent>
         {error ? <ErrorMessage error={error} /> : null}
         {loading ? (

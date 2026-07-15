@@ -27,10 +27,9 @@ function runVcf(name: string, file: string) {
     trackName: `Volvox ${name}`,
     uri: resolve(process.cwd(), `test_data/volvox/${file}`),
   })
-  const script = assembleRScript(
-    { refName: 'ctgA', start: 0, end: 20000 },
-    [fragment],
-  )
+  const script = assembleRScript({ refName: 'ctgA', start: 0, end: 20000 }, [
+    fragment,
+  ])
   const dir = mkdtempSync(join(tmpdir(), `jb-rexport-vcf-${name}-`))
   writeFileSync(join(dir, 'view.R'), script)
   execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
@@ -38,13 +37,21 @@ function runVcf(name: string, file: string) {
 }
 
 // SNVs + a sequence indel
-maybe('SNV VCF script runs and produces a figure', () => {
-  const dir = runVcf('snv', 'volvox.filtered.vcf.gz')
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 60000)
+maybe(
+  'SNV VCF script runs and produces a figure',
+  () => {
+    const dir = runVcf('snv', 'volvox.filtered.vcf.gz')
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)
 
 // symbolic structural variants (<DEL>/<INV>/<INS>) with END-derived spans
-maybe('structural-variant VCF script runs and produces a figure', () => {
-  const dir = runVcf('sv', 'volvox.sv.vcf.gz')
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 60000)
+maybe(
+  'structural-variant VCF script runs and produces a figure',
+  () => {
+    const dir = runVcf('sv', 'volvox.sv.vcf.gz')
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)

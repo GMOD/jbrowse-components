@@ -42,17 +42,29 @@ function runGwas(name: string, file: string, region: [string, number, number]) {
 
 // point-only BED (chromStart, no end column) — the LocusZoom / GWAS summary
 // stats layout, position resolved from the tabix index's begin column
-maybe('point GWAS BED script runs and produces a figure', () => {
-  const dir = runGwas('sle', 'test_data/gwas/SLE_gwas.bed.gz', [
-    '2', 191794000, 191900000,
-  ])
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 60000)
+maybe(
+  'point GWAS BED script runs and produces a figure',
+  () => {
+    const dir = runGwas('sle', 'test_data/gwas/SLE_gwas.bed.gz', [
+      '2',
+      191794000,
+      191900000,
+    ])
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)
 
 // BED with an explicit end column and a named score column
-maybe('interval GWAS BED script runs and produces a figure', () => {
-  const dir = runGwas('volvox', 'test_data/volvox/volvox.gwas.tsv.gz', [
-    'ctgA', 0, 50000,
-  ])
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 60000)
+maybe(
+  'interval GWAS BED script runs and produces a figure',
+  () => {
+    const dir = runGwas('volvox', 'test_data/volvox/volvox.gwas.tsv.gz', [
+      'ctgA',
+      0,
+      50000,
+    ])
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)

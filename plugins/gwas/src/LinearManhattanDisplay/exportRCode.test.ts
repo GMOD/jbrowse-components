@@ -33,9 +33,9 @@ test('draws points against -log10(p) with a genome-wide significance line', () =
 })
 
 test('reproduces native score transforms in the y aesthetic', () => {
-  expect(manhattanFragment({ ...base, scoreTransform: 'none' }).plotExpr).toContain(
-    'y = score)',
-  )
+  expect(
+    manhattanFragment({ ...base, scoreTransform: 'none' }).plotExpr,
+  ).toContain('y = score)')
   expect(
     manhattanFragment({ ...base, scoreTransform: 'negLog10' }).plotExpr,
   ).toContain('y = -log10(pmax(score, .Machine$double.xmin))')
@@ -45,7 +45,10 @@ test('reproduces native score transforms in the y aesthetic', () => {
 })
 
 test('falls back to the default color for a jexl color callback', () => {
-  const f = manhattanFragment({ ...base, color: 'jexl:rgb(get(feature,"score"))' })
+  const f = manhattanFragment({
+    ...base,
+    color: 'jexl:rgb(get(feature,"score"))',
+  })
   expect(f.plotExpr).toContain('color = "#0068d1"')
   expect(f.plotExpr).not.toContain('jexl')
 })

@@ -74,7 +74,8 @@ test('pileup colors reads by the resolved color-by scheme', () => {
   ).toContain('pair_orientation')
   // insert-size family collapses onto the insertSize scheme
   expect(
-    alignmentsFragments({ ...base, colorBy: 'insertSizeGradient' })[1]!.plotExpr,
+    alignmentsFragments({ ...base, colorBy: 'insertSizeGradient' })[1]!
+      .plotExpr,
   ).toContain('read_fill_colors(reads, "insertSize")')
 })
 
@@ -86,7 +87,9 @@ test('modifications scheme overlays MM/ML mod ticks instead of mismatches', () =
     expect.arrayContaining(['bam_modifications', 'mod_colors']),
   )
   expect(pileup!.helpers).not.toContain('bam_mismatches')
-  expect(pileup!.plotExpr).toContain('bam_modifications(aln, chrom, start, end, min_prob)')
+  expect(pileup!.plotExpr).toContain(
+    'bam_modifications(aln, chrom, start, end, min_prob)',
+  )
   expect(pileup!.plotExpr).toContain('mod_colors(mm$modtype)')
   expect(pileup!.plotExpr).toContain('reads$row[mm$read_index]')
   // the probability threshold is emitted as an editable var (JBrowse default 0.1)
@@ -127,14 +130,18 @@ test('linkReads uses chain layout with mate/supplementary connectors', () => {
   // default flat pileup
   const [, flat] = alignmentsFragments(base)
   expect(flat!.helpers).toContain('pileup_layout')
-  expect(flat!.plotExpr).toContain('pileup_layout(read_bam(aln, chrom, start, end))')
+  expect(flat!.plotExpr).toContain(
+    'pileup_layout(read_bam(aln, chrom, start, end))',
+  )
   expect(flat!.plotExpr).not.toContain('link_reads')
 
   // linkReads: group by read name into chains + draw gap connectors
   const [, linked] = alignmentsFragments({ ...base, linkReads: true })
   expect(linked!.helpers).toContain('link_reads')
   expect(linked!.helpers).not.toContain('pileup_layout')
-  expect(linked!.plotExpr).toContain('link_reads(read_bam(aln, chrom, start, end))')
+  expect(linked!.plotExpr).toContain(
+    'link_reads(read_bam(aln, chrom, start, end))',
+  )
   // connector segments drawn from linked$links, under the read rects
   expect(linked!.plotExpr).toContain('geom_segment(data = linked$links')
   expect(linked!.plotExpr.indexOf('geom_segment')).toBeLessThan(
@@ -166,7 +173,9 @@ test('pileup marks CIGAR deletions/skips/insertions', () => {
   )
   expect(pileup!.plotExpr).toContain('bam_indels(aln, chrom, start, end)')
   // indels joined to their read row by read_index, like the mismatch/clip overlays
-  expect(pileup!.plotExpr).toContain('indels$row <- reads$row[indels$read_index]')
+  expect(pileup!.plotExpr).toContain(
+    'indels$row <- reads$row[indels$read_index]',
+  )
   // deletions = grey full-height rect; skips = erased body + thin teal line;
   // insertions = thin purple tick (all via fixed colors, not the identity scale)
   expect(pileup!.plotExpr).toContain('dels <- indels[indels$type == "D", ]')
@@ -206,11 +215,11 @@ test('both panels share one file-path setup and pure Bioc packages', () => {
 
 test('respects showCoverage / showPileup toggles', () => {
   expect(alignmentsFragments({ ...base, showCoverage: false })).toHaveLength(1)
-  expect(alignmentsFragments({ ...base, showCoverage: false })[0]!.plotVariable).toBe(
-    'p_aln_pileup',
-  )
+  expect(
+    alignmentsFragments({ ...base, showCoverage: false })[0]!.plotVariable,
+  ).toBe('p_aln_pileup')
   expect(alignmentsFragments({ ...base, showPileup: false })).toHaveLength(1)
-  expect(alignmentsFragments({ ...base, showPileup: false })[0]!.plotVariable).toBe(
-    'p_aln_coverage',
-  )
+  expect(
+    alignmentsFragments({ ...base, showPileup: false })[0]!.plotVariable,
+  ).toBe('p_aln_coverage')
 })

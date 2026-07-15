@@ -44,33 +44,45 @@ function runRows(
 
 // 20-sample symbolic SVs (<DEL>/<INV>/<INS>) — exercises the INFO END span path
 // (each variant a genomic-width rect) and per-sample y labels
-maybe('20-sample SV row display runs and produces a figure', () => {
-  const dir = runRows('sv', 'volvox.sv.vcf.gz', {
-    refName: 'ctgA',
-    start: 1000,
-    end: 24000,
-  })
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 120000)
+maybe(
+  '20-sample SV row display runs and produces a figure',
+  () => {
+    const dir = runRows('sv', 'volvox.sv.vcf.gz', {
+      refName: 'ctgA',
+      start: 1000,
+      end: 24000,
+    })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  120000,
+)
 
 // 1094-sample panel — exercises the many-sample y-label-hidden path
-maybe('1094-sample row display runs and produces a figure', () => {
-  const dir = runRows('test', 'volvox.test.vcf.gz', {
-    refName: 'contigA',
-    start: 3000,
-    end: 12738,
-  })
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 120000)
+maybe(
+  '1094-sample row display runs and produces a figure',
+  () => {
+    const dir = runRows('test', 'volvox.test.vcf.gz', {
+      refName: 'contigA',
+      start: 3000,
+      end: 12738,
+    })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  120000,
+)
 
 // phased mode: the diploid panel expands to HP0/HP1 haplotype rows (2188 rows),
 // exercising the per-haplotype single-allele classing at genomic position
-maybe('1094-sample phased row display runs and produces a figure', () => {
-  const dir = runRows(
-    'test_phased',
-    'volvox.test.vcf.gz',
-    { refName: 'contigA', start: 3000, end: 12738 },
-    { phased: true },
-  )
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 120000)
+maybe(
+  '1094-sample phased row display runs and produces a figure',
+  () => {
+    const dir = runRows(
+      'test_phased',
+      'volvox.test.vcf.gz',
+      { refName: 'contigA', start: 3000, end: 12738 },
+      { phased: true },
+    )
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  120000,
+)

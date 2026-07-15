@@ -23,7 +23,9 @@ test('reads genotypes with read_vcf_gt and emits no bespoke package', () => {
     'patchwork',
   ])
   expect(f.packages).not.toContain('VariantAnnotation')
-  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end, FALSE)')
+  expect(f.plotExpr).toContain(
+    'read_vcf_gt(variants, chrom, start, end, FALSE)',
+  )
 })
 
 test('phased mode reads per-haplotype genotypes and uses the phased palette', () => {
@@ -54,5 +56,7 @@ test('emits editable MAF / missingness threshold variables from the slots', () =
 test('non-identifier track ids become safe R variable names', () => {
   const f = variantMatrixFragment({ ...base, trackId: '1000g.panel' })
   expect(f.plotVariable).toBe('p__1000g_panel')
-  expect(f.setup).toContain('_1000g_panel <- "https://example.com/panel.vcf.gz"')
+  expect(f.setup).toContain(
+    '_1000g_panel <- "https://example.com/panel.vcf.gz"',
+  )
 })
