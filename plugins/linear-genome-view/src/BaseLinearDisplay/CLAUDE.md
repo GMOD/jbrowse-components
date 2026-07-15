@@ -1,7 +1,7 @@
 # BaseLinearDisplay fetch system
 
 `models/FetchMixin.ts` (stop-token rotation, staleness, `fetchGeneration`,
-`isLoading`) + `models/MultiRegionDisplayMixin.ts` (the four autoruns,
+`isLoading`) + `models/MultiRegionDisplayMixin.ts` (the five autoruns,
 `fetchRegions`, `loadedRegions`, overridable hooks).
 
 The **status chrome** that renders this fetch state (loading overlay / error bar
@@ -14,7 +14,7 @@ early-`return` + loading-thunk constraints.
 
 ## MultiRegionDisplayMixin
 
-### Four autoruns installed in `afterAttach`
+### Five autoruns installed in `afterAttach`
 
 | Name                                 | Trigger                                                                                                 | Action                                                    |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
@@ -54,7 +54,7 @@ reuses indices, so a stale entry would apply to the wrong chromosome (canvas's
 | `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                                                                                                                                                                                                                  |
 | `onRegionTooLarge()`         | no-op       | clear transient hover/tooltip state when `regionTooLarge` becomes true (the banner replaces the content); fired by the `ClearHoverOnRegionTooLarge` autorun                                                                                                                                   |
 
-The region-too-large gate itself (imperative flag vs. derived byte estimate) lives in `RegionTooLargeMixin`; a byte-gated display opts into the derived, self-releasing banner by overriding `derivedRegionTooLargeEnabled` → true (+ `configuredFetchSizeLimit`, and `densityTooLargeForDerivedGate` for a second axis). See that mixin's header comment.
+The region-too-large gate itself lives in `RegionTooLargeMixin`: a derived byte estimate (the old imperative `setRegionTooLarge` flag path was removed). A byte-gated display opts into the derived, self-releasing banner by overriding `derivedRegionTooLargeEnabled` → true (+ `configuredFetchSizeLimit`, and `densityTooLargeForDerivedGate` for a second axis). See that mixin's header comment.
 
 ### `loadedRegions`
 

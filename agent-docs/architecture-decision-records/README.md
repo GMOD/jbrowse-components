@@ -22,6 +22,7 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [010](adr-010-synteny-dotplot-pixel-offsets.md) | Superseded | Synteny/dotplot pre-projected pixel offsets — superseded by ADR-018 for synteny |
 | [011](adr-011-canvas-flatbush-immutable-offsets.md) | Rejected | Canvas flatbushItem/subfeatureInfo stay mutable; reject parallel offset arrays |
 | [012](adr-012-synteny-worker-output-split.md) | Accepted | Synteny worker emits geometry only; main thread owns colors and picking IDs (picking part superseded by ADR-019) |
+| 013–015 | Removed | Graph-genome ADRs (bubble shape, chain contraction, cross-path symmetry) — deleted with `graph-core`; numbers not reused |
 | [016](adr-016-bicolorpivot-stays-in-worker.md) | Accepted | `bicolorPivot` split stays in the worker, not `gpuProps` |
 | [017](adr-017-wiggle-per-key-autoruns.md) | Accepted | Per-region streamed wiggle upload uses per-key autoruns |
 | [018](adr-018-synteny-cumbp-hpmath-storage.md) | Accepted | Synteny corner storage moves to cumulative-bp hi/lo Float32 (supersedes ADR-010) |

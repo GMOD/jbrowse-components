@@ -73,7 +73,7 @@ interface GlobalFetchAutorunHost extends IAnyStateTreeNode {
 /**
  * Install the fetch-trigger autorun for a `GlobalDataDisplayMixin` display.
  *
- * Unlike `MultiRegionDisplayMixin` (which installs its four fetch autoruns for
+ * Unlike `MultiRegionDisplayMixin` (which installs its five fetch autoruns for
  * you), this mixin installs none — each global display owns its trigger. But
  * every global trigger shares the same skeleton: skip while the track is
  * minimized or the viewport has no content blocks; track `rpcProps()` +

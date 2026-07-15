@@ -8,8 +8,10 @@ description: The community plugin API proposal. Read when doing plugin API desig
 **Status:** Historical proposal. The mixin/lifecycle rename pass in §4
 was adopted with different names than this RFC proposed. As-shipped
 mapping (RFC → adopted): `GpuRenderingBackendLifecycleSlotMixin` →
-`RenderLifecycleMixin` (kept "Gpu" prefix); `installGpuDisplay` →
-`attachRenderingBackend`; `stopGpuRenderingBackendLifecycle` → `stopRenderingBackend`;
+`RenderLifecycleMixin` (dropped the "Gpu" prefix, moved from
+`packages/core/src/gpu/` to the new `packages/render-core/` package);
+`installGpuDisplay` → `attachRenderingBackend`;
+`stopGpuRenderingBackendLifecycle` → `stopRenderingBackend`;
 `useGpuModelLifecycle` → `useRenderingBackend`; `initDualRenderingBackend` →
 `createRenderingBackend`. The Canvas2D-as-first-class proposal (§3, §4) is not
 yet implemented — current Canvas2D paths use the same

@@ -269,7 +269,7 @@ in `shared/featureDensityUtils.ts` so they can't drift:
   displays (alignments, LD) pass only bytes and never gate on density.
   `alwaysRender` is the self-summarizing-adapter escape hatch: adapters that cap
   returned data at screen resolution (BigWig, HiC, BigMaf, MultiWiggle) report
-  `{ alwaysRender: true }` from `getFeatureDensityStats`, so no region is ever too
+  `{ alwaysRender: true }` from `getMultiRegionFeatureDensityStats`, so no region is ever too
   large no matter how wide the view.
 
 Variants are monolithic: `MultiSampleVariantGetCellData` returns one batched
@@ -1024,7 +1024,7 @@ does the Canvas2D-only version); keep them in step with any change here.
   the `PassDescriptor`.
 - **MST model:**
   - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays (brings
-    in `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the four fetch
+    in `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the five fetch
     autoruns, and `rpcProps()`→refetch wiring).
   - Compose `GlobalDataDisplayMixin()` for displays that hold a single
     non-regional dataset (HiC contact matrix, LD triangle, variant matrix). Same

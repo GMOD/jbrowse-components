@@ -321,10 +321,10 @@ flavor of drift).
 
 - `createSvgRasterCanvas(width, height, opts)` — the 2× DPR canvas +
   `opts.createCanvas` fallback ritual.
-- `paintLayer(width, height, opts, paint) → ReactNode` — raster-vs-vector
-  dispatch.
-- `svgExport` — `SVGErrorBox` (red error banner) + `SvgClipRect` (clipPath
-  wrapper).
+- `PaintLayer({ width, height, opts, paint }) → ReactNode` — raster-vs-vector
+  dispatch (`@jbrowse/core/util/paintLayer`).
+- `SvgExport` — `SVGErrorBox` (red error banner) + `SvgClipRect` (clipPath
+  wrapper), in `@jbrowse/core/svg/SvgExport`.
 - `Ctx2D = CanvasRenderingContext2D | SvgCanvas` — the shared type alias every
   `drawXxxBlocks` signature uses.
 

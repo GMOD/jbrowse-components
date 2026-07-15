@@ -56,7 +56,7 @@ export function isBlockCovered(
  * #stateModel MultiRegionDisplayMixin
  * #category display
  *
- * Per-region fetch lifecycle for LGV-based GPU displays. Installs four autoruns
+ * Per-region fetch lifecycle for LGV-based GPU displays. Installs five autoruns
  * in `afterAttach` and exposes overridable hooks (`fetchNeeded`, `rpcProps`,
  * `isCacheValid`, `getByteEstimateConfig`, `clearDisplaySpecificData`) plus the
  * `fetchRegions` / `loadedRegions` machinery.
@@ -258,8 +258,7 @@ export default function MultiRegionDisplayMixin() {
        * to true. Displays with transient hover/tooltip state override it to clear
        * that state — the too-large banner replaces the rendered content, so a
        * lingering hover would otherwise pin to a now-hidden feature. Wired to the
-       * `ClearHoverOnRegionTooLarge` autorun so it fires for the imperative and
-       * derived gates alike.
+       * `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.
        */
       onRegionTooLarge() {},
     }))
@@ -312,8 +311,9 @@ export default function MultiRegionDisplayMixin() {
     .actions(self => ({
       /**
        * #action
-       * installs the four fetch-lifecycle autoruns (DisplayedRegionsChange,
-       * FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange)
+       * installs the five fetch-lifecycle autoruns (DisplayedRegionsChange,
+       * FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange,
+       * ClearHoverOnRegionTooLarge)
        */
       afterAttach() {
         // Clear loaded data whenever the displayed-regions list
