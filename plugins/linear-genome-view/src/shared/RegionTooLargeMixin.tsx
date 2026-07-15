@@ -147,6 +147,12 @@ export default function RegionTooLargeMixin() {
                 configFetchSizeLimit: self.configuredFetchSizeLimit,
               }),
               densityTooLarge: self.densityTooLargeForDerivedGate,
+              // Self-summarizing adapters (BigWig/HiC — cap returned data at
+              // screen resolution) never gate. None of the currently gated
+              // adapters set it (BigMaf explicitly does NOT), but honoring it
+              // here keeps the derived gate matching evaluateRegionTooLarge's
+              // contract if one ever does.
+              alwaysRender: self.featureDensityStats?.alwaysRender,
             })
           : { tooLarge: false, reason: '' }
       },

@@ -277,6 +277,18 @@ export default function MultiRegionDisplayMixin() {
         await self.runFetch(async ctx => {
           const byteEstimateConfig = self.getByteEstimateConfig()
           if (byteEstimateConfig) {
+            // A display returning a byte-estimate config MUST enable the derived
+            // gate, or the estimate is captured but `regionTooLarge` stays false
+            // and the download proceeds unblocked (silent). Catch the
+            // misconfiguration in dev.
+            if (
+              process.env.NODE_ENV !== 'production' &&
+              !self.derivedRegionTooLargeEnabled
+            ) {
+              console.error(
+                'getByteEstimateConfig() returned a config but derivedRegionTooLargeEnabled is false — the byte estimate is captured but the too-large gate never trips, so the download proceeds unblocked. Override derivedRegionTooLargeEnabled → true.',
+              )
+            }
             const session = getSession(self)
             const stats = await checkByteEstimate(
               session.rpcManager,
