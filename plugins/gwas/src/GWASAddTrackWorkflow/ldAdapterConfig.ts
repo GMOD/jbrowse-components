@@ -17,6 +17,19 @@ export function locationName(loc: FileLocation): string {
   return ''
 }
 
+// bgzip-compressed (tabix) vs plain file, sniffed from the .gz extension —
+// picks the tabix adapter and, for tabix files, means an index is needed.
+export function isTabixLocation(loc: FileLocation): boolean {
+  return locationName(loc).endsWith('.gz')
+}
+
+// A tabix file needs its index supplied explicitly when it's a non-URL location
+// (blob/localPath): we can only derive `<uri>.tbi` for a URL. Pairs with
+// deriveTbiLocation, which returns undefined in exactly this case.
+export function needsExplicitIndex(loc: FileLocation): boolean {
+  return !isUriLocation(loc)
+}
+
 // `<uri>.tbi` for a URL location, undefined otherwise (blob/localPath indexes
 // must be supplied explicitly).
 export function deriveTbiLocation(loc: FileLocation): FileLocation | undefined {
@@ -39,7 +52,7 @@ export function buildLdAdapterConfig(
   ldLocation: FileLocation,
   ldIndexLocation?: FileLocation,
 ): Record<string, unknown> {
-  const isTabix = locationName(ldLocation).endsWith('.gz')
+  const isTabix = isTabixLocation(ldLocation)
   const type = isTabix ? 'PlinkLDTabixAdapter' : 'PlinkLDAdapter'
   if (isUriLocation(ldLocation) && !(isTabix && ldIndexLocation)) {
     return { type, uri: ldLocation.uri }

@@ -13,7 +13,7 @@ import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Button, Divider, Paper, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { locationName } from './ldAdapterConfig.ts'
+import { isTabixLocation, needsExplicitIndex } from './ldAdapterConfig.ts'
 import { buildGwasTrackConfig, canSubmit } from './util.ts'
 import ScoreColumnFields from '../GWASAdapter/ScoreColumnFields.tsx'
 import { DEFAULT_SCORE_COLUMN } from '../GWASAdapter/configSchema.ts'
@@ -54,7 +54,12 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   const [error, setError] = useState<unknown>()
 
   const { assembly } = model
-  const ldIsTabix = !!ldLocation && locationName(ldLocation).endsWith('.gz')
+  const ldIsTabix = !!ldLocation && isTabixLocation(ldLocation)
+  // Local (blob/localPath) tabix files can't derive `<file>.tbi`, so the index
+  // must be supplied by hand; a URL derives it.
+  const gwasIndexRequired = !!gwasLocation && needsExplicitIndex(gwasLocation)
+  const ldIndexRequired =
+    !!ldLocation && ldIsTabix && needsExplicitIndex(ldLocation)
 
   function doSubmit() {
     try {
@@ -107,7 +112,11 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
           }}
         />
         <FileSelector
-          name="GWAS tabix index (.tbi, optional — defaults to <file>.tbi)"
+          name={
+            gwasIndexRequired
+              ? 'GWAS tabix index (.tbi, required for local files)'
+              : 'GWAS tabix index (.tbi, optional — defaults to <file>.tbi)'
+          }
           location={gwasIndexLocation}
           rootModel={rootModel}
           setLocation={loc => {
@@ -138,7 +147,11 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
         />
         {ldIsTabix ? (
           <FileSelector
-            name="LD tabix index (.tbi, optional — defaults to <file>.tbi)"
+            name={
+              ldIndexRequired
+                ? 'LD tabix index (.tbi, required for local files)'
+                : 'LD tabix index (.tbi, optional — defaults to <file>.tbi)'
+            }
             location={ldIndexLocation}
             rootModel={rootModel}
             setLocation={loc => {
@@ -162,7 +175,16 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
       <Button
         variant="contained"
         className={classes.submit}
-        disabled={!canSubmit({ gwasLocation, trackName, assembly })}
+        disabled={
+          !canSubmit({
+            gwasLocation,
+            gwasIndexLocation,
+            ldLocation,
+            ldIndexLocation,
+            trackName,
+            assembly,
+          })
+        }
         onClick={() => {
           doSubmit()
         }}

@@ -1,17 +1,38 @@
-import { buildLdAdapterConfig, deriveTbiLocation } from './ldAdapterConfig.ts'
+import {
+  buildLdAdapterConfig,
+  deriveTbiLocation,
+  isTabixLocation,
+  needsExplicitIndex,
+} from './ldAdapterConfig.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
+// A GWAS file is always a tabix BED, so a non-URL location must carry an
+// explicit index; the LD file only when it's the bgzipped (.gz) variant.
 export function canSubmit({
   gwasLocation,
+  gwasIndexLocation,
+  ldLocation,
+  ldIndexLocation,
   trackName,
   assembly,
 }: {
   gwasLocation: FileLocation | undefined
+  gwasIndexLocation: FileLocation | undefined
+  ldLocation: FileLocation | undefined
+  ldIndexLocation: FileLocation | undefined
   trackName: string
   assembly: string | undefined
 }) {
-  return !!gwasLocation && trackName.trim().length > 0 && !!assembly
+  const gwasOk =
+    !!gwasLocation &&
+    (!needsExplicitIndex(gwasLocation) || !!gwasIndexLocation)
+  const ldOk =
+    !ldLocation ||
+    !isTabixLocation(ldLocation) ||
+    !needsExplicitIndex(ldLocation) ||
+    !!ldIndexLocation
+  return gwasOk && ldOk && trackName.trim().length > 0 && !!assembly
 }
 
 // Full GWAS track config. The GWAS data is a bgzipped+tabixed BED

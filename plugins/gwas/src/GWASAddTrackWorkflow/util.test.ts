@@ -1,21 +1,83 @@
 import { buildGwasTrackConfig, canSubmit } from './util.ts'
 
 const uri = (s: string) => ({ uri: s, locationType: 'UriLocation' as const })
+const local = (s: string) => ({
+  localPath: s,
+  locationType: 'LocalPathLocation' as const,
+})
+const noIndexes = {
+  gwasIndexLocation: undefined,
+  ldLocation: undefined,
+  ldIndexLocation: undefined,
+}
 
 test('canSubmit requires a GWAS file, a name, and an assembly', () => {
-  const ld = uri('a.bed.gz')
+  const g = uri('a.bed.gz')
   expect(
-    canSubmit({ gwasLocation: ld, trackName: 'x', assembly: 'hg38' }),
+    canSubmit({ gwasLocation: g, trackName: 'x', assembly: 'hg38', ...noIndexes }),
   ).toBe(true)
   expect(
-    canSubmit({ gwasLocation: undefined, trackName: 'x', assembly: 'hg38' }),
+    canSubmit({
+      gwasLocation: undefined,
+      trackName: 'x',
+      assembly: 'hg38',
+      ...noIndexes,
+    }),
   ).toBe(false)
   expect(
-    canSubmit({ gwasLocation: ld, trackName: '  ', assembly: 'hg38' }),
+    canSubmit({ gwasLocation: g, trackName: '  ', assembly: 'hg38', ...noIndexes }),
   ).toBe(false)
   expect(
-    canSubmit({ gwasLocation: ld, trackName: 'x', assembly: undefined }),
+    canSubmit({
+      gwasLocation: g,
+      trackName: 'x',
+      assembly: undefined,
+      ...noIndexes,
+    }),
   ).toBe(false)
+})
+
+test('canSubmit: a local GWAS file requires an explicit index', () => {
+  const base = { trackName: 'x', assembly: 'hg38' as const }
+  // URL derives its .tbi, so no explicit index is needed
+  expect(
+    canSubmit({ ...base, ...noIndexes, gwasLocation: uri('a.bed.gz') }),
+  ).toBe(true)
+  // local file can't derive one
+  expect(
+    canSubmit({ ...base, ...noIndexes, gwasLocation: local('/a.bed.gz') }),
+  ).toBe(false)
+  expect(
+    canSubmit({
+      ...base,
+      ...noIndexes,
+      gwasLocation: local('/a.bed.gz'),
+      gwasIndexLocation: local('/a.bed.gz.tbi'),
+    }),
+  ).toBe(true)
+})
+
+test('canSubmit: a local LD file needs an index only when it is tabix (.gz)', () => {
+  const base = {
+    trackName: 'x',
+    assembly: 'hg38' as const,
+    gwasLocation: uri('a.bed.gz'),
+    gwasIndexLocation: undefined,
+    ldIndexLocation: undefined,
+  }
+  // local tabix LD without an index blocks submit
+  expect(canSubmit({ ...base, ldLocation: local('/p.ld.gz') })).toBe(false)
+  expect(
+    canSubmit({
+      ...base,
+      ldLocation: local('/p.ld.gz'),
+      ldIndexLocation: local('/p.ld.gz.tbi'),
+    }),
+  ).toBe(true)
+  // a plain (non-tabix) local .ld carries no index at all
+  expect(canSubmit({ ...base, ldLocation: local('/p.ld') })).toBe(true)
+  // a URL tabix LD derives its .tbi
+  expect(canSubmit({ ...base, ldLocation: uri('http://h/p.ld.gz') })).toBe(true)
 })
 
 test('without LD: GWAS adapter only, no displays override, derives .tbi', () => {
