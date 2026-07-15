@@ -40,6 +40,14 @@ const dataFileName: Record<AdapterTypeOptions, string> = {
   BgzipTaffyAdapter: 'Path to TAF.gz (Bgzipped TAF)',
 }
 
+// User-facing radio labels; the option values are the internal adapter type
+// names, which shouldn't be shown to users directly.
+const fileTypeLabel: Record<AdapterTypeOptions, string> = {
+  BigMafAdapter: 'bigMaf',
+  MafTabixAdapter: 'MAF (tabix-indexed)',
+  BgzipTaffyAdapter: 'TAF (Taffy, bgzip-compressed)',
+}
+
 export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
   const { classes } = useStyles()
   const [samples, setSamples] = useState('')
@@ -58,14 +66,13 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
 
   function handleSubmit() {
     try {
+      setError(undefined)
       const session = getSession(model)
-      const sampleNames = parseSampleNames(samples)
-      const trackId = makeTrackId({ name: trackName })
       if (isSessionWithAddTracks(session)) {
         addAndShowTrack(
           session,
           {
-            trackId,
+            trackId: makeTrackId({ name: trackName }),
             type: 'MafTrack',
             name: trackName,
             assemblyNames: [model.assembly],
@@ -76,15 +83,17 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
               indexLoc,
               nhLoc,
               summaryLoc,
-              sampleNames,
+              sampleNames: parseSampleNames(samples),
             }),
           },
           model.view,
         )
-      }
-      model.clearData()
-      if (isSessionModelWithWidgets(session)) {
-        session.hideWidget(model)
+        model.clearData()
+        if (isSessionModelWithWidgets(session)) {
+          session.hideWidget(model)
+        }
+      } else {
+        throw new Error("Can't add tracks to this session")
       }
     } catch (e) {
       setError(e)
@@ -99,6 +108,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
           label="File type"
           value={fileTypeChoice}
           options={['BigMafAdapter', 'MafTabixAdapter', 'BgzipTaffyAdapter']}
+          getOptionLabel={value => fileTypeLabel[value]}
           onChange={value => {
             setFileTypeChoice(value)
           }}

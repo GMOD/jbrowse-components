@@ -10,11 +10,13 @@ export default function RadioSelector<T extends string>({
   label,
   value,
   options,
+  getOptionLabel,
   onChange,
 }: {
   label: string
   value: T
   options: readonly T[]
+  getOptionLabel?: (value: T) => string
   onChange: (value: T) => void
 }) {
   return (
@@ -31,7 +33,7 @@ export default function RadioSelector<T extends string>({
             key={option}
             value={option}
             control={<Radio />}
-            label={option}
+            label={getOptionLabel ? getOptionLabel(option) : option}
           />
         ))}
       </RadioGroup>
