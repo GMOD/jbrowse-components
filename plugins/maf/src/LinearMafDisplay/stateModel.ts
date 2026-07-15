@@ -17,6 +17,11 @@ import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  evaluateRegionTooLarge,
+  onDisplayedRegionsChange,
+  resolveByteLimit,
+  scaleByteEstimate,
+  scaledForceLoadByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
@@ -197,6 +202,13 @@ export default function stateModelFactory(
       resizing: false,
       // Debounce handle that clears `resizing` after the drag stops.
       resizeSettleTimer: undefined as ReturnType<typeof setTimeout> | undefined,
+      /**
+       * #volatile
+       * visibleBp at which the current `featureDensityStats` byte estimate was
+       * captured, so the derived `regionTooLarge` getter can scale it to the
+       * currently visible span (mirrors canvas/LD's byteEstimateVisibleBp).
+       */
+      byteEstimateVisibleBp: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -500,6 +512,102 @@ export default function stateModelFactory(
        */
       get lgv(): LinearGenomeViewModel {
         return getContainingView(self) as LinearGenomeViewModel
+      },
+    }))
+    // Derived regionTooLarge: a pure function of the cached byte estimate scaled
+    // to the current viewport, so the too-large banner self-releases on zoom-in
+    // and doesn't flicker on pan (the estimate survives viewport changes; only
+    // region navigation clears it — see afterAttach). Byte-only (no density
+    // axis), mirroring canvas/LD. Shadows RegionTooLargeMixin's imperative
+    // getter; the mixin's pre-flight (getByteEstimateConfig) still captures the
+    // estimate and short-circuits the download server-side, but the banner + the
+    // FetchVisibleRegions gate now read this derived verdict so they self-release.
+    .actions(self => {
+      const superSetFeatureDensityStats = self.setFeatureDensityStats
+      return {
+        /**
+         * #action
+         * Records the span the byte estimate was measured at so the derived
+         * `regionTooLarge` getter can scale it to the current view (mirrors
+         * canvas/LD's setFeatureDensityStats override).
+         */
+        setFeatureDensityStats(
+          stats?: Parameters<typeof superSetFeatureDensityStats>[0],
+        ) {
+          self.byteEstimateVisibleBp = stats ? self.lgv.visibleBp : undefined
+          superSetFeatureDensityStats(stats)
+        },
+      }
+    })
+    .views(self => ({
+      /**
+       * #getter
+       * The cached byte estimate scaled from the span it was measured over
+       * (`byteEstimateVisibleBp`) to the currently visible span. Roughly
+       * proportional to span, so scaling makes the verdict a pure function of the
+       * current view and self-releases on zoom-in — without it a large zoomed-out
+       * estimate stays above the limit forever and gates refetch.
+       */
+      get estimatedVisibleBytes() {
+        return scaleByteEstimate({
+          bytes: self.featureDensityStats?.bytes,
+          captureBp: self.byteEstimateVisibleBp,
+          visibleBp: self.lgv.visibleBp,
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Shared verdict + reason (AUTO_FORCE_LOAD_BP floor + bytes-over-limit),
+       * fed the scaled estimate so the byte gate self-releases on zoom-in. Same
+       * helper as every other gating path so the banner text can't drift.
+       */
+      get tooLargeStatus() {
+        return evaluateRegionTooLarge({
+          visibleBp: self.lgv.visibleBp,
+          bytes: self.estimatedVisibleBytes,
+          byteLimit: resolveByteLimit({
+            userByteSizeLimit: self.userByteSizeLimit,
+            adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
+            configFetchSizeLimit: getConf(self, 'fetchSizeLimit'),
+          }),
+        })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get regionTooLarge() {
+        return self.tooLargeStatus.tooLarge
+      },
+      /**
+       * #getter
+       */
+      get regionTooLargeReason() {
+        return self.tooLargeStatus.reason
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Force-load raises the byte gate past the estimate scaled to the
+       * *current* view (`estimatedVisibleBytes`), not the raw captured bytes: the
+       * derived gate compares against the scaled estimate, so a view that zoomed
+       * out between the estimate capture and the force-load click would otherwise
+       * leave the estimate above the new limit and the banner up. Mirrors
+       * canvas/LD; without it the shared RegionTooLargeMixin default (raw bytes)
+       * under-raises this scale-aware path.
+       */
+      setFeatureDensityStatsLimit(stats?: { bytes?: number }) {
+        const limit = scaledForceLoadByteLimit({
+          scaledEstimate: self.estimatedVisibleBytes,
+          rawBytes: stats?.bytes,
+        })
+        if (limit !== undefined) {
+          self.userByteSizeLimit = limit
+        }
       },
     }))
     .views(self => ({
@@ -1585,6 +1693,16 @@ export default function stateModelFactory(
         },
         async afterAttach() {
           superAfterAttach()
+          // Drop the cached byte estimate on chromosome navigation:
+          // displayedRegionIndex is reused across chromosomes, so a stale
+          // estimate would gate the new region against the wrong stats and, since
+          // FetchVisibleRegions gates on !regionTooLarge, wedge the banner. The
+          // estimate intentionally survives viewport-change clears (no flicker on
+          // pan); this hook is the one path that clears it. Canvas does the same
+          // for its densityStatsPerRegion.
+          onDisplayedRegionsChange(self, () => {
+            self.setFeatureDensityStats(undefined)
+          })
           try {
             const { setupTreeDrawingAutorun } =
               await import('@jbrowse/tree-sidebar')
