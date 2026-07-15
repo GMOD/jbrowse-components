@@ -861,8 +861,8 @@
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
     "status": "good",
-    "note": "FIXED by filtering, not by changing gene (reviewer offered either). Counted the junctions from the BAM slice's CIGAR N-ops: 159 distinct, but 122 carry only 1-2 reads — nanopore aligner noise, much of it splice sites shifted a few bp off a real one (87958024 vs the true 87958020), which is what made the arcs crisscross. PTEN's 9 exons give exactly 8 real introns, each with 446-717 reads, vs 99 for the loudest noise junction — so any cutoff in that gap leaves precisely the 8 canonical introns. Set minSashimiScore: 200 (mid-gap: 2.2x under the weakest real junction, 2x over the loudest noise, so it is not overfit to this depth). Both stages now show 8 clean arcs, and the collapsed frame reads as one arc per adjacent-exon boundary.",
-    "reviewedAt": "2026-07-15T03:42:22.288Z",
+    "note": "the sashimi arcs here are pretty chaotic. we may want to find another gene that looks cleaner or filter out low frequency sashimi arcs",
+    "reviewedAt": "2026-07-15T03:52:12.650Z",
     "hash": "588296abbfd9a7b1dc85e890366e204b22411a42"
   },
   "gene_track_color_by_cds": {

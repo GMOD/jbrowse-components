@@ -94,10 +94,8 @@ test('an already-stopped stopToken aborts the multi-region fetch', async () => {
       normalization: 'NONE',
       stopToken,
     })
-    .then(
-      () => undefined,
-      (e: unknown) => e,
-    )
+    .then(() => undefined)
+    .catch((e: unknown) => e)
   expect(err).toBeDefined()
   expect(isAbortException(err)).toBe(true)
 })

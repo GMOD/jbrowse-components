@@ -50,18 +50,17 @@ function runNext() {
 function limitConcurrency<T>(fn: () => Promise<T>) {
   return new Promise<T>((resolve, reject) => {
     function run() {
-      fn().then(
-        val => {
+      fn()
+        .then(val => {
           activeCount--
           resolve(val)
           runNext()
-        },
-        (err: unknown) => {
+        })
+        .catch((err: unknown) => {
           activeCount--
           reject(err instanceof Error ? err : new Error(String(err)))
           runNext()
-        },
-      )
+        })
     }
     if (activeCount < MAX_CONCURRENT) {
       activeCount++

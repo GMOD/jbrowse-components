@@ -70,7 +70,7 @@ function upsertRecentSession(sessions: RecentSession[], entry: RecentSession) {
 let recentSessionsQueue: Promise<unknown> = Promise.resolve()
 
 function serializeRecentSessions<T>(fn: () => Promise<T>): Promise<T> {
-  const run = recentSessionsQueue.then(fn, fn)
+  const run = recentSessionsQueue.then(fn).catch(fn)
   recentSessionsQueue = run.catch(() => {})
   return run
 }

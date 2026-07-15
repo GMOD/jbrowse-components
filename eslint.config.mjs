@@ -165,8 +165,10 @@ export default defineConfig(
       // Abbreviation nannying — we use camelCase abbreviations freely.
       'unicorn/prevent-abbreviations': 'off',
       'unicorn/name-replacements': 'off', // 6976 (err->error, e->event, etc.)
+      'unicorn/prefer-dom-node-html-methods': 'off',
       // We mix PascalCase (React components) with camelCase; no single case.
       'unicorn/filename-case': 'off',
+      'unicorn/prefer-simple-condition-first': 'off',
       // Don't dictate named vs namespace import style (e.g. `node:fs`).
       'unicorn/import-style': 'off',
 
