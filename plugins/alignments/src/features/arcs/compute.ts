@@ -468,6 +468,11 @@ function entrySeg(entry: ReadEntry): SegAln {
 // first, so the on-screen record survives). That single canonical chain is what
 // lets a connector step through an off-screen segment and keeps a same-chr split
 // junction from reading as inter-chromosomal.
+//
+// This dedup requires both sides to agree on `start`, which is why
+// readPositions must carry the read's TRUE start (buildBaseReadArrays): a start
+// clipped to the region would never match its SA twin's un-clipped one, leaving
+// both copies in the chain to be joined as a spurious same-strand "deletion".
 function unpairedReadChain(
   entries: ReadEntry[],
   ctx: ArcChainContext,

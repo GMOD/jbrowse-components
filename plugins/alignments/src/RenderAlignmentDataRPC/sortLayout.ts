@@ -42,10 +42,8 @@ function buildSoftclipExpansions(data: PileupDataResult) {
     const readStart = data.readPositions[readIdx * 2]!
     // A left clip sits at the read's leftmost mapped base and expands the read
     // leftward; a right clip sits past the rightmost base and expands rightward.
-    // `readStart` is clamped to the region start (buildBaseReadArrays), so a read
-    // beginning left of the region has its left clip at `pos < readStart` — use
-    // `<=`, not `===`, or that clip is misread as a right clip and expands the
-    // wrong way.
+    // readStart is the read's true alignment start, so a left clip sits exactly
+    // on it.
     const isLeftClip = pos <= readStart
     const clipStart = isLeftClip ? pos - len : pos
     const clipEnd = clipStart + len
@@ -519,9 +517,9 @@ export function computeMultiRegionLayout({
   largeFeaturesFirst?: boolean
 }) {
   // Union extent per read (keyed by featureId) across every region it appears
-  // in, including soft-clip expansion. A read spanning a boundary is clamped to
-  // each region, so the union is its full on-screen extent. `orderedIds` keeps
-  // first-seen (≈ genomic) order for the default placement.
+  // in, including soft-clip expansion — a read spanning a boundary gets one
+  // extent, so it lands on one row. `orderedIds` keeps first-seen (≈ genomic)
+  // order for the default placement.
   const extents = new Map<string, { start: number; end: number }>()
   const orderedIds: string[] = []
   for (const [, data] of entries) {

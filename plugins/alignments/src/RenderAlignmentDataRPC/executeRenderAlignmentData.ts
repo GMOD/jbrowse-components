@@ -296,7 +296,7 @@ async function buildGroupResult(
   // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread via
   // `laidOutPileupMap` (pileup) / `computeChainLayout` (chain) — the worker
   // emits zero-filled Y arrays.
-  const { readArrays } = buildBaseReadArrays(features, region.start)
+  const { readArrays } = buildBaseReadArrays(features)
 
   // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
   const chainFields: Partial<PileupDataResult> = isChain

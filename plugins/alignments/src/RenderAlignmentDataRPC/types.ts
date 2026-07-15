@@ -69,7 +69,9 @@ export interface ModTooltipEntry {
 // `*PackedBuffer`) — see ./CLAUDE.md "Two feature categories".
 export interface PileupDataResult {
   // Read data - positions are absolute genomic uint32
-  readPositions: Uint32Array // [start, end] pairs
+  // [start, end] pairs — the read's true alignment span, never clipped to the
+  // region. Clipping to the region is the drawn geometry's job (buildSegments).
+  readPositions: Uint32Array
   readYs: Uint16Array // pileup row (0-65535 sufficient)
   readFlags: Uint16Array // BAM flags are 16-bit
   readMapqs: Uint8Array // 0-255

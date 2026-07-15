@@ -884,6 +884,97 @@ describe('computeArcsFromPileupData', () => {
     expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([3200, 1000])
   })
 
+  // A read overhanging the region's left edge: its fwd flank starts at 100,
+  // well left of the region (900), and its reverse middle segment sits on
+  // screen. The flank and the twin named by the middle's SA tag are the same
+  // segment, so they must fuse to one chain entry — otherwise the two
+  // same-strand copies land adjacent and emit a spurious "deletion" self-arc
+  // (slot 8, the orange that used to smear across sv_read_arcs). Fusing is what
+  // leaves only the real fwd→rev inversion junction (slot 7).
+  //
+  // Both cases below carry the flank's TRUE start (100), which is what
+  // buildBaseReadArrays now emits; a start clipped to the region (900) would
+  // not match the SA twin's 100 and would resurrect the spurious arc.
+  test.each([
+    // clip 38: the flank is preceded by a 38bp soft clip
+    { name: 'clipped flank', clip: 38, flankCigar: '38S1900M' },
+    // clip 0: the flank IS the read's first segment — the common case for a
+    // forward read hanging off the left edge, and the one a clipAtStart-keyed
+    // dedup cannot fuse (every first segment shares clip 0)
+    { name: 'first-segment flank', clip: 0, flankCigar: '1900M' },
+  ])(
+    'fuses an off-region-edge segment with its SA twin ($name)',
+    ({ clip, flankCigar }) => {
+      const data = makePileupData({
+        regionStart: 900,
+        // flank (fwd, true start 100, reaching into the region) + rev middle
+        readPositions: new Uint32Array([100, 2000, 2001, 2200]),
+        readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
+        readStrands: new Int8Array([1, -1]),
+        readInsertSizes: new Float32Array([0, 0]),
+        readPairOrientations: new Uint8Array([0, 0]),
+        readNames: ['readT', 'readT'],
+        readClipAtStart: new Uint32Array([clip, 1000]),
+        readSuppAlignments: [
+          // flank's SA names the reverse middle segment
+          'chr1,2002,-,1000S200M,60,0;',
+          // middle's SA names the flank at its true start 100
+          `chr1,101,+,${flankCigar},60,0;`,
+        ],
+      })
+      const regions = [
+        { refName: 'chr1', start: 900, end: 2300, displayedRegionIndex: 0 },
+      ]
+      const { arcs } = computeArcsFromPileupData(
+        new Map([[0, data]]),
+        regions,
+        {
+          colorByType: 'insertSizeAndOrientation',
+          drawInter: false,
+          drawLongRange: true,
+        },
+      )
+      // no spurious same-strand (deletion, slot 8) self-arc
+      expect(arcs.every(a => a.colorType !== 8)).toBe(true)
+      // just the one fwd→rev inversion junction (slot 7), on the breakpoint
+      expect(arcs).toHaveLength(1)
+      expect(arcs[0]!.colorType).toBe(7)
+      expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([2000, 2200])
+    },
+  )
+
+  // The read's true start survives into the arc endpoint. Read order here is
+  // middle (clip 0) then fwd flank (clip 1000), so the flank contributes its
+  // read-LEADING edge — its `start`. A start clipped to the region would put
+  // this endpoint at 900, the region edge, instead of the true 100.
+  test('an off-region-edge segment anchors its arc at its true start', () => {
+    const data = makePileupData({
+      regionStart: 900,
+      readPositions: new Uint32Array([100, 2000, 2001, 2200]),
+      readFlags: new Uint16Array([0, SAM_FLAG_SUPPLEMENTARY]),
+      readStrands: new Int8Array([1, -1]),
+      readInsertSizes: new Float32Array([0, 0]),
+      readPairOrientations: new Uint8Array([0, 0]),
+      readNames: ['readY', 'readY'],
+      readClipAtStart: new Uint32Array([1000, 0]),
+      readSuppAlignments: [
+        'chr1,2002,-,200M1000S,60,0;',
+        'chr1,101,+,1000S1900M,60,0;',
+      ],
+    })
+    const regions = [
+      { refName: 'chr1', start: 900, end: 2300, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.colorType).toBe(7)
+    expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([2001, 100])
+  })
+
   test('multi-entry split read steps through an off-screen segment, not across it', () => {
     // Two on-screen segments A (clip 0, chr1:1000) and C (clip 200, chr1:5000)
     // of one unpaired read; the middle segment B (clip 100) maps off-screen at

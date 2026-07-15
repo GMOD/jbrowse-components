@@ -1029,6 +1029,11 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--bam',
     HG00151_ONT_1000G_BAM,
     'arcs:down',
+    // Chain each long read's split segments (as the inversion_long_read figure
+    // does), so the reverse-strand core paints blue between the red forward
+    // flanks — the inversion is legible in the pileup itself, not only in the
+    // arcs.
+    'linkedReads:normal',
     'coverageHeight:80',
     'height:440',
     '--loc',
