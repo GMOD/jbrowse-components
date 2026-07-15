@@ -194,6 +194,21 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
+  it('force-load clears the banner even after zooming out past the capture', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    expect(display.regionTooLarge).toBe(true)
+
+    // zoom out: the scaled estimate grows past the raw captured bytes, so a
+    // limit raised only past the raw bytes would leave the banner up
+    view.zoomTo(400)
+    expect(display.regionTooLarge).toBe(true)
+
+    display.setFeatureDensityStatsLimit(display.featureDensityStats)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
   // afterAttach installs the onDisplayedRegionsChange autorun that drops the
   // cached estimate on chromosome navigation. Without it, a previous region's
   // estimate would gate the new region against the wrong stats and, because the

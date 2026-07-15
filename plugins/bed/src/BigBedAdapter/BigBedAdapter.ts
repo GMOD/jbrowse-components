@@ -57,6 +57,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     return Object.keys(header.refsByName)
   }
 
+  // Compressed download-size estimate straight from the bbi R-tree index (block
+  // byte lengths, no data blocks read), so a display can byte-gate an over-large
+  // BigBed fetch before it starts. Overrides the base no-estimate default, which
+  // left BigBed tracks ungated.
+  public async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    const { bigbed } = await this.configure(opts)
+    return bigbed.getRegionByteSizeMulti(regions, opts)
+  }
+
   // allow using BigBedAdapter for aliases with chromAlias.bb file from UCSC
   public async getRefNameAliases(opts?: BaseOptions) {
     const { header } = await this.configure(opts)

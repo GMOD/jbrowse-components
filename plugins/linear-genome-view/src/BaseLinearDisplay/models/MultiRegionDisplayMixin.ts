@@ -28,7 +28,8 @@ import type { IAutorunOptions } from 'mobx'
 // reference and give it a minimal module-scoped type for tsc.
 declare const process: { env: { NODE_ENV?: string } }
 
-export type { ByteEstimateConfig } from './fetchHelpers.ts'
+export { checkByteEstimate } from './fetchHelpers.ts'
+export type { ByteEstimateConfig, ByteEstimateResult } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
 
 /**

@@ -9,6 +9,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { dedupe, isDataCurrent, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
+  FetchMixin,
   RegionTooLargeMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -66,6 +67,11 @@ export function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       RegionTooLargeMixin(),
+      // shared cancel-safe fetch state machine (runFetch/isLoading/error/
+      // fetchGeneration): the same primitive every GPU display fetches through,
+      // so a fast pan/zoom cancels the in-flight arc fetch instead of letting a
+      // stale result clobber fresh features (arc used to guard with isAlive only)
+      FetchMixin(),
       types.model({
         /**
          * #property
@@ -82,7 +88,6 @@ export function stateModelFactory(
       // signature of the static-block region set `features` were fetched for;
       // drives the non-stale `svgReady` export gate (see regionSignature.ts)
       loadedRegionSignature: undefined as string | undefined,
-      loading: false,
     }))
 
     .views(self => ({
@@ -161,12 +166,6 @@ export function stateModelFactory(
         openFeatureWidget(self, feature.toJSON(), {
           widget: { type: 'VariantFeatureWidget', id: 'variantFeature' },
         })
-      },
-      /**
-       * #action
-       */
-      setLoading(flag: boolean) {
-        self.loading = flag
       },
       /**
        * #action

@@ -37,9 +37,11 @@ export type { HeightModeMenuModel } from './models/heightModeMenu.ts'
 export { default as RegionTooLargeMixin } from '../shared/RegionTooLargeMixin.tsx'
 export {
   type ByteEstimateConfig,
+  type ByteEstimateResult,
   type FetchContext,
   type MultiRegionDisplayMixinType,
   autorunOnReadyView,
+  checkByteEstimate,
   default as MultiRegionDisplayMixin,
   fetchAllRegions,
   fetchEachRegion,
@@ -50,6 +52,10 @@ export {
   default as GlobalDataDisplayMixin,
   installGlobalFetchAutorun,
 } from './models/GlobalDataDisplayMixin.ts'
+export {
+  type FetchMixinType,
+  default as FetchMixin,
+} from './models/FetchMixin.ts'
 export {
   type StaleViewportRescaleMixinType,
   default as StaleViewportRescaleMixin,
@@ -70,6 +76,7 @@ export {
   raiseLimitPast,
   resolveByteLimit,
   scaleByteEstimate,
+  scaledForceLoadByteLimit,
 } from '../shared/featureDensityUtils.ts'
 export type { RegionTooLargeStatus } from '../shared/featureDensityUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'

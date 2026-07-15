@@ -57,6 +57,26 @@ export function raiseLimitPast(estimate: number) {
 }
 
 /**
+ * The byte limit a derived-path force-load should install. Raises past the
+ * estimate scaled to the *current* view (`scaledEstimate`), not the raw captured
+ * bytes: the derived gate compares against the scaled estimate, so if the view
+ * zoomed out between the estimate capture and the force-load click, raising past
+ * the raw bytes would leave the estimate above the new limit and the banner up.
+ * Returns undefined when there's nothing to gate. Single source for canvas and
+ * LD so the two force-load paths can't drift (a drift that once left LD's
+ * force-load under-raising — it used the RegionTooLargeMixin raw-bytes default).
+ */
+export function scaledForceLoadByteLimit({
+  scaledEstimate,
+  rawBytes,
+}: {
+  scaledEstimate?: number
+  rawBytes?: number
+}) {
+  return rawBytes ? raiseLimitPast(scaledEstimate ?? rawBytes) : undefined
+}
+
+/**
  * Scale a captured byte estimate from the span it was measured over
  * (`captureBp`) to the currently visible span (`visibleBp`). The estimate is
  * roughly proportional to span, so scaling makes the too-large verdict a pure

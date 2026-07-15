@@ -37,6 +37,7 @@ import {
   raiseLimitPast,
   resolveByteLimit,
   scaleByteEstimate,
+  scaledForceLoadByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -1687,15 +1688,18 @@ export default function baseStateModelFactory(
           // is set, and densityTooLarge ignores its stats when no max is set).
           self.userByteSizeLimit = undefined
           self.userFeatureDensityLimit = undefined
-          if (stats?.bytes) {
-            // Raise the gate past the estimate scaled to the *current* view,
-            // not the raw captured bytes — the gate compares against
-            // estimatedVisibleBytes, so basing the limit on the same scaled
-            // value keeps force-load reliable even if the view zoomed between
-            // the estimate and the click (mirrors the density branch below,
-            // which uses density observed at the current bpPerPx).
-            const bytes = self.estimatedVisibleBytes ?? stats.bytes
-            self.userByteSizeLimit = raiseLimitPast(bytes)
+          const byteLimit = scaledForceLoadByteLimit({
+            // Raise the gate past the estimate scaled to the *current* view, not
+            // the raw captured bytes — the gate compares against
+            // estimatedVisibleBytes, so basing the limit on the same scaled value
+            // keeps force-load reliable even if the view zoomed between the
+            // estimate and the click (mirrors the density branch below, which
+            // uses density observed at the current bpPerPx). Shared with LD.
+            scaledEstimate: self.estimatedVisibleBytes,
+            rawBytes: stats?.bytes,
+          })
+          if (byteLimit !== undefined) {
+            self.userByteSizeLimit = byteLimit
           } else if (self.maxFeatureDensity !== undefined) {
             // Push the gate past the highest observed density across visible
             // regions, not past the current `maxFeatureDensity`. The latter

@@ -120,19 +120,15 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
     }, opts?.stopToken)
   }
 
-  // bbi exposes no per-region byte size, so estimate the fetch budget from span
-  // × configured sample count (the dominant term: ~one char per base per
-  // species). Falls back to no gate when samples aren't configured.
-  async getMultiRegionFeatureDensityStats(regions: Region[]) {
-    const samples = this.getConf('samples')
-    const n = Array.isArray(samples) ? samples.length : 0
-    if (!n) {
-      return { alwaysRender: true }
-    }
-    let bp = 0
-    for (const r of regions) {
-      bp += r.end - r.start
-    }
-    return { bytes: bp * n }
+  // Compressed download-size estimate from the bigMaf.bb R-tree index, delegated
+  // to the BigBed sub-adapter (the actual file). bigMaf is a full-feature
+  // download — a whole-chromosome view can pull enough packed MAF stanzas to
+  // hang the tab — so it must be byte-gated like any indexed track. NOT
+  // `alwaysRender`: that self-summarizing exemption is for screen-reduced
+  // adapters (BigWig), which bigMaf is not. The base
+  // getMultiRegionFeatureDensityStats wraps this into `{ bytes }`.
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    const { adapter } = await this.setupPre(opts)
+    return adapter.getRegionByteSize(regions, opts)
   }
 }

@@ -6,6 +6,7 @@ import {
   raiseLimitPast,
   resolveByteLimit,
   scaleByteEstimate,
+  scaledForceLoadByteLimit,
 } from './featureDensityUtils.ts'
 import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
@@ -21,6 +22,35 @@ describe('raiseLimitPast', () => {
     for (const estimate of [1, 100, 5_000_000]) {
       expect(raiseLimitPast(estimate)).toBeGreaterThan(estimate)
     }
+  })
+})
+
+describe('scaledForceLoadByteLimit', () => {
+  it('is undefined when there are no raw bytes to gate', () => {
+    expect(
+      scaledForceLoadByteLimit({ scaledEstimate: 500, rawBytes: undefined }),
+    ).toBeUndefined()
+    expect(
+      scaledForceLoadByteLimit({ scaledEstimate: 500, rawBytes: 0 }),
+    ).toBeUndefined()
+  })
+
+  it('raises past the scaled estimate, not the raw bytes (the LD force-load bug)', () => {
+    // view zoomed out after capture: scaled estimate (6MB) far exceeds the raw
+    // captured bytes (1.5MB). Basing the limit on raw bytes would under-raise
+    // and leave the banner up; the scaled estimate is the correct baseline.
+    expect(
+      scaledForceLoadByteLimit({
+        scaledEstimate: 6_000_000,
+        rawBytes: 1_500_000,
+      }),
+    ).toBe(raiseLimitPast(6_000_000))
+  })
+
+  it('falls back to raw bytes when no scaled estimate is available', () => {
+    expect(
+      scaledForceLoadByteLimit({ scaledEstimate: undefined, rawBytes: 900 }),
+    ).toBe(raiseLimitPast(900))
   })
 })
 

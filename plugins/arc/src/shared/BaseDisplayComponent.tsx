@@ -33,7 +33,7 @@ const BaseDisplayComponent = observer(function BaseDisplayComponent({
   const { error, regionTooLarge, features } = model
   const phase = computeDisplayPhase(
     { renderError: undefined, regionTooLarge, error },
-    () => model.loading,
+    () => model.isLoading,
   )
   // first-paint signal (arc's `canvasDrawn` analogue): stays true across a
   // refetch so the `-done` testid and the loading anti-flash don't churn on pan.

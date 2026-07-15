@@ -17,6 +17,7 @@ import {
   evaluateRegionTooLarge,
   resolveByteLimit,
   scaleByteEstimate,
+  scaledForceLoadByteLimit,
   viewportMatchesLastDrawn,
 } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
@@ -221,6 +222,28 @@ export default function sharedModelFactory(
          */
         get regionTooLargeReason() {
           return self.tooLargeStatus.reason
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Force-load raises the byte gate past the estimate scaled to the
+         * *current* view (`estimatedVisibleBytes`), not the raw captured bytes.
+         * The derived gate compares against the scaled estimate, so if the view
+         * zoomed out between the estimate capture and the force-load click,
+         * raising past the raw bytes would leave the estimate above the new
+         * limit and the banner up. Mirrors canvas's override; without it the
+         * shared RegionTooLargeMixin default (raw bytes) under-raises this
+         * derived, scale-aware path.
+         */
+        setFeatureDensityStatsLimit(stats?: { bytes?: number }) {
+          const limit = scaledForceLoadByteLimit({
+            scaledEstimate: self.estimatedVisibleBytes,
+            rawBytes: stats?.bytes,
+          })
+          if (limit !== undefined) {
+            self.userByteSizeLimit = limit
+          }
         },
       }))
       .views(self => ({

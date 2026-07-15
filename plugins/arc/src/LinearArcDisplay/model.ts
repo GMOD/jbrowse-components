@@ -14,6 +14,7 @@ import {
 } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  FetchMixin,
   RegionTooLargeMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -71,6 +72,11 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       BaseDisplay,
       TrackHeightMixin(),
       RegionTooLargeMixin(),
+      // shared cancel-safe fetch state machine (runFetch/isLoading/error/
+      // fetchGeneration): the same primitive every GPU display fetches through,
+      // so a fast pan/zoom cancels the in-flight arc fetch instead of letting a
+      // stale result clobber fresh features (arc used to guard with isAlive only)
+      FetchMixin(),
       types.model({
         /**
          * #property
@@ -87,7 +93,6 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       // signature of the static-block region set `features` were fetched for;
       // drives the non-stale `svgReady` export gate (see regionSignature.ts)
       loadedRegionSignature: undefined as string | undefined,
-      loading: false,
     }))
     .views(self => ({
       /**
@@ -176,12 +181,6 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
        */
       selectFeature(feature: Feature) {
         openFeatureWidget(self, feature.toJSON())
-      },
-      /**
-       * #action
-       */
-      setLoading(flag: boolean) {
-        self.loading = flag
       },
       /**
        * #action
