@@ -1144,23 +1144,35 @@ test('a sub-pixel fade box overlapping a visible feature stacks, not overprints'
   expect(top('fakeSNP')).toBeGreaterThan(0)
 })
 
-test('density-fade flag is narrowed to only the boxes that collapsed', () => {
-  // Worker emits densityFade as eligibility; layout must narrow it to the actual
-  // collapse decision so the renderers fade a box iff it truly collapsed onto
-  // row 0. rect i maps to feature i (makeFeatureData's rectFeatureIndices).
+test('density-fade flag is set only for collapsed boxes that pile into a cluster', () => {
+  // Worker emits densityFade as eligibility; layout narrows it to the actual
+  // pileup decision so a box fades iff it collapsed AND its pixels overlap
+  // another collapsed box. rect i maps to feature i (rectFeatureIndices).
+  // At bpPerPx=1 each box clamps to a 4px footprint.
   const data = makeFeatureData({
     features: [
-      // isolated sub-pixel box → collapses onto row 0, keeps the fade flag
-      { featureId: 'isolatedSnp', startBp: 6000, endBp: 6001, height: 10, densityFade: true },
-      // sub-pixel but sits inside the wide gene → stacks, flag cleared
-      { featureId: 'overlapSnp', startBp: 2000, endBp: 2001, height: 10, densityFade: true },
-      // wide fade-eligible box → never collapses, flag cleared
-      { featureId: 'wideGene', startBp: 100, endBp: 5000, height: 10, densityFade: true },
+      // pileA/pileB share pixels (200px..204px vs 202px..206px) → both fade
+      { featureId: 'pileA', startBp: 200, endBp: 201, height: 10, densityFade: true },
+      { featureId: 'pileB', startBp: 202, endBp: 203, height: 10, densityFade: true },
+      // isolated collapsed mark, no neighbor within 4px → opaque, flag cleared
+      { featureId: 'lone', startBp: 6000, endBp: 6001, height: 10, densityFade: true },
+    ],
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+  const fade = out.get(0)!.rectDensityFade
+  expect([...fade]).toEqual([1, 1, 0])
+})
+
+test('a single collapsed sub-pixel box renders opaque, not faded', () => {
+  // Regression: a lone variant far from any other must not read as a faint 30%
+  // mark just because it collapsed onto row 0. It fades only in a pileup.
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'solo', startBp: 500, endBp: 501, height: 10, densityFade: true },
     ],
   })
   const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 26, false)
-  const fade = out.get(0)!.rectDensityFade
-  expect([...fade]).toEqual([1, 0, 0])
+  expect([...out.get(0)!.rectDensityFade]).toEqual([0])
 })
 
 test('thousands of sub-pixel variants collapse onto one row, not thousands', () => {

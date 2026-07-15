@@ -207,7 +207,7 @@ export function computeLaidOutData(
   }
 
   for (const [, regions] of refGroups) {
-    const { layoutMap, layoutHeights, droppedLabelIds, collapsedFeatureIds } =
+    const { layoutMap, layoutHeights, droppedLabelIds, densityFadeIds } =
       packRef(
         regions,
         bpPerPx,
@@ -228,7 +228,7 @@ export function computeLaidOutData(
         layoutMap,
         layoutHeights,
         droppedLabelIds,
-        collapsedFeatureIds,
+        densityFadeIds,
       )
     }
   }
@@ -591,10 +591,11 @@ function packRef(
   })
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
-  // Features actually pinned to row 0 by the density-collapse path below. Only
-  // these fade in the renderers — a sub-pixel fade-eligible box that stacked on
-  // its own row (labeled, or overlapping a visible feature) stays opaque.
-  const collapsedFeatureIds = new Set<string>()
+  // Clamped px footprints of the boxes pinned to row 0 by the density-collapse
+  // path below. After packing, a box fades only where its footprint overlaps
+  // another collapsed box's (densityClusteredIds) — so a genuine pileup reads as
+  // a density gradient while a lone collapsed mark renders opaque.
+  const collapsedBoxes: { id: string; start: number; end: number }[] = []
 
   const labelInfoByFeatureId = new Map<
     string,
@@ -832,7 +833,7 @@ function packRef(
       !intersectsMerged(boxStartPx, boxEndPx, solidSpansPx)
     if (collapses) {
       layoutMap.set(id, 0)
-      collapsedFeatureIds.add(id)
+      collapsedBoxes.push({ id, start: boxStartPx, end: boxEndPx })
     } else {
       const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
       const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
@@ -846,7 +847,44 @@ function packRef(
     layoutHeights.set(id, ext.height)
   }
 
-  return { layoutMap, layoutHeights, droppedLabelIds, collapsedFeatureIds }
+  return {
+    layoutMap,
+    layoutHeights,
+    droppedLabelIds,
+    densityFadeIds: densityClusteredIds(collapsedBoxes),
+  }
+}
+
+// Ids of collapsed boxes whose clamped px footprint overlaps at least one other
+// collapsed box — i.e. the marks that physically pile into shared pixels. Those
+// fade so the src-alpha blend accumulates into a density gradient; a lone
+// collapsed mark (footprint touched by no other) is excluded and renders opaque.
+// Sweeps the footprints in x: any maximal run of transitively-overlapping boxes
+// with two or more members is a pileup, so every box in it fades.
+function densityClusteredIds(boxes: { id: string; start: number; end: number }[]) {
+  const sorted = [...boxes].sort((a, b) => a.start - b.start)
+  const fadeIds = new Set<string>()
+  let run: string[] = []
+  let runEnd = -Infinity
+  const flushRun = () => {
+    if (run.length >= 2) {
+      for (const id of run) {
+        fadeIds.add(id)
+      }
+    }
+  }
+  for (const box of sorted) {
+    if (box.start < runEnd) {
+      run.push(box.id)
+      runEnd = Math.max(runEnd, box.end)
+    } else {
+      flushRun()
+      run = [box.id]
+      runEnd = box.end
+    }
+  }
+  flushRun()
+  return fadeIds
 }
 
 // Mutates the cloned region in place. Raw data has topPx=0 everywhere, so we
@@ -859,10 +897,10 @@ function applyLayoutToRegion(
   // Feature ids whose name was decimated away: their floatingLabelsData entry is
   // deleted below so no renderer/hit-test draws a name the packer didn't reserve.
   droppedLabelIds: ReadonlySet<string>,
-  // Feature ids the packer collapsed onto row 0 for density. Only these keep the
-  // density-fade flag; a sub-pixel fade-eligible box that stacked on its own row
-  // is rewritten to 0 so the renderers draw it opaque.
-  collapsedFeatureIds: ReadonlySet<string>,
+  // Feature ids whose collapsed box piles into shared pixels with another (a
+  // genuine density pileup). Only these keep the fade flag; every other box —
+  // stacked, or a lone collapsed mark — is rewritten to 0 and drawn opaque.
+  densityFadeIds: ReadonlySet<string>,
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
   for (let i = 0; i < data.flatbushItems.length; i++) {
@@ -871,7 +909,7 @@ function applyLayoutToRegion(
 
   for (let i = 0; i < data.rectDensityFade.length; i++) {
     const featureId = data.flatbushItems[data.rectFeatureIndices[i]!]!.featureId
-    data.rectDensityFade[i] = collapsedFeatureIds.has(featureId) ? 1 : 0
+    data.rectDensityFade[i] = densityFadeIds.has(featureId) ? 1 : 0
   }
 
   for (let i = 0; i < data.rectYs.length; i++) {

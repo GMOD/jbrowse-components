@@ -145,14 +145,13 @@ function drawRects(
     const xLeft = Math.min(sx1, sx2)
     const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
 
-    // Whole-feature box glyphs (variants, plain BED) that layout collapsed onto
-    // row 0 draw semi-transparent so src-over accumulation makes dense regions
-    // read as a density texture instead of a flat block (mirrors rect.slang's
-    // densityAlpha); gene subfeature rects and non-collapsed features stay fully
-    // opaque. rectDensityFade is the collapse decision (already implies
-    // sub-pixel), so it alone gates the fade. Fold the factor into the fill
-    // color's alpha so it also applies on the SVG-export path (SvgCanvas has no
-    // globalAlpha).
+    // Collapsed row-0 boxes that pile into a cluster draw semi-transparent so
+    // src-over accumulation makes dense regions read as a density texture instead
+    // of a flat block (mirrors rect.slang's densityAlpha); gene subfeature rects,
+    // stacked boxes, and lone collapsed marks stay fully opaque. rectDensityFade
+    // is that pileup decision, so it alone gates the fade. Fold the factor into
+    // the fill color's alpha so it also applies on the SVG-export path (SvgCanvas
+    // has no globalAlpha).
     const c = region.rectColors[i]!
     const densityAlpha = region.rectDensityFade[i] ? MIN_DENSITY_ALPHA : 1
     const a = (abgrAlpha(c) / 255) * densityAlpha
