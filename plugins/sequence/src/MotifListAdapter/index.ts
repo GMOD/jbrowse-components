@@ -13,7 +13,8 @@ export default function MotifListAdapterF(pluginManager: PluginManager) {
         hiddenFromGUI: true,
       },
       configSchema,
-      getAdapterClass: () => import('./MotifListAdapter.ts').then(r => r.default),
+      getAdapterClass: () =>
+        import('./MotifListAdapter.ts').then(r => r.default),
     })
   })
 }

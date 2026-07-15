@@ -225,7 +225,10 @@ test('baking does not mutate the live session (cascade stays live)', () => {
   session.setDisplayTypeDefault(DISPLAY_TYPE, SLOT, PROMOTED)
 
   const before = getSnapshot(rootModel.session)
-  bakePromotedDefaultsIntoSnapshot(session as never, getSnapshot(rootModel.session))
+  bakePromotedDefaultsIntoSnapshot(
+    session as never,
+    getSnapshot(rootModel.session),
+  )
 
   // the live display still resolves through the cascade (no own value baked in)
   expect(getConfResolved(display, SLOT)).toBe(PROMOTED)

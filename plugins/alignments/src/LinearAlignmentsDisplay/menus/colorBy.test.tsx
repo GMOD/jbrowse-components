@@ -138,7 +138,8 @@ function clickRadio(model: Model, label: string) {
 }
 
 const BY_TYPE = 'One color per modification type'
-const TWO_COLOR = 'One color per type, plus low-probability & unmodified in blue'
+const TWO_COLOR =
+  'One color per type, plus low-probability & unmodified in blue'
 
 describe('color by modifications menu', () => {
   const controls = [BY_TYPE, TWO_COLOR, 'Probability threshold']

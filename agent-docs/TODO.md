@@ -57,10 +57,5 @@ This reversed-block Canvas2D issue is real but niche. Let me now verify a higher
 
 ## rowseparators not very visible
 
-## odd 'blinking' or 'processing' stage of setting grow trackheight mode where it intermittently tries a couple different read height settings?
 
-
-
-
-## audit slowness of zoom with force load banner
 

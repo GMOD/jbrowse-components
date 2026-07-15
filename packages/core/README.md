@@ -148,14 +148,17 @@ node has no session ancestor.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
-### isPromotableDefault
+### isSlotCustomized
 
-Whether every value in `entries` is the current session default for its slot.
-The live state the pin's filled/outline reflects.
+Whether this track has customized the slot (holds a non-default value of its
+own) rather than following the display type's default. The correct "reset to
+default" predicate for a promotable slot: comparing the resolved value to the
+base instead reads as at-default for a track merely _following_ a non-base
+promoted default, so the reset control lights up on a no-op.
 
 ```js
 // type signature
-(self: PromotableDisplay, entries: PromotableEntry[]) => boolean
+(self: PromotableDisplay, slot: string) => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
@@ -233,32 +236,6 @@ harmless no-op since they're dropped anyway.
 ```js
 // type signature
 (self: PromotableDisplay) => Record<string, unknown>
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-### setPromotableDefault
-
-Set (`on`) or clear (`!on`) this value combination as the session default for
-the display type. Non-destructive: tracks that follow the default inherit it via
-`getConfResolved`; tracks the user has customized keep their own value.
-
-```js
-// type signature
-(self: PromotableDisplay, entries: PromotableEntry[], on: boolean) => void
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-### tracksDifferingFrom
-
-Open tracks (across all views) whose resolved value differs from `entries` — the
-ones "apply to open tracks" would visibly change by resetting them to follow the
-default. Drives that action's count.
-
-```js
-// type signature
-(self: PromotableDisplay, entries: PromotableEntry[]) => PromotableDisplay[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)

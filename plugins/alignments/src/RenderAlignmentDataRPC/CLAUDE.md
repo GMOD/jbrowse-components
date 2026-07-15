@@ -79,15 +79,15 @@ accepted limitations of per-region partitioning, not bugs to fix.
 
 ## `computeMultiRegionLayout`: the placement axis is segmented per refName
 
-Reads are placed by genomic coordinate, and refNames share that coordinate
-space — `ctgA:1-50,000` and `ctgB:1-6,000` both start at 1 — while occupying
-disjoint screen space. Placing every region's reads on one axis therefore
-collided regions that never overlap on screen: each ctgB read was pushed below
-every ctgA read covering the same bp, so ctgB's pileup started well below row 0
-with a wedge of whitespace above it. `segmentExtentsByRefName` shifts each
-refName onto its own disjoint span of the axis before placement (a read only
-ever spans regions of one refName, so its unioned extent moves as a unit). It
-is a no-op for single-refName views, which includes collapse-introns.
+Reads are placed by genomic coordinate, and refNames share that coordinate space
+— `ctgA:1-50,000` and `ctgB:1-6,000` both start at 1 — while occupying disjoint
+screen space. Placing every region's reads on one axis therefore collided
+regions that never overlap on screen: each ctgB read was pushed below every ctgA
+read covering the same bp, so ctgB's pileup started well below row 0 with a
+wedge of whitespace above it. `segmentExtentsByRefName` shifts each refName onto
+its own disjoint span of the axis before placement (a read only ever spans
+regions of one refName, so its unioned extent moves as a unit). It is a no-op
+for single-refName views, which includes collapse-introns.
 
 ## `computeMultiRegionLayout` sort/softclip: same-refName only
 

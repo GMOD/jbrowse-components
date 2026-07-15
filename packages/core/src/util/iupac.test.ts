@@ -1,8 +1,4 @@
-import {
-  isPalindromic,
-  iupacToRegex,
-  reverseComplementIupac,
-} from './iupac.ts'
+import { isPalindromic, iupacToRegex, reverseComplementIupac } from './iupac.ts'
 
 test('iupacToRegex expands ambiguity codes', () => {
   expect(iupacToRegex('NGG')).toBe('[ACGT]GG')

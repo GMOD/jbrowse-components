@@ -270,7 +270,10 @@ describe('getReadDisplayLegendItems', () => {
     const mods = new Map([
       ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
     ])
-    expect(labels('bisulfite', [], mods)).toEqual(['5mC methylated', 'Unmethylated'])
+    expect(labels('bisulfite', [], mods)).toEqual([
+      '5mC methylated',
+      'Unmethylated',
+    ])
   })
 
   test('fill-unmarked view omits the 5hmC swatch when only 5mC was detected', () => {

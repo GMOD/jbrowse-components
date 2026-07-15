@@ -59,7 +59,8 @@ function webStreamToNodeReadable(
     // hanging — the cleanup Readable.fromWeb would do for us if it accepted
     // this stream.
     destroy(error: Error | null, callback: (error?: Error | null) => void) {
-      reader.cancel(error ?? undefined)
+      reader
+        .cancel(error ?? undefined)
         .then(() => {
           callback(error)
         })
