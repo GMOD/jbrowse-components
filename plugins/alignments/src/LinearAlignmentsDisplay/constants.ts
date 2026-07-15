@@ -66,11 +66,22 @@ export type ReadConnectionsMode = 'off' | 'arc' | 'samplot'
 // menus. 'auto' is the default.
 export type { SashimiArcsMode } from '../features/sashimi/computeOverlay.ts'
 
-// Minimum frequency (0-255 scale) for a mismatch/small-insertion to intercept
-// a click/hover when bpPerPx > 1. At individual-base zoom (bpPerPx <= 1) clicks
-// are precise enough that all features are clickable regardless of frequency.
-// 128 ≈ 50%: only positions where at least half of reads share the variant.
-export const CIGAR_CLICK_MIN_FREQ = 128
+// Whether a point feature (mismatch / small insertion) may intercept a
+// click/hover. Clickable when zoomed to base level (bpPerPx <= 1), when
+// frequency filtering is off (the feature then draws fully opaque), or when its
+// frequency survived the depth-dependent draw threshold. The
+// `mismatchFrequencies`/`interbaseFrequencies` bytes are pre-zeroed below
+// `featureFrequencyThreshold` (see computeFrequenciesAndThresholds), and the
+// draw fade reads that same array, so `> 0` == "drawn as signal, not the faint
+// noise floor" — clickability tracks visibility exactly, at every depth. Single
+// source of truth so the mismatch and insertion gates can't drift apart.
+export function passesFrequencyGate(
+  bpPerPx: number,
+  frequencyByte: number,
+  filterByFrequency: boolean,
+) {
+  return bpPerPx <= 1 || !filterByFrequency || frequencyByte > 0
+}
 
 // Returns the minimum frequency at which a feature (mismatch, insertion, etc.)
 // is shown at a given coverage depth. Features below this threshold are zeroed

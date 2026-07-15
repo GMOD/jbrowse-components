@@ -147,17 +147,17 @@ export function openCigarWidget(
     end: cigarHit.position + (cigarHit.length ?? 1),
   }
 
-  if (cigarHit.type === 'mismatch' && cigarHit.base) {
+  // base (mismatch), length (insertion/deletion/skip/clips), and sequence
+  // (insertion) are populated mutually exclusively by the hit-testers, so copy
+  // whichever the hit carries rather than re-deriving the type here.
+  if (cigarHit.base) {
     featureData.base = cigarHit.base
-  } else if (cigarHit.type === 'insertion') {
+  }
+  if (cigarHit.length !== undefined) {
     featureData.length = cigarHit.length
-    if (cigarHit.sequence) {
-      featureData.sequence = cigarHit.sequence
-    }
-  } else if (
-    ['deletion', 'skip', 'softclip', 'hardclip'].includes(cigarHit.type)
-  ) {
-    featureData.length = cigarHit.length
+  }
+  if (cigarHit.sequence) {
+    featureData.sequence = cigarHit.sequence
   }
 
   openFeatureWidget(model, featureData)

@@ -1,7 +1,7 @@
 import {
-  CIGAR_CLICK_MIN_FREQ,
   getInsertionType,
   insertionBarWidth as getInsertionRectWidthPx,
+  passesFrequencyGate,
 } from '../../LinearAlignmentsDisplay/constants.ts'
 import { INTERBASE_INSERTION } from '../../shared/types.ts'
 
@@ -19,6 +19,7 @@ function hitTestInsertion(
   coords: CigarCoords,
   sizeFilter: 'small' | 'large',
   featureHeight: number,
+  filterMismatchesByFrequency: boolean,
 ): CigarHitResult | undefined {
   const { bpPerPx, genomicPos, row } = coords
   const {
@@ -43,11 +44,16 @@ function hitTestInsertion(
       if (sizeFilter === 'small' ? isSmall : !isSmall) {
         // Small insertions are narrow bars; when not at base-level zoom only
         // let high-frequency insertions intercept clicks so the read body
-        // remains easy to click through.
+        // remains easy to click through. Same gate as mismatches (drift-proof
+        // via passesFrequencyGate) so it tracks the draw fade — with filtering
+        // off, low-freq insertions draw opaque and must stay clickable too.
         if (
           sizeFilter === 'small' &&
-          bpPerPx > 1 &&
-          (interbaseFrequencies[i] ?? 0) < CIGAR_CLICK_MIN_FREQ
+          !passesFrequencyGate(
+            bpPerPx,
+            interbaseFrequencies[i] ?? 0,
+            filterMismatchesByFrequency,
+          )
         ) {
           continue
         }
@@ -74,13 +80,21 @@ export function hitTestLargeInsertion(
   coords: CigarCoords,
   featureHeight: number,
 ) {
-  return hitTestInsertion(resolved, coords, 'large', featureHeight)
+  // Large insertions never frequency-gate, so the flag is inert here.
+  return hitTestInsertion(resolved, coords, 'large', featureHeight, true)
 }
 
 export function hitTestSmallInsertion(
   resolved: ResolvedBlock,
   coords: CigarCoords,
   featureHeight: number,
+  filterMismatchesByFrequency: boolean,
 ) {
-  return hitTestInsertion(resolved, coords, 'small', featureHeight)
+  return hitTestInsertion(
+    resolved,
+    coords,
+    'small',
+    featureHeight,
+    filterMismatchesByFrequency,
+  )
 }

@@ -3,6 +3,7 @@ import {
   contextMenuFieldsForHit,
   performHitTest,
 } from './hitTestPipeline.ts'
+import { INTERBASE_INSERTION } from '../../shared/types.ts'
 
 import type { HitTestOptions } from './hitTestPipeline.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -13,6 +14,8 @@ function makeRpcData(
 ): PileupDataResult {
   return {
     mismatchPositions: new Uint32Array(),
+    mismatchFrequencies: new Uint8Array(),
+    interbaseFrequencies: new Uint8Array(),
     interbasePositions: new Uint32Array(),
     gapPositions: new Uint32Array(),
     gapYs: new Uint16Array(),
@@ -212,14 +215,16 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
   })
 
   // bpRange=[0,2000], blockWidth=200 → bpPerPx=10: mismatches are still
-  // hit-tested (<= SNP_HIT_MAX_BP_PER_PX) but the frequency gate applies.
+  // hit-tested (<= SNP_HIT_MAX_BP_PER_PX) but the frequency gate applies. A
+  // frequency of 0 = zeroed by the depth-dependent draw threshold (drawn only at
+  // the faint noise floor), so it's not clickable while filtering is on.
   function lowFreqMismatchZoomedOut() {
     return {
       ...makeResolved({
         mismatchPositions: new Uint32Array([1000]),
         mismatchYs: new Uint16Array([0]),
         mismatchBases: new Uint8Array([65]),
-        mismatchFrequencies: new Uint8Array([1]), // below CIGAR_CLICK_MIN_FREQ
+        mismatchFrequencies: new Uint8Array([0]), // filtered out by draw threshold
       }),
       bpRange: [0, 2000] as [number, number],
     }
@@ -243,6 +248,65 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('mismatch')
+    }
+  })
+
+  // A mismatch that survived the draw threshold (any nonzero frequency, here
+  // ~20% — well under the old fixed 50% click cutoff) is drawn as signal, so it
+  // must be clickable: clickability tracks draw-visibility, not a separate cutoff.
+  it('a mismatch surviving the draw threshold is clickable even below 50%', () => {
+    const resolved = {
+      ...makeResolved({
+        mismatchPositions: new Uint32Array([1000]),
+        mismatchYs: new Uint16Array([0]),
+        mismatchBases: new Uint8Array([65]),
+        mismatchFrequencies: new Uint8Array([50]), // ~20%, survived the threshold
+      }),
+      bpRange: [0, 2000] as [number, number],
+    }
+    const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('mismatch')
+    }
+  })
+
+  // Small insertions gate on frequency identically to mismatches — and, like
+  // mismatches, the gate must lift when the user turns frequency filtering off
+  // (their draw fade lifts too). bpRange=[0,2000] → bpPerPx=10; pos=1000 sits
+  // under canvasX=100.
+  function lowFreqInsertionZoomedOut() {
+    return {
+      ...makeResolved({
+        interbasePositions: new Uint32Array([1000]),
+        interbaseYs: new Uint16Array([0]),
+        interbaseTypes: new Uint8Array([INTERBASE_INSERTION]),
+        interbaseLengths: new Uint16Array([1]), // < LONG_INSERTION_MIN_LENGTH → 'small'
+        interbaseSequences: ['A'],
+        interbaseFrequencies: new Uint8Array([0]), // filtered out by draw threshold
+      }),
+      bpRange: [0, 2000] as [number, number],
+    }
+  }
+
+  it('low-frequency small insertion is not clickable when frequency filtering is on', () => {
+    const result = performHitTest(
+      100,
+      60,
+      lowFreqInsertionZoomedOut(),
+      ZOOMED_OUT_OPTS,
+    )
+    expect(result.type).not.toBe('cigar')
+  })
+
+  it('low-frequency small insertion stays clickable when frequency filtering is off', () => {
+    const result = performHitTest(100, 60, lowFreqInsertionZoomedOut(), {
+      ...ZOOMED_OUT_OPTS,
+      filterMismatchesByFrequency: false,
+    })
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('insertion')
     }
   })
 })

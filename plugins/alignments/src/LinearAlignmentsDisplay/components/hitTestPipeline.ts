@@ -154,7 +154,12 @@ function hitTestCigarItem(
   return (
     hitTestLargeInsertion(resolved, coords, featureHeight) ??
     hitTestMismatch(resolved, coords, filterMismatchesByFrequency) ??
-    hitTestSmallInsertion(resolved, coords, featureHeight) ??
+    hitTestSmallInsertion(
+      resolved,
+      coords,
+      featureHeight,
+      filterMismatchesByFrequency,
+    ) ??
     hitTestGap(resolved, coords) ??
     hitTestClip(resolved, coords, 'softclip') ??
     hitTestClip(resolved, coords, 'hardclip')
