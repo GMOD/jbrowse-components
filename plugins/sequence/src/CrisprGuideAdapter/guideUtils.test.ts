@@ -1,21 +1,4 @@
-import {
-  guideQuality,
-  iupacToRegex,
-  placeGuide,
-  reverseComplementIupac,
-} from './guideUtils.ts'
-
-test('iupacToRegex expands ambiguity codes', () => {
-  expect(iupacToRegex('NGG')).toBe('[ACGT]GG')
-  expect(iupacToRegex('TTTV')).toBe('TTT[ACG]')
-})
-
-test('reverseComplementIupac reverse-complements a motif', () => {
-  // revcomp(NGG) = CCN
-  expect(reverseComplementIupac('NGG')).toBe('CCN')
-  // revcomp(TTTV) = B AAA (V->B, reversed)
-  expect(reverseComplementIupac('TTTV')).toBe('BAAA')
-})
+import { guideQuality, placeGuide } from './guideUtils.ts'
 
 test('SpCas9 plus-strand: PAM 3prime, protospacer to the left, cut 3bp in', () => {
   // PAM NGG matched at 100..103, 20nt protospacer, blunt cut 3bp 5' of PAM

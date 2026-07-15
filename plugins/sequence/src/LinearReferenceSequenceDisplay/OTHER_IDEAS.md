@@ -38,12 +38,6 @@ item that spins up a search track over this track's sequence adapter — mirror
 the existing `addGCContentTrack` action pattern (`model.ts`). Makes an existing
 capability discoverable.
 
-## Restriction enzyme / PAM site overlay
-
-Same mechanism as motif search but with a curated enzyme list (or CRISPR PAM via
-the existing `CrisprGuideAdapter`). Common in cloning / editing workflows. Could
-be a preset feeding the motif-search track, or a dedicated overlay.
-
 ## Inline GC-content strip
 
 Today GC content requires adding a whole separate `GCContentTrack`

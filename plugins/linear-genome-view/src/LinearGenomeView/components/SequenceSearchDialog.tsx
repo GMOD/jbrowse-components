@@ -8,6 +8,7 @@ import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import CrisprGuidePanel from './CrisprGuidePanel.tsx'
+import MotifListPanel from './MotifListPanel.tsx'
 import SequencePatternPanel from './SequencePatternPanel.tsx'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
@@ -41,6 +42,12 @@ const MODES: SearchMode[] = [
     label: 'CRISPR guide RNAs',
     extensionPoint: 'LinearGenomeView-crisprGuidePanel',
     ReactComponent: CrisprGuidePanel,
+  },
+  {
+    id: 'motifs',
+    label: 'Motif list',
+    extensionPoint: 'LinearGenomeView-motifListPanel',
+    ReactComponent: MotifListPanel,
   },
 ]
 

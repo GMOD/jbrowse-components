@@ -1,13 +1,14 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, doesIntersect2, revcom } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  doesIntersect2,
+  iupacToRegex,
+  revcom,
+  reverseComplementIupac,
+} from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import {
-  guideQuality,
-  iupacToRegex,
-  placeGuide,
-  reverseComplementIupac,
-} from './guideUtils.ts'
+import { guideQuality, placeGuide } from './guideUtils.ts'
 
 import type { CrisprGuideAdapterConfig } from './configSchema.ts'
 import type {

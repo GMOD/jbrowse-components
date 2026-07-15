@@ -138,6 +138,8 @@ export function fileToLocation(file: File): FileLocation {
 }
 
 export * from './seqUtils.ts'
+export * from './iupac.ts'
+export * from './parseMotifList.ts'
 
 // requires immediate execution in jest environment, because (hypothesis) it
 // otherwise listens for prerendered_canvas but reads empty pixels, and doesn't
