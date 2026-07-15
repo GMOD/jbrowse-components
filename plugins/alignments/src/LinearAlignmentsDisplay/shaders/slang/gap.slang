@@ -45,11 +45,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     // the smoothstep bounds (1..4 px) and floor (0.25) in sync.
     alpha = 0.25 + 0.75 * smoothstep(1.0, 4.0, u.featHeight);
   }
-  if (inst.gapType == GAP_DELETION && u.filterMismatchesByFrequency != 0) {
+  if (inst.gapType == GAP_DELETION) {
     float widthPx = float(inst.endOff - inst.startOff) * u.pxPerBp;
-    if (widthPx < 1.0) {
-      alpha = frequencyAlpha(widthPx * widthPx, inst.frequency);
-    }
+    alpha = frequencyFade(widthPx * widthPx, inst.frequency, u);
   }
   if (alpha <= 0.0) { return discardVertex(); }
 

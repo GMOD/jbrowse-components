@@ -39,11 +39,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float pxPerBp = u.pxPerBp;
   // Sub-pixel alpha: at <1 px/bp, blend toward full-row alpha based on the
-  // per-site frequency so thinly-covered mismatches fade out.
-  float alpha = 1.0;
-  if (u.filterMismatchesByFrequency != 0 && pxPerBp < 1.0) {
-    alpha = frequencyAlpha(pxPerBp, inst.frequency);
-  }
+  // per-site frequency so thinly-covered mismatches fade out. The softclip-base
+  // pass shares this shader and packs full frequency, pinning its alpha at 1.
+  float alpha = frequencyFade(pxPerBp, inst.frequency, u);
   // Fade by base quality: Phred 50+ stays opaque, lower qualities fade toward
   // transparent. qual == 0 (no quality, and the softclip-bases pass) is left
   // untouched. Mirrors the Canvas2D drawMismatches path.

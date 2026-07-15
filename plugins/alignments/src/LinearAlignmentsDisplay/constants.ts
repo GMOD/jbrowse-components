@@ -72,9 +72,17 @@ export type { SashimiArcsMode } from '../features/sashimi/computeOverlay.ts'
 // frequency survived the depth-dependent draw threshold. The
 // `mismatchFrequencies`/`interbaseFrequencies` bytes are pre-zeroed below
 // `featureFrequencyThreshold` (see computeFrequenciesAndThresholds), and the
-// draw fade reads that same array, so `> 0` == "drawn as signal, not the faint
-// noise floor" — clickability tracks visibility exactly, at every depth. Single
-// source of truth so the mismatch and insertion gates can't drift apart.
+// draw fade reads that same array, so `> 0` == "drawn as signal, not the noise
+// floor". Single source of truth so the mismatch and insertion gates can't
+// drift apart.
+//
+// This gates on *significance*, not visibility: below-threshold features must
+// not steal clicks from the read body underneath. Visibility is a separate,
+// gradual thing — a zeroed feature still paints at `frequencyFade`'s floor
+// (alpha == pxPerBp), which is genuinely faint only once well past 1 bp/px. So
+// between ~1 and ~3 bp/px a thresholded feature is plainly visible yet
+// deliberately inert. Don't "fix" that by keying this off drawn alpha; that
+// would hand clicks back to the noise this is meant to suppress.
 export function passesFrequencyGate(
   bpPerPx: number,
   frequencyByte: number,

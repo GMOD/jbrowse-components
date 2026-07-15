@@ -4,7 +4,7 @@ import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { LONG_INSERTION_MIN_LENGTH } from '../../LinearAlignmentsDisplay/constants.ts'
 import {
   bpToScreenX,
-  frequencyAlpha,
+  frequencyFade,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -41,13 +41,12 @@ export function drawInsertions(
     const bp = region.insertionPositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const length = region.insertionLengths[i]!
-    const frequency = region.insertionFrequencies[i]! / 255
 
+    // Long insertions draw as a fixed marker and never frequency-fade.
     const isLong = length >= LONG_INSERTION_MIN_LENGTH
-    const alpha =
-      !isLong && state.filterMismatchesByFrequency && pxPerBp < 1
-        ? frequencyAlpha(pxPerBp * pxPerBp, frequency)
-        : 1
+    const alpha = isLong
+      ? 1
+      : frequencyFade(state, pxPerBp * pxPerBp, region.insertionFrequencies[i]!)
 
     // Box + serif caps shared with plugin-maf via drawInsertionMarker: a wide
     // labelled box for large insertions, a short bar for long, 1px + serifs for

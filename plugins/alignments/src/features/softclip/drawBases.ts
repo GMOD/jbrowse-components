@@ -31,10 +31,11 @@ export function drawSoftclipBases(
   // fudge; without it the Canvas2D fallback showed hairline gaps the GPU didn't.
   const w = pileupCellWidth(bpPerPx, true)
   const baseColors = buildBaseColorTupleMap(state)
-  // Non-A/C/G/T bases (e.g. N) have no palette entry; render them with the
-  // muted SNP color rather than dropping them, matching the GPU shader
-  // (mismatch.slang, shared with the softclip-bases overlay) and MAF.
-  const unknownColor = state.colors.colorMutedSnpBase
+  // N has a palette entry; any other non-A/C/G/T byte falls back to the N
+  // color, matching the GPU shader (mismatch.slang baseColor catch-all, shared
+  // with the softclip-bases overlay) and the mismatch draw. Under
+  // showModifications buildBaseColorTupleMap already mutes every base to grey.
+  const unknownColor = state.colors.colorBaseN
 
   for (let i = 0; i < region.softclipBasePositions.length; i++) {
     const yRow = region.softclipBaseYs[i]!

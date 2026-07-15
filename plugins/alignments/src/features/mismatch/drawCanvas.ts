@@ -2,7 +2,7 @@ import { buildBaseColorTupleMap } from './baseColors.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
-  frequencyAlpha,
+  frequencyFade,
   pileupCellWidth,
   pileupRowOffCanvas,
   pileupRowY,
@@ -38,14 +38,14 @@ export function drawMismatches(
     const bp = region.mismatchPositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
     const base = region.mismatchBases[i]!
-    const frequency = region.mismatchFrequencies[i]! / 255
     // N has a palette entry; any other non-A/C/G/T byte falls back to the N
     // color, matching the GPU shader (mismatch.slang baseColor catch-all).
     const colorTuple = baseColors[base] ?? state.colors.colorBaseN
-    const freqAlpha =
-      state.filterMismatchesByFrequency && pxPerBp < 1
-        ? frequencyAlpha(pxPerBp, frequency)
-        : 1
+    const freqAlpha = frequencyFade(
+      state,
+      pxPerBp,
+      region.mismatchFrequencies[i]!,
+    )
     // Fade by base quality: Phred 50+ opaque, lower fades out. qual 0 (no
     // quality) stays opaque. Mirrors the GPU mismatch.slang path.
     const qual = region.mismatchQuals[i]!

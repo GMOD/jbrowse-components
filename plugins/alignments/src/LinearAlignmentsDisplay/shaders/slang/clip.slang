@@ -25,10 +25,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float pxPerBp = u.pxPerBp;
 
-  float alpha = 1.0;
-  if (pxPerBp < 1.0) {
-    alpha = frequencyAlpha(pxPerBp, inst.frequency);
-  }
+  // Sub-pixel alpha: at <1 px/bp, thinly-supported clip boundaries fade out.
+  // Mirrors the Canvas2D drawClipBars path.
+  float alpha = frequencyFade(pxPerBp, inst.frequency, u);
   if (alpha <= 0.0) { return discardVertex(); }
 
   float clipCx = bpToClipX(inst.position, u);

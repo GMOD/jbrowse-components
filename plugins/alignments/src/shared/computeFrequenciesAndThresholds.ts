@@ -86,6 +86,30 @@ export function applyDepthDependentThreshold(
   }
 }
 
+// Interbase point features (insertions, clips, gap starts) all share one
+// recipe: per-position frequency against the interbase depth, then the
+// depth-dependent threshold zeroing the noise floor.
+function thresholdedPositionFrequencies(
+  positions: Uint32Array,
+  depths: Float32Array,
+  coverageStartPos: number,
+) {
+  const frequencies = computePositionFrequencies(
+    positions,
+    depths,
+    coverageStartPos,
+  )
+  applyDepthDependentThreshold(
+    frequencies,
+    positions,
+    depths,
+    coverageStartPos,
+    featureFrequencyThreshold,
+    true,
+  )
+  return frequencies
+}
+
 export function computeFrequenciesAndThresholds(
   mismatchArrays: { mismatchPositions: Uint32Array; mismatchBases: Uint8Array },
   interbaseArrays: { interbasePositions: Uint32Array },
@@ -106,36 +130,23 @@ export function computeFrequenciesAndThresholds(
     coverageStartPos,
     featureFrequencyThreshold,
   )
-  const interbaseFrequencies = computePositionFrequencies(
-    interbaseArrays.interbasePositions,
-    depths,
-    coverageStartPos,
-  )
-  applyDepthDependentThreshold(
-    interbaseFrequencies,
-    interbaseArrays.interbasePositions,
-    depths,
-    coverageStartPos,
-    featureFrequencyThreshold,
-    true,
-  )
+  // gapPositions stores [start, end] pairs; a gap's frequency is anchored at
+  // its start.
   const gapStartPositions = new Uint32Array(gapArrays.gapPositions.length / 2)
   for (let i = 0; i < gapStartPositions.length; i++) {
     gapStartPositions[i] = gapArrays.gapPositions[i * 2]!
   }
-  const gapFrequencies = computePositionFrequencies(
-    gapStartPositions,
-    depths,
-    coverageStartPos,
-  )
-  applyDepthDependentThreshold(
-    gapFrequencies,
-    gapStartPositions,
-    depths,
-    coverageStartPos,
-    featureFrequencyThreshold,
-    true,
-  )
-
-  return { mismatchFrequencies, interbaseFrequencies, gapFrequencies }
+  return {
+    mismatchFrequencies,
+    interbaseFrequencies: thresholdedPositionFrequencies(
+      interbaseArrays.interbasePositions,
+      depths,
+      coverageStartPos,
+    ),
+    gapFrequencies: thresholdedPositionFrequencies(
+      gapStartPositions,
+      depths,
+      coverageStartPos,
+    ),
+  }
 }

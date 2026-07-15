@@ -206,11 +206,31 @@ export function shouldDrawOverlaps(state: RenderState) {
 }
 
 // Sub-pixel alpha blend: lerp between `base` (full-row coverage) and 1 using
-// per-site frequency. Same formula as the three GPU shaders (mismatch /
-// gap / insertion). Callers compute `base` from their geometry (pxPerBp or
-// widthPx²) then call this once per feature.
-export function frequencyAlpha(base: number, frequency: number) {
+// per-site frequency. Same formula as frequencyAlpha() in
+// alignmentsUniforms.slang.
+function frequencyAlpha(base: number, frequency: number) {
   return base + frequency * (1 - base)
+}
+
+// The whole low-frequency fade gate for one feature: honors the
+// "show low frequency mismatches" toggle, skips features that already cover a
+// full pixel, and normalizes the frequency byte. Callers pass `base` computed
+// from their geometry — pxPerBp (mismatch, clip) or its square (insertion, gap
+// deletion), which fades narrow features faster. Squaring can't change the
+// sub-pixel test, since base < 1 ⟺ pxPerBp < 1 for non-negative values.
+//
+// Every fading pass must go through this rather than reassembling the gate
+// locally: hand-rolled copies are how the clip pass silently lost its toggle
+// check and how the softclip-base pass fed 0 into the lerp (0 fades to nothing,
+// it doesn't mean "opaque"). Mirrors frequencyFade() in alignmentsUniforms.slang.
+export function frequencyFade(
+  state: RenderState,
+  base: number,
+  frequencyByte: number,
+) {
+  return state.filterMismatchesByFrequency && base < 1
+    ? frequencyAlpha(base, frequencyByte / 255)
+    : 1
 }
 
 // Width (CSS px) of one 1bp pileup cell for the Canvas2D "colored rect per base"

@@ -318,8 +318,24 @@ public float normalizeDepth(float relDepth, Uniforms u) {
 
 // Sub-pixel alpha blend: lerp between `base` and 1.0 using per-site frequency.
 // Mirrors frequencyAlpha() in rendererTypes.ts.
-public float frequencyAlpha(float base, float freq) {
+float frequencyAlpha(float base, float freq) {
   return base + freq * (1.0 - base);
+}
+
+// The whole low-frequency fade gate for one instance: honors the
+// "show low frequency mismatches" toggle and skips instances already covering a
+// full pixel. Passes supply `base` from their geometry — pxPerBp (mismatch,
+// clip) or its square (insertion, gap deletion), which fades narrow features
+// faster. Squaring can't change the sub-pixel test, since base < 1.0 ⟺
+// pxPerBp < 1.0 for non-negative values.
+//
+// Every fading pass must go through this rather than reassembling the gate
+// locally — a hand-rolled copy is how the clip pass silently lost its
+// filterMismatchesByFrequency check. Mirrors frequencyFade() in rendererTypes.ts.
+public float frequencyFade(float base, float freq, Uniforms u) {
+  return (u.filterMismatchesByFrequency != 0 && base < 1.0)
+    ? frequencyAlpha(base, freq)
+    : 1.0;
 }
 
 // Shared vertex output for passes that only need clip-space position + color.

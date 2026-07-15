@@ -883,6 +883,16 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        // The draw/hit-test sense of showLowFreqMismatches. Both the renderers
+        // and the hit-test pipeline take the filter in this polarity, so the
+        // negation lives here once rather than at each call site.
+        get filterMismatchesByFrequency() {
+          return !this.showLowFreqMismatches
+        },
+
+        /**
+         * #getter
+         */
         // Resolved through the promotable-slot tiers (getConfResolved): an
         // explicit track value customizes the fade on or off; otherwise it follows the
         // session-wide default, falling back to off. A `maybeBoolean` slot, so
@@ -1955,7 +1965,7 @@ export default function stateModelFactory(
             coverageMaxDepth: self.coverageDomain?.[1],
             coverageIsLog: self.coverageIsLog,
             showMismatches: self.showMismatches,
-            filterMismatchesByFrequency: !self.showLowFreqMismatches,
+            filterMismatchesByFrequency: self.filterMismatchesByFrequency,
             mismatchAlpha: self.mismatchAlpha,
             showSoftClipping: self.showSoftClipping,
             showInterbaseIndicators: self.showInterbaseIndicators,
