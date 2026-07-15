@@ -2,11 +2,11 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Structural coverage for the two sibling height menus: "Feature height" holds
-// only the three size presets, and "Track sizing" (its own top-level entry, not
-// nested) holds the scroll/expand/squeeze modes. The mutual-exclusion
-// invariants are covered in squeezeToDisplayHeight.test.ts; here we assert the
-// menu wires up to them.
+// Structural coverage for the single "Feature height" menu, mirroring the
+// alignments display: the three size presets, then a "Track sizing" subheader,
+// then the scroll/expand/squeeze modes. The mutual-exclusion invariants are
+// covered in squeezeToDisplayHeight.test.ts; here we assert the menu wires up
+// to them.
 
 function hasLabel(item: MenuItem, label: string) {
   return 'label' in item && item.label === label
@@ -25,10 +25,6 @@ function featureHeightSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
   return subMenuOf(display.trackMenuItems(), 'Feature height')
 }
 
-function trackSizingSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
-  return subMenuOf(display.trackMenuItems(), 'Track sizing')
-}
-
 function radio(subMenu: MenuItem[], label: string) {
   const item = subMenu.find(i => hasLabel(i, label))
   if (item?.type === 'radio') {
@@ -39,15 +35,27 @@ function radio(subMenu: MenuItem[], label: string) {
 }
 
 describe('Feature height submenu', () => {
-  it('top level is only the three size presets', () => {
+  it('holds the size presets, then a Track sizing subheader, then the modes', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const subMenu = featureHeightSubMenu(display)
 
-    const labels = subMenu.flatMap(i => ('label' in i ? [i.label] : []))
-    expect(labels).toEqual(['Normal', 'Compact', 'Super-compact'])
-    // no subheaders; each size preset carries a "make default" pin
-    expect(subMenu.some(i => i.type === 'subHeader')).toBe(false)
+    const labels = subMenu.flatMap(i =>
+      'label' in i && i.type !== 'subHeader' ? [i.label] : [],
+    )
+    expect(labels).toEqual([
+      'Normal',
+      'Compact',
+      'Super-compact',
+      'Fixed feature height',
+      'Fixed feature height + autogrow track height',
+      'Fit feature height to display',
+    ])
+    // one "Track sizing" subheader separates the two radio groups
+    expect(
+      subMenu.filter(i => i.type === 'subHeader' && hasLabel(i, 'Track sizing')),
+    ).toHaveLength(1)
+    // each size preset carries a "make default" pin
     expect(radio(subMenu, 'Normal').endAdornment).toBeDefined()
     expect(radio(subMenu, 'Compact').endAdornment).toBeDefined()
     expect(radio(subMenu, 'Super-compact').endAdornment).toBeDefined()
@@ -82,19 +90,12 @@ describe('Feature height submenu', () => {
     expect(radio(subMenu, 'Compact').checked).toBe(true)
   })
 
-  it('Track sizing submenu holds only the track-sizing radios, tracking heightMode', () => {
+  it('the track-sizing radios track heightMode, orthogonal to the size presets', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setDisplayMode('compact')
-    const sizing = trackSizingSubMenu(display)
+    const sizing = featureHeightSubMenu(display)
 
-    // exactly the three track-sizing modes, each a radio carrying its own pin
-    const labels = sizing.flatMap(i => ('label' in i ? [i.label] : []))
-    expect(labels).toEqual([
-      'Fixed feature height',
-      'Fixed feature height + autogrow track height',
-      'Fit feature height to display',
-    ])
     expect(sizing.some(i => i.type === 'checkbox')).toBe(false)
     expect(radio(sizing, 'Fixed feature height').checked).toBe(true)
     // each mode carries a "make default" pin, like the size presets
@@ -108,13 +109,14 @@ describe('Feature height submenu', () => {
     ).toBeDefined()
 
     display.setHeightMode('grow')
-    const sizing2 = trackSizingSubMenu(display)
+    const sizing2 = featureHeightSubMenu(display)
     expect(
       radio(sizing2, 'Fixed feature height + autogrow track height').checked,
     ).toBe(true)
     expect(radio(sizing2, 'Fixed feature height').checked).toBe(false)
     // density is orthogonal — still Compact while the track grows
-    // (verified via the model getter; the size radios live in a sibling menu)
     expect(display.displayMode).toBe('compact')
+    // and the size presets still read as Compact in the same menu
+    expect(radio(sizing2, 'Compact').checked).toBe(true)
   })
 })
