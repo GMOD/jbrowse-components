@@ -19,7 +19,12 @@ const noIndexes = {
 test('canSubmit requires a GWAS file, a name, and an assembly', () => {
   const g = uri('a.bed.gz')
   expect(
-    canSubmit({ gwasLocation: g, trackName: 'x', assembly: 'hg38', ...noIndexes }),
+    canSubmit({
+      gwasLocation: g,
+      trackName: 'x',
+      assembly: 'hg38',
+      ...noIndexes,
+    }),
   ).toBe(true)
   expect(
     canSubmit({
@@ -30,7 +35,12 @@ test('canSubmit requires a GWAS file, a name, and an assembly', () => {
     }),
   ).toBe(false)
   expect(
-    canSubmit({ gwasLocation: g, trackName: '  ', assembly: 'hg38', ...noIndexes }),
+    canSubmit({
+      gwasLocation: g,
+      trackName: '  ',
+      assembly: 'hg38',
+      ...noIndexes,
+    }),
   ).toBe(false)
   expect(
     canSubmit({

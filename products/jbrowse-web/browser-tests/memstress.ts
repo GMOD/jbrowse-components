@@ -154,7 +154,9 @@ async function act(page: Page) {
       if (!view) {
         return 'noview'
       }
-      const shown = new Set(view.tracks.map((t: any) => t.configuration.trackId))
+      const shown = new Set(
+        view.tracks.map((t: any) => t.configuration.trackId),
+      )
       if (r < 0.4) {
         // toggle a track on/off (display create/destroy lifecycle)
         if (shown.has(trackId)) {

@@ -25,62 +25,62 @@ const sections = gallerySections
 >
   <DocsSidebarNav slot="nav" currentSlug="gallery" />
   <div class="showcase-main">
-  <div class={`${page.content} wide`}>
-    <h1>JBrowse 2 visualizations gallery</h1>
+    <div class={`${page.content} wide`}>
+      <h1>JBrowse 2 visualizations gallery</h1>
 
-    {
-      sections.map(s => (
-        <section>
-          <h2 id={s.id}>{s.title}</h2>
-          {s.cards.length > 0 && (
-            <div class="grid">
-              {s.cards.map(item => {
-                const href = itemHref(item, baseUrl)
-                const src = `${baseUrl}/img/${itemImg(item)}`
-                const openLabel = item.guide
-                  ? 'Open tutorial ↗'
-                  : 'Open in JBrowse ↗'
-                return (
-                  <figure class="card">
-                    <button
-                      type="button"
-                      class="card-img-btn"
-                      data-full={src}
-                      data-label={item.label}
-                      data-href={href}
-                      data-open-label={openLabel}
-                      aria-label={`Enlarge: ${item.label}`}
-                    >
-                      <img src={src} alt={item.label} loading="lazy" />
-                    </button>
-                    <figcaption>
-                      <a href={href} class="card-title">
-                        {item.label}
-                      </a>
-                      {item.description && <p>{item.description}</p>}
-                    </figcaption>
-                  </figure>
-                )
-              })}
-            </div>
-          )}
-          {s.links.length > 0 && (
-            <>
-              {s.cards.length > 0 && <p class="more">More examples</p>}
-              <ul class="links">
-                {s.links.map(item => (
-                  <li>
-                    <a href={itemHref(item, baseUrl)}>{item.label}</a>
-                    {item.description && <span> — {item.description}</span>}
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </section>
-      ))
-    }
-  </div>
+      {
+        sections.map(s => (
+          <section>
+            <h2 id={s.id}>{s.title}</h2>
+            {s.cards.length > 0 && (
+              <div class="grid">
+                {s.cards.map(item => {
+                  const href = itemHref(item, baseUrl)
+                  const src = `${baseUrl}/img/${itemImg(item)}`
+                  const openLabel = item.guide
+                    ? 'Open tutorial ↗'
+                    : 'Open in JBrowse ↗'
+                  return (
+                    <figure class="card">
+                      <button
+                        type="button"
+                        class="card-img-btn"
+                        data-full={src}
+                        data-label={item.label}
+                        data-href={href}
+                        data-open-label={openLabel}
+                        aria-label={`Enlarge: ${item.label}`}
+                      >
+                        <img src={src} alt={item.label} loading="lazy" />
+                      </button>
+                      <figcaption>
+                        <a href={href} class="card-title">
+                          {item.label}
+                        </a>
+                        {item.description && <p>{item.description}</p>}
+                      </figcaption>
+                    </figure>
+                  )
+                })}
+              </div>
+            )}
+            {s.links.length > 0 && (
+              <>
+                {s.cards.length > 0 && <p class="more">More examples</p>}
+                <ul class="links">
+                  {s.links.map(item => (
+                    <li>
+                      <a href={itemHref(item, baseUrl)}>{item.label}</a>
+                      {item.description && <span> — {item.description}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </section>
+        ))
+      }
+    </div>
   </div>
 
   <div id="lightbox" class="lightbox" hidden>

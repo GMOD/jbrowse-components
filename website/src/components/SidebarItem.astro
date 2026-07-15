@@ -29,7 +29,10 @@ const { item, currentSlug } = Astro.props
           {item.href ? (
             <a
               href={item.href}
-              class:list={['summary-link', { active: item.slug === currentSlug }]}
+              class:list={[
+                'summary-link',
+                { active: item.slug === currentSlug },
+              ]}
               aria-current={item.slug === currentSlug ? 'page' : undefined}
             >
               {item.label}

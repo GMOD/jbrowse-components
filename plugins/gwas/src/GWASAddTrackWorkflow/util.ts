@@ -26,8 +26,7 @@ export function canSubmit({
   assembly: string | undefined
 }) {
   const gwasOk =
-    !!gwasLocation &&
-    (!needsExplicitIndex(gwasLocation) || !!gwasIndexLocation)
+    !!gwasLocation && (!needsExplicitIndex(gwasLocation) || !!gwasIndexLocation)
   const ldOk =
     !ldLocation ||
     !isTabixLocation(ldLocation) ||
