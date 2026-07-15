@@ -100,13 +100,22 @@ why?** Linear-genome-view displays are built from a small set of **foundation
 mixins** on `BaseDisplay` (they all share `baseLinearDisplayConfigSchema` as their
 config base). Which mixins a display composes is the primary axis of code
 sharing; *how* it renders (GPU vs Canvas2D) is a separate axis layered on top.
-Three foundations cover every in-tree display:
+Two fetch foundations — per-region (`MultiRegionDisplayMixin`) and single-global
+(`GlobalFetchMixin`) — cover every in-tree display:
 
 | Foundation (composed on `BaseDisplay`) | Brings | Displays |
 | --- | --- | --- |
 | `MultiRegionDisplayMixin()` | `RenderLifecycleMixin` + `FetchMixin` + `RegionTooLargeMixin` + the four fetch autoruns + `rpcProps()`→refetch wiring | `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `LinearManhattanDisplay`, `LinearAlignmentsDisplay`, both multi-sample variant displays, `LinearReferenceSequenceDisplay`, plus the canvas displays (via `LinearCanvasBaseDisplay` — see below) |
-| `GlobalDataDisplayMixin()` | same slot mixins, **no** fetch autoruns (each display installs its own `afterAttach` autorun) | HiC (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`) |
-| `RegionTooLargeMixin()` + custom `renderSvg` (no GPU/fetch mixin) | lightweight React-SVG render — no GPU upload, no block machinery | `LinearArcDisplay`, `LinearPairedArcDisplay` |
+| `GlobalDataDisplayMixin()` = `GlobalFetchMixin()` + `RenderLifecycleMixin` | the single-global fetch foundation **plus** GPU render lifecycle + `displayPhase`; **no** fetch autoruns (each display installs its own `afterAttach` autorun via `installGlobalFetchAutorun`) | HiC (`LinearHicDisplay`), LD (`plugins/variants/src/LDDisplay`) |
+| `GlobalFetchMixin()` bare (via arc's `ArcFetchModel`) + main-thread SVG render | the same fetch foundation (`RegionTooLargeMixin` + `FetchMixin` + `reloadCounter`) with **no** `RenderLifecycleMixin` — a non-GPU display shouldn't drag in the render lifecycle to get fetch/cancel/too-large/reload | `LinearArcDisplay`, `LinearPairedArcDisplay` |
+
+`GlobalFetchMixin` is the rendering-agnostic fetch foundation shared by the last
+two rows: GPU global displays layer `RenderLifecycleMixin` on top of it
+(`GlobalDataDisplayMixin`), while arc composes it bare and paints main-thread SVG.
+`displayPhase` lives in `GlobalDataDisplayMixin`, not `GlobalFetchMixin`, because
+it reads `renderError` — the one genuinely GPU-only piece. Arc's `ArcFetchModel`
+shadows the imperative `RegionTooLargeMixin` getter with a **derived** one (see
+"regionTooLarge: imperative vs. derived").
 
 `LinearCanvasBaseDisplay` (plugins/canvas) is **not** a peer of these. It is a
 canvas-feature *specialization layered on `MultiRegionDisplayMixin`*, and only
@@ -186,13 +195,17 @@ off the fetch. It has two implementations, both read through the one
 `regionTooLarge` getter so consumers (`regionCannotBeRendered()`,
 `regionCannotBeRenderedText()`, the `FetchVisibleRegions` gate) work with either.
 
-**Imperative** (`RegionTooLargeMixin` default; wiggle, alignments, LD):
-`setRegionTooLarge(true)` flips a volatile flag inside `fetchRegions` when the
-byte estimate exceeds the limit. `ClearBlockingStateOnViewportChange` clears it on
-viewport change so `FetchVisibleRegions` can retry.
+**Imperative** (`RegionTooLargeMixin` default; the displays that run a real byte
+pre-flight by overriding `getByteEstimateConfig` — alignments, maf,
+multi-sample-variant): `setRegionTooLarge(true)` flips a volatile flag inside
+`fetchRegions` when the byte estimate exceeds the limit.
+`ClearBlockingStateOnViewportChange` clears it on viewport change so
+`FetchVisibleRegions` can retry. (Wiggle inherits this default but never actually
+gates — its `alwaysRender` adapters make `evaluateRegionTooLarge` a no-op.)
 
-**Derived** (canvas's `LinearCanvasBaseDisplay`): a pure function of cached stats
-× current `bpPerPx` + visible regions.
+**Derived** (canvas's `LinearCanvasBaseDisplay`, LD's `LDDisplay`, and arc's
+`ArcFetchModel` — each a `get regionTooLarge()` that shadows the mixin default): a
+pure function of cached stats × current `bpPerPx` + visible regions.
 
 - `bytesEstimateTooLarge` tests `estimatedVisibleBytes` against
   `resolveByteLimit()`. `applyFetchResults` records `featureDensityStats.bytes`
@@ -256,7 +269,7 @@ payload covering all visible regions, so variants' `fetchNeeded` expands `needed
 to all `bufferedVisibleRegions` and marks them all loaded together when the work
 callback returns.
 
-### Terminal states (banners) replace the whole subtree
+### Terminal states early-return their own root
 
 `DisplayChrome` branches on `model.displayPhase`. For the `renderError` /
 `tooLarge` banners it **early-`return`s** the banner as its *entire* output,
