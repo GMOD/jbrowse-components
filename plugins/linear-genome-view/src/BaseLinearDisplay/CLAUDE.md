@@ -36,6 +36,16 @@ getters synchronously in an `afterAttach` body; do it inside
 `FetchVisibleRegions`, so a mismatch error surfaces only after its 600 ms
 debounce.
 
+**A display's own `afterAttach` must NOT `superAfterAttach()`.** Unlike regular
+actions (`rpcProps`, `setError`, … — extend those via the super-capture pattern),
+`@jbrowse/mobx-state-tree` **auto-chains lifecycle hooks** (`afterAttach`,
+`beforeDestroy`, …): the fork runs the base hook automatically before the
+subclass's. Capturing `const superAfterAttach = self.afterAttach` and calling it
+runs `MultiRegionDisplayMixin.afterAttach` **twice**, double-installing all five
+autoruns (masked by the `isLoading`/stale guards, but wasteful). Just define
+`afterAttach` and let the auto-chain run the base. Proven in
+`models/afterAttachAutoChain.test.ts`.
+
 `onDisplayedRegionsChange(self, clear, name?)` (exported helper, NOT a 5th
 installed autorun) is opt-in for per-region state keyed by
 `displayedRegionIndex` that must survive `clearAllRpcData` — chromosome nav

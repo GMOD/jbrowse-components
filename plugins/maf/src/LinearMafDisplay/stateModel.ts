@@ -1591,19 +1591,20 @@ export default function stateModelFactory(
         }
       },
     }))
-    .actions(self => {
-      const superAfterAttach = self.afterAttach
-      return {
-        /**
-         * #action
-         */
-        async renderSvg(opts: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self as LinearMafDisplayModel, opts)
-        },
-        async afterAttach() {
-          superAfterAttach()
-          // Drop the cached byte estimate on chromosome navigation:
+    .actions(self => ({
+      /**
+       * #action
+       */
+      async renderSvg(opts: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self as LinearMafDisplayModel, opts)
+      },
+      // No superAfterAttach() call: @jbrowse/mobx-state-tree auto-chains hooks,
+      // so MultiRegionDisplayMixin's afterAttach already runs (see
+      // afterAttachAutoChain.test.ts). Calling it explicitly would double-install
+      // the mixin's fetch autoruns.
+      async afterAttach() {
+        // Drop the cached byte estimate on chromosome navigation:
           // displayedRegionIndex is reused across chromosomes, so a stale
           // estimate would gate the new region against the wrong stats and, since
           // FetchVisibleRegions gates on !regionTooLarge, wedge the banner. The
@@ -1626,8 +1627,7 @@ export default function stateModelFactory(
         beforeDestroy() {
           clearTimeout(self.resizeSettleTimer)
         },
-      }
-    })
+    }))
     .postProcessSnapshot(snap => {
       // The active clusterTree is derived (rebuilt from worker output on fetch,
       // or restored from treeNewickVolatile on clear), so it's dropped rather

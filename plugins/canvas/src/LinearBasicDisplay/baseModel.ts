@@ -2315,14 +2315,15 @@ export default function baseStateModelFactory(
         }
       })
       .actions(self => {
-        const superAfterAttach = self.afterAttach
         return {
           /**
            * #action
            */
+          // No superAfterAttach() call: the fork auto-chains hooks, so
+          // MultiRegionDisplayMixin's afterAttach already runs (see
+          // afterAttachAutoChain.test.ts). An explicit call would double-install
+          // its fetch autoruns.
           afterAttach() {
-            superAfterAttach()
-
             // Grow mode needs no autorun to drive height: the `height` getter
             // returns `grownHeight` reactively (see the getter above), so
             // consumers recompute when the laid-out content changes without ever

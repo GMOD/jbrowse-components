@@ -546,10 +546,12 @@ export function stateModelFactory(
       },
     }))
     .actions(self => {
-      const superAfterAttach = self.afterAttach
       return {
+        // No superAfterAttach() call: the fork auto-chains hooks, so
+        // MultiRegionDisplayMixin's afterAttach already runs (see
+        // afterAttachAutoChain.test.ts). An explicit call would double-install
+        // its fetch autoruns.
         afterAttach() {
-          superAfterAttach()
           // LocusZoom-style default: while no index SNP is pinned, keep the
           // index anchored on the highest-scoring loaded SNP, re-tracking it as
           // higher-scoring data lands.

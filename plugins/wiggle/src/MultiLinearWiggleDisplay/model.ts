@@ -323,8 +323,6 @@ export default function stateModelFactory(
       }
     })
     .actions(self => {
-      const superAfterAttach = self.afterAttach
-
       return {
         fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
@@ -364,9 +362,11 @@ export default function stateModelFactory(
           return undefined
         },
 
+        // No superAfterAttach() call: the fork auto-chains hooks, so
+        // MultiRegionDisplayMixin's afterAttach already runs (see
+        // afterAttachAutoChain.test.ts). An explicit call would double-install
+        // its fetch autoruns.
         async afterAttach() {
-          superAfterAttach()
-
           try {
             const { setupTreeDrawingAutorun } =
               await import('@jbrowse/tree-sidebar')

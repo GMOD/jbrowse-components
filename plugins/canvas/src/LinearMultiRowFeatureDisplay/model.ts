@@ -739,10 +739,12 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => {
-      const superAfterAttach = self.afterAttach
       return {
+        // No superAfterAttach() call: the fork auto-chains hooks, so
+        // MultiRegionDisplayMixin's afterAttach already runs (see
+        // afterAttachAutoChain.test.ts). An explicit call would double-install
+        // its fetch autoruns.
         async afterAttach() {
-          superAfterAttach()
           // Light autorun (mobx-only, already bundled): install synchronously.
           // The two below genuinely code-split heavy d3/clustering code.
           getMultiRowSortAutorun(self)
