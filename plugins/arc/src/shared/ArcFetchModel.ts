@@ -1,17 +1,10 @@
-import { getContainingView, isDataCurrent } from '@jbrowse/core/util'
+import { isDataCurrent } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  GlobalFetchMixin,
-  evaluateRegionTooLarge,
-  resolveByteLimit,
-  scaleByteEstimate,
-  scaledForceLoadByteLimit,
-} from '@jbrowse/plugin-linear-genome-view'
+import { GlobalFetchMixin } from '@jbrowse/plugin-linear-genome-view'
 
 import { currentRegionSignature } from './regionSignature.ts'
 
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * Shared fetch/gating model for both arc displays. Composes the
@@ -40,12 +33,6 @@ export function ArcFetchModel() {
        * the `dataLoaded`/`svgReady` freshness axis (see regionSignature.ts)
        */
       loadedRegionSignature: undefined as string | undefined,
-      /**
-       * #volatile
-       * visibleBp when the current `featureDensityStats` estimate was captured,
-       * so the derived `regionTooLarge` getter can scale it to the current view
-       */
-      byteEstimateVisibleBp: undefined as number | undefined,
     }))
     .actions(self => ({
       /**
@@ -56,84 +43,20 @@ export function ArcFetchModel() {
         self.loadedRegionSignature = signature
       },
     }))
-    .actions(self => {
-      const superSetFeatureDensityStats = self.setFeatureDensityStats
-      return {
-        /**
-         * #action
-         * Records the span the byte estimate was measured at so
-         * `estimatedVisibleBytes` can scale it to the current view.
-         */
-        setFeatureDensityStats(
-          stats?: Parameters<typeof superSetFeatureDensityStats>[0],
-        ) {
-          self.byteEstimateVisibleBp = stats
-            ? (getContainingView(self) as LinearGenomeViewModel).visibleBp
-            : undefined
-          superSetFeatureDensityStats(stats)
-        },
-      }
-    })
+    // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases on
+    // zoom-in, no flicker on pan). fetchArcFeatures captures the estimate;
+    // afterAttach clears it on chromosome nav. Byte-only — no density axis. Each
+    // concrete arc model overrides `configuredFetchSizeLimit` (the mixin owns no
+    // `configuration`).
     .views(() => ({
       /**
        * #getter
-       * Overridable hook: the display's configured `fetchSizeLimit`. The mixin
-       * can't read a config slot itself (it owns no `configuration`), so each
-       * concrete arc model supplies `getConf(self, 'fetchSizeLimit')`. Default
-       * matches the BaseLinearDisplay slot default; every arc model overrides it.
        */
-      get configuredFetchSizeLimit(): number {
-        return 1_000_000
+      get derivedRegionTooLargeEnabled() {
+        return true
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * cached byte estimate scaled from the span it was measured over to the
-       * current visible span, so the verdict self-releases on zoom-in
-       */
-      get estimatedVisibleBytes() {
-        return scaleByteEstimate({
-          bytes: self.featureDensityStats?.bytes,
-          captureBp: self.byteEstimateVisibleBp,
-          visibleBp: (getContainingView(self) as LinearGenomeViewModel)
-            .visibleBp,
-        })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * shared verdict + reason (AUTO_FORCE_LOAD_BP floor + bytes-over-limit),
-       * fed the scaled estimate — same helper as every other gating path
-       */
-      get tooLargeStatus() {
-        return evaluateRegionTooLarge({
-          visibleBp: (getContainingView(self) as LinearGenomeViewModel)
-            .visibleBp,
-          bytes: self.estimatedVisibleBytes,
-          byteLimit: resolveByteLimit({
-            userByteSizeLimit: self.userByteSizeLimit,
-            adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
-            configFetchSizeLimit: self.configuredFetchSizeLimit,
-          }),
-        })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * derived — shadows GlobalFetchMixin's imperative RegionTooLargeMixin getter
-       */
-      get regionTooLarge() {
-        return self.tooLargeStatus.tooLarge
-      },
-      /**
-       * #getter
-       */
-      get regionTooLargeReason() {
-        return self.tooLargeStatus.reason
-      },
       /**
        * #getter
        * fresh only when `features` were fetched for the current static-block set;
@@ -144,23 +67,6 @@ export function ArcFetchModel() {
           self.loadedRegionSignature,
           currentRegionSignature(self),
         )
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * Force-load raises the byte gate past the estimate scaled to the *current*
-       * view (shared helper), not the raw captured bytes, so it clears even if the
-       * view zoomed out after the estimate was captured.
-       */
-      setFeatureDensityStatsLimit(stats?: { bytes?: number }) {
-        const limit = scaledForceLoadByteLimit({
-          scaledEstimate: self.estimatedVisibleBytes,
-          rawBytes: stats?.bytes,
-        })
-        if (limit !== undefined) {
-          self.userByteSizeLimit = limit
-        }
       },
     }))
 }

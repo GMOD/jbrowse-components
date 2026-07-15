@@ -30,13 +30,10 @@ import {
   PromotableDefaultsMixin,
   TrackHeightMixin,
   autorunOnReadyView,
-  evaluateRegionTooLarge,
-  getTrackSizingMenuItem,
+  heightModeMenuItems,
   installGrowExitBake,
   onDisplayedRegionsChange,
   raiseLimitPast,
-  resolveByteLimit,
-  scaleByteEstimate,
   scaledForceLoadByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
@@ -408,15 +405,6 @@ export default function baseStateModelFactory(
          * #volatile
          */
         userFeatureDensityLimit: undefined as number | undefined,
-        /**
-         * #volatile
-         */
-        // visibleBp at which the current `featureDensityStats` byte estimate was
-        // measured. The estimate scales with span, so a value taken while zoomed
-        // out doesn't describe a smaller zoomed-in span; tracking the capture
-        // span lets `estimatedVisibleBytes` rescale it to the current view
-        // instead of letting a stale estimate gate refetch forever.
-        byteEstimateVisibleBp: undefined as number | undefined,
         /**
          * #volatile
          */
@@ -939,31 +927,11 @@ export default function baseStateModelFactory(
           }
         },
       }))
-      // Derived regionTooLarge: a pure function of cached stats × current
-      // bpPerPx + visible regions. No imperative clear-and-reset, so small
-      // zoom/pan moves don't flicker the banner. Shadows RegionTooLargeMixin's
-      // imperative getter.
-      .views(self => ({
-        /**
-         * #getter
-         * The largest single region's cached byte estimate (see
-         * applyFetchResults), scaled from the span it was measured over
-         * (`byteEstimateVisibleBp`) to the currently visible span. The estimate
-         * is roughly proportional to span, so scaling makes it a pure function
-         * of the current view — mirroring densityTooLarge. Crucially it
-         * self-releases on zoom-in: without scaling, a large zoomed-out estimate
-         * stays above the limit forever and gates refetch (FetchVisibleRegions
-         * won't re-estimate while regionTooLarge holds) — a permanently stuck
-         * banner.
-         */
-        get estimatedVisibleBytes() {
-          return scaleByteEstimate({
-            bytes: self.featureDensityStats?.bytes,
-            captureBp: self.byteEstimateVisibleBp,
-            visibleBp: getView(self).visibleBp,
-          })
-        },
-      }))
+      // Opt into RegionTooLargeMixin's shared derived byte gate, folding the
+      // feature-density axis in via densityTooLargeForDerivedGate. The banner is
+      // then a pure function of cached stats × current view (no imperative
+      // clear-and-reset, no flicker on small zoom/pan). afterAttach's
+      // clearStaleDensityState drops the cached estimate on chromosome nav.
       .views(self => ({
         /**
          * #getter
@@ -976,37 +944,25 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
-        // Shared verdict + reason: bytes-over-limit takes precedence over
-        // density, gated by AUTO_FORCE_LOAD_BP. Same helper as the block-based
-        // and pre-fetch byte paths so the banner text can't drift. Feeds the
-        // scaled estimatedVisibleBytes so the byte gate self-releases on
-        // zoom-in (see estimatedVisibleBytes).
-        get tooLargeStatus() {
-          return evaluateRegionTooLarge({
-            visibleBp: getView(self).visibleBp,
-            bytes: self.estimatedVisibleBytes,
-            byteLimit: resolveByteLimit({
-              userByteSizeLimit: self.userByteSizeLimit,
-              adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
-              configFetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),
-            }),
-            densityTooLarge: self.densityTooLarge,
-          })
-        },
-      }))
-      .views(self => ({
         /**
          * #getter
          */
-        get regionTooLarge() {
-          return self.tooLargeStatus.tooLarge
+        get derivedRegionTooLargeEnabled() {
+          return true
         },
-
         /**
          * #getter
          */
-        get regionTooLargeReason() {
-          return self.tooLargeStatus.reason
+        get configuredFetchSizeLimit(): number {
+          return readConfObject(self.conf, 'fetchSizeLimit')
+        },
+        /**
+         * #getter
+         * Folds canvas's feature-density gate into the shared derived verdict
+         * (`RegionTooLargeMixin.tooLargeStatus`), which is byte-only by default.
+         */
+        get densityTooLargeForDerivedGate() {
+          return self.densityTooLarge
         },
       }))
       // Laid-out data derived from the raw per-region fetch results. MobX
@@ -2331,25 +2287,6 @@ export default function baseStateModelFactory(
           },
         }
       })
-      .actions(self => {
-        const superSetFeatureDensityStats = self.setFeatureDensityStats
-        return {
-          /**
-           * #action
-           * Records the span the byte estimate was measured at so
-           * `estimatedVisibleBytes` can scale it to the current view (see
-           * `byteEstimateVisibleBp`).
-           */
-          setFeatureDensityStats(
-            stats?: Parameters<typeof superSetFeatureDensityStats>[0],
-          ) {
-            self.byteEstimateVisibleBp = stats
-              ? getView(self).visibleBp
-              : undefined
-            superSetFeatureDensityStats(stats)
-          },
-        }
-      })
       .actions(self => ({
         /**
          * #action
@@ -2829,29 +2766,29 @@ export default function baseStateModelFactory(
 
         /**
          * #method
-         * Two sibling menu entries for the two independent height questions: the
-         * "Feature height" size presets (how tall each feature is drawn) and the
-         * "Track sizing" entry (how the track responds when there are more
-         * features than fit — scroll / expand / squeeze). Keeping them side by
-         * side, rather than one nested inside the other, keeps each a shallow hop
-         * away and stops the two "height" ideas from blurring together. Shared by
-         * every canvas display (genes, variants).
+         * One "Feature height" menu with two independent radio groups, mirroring
+         * the alignments display: the size presets (how tall each feature is
+         * drawn) and, under a "Track sizing" subheader, how the track responds
+         * when there are more features than fit — scroll / expand / squeeze. The
+         * two axes are orthogonal, so picking a size never changes the mode and
+         * vice versa. Shared by every canvas display (genes, variants).
          */
         featureHeightMenuItems() {
           return [
             {
               label: 'Feature height',
               icon: HeightIcon,
-              subMenu:
+              subMenu: [
                 // Each preset row carries its own pin (endAdornment): the radio
                 // selects the mode for this track, the pin promotes that preset
                 // as the session-wide default for this display type. displayMode
                 // is a sentinel promotable slot, so every preset — `normal`
                 // included — is customizable back over another session default.
-                displayModeOptions.map(option =>
+                ...displayModeOptions.map(option =>
                   promotableRadioItem({
                     label: option.label,
                     checked: self.displayMode === option.value,
+                    keepMenuOpen: true,
                     onClick: () => {
                       self.setDisplayMode(option.value)
                     },
@@ -2862,8 +2799,10 @@ export default function baseStateModelFactory(
                     ),
                   }),
                 ),
+                { type: 'subHeader' as const, label: 'Track sizing' },
+                ...heightModeMenuItems(self, 'feature'),
+              ],
             },
-            getTrackSizingMenuItem(self, 'feature'),
           ]
         },
       }))

@@ -21,6 +21,7 @@ import {
   AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   TreeSidebarMixin,
@@ -463,6 +464,26 @@ export default function MultiSampleVariantBaseModelF(
 
         get fetchSizeLimit(): number {
           return self.userByteSizeLimit ?? getConf(self, 'fetchSizeLimit')
+        },
+      }))
+      // Opt into RegionTooLargeMixin's shared derived byte gate: the too-large
+      // banner becomes a pure function of the cached estimate scaled to the
+      // current viewport (self-releases on zoom-in, no flicker on pan). The
+      // mixin's pre-flight (getByteEstimateConfig) still captures the estimate
+      // and short-circuits the download server-side; afterAttach clears the
+      // estimate on chromosome nav. Byte-only — no density axis.
+      .views(self => ({
+        /**
+         * #getter
+         */
+        get derivedRegionTooLargeEnabled() {
+          return true
+        },
+        /**
+         * #getter
+         */
+        get configuredFetchSizeLimit(): number {
+          return getConf(self, 'fetchSizeLimit')
         },
       }))
       .actions(self => {
@@ -1178,6 +1199,15 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .actions(self => ({
         afterAttach() {
+          // Drop the cached byte estimate on chromosome navigation:
+          // displayedRegionIndex is reused across chromosomes, so a stale
+          // estimate would gate the new region against the wrong stats and, since
+          // FetchVisibleRegions gates on !regionTooLarge, wedge the banner. The
+          // estimate intentionally survives viewport-change clears (no flicker on
+          // pan); this hook is the one path that clears it. Mirrors canvas/maf.
+          onDisplayedRegionsChange(self, () => {
+            self.setFeatureDensityStats(undefined)
+          })
           // Keep scrollTop within the content by construction. A row-height
           // shrink or a display drag-resize lowers scrollableHeight, and the
           // matrix display scrolls a canvas with no native overflow container
