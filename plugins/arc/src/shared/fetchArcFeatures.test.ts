@@ -8,9 +8,7 @@ import {
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory } from '@jbrowse/plugin-linear-genome-view'
-import { autorun } from 'mobx'
 
-import { fetchArcFeatures } from './fetchArcFeatures.ts'
 import { configSchemaFactory } from '../LinearArcDisplay/configSchema.ts'
 import { stateModelFactory } from '../LinearArcDisplay/model.ts'
 
@@ -144,61 +142,66 @@ function createTestEnvironment() {
   return { createDisplay }
 }
 
-const tick = () => new Promise(res => setTimeout(res, 0))
-
-describe('fetchArcFeatures region-too-large gating', () => {
-  it('flags a too-large region and skips the feature download', async () => {
+// Arc's regionTooLarge is DERIVED (byte-only), identical to the LD pattern
+// (ArcFetchModel), so it is exercised the same way: drive setFeatureDensityStats
+// synchronously — before the async afterAttach installs its autoruns — and read
+// the derived getter. This is the de-specialization the migration achieved:
+// there is no imperative setRegionTooLarge and no "don't early-return" hack.
+describe('arc derived regionTooLarge', () => {
+  it('is false with no estimate yet', () => {
     const { display } = createTestEnvironment().createDisplay()
-    await fetchArcFeatures(display)
-    expect(display.regionTooLarge).toBe(true)
-    // only the density estimate ran, not CoreGetFeatures
-    expect(display.features).toBeUndefined()
+    expect(display.regionTooLarge).toBe(false)
   })
 
-  it('re-estimates on every viewport change while too-large (does not wedge)', async () => {
+  it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
-
-    // Drive fetchArcFeatures through a real reaction — its own tracked
-    // dependency set is what the fix repairs (production wraps this same call
-    // in a { delay: 1000 } autorun via doAfterAttach; the tracked reads are
-    // identical). Regression guard: gating on `regionTooLarge` as an
-    // early-return dropped the viewport read from the tracked set once the
-    // banner showed, so a second viewport change never re-fired and the banner
-    // wedged until force-load.
-    let runs = 0
-    const dispose = autorun(() => {
-      runs++
-      void fetchArcFeatures(display)
-    })
-
-    await tick()
+    view.zoomTo(2000)
+    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
-
-    view.zoomTo(1000)
-    const afterFirstZoom = runs
-    await tick()
-
-    // a SECOND viewport change must still re-fire: proves run #2 kept tracking
-    // the viewport even though regionTooLarge was set
-    view.zoomTo(500)
-    expect(runs).toBe(afterFirstZoom + 1)
-
-    dispose()
   })
 
-  it('self-releases when a zoomed-in region fits under the limit', async () => {
-    const { display, view, mockRpcCall } = createTestEnvironment().createDisplay()
-    await fetchArcFeatures(display)
+  it('self-releases on zoom-in via scaling, without an imperative clear', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(2000)
+    display.setFeatureDensityStats({ bytes: 1_500_000 })
     expect(display.regionTooLarge).toBe(true)
 
-    // smaller region now estimates under the fetch cap
-    mockRpcCall.mockImplementation(async (_sessionId: string, method: string) =>
-      method === 'CoreGetFeatureDensityStats'
-        ? { bytes: 10, fetchSizeLimit: 0, featureDensity: 1 }
-        : [],
-    )
-    view.zoomTo(300)
-    await fetchArcFeatures(display)
+    // scaled estimate shrinks with the span; still above AUTO_FORCE_LOAD_BP
+    view.zoomTo(50)
+    expect(view.visibleBp).toBeGreaterThan(20_000)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  it('does not flicker on pan: the estimate survives a viewport shift', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(2000)
+    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    expect(display.regionTooLarge).toBe(true)
+
+    view.scrollTo(view.offsetPx + 200)
+    expect(display.featureDensityStats).toBeDefined()
+    expect(display.regionTooLarge).toBe(true)
+  })
+
+  it('force-load clears the banner even after zooming out past the capture', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(2000)
+    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    expect(display.regionTooLarge).toBe(true)
+
+    // zoom out: the scaled estimate grows past the raw captured bytes, so a
+    // limit raised only past the raw bytes would leave the banner up
+    view.zoomTo(8000)
+    expect(display.regionTooLarge).toBe(true)
+    display.setFeatureDensityStatsLimit(display.featureDensityStats)
     expect(display.regionTooLarge).toBe(false)
   })
 })
+
+// The fetchArcFeatures flow (density probe → commit → derived gate → feature
+// download) mirrors LD's performLDFetch and is driven by the shared
+// installGlobalFetchAutorun; it isn't unit-tested in isolation here because the
+// direct call races the async afterAttach autoruns (which clear the estimate on
+// install). Browser tests cover the end-to-end path via the arc-display-done
+// testid.

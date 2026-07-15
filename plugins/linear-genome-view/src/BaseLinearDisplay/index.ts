@@ -49,6 +49,8 @@ export {
 } from './models/MultiRegionDisplayMixin.ts'
 export {
   type GlobalDataDisplayMixinType,
+  GlobalFetchMixin,
+  type GlobalFetchMixinType,
   default as GlobalDataDisplayMixin,
   installGlobalFetchAutorun,
 } from './models/GlobalDataDisplayMixin.ts'

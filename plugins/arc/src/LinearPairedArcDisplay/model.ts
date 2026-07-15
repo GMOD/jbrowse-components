@@ -2,21 +2,18 @@ import type React from 'react'
 
 import {
   ConfigurationReference,
+  getConf,
   getConfResolved,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { dedupe, isDataCurrent, openFeatureWidget } from '@jbrowse/core/util'
+import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  FetchMixin,
-  RegionTooLargeMixin,
-  TrackHeightMixin,
-} from '@jbrowse/plugin-linear-genome-view'
+import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 
 import { makeFeaturePair, pairKey } from './components/util.ts'
 import { makeLineWidthMenuItem } from './lineWidthMenu.tsx'
-import { currentRegionSignature } from '../shared/regionSignature.ts'
+import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
 
 import type {
   LinearPairedArcDisplayConfig,
@@ -66,12 +63,10 @@ export function stateModelFactory(
       'LinearPairedArcDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      RegionTooLargeMixin(),
-      // shared cancel-safe fetch state machine (runFetch/isLoading/error/
-      // fetchGeneration): the same primitive every GPU display fetches through,
-      // so a fast pan/zoom cancels the in-flight arc fetch instead of letting a
-      // stale result clobber fresh features (arc used to guard with isAlive only)
-      FetchMixin(),
+      // shared arc fetch/gating: cancel-safe runFetch, DERIVED regionTooLarge,
+      // reload/svgReady contract — identical structure to LD, so arc has no
+      // special fetch or region-too-large behavior
+      ArcFetchModel(),
       types.model({
         /**
          * #property
@@ -83,13 +78,6 @@ export function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .volatile(() => ({
-      features: undefined as Feature[] | undefined,
-      // signature of the static-block region set `features` were fetched for;
-      // drives the non-stale `svgReady` export gate (see regionSignature.ts)
-      loadedRegionSignature: undefined as string | undefined,
-    }))
-
     .views(self => ({
       /**
        * #getter
@@ -102,6 +90,13 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * supplies the config read `ArcFetchModel`'s derived byte gate needs
+       */
+      get configuredFetchSizeLimit() {
+        return getConf(self, 'fetchSizeLimit')
+      },
+      /**
+       * #getter
        * arc stroke width in px, from the promotable `lineWidth` slot (track-menu
        * slider writes it); flat across all arcs
        */
@@ -110,30 +105,6 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      /**
-       * #getter
-       * the SVG-export terminal-state gate (the `SvgExportable` contract every
-       * LGV track display shares). Non-stale: `features` must have been fetched
-       * for the *current* static-block region set (`loadedRegionSignature`
-       * matches), so an export fired mid-refetch after a pan/zoom waits for
-       * fresh arcs instead of capturing stale ones — arc's analogue of the GPU
-       * mixins' `viewportWithinLoadedData`. The first-paint testid + loading
-       * anti-flash use `features !== undefined` (painted-once) directly, not
-       * this, so they don't flip on refetch (see BaseDisplayComponent).
-       */
-      get svgReady() {
-        // a set `loadedRegionSignature` is the "have we loaded" guard (it and
-        // `features` are set together in one `setFeatures`); the signature
-        // compare inside `isDataCurrent` then rejects a stale in-flight refetch
-        return (
-          isDataCurrent(
-            self.loadedRegionSignature,
-            currentRegionSignature(self),
-          ) ||
-          !!self.error ||
-          self.regionTooLarge
-        )
-      },
       /**
        * #getter
        * per-arc styling and endpoint pairs (one per ALT), evaluated once when
@@ -169,26 +140,10 @@ export function stateModelFactory(
       },
       /**
        * #action
-       */
-      setFeatures(f: Feature[], signature: string) {
-        self.features = f
-        self.loadedRegionSignature = signature
-      },
-      /**
-       * #action
        * set arc stroke width; `undefined` resets to the config-slot default
        */
       setLineWidth(n?: number) {
         self.configuration.setSlot('lineWidth', n)
-      },
-      /**
-       * #action
-       * retry after an error: clearing `error` re-fires the (error-gated) fetch
-       * autorun. The shared `DisplayErrorBar` retry calls this; the base
-       * `reload` is a no-op, which would leave the display stuck on error.
-       */
-      reload() {
-        self.setError(undefined)
       },
     }))
 

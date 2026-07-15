@@ -88,6 +88,7 @@ export {
   FloatingLegend,
   GROW_MAX_HEIGHT,
   GlobalDataDisplayMixin,
+  GlobalFetchMixin,
   HEIGHT_MODE_VALUES,
   HeightModeMixin,
   MIN_DISPLAY_HEIGHT,

@@ -12,31 +12,34 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 export type { FetchContext } from './FetchMixin.ts'
 
 /**
- * Mixin for GPU displays that hold a single global (non-regional) dataset —
- * HiC contact matrix, LD triangle, variant matrix, etc.
+ * Rendering-agnostic foundation for any display holding a single global
+ * (non-regional) dataset. Owns the *fetch* concern only — no GPU rendering — so
+ * it is shared by GPU global displays (via GlobalDataDisplayMixin below) AND
+ * main-thread SVG ones (the arc displays), which compose it directly. That's the
+ * whole reason it's split out from GlobalDataDisplayMixin: fetch (cancellation,
+ * staleness, region-too-large, reload, the svgReady export gate) is orthogonal
+ * to how the display paints, so a non-GPU display shouldn't have to drag in
+ * RenderLifecycleMixin to get it.
  *
  * Composes:
- *   - RenderLifecycleMixin (attachRenderingBackend, renderNow, …)
- *   - RegionTooLargeMixin (regionTooLarge, regionCannotBeRendered, …)
+ *   - RegionTooLargeMixin (regionTooLarge, force-load, …)
  *   - FetchMixin (runFetch, cancelFetch, isLoading, error, statusMessage,
  *                 fetchGeneration)
  *
- * Unlike MultiRegionDisplayMixin, this mixin owns no per-region state and
- * installs no autoruns. Fetch triggering is left to the display's own
- * afterAttach autorun so each display can express its own trigger conditions
- * (HiC: viewport change; LD: viewport + showLDTriangle + etc). The shared
- * skeleton of that autorun lives in `installGlobalFetchAutorun` (below) — a
- * display supplies only its own `shouldFetch` gate + `fetch` action.
+ * Installs no autoruns — each display owns its fetch trigger
+ * (`installGlobalFetchAutorun` for the GPU displays' viewport/settings skeleton;
+ * the arc displays keep a bespoke staticBlocks trigger). `displayPhase` lives in
+ * GlobalDataDisplayMixin, not here, because it reads `renderError` from
+ * RenderLifecycleMixin — the one genuinely GPU-only piece.
  *
- * #stateModel GlobalDataDisplayMixin
+ * #stateModel GlobalFetchMixin
  * #category display
  */
-export default function GlobalDataDisplayMixin() {
+export function GlobalFetchMixin() {
   return types
     .compose(
-      'GlobalDataDisplayMixin',
+      'GlobalFetchMixin',
       RegionTooLargeMixin(),
-      RenderLifecycleMixin(),
       FetchMixin(),
       types.model({}),
     )
@@ -49,23 +52,6 @@ export default function GlobalDataDisplayMixin() {
        * viewport/setting changed.
        */
       reloadCounter: 0,
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Same precedence as MultiRegionDisplayMixin (single-sourced in
-       * `computeDisplayPhase`). A global display has no per-region staleness
-       * axis — it either has its one dataset or is fetching it — so its
-       * `loading` axis is simply "fetch in flight".
-       */
-      get displayPhase(): DisplayPhase {
-        // fetchCanceled keeps the overlay up (showing its retry affordance)
-        // even though isLoading has gone false after the user canceled
-        return computeDisplayPhase(
-          self,
-          () => self.isLoading || self.fetchCanceled,
-        )
-      },
     }))
     .views(() => ({
       /**
@@ -114,10 +100,10 @@ export default function GlobalDataDisplayMixin() {
     .actions(self => ({
       /**
        * #action
-       * Satisfies the `reload` contract `DisplayChrome` requires of every
-       * display (the per-region foundation provides its own). Clears any error
-       * and bumps `reloadCounter` so the display's fetch autorun re-runs. A
-       * subclass whose reload needs extra teardown can override and chain.
+       * Satisfies the `reload` contract `DisplayChrome` (and the arc SVG chrome)
+       * require of every display. Clears any error and bumps `reloadCounter` so
+       * the display's fetch autorun re-runs. A subclass whose reload needs extra
+       * teardown can override and chain.
        */
       reload() {
         self.setError(undefined)
@@ -126,6 +112,54 @@ export default function GlobalDataDisplayMixin() {
         // the debounced fetch autorun runs runFetch (which also clears it)
         self.fetchCanceled = false
         self.reloadCounter += 1
+      },
+    }))
+}
+
+export type GlobalFetchMixinType = ReturnType<typeof GlobalFetchMixin>
+
+/**
+ * Mixin for GPU displays that hold a single global (non-regional) dataset —
+ * HiC contact matrix, LD triangle, variant matrix, etc.
+ *
+ * `GlobalFetchMixin` (the rendering-agnostic fetch foundation) + RenderLifecycleMixin
+ * (attachRenderingBackend, renderNow, renderError, …) + the GPU `displayPhase`.
+ *
+ * Unlike MultiRegionDisplayMixin, it owns no per-region state and installs no
+ * autoruns. Fetch triggering is left to the display's own afterAttach autorun so
+ * each display can express its own trigger conditions (HiC: viewport change; LD:
+ * viewport + showLDTriangle + etc). The shared skeleton of that autorun lives in
+ * `installGlobalFetchAutorun` (below) — a display supplies only its own
+ * `shouldFetch` gate + `fetch` action.
+ *
+ * #stateModel GlobalDataDisplayMixin
+ * #category display
+ */
+export default function GlobalDataDisplayMixin() {
+  return types
+    .compose(
+      'GlobalDataDisplayMixin',
+      GlobalFetchMixin(),
+      RenderLifecycleMixin(),
+      types.model({}),
+    )
+    .views(self => ({
+      /**
+       * #getter
+       * Same precedence as MultiRegionDisplayMixin (single-sourced in
+       * `computeDisplayPhase`). A global display has no per-region staleness
+       * axis — it either has its one dataset or is fetching it — so its
+       * `loading` axis is simply "fetch in flight". Reads `renderError`
+       * (RenderLifecycleMixin), which is why it lives here, not in
+       * GlobalFetchMixin.
+       */
+      get displayPhase(): DisplayPhase {
+        // fetchCanceled keeps the overlay up (showing its retry affordance)
+        // even though isLoading has gone false after the user canceled
+        return computeDisplayPhase(
+          self,
+          () => self.isLoading || self.fetchCanceled,
+        )
       },
     }))
 }
