@@ -1,4 +1,9 @@
-import { firstUri, getTrackRMeta, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
+import {
+  firstUri,
+  getTrackRMeta,
+  rStr,
+  safeVarName,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'

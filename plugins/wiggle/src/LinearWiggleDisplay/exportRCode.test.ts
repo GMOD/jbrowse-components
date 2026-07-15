@@ -21,7 +21,9 @@ test('emits pure ggplot2 with a read_bigwig data source and no bespoke package',
   expect(f.setup).toBe('coverage <- "https://example.com/cov.bw"')
   expect(f.helpers).toEqual(['read_bigwig', 'bp_axis'])
   expect(f.packages).toEqual(['rtracklayer', 'ggplot2'])
-  expect(f.plotExpr).toContain('ggplot(read_bigwig(coverage, chrom, start, end))')
+  expect(f.plotExpr).toContain(
+    'ggplot(read_bigwig(coverage, chrom, start, end))',
+  )
   expect(f.plotExpr).toContain('theme_minimal()')
   // never leaks a ggjbrowse concept into the output
   expect(f.plotExpr).not.toMatch(/jb_features|geom_wiggle|scale_x_genomic/)

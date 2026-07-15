@@ -50,24 +50,36 @@ const base: MultiWiggleRParams = {
   isOverlay: false,
 }
 
-maybe('multi-row XY script runs and produces a figure', () => {
-  const dir = runFragment('rowxy', base)
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 60000)
+maybe(
+  'multi-row XY script runs and produces a figure',
+  () => {
+    const dir = runFragment('rowxy', base)
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)
 
-maybe('overlay line script runs', () => {
-  const dir = runFragment('overlay', {
-    ...base,
-    renderingType: 'multiline',
-    isOverlay: true,
-  })
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 60000)
+maybe(
+  'overlay line script runs',
+  () => {
+    const dir = runFragment('overlay', {
+      ...base,
+      renderingType: 'multiline',
+      isOverlay: true,
+    })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)
 
-maybe('density heatmap script runs', () => {
-  const dir = runFragment('density', {
-    ...base,
-    renderingType: 'multirowdensity',
-  })
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 60000)
+maybe(
+  'density heatmap script runs',
+  () => {
+    const dir = runFragment('density', {
+      ...base,
+      renderingType: 'multirowdensity',
+    })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)

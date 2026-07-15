@@ -44,35 +44,47 @@ function runMatrix(
 
 // 1094-sample phased 1000G simulation (FORMAT is GT:AP, diploid) — exercises the
 // FORMAT GT-subfield locator and the many-sample hclust/dendrogram path
-maybe('1094-sample matrix script runs and produces a figure', () => {
-  const dir = runMatrix('test', 'volvox.test.vcf.gz', {
-    refName: 'contigA',
-    start: 3000,
-    end: 12738,
-  })
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 120000)
+maybe(
+  '1094-sample matrix script runs and produces a figure',
+  () => {
+    const dir = runMatrix('test', 'volvox.test.vcf.gz', {
+      refName: 'contigA',
+      start: 3000,
+      end: 12738,
+    })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  120000,
+)
 
 // phased mode on the diploid 1094-sample panel: samples expand to HP0/HP1
 // haplotype rows, exercising the per-haplotype single-allele classing branch
-maybe('1094-sample phased matrix script runs and produces a figure', () => {
-  const dir = runMatrix(
-    'test_phased',
-    'volvox.test.vcf.gz',
-    { refName: 'contigA', start: 3000, end: 12738 },
-    { phased: true },
-  )
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 120000)
+maybe(
+  '1094-sample phased matrix script runs and produces a figure',
+  () => {
+    const dir = runMatrix(
+      'test_phased',
+      'volvox.test.vcf.gz',
+      { refName: 'contigA', start: 3000, end: 12738 },
+      { phased: true },
+    )
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  120000,
+)
 
 // 50-sample haploid VCF (FORMAT is bare GT) with a MAF floor applied, so the
 // site-filter branch and the small-y-label path both execute
-maybe('50-sample matrix with a MAF filter runs and produces a figure', () => {
-  const dir = runMatrix(
-    'variants',
-    'volvox.variants.vcf.gz',
-    { refName: 'ref#0#ctgA', start: 0, end: 50000 },
-    { minMaf: 0.05, maxMissing: 0.9 },
-  )
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 120000)
+maybe(
+  '50-sample matrix with a MAF filter runs and produces a figure',
+  () => {
+    const dir = runMatrix(
+      'variants',
+      'volvox.variants.vcf.gz',
+      { refName: 'ref#0#ctgA', start: 0, end: 50000 },
+      { minMaf: 0.05, maxMissing: 0.9 },
+    )
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  120000,
+)

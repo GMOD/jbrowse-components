@@ -36,5 +36,7 @@ test('draws plain boxes like a gene track, no per-type color or lollipop', () =>
 test('non-identifier track ids become safe R variable names', () => {
   const f = variantFragment({ ...base, trackId: '1000g.snv-calls' })
   expect(f.plotVariable).toBe('p__1000g_snv_calls')
-  expect(f.setup).toBe('_1000g_snv_calls <- "https://example.com/volvox.vcf.gz"')
+  expect(f.setup).toBe(
+    '_1000g_snv_calls <- "https://example.com/volvox.vcf.gz"',
+  )
 })

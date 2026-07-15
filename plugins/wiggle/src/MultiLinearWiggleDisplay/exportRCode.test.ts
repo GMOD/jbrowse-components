@@ -35,7 +35,9 @@ test('setup emits parallel uri + name vectors in source order', () => {
 test('multi-row XY facets by source and colors rows by the source palette', () => {
   const f = multiWiggleFragment(base)
   expect(f.plotExpr).toContain('facet_grid(rows = vars(source))')
-  expect(f.plotExpr).toContain('geom_area(aes(x = start, y = score, fill = source)')
+  expect(f.plotExpr).toContain(
+    'geom_area(aes(x = start, y = score, fill = source)',
+  )
   expect(f.plotExpr).toContain(
     'scale_fill_manual(values = c(`Alpha` = "#e6194b", `Beta` = "#3cb44b"), guide = "none")',
   )
@@ -44,7 +46,11 @@ test('multi-row XY facets by source and colors rows by the source palette', () =
 })
 
 test('overlay XY keeps one panel, a source legend, and overlaps with alpha', () => {
-  const f = multiWiggleFragment({ ...base, renderingType: 'multixyplot', isOverlay: true })
+  const f = multiWiggleFragment({
+    ...base,
+    renderingType: 'multixyplot',
+    isOverlay: true,
+  })
   expect(f.plotExpr).not.toContain('facet_grid')
   expect(f.plotExpr).toContain('position = "identity", alpha = 0.4')
   expect(f.plotExpr).toContain('scale_fill_manual(values = ')
@@ -53,8 +59,14 @@ test('overlay XY keeps one panel, a source legend, and overlaps with alpha', () 
 })
 
 test('overlay line uses geom_step + color aesthetic', () => {
-  const f = multiWiggleFragment({ ...base, renderingType: 'multiline', isOverlay: true })
-  expect(f.plotExpr).toContain('geom_step(aes(x = start, y = score, color = source))')
+  const f = multiWiggleFragment({
+    ...base,
+    renderingType: 'multiline',
+    isOverlay: true,
+  })
+  expect(f.plotExpr).toContain(
+    'geom_step(aes(x = start, y = score, color = source))',
+  )
   expect(f.plotExpr).toContain('scale_color_manual(values = ')
 })
 
@@ -63,12 +75,16 @@ test('interpolated line uses geom_line (linecenter tested before line)', () => {
     ...base,
     renderingType: 'multirowlinecenter',
   })
-  expect(f.plotExpr).toContain('geom_line(aes(x = start, y = score, color = source))')
+  expect(f.plotExpr).toContain(
+    'geom_line(aes(x = start, y = score, color = source))',
+  )
 })
 
 test('scatter uses geom_point', () => {
   const f = multiWiggleFragment({ ...base, renderingType: 'multirowscatter' })
-  expect(f.plotExpr).toContain('geom_point(aes(x = start, y = score, color = source)')
+  expect(f.plotExpr).toContain(
+    'geom_point(aes(x = start, y = score, color = source)',
+  )
 })
 
 test('density is a faceted viridis strip keyed on score, y axis hidden', () => {

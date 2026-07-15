@@ -23,20 +23,24 @@ const maybe = rWithStrawr() ? test : test.skip
 
 // extra_test_data/test.hic is an hg19 map (chroms "1".."22","X","Y","MT") with
 // resolutions 2500000 and 100000.
-maybe('Hi-C script runs and produces a figure', () => {
-  const fragment = hicFragment({
-    trackId: 'test_hic',
-    trackName: 'Test Hi-C',
-    uri: resolve(process.cwd(), 'extra_test_data/test.hic'),
-    binsize: 100000,
-    norm: 'NONE',
-    useLogScale: true,
-  })
-  const script = assembleRScript({ refName: '1', start: 0, end: 5000000 }, [
-    fragment,
-  ])
-  const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-hic-'))
-  writeFileSync(join(dir, 'view.R'), script)
-  execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
-  expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
-}, 60000)
+maybe(
+  'Hi-C script runs and produces a figure',
+  () => {
+    const fragment = hicFragment({
+      trackId: 'test_hic',
+      trackName: 'Test Hi-C',
+      uri: resolve(process.cwd(), 'extra_test_data/test.hic'),
+      binsize: 100000,
+      norm: 'NONE',
+      useLogScale: true,
+    })
+    const script = assembleRScript({ refName: '1', start: 0, end: 5000000 }, [
+      fragment,
+    ])
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-hic-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)

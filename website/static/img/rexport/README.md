@@ -3,10 +3,10 @@
 Figures produced by **View menu → "Export R script"**, which downloads a
 self-contained `.R` that redraws the current view from source in pure
 `rtracklayer` + `ggplot2` (no bespoke package — see `agent-docs/R_EXPORT.md`).
-Every image below was rendered by running the *actual* generated script through
+Every image below was rendered by running the _actual_ generated script through
 `Rscript` (against `test_data/volvox`, except Hi-C which uses the published hg19
-GM12878/HMEC contact maps from `config_demo.json` plus an Ensembl GRCh37 gene GFF,
-and GWAS which uses the hg19 `test_data/gwas/SLE_gwas.bed.gz`).
+GM12878/HMEC contact maps from `config_demo.json` plus an Ensembl GRCh37 gene
+GFF, and GWAS which uses the hg19 `test_data/gwas/SLE_gwas.bed.gz`).
 
 ## Wiggle — `LinearWiggleDisplay`
 
@@ -41,8 +41,8 @@ whose rows come from `IRanges::disjointBins()`.
 ### Modifications / methylation (MM/ML)
 
 `colorBy: 'modifications'` (and `'methylation'`) keeps grey read bodies and
-overlays per-base modification ticks parsed reference-free from the MM/ML tags by
-`bam_modifications()` — a faithful `getModPositions` port (reverse-strand
+overlays per-base modification ticks parsed reference-free from the MM/ML tags
+by `bam_modifications()` — a faithful `getModPositions` port (reverse-strand
 target-base complement + 5′-end counting, interleaved combined-code ML, CIGAR
 ref-mapping; ML read via `scanBam` since its `B:C` array breaks
 `readGAlignments`). Ticks are colored by modification type with `mod_colors()`
@@ -117,10 +117,10 @@ The non-matrix multi-sample display: one genotype row per sample, each variant a
 `geom_rect` drawn at its honest genomic position (single-base sites floored to a
 minimum width; symbolic SVs use their INFO `END` span). It reuses the same
 `read_vcf_gt()` reader and ref / het / hom / other / no-call classing as the
-matrix, but keeps samples in VCF order (no clustering) and — because x is genomic
-— shares the `coord_cartesian(xlim=)` contract, so it **lines up** with the
-`plugins/canvas` gene track above. Shown on the 20-sample `volvox.sv.vcf.gz` over
-`ctgA:1,000-24,000`.
+matrix, but keeps samples in VCF order (no clustering) and — because x is
+genomic — shares the `coord_cartesian(xlim=)` contract, so it **lines up** with
+the `plugins/canvas` gene track above. Shown on the 20-sample `volvox.sv.vcf.gz`
+over `ctgA:1,000-24,000`.
 
 ![variant rows over a gene track](./variant_rows_genes.png)
 
@@ -132,17 +132,18 @@ Contact matrix read with `hic_triangle()` (`strawr::straw`, the reader from the
 genomic x-axis (interaction distance up the y-axis), so the map stacks with
 ordinary 1-D tracks on a shared x-range. Log-scaled `scale_fill_viridis_c()`;
 bin size and normalization are emitted as visible script variables you can edit.
-Shown on the published HMEC contact map (Rao et al. 2014, GSE63525; KR-normalized,
-10 kb bins) over `1:1,000,000-2,000,000` — near-diagonal contact decay with a
-domain boundary around 1.5 Mb.
+Shown on the published HMEC contact map (Rao et al. 2014, GSE63525;
+KR-normalized, 10 kb bins) over `1:1,000,000-2,000,000` — near-diagonal contact
+decay with a domain boundary around 1.5 Mb.
 
 ![hi-c](./hic.png)
 
 Because the triangle shares the genomic x-axis it lines up under a gene track in
 one `plot_region()` call. This figure is genuine `assembleRScript` output: the
-same HMEC map over Ensembl GRCh37 genes on `1:1,550,000-2,000,000`, both keyed to
-chromosome `"1"` so one `plot_region("1", …)` drives both panels. The gene-dense
-MIB2/CDK11B/SLC35E2 cluster sits under the bright on-diagonal contact domain.
+same HMEC map over Ensembl GRCh37 genes on `1:1,550,000-2,000,000`, both keyed
+to chromosome `"1"` so one `plot_region("1", …)` drives both panels. The
+gene-dense MIB2/CDK11B/SLC35E2 cluster sits under the bright on-diagonal contact
+domain.
 
 ![hi-c over a gene track](./hic_genes.png)
 

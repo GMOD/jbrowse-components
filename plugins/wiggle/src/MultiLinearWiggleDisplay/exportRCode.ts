@@ -1,4 +1,9 @@
-import { getTrackRMeta, rName, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
+import {
+  getTrackRMeta,
+  rName,
+  rStr,
+  safeVarName,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
@@ -110,7 +115,8 @@ export function multiWiggleFragment(p: MultiWiggleRParams): RTrackFragment {
       area: `geom_area(aes(x = start, y = score, fill = source), position = "identity"${p.isOverlay ? ', alpha = 0.4' : ''})`,
       step: 'geom_step(aes(x = start, y = score, color = source))',
       line: 'geom_line(aes(x = start, y = score, color = source))',
-      point: 'geom_point(aes(x = start, y = score, color = source), size = 0.6)',
+      point:
+        'geom_point(aes(x = start, y = score, color = source), size = 0.6)',
     }[geom]
     const scaleFn = usesFill ? 'scale_fill_manual' : 'scale_color_manual'
     // overlay keeps a source legend; multi-row labels each row via the facet

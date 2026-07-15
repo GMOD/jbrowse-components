@@ -1,6 +1,11 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView, getSession } from '@jbrowse/core/util'
-import { firstUri, getTrackRMeta, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
+import {
+  firstUri,
+  getTrackRMeta,
+  rStr,
+  safeVarName,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 
@@ -209,7 +214,11 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
     p <- p + geom_rect(data = mm,
       aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
   }`
-    const overlay = isMods ? modsOverlay : isQual ? qualOverlay : mismatchOverlay
+    const overlay = isMods
+      ? modsOverlay
+      : isQual
+        ? qualOverlay
+        : mismatchOverlay
     // chain layout groups mates + supplementary segments onto one row and draws
     // a connector across each gap (under the read rects, which paint on top)
     const layout = p.linkReads
@@ -344,7 +353,7 @@ export function exportRCode(
     // JBrowse stores the threshold as a percent (default 10); the R helper wants
     // a 0..1 probability
     modificationThreshold:
-      (self.colorBy.modifications?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) /
-      100,
+      (self.colorBy.modifications?.threshold ??
+        DEFAULT_MODIFICATION_THRESHOLD) / 100,
   })
 }

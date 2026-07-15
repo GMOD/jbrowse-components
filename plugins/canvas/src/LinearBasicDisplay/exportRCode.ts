@@ -1,4 +1,9 @@
-import { firstUri, getTrackRMeta, rStr, safeVarName } from '@jbrowse/plugin-linear-genome-view'
+import {
+  firstUri,
+  getTrackRMeta,
+  rStr,
+  safeVarName,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import type { LinearBasicDisplayModel } from './model.ts'
 import type { RTrackFragment } from '@jbrowse/plugin-linear-genome-view'
@@ -26,8 +31,7 @@ export interface GeneRParams {
  */
 export function geneFragment(p: GeneRParams): RTrackFragment {
   const pathVar = safeVarName(p.trackId)
-  const strandColors =
-    'c(`+` = "#5a9bd4", `-` = "#e8894a", `*` = "grey50")'
+  const strandColors = 'c(`+` = "#5a9bd4", `-` = "#e8894a", `*` = "grey50")'
   return {
     trackId: p.trackId,
     trackName: p.trackName,
