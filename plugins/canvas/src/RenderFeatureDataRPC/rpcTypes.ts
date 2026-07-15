@@ -96,9 +96,9 @@ export interface FeatureDataResult {
   // Worker output is fade-*eligibility*: 1 = whole-feature box glyph (variants,
   // plain BED) that MAY fade; 0 = gene subfeature rect that never fades. Layout
   // (applyLayoutToRegion) narrows it in place to the actual density decision — 1
-  // only where the box collapsed onto row 0 AND its pixels pile into a cluster
-  // with another collapsed box, 0 otherwise — so a box fades iff it's part of a
-  // real pileup, not merely because it's sub-pixel or a lone collapsed mark.
+  // only when the region is in the dense-pileup regime (thousands of collapsed
+  // marks on row 0), 0 otherwise — so a sparse handful of variants stays opaque
+  // and only a genuine pileup fades to convey density.
   rectDensityFade: Uint32Array
 
   // Connecting lines (introns) with strand info for dynamic chevron generation

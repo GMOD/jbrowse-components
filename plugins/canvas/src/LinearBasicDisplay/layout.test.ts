@@ -1144,35 +1144,41 @@ test('a sub-pixel fade box overlapping a visible feature stacks, not overprints'
   expect(top('fakeSNP')).toBeGreaterThan(0)
 })
 
-test('density-fade flag is set only for collapsed boxes that pile into a cluster', () => {
-  // Worker emits densityFade as eligibility; layout narrows it to the actual
-  // pileup decision so a box fades iff it collapsed AND its pixels overlap
-  // another collapsed box. rect i maps to feature i (rectFeatureIndices).
-  // At bpPerPx=1 each box clamps to a 4px footprint.
+test('a sparse handful of collapsed sub-pixel boxes render opaque, not faded', () => {
+  // Worker emits densityFade as eligibility; layout only keeps it in the dense-
+  // pileup regime. A few collapsed variants are not that regime, so they must
+  // stay solid (visible individual features), not read as a faint 30% smear.
   const data = makeFeatureData({
-    features: [
-      // pileA/pileB share pixels (200px..204px vs 202px..206px) → both fade
-      { featureId: 'pileA', startBp: 200, endBp: 201, height: 10, densityFade: true },
-      { featureId: 'pileB', startBp: 202, endBp: 203, height: 10, densityFade: true },
-      // isolated collapsed mark, no neighbor within 4px → opaque, flag cleared
-      { featureId: 'lone', startBp: 6000, endBp: 6001, height: 10, densityFade: true },
-    ],
-  })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
-  const fade = out.get(0)!.rectDensityFade
-  expect([...fade]).toEqual([1, 1, 0])
-})
-
-test('a single collapsed sub-pixel box renders opaque, not faded', () => {
-  // Regression: a lone variant far from any other must not read as a faint 30%
-  // mark just because it collapsed onto row 0. It fades only in a pileup.
-  const data = makeFeatureData({
-    features: [
-      { featureId: 'solo', startBp: 500, endBp: 501, height: 10, densityFade: true },
-    ],
+    features: Array.from({ length: 5 }, (_, i) => ({
+      featureId: `snp${i}`,
+      startBp: 100 + i,
+      endBp: 101 + i,
+      height: 10,
+      densityFade: true,
+    })),
   })
   const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 26, false)
-  expect([...out.get(0)!.rectDensityFade]).toEqual([0])
+  expect([...out.get(0)!.rectDensityFade].every(v => v === 0)).toBe(true)
+})
+
+test('a dense pileup of thousands of collapsed marks fades', () => {
+  // A dense SNP track: thousands of sub-pixel variants collapse onto row 0, and
+  // in that regime every one fades so the pileup conveys density (accumulated
+  // src-alpha) instead of a saturated flat block.
+  const N = 1500
+  const data = makeFeatureData({
+    features: Array.from({ length: N }, (_, i) => ({
+      featureId: `snp${i}`,
+      startBp: 100 + i * 3,
+      endBp: 101 + i * 3,
+      height: 10,
+      densityFade: true,
+    })),
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 100, false)
+  const fade = out.get(0)!.rectDensityFade
+  expect(fade).toHaveLength(N)
+  expect([...fade].every(v => v === 1)).toBe(true)
 })
 
 test('thousands of sub-pixel variants collapse onto one row, not thousands', () => {

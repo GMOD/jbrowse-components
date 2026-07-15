@@ -591,11 +591,11 @@ function packRef(
   })
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
-  // Clamped px footprints of the boxes pinned to row 0 by the density-collapse
-  // path below. After packing, a box fades only where its footprint overlaps
-  // another collapsed box's (densityClusteredIds) — so a genuine pileup reads as
-  // a density gradient while a lone collapsed mark renders opaque.
-  const collapsedBoxes: { id: string; start: number; end: number }[] = []
+  // Features pinned to row 0 by the density-collapse path below. They fade only
+  // when there are enough of them to be a genuine pileup (see DENSITY_FADE_MIN
+  // and the return): a handful of collapsed marks render opaque, thousands fade
+  // to convey density.
+  const collapsedFeatureIds = new Set<string>()
 
   const labelInfoByFeatureId = new Map<
     string,
@@ -833,7 +833,7 @@ function packRef(
       !intersectsMerged(boxStartPx, boxEndPx, solidSpansPx)
     if (collapses) {
       layoutMap.set(id, 0)
-      collapsedBoxes.push({ id, start: boxStartPx, end: boxEndPx })
+      collapsedFeatureIds.add(id)
     } else {
       const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
       const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
@@ -847,45 +847,27 @@ function packRef(
     layoutHeights.set(id, ext.height)
   }
 
+  // Fade only in the dense-pileup regime: thousands of collapsed sub-pixel marks
+  // that stack onto row 0 read as density when drawn semi-transparent, but a
+  // sparse handful should stay solid so individual features are visible. Below
+  // the threshold nothing fades (empty set); at or above it every collapsed mark
+  // fades. One count, no per-mark decision.
   return {
     layoutMap,
     layoutHeights,
     droppedLabelIds,
-    densityFadeIds: densityClusteredIds(collapsedBoxes),
+    densityFadeIds:
+      collapsedFeatureIds.size >= DENSITY_FADE_MIN
+        ? collapsedFeatureIds
+        : EMPTY_ID_SET,
   }
 }
 
-// Ids of collapsed boxes whose clamped px footprint overlaps at least one other
-// collapsed box — i.e. the marks that physically pile into shared pixels. Those
-// fade so the src-alpha blend accumulates into a density gradient; a lone
-// collapsed mark (footprint touched by no other) is excluded and renders opaque.
-// Sweeps the footprints in x: any maximal run of transitively-overlapping boxes
-// with two or more members is a pileup, so every box in it fades.
-function densityClusteredIds(boxes: { id: string; start: number; end: number }[]) {
-  const sorted = [...boxes].sort((a, b) => a.start - b.start)
-  const fadeIds = new Set<string>()
-  let run: string[] = []
-  let runEnd = -Infinity
-  const flushRun = () => {
-    if (run.length >= 2) {
-      for (const id of run) {
-        fadeIds.add(id)
-      }
-    }
-  }
-  for (const box of sorted) {
-    if (box.start < runEnd) {
-      run.push(box.id)
-      runEnd = Math.max(runEnd, box.end)
-    } else {
-      flushRun()
-      run = [box.id]
-      runEnd = box.end
-    }
-  }
-  flushRun()
-  return fadeIds
-}
+// Collapsed-mark count at/above which a region enters the density-fade regime.
+// ~1 mark per pixel of a typical viewport — enough overlap that the pileup reads
+// as density rather than resolvable individual features.
+const DENSITY_FADE_MIN = 1000
+const EMPTY_ID_SET: ReadonlySet<string> = new Set()
 
 // Mutates the cloned region in place. Raw data has topPx=0 everywhere, so we
 // simply add the per-feature offset rather than computing a delta from the
