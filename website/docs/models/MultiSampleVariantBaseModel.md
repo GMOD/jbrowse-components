@@ -71,7 +71,8 @@ displays: [
 | [colorBy](#getter-colorby)                                               | Getters    | MultiSampleVariantBaseModel                           | The effective sample-grouping attribute (config default or runtime override). Drives the sidebar row coloring and the legend's group section; '' means no grouping.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [featureColor](#getter-featurecolor)                                     | Getters    | MultiSampleVariantBaseModel                           | Optional per-variant cell color (jexl string or CSS color) applied to alt-carrying cells; '' means default genotype coloring. Reads the raw config value directly (not `getConf`, which evaluates a `jexl:...` string immediately with no `feature` bound) — this crosses the RPC boundary as-is and is evaluated once per feature in the worker (see `makeFeatureColor` in `executeVariantCellData.ts`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [featureWidgetType](#getter-featurewidgettype)                           | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [fetchSizeLimit](#getter-fetchsizelimit)                                 | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)     | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)             | Getters    | MultiSampleVariantBaseModel                           |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [minorAlleleFrequencyFilter](#getter-minorallelefrequencyfilter)         | Getters    | MultiSampleVariantBaseModel                           | Returns the minor allele frequency filter config slot value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [maxMissingnessFilter](#getter-maxmissingnessfilter)                     | Getters    | MultiSampleVariantBaseModel                           | Max fraction of no-call genotypes a variant may have before it's hidden; 1 keeps every variant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [filters](#getter-filters)                                               | Getters    | MultiSampleVariantBaseModel                           | The jexl filter expressions (from the Edit filters dialog) as a SerializableFilterChain, ready to pass as the RPC `filters` arg. MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix} all extend RpcMethodTypeWithFiltersAndRenameRegions, which serializes this to string[] and rebuilds it in the worker with pluginManager.jexl.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -167,20 +168,22 @@ displays: [
 | [renderBlocks](#getter-renderblocks)                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Shared cached view for every LGV-based GPU display. A single displayedRegion may produce multiple render blocks (shared GPU buffer, different scissor clips on screen). Plugins that want to suppress rendering in certain states (e.g. no domain yet) can override this getter to return [] — the autorun lifecycle will then issue an empty-blocks render that clears the canvas.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [displayPhase](#getter-displayphase)                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data (viewport past loaded) is still on screen through the pre-refetch debounce.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setLoadedRegion](#action-setloadedregion)                               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| [clearAllRpcData](#action-clearallrpcdata)                               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, regionTooLarge, loadedRegions, display-specific data, and the canvas-drawn flag                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [clearAllRpcData](#action-clearallrpcdata)                               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag. The too-large gate is derived (a pure function of the cached estimate × viewport), so it needs no explicit clear here — it self-releases when the viewport changes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | [invalidateLoadedRegions](#action-invalidateloadedregions)               | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [onRegionTooLarge](#action-onregiontoolarge)                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (no-op base): called when `regionTooLarge` transitions to true. Displays with transient hover/tooltip state override it to clear that state — the too-large banner replaces the rendered content, so a lingering hover would otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | [fetchRegions](#action-fetchregions)                                     | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating. Marks regions as loaded only AFTER the work callback has populated display-specific data (rpcDataMap, cellData, etc) so the GPU upload autorun sees committed data when it observes loadedRegions.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| [afterAttach](#action-afterattach)                                       | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | installs the four fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [afterAttach](#action-afterattach)                                       | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | installs the five fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange, ClearHoverOnRegionTooLarge)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | [userByteSizeLimit](#property-userbytesizelimit)                         | Properties | [RegionTooLargeMixin](../regiontoolargemixin)         | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [regionTooLargeState](#volatile-regiontoolargestate)                     | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [regionTooLargeReasonState](#volatile-regiontoolargereasonstate)         | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [featureDensityStats](#volatile-featuredensitystats)                     | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [byteEstimateVisibleBp](#volatile-byteestimatevisiblebp)                 | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | visibleBp at which the current `featureDensityStats` byte estimate was captured, so the derived gate (`estimatedVisibleBytes`) can scale it to the current view. Written by `setFeatureDensityStats`; ignored unless `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate)   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [estimatedVisibleBytes](#getter-estimatedvisiblebytes)                   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The cached byte estimate scaled from the span it was measured over (`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to span, so scaling makes the derived verdict a pure function of the current view and self-releases on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [tooLargeStatus](#getter-toolargestatus)                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in. Same helper as every other gating path so the banner text can't drift.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [regionTooLarge](#getter-regiontoolarge)                                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [regionTooLargeReason](#getter-regiontoolargereason)                     | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [regionCannotBeRenderedText](#method-regioncannotberenderedtext)         | Methods    | [RegionTooLargeMixin](../regiontoolargemixin)         | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| [setRegionTooLarge](#action-setregiontoolarge)                           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [setFeatureDensityStats](#action-setfeaturedensitystats)                 | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | force-load: raise the byte limit past the current request and clear the too-large banner                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [setFeatureDensityStats](#action-setfeaturedensitystats)                 | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Commits the byte estimate and records the span it was measured at (`byteEstimateVisibleBp`) so the derived gate can scale it to the current view. The capture is harmless for non-gated displays (they ignore it).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)       | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | force-load: raise the byte limit past the current request so the gate releases. Raises past the estimate scaled to the _current_ view (not the raw captured bytes), so it clears even if the view zoomed out after the estimate was captured; `raiseLimitPast` is the raw fallback for a display with no scaled estimate. Canvas (which also has a density force-load) overrides this entirely.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [forceLoad](#action-forceload)                                           | Actions    | [RegionTooLargeMixin](../regiontoolargemixin)         | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [canvasDrawn](#volatile-canvasdrawn)                                     | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | flips true on first paint; read by test selectors to detect render                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [currentRenderingBackend](#volatile-currentrenderingbackend)             | Volatiles  | [RenderLifecycleMixin](../renderlifecyclemixin)       | current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -615,10 +618,16 @@ type sampleInfo = Record<string, SampleInfo> | undefined
 type featureWidgetType = { type: string; id: string }
 ```
 
-#### getter: fetchSizeLimit
+#### getter: derivedRegionTooLargeEnabled
 
 ```ts
-type fetchSizeLimit = number
+type derivedRegionTooLargeEnabled = boolean
+```
+
+#### getter: configuredFetchSizeLimit
+
+```ts
+type configuredFetchSizeLimit = number
 ```
 
 #### getter: showSidebarLabels
@@ -1006,7 +1015,7 @@ type isCacheValid = (_displayedRegionIndex: number) => boolean
 #### action: getByteEstimateConfig
 
 ```ts
-type getByteEstimateConfig = () => ByteEstimateConfig | null
+type getByteEstimateConfig = () => ByteEstimateConfig
 ```
 
 #### action: fetchNeeded
@@ -1357,8 +1366,10 @@ type setLoadedRegion = (displayedRegionIndex: number, region: Region) => void
 
 #### action: clearAllRpcData
 
-full reset: cancels fetch, clears error, regionTooLarge, loadedRegions,
-display-specific data, and the canvas-drawn flag
+full reset: cancels fetch, clears error, loadedRegions, display-specific data,
+and the canvas-drawn flag. The too-large gate is derived (a pure function of the
+cached estimate × viewport), so it needs no explicit clear here — it
+self-releases when the viewport changes.
 
 ```ts
 type clearAllRpcData = () => void
@@ -1371,6 +1382,18 @@ regionTooLarge intact
 
 ```ts
 type invalidateLoadedRegions = () => void
+```
+
+#### action: onRegionTooLarge
+
+Overridable hook (no-op base): called when `regionTooLarge` transitions to true.
+Displays with transient hover/tooltip state override it to clear that state —
+the too-large banner replaces the rendered content, so a lingering hover would
+otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge`
+autorun, fired by the derived too-large gate.
+
+```ts
+type onRegionTooLarge = () => void
 ```
 
 #### action: fetchRegions
@@ -1389,8 +1412,9 @@ type fetchRegions = (
 
 #### action: afterAttach
 
-installs the four fetch-lifecycle autoruns (DisplayedRegionsChange,
-FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange)
+installs the five fetch-lifecycle autoruns (DisplayedRegionsChange,
+FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange,
+ClearHoverOnRegionTooLarge)
 
 ```ts
 type afterAttach = () => void
@@ -1418,24 +1442,6 @@ userByteSizeLimit: types.maybe(types.number)
 
 **Volatiles**
 
-#### volatile: regionTooLargeState
-
-```ts
-// type signature
-type regionTooLargeState = false
-// code
-regionTooLargeState: false
-```
-
-#### volatile: regionTooLargeReasonState
-
-```ts
-// type signature
-type regionTooLargeReasonState = string
-// code
-regionTooLargeReasonState: ''
-```
-
 #### volatile: featureDensityStats
 
 ```ts
@@ -1445,7 +1451,55 @@ type featureDensityStats = FeatureDensityStats | undefined
 featureDensityStats: undefined as FeatureDensityStats | undefined
 ```
 
+#### volatile: byteEstimateVisibleBp
+
+visibleBp at which the current `featureDensityStats` byte estimate was captured,
+so the derived gate (`estimatedVisibleBytes`) can scale it to the current view.
+Written by `setFeatureDensityStats`; ignored unless
+`derivedRegionTooLargeEnabled`.
+
+```ts
+// type signature
+type byteEstimateVisibleBp = number | undefined
+// code
+byteEstimateVisibleBp: undefined as number | undefined
+```
+
 **Getters**
+
+#### getter: densityTooLargeForDerivedGate
+
+Extra (non-byte) too-large axis folded into the derived verdict — canvas
+overrides it with its feature-density gate. Byte-only derived displays leave it
+false.
+
+```ts
+type densityTooLargeForDerivedGate = boolean
+```
+
+#### getter: estimatedVisibleBytes
+
+The cached byte estimate scaled from the span it was measured over
+(`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to
+span, so scaling makes the derived verdict a pure function of the current view
+and self-releases on zoom-in — without it a large zoomed-out estimate stays
+above the limit forever and gates refetch. Only meaningful when
+`derivedRegionTooLargeEnabled`.
+
+```ts
+type estimatedVisibleBytes = number | undefined
+```
+
+#### getter: tooLargeStatus
+
+Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then
+bytes-over-limit, then the density axis), fed the scaled estimate so the byte
+gate self-releases on zoom-in. Same helper as every other gating path so the
+banner text can't drift.
+
+```ts
+type tooLargeStatus = RegionTooLargeStatus
+```
 
 #### getter: regionTooLarge
 
@@ -1472,13 +1526,11 @@ type regionCannotBeRenderedText = () => '' | 'Force load to see features'
 
 **Actions**
 
-#### action: setRegionTooLarge
-
-```ts
-type setRegionTooLarge = (val: boolean, reason?: string | undefined) => void
-```
-
 #### action: setFeatureDensityStats
+
+Commits the byte estimate and records the span it was measured at
+(`byteEstimateVisibleBp`) so the derived gate can scale it to the current view.
+The capture is harmless for non-gated displays (they ignore it).
 
 ```ts
 type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
@@ -1486,8 +1538,11 @@ type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
 
 #### action: setFeatureDensityStatsLimit
 
-force-load: raise the byte limit past the current request and clear the
-too-large banner
+force-load: raise the byte limit past the current request so the gate releases.
+Raises past the estimate scaled to the _current_ view (not the raw captured
+bytes), so it clears even if the view zoomed out after the estimate was
+captured; `raiseLimitPast` is the raw fallback for a display with no scaled
+estimate. Canvas (which also has a density force-load) overrides this entirely.
 
 ```ts
 type setFeatureDensityStatsLimit = (
