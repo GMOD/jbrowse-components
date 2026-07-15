@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { FileSelector } from '@jbrowse/core/ui'
+import { ErrorMessage, FileSelector } from '@jbrowse/core/ui'
 import {
   addAndShowTrack,
   getSession,
@@ -50,40 +50,46 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   const [scoreTransform, setScoreTransform] = useState('none')
   const [ldLocation, setLdLocation] = useState<FileLocation>()
   const [ldIndexLocation, setLdIndexLocation] = useState<FileLocation>()
-  const [trackName, setTrackName] = useState(() => `GWAS${Date.now()}`)
-  const [displayId] = useState(() => `gwas-ld-display-${Date.now()}`)
+  const [trackName, setTrackName] = useState('GWAS track')
+  const [error, setError] = useState<unknown>()
 
   const { assembly } = model
   const ldIsTabix = !!ldLocation && locationName(ldLocation).endsWith('.gz')
 
   function doSubmit() {
-    if (gwasLocation && assembly && isSessionWithAddTracks(session)) {
-      const trackId = makeTrackId({ name: trackName })
-      addAndShowTrack(
-        session,
-        buildGwasTrackConfig({
-          trackId,
-          trackName,
-          assembly,
-          gwasLocation,
-          gwasIndexLocation,
-          scoreColumn,
-          scoreTransform,
-          ldLocation,
-          ldIndexLocation,
-          displayId,
-        }),
-        model.view,
-      )
-      model.clearData()
-      if (isSessionModelWithWidgets(session)) {
-        session.hideWidget(model)
+    try {
+      setError(undefined)
+      if (gwasLocation && assembly && isSessionWithAddTracks(session)) {
+        addAndShowTrack(
+          session,
+          buildGwasTrackConfig({
+            trackId: makeTrackId({ name: trackName }),
+            trackName,
+            assembly,
+            gwasLocation,
+            gwasIndexLocation,
+            scoreColumn,
+            scoreTransform,
+            ldLocation,
+            ldIndexLocation,
+          }),
+          model.view,
+        )
+        model.clearData()
+        if (isSessionModelWithWidgets(session)) {
+          session.hideWidget(model)
+        }
+      } else {
+        throw new Error("Can't add tracks to this session")
       }
+    } catch (e) {
+      setError(e)
     }
   }
 
   return (
     <Paper className={classes.paper}>
+      {error ? <ErrorMessage error={error} /> : null}
       <Typography variant="h6">Add a GWAS / Manhattan track</Typography>
       <Typography variant="body2" color="textSecondary">
         Load a bgzipped + tabix-indexed BED of GWAS results. Optionally attach a

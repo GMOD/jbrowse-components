@@ -28,7 +28,6 @@ export function buildGwasTrackConfig({
   scoreTransform,
   ldLocation,
   ldIndexLocation,
-  displayId,
 }: {
   trackId: string
   trackName: string
@@ -39,7 +38,6 @@ export function buildGwasTrackConfig({
   scoreTransform: string
   ldLocation: FileLocation | undefined
   ldIndexLocation: FileLocation | undefined
-  displayId: string
 }) {
   return {
     trackId,
@@ -69,7 +67,6 @@ export function buildGwasTrackConfig({
           displays: [
             {
               type: 'LinearManhattanDisplay',
-              displayId,
               colorBy: 'ld',
             },
           ],

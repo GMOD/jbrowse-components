@@ -29,7 +29,6 @@ test('without LD: GWAS adapter only, no displays override, derives .tbi', () => 
     scoreTransform: 'none',
     ldLocation: undefined,
     ldIndexLocation: undefined,
-    displayId: 'd1',
   })
   expect(cfg.adapter).toEqual({
     type: 'GWASAdapter',
@@ -51,7 +50,6 @@ test('a raw p-value column bakes scoreTransform into the adapter', () => {
     scoreTransform: 'negLog10',
     ldLocation: undefined,
     ldIndexLocation: undefined,
-    displayId: 'd1',
   })
   expect(cfg.adapter).toEqual({
     type: 'GWASAdapter',
@@ -73,7 +71,6 @@ test('with LD: adds a LinearManhattanDisplay in ld color mode', () => {
     scoreTransform: 'none',
     ldLocation: uri('http://host/p.ld.gz'),
     ldIndexLocation: undefined,
-    displayId: 'd1',
   })
   expect(cfg.adapter).toMatchObject({
     type: 'GWASAdapter',
@@ -85,7 +82,6 @@ test('with LD: adds a LinearManhattanDisplay in ld color mode', () => {
   expect(cfg.displays).toEqual([
     {
       type: 'LinearManhattanDisplay',
-      displayId: 'd1',
       colorBy: 'ld',
     },
   ])
