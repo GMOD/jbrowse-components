@@ -29,6 +29,7 @@ export default defineConfig(
       'website/scripts/flip-review.mjs',
       'products/jbrowse-web/browser-tests/memsticky.ts',
       'products/jbrowse-web/browser-tests/memprofile.ts',
+      'products/jbrowse-web/browser-tests/memstress.ts',
       'babel.config.cjs',
       'eslint.config.mjs',
       'products/**/webpack.config.js',
