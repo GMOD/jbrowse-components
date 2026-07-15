@@ -43,6 +43,46 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     expect(adapters[0]!.source).toBe('noext')
   })
 
+  it('disambiguates same-basename files in different directories (#5598)', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: [
+          'https://example.com/cond1/sample.bw',
+          'https://example.com/cond2/sample.bw',
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters[0]!.source).toBe('cond1/sample')
+    expect(adapters[1]!.source).toBe('cond2/sample')
+  })
+
+  it('falls back to a numeric suffix when paths do not disambiguate', async () => {
+    const mockGetSubAdapter = jest
+      .fn()
+      .mockImplementation(async (conf: { source?: string }) => ({
+        dataAdapter: { id: conf.source ?? 'mock' },
+      }))
+    const adapter = new MultiWiggleAdapter(
+      configSchema.create({
+        subadapters: [
+          { type: 'BigWigAdapter', source: 'dup', bigWigLocation: { uri: 'a' } },
+          { type: 'BigWigAdapter', source: 'dup', bigWigLocation: { uri: 'b' } },
+          { type: 'BigWigAdapter', source: 'dup', bigWigLocation: { uri: 'c' } },
+        ],
+      }),
+      mockGetSubAdapter,
+    )
+    const adapters = await adapter.getAdapters()
+    expect(adapters.map(a => a.source)).toEqual(['dup', 'dup (2)', 'dup (3)'])
+  })
+
   it('handles filenames with multiple dots', async () => {
     const mockGetSubAdapter = jest
       .fn()

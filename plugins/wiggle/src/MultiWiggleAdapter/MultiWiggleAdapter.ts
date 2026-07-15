@@ -54,9 +54,60 @@ function getFilenameFromAdapterConfig(config: AdapterConfig) {
   return undefined
 }
 
+function getLocationPath(location?: FileLocation) {
+  return location === undefined
+    ? undefined
+    : 'uri' in location && location.uri
+      ? location.uri
+      : 'localPath' in location && location.localPath
+        ? location.localPath
+        : 'blob' in location && location.blob instanceof File
+          ? location.blob.name || undefined
+          : undefined
+}
+
+// Grow a colliding label leftward to include its parent directory, e.g. the
+// `sample` shared by `cond1/sample.bw` and `cond2/sample.bw` becomes
+// `cond1/sample` vs `cond2/sample`.
+function parentDirLabel(label: string, path?: string) {
+  const trimmed = path?.replace(/\/+$/, '') ?? ''
+  const dirSlash = trimmed.lastIndexOf('/')
+  const dir = dirSlash === -1 ? '' : trimmed.slice(0, dirSlash)
+  const parent = dir.slice(dir.lastIndexOf('/') + 1)
+  return parent ? `${parent}/${label}` : undefined
+}
+
+// Two files sharing a basename (e.g. in different directories) derive the same
+// `source`, which is the per-subtrack identity key — colliding sources collapse
+// the subtracks into one duplicated-looking track (#5598). Qualify colliding
+// labels with their parent directory, falling back to a numeric suffix so the
+// result is always unique.
+function disambiguateSources(entries: AdapterEntry[]): AdapterEntry[] {
+  const counts = new Map<string, number>()
+  for (const { source } of entries) {
+    counts.set(source, (counts.get(source) ?? 0) + 1)
+  }
+  const used = new Set<string>()
+  return entries.map(entry => {
+    const collides = (counts.get(entry.source) ?? 0) > 1
+    const preferred = collides
+      ? (parentDirLabel(entry.source, getLocationPath(entry.bigWigLocation)) ??
+        entry.source)
+      : entry.source
+    let source = preferred
+    let n = 2
+    while (used.has(source)) {
+      source = `${preferred} (${n++})`
+    }
+    used.add(source)
+    return source === entry.source ? entry : { ...entry, source }
+  })
+}
+
 interface AdapterEntry {
   dataAdapter: BaseFeatureDataAdapter
   source: string
+  bigWigLocation?: FileLocation
   [key: string]: unknown
 }
 
@@ -98,7 +149,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
       }))
     }
 
-    return Promise.all(
+    const entries = await Promise.all(
       subConfs.map(async (conf: AdapterConfig) => {
         const dataAdapter = (await getSubAdapter(conf))
           .dataAdapter as BaseFeatureDataAdapter
@@ -114,6 +165,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
         }
       }),
     )
+    return disambiguateSources(entries)
   }
 
   // note: can't really have dis-agreeing refNames
