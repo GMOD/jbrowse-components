@@ -533,9 +533,13 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         },
         dx: 250,
         dy: -60,
-        maxWidth: 260,
+        // matches the probability callout's width so the two pills line up
+        maxWidth: 340,
         fontSize: 16,
-        text: 'Type mode: only bases called modified.',
+        // Both callouts name the menu radio verbatim (colorBy.tsx). "only" here
+        // vs "every CpG" below is the contrast the figure teaches — it's why the
+        // island reads empty on this row and blue on the next.
+        text: 'Color by type: only positions marked in the MM tag',
       },
       {
         // blue is every CpG whose most likely state is unmodified: both the ones
@@ -554,10 +558,10 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -110,
         maxWidth: 340,
         fontSize: 16,
-        text: `Probability mode: every CpG painted
+        text: `Color by state: every CpG painted
 
 - red = methylated
-- blue = low probability or unmarked.`,
+- blue = low probability or unmarked`,
       },
     ],
   },
@@ -815,7 +819,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     // by → Modifications → Color by type path so the figure shows the menu
     // route, not just the result (reviewer asked to actually open the menu). The
     // MM/ML modes live in a "Modifications" submenu with two radios ("Color by
-    // type" / "Color by probability"); the per-type filter, threshold slider and
+    // type" / "Color by state"); the per-type filter, threshold slider and
     // cytosine context sit flat beneath them (no dialog). The selector is scoped
     // by data-trackid to the COLO829 alignments track — the bare track_menu_icon
     // matched the CpG-island feature track first, whose Color by menu has no

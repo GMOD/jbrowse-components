@@ -55,7 +55,7 @@
     "name": "alignments/read_cloud",
     "status": "good",
     "note": "FIXED (real bug, not a spec issue): computeMultiRegionLayout placed every region's reads on one genomic-coordinate axis, but refNames share it — ctgA:1-50,001 and ctgB:1-6,079 both start at bp 1 — while occupying disjoint screen space. Each ctgB read was therefore pushed below every ctgA read covering the same bp, leaving the whitespace wedge above ctgB's pileup. Added segmentExtentsByRefName (sortLayout.ts) shifting each refName onto its own disjoint span; proved with a unit test that previously put ctgB's lone read on row 3 instead of row 0. ctgB now fills from row 0. NB the spec comment already asserted 'the pileup below still fills from row 0' — that was false until this fix.",
-    "reviewedAt": "2026-07-15T03:11:55.432Z",
+    "reviewedAt": "2026-07-15T03:31:56.185Z",
     "hash": "1d2ae0ef37782f629faf98cd7419eafc9f94a15f"
   },
   "dotplot": {
@@ -860,9 +860,9 @@
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
-    "status": "good",
-    "note": "FIXED per reviewer: (a) stage 1 zoomed out from PTEN 109kb to 255kb, so the gene and its sashimi arcs occupy the middle ~40% instead of sprawling edge-to-edge behind the context menu; (b) dropped the confirmation-dialog stage (now driven through, uncaptured) so the figure is first + last only. gene_track.md caption updated from \"in three steps\" to the two frames.",
-    "reviewedAt": "2026-07-15T03:15:18.353Z",
+    "status": "bad",
+    "note": "the sashimi arcs here are pretty chaotic. we may want to find another gene that looks cleaner or filter out low frequency sashimi arcs",
+    "reviewedAt": "2026-07-15T03:32:38.806Z",
     "hash": "b37d7d2a0f23681c11e35c6e4547fb1297a31904"
   },
   "gene_track_color_by_cds": {
@@ -1449,8 +1449,8 @@
   "jbrowse-img/sv_read_arcs": {
     "name": "jbrowse-img/sv_read_arcs",
     "status": "good",
-    "note": "FIXED: CLI spec height 440 -> 820 so the whole pileup renders instead of running off the bottom of the image. Regenerated (41.85% diff).",
-    "reviewedAt": "2026-07-15T03:15:18.352Z",
+    "note": "",
+    "reviewedAt": "2026-07-15T03:34:07.029Z",
     "hash": "445c77355e28c8134c1fddd6087bde3f36496fdd"
   },
   "methylation/arabidopsis_wgbs_contexts": {

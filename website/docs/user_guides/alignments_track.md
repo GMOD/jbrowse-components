@@ -71,19 +71,20 @@ data), **Color by → Modifications** paints them. It offers two modes:
   **Threshold** slider to raise the probability cutoff, or **Types shown** to
   restrict to a single type such as 5mC — both sit directly beneath the two mode
   radios.
-- Color by probability colors each position by its modification probability —
-  methylated red, unmethylated blue. For methylation (cytosine) data it fills
-  every CpG in context, including the ones the basecaller left implicit (drawn
-  blue). Those blue positions aren't in the MM tag; JBrowse infers them from the
-  reference CpG context. That's why a hypomethylated island fills with solid
-  blue here but looks nearly empty in the by-type mode. The cytosine context
-  (CpG/CHG/CHH) is a **Cytosine context** submenu in the same list.
+- Color by state colors each position by whether it is modified rather than by
+  which modification it is — modified red, unmodified blue. For methylation
+  (cytosine) data it fills every CpG in context, including the ones the
+  basecaller left implicit (drawn blue). Those blue positions aren't in the MM
+  tag; JBrowse infers them from the reference CpG context. That's why a
+  hypomethylated island fills with solid blue here but looks nearly empty in the
+  by-type mode. The cytosine context (CpG/CHG/CHH) is a **Cytosine context**
+  submenu in the same list.
 
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
 
 <Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a CpG island on chr20." src="/img/alignments/modifications1.png" />
-<Figure caption="The same track colored by type (top) and by probability (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls, so the region looks empty; by-probability mode paints every CpG — red for methylated, blue for the low-probability or unmarked ones — filling the hypomethylated island blue." src="/img/alignments/modifications2.png" />
+<Figure caption="The same track colored by type (top) and by state (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls, so the region looks empty; by-state mode paints every CpG — red for methylated, blue for the low-probability or unmarked ones — filling the hypomethylated island blue." src="/img/alignments/modifications2.png" />
 
 ### Pair orientation and insert size
 

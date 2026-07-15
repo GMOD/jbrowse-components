@@ -138,18 +138,11 @@ function clickRadio(model: Model, label: string) {
 }
 
 describe('color by modifications menu', () => {
-  const controls = [
-    'Color by type',
-    'Color by probability',
-    'Probability threshold',
-  ]
+  const controls = ['Color by type', 'Color by state', 'Probability threshold']
 
   test.each([
     ['by type', { type: 'modifications' }],
-    [
-      'probability',
-      { type: 'modifications', modifications: { twoColor: true } },
-    ],
+    ['by state', { type: 'modifications', modifications: { twoColor: true } }],
     ['fill', { type: 'modifications', modifications: { fillUnmarked: true } }],
   ] as [string, ColorBy][])(
     'shows the same controls regardless of the active view (%s)',
@@ -165,7 +158,7 @@ describe('color by modifications menu', () => {
   test('the Probability view fills unmarked cytosines for methylation data', () => {
     const model = makeModModel(['m', 'h'])
     model.colorBy = { type: 'modifications' }
-    clickRadio(model, 'Color by probability')
+    clickRadio(model, 'Color by state')
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { fillUnmarked: true },
@@ -175,20 +168,20 @@ describe('color by modifications menu', () => {
   test('the Probability view is plain two-color for non-cytosine modifications', () => {
     const model = makeModModel(['a'])
     model.colorBy = { type: 'modifications' }
-    clickRadio(model, 'Color by probability')
+    clickRadio(model, 'Color by state')
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { twoColor: true },
     })
   })
 
-  test('the fill view reads as the "Color by probability" radio, not a separate row', () => {
+  test('the fill view reads as the "Color by state" radio, not a separate row', () => {
     const model = makeModModel()
     model.colorBy = {
       type: 'modifications',
       modifications: { fillUnmarked: true },
     }
-    const prob = byLabel(model, 'Color by probability')
+    const prob = byLabel(model, 'Color by state')
     expect(prob && 'checked' in prob && prob.checked).toBe(true)
   })
 
@@ -205,15 +198,15 @@ describe('color by modifications menu', () => {
     })
   })
 
-  test('the probability pin promotes the methylation view for cytosine data', () => {
+  test('the by-state pin promotes the methylation view for cytosine data', () => {
     const model = makeModModel(['m', 'h'])
-    const item = byLabel(model, 'Color by probability', {
+    const item = byLabel(model, 'Color by state', {
       displayTypeDefault: displayTypeDefault(model),
     })
     const adornment =
       item && 'endAdornment' in item ? item.endAdornment : undefined
     if (!isValidElement(adornment)) {
-      throw new Error('no pin on probability radio')
+      throw new Error('no pin on by-state radio')
     }
     const { control } = adornment.props as { control: { toggle: () => void } }
     control.toggle()
