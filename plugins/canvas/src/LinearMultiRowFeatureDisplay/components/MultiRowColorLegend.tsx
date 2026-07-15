@@ -11,6 +11,7 @@ export default function MultiRowColorLegend({
   canvasWidth,
   maxHeight,
   hiddenLabels,
+  onDismiss,
 }: {
   entries: LegendEntry[]
   canvasWidth: number
@@ -19,11 +20,15 @@ export default function MultiRowColorLegend({
   // labels toggled off — rendered dimmed (the row-filter itself lives in the
   // model; this is just the visual cue)
   hiddenLabels: ReadonlySet<string>
+  // on-screen only: adds the "×" dismiss button (omitted on the SVG export,
+  // which can't be clicked)
+  onDismiss?: () => void
 }) {
   return (
     <SvgColorLegend
       canvasWidth={canvasWidth}
       maxHeight={maxHeight}
+      onDismiss={onDismiss}
       entries={entries.map(e => ({
         key: e.label,
         label: e.label,

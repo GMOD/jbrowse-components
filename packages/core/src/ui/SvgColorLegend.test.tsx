@@ -1,4 +1,4 @@
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import SvgColorLegend from './SvgColorLegend.tsx'
 
@@ -78,6 +78,29 @@ test('maxHeight collapses overflow into a "+N more" row and never exceeds it', (
   expect(getByText('+7 more')).toBeTruthy()
   // capped at 4 rows: 3 category labels + the summary, never the full 10
   expect(container.querySelectorAll('text')).toHaveLength(4)
+})
+
+test('onDismiss adds an "×" button that fires on click', () => {
+  const onDismiss = jest.fn()
+  const { getByText } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[{ key: 'a', label: 'TssA', color: 'red' }]}
+      onDismiss={onDismiss}
+    />,
+  )
+  fireEvent.click(getByText('×'))
+  expect(onDismiss).toHaveBeenCalledTimes(1)
+})
+
+test('no dismiss button without onDismiss (e.g. the SVG export)', () => {
+  const { queryByText } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[{ key: 'a', label: 'TssA', color: 'red' }]}
+    />,
+  )
+  expect(queryByText('×')).toBeNull()
 })
 
 test('draws nothing with no entries and no children', () => {

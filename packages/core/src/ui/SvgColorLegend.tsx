@@ -29,6 +29,9 @@ const TEXT_LEFT = 16
 export const LEGEND_ROW_HEIGHT = 14
 export const LEGEND_SWATCH = 10
 
+// narrow right-side gutter reserved for the small dismiss "×"
+const DISMISS_GUTTER = 11
+
 // Shared SVG categorical color key: one translucent row per entry, each a swatch
 // + label, right-aligned within canvasWidth. Used by any display that colors by
 // a discrete vocabulary (wiggle multi-source overlays, multi-row per-feature
@@ -44,15 +47,22 @@ export const LEGEND_SWATCH = 10
 // `maxHeight` (e.g. the display height) caps the box: entries past what fits
 // collapse into a trailing "+N more" summary row, so the legend never overflows
 // its display — the full list stays reachable via the track menu.
+//
+// `onDismiss` adds a clickable "×" in the top-right corner (with its own
+// pointer-events so it works under a pointer-events:none overlay). Pass it only
+// on interactive paths where the legend can be re-shown — never on the SVG
+// export, which has no way to click it.
 export default function SvgColorLegend({
   entries,
   canvasWidth,
   maxHeight,
+  onDismiss,
   children,
 }: {
   entries: ColorLegendEntry[]
   canvasWidth: number
   maxHeight?: number
+  onDismiss?: () => void
   children?: ReactNode
 }) {
   const fit =
@@ -73,7 +83,8 @@ export default function SvgColorLegend({
       maxLabelWidth = w
     }
   }
-  const totalWidth = TEXT_LEFT + maxLabelWidth + 6
+  const totalWidth =
+    TEXT_LEFT + maxLabelWidth + 6 + (onDismiss ? DISMISS_GUTTER : 0)
   const x = Math.max(0, canvasWidth - totalWidth - 4)
   return shown.length || overflowLabel || children ? (
     <g transform={`translate(${x} 0)`}>
@@ -122,6 +133,34 @@ export default function SvgColorLegend({
           />
           <text x={TEXT_LEFT} y={11} fontSize={FONT_SIZE} fill="#555">
             {overflowLabel}
+          </text>
+        </g>
+      )}
+      {onDismiss === undefined ? null : (
+        <g
+          transform={`translate(${totalWidth - DISMISS_GUTTER} 0)`}
+          style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+          onClick={() => {
+            onDismiss()
+          }}
+        >
+          <title>Hide legend</title>
+          {/* transparent hit target spanning the gutter */}
+          <rect
+            x={0}
+            y={0}
+            width={DISMISS_GUTTER}
+            height={LEGEND_ROW_HEIGHT}
+            fill="transparent"
+          />
+          <text
+            x={DISMISS_GUTTER / 2}
+            y={9}
+            fontSize={9}
+            fill="#777"
+            textAnchor="middle"
+          >
+            ×
           </text>
         </g>
       )}

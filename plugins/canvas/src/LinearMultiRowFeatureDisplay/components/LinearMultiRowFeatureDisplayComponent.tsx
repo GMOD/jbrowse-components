@@ -111,6 +111,9 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
               canvasWidth={view.width}
               maxHeight={height}
               hiddenLabels={hiddenCategorySet}
+              onDismiss={() => {
+                model.setShowLegend(false)
+              }}
             />
           ) : null}
         </svg>
