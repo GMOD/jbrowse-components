@@ -116,15 +116,17 @@ const arcColorOptions: {
 const DIVIDER: MenuItem = { type: 'divider' }
 
 // --- modification coloring ---------------------------------------------------
-// Two mode radios (color by type / 2-color) and three refinement submenus.
+// Two mode radios and three refinement submenus.
 //
-// The second radio is named for IGV's "base modification 2-color", the term its
-// users already search for, and its subLabel ("modified red, unmodified blue")
-// spells the name out. It is NOT named "probability": both views shade by
-// probability (see `prob` in features/modification/extract.ts), so that named a
-// shared axis — and it collided with "Probability threshold" below, which gates
-// only the by-type view. Strictly, 5mC + 5hmC + unmodified is three colors, not
-// two; that imprecision is IGV's too, and is worth less than the familiarity.
+// The two radios echo each other on purpose: 2-color is by-type *plus* one extra
+// step, so the labels say exactly that ("One color per modification type" /
+// "...plus low-probability & unmodified in blue"). Modified sites keep their
+// per-type colors in both; 2-color additionally paints the not-modified side
+// blue instead of leaving it blank. IGV's searchable term "2-color" lives in the
+// helpText rather than the label. It is NOT named "probability": both views
+// shade by probability (see `prob` in features/modification/extract.ts), so that
+// named a shared axis — and it collided with "Probability threshold" below,
+// which gates only the by-type view.
 //
 // `patchMods` is the single writer: it merges a patch into the current
 // modifications and normalizes, dropping defaults so a saved session carries no
@@ -200,9 +202,8 @@ function modificationsMenu(
       'Color the ONT/PacBio modification calls in these reads: by which modification each call is, or by whether each site is modified at all. Refine with the per-type filter, threshold and cytosine context below.',
     subMenu: [
       promotableRadioItem({
-        label: 'Color by type',
-        subLabel: 'each modification its own color (5mC, 5hmC, 6mA…)',
-        helpText: `Colors each call by which modification it is. Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
+        label: 'One color per modification type',
+        helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
         checked: model.colorBy.type === 'modifications' && !byTwoColor,
         onClick: () => {
           patchMods(model, clearView)
@@ -210,10 +211,9 @@ function modificationsMenu(
         displayTypeDefault: displayTypeDefault?.({ type: 'modifications' }),
       }),
       promotableRadioItem({
-        label: '2-color',
-        subLabel: 'modified red, unmodified blue',
+        label: 'One color per type, plus low-probability & unmodified in blue',
         helpText:
-          'Colors each site by whether it is modified rather than by which modification it is: the modification color when modified, blue when not. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. Named as in IGV ("base modification 2-color") — with both 5mC and 5hmC present the palette is strictly more than two colors.',
+          'Everything the by-type view does, plus it paints the not-modified side blue instead of leaving it blank: modified sites keep their per-type colors, while low-probability and unmodified sites turn blue. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. Named as in IGV ("base modification 2-color") — with both 5mC and 5hmC present the palette is strictly more than two colors.',
         checked: byTwoColor,
         onClick: () => {
           patchMods(model, { ...clearView, ...twoColorView })
@@ -227,7 +227,7 @@ function modificationsMenu(
       ...(types.length > 1
         ? [
             {
-              label: 'Types shown',
+              label: 'Modification types',
               helpText:
                 'Limit which modification types are drawn in the by-type and 2-color views.',
               subMenu: radioItems(

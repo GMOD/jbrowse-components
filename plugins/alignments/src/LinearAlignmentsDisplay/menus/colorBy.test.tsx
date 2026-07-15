@@ -137,8 +137,11 @@ function clickRadio(model: Model, label: string) {
   item.onClick({})
 }
 
+const BY_TYPE = 'One color per modification type'
+const TWO_COLOR = 'One color per type, plus low-probability & unmodified in blue'
+
 describe('color by modifications menu', () => {
-  const controls = ['Color by type', '2-color', 'Probability threshold']
+  const controls = [BY_TYPE, TWO_COLOR, 'Probability threshold']
 
   test.each([
     ['by type', { type: 'modifications' }],
@@ -158,7 +161,7 @@ describe('color by modifications menu', () => {
   test('the Probability view fills unmarked cytosines for methylation data', () => {
     const model = makeModModel(['m', 'h'])
     model.colorBy = { type: 'modifications' }
-    clickRadio(model, '2-color')
+    clickRadio(model, TWO_COLOR)
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { fillUnmarked: true },
@@ -168,7 +171,7 @@ describe('color by modifications menu', () => {
   test('the Probability view is plain two-color for non-cytosine modifications', () => {
     const model = makeModModel(['a'])
     model.colorBy = { type: 'modifications' }
-    clickRadio(model, '2-color')
+    clickRadio(model, TWO_COLOR)
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { twoColor: true },
@@ -181,7 +184,7 @@ describe('color by modifications menu', () => {
       type: 'modifications',
       modifications: { fillUnmarked: true },
     }
-    const prob = byLabel(model, '2-color')
+    const prob = byLabel(model, TWO_COLOR)
     expect(prob && 'checked' in prob && prob.checked).toBe(true)
   })
 
@@ -191,7 +194,7 @@ describe('color by modifications menu', () => {
       type: 'modifications',
       modifications: { fillUnmarked: true, cytosineContext: 'CHH' },
     }
-    clickRadio(model, 'Color by type')
+    clickRadio(model, BY_TYPE)
     expect(model.colorBy).toEqual({
       type: 'modifications',
       modifications: { cytosineContext: 'CHH' },
@@ -200,7 +203,7 @@ describe('color by modifications menu', () => {
 
   test('the 2-color pin promotes the methylation view for cytosine data', () => {
     const model = makeModModel(['m', 'h'])
-    const item = byLabel(model, '2-color', {
+    const item = byLabel(model, TWO_COLOR, {
       displayTypeDefault: displayTypeDefault(model),
     })
     const adornment =
@@ -223,7 +226,7 @@ describe('color by modifications menu', () => {
   test('the per-type filter is surfaced inline and limits to one type', () => {
     const model = makeModModel(['m', 'h'])
     model.colorBy = { type: 'modifications' }
-    const item = subMenuOf(byLabel(model, 'Types shown')).find(
+    const item = subMenuOf(byLabel(model, 'Modification types')).find(
       i => 'label' in i && i.label === '5hmC',
     )
     if (!item || !('onClick' in item)) {
@@ -238,7 +241,7 @@ describe('color by modifications menu', () => {
 
   test('the per-type filter is hidden when only one type is detected', () => {
     const model = makeModModel(['m'])
-    expect(byLabel(model, 'Types shown')).toBeFalsy()
+    expect(byLabel(model, 'Modification types')).toBeFalsy()
   })
 
   test('the threshold slider commits a non-default value inline', () => {

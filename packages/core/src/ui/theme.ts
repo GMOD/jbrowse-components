@@ -262,8 +262,6 @@ export const methylated5mC = '#ff0000'
 export const unmethylated5mC = '#0000ff'
 /** #color theme-methylation | methylated5hmC | 5-hydroxymethylcytosine, methylated */
 export const methylated5hmC = '#ffc0cb'
-/** #color theme-methylation | unmethylated5hmC | 5-hydroxymethylcytosine, unmethylated */
-export const unmethylated5hmC = '#800080'
 
 const alignmentFill = {
   pairLR: colorPairLR,

@@ -66,19 +66,21 @@ Three schemes surface per-read or per-base signal directly on the pileup:
 If a BAM/CRAM carries MM/ML modification calls (common in nanopore and PacBio
 data), **Color by → Modifications** paints them. It offers two modes:
 
-- Color by type draws a mark _only_ where the MM tag reports a modified base,
-  each type in its own color, so an unmethylated region looks empty. Use the
-  **Threshold** slider to raise the probability cutoff, or **Types shown** to
-  restrict to a single type such as 5mC — both sit directly beneath the two mode
-  radios.
-- 2-color (IGV's name for the same view) colors each position by whether it is
-  modified rather than by which modification it is — modified red, unmodified
-  blue. For methylation (cytosine) data it fills every CpG in context, including
-  the ones the basecaller left implicit (drawn blue). Those blue positions
-  aren't in the MM tag; JBrowse infers them from the reference CpG context.
-  That's why a hypomethylated island fills with solid blue here but looks nearly
-  empty in the by-type mode. The cytosine context (CpG/CHG/CHH) is a **Cytosine
-  context** submenu in the same list.
+- **One color per modification type** draws a mark _only_ where the MM tag
+  reports a modified base, each type in its own color, so an unmethylated region
+  looks empty. Use the **Threshold** slider to raise the probability cutoff, or
+  **Modification types** to restrict to a single type such as 5mC — both sit
+  directly beneath the two mode radios.
+- **One color per type, plus low-probability & unmodified in blue** (IGV calls
+  this "2-color") does everything the by-type view does and additionally paints
+  the not-modified side blue: modified sites keep their per-type color, while
+  low-probability and unmodified sites turn blue. For methylation (cytosine)
+  data it fills every CpG in context, including the ones the basecaller left
+  implicit (drawn blue). Those blue positions aren't in the MM tag; JBrowse
+  infers them from the reference CpG context. That's why a hypomethylated island
+  fills with solid blue here but looks nearly empty in the by-type mode. The
+  cytosine context (CpG/CHG/CHH) is a **Cytosine context** submenu in the same
+  list.
 
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.

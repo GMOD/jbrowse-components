@@ -536,10 +536,11 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         // matches the probability callout's width so the two pills line up
         maxWidth: 340,
         fontSize: 16,
-        // Both callouts name the menu radio verbatim (colorBy.tsx). "only" here
-        // vs "every CpG" below is the contrast the figure teaches — it's why the
+        // Both callouts name the menu radio (colorBy.tsx); the second is
+        // abbreviated to its distinguishing clause to fit the callout. "only"
+        // here vs "every CpG" below is the contrast the figure teaches — it's why the
         // island reads empty on this row and blue on the next.
-        text: 'Color by type: only positions marked in the MM tag',
+        text: 'One color per modification type: only positions marked in the MM tag',
       },
       {
         // blue is every CpG whose most likely state is unmodified: both the ones
@@ -558,7 +559,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         dy: -110,
         maxWidth: 340,
         fontSize: 16,
-        text: `2-color: every CpG painted
+        text: `Plus low-probability & unmodified in blue: every CpG painted
 
 - red = methylated
 - blue = low probability or unmarked`,
@@ -816,10 +817,12 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     settleMs: 35000,
     // colorBy:modifications is set declaratively so the mod data is already
     // loaded and painted by the time the menu opens. Then drive the live Color
-    // by → Modifications → Color by type path so the figure shows the menu
-    // route, not just the result (reviewer asked to actually open the menu). The
-    // MM/ML modes live in a "Modifications" submenu with two radios ("Color by
-    // type" / "2-color"); the per-type filter, threshold slider and
+    // by → Modifications → One color per modification type path so the figure
+    // shows the menu route, not just the result (reviewer asked to actually open
+    // the menu). The MM/ML modes live in a "Modifications" submenu with two
+    // radios ("One color per modification type" / "One color per type, plus
+    // low-probability & unmodified in blue"); the per-type filter, threshold
+    // slider and
     // cytosine context sit flat beneath them (no dialog). The selector is scoped
     // by data-trackid to the COLO829 alignments track — the bare track_menu_icon
     // matched the CpG-island feature track first, whose Color by menu has no
@@ -830,12 +833,15 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         selector:
           '[data-testid="track_menu_icon"][data-trackid="COLO829_tumor.ht"]',
       },
-      ...menuCascade(['Color by...', 'Modifications', 'Color by type'], 800),
+      ...menuCascade(
+        ['Color by...', 'Modifications', 'One color per modification type'],
+        800,
+      ),
     ],
     annotations: cascadeBoxes([
       'Color by...',
       'Modifications',
-      'Color by type',
+      'One color per modification type',
     ]),
   },
 
