@@ -1,6 +1,7 @@
 import { getContextMenuItems } from './contextMenu.ts'
 
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
+import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type {
   CigarHitResult,
   ResolvedBlock,
@@ -39,6 +40,7 @@ function makeModel(
   over: {
     contextMenuCigarHit?: CigarHitResult
     contextMenuIndicatorHit?: IndicatorHitResult
+    contextMenuModHit?: ModificationHitResult
     contextMenuBlock?: ResolvedBlock
     contextMenuGenomicPos?: number
     contextMenuFeature?: Feature
@@ -53,6 +55,7 @@ function makeModel(
     contextMenuFeature: undefined as Feature | undefined,
     contextMenuCigarHit: undefined,
     contextMenuIndicatorHit: undefined,
+    contextMenuModHit: undefined as ModificationHitResult | undefined,
     contextMenuBlock: makeBlock('ctgA') as ResolvedBlock | undefined,
     contextMenuGenomicPos: undefined as number | undefined,
     filterBy: defaultFilterBy,
@@ -144,6 +147,19 @@ test('an indicator hit sorts by the indicator type', () => {
   })
   firstSubMenuItem(run(model)[0]).onClick()
   expect(model.sortCalls).toEqual([['insertion', 100, 'ctgA']])
+})
+
+test('a modification hit offers "Open modification details"', () => {
+  const model = makeModel({
+    contextMenuModHit: {
+      position: 100,
+      modType: 'm',
+      probability: 0.9,
+      color: 'rgb(255,0,0)',
+    },
+  })
+  const labels = run(model).map(i => (i as { label?: string }).label)
+  expect(labels).toContain('Open modification details')
 })
 
 test('sort is a no-op without a block', () => {

@@ -15,6 +15,7 @@ function makeRpcData(
   return {
     mismatchPositions: new Uint32Array(),
     mismatchFrequencies: new Uint8Array(),
+    mismatchQuals: new Uint8Array(),
     interbaseFrequencies: new Uint8Array(),
     interbasePositions: new Uint32Array(),
     gapPositions: new Uint32Array(),
@@ -348,22 +349,29 @@ describe('contextMenuFieldsForHit', () => {
   })
 
   // regression: a modification hit used to fall through to the native browser
-  // menu; it must expose the read's feature id (and the base's cigar hit).
-  it('a modification hit exposes the underlying read feature id', () => {
+  // menu; it must expose the read's feature id, the base's cigar hit, and the
+  // mod hit itself (so "Open modification details" is reachable from the menu).
+  it('a modification hit exposes the mod hit, cigar hit, and read feature id', () => {
     const cigar = {
       type: 'mismatch',
       index: 0,
       position: 7,
       base: 'A',
     } as const
+    const mod = { position: 7, modType: 'm', probability: 0.9, color: '#f00' }
     const fields = contextMenuFieldsForHit({
       type: 'modification',
-      hit: { position: 7, modType: 'm', probability: 0.9, color: '#f00' },
+      hit: mod,
       featureHit: { id: 'r3', index: 2 },
       cigarHit: cigar,
       resolved,
     })
-    expect(fields).toEqual({ show: true, cigarHit: cigar, featureId: 'r3' })
+    expect(fields).toEqual({
+      show: true,
+      cigarHit: cigar,
+      modHit: mod,
+      featureId: 'r3',
+    })
   })
 
   it('an indicator hit carries the indicator hit but no feature', () => {

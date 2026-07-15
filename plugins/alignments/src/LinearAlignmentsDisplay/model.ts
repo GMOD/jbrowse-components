@@ -2781,6 +2781,7 @@ export default function stateModelFactory(
             self.contextMenuFeature = undefined
             self.contextMenuCigarHit = undefined
             self.contextMenuIndicatorHit = undefined
+            self.contextMenuModHit = undefined
             self.contextMenuBlock = undefined
             self.contextMenuGenomicPos = undefined
           },
@@ -2857,6 +2858,7 @@ export default function stateModelFactory(
             genomicPos?: number
             cigarHit?: CigarHitResult
             indicatorHit?: IndicatorHitResult
+            modHit?: ModificationHitResult
             featureId?: string
           }) {
             self.contextMenuCoord = args.coord
@@ -2864,6 +2866,7 @@ export default function stateModelFactory(
             self.contextMenuGenomicPos = args.genomicPos
             self.contextMenuCigarHit = args.cigarHit
             self.contextMenuIndicatorHit = args.indicatorHit
+            self.contextMenuModHit = args.modHit
             self.contextMenuFeature = undefined
             // Pin the hover to the menu's target read so its highlight box
             // (highlightBoxes, keyed on featureIdUnderMouse) stays on while the

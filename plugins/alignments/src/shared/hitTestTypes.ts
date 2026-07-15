@@ -16,6 +16,8 @@ export interface CigarHitResult {
   length?: number
   base?: string
   sequence?: string
+  // Phred base quality for a mismatch (0 = no quality reported / not applicable).
+  qual?: number
 }
 
 export interface SashimiArcHitResult {

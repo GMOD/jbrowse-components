@@ -53,12 +53,15 @@ export interface ContextMenuFields {
   show: boolean
   cigarHit?: CigarHitResult
   indicatorHit?: IndicatorHitResult
+  modHit?: ModificationHitResult
   featureId?: string
 }
 
 // Which context-menu state a right-click hit maps to. A cigar/modification hit
 // carries the read's featureId so the read's own menu items (view mate, feature
 // details) stay reachable over a mismatched/modified base — not just bare body.
+// A modification hit also carries the underlying cigarHit (its mismatch, if the
+// modified base is also a SNP), so the SNP submenu appears next to the mod item.
 export function contextMenuFieldsForHit(
   result: HitTestResult,
 ): ContextMenuFields {
@@ -73,6 +76,7 @@ export function contextMenuFieldsForHit(
       return {
         show: true,
         cigarHit: result.cigarHit,
+        modHit: result.hit,
         featureId: result.featureHit?.id,
       }
     case 'indicator':

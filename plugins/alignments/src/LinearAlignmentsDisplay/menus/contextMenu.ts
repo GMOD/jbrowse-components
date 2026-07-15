@@ -18,12 +18,14 @@ import { CIGAR_TYPE_LABELS } from '../components/alignmentComponentUtils.ts'
 import {
   openCigarWidget,
   openIndicatorWidget,
+  openModificationWidget,
 } from '../components/detailWidgets.ts'
 import { viewMateRegionInCurrentView } from '../viewMateRegion.ts'
 
 const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
 
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
+import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type {
   CigarHitResult,
   ResolvedBlock,
@@ -40,6 +42,7 @@ interface ContextMenuModel extends IAnyStateTreeNode {
   contextMenuFeature: Feature | undefined
   contextMenuCigarHit: CigarHitResult | undefined
   contextMenuIndicatorHit: IndicatorHitResult | undefined
+  contextMenuModHit: ModificationHitResult | undefined
   // The block under the right-click (refName + worker result + bp range), the
   // single source of the position sort's refName and the indicator widget's
   // rpcData. Captured once when the menu is built so its onClicks operate on a
@@ -251,6 +254,7 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
   const feat = self.contextMenuFeature
   const cigarHit = self.contextMenuCigarHit
   const indicatorHit = self.contextMenuIndicatorHit
+  const modHit = self.contextMenuModHit
   const block = self.contextMenuBlock
   const items: MenuItem[] = []
 
@@ -273,6 +277,22 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         },
       }),
     )
+  }
+
+  // A modified base opens its per-read modification widget from the menu too —
+  // reachable on a plain modified base, where there's no cigarHit submenu above.
+  // block/modHit are snapshotted (like cigarHit/block) since closeContextMenu
+  // clears them before this onClick fires. snpBase annotates the widget when the
+  // modified base is also a SNP, mirroring the left-click path.
+  if (modHit && block) {
+    const snpBase = cigarHit?.type === 'mismatch' ? cigarHit.base : undefined
+    items.push({
+      label: 'Open modification details',
+      icon: MenuOpenIcon,
+      onClick: () => {
+        openModificationWidget(self, modHit, block.refName, snpBase)
+      },
+    })
   }
 
   if (indicatorHit) {

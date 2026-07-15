@@ -153,6 +153,9 @@ export function openCigarWidget(
   if (cigarHit.base) {
     featureData.base = cigarHit.base
   }
+  if (cigarHit.qual) {
+    featureData.quality = cigarHit.qual
+  }
   if (cigarHit.length !== undefined) {
     featureData.length = cigarHit.length
   }

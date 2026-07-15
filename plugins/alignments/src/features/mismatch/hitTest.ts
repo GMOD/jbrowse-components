@@ -12,8 +12,13 @@ export function hitTestMismatch(
   filterMismatchesByFrequency: boolean,
 ): CigarHitResult | undefined {
   const { genomicPos, row, bpPerPx } = coords
-  const { mismatchPositions, mismatchYs, mismatchBases, mismatchFrequencies } =
-    resolved.rpcData
+  const {
+    mismatchPositions,
+    mismatchYs,
+    mismatchBases,
+    mismatchFrequencies,
+    mismatchQuals,
+  } = resolved.rpcData
   const numMismatches = mismatchPositions.length
   // 1bp features — floor to the integer base the mouse is over
   const mousePos = Math.floor(genomicPos)
@@ -38,6 +43,7 @@ export function hitTestMismatch(
         index: i,
         position: pos,
         base: String.fromCharCode(baseCode),
+        qual: mismatchQuals[i],
       }
     }
   }

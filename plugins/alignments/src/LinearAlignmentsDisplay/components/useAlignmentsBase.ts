@@ -178,7 +178,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   function handleContextMenu(e: React.MouseEvent) {
     const { resolved, result } = hitTestEvent(e)
-    const { show, cigarHit, indicatorHit, featureId } =
+    const { show, cigarHit, indicatorHit, modHit, featureId } =
       contextMenuFieldsForHit(result)
     if (show) {
       e.preventDefault()
@@ -197,6 +197,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         genomicPos,
         cigarHit,
         indicatorHit,
+        modHit,
         featureId,
       })
     }

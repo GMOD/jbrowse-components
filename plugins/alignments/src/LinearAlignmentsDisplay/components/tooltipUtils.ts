@@ -156,8 +156,11 @@ export function formatChainTooltip(
 export function formatCigarTooltip(cigarHit: CigarHitResult) {
   const pos = toLocale(cigarHit.position + 1)
   switch (cigarHit.type) {
-    case 'mismatch':
-      return `SNP: ${cigarHit.base} at ${pos}`
+    case 'mismatch': {
+      // qual 0 = no base quality reported; omit rather than show a bare "Q0".
+      const qual = cigarHit.qual ? ` (Q${cigarHit.qual})` : ''
+      return `SNP: ${cigarHit.base} at ${pos}${qual}`
+    }
     case 'insertion':
       return `${formatInsertionLabel(cigarHit.length ?? 0, cigarHit.sequence)} at ${pos}`
     case 'deletion':
