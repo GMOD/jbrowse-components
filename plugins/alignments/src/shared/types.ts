@@ -130,6 +130,15 @@ export function isFillUnmarkedMode(colorBy: ColorBy | undefined) {
   )
 }
 
+// True when the mode paints an explicit unmethylated state alongside the
+// methylated calls: the fill-unmarked cytosine walk and bisulfite (read C->T
+// conversion vs. reference) both do — see extractBisulfite / the fill-unmarked
+// path. Their legend must key the "Unmethylated" swatch, unlike the per-type MM
+// palette, which has no unmethylated swatch at all (see fillUnmarkedLegend).
+export function paintsUnmethylatedState(colorBy: ColorBy | undefined) {
+  return isFillUnmarkedMode(colorBy) || colorBy?.type === 'bisulfite'
+}
+
 export interface TagFilter {
   tag: string
   value?: string

@@ -6,7 +6,7 @@ import {
 
 import { isModificationScheme } from './colorSchemes.ts'
 import { getModificationName } from './modificationData.ts'
-import { isFillUnmarkedMode, isModificationTypeVisible } from './types.ts'
+import { isModificationTypeVisible, paintsUnmethylatedState } from './types.ts'
 import {
   categorySwatchColor,
   rgb255,
@@ -214,10 +214,11 @@ export function getReadDisplayLegendItems(
     ]
   }
   if (colorType && isModificationScheme(colorType) && visibleModifications) {
-    // The methylation (fill-unmarked) view paints the three states
-    // extractMethylation produces, not the per-type MM palette; every other
-    // modification view keys each detected type in the color the reads use.
-    const items = isFillUnmarkedMode(colorBy)
+    // The methylation views that paint an explicit unmethylated state
+    // (fill-unmarked and bisulfite) key those states, not the per-type MM
+    // palette; every other modification view keys each detected type in the
+    // color the reads use.
+    const items = paintsUnmethylatedState(colorBy)
       ? fillUnmarkedLegend(colorBy.modifications, visibleModifications)
       : [...visibleModifications]
           .filter(([type]) =>
