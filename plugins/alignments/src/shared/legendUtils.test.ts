@@ -120,16 +120,22 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('strand-based schemes keep the plain wording (fwd/rev is their primary key)', () => {
-    // Under strand / first-of-pair-strand every read is colored by its own
-    // strand, so a fwd/rev bucket is the key itself, not a split-read exception.
-    expect(labels('strand', ['fwdStrand', 'revStrand'])).toEqual([
+  test('the plain strand scheme keeps the plain wording (fwd/rev is its primary key)', () => {
+    // Under strand, every read is colored by its own strand, so a fwd/rev bucket
+    // is the key itself, not a split-read exception.
+    expect(labels('strand', ['fwdStrand', 'revStrand', 'noStrand'])).toEqual([
       'Forward strand',
       'Reverse strand',
+      'No strand',
     ])
+  })
+
+  test('first-of-pair-strand names the fragment strand, not the read’s own strand', () => {
+    // The color is the strand inferred from the first mate, so a reverse-mapped
+    // read1 lands in the "forward" bucket — spell that out.
     expect(labels('firstOfPairStrand', ['fwdStrand', 'revStrand'])).toEqual([
-      'Forward strand',
-      'Reverse strand',
+      'Forward (first-in-pair)',
+      'Reverse (first-in-pair)',
     ])
   })
 

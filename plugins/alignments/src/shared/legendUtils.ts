@@ -69,21 +69,33 @@ const CATEGORY_LEGEND: { category: SwatchCategory; label: string }[] = [
 // classifier yields a different category (plain/mapq/insert/pair/…) for a
 // non-split read. Naming these as split reads is what distinguishes the colored
 // split segments from the scheme's grey/base-colored non-split reads in
-// linked-reads (chain) mode, where only the splits pick up a color. Strand
-// schemes color every read by its own strand, so they keep the plain wording
-// (see STRAND_PRIMARY_SCHEMES).
+// linked-reads (chain) mode, where only the splits pick up a color.
 const SPLIT_STRAND_LABELS: Partial<Record<SwatchCategory, string>> = {
   fwdStrand: 'Split read (forward)',
   revStrand: 'Split read (reverse)',
 }
 
-// Schemes whose primary coloring IS the read's own strand, so a fwd/rev bucket
-// is the key itself rather than a split-read exception to relabel.
-const STRAND_PRIMARY_SCHEMES = new Set<ColorSchemeType>([
-  'strand',
-  'firstOfPairStrand',
-  'stranded',
-])
+// The first-of-pair-strand scheme colors by the FRAGMENT strand inferred from
+// the first mate (read2's strand is inverted), not each read's own strand — so a
+// reverse-mapped read1 lands in the "forward" bucket. Spell that out rather than
+// reusing the plain "Forward strand" wording of the strand scheme, which would
+// read as the read's own strand.
+const FIRST_OF_PAIR_LABELS: Partial<Record<SwatchCategory, string>> = {
+  fwdStrand: 'Forward (first-in-pair)',
+  revStrand: 'Reverse (first-in-pair)',
+}
+
+// Per-scheme relabeling of the shared fwd/rev-strand swatches. The plain
+// `strand` scheme (and undefined = no relabel here) keeps CATEGORY_LEGEND's
+// wording; every other scheme reframes fwd/rev as either the fragment strand or
+// a split read (see the two maps above).
+function strandLabelOverrides(colorType: ColorSchemeType | undefined) {
+  return colorType === 'firstOfPairStrand' || colorType === 'stranded'
+    ? FIRST_OF_PAIR_LABELS
+    : colorType === 'strand'
+      ? undefined
+      : SPLIT_STRAND_LABELS
+}
 
 // Per-base nucleotide swatches, colored from the live palette base colors.
 const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
@@ -129,20 +141,19 @@ function fillUnmarkedLegend(
 // layered over the scheme's primary coloring — unmapped mate, inter-chromosomal,
 // supplementary, and (in chain mode) the split-read strand framing — so every
 // scheme appends them after its own key rather than any one branch owning them.
-// fwd/rev get the split-read wording unless the active scheme is itself
-// strand-based (see SPLIT_STRAND_LABELS / STRAND_PRIMARY_SCHEMES).
+// fwd/rev are reworded per scheme (split read vs. fragment strand) — see
+// strandLabelOverrides.
 function crossCuttingBuckets(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
   colorType: ColorSchemeType | undefined,
 ): LegendItem[] {
-  const splitFraming =
-    colorType === undefined || !STRAND_PRIMARY_SCHEMES.has(colorType)
+  const overrides = strandLabelOverrides(colorType)
   return CATEGORY_LEGEND.filter(({ category }) =>
     presentCategories.has(category),
   ).map(({ category, label }) => ({
     color: categorySwatchColor(category, palette),
-    label: splitFraming ? (SPLIT_STRAND_LABELS[category] ?? label) : label,
+    label: overrides?.[category] ?? label,
   }))
 }
 
