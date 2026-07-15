@@ -201,8 +201,14 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * Drives the "view changes" dialog opened from the edited badge.
          */
         getTrackConfigChanges(trackId: string) {
+          // Every rendered track row asks this (the edited badge), but only an
+          // edited track has a delta — so scan for the base only once one
+          // exists. Skipping it also keeps an unedited row from subscribing to
+          // the whole jbrowse.tracks array.
           const delta = self.trackConfigDeltas[trackId]
-          const base = baseTracks(self).find(t => t.trackId === trackId)
+          const base = delta
+            ? baseTracks(self).find(t => t.trackId === trackId)
+            : undefined
           return delta && base
             ? flattenTrackConfigDelta(toPlainConfig(base), delta)
             : []
@@ -403,6 +409,14 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             // (an opened connection track, or a homeless in-memory-only edit):
             // the base mixin routes these
             superUpdateTrackConfiguration(trackConf)
+            // An admin's edit rewrites the base config itself, so it supersedes
+            // any delta: a shared session authored by a non-admin carries their
+            // deltas, and an admin opening it edits jbrowse.tracks directly. Left
+            // in place, the delta merges straight back over that base in the
+            // `tracks` getter and the admin's own edit silently reverts.
+            if (self.adminMode && trackId in self.trackConfigDeltas) {
+              writeDelta(trackId, undefined)
+            }
           }
         },
 

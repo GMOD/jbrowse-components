@@ -47,18 +47,15 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
                 }[])
               : []
 
-          const connectionInstances =
-            'connectionInstances' in self
-              ? (self.connectionInstances as ConnectionInstance[])
-              : []
+          // both come from the connections mixin, which not every session
+          // composes. connectionInstances is annotated because its element type
+          // is a runtime-pluggable stateModel, so the guard can't infer it.
+          const connectionInstances: ConnectionInstance[] =
+            isSessionWithConnections(self) ? self.connectionInstances : []
 
-          const connectionTrackConfigs =
-            'connectionTrackConfigs' in self
-              ? (self.connectionTrackConfigs as Record<
-                  string,
-                  { config: AnyConfigurationModel }
-                >)
-              : {}
+          const connectionTrackConfigs = isSessionWithConnections(self)
+            ? self.connectionTrackConfigs
+            : {}
 
           return Object.fromEntries([
             ...self.tracks.map(t => [t.trackId, t]),

@@ -148,6 +148,35 @@ test('a legacy full-override session track migrates to a delta on load', () => {
   expect(readConfObject(resolved, 'name')).toBe('Legacy name')
 })
 
+// A non-admin's deltas ride along in a shared session, so an admin can open one
+// and then edit the very tracks it overrides. An admin edit rewrites the base
+// config itself, so it has to supersede the delta -- otherwise the delta merges
+// straight back over the new base and the admin's edit silently reverts.
+test("an admin's edit clears a shared session's delta for that track", () => {
+  const { rootModel: nonAdminRoot } = getPluginManager(undefined, false)
+  const nonAdmin = nonAdminRoot.session as unknown as TestSession
+  nonAdmin.updateTrackConfiguration(editedSnapshot(nonAdmin, 'NonAdminName'))
+  const shared = getSnapshot(nonAdminRoot.session)
+
+  const { rootModel } = getPluginManager(undefined, true)
+  rootModel.setSession(shared)
+  const session = rootModel.session as unknown as TestSession
+  // the admin first sees the session as its author shared it
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeDefined()
+  const before = session.tracks.find(t => t.trackId === TRACK_ID)!
+  expect(readConfObject(before, 'name')).toBe('NonAdminName')
+
+  session.updateTrackConfiguration(editedSnapshot(session, 'AdminName'))
+
+  // the admin's edit lands on the base config and actually takes effect
+  expect(session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!.name).toBe(
+    'AdminName',
+  )
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+  const after = session.tracks.find(t => t.trackId === TRACK_ID)!
+  expect(readConfObject(after, 'name')).toBe('AdminName')
+})
+
 test('isTrackOverride distinguishes a delta from a plain config track', () => {
   const { rootModel } = getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession

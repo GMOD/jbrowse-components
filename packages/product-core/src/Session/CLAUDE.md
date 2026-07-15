@@ -35,7 +35,13 @@ persist through `#action updateTrackConfiguration(snapshot)`:
 
 - **Admin** (`adminMode`, and desktop, which only has the base
   `TracksManagerSessionMixin`) → `jbrowse.updateTrackConf` edits the config in
-  place.
+  place, **and drops any `trackConfigDeltas` entry for that track**. Deltas ride
+  along in a shared session, so an admin can open a non-admin's session and edit
+  the very tracks it overrides; an admin edit rewrites the base itself, so it
+  supersedes the delta. Left in place, the delta merges straight back over the
+  new base in the `tracks` getter and the admin's edit silently reverts. Canary:
+  `UpdateTrackConfiguration.test.ts` ("an admin's edit clears a shared session's
+  delta").
 - **Everyone else** → `diffTrackConfig(base, snapshot)` and store the delta in
   `trackConfigDeltas[trackId]`. A second edit recomputes the delta against the
   same base. If the edited track has **no** admin base (a user-added
