@@ -66,5 +66,9 @@ export {
   default as SvgGradientLegend,
 } from './SvgGradientLegend.tsx'
 export type { GradientLabel, GradientStop } from './SvgGradientLegend.tsx'
-export { default as SvgColorLegend } from './SvgColorLegend.tsx'
+export {
+  LEGEND_ROW_HEIGHT,
+  LEGEND_SWATCH,
+  default as SvgColorLegend,
+} from './SvgColorLegend.tsx'
 export type { ColorLegendEntry } from './SvgColorLegend.tsx'
