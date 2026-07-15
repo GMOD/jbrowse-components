@@ -22,8 +22,9 @@ early-`return` + loading-thunk constraints.
 | `FetchVisibleRegions`                | `fetchGeneration` (bumps at fetch end), `view.visibleRegions`, `error`, `regionTooLarge` (600 ms delay) | calls `fetchNeeded` with uncovered buffered regions       |
 | `SettingsInvalidate`                 | `self.rpcProps()` (any field it reads); installed only when subclass defines the method                 | `clearAllRpcData()`                                       |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `regionTooLarge` or `error` is set |
+| `ClearHoverOnRegionTooLarge`         | `self.regionTooLarge`                                                                                   | fires the overridable `onRegionTooLarge()` hook (no-op base) when it becomes true, so a display can drop its hover/tooltip when the banner replaces the content (alignments clears its mouseover) |
 
-All four are installed via `autorunOnReadyView(self, view => …, opts)`, which
+All five are installed via `autorunOnReadyView(self, view => …, opts)`, which
 runs its body only once `view.initialized` (measured width + ready assemblies)
 and passes the view in. Use it for **any** view-dependent autorun on an LGV
 display — before init, view-derived getters like `view.width` throw by design,
@@ -51,6 +52,9 @@ reuses indices, so a stale entry would apply to the wrong chromosome (canvas's
 | `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes)                                                                                                                                                                                                   |
 | `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch                                                                                                                                                                                                                                    |
 | `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                                                                                                                                                                                                                  |
+| `onRegionTooLarge()`         | no-op       | clear transient hover/tooltip state when `regionTooLarge` becomes true (the banner replaces the content); fired by the `ClearHoverOnRegionTooLarge` autorun                                                                                                                                   |
+
+The region-too-large gate itself (imperative flag vs. derived byte estimate) lives in `RegionTooLargeMixin`; a byte-gated display opts into the derived, self-releasing banner by overriding `derivedRegionTooLargeEnabled` → true (+ `configuredFetchSizeLimit`, and `densityTooLargeForDerivedGate` for a second axis). See that mixin's header comment.
 
 ### `loadedRegions`
 

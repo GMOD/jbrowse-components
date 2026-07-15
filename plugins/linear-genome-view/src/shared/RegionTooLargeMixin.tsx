@@ -120,12 +120,17 @@ export default function RegionTooLargeMixin() {
        * refetch. Only meaningful when `derivedRegionTooLargeEnabled`.
        */
       get estimatedVisibleBytes() {
-        return scaleByteEstimate({
-          bytes: self.featureDensityStats?.bytes,
-          captureBp: self.byteEstimateVisibleBp,
-          visibleBp: (getContainingView(self) as LinearGenomeViewModel)
-            .visibleBp,
-        })
+        const view = getContainingView(self) as LinearGenomeViewModel
+        // Guard: `visibleBp` reads `view.width`, which throws before the view is
+        // measured. A bare getter must never throw, and there's no estimate to
+        // scale without a viewport, so yield undefined until the view is ready.
+        return view.initialized
+          ? scaleByteEstimate({
+              bytes: self.featureDensityStats?.bytes,
+              captureBp: self.byteEstimateVisibleBp,
+              visibleBp: view.visibleBp,
+            })
+          : undefined
       },
     }))
     .views(self => ({
@@ -137,17 +142,21 @@ export default function RegionTooLargeMixin() {
        * path so the banner text can't drift.
        */
       get tooLargeStatus() {
-        return evaluateRegionTooLarge({
-          visibleBp: (getContainingView(self) as LinearGenomeViewModel)
-            .visibleBp,
-          bytes: self.estimatedVisibleBytes,
-          byteLimit: resolveByteLimit({
-            userByteSizeLimit: self.userByteSizeLimit,
-            adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
-            configFetchSizeLimit: self.configuredFetchSizeLimit,
-          }),
-          densityTooLarge: self.densityTooLargeForDerivedGate,
-        })
+        const view = getContainingView(self) as LinearGenomeViewModel
+        // Not too large until the view is measured (visibleBp reads view.width,
+        // which throws pre-init); the banner never shows before first paint.
+        return view.initialized
+          ? evaluateRegionTooLarge({
+              visibleBp: view.visibleBp,
+              bytes: self.estimatedVisibleBytes,
+              byteLimit: resolveByteLimit({
+                userByteSizeLimit: self.userByteSizeLimit,
+                adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
+                configFetchSizeLimit: self.configuredFetchSizeLimit,
+              }),
+              densityTooLarge: self.densityTooLargeForDerivedGate,
+            })
+          : { tooLarge: false, reason: '' }
       },
     }))
     .views(self => ({
