@@ -35,7 +35,6 @@ import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
-import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
@@ -421,10 +420,7 @@ export function stateModelFactory(
       trackMenuItems() {
         return [
           makeScoreSubMenu(self, { scaleType: false }),
-          makeScatterPointSizeMenuItem(self, {
-            label: 'Point size',
-            defaultValue: DEFAULT_POINT_DIAMETER_PX,
-          }),
+          makeScatterPointSizeMenuItem(self, { label: 'Point size' }),
           makeCrossHatchItem(self),
           {
             // whole submenu greys out without a configured .ld adapter

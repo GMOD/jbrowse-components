@@ -173,9 +173,12 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
 }
 
 /**
+ * #api core/configuration
  * Whether this track has customized the slot (holds a non-default value of its
- * own) rather than following the display type's default. Module-internal
- * (exercised by promotableDefaults.test.ts); not part of the public barrel.
+ * own) rather than following the display type's default. The correct "reset to
+ * default" predicate for a promotable slot: comparing the resolved value to the
+ * base instead reads as at-default for a track merely *following* a non-base
+ * promoted default, so the reset control lights up on a no-op.
  */
 export function isSlotCustomized(
   self: PromotableDisplay,

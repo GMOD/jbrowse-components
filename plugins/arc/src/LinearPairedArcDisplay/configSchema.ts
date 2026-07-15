@@ -52,9 +52,12 @@ export function configSchemaFactory() {
        * #slot
        */
       lineWidth: {
-        type: 'number',
-        description: 'the stroke width of the arcs, in pixels',
-        defaultValue: defaultArcLineWidth,
+        type: 'maybeNumber',
+        description:
+          'the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type',
+        // sentinel promotable slot: see promotableDefaults.ts
+        defaultValue: undefined,
+        promotedBase: defaultArcLineWidth,
         promotable: true,
       },
     },

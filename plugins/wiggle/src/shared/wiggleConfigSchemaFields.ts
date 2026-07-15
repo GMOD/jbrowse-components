@@ -55,18 +55,28 @@ export const wiggleConfigSchemaFields = {
       'Number of standard deviations to use for the localsd autoscale type',
     advanced: true,
   },
+  // Sentinel promotable slots (like alignments featureHeight): `undefined` is
+  // the inherit state and `promotedBase` is what it resolves to when nothing is
+  // promoted, so every real value — the base included — stays customizable over
+  // a session-wide default. A plain `number` slot would spend its default as
+  // the inherit signal, so dragging the slider back to that value would strip
+  // to default and silently re-inherit the promoted one. See
+  // promotableDefaults.ts.
   scatterPointSize: {
-    type: 'number',
-    defaultValue: 2,
+    type: 'maybeNumber',
+    defaultValue: undefined,
+    promotedBase: 2,
     description:
-      'Point height in px for scatterplot ("scatter"/"multiscatter") rendering',
+      'Point height in px for scatterplot ("scatter"/"multiscatter") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 2',
     advanced: true,
     promotable: true,
   },
   lineWidth: {
-    type: 'number',
-    defaultValue: 1,
-    description: 'Line thickness in px for line ("line"/"multiline") rendering',
+    type: 'maybeNumber',
+    defaultValue: undefined,
+    promotedBase: 1,
+    description:
+      'Line thickness in px for line ("line"/"multiline") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 1',
     advanced: true,
     promotable: true,
   },

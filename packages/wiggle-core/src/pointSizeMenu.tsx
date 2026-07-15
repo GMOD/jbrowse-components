@@ -1,4 +1,7 @@
-import { makeCurrentValueDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import {
+  isSlotCustomized,
+  makeCurrentValueDisplayTypeDefaultControl,
+} from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
@@ -16,13 +19,13 @@ export function makeScatterPointSizeMenuItem(
     scatterPointSize: number
     setScatterPointSize: (n?: number) => void
   } & PromotableDisplay,
-  opts: { label: string; defaultValue: number },
+  opts: { label: string },
 ): MenuItem {
   return makeSizeMenu({
     label: opts.label,
     title: 'Point size',
     getValue: () => self.scatterPointSize,
-    isDefault: self.scatterPointSize === opts.defaultValue,
+    isDefault: !isSlotCustomized(self, 'scatterPointSize'),
     onChange: n => {
       self.setScatterPointSize(n)
     },

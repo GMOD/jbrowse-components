@@ -87,9 +87,11 @@ export function configSchemaFactory() {
        * default than wiggle's since Manhattan points are the primary glyph.
        */
       scatterPointSize: {
-        type: 'number',
-        defaultValue: DEFAULT_POINT_DIAMETER_PX,
-        description: 'Diameter in px of Manhattan points',
+        type: 'maybeNumber',
+        defaultValue: undefined,
+        promotedBase: DEFAULT_POINT_DIAMETER_PX,
+        description:
+          'Diameter in px of Manhattan points. Unset (the default) follows the session-wide default for this display type',
         promotable: true,
       },
     },

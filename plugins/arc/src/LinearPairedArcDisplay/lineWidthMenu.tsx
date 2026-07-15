@@ -1,7 +1,8 @@
-import { makeCurrentValueDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import {
+  isSlotCustomized,
+  makeCurrentValueDisplayTypeDefaultControl,
+} from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
-
-import { defaultArcLineWidth } from './configSchema.ts'
 
 import type { LinearPairedArcDisplayModel } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -18,7 +19,7 @@ export function makeLineWidthMenuItem(
     max: 20,
     step: 1,
     getValue: () => self.lineWidth,
-    isDefault: self.lineWidth === defaultArcLineWidth,
+    isDefault: !isSlotCustomized(self, 'lineWidth'),
     onChange: n => {
       self.setLineWidth(n)
     },

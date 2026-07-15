@@ -1,4 +1,7 @@
-import { makeCurrentValueDisplayTypeDefaultControl } from '@jbrowse/core/configuration'
+import {
+  isSlotCustomized,
+  makeCurrentValueDisplayTypeDefaultControl,
+} from '@jbrowse/core/configuration'
 import {
   makeRadioSubMenu,
   makeResolutionSubMenuItem,
@@ -12,9 +15,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-const SCATTER_POINT_SIZE_DEFAULT = 2
-const LINE_WIDTH_DEFAULT = 1
 
 // Shared "Show" submenu: single and multi wiggle both group their visibility
 // toggles and rendering-specific size sliders (point size / line width) here,
@@ -88,10 +88,7 @@ export function makePointSizeMenuItems(
       label: 'Scatter point size',
       icon: ScatterPlotIcon,
       subMenu: [
-        makeScatterPointSizeMenuItem(self, {
-          label: 'Scatter point size',
-          defaultValue: SCATTER_POINT_SIZE_DEFAULT,
-        }),
+        makeScatterPointSizeMenuItem(self, { label: 'Scatter point size' }),
       ],
     },
   ]
@@ -127,7 +124,7 @@ export function makeLineWidthMenuItems(
           max: 10,
           step: 1,
           getValue: () => self.lineWidth,
-          isDefault: self.lineWidth === LINE_WIDTH_DEFAULT,
+          isDefault: !isSlotCustomized(self, 'lineWidth'),
           onChange: n => {
             self.setLineWidth(n)
           },

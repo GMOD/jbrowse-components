@@ -26,6 +26,7 @@ export {
   clearPromotedDefaults,
   getConfResolved,
   getDisplayTypeDefaultChanges,
+  isSlotCustomized,
   makeCurrentValueDisplayTypeDefaultControl,
   makeDisplayTypeDefaultControl,
   makeSlotsValueDisplayTypeDefaultControl,
