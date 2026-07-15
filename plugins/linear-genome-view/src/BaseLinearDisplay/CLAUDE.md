@@ -16,12 +16,12 @@ early-`return` + loading-thunk constraints.
 
 ### Five autoruns installed in `afterAttach`
 
-| Name                                 | Trigger                                                                                                 | Action                                                    |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| `DisplayedRegionsChange`             | `view.displayedRegions` entries change (chromosome navigation)                                          | `clearAllRpcData()`                                       |
-| `FetchVisibleRegions`                | `fetchGeneration` (bumps at fetch end), `view.visibleRegions`, `error`, `regionTooLarge` (600 ms delay) | calls `fetchNeeded` with uncovered buffered regions       |
-| `SettingsInvalidate`                 | `self.rpcProps()` (any field it reads); installed only when subclass defines the method                 | `clearAllRpcData()`                                       |
-| `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `error` or `fetchCanceled` is set (the derived `regionTooLarge` self-releases, so it isn't part of this) |
+| Name                                 | Trigger                                                                                                 | Action                                                                                                                                                                                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DisplayedRegionsChange`             | `view.displayedRegions` entries change (chromosome navigation)                                          | `clearAllRpcData()`                                                                                                                                                                               |
+| `FetchVisibleRegions`                | `fetchGeneration` (bumps at fetch end), `view.visibleRegions`, `error`, `regionTooLarge` (600 ms delay) | calls `fetchNeeded` with uncovered buffered regions                                                                                                                                               |
+| `SettingsInvalidate`                 | `self.rpcProps()` (any field it reads); installed only when subclass defines the method                 | `clearAllRpcData()`                                                                                                                                                                               |
+| `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `error` or `fetchCanceled` is set (the derived `regionTooLarge` self-releases, so it isn't part of this)                                                                   |
 | `ClearHoverOnRegionTooLarge`         | `self.regionTooLarge`                                                                                   | fires the overridable `onRegionTooLarge()` hook (no-op base) when it becomes true, so a display can drop its hover/tooltip when the banner replaces the content (alignments clears its mouseover) |
 
 All five are installed via `autorunOnReadyView(self, view => …, opts)`, which
@@ -37,14 +37,14 @@ getters synchronously in an `afterAttach` body; do it inside
 debounce.
 
 **A display's own `afterAttach` must NOT `superAfterAttach()`.** Unlike regular
-actions (`rpcProps`, `setError`, … — extend those via the super-capture pattern),
-`@jbrowse/mobx-state-tree` **auto-chains lifecycle hooks** (`afterAttach`,
-`beforeDestroy`, …): the fork runs the base hook automatically before the
-subclass's. Capturing `const superAfterAttach = self.afterAttach` and calling it
-runs `MultiRegionDisplayMixin.afterAttach` **twice**, double-installing all five
-autoruns (masked by the `isLoading`/stale guards, but wasteful). Just define
-`afterAttach` and let the auto-chain run the base. Proven in
-`models/afterAttachAutoChain.test.ts`.
+actions (`rpcProps`, `setError`, … — extend those via the super-capture
+pattern), `@jbrowse/mobx-state-tree` **auto-chains lifecycle hooks**
+(`afterAttach`, `beforeDestroy`, …): the fork runs the base hook automatically
+before the subclass's. Capturing `const superAfterAttach = self.afterAttach` and
+calling it runs `MultiRegionDisplayMixin.afterAttach` **twice**,
+double-installing all five autoruns (masked by the `isLoading`/stale guards, but
+wasteful). Just define `afterAttach` and let the auto-chain run the base. Proven
+in `models/afterAttachAutoChain.test.ts`.
 
 `onDisplayedRegionsChange(self, clear, name?)` (exported helper, NOT a 5th
 installed autorun) is opt-in for per-region state keyed by
@@ -62,9 +62,14 @@ reuses indices, so a stale entry would apply to the wrong chromosome (canvas's
 | `isCacheValid(idx)`          | `true`      | return `false` to force re-fetch at current zoom (wiggle uses this for zoom-level changes)                                                                                                                                                                                                   |
 | `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch                                                                                                                                                                                                                                    |
 | `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                                                                                                                                                                                                                  |
-| `onRegionTooLarge()`         | no-op       | clear transient hover/tooltip state when `regionTooLarge` becomes true (the banner replaces the content); fired by the `ClearHoverOnRegionTooLarge` autorun                                                                                                                                   |
+| `onRegionTooLarge()`         | no-op       | clear transient hover/tooltip state when `regionTooLarge` becomes true (the banner replaces the content); fired by the `ClearHoverOnRegionTooLarge` autorun                                                                                                                                  |
 
-The region-too-large gate itself lives in `RegionTooLargeMixin`: a derived byte estimate (the old imperative `setRegionTooLarge` flag path was removed). A byte-gated display opts into the derived, self-releasing banner by overriding `derivedRegionTooLargeEnabled` → true (+ `configuredFetchSizeLimit`, and `densityTooLargeForDerivedGate` for a second axis). See that mixin's header comment.
+The region-too-large gate itself lives in `RegionTooLargeMixin`: a derived byte
+estimate (the old imperative `setRegionTooLarge` flag path was removed). A
+byte-gated display opts into the derived, self-releasing banner by overriding
+`derivedRegionTooLargeEnabled` → true (+ `configuredFetchSizeLimit`, and
+`densityTooLargeForDerivedGate` for a second axis). See that mixin's header
+comment.
 
 ### `loadedRegions`
 
@@ -88,10 +93,10 @@ loadedRegions, leaving error intact. Used by alignments after sort/group change.
 
 ### `untracked` semantics
 
-| Call                                                   | Type            | Reason                                                                                                                                       |
-| ------------------------------------------------------ | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `untracked(() => self.isLoading)`                      | perf guard      | prevents extra fire on fetch start; `fetchGeneration` already covers post-fetch re-evaluation                                                |
-| `untracked(() => self.loadedRegions.get(...))`         | perf guard      | prevents autorun re-fire when regions are populated; `fetchGeneration` bump covers it                                                        |
+| Call                                                  | Type            | Reason                                                                                                                                       |
+| ----------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `untracked(() => self.isLoading)`                     | perf guard      | prevents extra fire on fetch start; `fetchGeneration` already covers post-fetch re-evaluation                                                |
+| `untracked(() => self.loadedRegions.get(...))`        | perf guard      | prevents autorun re-fire when regions are populated; `fetchGeneration` bump covers it                                                        |
 | `untracked(() => self.error \|\| self.fetchCanceled)` | **correctness** | if either were tracked, setting them would immediately re-fire `ClearBlockingStateOnViewportChange` and wipe them before any viewport change |
 
 ### `isBlockCovered` / `viewportWithinLoadedData`

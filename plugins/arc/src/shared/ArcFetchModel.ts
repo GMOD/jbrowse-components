@@ -20,55 +20,57 @@ import type { Feature } from '@jbrowse/core/util'
  * #category display
  */
 export function ArcFetchModel() {
-  return types
-    .compose('ArcFetchModel', GlobalFetchMixin(), types.model({}))
-    .volatile(() => ({
-      /**
-       * #volatile
-       */
-      features: undefined as Feature[] | undefined,
-      /**
-       * #volatile
-       * signature of the static-block region set `features` were fetched for;
-       * the `dataLoaded`/`svgReady` freshness axis (see regionSignature.ts)
-       */
-      loadedRegionSignature: undefined as string | undefined,
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       */
-      setFeatures(f: Feature[], signature: string) {
-        self.features = f
-        self.loadedRegionSignature = signature
-      },
-    }))
-    // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases on
-    // zoom-in, no flicker on pan). fetchArcFeatures captures the estimate;
-    // afterAttach clears it on chromosome nav. Byte-only — no density axis. Each
-    // concrete arc model overrides `configuredFetchSizeLimit` (the mixin owns no
-    // `configuration`).
-    .views(() => ({
-      /**
-       * #getter
-       */
-      get derivedRegionTooLargeEnabled() {
-        return true
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * fresh only when `features` were fetched for the current static-block set;
-       * overrides GlobalFetchMixin's default so `svgReady` can resolve on load
-       */
-      get dataLoaded() {
-        return isDataCurrent(
-          self.loadedRegionSignature,
-          currentRegionSignature(self),
-        )
-      },
-    }))
+  return (
+    types
+      .compose('ArcFetchModel', GlobalFetchMixin(), types.model({}))
+      .volatile(() => ({
+        /**
+         * #volatile
+         */
+        features: undefined as Feature[] | undefined,
+        /**
+         * #volatile
+         * signature of the static-block region set `features` were fetched for;
+         * the `dataLoaded`/`svgReady` freshness axis (see regionSignature.ts)
+         */
+        loadedRegionSignature: undefined as string | undefined,
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         */
+        setFeatures(f: Feature[], signature: string) {
+          self.features = f
+          self.loadedRegionSignature = signature
+        },
+      }))
+      // Opt into RegionTooLargeMixin's shared derived byte gate (self-releases on
+      // zoom-in, no flicker on pan). fetchArcFeatures captures the estimate;
+      // afterAttach clears it on chromosome nav. Byte-only — no density axis. Each
+      // concrete arc model overrides `configuredFetchSizeLimit` (the mixin owns no
+      // `configuration`).
+      .views(() => ({
+        /**
+         * #getter
+         */
+        get derivedRegionTooLargeEnabled() {
+          return true
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * fresh only when `features` were fetched for the current static-block set;
+         * overrides GlobalFetchMixin's default so `svgReady` can resolve on load
+         */
+        get dataLoaded() {
+          return isDataCurrent(
+            self.loadedRegionSignature,
+            currentRegionSignature(self),
+          )
+        },
+      }))
+  )
 }
 
 export type ArcFetchModelType = ReturnType<typeof ArcFetchModel>

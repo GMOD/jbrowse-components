@@ -72,9 +72,21 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     const adapter = new MultiWiggleAdapter(
       configSchema.create({
         subadapters: [
-          { type: 'BigWigAdapter', source: 'dup', bigWigLocation: { uri: 'a' } },
-          { type: 'BigWigAdapter', source: 'dup', bigWigLocation: { uri: 'b' } },
-          { type: 'BigWigAdapter', source: 'dup', bigWigLocation: { uri: 'c' } },
+          {
+            type: 'BigWigAdapter',
+            source: 'dup',
+            bigWigLocation: { uri: 'a' },
+          },
+          {
+            type: 'BigWigAdapter',
+            source: 'dup',
+            bigWigLocation: { uri: 'b' },
+          },
+          {
+            type: 'BigWigAdapter',
+            source: 'dup',
+            bigWigLocation: { uri: 'c' },
+          },
         ],
       }),
       mockGetSubAdapter,

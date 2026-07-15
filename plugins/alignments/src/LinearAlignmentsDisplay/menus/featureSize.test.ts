@@ -20,6 +20,8 @@ test('featureSpacingForHeight reproduces the fixed-mode preset pitches', () => {
 
 test('NORMAL_PITCH is the Normal body plus its derived gap (the fit cap)', () => {
   const { featureHeight } = COMPACTNESS_PRESETS.normal
-  expect(NORMAL_PITCH).toBe(featureHeight + featureSpacingForHeight(featureHeight))
+  expect(NORMAL_PITCH).toBe(
+    featureHeight + featureSpacingForHeight(featureHeight),
+  )
   expect(NORMAL_PITCH).toBe(8)
 })

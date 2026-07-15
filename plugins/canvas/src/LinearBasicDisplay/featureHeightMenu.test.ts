@@ -53,7 +53,9 @@ describe('Feature height submenu', () => {
     ])
     // one "Track sizing" subheader separates the two radio groups
     expect(
-      subMenu.filter(i => i.type === 'subHeader' && hasLabel(i, 'Track sizing')),
+      subMenu.filter(
+        i => i.type === 'subHeader' && hasLabel(i, 'Track sizing'),
+      ),
     ).toHaveLength(1)
     // each size preset carries a "make default" pin
     expect(radio(subMenu, 'Normal').endAdornment).toBeDefined()

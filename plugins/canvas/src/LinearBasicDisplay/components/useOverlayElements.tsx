@@ -227,7 +227,10 @@ export function useFloatingLabels(
     const featureId = el?.dataset.featureId
     const entry = featureId ? featureItemMap.get(featureId) : undefined
     return el && entry?.kind === 'feature'
-      ? { item: entry.item, displayedRegionIndex: Number(el.dataset.regionIndex) }
+      ? {
+          item: entry.item,
+          displayedRegionIndex: Number(el.dataset.regionIndex),
+        }
       : undefined
   }
   return (

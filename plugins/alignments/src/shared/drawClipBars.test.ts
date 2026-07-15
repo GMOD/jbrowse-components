@@ -91,7 +91,14 @@ function drawOne(
   bpLength: number = ZOOMED_OUT_BP_LENGTH,
 ) {
   const { ctx, fills } = recordingCtx()
-  drawSoftclips(ctx, oneSoftclip(frequency), block, bpLength, BLOCK_WIDTH, state)
+  drawSoftclips(
+    ctx,
+    oneSoftclip(frequency),
+    block,
+    bpLength,
+    BLOCK_WIDTH,
+    state,
+  )
   return fills[0]
 }
 
