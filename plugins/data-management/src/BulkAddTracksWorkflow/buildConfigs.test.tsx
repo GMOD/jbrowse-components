@@ -4,12 +4,11 @@ import { makeModel, uri } from './testUtils.tsx'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-function build(locations: FileLocation[], adminMode = true) {
+function build(locations: FileLocation[]) {
   return buildTrackConfigs({
     pairs: pairLocations(locations),
     model: makeModel(),
     assembly: 'volvox',
-    adminMode,
     timestamp: 123,
   })
 }
@@ -33,9 +32,4 @@ test('detects bgzipped vcf variant track', () => {
 test('flags an unrecognized extension as unknown', () => {
   const rows = build([uri('/mystery.qqq')])
   expect(rows[0]!.status).toBe('unknown')
-})
-
-test('session track ids get -sessionTrack suffix when not admin', () => {
-  const rows = build([uri('/a.bam')], false)
-  expect(rows[0]!.conf.trackId.endsWith('-sessionTrack')).toBe(true)
 })

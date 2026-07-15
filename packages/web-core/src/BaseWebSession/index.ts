@@ -201,9 +201,10 @@ export function BaseWebSessionModel({
     .actions(self => ({
       /**
        * #action
-       * opens the config editor for a track. Available for any track: edits to
-       * a non-session (admin-owned) track apply in-memory for the current
-       * session even when the user lacks rights to persist them.
+       * opens the config editor for a track. Available for any track: a
+       * non-admin's edits to an admin-owned track persist as a delta
+       * (trackConfigDeltas) that rides along in the shared/saved session, rather
+       * than mutating the admin-owned config itself.
        */
       editTrackConfiguration(
         configuration: AnyConfigurationModel | { trackId: string },
@@ -226,11 +227,11 @@ export function BaseWebSessionModel({
           view,
           canEdit: self.canEditTrack(config.trackId),
           isSessionOverride: self.isTrackOverride(config.trackId),
-          // non-admin copies become session tracks (routed to a special
-          // category, so the original category is also cleared)
+          // a non-admin's copy is routed to sessionTracks (see addTrackConf) and
+          // the selector groups it under "Session tracks" from that membership;
+          // clear the original category so it isn't also nested there
           makeCopy: () =>
             copyTrackSnapshot(config, {
-              sessionTrack: !self.adminMode,
               clearCategory: !self.adminMode,
             }),
         })

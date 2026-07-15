@@ -90,7 +90,7 @@ export function addMultiWiggleTrack({
   assemblyNames: string[]
   adapter: Record<string, unknown>
 }) {
-  const trackId = makeTrackId({ name, adminMode: !!session.adminMode })
+  const trackId = makeTrackId({ name })
   session.addTrackConf({
     trackId,
     type: 'MultiQuantitativeTrack',

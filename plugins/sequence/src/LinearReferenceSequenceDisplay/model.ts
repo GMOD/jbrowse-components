@@ -298,10 +298,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         const track = getContainingTrack(self)
         if (isSessionWithAddTracks(session)) {
           const name = 'GC content'
-          const trackId = makeTrackId({
-            name,
-            adminMode: !!session.adminMode,
-          })
+          const trackId = makeTrackId({ name })
           session.addTrackConf({
             trackId,
             type: 'GCContentTrack',

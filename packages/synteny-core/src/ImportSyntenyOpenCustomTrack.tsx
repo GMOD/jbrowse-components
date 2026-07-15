@@ -77,7 +77,7 @@ const ImportSyntenyOpenCustomTrack = observer(
                 assembly2={assembly2}
                 onAdapterChange={result => {
                   if (result) {
-                    const trackId = `${result.name}-${Date.now()}-sessionTrack`
+                    const trackId = `${result.name}-${Date.now()}`
                     onSetTrack({
                       type: 'userOpened',
                       value: {

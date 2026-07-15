@@ -28,7 +28,6 @@ export function JBrowseConfigF({
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
-  adminMode?: boolean
   extraConfigSlots?: ConfigurationSchemaDefinition
 }) {
   return types.model('JBrowseConfig', {

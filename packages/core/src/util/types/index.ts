@@ -214,7 +214,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   captureConnectionTrack?: (trackId: string) => void
   pruneConnectionTrackConfig?: (trackId: string) => void
   hydrateConnection?: (connectionId: string) => void
-  adminMode?: boolean
+  adminMode: boolean
   showWidget?: (widget: unknown) => void
   addWidget?: (
     typeName: string,
@@ -510,7 +510,7 @@ export interface AbstractRootModel {
   session?: AbstractSessionModel
   setSession?(arg: { name: string; [key: string]: unknown }): void
   setDefaultSession?(): void
-  adminMode?: boolean
+  adminMode: boolean
   error?: unknown
 }
 

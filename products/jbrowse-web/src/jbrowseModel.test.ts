@@ -16,7 +16,6 @@ describe('JBrowse model', () => {
       .configure()
 
     JBrowseModel = jbrowseModelFactory({
-      adminMode: false,
       pluginManager,
       assemblyConfigSchema: assemblyConfigSchemasFactory(pluginManager),
     })

@@ -12,18 +12,16 @@ export function makeGCContentTrackConf({
   gcMode,
   windowSize,
   windowDelta,
-  adminMode,
 }: {
   assemblyNames: string[]
   sequenceAdapter: unknown
   gcMode: 'content' | 'skew'
   windowSize?: number
   windowDelta?: number
-  adminMode: boolean
 }) {
   const name = gcMode === 'skew' ? 'GC skew' : 'GC content'
   return {
-    trackId: makeTrackId({ name, adminMode }),
+    trackId: makeTrackId({ name }),
     type: 'GCContentTrack',
     name,
     assemblyNames,

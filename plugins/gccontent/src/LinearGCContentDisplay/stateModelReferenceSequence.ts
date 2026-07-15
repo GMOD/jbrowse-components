@@ -73,7 +73,6 @@ export default function stateModelF(
             gcMode: self.gcMode,
             windowSize: self.windowSize,
             windowDelta: self.windowDelta,
-            adminMode: !!session.adminMode,
           })
           session.addTrackConf(conf)
           ;(getContainingView(self) as LinearGenomeViewModel).showTrack(

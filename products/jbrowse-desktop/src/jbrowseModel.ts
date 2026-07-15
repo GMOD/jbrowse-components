@@ -10,12 +10,10 @@ import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
 export default function JBrowseDesktop(
   pluginManager: PluginManager,
   assemblyConfigSchema: BaseAssemblyConfigSchema,
-  adminMode = true,
 ) {
   return JBrowseModelF({
     pluginManager,
     assemblyConfigSchema,
-    adminMode,
     // desktop-only: records the hosted config a session was launched from (a
     // "show available genomes" hub entry) so "export to web" can reuse it as
     // the session base

@@ -39,7 +39,6 @@ export function JBrowseModelF({
   assemblyConfigSchema,
   extraConfigSlots,
 }: {
-  adminMode?: boolean
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
   extraConfigSlots?: ConfigurationSchemaDefinition

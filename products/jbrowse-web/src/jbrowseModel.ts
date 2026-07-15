@@ -17,17 +17,14 @@ window.resolveIdentifier = resolveIdentifier
 export default function JBrowseWeb({
   pluginManager,
   assemblyConfigSchema,
-  adminMode,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
-  adminMode: boolean
 }) {
   return types.snapshotProcessor(
     JBrowseModelF({
       pluginManager,
       assemblyConfigSchema,
-      adminMode,
     }),
     {
       // strip the synthetic baseUri keys added by addRelativeUris when

@@ -5,12 +5,11 @@ import type { FileLocation } from '@jbrowse/core/util/types'
 
 // summarizeBulkInput expects an already-deduped location list (the workflow
 // dedupes via useBulkLocations before calling it).
-function summarize(locations: FileLocation[], adminMode = true) {
+function summarize(locations: FileLocation[]) {
   return summarizeBulkInput({
     locations,
     model: makeModel(),
     assembly: 'volvox',
-    adminMode,
     timestamp: 123,
   })
 }

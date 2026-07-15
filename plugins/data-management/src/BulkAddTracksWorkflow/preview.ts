@@ -26,13 +26,11 @@ export function summarizeBulkInput({
   locations,
   model,
   assembly,
-  adminMode,
   timestamp,
 }: {
   locations: FileLocation[]
   model: IAnyStateTreeNode
   assembly: string
-  adminMode: boolean
   timestamp: number
 }): BulkPreview {
   const pairs = pairLocations(locations)
@@ -40,7 +38,6 @@ export function summarizeBulkInput({
     pairs,
     model,
     assembly,
-    adminMode,
     timestamp,
   })
   const okRows = rows.filter(row => row.status === 'ok')

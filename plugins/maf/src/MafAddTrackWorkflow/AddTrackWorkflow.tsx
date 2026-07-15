@@ -59,10 +59,7 @@ export default function MultiMAFWidget({ model }: { model: AddTrackModel }) {
     try {
       const session = getSession(model)
       const sampleNames = parseSampleNames(samples)
-      const trackId = makeTrackId({
-        name: trackName,
-        adminMode: !!session.adminMode,
-      })
+      const trackId = makeTrackId({ name: trackName })
       if (isSessionWithAddTracks(session)) {
         session.addTrackConf({
           trackId,

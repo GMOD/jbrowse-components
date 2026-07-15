@@ -104,7 +104,7 @@ test('localstorage preference - collapse categorized tracks', async () => {
     'collapsedCategories-/-volMyt1-LinearGenomeView',
     '[["Tracks-Foo Category",true]]',
   )
-  const session = addTestData(createTestSession())
+  const session = addCategorizedTestData(createTestSession({ adminMode: true }))
 
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
@@ -116,13 +116,8 @@ test('localstorage preference - collapse categorized tracks', async () => {
       },
     ],
   })
-  firstView.showTrack(session.sessionTracks[0].trackId)
-  firstView.showTrack(session.sessionTracks[1].trackId)
-  firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
-  firstView.tracks[1].configuration.setSlot('category', [
-    'Foo Category',
-    'Bar Category',
-  ])
+  firstView.showTrack('fooC')
+  firstView.showTrack('barC')
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId: f } = render(
@@ -135,8 +130,9 @@ test('localstorage preference - collapse categorized tracks', async () => {
 })
 
 test('configuration preference - collapse categorized tracks', async () => {
-  const session = addTestData(
+  const session = addCategorizedTestData(
     createTestSession({
+      adminMode: true,
       jbrowseConfig: {
         configuration: {
           hierarchical: {
@@ -159,13 +155,8 @@ test('configuration preference - collapse categorized tracks', async () => {
       },
     ],
   })
-  firstView.showTrack(session.sessionTracks[0].trackId)
-  firstView.showTrack(session.sessionTracks[1].trackId)
-  firstView.tracks[0].configuration.setSlot('category', ['Foo Category'])
-  firstView.tracks[1].configuration.setSlot('category', [
-    'Foo Category',
-    'Bar Category',
-  ])
+  firstView.showTrack('fooC')
+  firstView.showTrack('barC')
   const model = firstView.activateTrackSelector()
 
   const { findAllByTestId: f } = render(
@@ -175,6 +166,31 @@ test('configuration preference - collapse categorized tracks', async () => {
   )
 
   expect((await f(/htsTrackLabel/)).map(e => e.textContent)).toMatchSnapshot()
+})
+
+// a non-admin's added tracks land in session.sessionTracks and the selector
+// groups them under "Session tracks" from that membership (not a trackId
+// suffix), so a track's own category nests beneath it.
+test('session tracks are grouped under the Session tracks category', () => {
+  const session = addTestData(createTestSession())
+  const firstView = session.addView('LinearGenomeView', {
+    displayedRegions: [
+      { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
+    ],
+  })
+  const model =
+    firstView.activateTrackSelector() as HierarchicalTrackSelectorModel
+
+  const tracksGroup = model.hierarchy.children[0]!
+  const sessionCategory = tracksGroup.children.find(
+    c => c.name === ' Session tracks',
+  )!
+  expect(sessionCategory).toBeDefined()
+  expect(
+    sessionCategory.children
+      .map(c => c.name)
+      .sort((a, b) => a.localeCompare(b)),
+  ).toEqual(['barC', 'fooC'])
 })
 
 test('unsorted categories', async () => {
@@ -1429,7 +1445,9 @@ test('faceted model fields include metadata columns with prefix', () => {
 // -------------------------- category-based folder tests -
 
 test('category-based folder hides children when toggled', async () => {
-  const session = addTestDataWithDeepCategories(createTestSession())
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
@@ -1458,7 +1476,9 @@ test('category-based folder hides children when toggled', async () => {
 })
 
 test('category-based folder hierarchy model groups correctly', () => {
-  const session = addTestDataWithDeepCategories(createTestSession())
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
@@ -1487,7 +1507,9 @@ test('category-based folder hierarchy model groups correctly', () => {
 })
 
 test('toggleFolderCategory collapses children in flattenedItems', () => {
-  const session = addTestDataWithDeepCategories(createTestSession())
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       {
@@ -1534,7 +1556,9 @@ test('toggleFolderCategory collapses children in flattenedItems', () => {
 // the reverse. Regression for findSubCategories sweeping in top-level
 // categories that happen to contain tracks.
 test('collapseSubCategories vs collapseTopLevelCategories scope', () => {
-  const session = addTestDataWithDeepCategories(createTestSession())
+  const session = addTestDataWithDeepCategories(
+    createTestSession({ adminMode: true }),
+  )
   const firstView = session.addView('LinearGenomeView', {
     displayedRegions: [
       { assemblyName: 'volMyt1', refName: 'ctgA', start: 0, end: 1000 },
@@ -1632,6 +1656,42 @@ function addTestData(session: ReturnType<typeof createTestSession>) {
     name: 'barC',
     assemblyNames: ['volMyt1'],
     type: 'FeatureTrack',
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  return session
+}
+
+// fooC/barC as admin config tracks with categories set in-config, for the
+// category-collapse tests: admin tracks group by their own category, not under
+// the non-admin "Session tracks" bucket.
+function addCategorizedTestData(session: ReturnType<typeof createTestSession>) {
+  session.addAssemblyConf({
+    name: 'volMyt1',
+    sequence: {
+      trackId: 'sequenceConfigId',
+      type: 'ReferenceSequenceTrack',
+      adapter: {
+        type: 'FromConfigSequenceAdapter',
+        features: [
+          { refName: 'ctgA', uniqueId: 'firstId', start: 0, end: 10, seq: 'c' },
+        ],
+      },
+    },
+  })
+  session.addTrackConf({
+    trackId: 'fooC',
+    name: 'fooC',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Foo Category'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  })
+  session.addTrackConf({
+    trackId: 'barC',
+    name: 'barC',
+    assemblyNames: ['volMyt1'],
+    type: 'FeatureTrack',
+    category: ['Foo Category', 'Bar Category'],
     adapter: { type: 'FromConfigAdapter', features: [] },
   })
   return session

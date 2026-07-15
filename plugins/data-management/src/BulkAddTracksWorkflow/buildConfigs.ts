@@ -42,13 +42,11 @@ export function buildTrackConfigs({
   pairs,
   model,
   assembly,
-  adminMode,
   timestamp,
 }: {
   pairs: LocationPair[]
   model: IAnyStateTreeNode
   assembly: string
-  adminMode: boolean
   timestamp: number
 }): TrackConfRow[] {
   return pairs.map((pair, idx) => {
@@ -56,7 +54,7 @@ export function buildTrackConfigs({
     const adapterType = adapter.type
     const trackType = guessTrackType(adapterType, model, pair.file)
     const name = getFileName(pair.file)
-    const trackId = makeTrackId({ name, timestamp, adminMode, index: idx })
+    const trackId = makeTrackId({ name, timestamp, index: idx })
     return {
       id: locationId(pair.file),
       conf: {

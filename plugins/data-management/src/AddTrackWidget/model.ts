@@ -260,7 +260,6 @@ export default function f(pluginManager: PluginManager) {
                 trackId: makeTrackId({
                   name: self.trackName,
                   timestamp,
-                  adminMode: !!session.adminMode,
                 }),
                 type: self.trackType,
                 name: self.trackName,

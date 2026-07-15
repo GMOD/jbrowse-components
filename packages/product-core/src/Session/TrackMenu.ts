@@ -30,24 +30,19 @@ type TrackCopySnapshot = {
 
 /**
  * Clone a track config for "Copy track": snapshots the config, appends a unique
- * suffix to trackId (so it doesn't collide with the original), tags " (copy)"
- * on the name, and regenerates each displayId to the canonical
+ * timestamp suffix to trackId (so it doesn't collide with the original), tags
+ * " (copy)" on the name, and regenerates each displayId to the canonical
  * `${trackId}-${type}` form baseTrackConfig auto-injects — keeping them unique
  * (displayId is a types.identifier, so a collision would crash MST).
  */
 export function copyTrackSnapshot(
   config: BaseTrackConfig,
-  opts: { sessionTrack?: boolean; clearCategory: boolean },
+  opts: { clearCategory: boolean },
 ): TrackCopySnapshot {
   const snap = structuredClone(
     isStateTreeNode(config) ? getSnapshot(config) : config,
   ) as TrackCopySnapshot
   snap.trackId += `-${Date.now()}`
-  // the -sessionTrack suffix is metadata for the track selector to store the
-  // copy in a special category
-  if (opts.sessionTrack) {
-    snap.trackId += '-sessionTrack'
-  }
   snap.name += ' (copy)'
   if (opts.clearCategory) {
     snap.category = undefined

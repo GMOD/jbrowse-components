@@ -36,8 +36,6 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const adminMode = !!session.adminMode
-
   const input = useBulkLocations()
   const { locations } = input
   // Reuse the widget model's assembly derivation/action (shared with the
@@ -48,7 +46,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const [timestamp] = useState(() => Date.now())
 
   const { pairs, rows, okRows, skippedCount, orphanIndexCount, warnings } =
-    summarizeBulkInput({ locations, model, assembly, adminMode, timestamp })
+    summarizeBulkInput({ locations, model, assembly, timestamp })
 
   function removeRow(rowId: string) {
     const pair = pairs.find(p => locationId(p.file) === rowId)

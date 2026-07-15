@@ -28,7 +28,6 @@ export default function GCContentExtraTrackMenuItemsF(
                 assemblyNames: getConfAssemblyNames(config),
                 sequenceAdapter: readConfObject(config, 'adapter'),
                 gcMode: 'content',
-                adminMode: !!session.adminMode,
               })
               session.addTrackConf(conf)
               view?.showTrack(conf.trackId)

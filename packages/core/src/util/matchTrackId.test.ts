@@ -5,11 +5,9 @@ test('exact string match', () => {
   expect(matchTrackId('volvox.inv.vcf', ['other'])).toBe(false)
 })
 
-test('regex matches session copies with -sessionTrack suffix', () => {
+test('regex matches session copies with a timestamp suffix', () => {
   expect(
-    matchTrackId('volvox.inv.vcf-1700000000000-sessionTrack', [
-      /^volvox\.inv\.vcf/,
-    ]),
+    matchTrackId('volvox.inv.vcf-1700000000000', [/^volvox\.inv\.vcf/]),
   ).toBe(true)
 })
 

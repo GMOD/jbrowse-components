@@ -58,7 +58,7 @@ test('adding an invalid sessionTrack config surfaces a snackbar, not a crash', a
     }
     const added = session.addTrackConf({
       type: 'FeatureTrack',
-      trackId: 'broken_copy-sessionTrack',
+      trackId: 'broken_copy',
       name: 'Broken copy',
       assemblyNames: ['volvox'],
       adapter: {

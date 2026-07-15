@@ -35,7 +35,7 @@ const ShoppingCart = observer(function ShoppingCart({
   const { pluginManager } = getEnv(model)
   const { adminMode, sessionTracks } = session
   const s = new Set<string>(sessionTracks?.map(t => t.trackId))
-  const canEdit = (t: string) => adminMode === true || s.has(t)
+  const canEdit = (t: string) => adminMode || s.has(t)
   const items = pluginManager.evaluateExtensionPoint(
     /** #extensionPoint TrackSelector-multiTrackMenuItems | sync | Add items to the multi-track (shopping cart) menu */
     'TrackSelector-multiTrackMenuItems',
