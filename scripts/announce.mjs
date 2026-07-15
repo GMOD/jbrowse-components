@@ -216,14 +216,15 @@ async function postMastodon() {
 
 // ---------------------------------------------------------------------------
 // Newsletter — invoke the send Lambda via the AWS CLI (matches the README).
-// The Lambda honors dryRun itself (returns subscriber count, sends nothing).
+// Only called for a real send; --dry-run short-circuits before we reach the
+// network, same as the Bluesky/Mastodon paths below.
 // ---------------------------------------------------------------------------
 function sendNewsletter() {
   const fn = process.env.NEWSLETTER_LAMBDA
   // The newsletter stack is deployed in us-east-1; pin it so a local run whose
   // default region differs still finds the function.
   const region = process.env.AWS_REGION ?? 'us-east-1'
-  const payload = { subject, htmlBody, textBody, dryRun }
+  const payload = { subject, htmlBody, textBody }
   const payloadFile = path.join(tmpdir(), `announce-payload-${tag}.json`)
   const outFile = path.join(tmpdir(), `announce-response-${tag}.json`)
   writeFileSync(payloadFile, JSON.stringify(payload))
@@ -275,7 +276,11 @@ if (process.env.MASTODON_ACCESS_TOKEN) {
 }
 
 if (process.env.NEWSLETTER_LAMBDA) {
-  sendNewsletter()
+  if (dryRun) {
+    console.log('[dry-run] would invoke newsletter Lambda')
+  } else {
+    sendNewsletter()
+  }
 } else {
   console.log('  – Newsletter skipped (no NEWSLETTER_LAMBDA)')
 }
