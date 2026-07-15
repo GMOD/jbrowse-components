@@ -1,5 +1,5 @@
 import { getContainingView } from '@jbrowse/core/util'
-import { TrackOverlayPortal } from '@jbrowse/plugin-linear-genome-view'
+import { FloatingSvgOverlay } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import OverlayColorLegend from '../../shared/OverlayColorLegend.tsx'
@@ -8,12 +8,10 @@ import { legendRightEdgePx } from '../../shared/wiggleComponentUtils.ts'
 import type { MultiWiggleDisplayModel } from './multiWiggleDisplayTypes.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// The overlay-mode color legend. The display's own render tree is sealed in a
-// `contain:strict` sandbox that the inter-region separator/elided masks paint
-// over (they'd bury the legend at whole-genome scale), so TrackOverlayPortal
-// lifts it above those masks. fallbackInline={false}: outside a TrackContainer
-// it renders nothing, because the SVG-export path (renderSvg) draws its own
-// inline legend where there are no masks to escape.
+// The overlay-mode color legend, lifted above the inter-region masks by
+// FloatingSvgOverlay (the display's inline tree is painted over by them at
+// whole-genome scale). The inner <g> re-enables pointer events so hovering the
+// swatches doesn't fall through to wiggle tooltips.
 const MultiWiggleLegendOverlay = observer(function MultiWiggleLegendOverlay({
   model,
 }: {
@@ -23,34 +21,19 @@ const MultiWiggleLegendOverlay = observer(function MultiWiggleLegendOverlay({
   const totalWidth = view.trackWidthPx
   const legendWidth = legendRightEdgePx(view.visibleRegions, totalWidth)
   return model.isOverlay && model.sources.length > 1 && model.showLegend ? (
-    <TrackOverlayPortal fallbackInline={false}>
-      <svg
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: totalWidth,
-          height: model.height,
-          pointerEvents: 'none',
-          overflow: 'hidden',
-        }}
-      >
-        {/* svg spans the whole track (pointer-events:none so it doesn't eat
-            canvas events); re-enable events only on the legend graphics so
-            hovering the swatches doesn't fall through to wiggle tooltips */}
-        <g style={{ pointerEvents: 'auto' }}>
-          <OverlayColorLegend
-            sources={model.sources}
-            fallbackColor={model.posColor}
-            canvasWidth={legendWidth}
-            maxHeight={model.height}
-            onDismiss={() => {
-              model.setShowLegend(false)
-            }}
-          />
-        </g>
-      </svg>
-    </TrackOverlayPortal>
+    <FloatingSvgOverlay width={totalWidth} height={model.height}>
+      <g style={{ pointerEvents: 'auto' }}>
+        <OverlayColorLegend
+          sources={model.sources}
+          fallbackColor={model.posColor}
+          canvasWidth={legendWidth}
+          maxHeight={model.height}
+          onDismiss={() => {
+            model.setShowLegend(false)
+          }}
+        />
+      </g>
+    </FloatingSvgOverlay>
   ) : null
 })
 

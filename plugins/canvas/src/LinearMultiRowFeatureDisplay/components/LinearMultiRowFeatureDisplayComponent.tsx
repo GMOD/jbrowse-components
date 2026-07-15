@@ -2,7 +2,10 @@ import type React from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import {
+  DisplayChrome,
+  FloatingSvgOverlay,
+} from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
@@ -104,19 +107,22 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
             labelOffset={sidebarOffset}
             availableHeight={height}
           />
-          {/* painted after the labels so the legend stacks on top */}
-          {showLegend && colorLegend.length ? (
-            <MultiRowColorLegend
-              entries={colorLegend}
-              canvasWidth={view.width}
-              maxHeight={height}
-              hiddenLabels={hiddenCategorySet}
-              onDismiss={() => {
-                model.setShowLegend(false)
-              }}
-            />
-          ) : null}
         </svg>
+      ) : null}
+      {/* portaled above the inter-region masks (see FloatingSvgOverlay) so the
+          legend isn't buried at multi-region scale */}
+      {showLegend && colorLegend.length ? (
+        <FloatingSvgOverlay width={view.width} height={height}>
+          <MultiRowColorLegend
+            entries={colorLegend}
+            canvasWidth={view.width}
+            maxHeight={height}
+            hiddenLabels={hiddenCategorySet}
+            onDismiss={() => {
+              model.setShowLegend(false)
+            }}
+          />
+        </FloatingSvgOverlay>
       ) : null}
       <TreeSidebar model={model} />
       <MultiRowTooltip model={model} />

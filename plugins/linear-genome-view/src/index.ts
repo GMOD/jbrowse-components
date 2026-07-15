@@ -117,6 +117,7 @@ export {
   raiseLimitPast,
   resolveByteLimit,
   scaleByteEstimate,
+  scaledForceLoadByteLimit,
   viewportMatchesLastDrawn,
 } from './BaseLinearDisplay/index.ts'
 export type {
@@ -181,6 +182,7 @@ export { default as ConnectedHoverHighlight } from './LinearGenomeView/component
 export { default as HoverPositionHighlight } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export { TrackOverlayContext } from './LinearGenomeView/TrackOverlayContext.ts'
 export { TrackOverlayPortal } from './LinearGenomeView/TrackOverlayPortal.tsx'
+export { FloatingSvgOverlay } from './LinearGenomeView/FloatingSvgOverlay.tsx'
 export type { HoverHighlightPosition } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
 export {
   SVGErrorBox,
