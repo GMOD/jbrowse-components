@@ -238,6 +238,10 @@ export default function stateModelFactory(
         return getConf(self, 'showRowSeparators')
       },
 
+      get showLegend() {
+        return getConf(self, 'showLegend')
+      },
+
       /**
        * #getter
        * Offset the track label above the visualization so the stacked
@@ -307,6 +311,10 @@ export default function stateModelFactory(
 
         setShowRowSeparators(arg: boolean) {
           self.configuration.setSlot('showRowSeparators', arg)
+        },
+
+        setShowLegend(arg: boolean) {
+          self.configuration.setSlot('showLegend', arg)
         },
 
         setRunClustering(arg?: boolean) {
@@ -397,6 +405,19 @@ export default function stateModelFactory(
                   },
                 },
               ]),
+          // the color key only renders as an overlay of >1 source
+          ...(self.isOverlay && self.sources.length > 1
+            ? [
+                {
+                  label: 'Show legend',
+                  type: 'checkbox' as const,
+                  checked: self.showLegend,
+                  onClick: () => {
+                    self.setShowLegend(!self.showLegend)
+                  },
+                },
+              ]
+            : []),
           // density maps score to color, so score-axis cross hatches are
           // meaningless there
           ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),

@@ -70,18 +70,22 @@ export default function OverlayColorLegend({
   fallbackColor,
   canvasWidth,
   maxHeight,
+  onDismiss,
 }: {
   sources: LegendSource[]
   fallbackColor: string
   canvasWidth: number
   // the display height — caps the legend so it never overflows the track
   maxHeight: number
+  // on-screen only: adds the "×" dismiss button (omitted on the SVG export)
+  onDismiss?: () => void
 }) {
   const entries = buildLegendEntries(sources)
   return (
     <SvgColorLegend
       canvasWidth={canvasWidth}
       maxHeight={maxHeight}
+      onDismiss={onDismiss}
       entries={entries.map(e => ({
         key: e.key,
         label: e.label,

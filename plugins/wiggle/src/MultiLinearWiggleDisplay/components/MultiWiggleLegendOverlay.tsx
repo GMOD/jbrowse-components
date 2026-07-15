@@ -22,7 +22,7 @@ const MultiWiggleLegendOverlay = observer(function MultiWiggleLegendOverlay({
   const view = getContainingView(model) as LinearGenomeViewModel
   const totalWidth = view.trackWidthPx
   const legendWidth = legendRightEdgePx(view.visibleRegions, totalWidth)
-  return model.isOverlay && model.sources.length > 1 ? (
+  return model.isOverlay && model.sources.length > 1 && model.showLegend ? (
     <TrackOverlayPortal fallbackInline={false}>
       <svg
         style={{
@@ -44,6 +44,9 @@ const MultiWiggleLegendOverlay = observer(function MultiWiggleLegendOverlay({
             fallbackColor={model.posColor}
             canvasWidth={legendWidth}
             maxHeight={model.height}
+            onDismiss={() => {
+              model.setShowLegend(false)
+            }}
           />
         </g>
       </svg>

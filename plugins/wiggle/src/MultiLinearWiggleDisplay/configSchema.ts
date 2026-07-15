@@ -170,6 +170,14 @@ export default ConfigurationSchema(
       defaultValue: false,
       description: 'Draw separator lines between subtrack rows',
     },
+    /**
+     * #slot
+     */
+    showLegend: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'Draw the source color key in overlay mode',
+    },
   },
   {
     explicitlyTyped: true,

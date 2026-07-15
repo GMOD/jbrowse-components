@@ -21,6 +21,8 @@ export interface MultiWiggleDisplayModel
   treeAreaWidth: number
   showTree: boolean
   showRowSeparators: boolean
+  showLegend: boolean
+  setShowLegend: (arg: boolean) => void
   subtreeFilter?: string[]
   hoveredTreeNode?: HoveredTreeNode
   treeCanvas?: HTMLCanvasElement | null
