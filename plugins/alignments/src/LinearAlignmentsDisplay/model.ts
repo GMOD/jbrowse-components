@@ -434,9 +434,12 @@ export default function stateModelFactory(
           return makeDisplayTypeDefaultControl(self, 'readConnections', 'cloud')
         },
         /** #getter */
-        // Resolved through the promotable-slot tiers (getConfResolved): a plain
-        // boolean slot, so a session default of `true` can only be customized back
-        // off in the "on" direction (see showSoftClipping above).
+        // Resolved through the promotable-slot tiers (getConfResolved). The last
+        // plain-boolean promotable slot: `defaultValue` (true) doubles as the
+        // inherit signal, so a track could not pin `true` back over a promoted
+        // `false`. Safe only because the pin below promotes `true` alone, so
+        // that case is unreachable — promoting `false` here would need the
+        // maybeBoolean sentinel form (see showSoftClipping/mismatchAlpha).
         get readConnectionsDown(): boolean {
           return getConfResolved(self, 'readConnectionsDown')
         },
@@ -842,20 +845,25 @@ export default function stateModelFactory(
         /**
          * #getter
          * Whether to draw the supporting-read count on each sashimi arc.
-         * Resolved through the promotable-slot tiers (getConfResolved): a track
-         * configured `true` pins labels on; otherwise it follows the
-         * session-wide default, falling back to off.
+         * Resolved through the promotable-slot tiers (getConfResolved): an
+         * explicit track value pins labels on or off; otherwise it follows the
+         * session-wide default, falling back to off. A `maybeBoolean` slot, so
+         * (like mismatchAlpha) a session default of "on" can be customized back
+         * off on a single track.
          */
         get showSashimiLabels(): boolean {
           return getConfResolved(self, 'showSashimiLabels')
         },
         /**
          * #getter
-         * "make this the default for all tracks" control (pin) for sashimi
-         * arc labels
+         * "make the current sashimi-label state the default for all tracks"
+         * control (pin): symmetric, so it promotes whichever value the track
+         * currently shows.
          */
         get showSashimiLabelsDisplayTypeDefault() {
-          return makeDisplayTypeDefaultControl(self, 'showSashimiLabels', true)
+          return makeCurrentValueDisplayTypeDefaultControl(self, [
+            'showSashimiLabels',
+          ])
         },
 
         /**

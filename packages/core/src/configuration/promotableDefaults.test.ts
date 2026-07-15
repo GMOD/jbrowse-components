@@ -20,7 +20,9 @@ pluginManager.configure()
 // The display shim the cascade operates on: the `type` + `configuration` it
 // reads, plus the received-session opt-out (`ignorePromotedDefaults`) that
 // BaseDisplay contributes to every real display.
-function testDisplayModel(configSchema: ReturnType<typeof ConfigurationSchema>) {
+function testDisplayModel(
+  configSchema: ReturnType<typeof ConfigurationSchema>,
+) {
   return types
     .model('TestDisplay', {
       type: types.literal('TestDisplay'),
@@ -736,6 +738,24 @@ describe('a display from a received session', () => {
 
     display.setIgnorePromotedDefaults(true)
     expect(getDisplayTypeDefaultChanges(display)).toEqual([])
+  })
+
+  // The opt-out neutralizes the session-wide TIER of the cascade for this
+  // display; it does not un-promote the value. The pin reports on the session,
+  // so it must keep reading the raw promoted default — otherwise every track in
+  // a received session shows an outline pin for a value that IS the user's
+  // default, and the toggle can only ever set, never clear it.
+  test('still reports the session default for the pin while opted out', () => {
+    const { session, display } = createDisplay(sentinelSchema)
+    session.setDisplayTypeDefault('TestDisplay', 'mode', 'compact')
+    const entries = [{ slot: 'mode', value: 'compact' }]
+    expect(isPromotableDefault(display, entries)).toBe(true)
+
+    display.setIgnorePromotedDefaults(true)
+    // the display no longer FOLLOWS the default...
+    expect(getConfResolved(display, 'mode')).toBe('normal')
+    // ...but 'compact' is still what's promoted session-wide
+    expect(isPromotableDefault(display, entries)).toBe(true)
   })
 
   test('follows the default once the user deliberately opts it back in', () => {

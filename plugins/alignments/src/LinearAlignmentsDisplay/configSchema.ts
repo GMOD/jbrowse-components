@@ -120,9 +120,15 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showSashimiLabels: {
-        type: 'boolean',
-        defaultValue: false,
+        type: 'maybeBoolean',
         description: 'Draw the supporting-read count on each sashimi arc',
+        // `undefined` is the inherit sentinel and `promotedBase` the value it
+        // resolves to, so a track can pin labels OFF over a promoted ON — a
+        // plain boolean would spend its `false` default on the inherit signal
+        // and silently re-inherit ON. Read through the resolved
+        // `showSashimiLabels` getter (getConfResolved), never raw.
+        defaultValue: undefined,
+        promotedBase: false,
         promotable: true,
       },
       /**

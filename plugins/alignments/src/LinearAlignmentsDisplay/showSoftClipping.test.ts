@@ -709,6 +709,72 @@ describe('alignments mismatchAlpha (fade by base quality)', () => {
   })
 })
 
+// showSashimiLabels draws the supporting-read count on each sashimi arc. A
+// promotable `maybeBoolean` slot (like mismatchAlpha), so an explicit off is a
+// real pin rather than the un-set sentinel and survives an on session default.
+describe('alignments showSashimiLabels (sashimi arc counts)', () => {
+  it('is off by default with no config and no session default', () => {
+    const { display } = createDisplay()
+    expect(display.showSashimiLabels).toBe(false)
+    expect(display.showSashimiLabelsDisplayTypeDefault.active).toBe(false)
+  })
+
+  it('follows a session-wide default of on when the track is not customized', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSashimiLabels',
+      true,
+    )
+    expect(display.showSashimiLabels).toBe(true)
+    expect(display.displayTypeDefaultChanges()).toEqual([
+      { path: ['showSashimiLabels'], from: false, to: true },
+    ])
+  })
+
+  it('a track can pin off over an on session default (#regression)', () => {
+    // When this was a plain `boolean` with defaultValue false, an explicit off
+    // was indistinguishable from the un-set default: stripDefault dropped it,
+    // the slot read as "inherit", and the promoted `true` came straight back —
+    // so the menu checkbox could not be unticked at all.
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSashimiLabels',
+      true,
+    )
+    expect(display.showSashimiLabels).toBe(true)
+
+    display.setShowSashimiLabels(false)
+    expect(display.showSashimiLabels).toBe(false)
+    // holding its own value, it is not merely following the default
+    expect(display.displayTypeDefaultChanges()).toEqual([])
+  })
+
+  it('the pin promotes the current value, including off', () => {
+    const { session, display } = createDisplay()
+    display.setShowSashimiLabels(false)
+    display.showSashimiLabelsDisplayTypeDefault.toggle()
+    expect(
+      session.getDisplayTypeDefault(
+        'LinearAlignmentsDisplay',
+        'showSashimiLabels',
+      ),
+    ).toBe(false)
+    expect(display.showSashimiLabelsDisplayTypeDefault.active).toBe(true)
+  })
+
+  it('ignores a non-boolean session default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSashimiLabels',
+      'yes',
+    )
+    expect(display.showSashimiLabels).toBe(false)
+  })
+})
+
 // `grow` is the third value of the shared `heightMode` vocabulary (with the
 // canvas display): the track resizes to fit all reads rather than scrolling
 // (fixed) or shrinking reads (fit). autoHeight/fitHeightToDisplay are mutually

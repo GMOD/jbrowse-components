@@ -28,11 +28,16 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * lives; every exported function reads a field off it.
  *
  * Whether the default value itself can be customized per-track depends on the slot:
- *   - Plain (`showSoftClipping`): `defaultValue` is both the base and the
+ *   - Plain (`readConnectionsDown`): `defaultValue` is both the base and the
  *     inherit signal, so it can't be customized over an opposite session default.
- *   - Sentinel (`displayMode`): `defaultValue` is a dedicated `'inherit'` member
- *     (CSS `inherit`) and `promotedBase` is what it resolves to (CSS `initial`),
- *     freeing every real value — base included — to be customized.
+ *     Only safe when no control ever promotes the *opposite* of `defaultValue`
+ *     (readConnectionsDown's pin only ever promotes its `true` base); otherwise
+ *     the setting becomes unturn-off-able and the slot wants the sentinel form.
+ *   - Sentinel (`displayMode`, `showSoftClipping`): `defaultValue` is a dedicated
+ *     `'inherit'` member (CSS `inherit`) — or the `undefined` of a
+ *     `maybeBoolean`/`maybeNumber` — and `promotedBase` is what it resolves to
+ *     (CSS `initial`), freeing every real value — base included — to be
+ *     customized. Prefer this for anything a user can toggle both ways.
  *
  * Every comparison below (customized / at-default / at-promoted-default) uses
  * `deepEqual`, not `===`: needed once a promotable slot is `frozen`
@@ -149,16 +154,12 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
   const base = def.promotedBase ?? def.defaultValue
   const own = getConf(self, slot)
-  // A display that arrived in a received session skips the session-wide tier
-  // entirely, collapsing the cascade to "own value, else base". This is the
-  // only mechanism that can neutralize a promoted default on a *plain*
-  // promotable slot (one with no `promotedBase`, where `defaultValue` is both
-  // the base and the inherit signal): there, no baked-in value can read as
-  // customized, so an explicit opt-out is the sole way the sender's `false`
-  // survives the recipient's promoted `true`.
-  const promoted = self.ignorePromotedDefaults
-    ? undefined
-    : getSession(self).getDisplayTypeDefault?.(self.type, slot)
+  // `promoted` stays the raw session-wide value regardless of this display's
+  // opt-out: it's a session-wide fact, and `isPromotableDefault` (the pin's
+  // filled/outline state) reports on the session, not on one display's view of
+  // it. The opt-out belongs to `inherited` below, which is the only tier of the
+  // cascade it may neutralize.
+  const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
   // A track is customized only when it holds a *usable* value other than the
   // default. Routing `own` through the same `isUsableValue` gate as a promoted
   // default means an own value that's malformed or fails `validate` (e.g. a saved
@@ -167,7 +168,17 @@ function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   // trusts every value it sees.
   const customized =
     !deepEqual(own, def.defaultValue) && isUsableValue(def, own)
-  const inherited = isUsableValue(def, promoted) ? promoted : base
+  // A display that arrived in a received session skips the session-wide tier
+  // entirely, collapsing the cascade to "own value, else base". This is the
+  // only mechanism that can neutralize a promoted default on a *plain*
+  // promotable slot (one with no `promotedBase`, where `defaultValue` is both
+  // the base and the inherit signal): there, no baked-in value can read as
+  // customized, so an explicit opt-out is the sole way the sender's `false`
+  // survives the recipient's promoted `true`.
+  const inherited =
+    !self.ignorePromotedDefaults && isUsableValue(def, promoted)
+      ? promoted
+      : base
   const value = customized ? own : inherited
   return { base, customized, promoted, value }
 }
@@ -301,9 +312,12 @@ export function resetSlotsToInherit(
 }
 
 /**
- * #api core/configuration
  * Whether every value in `entries` is the current session default for its slot.
- * The live state the pin's filled/outline reflects.
+ * The live state the pin's filled/outline reflects — a session-wide fact, so it
+ * reads the raw promoted default and ignores this display's
+ * `ignorePromotedDefaults` opt-out (which only governs what the display
+ * *follows*). Module-internal (exercised by promotableDefaults.test.ts); not
+ * part of the public barrel.
  */
 export function isPromotableDefault(
   self: PromotableDisplay,
@@ -315,10 +329,11 @@ export function isPromotableDefault(
 }
 
 /**
- * #api core/configuration
  * Set (`on`) or clear (`!on`) this value combination as the session default for
  * the display type. Non-destructive: tracks that follow the default inherit it
  * via `getConfResolved`; tracks the user has customized keep their own value.
+ * Module-internal (exercised by promotableDefaults.test.ts); not part of the
+ * public barrel — plugins promote a value through the control builders below.
  */
 export function setPromotableDefault(
   self: PromotableDisplay,
@@ -332,10 +347,10 @@ export function setPromotableDefault(
 }
 
 /**
- * #api core/configuration
  * Open tracks (across all views) whose resolved value differs from `entries` —
  * the ones "apply to open tracks" would visibly change by resetting them to
- * follow the default. Drives that action's count.
+ * follow the default. Drives that action's count. Module-internal (exercised by
+ * promotableDefaults.test.ts); not part of the public barrel.
  */
 export function tracksDifferingFrom(
   self: PromotableDisplay,
