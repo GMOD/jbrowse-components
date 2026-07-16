@@ -69,6 +69,56 @@ maybe(
   90000,
 )
 
+// interbase_indicators reproduces JBrowse's coverage-band breakpoint flags:
+// significant only where local depth >= 8 and the interbase events exceed 30% of
+// it, typed by the dominant event (insertion, else softclip, else hardclip).
+// Synthetic inputs make the expected significant set deterministic.
+maybe(
+  'interbase_indicators applies the depth/threshold gate and dominant type',
+  () => {
+    // any coverage fragment emits the interbase_indicators helper def; reuse it
+    const [cov] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'x',
+      uri: '/dev/null',
+      showCoverage: true,
+      showPileup: false,
+      colorBy: 'normal',
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 100, end: 110 },
+      [cov!],
+    )
+    const helpers = script.split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-interbase-'))
+    // depth 10 everywhere except pos 109 (5, below the min-depth gate). Events:
+    // 105 = 4 ins (sig, I); 106 = 3 ins + 4 soft (sig, soft dominates → S);
+    // 107 = 5 soft (sig, S); 103 = 2 ins (< 30% of 10, dropped); 109 = 4 hard
+    // (depth 5 < 8, dropped)
+    const probe = `${helpers}
+cov <- data.frame(pos = 100:110, depth = rep(10, 11))
+cov$depth[cov$pos == 109] <- 5
+indels <- data.frame(
+  refpos = c(105L, 105L, 105L, 105L, 103L, 103L, 106L, 106L, 106L),
+  length = 1L, type = "I", stringsAsFactors = FALSE)
+clips <- data.frame(
+  pos = c(rep(107L, 5), rep(106L, 4), rep(109L, 4)),
+  type = c(rep("S", 5), rep("S", 4), rep("H", 4)), stringsAsFactors = FALSE)
+ind <- interbase_indicators(indels, clips, cov)
+o <- order(ind$pos)
+cat(paste(ind$pos[o], ind$type[o], sep = ":"), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    expect(out).toBe('105:I 106:S 107:S')
+  },
+  90000,
+)
+
 // exercise every color-by scheme's read_fill_colors branch (incl. the MAPQ hue
 // ramp + insert-size stats) through the real generated script
 maybe(
