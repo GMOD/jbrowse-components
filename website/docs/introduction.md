@@ -13,7 +13,8 @@ and [tracks](/docs/config_guides/tracks) layered on top of them.
 ## Quick start
 
 Not ready to install anything? Browse [live demos](/demos/), the
-[visualization gallery](/gallery/), or the [feature list](/features/) first.
+[visualization gallery](/gallery/), or the [feature list](/features/) first, or
+explore real hosted genomes at [Genome Hubs](https://genomes.jbrowse.org/).
 
 - [JBrowse web](/docs/quickstart_web) - run JBrowse 2 in a browser
 - [JBrowse desktop](/docs/quickstart_desktop) - run the desktop app on your

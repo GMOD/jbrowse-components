@@ -143,12 +143,9 @@ const year = new Date().getFullYear()
             </a>
           ))
         }
-      </div>
-
-      <div class={styles.navRight}>
         <a
           href="https://genomes.jbrowse.org/"
-          class={styles.navExternal}
+          class={styles.navExternalLink}
           target="_blank"
           rel="noopener noreferrer"
           title="Browse hosted genomes — opens the JBrowse 2 Genome Hubs app in a new tab"
@@ -169,6 +166,9 @@ const year = new Date().getFullYear()
             <path d="M7 17 17 7"></path><path d="M7 7h10v10"></path>
           </svg>
         </a>
+      </div>
+
+      <div class={styles.navRight}>
         <a
           href={`${baseUrl}/search/`}
           class:list={[
@@ -195,18 +195,6 @@ const year = new Date().getFullYear()
           href="https://github.com/GMOD/jbrowse-components"
           class:list={[styles.socialIcon, styles.githubIcon]}
           aria-label="GitHub"></a>
-        <a
-          href="https://genomic.social/@usejbrowse"
-          class:list={[styles.socialIcon, styles.mastodonIcon]}
-          aria-label="Mastodon"></a>
-        <a
-          href="https://bsky.app/profile/jbrowse.org"
-          class:list={[styles.socialIcon, styles.blueskyIcon]}
-          aria-label="Bluesky"></a>
-        <a
-          href="https://www.youtube.com/@jbrowse6740"
-          class:list={[styles.socialIcon, styles.youtubeIcon]}
-          aria-label="YouTube"></a>
       </div>
 
       <button
@@ -229,6 +217,13 @@ const year = new Date().getFullYear()
           <h4>Docs</h4>
           <ul>
             <li><a href={`${baseUrl}/docs/`}>Documentation</a></li>
+            <li>
+              <a
+                href="https://genomes.jbrowse.org/"
+                target="_blank"
+                rel="noopener noreferrer">Genome Hubs ↗</a
+              >
+            </li>
             <li><a href={`${baseUrl}/cancer/`}>Cancer resources</a></li>
           </ul>
         </div>
