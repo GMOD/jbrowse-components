@@ -112,6 +112,7 @@ how-tos in **[guides/](guides/)**, and design rationale in
 | **[TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md)**               | Browser + unit tests, WebGPU CI                             | Running or writing tests, validating RPC      |
 | **[PERF_INSTRUMENTATION.md](guides/PERF_INSTRUMENTATION.md)**             | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
 | **[SCREENSHOT_REVIEW_HANDOFF.md](guides/SCREENSHOT_REVIEW_HANDOFF.md)**   | Working the `bad`-status screenshot-review backlog (regen pipeline, hosted-track sources) | Fixing website screenshot specs / gallery figures |
+| **[R_EXPORT.md](guides/R_EXPORT.md)**                                     | "Export R script" — architecture, add-a-track recipe, next steps, `read_index`/NA-row gotcha | Extending the R script exporter |
 
 ### `architecture-decision-records/`
 
