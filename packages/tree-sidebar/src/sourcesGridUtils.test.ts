@@ -1,4 +1,5 @@
 import {
+  allFieldNames,
   extraColumns,
   moveDown,
   moveUp,
@@ -179,5 +180,23 @@ describe('extraColumns', () => {
       { name: 'b', labelColor: '#f00' },
     ]
     expect(extraColumns(rows, reserved)).toEqual(['labelColor'])
+  })
+})
+
+describe('allFieldNames', () => {
+  const reserved = new Set(['name', 'color'])
+
+  // The shape counterpart to extraColumns: keeps keys no row has set, so the
+  // CSV export can offer them as fillable headers.
+  it('keeps keys that are undefined on every row', () => {
+    const rows = [
+      { name: 'a', group: undefined },
+      { name: 'b', group: undefined },
+    ]
+    expect(allFieldNames(rows, reserved)).toEqual(['group'])
+  })
+
+  it('still honours the reserved set', () => {
+    expect(allFieldNames([{ name: 'a', color: 'red' }], reserved)).toEqual([])
   })
 })

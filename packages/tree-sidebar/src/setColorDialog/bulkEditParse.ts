@@ -1,4 +1,4 @@
-import { IDENTITY_FIELDS, extraColumns } from '../sourcesGridUtils.ts'
+import { IDENTITY_FIELDS, allFieldNames } from '../sourcesGridUtils.ts'
 
 // Detect the primary delimiter from the first line (whichever of tab/comma
 // appears first). Defaults to comma when neither is found.
@@ -14,9 +14,12 @@ function detectDelimiter(header: string): string {
   return ti < ci ? '\t' : ','
 }
 
-// RFC-4180 CSV row parser. Handles quoted fields containing the delimiter,
-// newlines, and "" as an escaped quote. Falls back to a plain split when no
-// quotes are present (fast path for the common case).
+// CSV parser for one already-split line. Handles quoted fields containing the
+// delimiter and "" as an escaped quote. A newline *inside* a quoted field is
+// not supported — callers split on newlines before this sees the text (see
+// nonEmptyLines) — so this is RFC-4180 minus the embedded-newline case. Falls
+// back to a plain split when no quotes are present (fast path for the common
+// case).
 function parseCSVRow(line: string, delim: string): string[] {
   if (!line.includes('"')) {
     return line.split(delim)
@@ -140,12 +143,16 @@ function toCsvField(val: string): string {
   return /[,\t\n"]/.test(val) ? `"${val.replaceAll('"', '""')}"` : val
 }
 
-// Field names to include in an export: union across all rows, minus the
-// identity fields, with `name` always first. `source`/`baseUri` are dropped
+// Field names to include in an export: every field the rows can carry, minus
+// the identity fields, with `name` always first. `source`/`baseUri` are dropped
 // because `source` always equals `name` for multi-wiggle and `baseUri` is
 // plumbing.
+//
+// Deliberately the shape (allFieldNames), not the populated columns
+// (extraColumns): exporting a still-empty field is how the user discovers it is
+// settable, and round-tripping the export must not silently narrow the header.
 function csvExportFields(rows: Record<string, unknown>[]): string[] {
-  return ['name', ...extraColumns(rows, new Set<string>(IDENTITY_FIELDS))]
+  return ['name', ...allFieldNames(rows, new Set<string>(IDENTITY_FIELDS))]
 }
 
 // Serialize the current layout as a CSV string suitable for pasting back.

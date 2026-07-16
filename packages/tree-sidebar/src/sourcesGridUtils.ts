@@ -58,10 +58,25 @@ export function updateRows<T extends { name: string }>(
   return rows.map(r => (sel.has(r.name) ? { ...r, ...patch } : r))
 }
 
-// Field names carrying a value on at least one row, minus a caller-provided
-// reserved set (the fields that drive their own dedicated columns).
 // Heterogeneous rows can contribute different keys, so union across all rows
 // rather than peeking at just the first.
+function unionFields<T extends object>(
+  rows: T[],
+  reserved: ReadonlySet<string>,
+  include: (value: unknown) => boolean,
+): string[] {
+  const out = new Set<string>()
+  for (const row of rows) {
+    for (const [key, value] of Object.entries(row)) {
+      if (!reserved.has(key) && include(value)) {
+        out.add(key)
+      }
+    }
+  }
+  return [...out]
+}
+
+// Fields worth giving a column, i.e. carrying a value on at least one row.
 //
 // A key explicitly assigned `undefined` still shows up in Object.keys, and rows
 // are commonly built by mapping a fixed field list (multi-wiggle's setRpcData
@@ -72,13 +87,16 @@ export function extraColumns<T extends object>(
   rows: T[],
   reserved: ReadonlySet<string>,
 ): string[] {
-  const out = new Set<string>()
-  for (const row of rows) {
-    for (const [key, value] of Object.entries(row)) {
-      if (!reserved.has(key) && value !== undefined) {
-        out.add(key)
-      }
-    }
-  }
-  return [...out]
+  return unionFields(rows, reserved, value => value !== undefined)
+}
+
+// Every field a row can carry, whether or not any row has set one. This is the
+// row *shape* rather than the row data: the CSV export needs it so a field
+// nobody has filled in yet still appears as a header the user can fill in,
+// which is how the bulk editor advertises what is settable.
+export function allFieldNames<T extends object>(
+  rows: T[],
+  reserved: ReadonlySet<string>,
+): string[] {
+  return unionFields(rows, reserved, () => true)
 }

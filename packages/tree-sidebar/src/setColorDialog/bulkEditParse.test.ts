@@ -151,6 +151,17 @@ describe('toCSV', () => {
     expect(csv).not.toContain('baseUri')
   })
 
+  // The export advertises the row shape, so a field nobody has set yet still
+  // gets a header the user can fill in. This is the one place that wants the
+  // full key union rather than the populated-only columns the grid shows.
+  it('exports a header for a field no row has set', () => {
+    const rows = [
+      { name: 'HG1', color: 'red', group: undefined },
+      { name: 'HG2', color: 'blue', group: undefined },
+    ]
+    expect(toCSV(rows).split('\n')[0]).toBe('name,color,group')
+  })
+
   it('round-trips through parseRowsByName', () => {
     const rows = [
       { name: 'HG1', color: '#f00', group: 'tumor' },
