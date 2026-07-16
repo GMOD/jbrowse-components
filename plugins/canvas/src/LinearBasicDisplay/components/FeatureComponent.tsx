@@ -223,6 +223,7 @@ const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   view,
   openContextMenu,
   onLabelMouseOver,
+  onLabelMouseLeave,
 }: {
   model: LinearBasicDisplayModel
   view: LGV
@@ -237,6 +238,7 @@ const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     displayedRegionIndex: number,
     e: React.MouseEvent,
   ) => void
+  onLabelMouseLeave: () => void
 }) {
   const renderDataMap = model.renderDataMap
   const width = view.initialized ? view.trackWidthPx : undefined
@@ -253,6 +255,7 @@ const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     model,
     openContextMenu,
     onLabelMouseOver,
+    onLabelMouseLeave,
   )
 
   return (
@@ -504,11 +507,15 @@ const FeatureBody = observer(function FeatureBody({
     }
   }
 
-  const handleMouseLeave = () => {
+  // Shared by the canvas and the label layer (see useFloatingLabels): whichever
+  // of the two the cursor was last over, exiting it drops the hover. Stable
+  // identity so a hover tick — which re-renders FeatureBody for the cursor
+  // style — doesn't force the label layer to rebuild every label.
+  const handleMouseLeave = useCallback(() => {
     if (!model.contextMenuInfo) {
       model.clearHover()
     }
-  }
+  }, [model])
 
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem, displayedRegionIndex: number, e: React.MouseEvent) => {
@@ -526,9 +533,7 @@ const FeatureBody = observer(function FeatureBody({
         aria-label="Feature track"
         ref={canvasRef}
         onMouseMove={handleMouseMove}
-        onMouseLeave={() => {
-          handleMouseLeave()
-        }}
+        onMouseLeave={handleMouseLeave}
         onClick={e => {
           handleClick(e)
         }}
@@ -548,6 +553,7 @@ const FeatureBody = observer(function FeatureBody({
           view={view}
           openContextMenu={model.openContextMenu}
           onLabelMouseOver={onLabelMouseOver}
+          onLabelMouseLeave={handleMouseLeave}
         />
       </OverlayScrollLayer>
 

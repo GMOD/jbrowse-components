@@ -145,6 +145,7 @@ export function useFloatingLabels(
     displayedRegionIndex: number,
     e: React.MouseEvent,
   ) => void,
+  onLabelMouseLeave?: () => void,
 ) {
   const { classes, cx } = useStyles()
   const {
@@ -254,6 +255,18 @@ export function useFloatingLabels(
         if (t && onLabelMouseOver) {
           onLabelMouseOver(t.item, t.displayedRegionIndex, e)
         }
+      }}
+      // A clickable label is stacked above the canvas, so entering one fires the
+      // canvas's mouseleave (which clears the hover) and the mousemove above
+      // re-sets it from the label. Leaving the label back onto the canvas is
+      // covered by the canvas's own mousemove, but leaving it to anywhere else —
+      // off the track edge, onto an adjacent track, out of the window — hits no
+      // canvas handler at all, so without this the label's hover shading and
+      // tooltip stay stuck. React dispatches leave to this layer when the cursor
+      // exits a label (labels are its descendants) even though the layer itself
+      // is pointerEvents:none.
+      onMouseLeave={() => {
+        onLabelMouseLeave?.()
       }}
     >
       {elements}
