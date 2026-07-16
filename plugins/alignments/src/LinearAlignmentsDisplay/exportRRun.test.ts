@@ -1108,3 +1108,65 @@ cat(sum(all_reads$keep), sum(rg4$keep),
   },
   90000,
 )
+
+// The tag sort has the most panel wiring of any sort: the loop must read each
+// read's tag with bam_tag_values and hang it on the reads frame as sort_tag, so
+// it survives the multi-region rbind and stays joined to its read. Run the real
+// generated script over volvox-rg.bam, whose reads carry an RG tag.
+maybe(
+  'generated tag-sort pileup runs and orders reads by the tag',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-rg.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox RG',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      sortType: 'tag',
+      sortTag: 'RG',
+      sortPos: 200,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 800 },
+      fragments,
+    )
+    expect(script).toContain('bam_tag_values(bam, chrom, start, end, "RG")')
+
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-tagsort-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // the tag really is read per-read, and the reads crossing the sort column
+    // come out grouped by it: every row above the last RG:Z:1 read is RG:Z:1
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+uri <- ${JSON.stringify(bam)}
+chrom <- "ctgA"; start <- 0; end <- 800; sort_pos <- 200
+reads <- read_filter(read_bam(uri, chrom, start, end), uri, chrom, start, end,
+  0, 1540, NULL, list())
+reads$sort_tag <- bam_tag_values(uri, chrom, start, end, "RG")
+laid <- sorted_pileup_layout(reads, sort_pos, "tag")
+ov <- laid[laid$start <= sort_pos & laid$end > sort_pos & !is.na(laid$row), ]
+ov <- ov[order(ov$row), ]
+cat(length(unique(reads$sort_tag)), nrow(ov),
+    paste(ov$sort_tag, collapse = ","), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [distinct, n, order] = out.split(/\s+/)
+    // several distinct RG values are actually read off the reads
+    expect(Number(distinct)).toBeGreaterThan(1)
+    expect(Number(n)).toBeGreaterThan(1)
+    // and the sorted reads are grouped by tag, descending (JBrowse's order)
+    const tags = order!.split(',')
+    expect([...tags].sort().reverse()).toEqual(tags)
+  },
+  90000,
+)
