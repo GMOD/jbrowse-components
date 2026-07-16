@@ -166,6 +166,11 @@ jobs:
             git diff --stat -- '**/*.generated.ts'
             exit 1
           fi
+      - name: Check generated R helpers are up to date
+        # rHelpers.generated.ts is a verbatim bundle of the rhelpers/*.R sources
+        # the R-script exporter emits. A hand-edited artifact, or an .R changed
+        # without running gen:rhelpers, fails the check.
+        run: pnpm gen:rhelpers --check
       - name: Lint codebase
         run: pnpm lint:strict
 

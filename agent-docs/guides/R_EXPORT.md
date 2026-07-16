@@ -21,17 +21,35 @@ record* lives elsewhere and is not duplicated here:
   matching JBrowse's exact rendering. Row packing uses `IRanges::disjointBins`,
   colors approximate the canvas palette, etc.
 - **A TS→R transpiler was considered and rejected** (non-idiomatic machine R,
-  fights hackability).
+  fights hackability). Note the `rhelpers/*.R` → `rHelpers.generated.ts` step is
+  **not** that: it's a verbatim bundle of hand-written R (so the browser bundle
+  can carry it), not a translation. The R a user reads is still the R a human
+  wrote. Don't "extend" it into a transpiler.
 
 ## Architecture
 
+- **`plugins/linear-genome-view/src/LinearGenomeView/rhelpers/*.R`** — the R
+  helper library, one **real `.R` file per helper**, named for the helper it
+  defines (`read_bam.R` defines `read_bam`). Edit these, then run
+  **`pnpm gen:rhelpers`** to regenerate `rHelpers.generated.ts` (the `HELPERS`
+  table `exportR.ts` imports). **Never hand-edit `rHelpers.generated.ts`** — CI
+  runs `pnpm gen:rhelpers --check` and fails on a stale/edited artifact, the
+  same convention as `.slang` → `pnpm gen:shaders`. Because they're real R:
+  no TS-template escaping (write `"\\.cram$"`, not `"\\\\.cram$"`), and
+  `rhelpers/rhelpers.test.ts` has R `parse()` every file (catching a syntax
+  error without running a figure) and `sys.source()` the library to prove each
+  file defines exactly its own helper.
 - `plugins/linear-genome-view/src/LinearGenomeView/exportR.ts`
-  - `HELPERS`: the inline R helper defs table; only helpers a fragment
-    references are emitted (deduped, stable order). Add new readers/layout
-    helpers here. The `REGION_HELPERS` (region_layout / read_regions /
-    region_scale / region_dividers / region_xlim / region_ruler / region_title)
-    are emitted into **every** script — they are core infrastructure, not
-    per-fragment opt-in.
+  - Only helpers a fragment references are emitted (deduped, alphabetical).
+    The `REGION_HELPERS` (region_layout / read_regions / region_scale /
+    region_dividers / region_xlim / region_ruler / region_title) are emitted
+    into **every** script — they are core infrastructure, not per-fragment
+    opt-in.
+  - `HELPER_DEPS` + `resolveHelpers`: helper→helper calls. A fragment declares
+    only what **its own plot code** calls; the transitive closure is added at
+    assemble time (a caller of `read_bam` doesn't list `pair_orientation`).
+    A helper that gains a call to another needs the edge added **here, and only
+    here** — `exportR.test.ts` scans the R bodies and fails on a missing edge.
   - `assembleRScript(regions, fragments)` (re-exported; accepts one region or an
     array): pure codegen — emits `library()`s, deduped helper defs, per-track
     setup, `plot_regions()`, the `plot_region()` shorthand, the current-view call
@@ -99,9 +117,11 @@ continuous axis.
 
 ## Adding a track type (recipe)
 
-1. Add any reader/layout helper to `HELPERS` in `exportR.ts`. A reader takes
-   `(uri, chrom, start, end)` and returns a genomic-coordinate data.frame — never
-   cumulative coords; `read_regions` handles the shift.
+1. Add any reader/layout helper as `rhelpers/<name>.R` (defining `<name>`), then
+   `pnpm gen:rhelpers`. A reader takes `(uri, chrom, start, end)` and returns a
+   genomic-coordinate data.frame — never cumulative coords; `read_regions`
+   handles the shift. If the helper calls another helper, add the edge to
+   `HELPER_DEPS`; callers never list transitive helpers.
 2. In the display plugin add `exportRCode.ts`: a pure `xFragment(params)` builder
    + `exportRCode(self)` reading `getTrackRMeta(self)`'s adapter uri + resolved
    styling. Return `RTrackFragment` (or `RTrackFragment[]`). For a genomic-bp

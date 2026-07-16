@@ -1,3 +1,5 @@
+import { resolveHelpers } from '@jbrowse/plugin-linear-genome-view'
+
 import { alignmentsFragments } from './exportRCode.ts'
 
 import type { AlignmentsRParams } from './exportRCode.ts'
@@ -92,9 +94,12 @@ test('pileup colors reads by the resolved color-by scheme', () => {
   expect(
     alignmentsFragments({ ...base, colorBy: 'pairOrientation' })[1]!.plotExpr,
   ).toContain('read_fill_colors(reads, "pairOrientation")')
-  // pileup reads the mate-derived orientation columns from read_bam
+  // pileup reads the mate-derived orientation columns from read_bam, which
+  // classifies them with pair_orientation (pulled in as a helper dependency)
   expect(
-    alignmentsFragments({ ...base, colorBy: 'pairOrientation' })[1]!.helpers,
+    resolveHelpers(
+      alignmentsFragments({ ...base, colorBy: 'pairOrientation' })[1]!.helpers,
+    ),
   ).toContain('pair_orientation')
   // insert-size family collapses onto the insertSize scheme
   expect(
@@ -326,13 +331,14 @@ test('low-frequency fade lives on the pileup, not the coverage panel', () => {
   // JBrowse's coverage panel always shows every mismatch fraction; it must not
   // threshold (that was inverted — the fade belongs on the pileup ticks)
   const [cov, pileup] = alignmentsFragments({ ...base, bpPerPx: 5 })
-  expect(cov!.helpers).not.toContain('snp_freq_threshold')
+  expect(resolveHelpers(cov!.helpers)).not.toContain('snp_freq_threshold')
   expect(cov!.plotExpr).not.toContain('snp_freq_threshold')
   expect(cov!.plotExpr).not.toContain('show_low_freq')
 
   // the pileup fades ticks below snp_freq_threshold(depth) once zoomed out past
-  // 1 bp/px, with the filter on by default (showLowFreqMismatches false)
-  expect(pileup!.helpers).toEqual(
+  // 1 bp/px, with the filter on by default (showLowFreqMismatches false).
+  // snp_freq_threshold arrives as a dependency of mismatch_fade_alpha.
+  expect([...resolveHelpers(pileup!.helpers)]).toEqual(
     expect.arrayContaining([
       'snp_freq_threshold',
       'bam_coverage',

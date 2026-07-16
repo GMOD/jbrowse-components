@@ -28,6 +28,7 @@
     "autogen": "pnpm gendocs && pnpm gen-img-doc && pnpm gen-cli-doc",
     "postautogen": "pnpm format",
     "gen:shaders": "node --experimental-strip-types packages/shader-tools/src/build-shaders.ts",
+    "gen:rhelpers": "node --experimental-strip-types scripts/build-r-helpers.ts",
     "lint-docs": "node --experimental-strip-types website/scripts/generate-guide-indexes.ts",
     "lint-docs-check": "node --experimental-strip-types website/scripts/generate-guide-indexes.ts --check && pnpm gen-img-doc --check && pnpm gen-cli-doc --check && node --experimental-strip-types website/scripts/check-doc-imports.ts",
     "fix-extensions": "node scripts/add-extensions.ts",

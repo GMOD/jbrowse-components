@@ -294,9 +294,7 @@ ${pathAlias}
       needsMm
         ? `  mm <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "mm")))`
         : '',
-      needsCov
-        ? `  cov <- do.call(rbind, lapply(parts, \`[[\`, "cov"))`
-        : '',
+      needsCov ? `  cov <- do.call(rbind, lapply(parts, \`[[\`, "cov"))` : '',
       isMods
         ? `  mods <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "mods")))`
         : '',
@@ -442,7 +440,6 @@ ${pathAlias}
         ...cramHelpers,
         'read_bam',
         'read_filter',
-        'pair_orientation',
         p.linkReads
           ? 'link_reads'
           : sortType !== undefined
@@ -453,13 +450,11 @@ ${pathAlias}
           ? ['bam_modifications', 'mod_colors']
           : isQual
             ? ['bam_base_quality', 'quality_colors']
-            : // the mismatch overlay's low-frequency fade needs the coverage
-              // depth + the depth-dependent threshold
+            : // the mismatch overlay's low-frequency fade needs the coverage depth
               [
                 'bam_mismatches',
                 'base_colors',
                 'bam_coverage',
-                'snp_freq_threshold',
                 'mismatch_fade_alpha',
               ]),
         // base sort reads the mismatch base at sort_pos even when the color

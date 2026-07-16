@@ -181,7 +181,7 @@ export {
   SVGView,
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
-export { assembleRScript } from './LinearGenomeView/exportR.ts'
+export { assembleRScript, resolveHelpers } from './LinearGenomeView/exportR.ts'
 export {
   firstUri,
   getTrackRMeta,
