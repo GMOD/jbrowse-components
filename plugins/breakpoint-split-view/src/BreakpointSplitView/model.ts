@@ -40,6 +40,7 @@ import type {
   OverlayLevel,
   OverlayMatch,
 } from './types.ts'
+import type { OverlayTrack } from './util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -212,7 +213,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * the track is present in every view and `filter` drops nothing. Don't
        * level-index the result for an arbitrary trackId.
        */
-      getMatchedTracks(trackConfigId: string) {
+      getMatchedTracks(trackConfigId: string): OverlayTrack[] {
         return self.views
           .map(view => view.getTrack(trackConfigId))
           .filter(notEmpty)
@@ -406,7 +407,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const result = new Map<string, OverlayMatch>()
         for (const [trackId, chunk] of this.matchedTrackChunks) {
           const { kind, allFeatures, matched, hasPairedReads, chains } = chunk
-          const layoutMatches = this.getMatchedFeaturesInLayout(trackId, matched)
+          const layoutMatches = this.getMatchedFeaturesInLayout(
+            trackId,
+            matched,
+          )
           if (chains) {
             for (const [i, m] of layoutMatches.entries()) {
               m.sort(

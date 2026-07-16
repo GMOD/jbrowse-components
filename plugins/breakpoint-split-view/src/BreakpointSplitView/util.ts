@@ -7,12 +7,30 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-interface Display {
-  searchFeatureByID?: (str: string) => LayoutRecord
+// The subset of a track/display the overlays actually read. The LGV's `tracks`
+// array is an MST pluggable union, which TS widens to `any`, so naming the
+// shape here is what makes these field reads checked at all — see the
+// OverlayTrack annotation on getMatchedTracks.
+export interface OverlayDisplay {
+  height: number
+  searchFeatureByID?: (str: string) => LayoutRecord | undefined
+  scrollTop?: number
+  regionTooLarge?: boolean
+  /** height of the coverage subtrack, on displays that have one */
+  coverageDisplayHeight?: number
+  /**
+   * LinearAlignmentsDisplay's view-as-pairs / link-supplementary-alignments
+   * setting; absent on display types that don't link reads. Mirrors that
+   * plugin's LinkedReadsMode structurally — this plugin has no dependency on
+   * plugin-alignments, so a rename there surfaces as `undefined` here, not as
+   * a type error.
+   */
+  linkedReads?: 'off' | 'normal'
 }
 
-interface Track {
-  displays: Display[]
+export interface OverlayTrack {
+  minimized: boolean
+  displays: OverlayDisplay[]
   configuration: AnyConfigurationModel
 }
 
@@ -103,13 +121,13 @@ export function intersect<T>(
   return rest.length === 0 ? a12 : intersect(cb, a12, ...rest)
 }
 
-export function calc(track: Track, f: Feature) {
+export function calc(track: OverlayTrack, f: Feature) {
   return track.displays[0]!.searchFeatureByID?.(f.id())
 }
 
 export async function getBlockFeatures(
   model: { views: LinearGenomeViewModel[] },
-  track: Track,
+  track: OverlayTrack,
 ) {
   const { views } = model
   const { rpcManager } = getSession(model)

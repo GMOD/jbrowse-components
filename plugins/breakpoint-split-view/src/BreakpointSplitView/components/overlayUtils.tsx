@@ -14,12 +14,15 @@ import { isOffscreenLayout } from '../util.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'
+import type { OverlayTrack } from '../util.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 export const LEFT = 0
 export const RIGHT = 2
+
+type MinimizableTrack = Pick<OverlayTrack, 'minimized'>
 
 export interface OverlayProps {
   model: BreakpointViewModel
@@ -325,8 +328,10 @@ export const VariantOverlay = observer(function VariantOverlay({
   )
 })
 
+// Only `minimized` is needed, so that's all this asks for — a caller with any
+// track-ish thing (including a test double) can use it.
 export function isLevelPairMinimized(
-  tracks: VariantOverlayContext['tracks'],
+  tracks: MinimizableTrack[],
   level1: number,
   level2: number,
 ) {
@@ -359,7 +364,7 @@ export function* resolvedPairs({
 }: {
   match: Pick<OverlayMatch, 'layoutMatches'>
   assembly: Assembly
-  tracks: VariantOverlayContext['tracks']
+  tracks: MinimizableTrack[]
 }): Generator<ResolvedPair> {
   for (const chunk of match.layoutMatches) {
     for (let i = 0; i < chunk.length - 1; i++) {
