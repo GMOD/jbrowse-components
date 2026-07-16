@@ -19,6 +19,7 @@ import { syntenySpecs } from './specs/synteny.ts'
 import { trioSpecs } from './specs/trio.ts'
 import { uiSpecs } from './specs/ui.ts'
 import { variantsSpecs } from './specs/variants.ts'
+import { CODE_BASE } from '../src/lib/code-base.ts'
 
 import type { ScreenshotSpec } from './screenshot-spec-types.ts'
 
@@ -46,14 +47,8 @@ export const specs: ScreenshotSpec[] = [
 // jbrowse.org hosts the same test_data/ configs (and the cgiab/hpylori demos)
 // these specs load, so every spec's session can be opened as a live, clickable
 // instance. The website Figure macro uses screenshotLiveUrls to link each
-// screenshot to the running view that produced it.
-//
-// `JBROWSE_CODE_BASE` overrides the hosted build these links open in (must end
-// in a slash). Staging deploys point it at `main`, whose app matches the docs
-// being staged; the default is the released `latest`.
-const JBROWSE_CODE_BASE =
-  process.env.JBROWSE_CODE_BASE || 'https://jbrowse.org/code/jb2/latest/'
-
+// screenshot to the running view that produced it. CODE_BASE is the hosted build
+// they open in — see src/lib/code-base.ts for retargeting it.
 export function specLiveUrl(spec: ScreenshotSpec): string | undefined {
   if (spec.mode === 'url') {
     if (spec.url.startsWith('http')) {
@@ -65,8 +60,8 @@ export function specLiveUrl(spec: ScreenshotSpec): string | undefined {
         : spec.url
     } else {
       // a bare `?config=...` captured against the local build opens identically
-      // on the public latest instance
-      return `${JBROWSE_CODE_BASE}${spec.url}`
+      // on the public hosted instance
+      return `${CODE_BASE}${spec.url}`
     }
   } else {
     return undefined

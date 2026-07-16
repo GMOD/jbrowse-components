@@ -2,6 +2,7 @@
 import { base, site } from 'astro:config/client'
 
 import { absolutizeMarkdownLinks } from '../lib/absolutize-markdown-links.ts'
+import { retargetCodeBaseInMarkdown } from '../lib/code-base.ts'
 
 interface Props {
   markdown: string
@@ -10,7 +11,7 @@ interface Props {
 
 const { markdown, title } = Astro.props
 const origin = `${site ?? ''}${base.replace(/\/$/, '')}`
-const raw = `# ${title}\n\n${absolutizeMarkdownLinks(markdown, origin)}`
+const raw = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(markdown, origin))}`
 ---
 
 <button

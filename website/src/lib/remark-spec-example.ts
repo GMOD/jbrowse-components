@@ -1,5 +1,7 @@
 import { visit } from 'unist-util-visit'
 
+import { retargetCodeBase } from './code-base.ts'
+
 import type { Code, Root } from 'mdast'
 import type { Plugin } from 'unified'
 
@@ -56,7 +58,7 @@ const remarkSpecExample: Plugin<[], Root> = () => {
           )
         }
         const url = buildSpecUrl(
-          meta.base || DEFAULT_BASE,
+          retargetCodeBase(meta.base || DEFAULT_BASE),
           meta.config ?? '',
           spec,
         )

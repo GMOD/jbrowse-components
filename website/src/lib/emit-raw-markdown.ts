@@ -2,6 +2,7 @@ import fs, { glob } from 'node:fs/promises'
 import path from 'node:path'
 
 import { absolutizeMarkdownLinks } from './absolutize-markdown-links.ts'
+import { retargetCodeBaseInMarkdown } from './code-base.ts'
 
 // Writes each doc's raw Markdown to `dist/docs/<slug>.md` (introduction ->
 // `index.md`) at build time. This runs as an integration hook rather than an
@@ -55,7 +56,7 @@ export async function emitRawMarkdown({
     const { data, body } = parseFrontmatter(raw)
     const slug = slugForDoc(rel, data)
     const title = data.title ?? slug
-    const md = `# ${title}\n\n${absolutizeMarkdownLinks(body.trimStart(), origin)}\n`
+    const md = `# ${title}\n\n${retargetCodeBaseInMarkdown(absolutizeMarkdownLinks(body.trimStart(), origin))}\n`
     const out = path.join(distDir, 'docs', `${slug}.md`)
     await fs.mkdir(path.dirname(out), { recursive: true })
     await fs.writeFile(out, md)

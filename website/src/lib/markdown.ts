@@ -15,6 +15,7 @@ import rehypeHeadingLinks from './rehype-heading-links.ts'
 import rehypeShiki from './rehype-shiki.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
 import remarkAutolinkTypes from './remark-autolink-types.ts'
+import remarkCodeBase from './remark-code-base.ts'
 import remarkCustomHeadingId from './remark-custom-heading-id.ts'
 import remarkDocList from './remark-doc-list.ts'
 import remarkFigure from './remark-figure.ts'
@@ -28,6 +29,7 @@ const processor = unified()
   .use(remarkFigure, { base: baseUrl })
   .use(remarkDocList)
   .use(remarkSpecExample)
+  .use(remarkCodeBase)
   .use(remarkAutolinkTypes)
   .use(remarkRelatedGuides)
   .use(remarkRehype, { allowDangerousHtml: true })
