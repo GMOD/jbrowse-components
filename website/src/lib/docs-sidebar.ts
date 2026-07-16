@@ -39,7 +39,8 @@ type DocusaurusSidebarItem =
 export function containsSlug(entry: SidebarEntry, slug: string): boolean {
   return entry.type === 'link'
     ? entry.slug === slug
-    : entry.slug === slug || entry.items.some(child => containsSlug(child, slug))
+    : entry.slug === slug ||
+        entry.items.some(child => containsSlug(child, slug))
 }
 
 export function entrySlug(id: string): string {
@@ -200,11 +201,12 @@ export function buildSidebar(
   )
 }
 
-// The "showcase" pages (Features / Gallery / Demos) hang off the same sidebar as
-// the docs, so navigation is identical everywhere on the site. Gallery and Demos
-// become collapsible groups whose summary links to the page and whose children
-// jump to the page's own section anchors (single-sourced from gallerySections);
-// Features has no enumerable sections, so it stays a plain top-level link.
+// The "showcase" pages (Features / Plugins / Gallery / Demos) hang off the same
+// sidebar as the docs, so navigation is identical everywhere on the site. Gallery
+// and Demos become collapsible groups whose summary links to the page and whose
+// children jump to the page's own section anchors (single-sourced from
+// gallerySections); Features and Plugins have no enumerable sections, so they stay
+// plain top-level links.
 export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
   const pageUrl = (path: string) => `${baseUrl}/${path}/`
   const sectionLinks = (
@@ -226,6 +228,12 @@ export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
       label: 'Features',
       href: pageUrl('features'),
       slug: 'features',
+    },
+    {
+      type: 'link',
+      label: 'Plugins',
+      href: pageUrl('plugin_store'),
+      slug: 'plugin_store',
     },
     {
       type: 'group',

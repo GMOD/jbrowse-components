@@ -9,7 +9,7 @@ import type { APIRoute } from 'astro'
 
 // Standalone routes that aren't part of a content collection: the shared nav
 // pages plus home, search, and the pages kept out of the nav bar (cancer,
-// features, contact) that still need sitemap coverage.
+// features, contact, plugin_store) that still need sitemap coverage.
 const staticRoutes = [
   ...navLinks.map(l => l.path),
   '',
@@ -17,6 +17,7 @@ const staticRoutes = [
   'cancer',
   'features',
   'contact',
+  'plugin_store',
 ]
 
 export const GET: APIRoute = async ({ site }) => {
