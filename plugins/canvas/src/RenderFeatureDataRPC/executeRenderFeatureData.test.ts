@@ -57,6 +57,20 @@ describe('buildFeatureAdmission', () => {
     expect(admit(feat('gene', { score: 1 }))).toBe(false)
   })
 
+  it("the default gbkey=='Src' filter hides the NCBI whole-sequence source record only", () => {
+    // Mirrors the jexlFilters config-slot default: drops NCBI's whole-molecule
+    // type=region source feature (gbkey=Src) without touching other region
+    // features or non-NCBI features (which carry no gbkey).
+    const admit = buildFeatureAdmission({
+      jexl,
+      config: mockDisplayConfig({ jexlFilters: [`get(feature,'gbkey')!='Src'`] }),
+    })
+    expect(admit(feat('region', { gbkey: 'Src' }))).toBe(false)
+    expect(admit(feat('region', { gbkey: 'CpG_island' }))).toBe(true)
+    expect(admit(feat('region'))).toBe(true)
+    expect(admit(feat('gene'))).toBe(true)
+  })
+
   it('showOnlyGenes keeps gene-like top-level types and drops the rest', () => {
     const admit = buildFeatureAdmission({
       jexl,

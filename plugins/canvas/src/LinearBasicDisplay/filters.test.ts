@@ -26,7 +26,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // (util/tracks.ts). Omitting it makes the configuration union fall to its inline
 // schemaType branch and silently build a *default* config — so every slot reads
 // its default and the track's real config (jexlFilters etc.) is never seen.
-function createDisplay(jexlFilters: string[] = []) {
+function createDisplay(jexlFilters?: string[]) {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory(pluginManager)
 
@@ -127,6 +127,13 @@ describe('canvas display runtime filters', () => {
     expect(display.activeFilters()).toEqual([
       `jexl:get(feature,'type')=='gene'`,
     ])
+  })
+
+  it("defaults to hiding the NCBI whole-sequence source record (gbkey=='Src')", () => {
+    // With the slot left unset, activeFilters() surfaces the schema default so
+    // the "Filter by..." dialog shows it pre-populated and removable.
+    const display = createDisplay()
+    expect(display.activeFilters()).toEqual([`jexl:get(feature,'gbkey')!='Src'`])
   })
 
   it('the runtime override replaces (shadows) the config jexlFilters slot', () => {
