@@ -96,39 +96,38 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Synteny and whole-genome comparison',
     items: [
       {
-        label: 'Dotplot (grape vs peach)',
+        label: 'Grape vs peach dotplot',
         spec: 'dotplot',
         guide: 'user_guides/dotplot_view',
         description:
           'Grape vs peach genome alignment as a dotplot, from a minimap2 PAF.',
       },
       {
-        label: 'Linear synteny (grape vs peach)',
+        label: 'Grape vs peach - synteny view',
         spec: 'linear_synteny_gallery',
         guide: 'tutorials/synteny_visualization',
         description:
           'Grape vs peach MCScan synteny: fine per-gene links riding on top of the larger blocks, red where colinear and blue where inverted.',
       },
       {
-        label: 'Whole-genome synteny (human hs1 vs mouse mm39)',
+        label: 'Human vs mouse synteny',
         spec: 'hs1_vs_mm39_synteny',
         guide: 'tutorials/synteny_visualization',
         description:
           'Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny from liftOver chains. Auto-diagonalized and colored by query chromosome, turning a dense hairball into a readable map of conserved blocks.',
       },
       {
-        label: 'Grape / peach / cacao 3-way synteny (MCScan blocks)',
+        label: 'Grape vs peach vs cacao - synteny view',
         spec: 'multiway_synteny/grape_peach_cacao',
         guide: 'tutorials/multiway_synteny',
         description:
           'Three plant genomes stacked in one synteny view, MCScan blocks connecting each adjacent pair. Auto-diagonalized and colored by the shared anchor genome.',
       },
       {
-        label: 'E. coli 4-strain pangenome (all-vs-all PAF)',
+        label: 'E. coli 4-strain all vs all PAF',
         spec: 'multiway_synteny/ecoli_pangenome',
         guide: 'tutorials/allvsall_synteny',
-        description:
-          'Four E. coli strains as a stacked pangenome, with one all-vs-all PAF track backing every band.',
+        description: 'Four E. coli strain all-vs-all alignment',
       },
     ],
   },
@@ -137,33 +136,33 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Structural variants',
     items: [
       {
-        label: 'SV inspector (SKBR3 translocations)',
+        label: 'SV inspector (SKBR3)',
         spec: 'sv_inspector_importform_loaded',
         guide: 'user_guides/sv_inspector_view',
         description:
           'Inter-chromosomal translocations in the SKBR3 cell line: a sortable table alongside a whole-genome circular overview.',
       },
       {
-        label: 'Breakpoint split view (SKBR3 translocation)',
+        label: 'Breakpoint split view',
         spec: 'breakpoint_split_view',
         guide: 'user_guides/sv_visualization',
         description:
           'An SKBR3 translocation in the breakpoint split view, connecting supporting reads (black curves) and the variant call (green, with feet showing directionality).',
       },
       {
-        label: '1000 genomes structural variants (chr19 inversion)',
+        label: '1000 Genomes SVs (chr19 inversion)',
         spec: 'multisv',
         guide: 'tutorials/sv_multisamples',
         description:
           'A large chr19 inversion in the 1000 Genomes SV VCF, found with the in-app clustering workflow.',
       },
       {
-        label: 'Inversion ("single row" breakpoint view)',
+        label: 'Inversion (single-row view)',
         session:
           '?config=test_data%2Fconfig_demo.json&session=share-sA7riIQWhJ&password=3pkHd',
       },
       {
-        label: 'Inversion (linked reads mode)',
+        label: 'Inversion (linked reads)',
         session:
           '?config=test_data%2Fconfig_demo.json&session=share-ofjI26CNas&password=ohqlR',
       },
@@ -171,51 +170,45 @@ export const gallerySections: readonly GallerySection[] = [
   },
   {
     id: 'alignments',
-    title: 'Alignments and long reads',
+    title: 'Alignments, long reads, and base modifications',
     items: [
       {
-        label: 'Heterozygous small deletion (GIAB, haplotype-sorted)',
+        label: 'Small deletion (haplotype-sorted)',
         spec: 'smalldel',
         guide: 'user_guides/alignments_track',
         description:
           'A heterozygous small deletion in GIAB nanopore reads, colored and grouped by HP (haplotype) tag — the deletion sits on one haplotype only.',
       },
       {
-        label: 'Insertion with multi-platform reads (GIAB)',
+        label: 'Insertion (multi-platform reads)',
         spec: 'insertion',
         guide: 'user_guides/alignments_track',
         description:
           'A ~1.5kb GIAB insertion across Nanopore, PacBio, and Illumina reads. Soft clipping on the Illumina reads marks the insertion boundaries the long reads span.',
       },
       {
-        label: 'RNA-seq splice junctions (ACTB)',
+        label: 'RNA-seq splice junctions',
         img: 'rnaseq/basic.png',
         guide: 'tutorials/rnaseq',
         description:
           'RNA-seq over ACTB: a coverage histogram, strand-colored splice-junction arcs, the spliced read pileup, and the gene model below.',
       },
       {
-        label: 'Fiber-seq 6mA (GAPDH promoter)',
+        label: 'Fiber-seq 6mA (GAPDH)',
         spec: 'gallery/fiberseq_gapdh',
         guide: 'tutorials/methylation',
         description:
           'ONT single-molecule fiber-seq over the GAPDH promoter, each read colored per-base by its 6mA (A+a) calls; single-cell ATAC above corroborates the open promoter. Data: nanopore HG002 fiber-seq and CATlas single-cell ATAC.',
       },
-    ],
-  },
-  {
-    id: 'methylation',
-    title: 'Methylation and base modifications',
-    items: [
       {
-        label: 'Nanopore methylation / modifications coloring',
+        label: 'Nanopore methylation coloring',
         spec: 'gallery/nanopore_methylation',
         guide: 'tutorials/methylation',
         description:
           'Human nanopore reads colored by base-modification (methylation) calls over a chr20 CpG island.',
       },
       {
-        label: 'Bisulfite / EM-seq methylation (Arabidopsis, three contexts)',
+        label: 'Bisulfite methylation (Arabidopsis)',
         spec: 'methylation/arabidopsis_wgbs_contexts',
         guide: 'tutorials/bisulfite',
         description:
@@ -228,28 +221,28 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Variants and populations',
     items: [
       {
-        label: '1000 genomes extended trio',
+        label: '1000 Genomes trio',
         spec: 'multi-sv-trio',
         guide: 'tutorials/sv_multisamples',
         description:
           'Coverage for a 1000 Genomes trio — mother, child, and father — beneath the ensemble structural-variant VCF.',
       },
       {
-        label: 'Trio phased VCF (inheritance in the genotype matrix)',
+        label: 'Trio phased VCF matrix',
         img: 'trio-matrix-phased-clean.png',
         guide: 'tutorials/analyze_trio',
         description:
           'A phased trio genotype matrix: child, mother, and father each as two haplotype rows, so matching blocks reveal which parental haplotype the child inherited.',
       },
       {
-        label: 'GWAS LocusZoom-style LD coloring (GIANT BMI, FTO locus)',
+        label: 'GWAS LD coloring (FTO locus)',
         spec: 'gallery/gwas_bmi_fto',
         guide: 'user_guides/gwas_track',
         description:
           'A Manhattan plot with LocusZoom-style LD coloring around the FTO obesity locus.',
       },
       {
-        label: 'More LocusZoom-style GWAS examples (Storybook) ↗',
+        label: 'More GWAS examples (Storybook) ↗',
         href: 'https://jbrowse.org/storybook/lgv/locus-zoom-ld',
       },
     ],
@@ -259,35 +252,35 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Coverage, copy number, and epigenomics',
     items: [
       {
-        label: 'CNV multi-quantitative track (COLO829 tumor vs normal)',
+        label: 'CNV track (COLO829 tumor/normal)',
         spec: 'cnv',
         guide: 'user_guides/multiquantitative_track',
         description:
           'Whole-genome COLO829 melanoma coverage, tumor and normal on one multi-quantitative track (mosdepth BigWigs).',
       },
       {
-        label: 'Clustered multi-sample copy-number track (1000 genomes)',
+        label: 'Clustered copy-number (1000 Genomes)',
         spec: 'gallery/copynumber_clustered',
         guide: 'user_guides/multiquantitative_track',
         description:
           'Copy-number profiles for many 1000 Genomes individuals as a multi-row density heatmap. The in-app "Cluster by score" workflow reorders rows by signal similarity.',
       },
       {
-        label: 'Hi-C contact matrix (chr8, hg19)',
+        label: 'Hi-C contact matrix',
         spec: 'hic_track',
         guide: 'user_guides/hic_track',
         description:
           'A Hi-C contact matrix from a .hic file (Juicebox format) over ~11 Mb of chr8, with the RefSeq gene track above.',
       },
       {
-        label: 'ChromHMM state painting (Roadmap)',
+        label: 'ChromHMM state painting',
         spec: 'chromhmm',
         guide: 'tutorials/chromhmm',
         description:
           'Dense chromatin-state annotations from Roadmap Epigenomics (127 epigenomes) in the multi-row feature display.',
       },
       {
-        label: 'Single-cell ATAC by cell type (CATlas, INS locus)',
+        label: 'Single-cell ATAC (INS locus)',
         spec: 'gallery/scatac_catlas',
         guide: 'tutorials/scatac_pseudobulk',
         description:
@@ -300,7 +293,7 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Genes, proteins, and compact genomes',
     items: [
       {
-        label: 'Horizontally flipped linear genome view',
+        label: 'Horizontally flipped view',
         spec: 'horizontally_flip',
         // the spec's base capture is the un-flipped top frame (the figure flips
         // via a capture-time menu action); open the flipped end-state directly
@@ -311,14 +304,14 @@ export const gallerySections: readonly GallerySection[] = [
           'The linear genome view flipped to read right-to-left (3′→5′), useful for anti-sense genes.',
       },
       {
-        label: 'SARS-CoV2 polyprotein (ORF1ab mature peptides)',
+        label: 'SARS-CoV-2 polyprotein (ORF1ab)',
         spec: 'gallery/sarscov2_polyprotein',
         guide: 'user_guides/gene_track',
         description:
           'The SARS-CoV-2 ORF1ab polyprotein colored by CDS frame and cleaved into its mature peptides.',
       },
       {
-        label: 'GPX1 selenoprotein (UGA→Sec readthrough)',
+        label: 'GPX1 selenoprotein (UGA→Sec)',
         spec: 'gene_track_selenocysteine',
         guide: 'user_guides/feature_sequence',
         description:
@@ -331,13 +324,13 @@ export const gallerySections: readonly GallerySection[] = [
     title: 'Full example instances and hubs',
     items: [
       {
-        label: 'Human demo instance (many tracks available)',
+        label: 'Human demo instance',
         session:
           '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
         demoOnly: true,
       },
       {
-        label: 'UCSC GenArk hub import (GCF_019202715.1)',
+        label: 'UCSC GenArk hub import',
         session:
           '?hubURL=https://hgdownload.soe.ucsc.edu/hubs/GCF/019/202/715/GCF_019202715.1/hub.txt&config=none',
         demoOnly: true,

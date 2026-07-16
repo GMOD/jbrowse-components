@@ -2,7 +2,12 @@
 import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import SidebarLayout from '../layouts/SidebarLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
-import { gallerySections, guidedDemos, itemHref } from '../lib/gallery.ts'
+import {
+  gallerySections,
+  guidedDemos,
+  itemGuideHref,
+  itemLiveHref,
+} from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
 ---
 
@@ -14,7 +19,7 @@ import page from '../styles/page.module.css'
 >
   <DocsSidebarNav slot="nav" currentSlug="demos" />
   <div class="showcase-main">
-    <div class={page.content}>
+    <div class={`${page.content} full`}>
       <h1>JBrowse 2 demos</h1>
       <p>
         Live sessions you can open and try in the app. The{' '}
@@ -23,35 +28,51 @@ import page from '../styles/page.module.css'
         in JBrowse desktop.
       </p>
 
-      {
-        gallerySections.map(s => (
-          <section>
-            <h2 id={s.id}>{s.title}</h2>
-            <ul>
-              {s.items.map(item => (
-                <li>
-                  <a href={itemHref(item, baseUrl)}>{item.label}</a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))
-      }
+      <div class="cols">
+        {
+          gallerySections.map(s => (
+            <section>
+              <h2 id={s.id}>{s.title}</h2>
+              <ul>
+                {s.items.map(item => {
+                  const liveHref = itemLiveHref(item)
+                  const guideHref = itemGuideHref(item, baseUrl)
+                  const guideLabel = item.guide?.startsWith('tutorials/')
+                    ? 'tutorial'
+                    : 'guide'
+                  return (
+                    <li>
+                      <a class="demo" href={liveHref || guideHref}>
+                        {item.label}
+                      </a>
+                      {liveHref && guideHref && (
+                        <a class="guide" href={guideHref}>
+                          {guideLabel}
+                        </a>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          ))
+        }
 
-      <section>
-        <h2 id="guided">Conference and other guided demos</h2>
-        <ul>
-          {
-            guidedDemos.map(d => (
-              <li>
-                <a href={d.href} target="_blank" rel="noopener">
-                  {d.label}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </section>
+        <section>
+          <h2 id="guided">Conference and other guided demos</h2>
+          <ul>
+            {
+              guidedDemos.map(d => (
+                <li>
+                  <a href={d.href} target="_blank" rel="noopener">
+                    {d.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </section>
+      </div>
     </div>
   </div>
 </SidebarLayout>
@@ -68,10 +89,38 @@ import page from '../styles/page.module.css'
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.75rem;
   }
+  .full {
+    max-width: none;
+  }
+  .cols {
+    columns: 18rem;
+    column-gap: 2.5rem;
+  }
+  .cols a.demo {
+    white-space: nowrap;
+  }
+  .cols a.guide {
+    margin-left: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .cols a.guide::before {
+    content: '· ';
+  }
+  .cols a.guide:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+  section {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
   h2 {
     font-size: 1.3rem;
     font-weight: 500;
-    margin: 2rem 0 0.5rem;
+    margin: 0 0 0.5rem;
     scroll-margin-top: 5rem;
   }
   ul {
