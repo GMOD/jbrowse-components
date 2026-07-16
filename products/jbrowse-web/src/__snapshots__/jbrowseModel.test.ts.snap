@@ -580,11 +580,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
-        "twoBitLocation": {
-          "locationType": "UriLocation",
-          "uri": "volvox.2bit",
+        "sequenceAdapter": {
+          "twoBitLocation": {
+            "locationType": "UriLocation",
+            "uri": "volvox.2bit",
+          },
+          "type": "TwoBitAdapter",
         },
-        "type": "TwoBitAdapter",
+        "type": "GCContentAdapter",
       },
       "assemblyNames": [
         "volvox",

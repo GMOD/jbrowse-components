@@ -108,10 +108,7 @@ import type {
   VisibleRegion,
 } from './components/hitTesting.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
-import type {
-  FeatureHighlight,
-  HighlightTarget,
-} from './featureHighlight.ts'
+import type { FeatureHighlight, HighlightTarget } from './featureHighlight.ts'
 import type { FitStage } from './fitLadder.ts'
 import type { IncrementalLayout, LabelDecimation } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
@@ -1835,7 +1832,10 @@ export default function baseStateModelFactory(
         // resolution (not exact signature) lets the menu's "Remove highlight"
         // also clear a search-originated highlight, whose stored span/name is
         // trix's — not the rendered item's exact span.
-        removeFeatureHighlightsForItem(target: HighlightTarget, refName: string) {
+        removeFeatureHighlightsForItem(
+          target: HighlightTarget,
+          refName: string,
+        ) {
           self.featureHighlights = cast(
             self.featureHighlights.filter(
               h => !targetMatchesHighlight(target, refName, h),
@@ -2591,7 +2591,8 @@ export default function baseStateModelFactory(
           const inSoloSet = self.soloFeatureIdSet.has(featureId)
           const soloCount = self.soloFeatureIds.length
           const subfeatureHighlighted =
-            !!subfeature && self.highlightedFeatureIdSet.has(subfeature.featureId)
+            !!subfeature &&
+            self.highlightedFeatureIdSet.has(subfeature.featureId)
           // Name each scope by its own type rather than hardcoding
           // "transcript"/"gene": subfeatureInfos carries more than transcripts
           // (a transposon's LTR parts, mature-protein regions), so fixed
@@ -2643,7 +2644,8 @@ export default function baseStateModelFactory(
                         : `Highlight this ${subfeatureNoun}`,
                     icon: Highlighter,
                     onClick: () => {
-                      const region = self.loadedRegions.get(displayedRegionIndex)
+                      const region =
+                        self.loadedRegions.get(displayedRegionIndex)
                       if (region) {
                         const target = {
                           startBp: subfeature.startBp,
@@ -2657,7 +2659,10 @@ export default function baseStateModelFactory(
                             region.refName,
                           )
                         } else {
-                          self.addFeatureHighlightForItem(target, region.refName)
+                          self.addFeatureHighlightForItem(
+                            target,
+                            region.refName,
+                          )
                         }
                       }
                     },

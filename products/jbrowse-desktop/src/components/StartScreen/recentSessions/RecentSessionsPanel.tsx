@@ -155,8 +155,7 @@ export default function RecentSessionPanel({
   // the in-session menu share its filters and default directory
   const promptOpenFile = async () => {
     const path = (await ipcRenderer.invoke('promptOpenFile')) as
-      | string
-      | undefined
+      string | undefined
     if (path) {
       await launch(path)
     }

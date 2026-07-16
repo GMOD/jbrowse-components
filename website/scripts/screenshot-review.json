@@ -146,8 +146,8 @@
     "name": "insertion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T11:09:05.694Z",
-    "hash": "f96f792faee8de64d326e826c1caccd012cd209f"
+    "reviewedAt": "2026-07-16T20:41:36.053Z",
+    "hash": "87f68fa95c29a1c318a6c3491a6f87267c9a7283"
   },
   "multisv": {
     "name": "multisv",
@@ -160,8 +160,8 @@
     "name": "breakpoint_split_view",
     "status": "good",
     "note": "FIXED+regen: taller viewport + short (h90) variant lanes; both panels + splines captured.",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
-    "hash": "99f8dc57223adf4b416414c7ef00c91a66f6c30a"
+    "reviewedAt": "2026-07-16T20:44:09.850Z",
+    "hash": "93cf2c96176aaaf9b672cac17b93e85fa95479fe"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -273,17 +273,17 @@
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-15T02:33:55.600Z",
-    "hash": "813ce60a56822522635fbc0ca1d67ae7fb228b42"
+    "status": "bad",
+    "note": "might consider using the  'two color' rendering type for this screenshot",
+    "reviewedAt": "2026-07-16T20:43:56.103Z",
+    "hash": "9f30826ead2af52810042b35b9326783fab9d24f"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T03:49:05.557Z",
-    "hash": "b6b1d177587c007d55cbd5aea55521ec39f839b1"
+    "reviewedAt": "2026-07-16T20:41:32.199Z",
+    "hash": "4e819da3a4938787a1087f93155378b35a10170a"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -485,8 +485,8 @@
     "name": "feature_detail_sequence",
     "status": "good",
     "note": "FIXED+regen: swapped PTEN->HBB (small gene, tiny UTR/CDS/intron all visible).",
-    "reviewedAt": "2026-07-08T23:35:18.206Z",
-    "hash": "0f246246c49f6615afb66a8ad6cfc35dcfa71ca6"
+    "reviewedAt": "2026-07-16T20:44:10.148Z",
+    "hash": "2c18af18ac8affe3a5779616c363870d480ef283"
   },
   "hic_track": {
     "name": "hic_track",
@@ -853,10 +853,10 @@
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "good",
-    "note": "FIXED all three points. (a) Probability text is now short: \"Probability mode: every CpG painted — red = methylated, blue = low probability or unmarked\" — reviewer supplied the wording. (b) Accurate now: verified in extract.ts that blue is every CpG whose most likely state is unmodified, i.e. both MM-uncalled AND low-probability calls; the old text claimed only the first. (c) Dropped the track menu from the frame entirely (reviewer): the mode radios carry no color swatches at that level, so the menu covered half the reads to show nothing the row labels do not. Both doc captions (alignments_track.md, methylation.md) carried the same inaccuracy and were corrected too.",
-    "reviewedAt": "2026-07-15T03:15:18.352Z",
-    "hash": "b5f2c049716479a76f0707783326a3a06c48de9c"
+    "status": "bad",
+    "note": "might consider adding legends to these two tracks",
+    "reviewedAt": "2026-07-16T20:44:19.742Z",
+    "hash": "5a89c306c7be93cc598d601f2887a6cb4afcbc8c"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -895,9 +895,9 @@
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
     "status": "good",
-    "note": "FIXED: added the somatic-SV benchmark VCF (compact lane) to both breakpoint-split panels (reviewer), so each panel anchors its reads to the benchmark BND call (SV_20 / SV_190 reciprocal). Regenerated.",
-    "reviewedAt": "2026-07-12T04:54:18.113Z",
-    "hash": "73b25f2bc9db0d65a0f3a91e7f4c91865b9bad3b"
+    "note": "",
+    "reviewedAt": "2026-07-16T20:45:02.605Z",
+    "hash": "cecc0e515b7eafbdbd87706bbeddb430837f0301"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
@@ -908,16 +908,16 @@
   "trio-crossover-paternal": {
     "name": "trio-crossover-paternal",
     "status": "good",
-    "note": "FIXED: on-image captions now name the highlight FRAME colours (yellow/purple) instead of the painting colours (light/dark blue) that clashed with the blue variant track (reviewer). Regenerated.",
-    "reviewedAt": "2026-07-13T05:59:24.291Z",
-    "hash": "a6ac979251746a14cec66b8152e2b5f0d2c44f0a"
+    "note": "",
+    "reviewedAt": "2026-07-16T20:42:32.434Z",
+    "hash": "50167e10fc7e569dc024e36b587586e715cd6c55"
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
     "status": "good",
     "note": "FIXED: on-image captions now name the highlight FRAME colours (green/orange) instead of red/pink that clashed with the blue variant track (reviewer). Regenerated.",
-    "reviewedAt": "2026-07-13T05:58:34.439Z",
-    "hash": "b57021f29fe3d414d3a2fafb07209fd669c62c5f"
+    "reviewedAt": "2026-07-16T20:44:12.662Z",
+    "hash": "84238299ab2efab9d476a2ced385eb9ca884f602"
   },
   "maf_track": {
     "name": "maf_track",
@@ -1018,8 +1018,8 @@
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-10T18:58:17.261Z",
-    "hash": "5d4959f5a66ce28ed7d6761e3b71ccc4a7d1805f"
+    "reviewedAt": "2026-07-16T20:49:46.184Z",
+    "hash": "fe5482716dce799f3b92267dcfe04540c5665af1"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
@@ -1094,8 +1094,8 @@
     "name": "protein/connected",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T05:30:31.518Z",
-    "hash": "6379a3675a4975aad76f20591e980e371abc70b5"
+    "reviewedAt": "2026-07-16T20:42:18.603Z",
+    "hash": "4ae6e222813979386ccb91870a59d76212e6e9e1"
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
@@ -1108,8 +1108,8 @@
     "name": "feature_detail_protein",
     "status": "good",
     "note": "add a red box around the 'sequence feature panel'",
-    "reviewedAt": "2026-07-08T21:24:12.217Z",
-    "hash": "d425796332d989ae4b06846ec0832bf4b115d53e"
+    "reviewedAt": "2026-07-16T20:42:45.198Z",
+    "hash": "805db71e0d1e3ecdf601b4ad824d34285640aab4"
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
@@ -1122,8 +1122,8 @@
     "name": "chromhmm",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T03:40:47.295Z",
-    "hash": "f4f67af8a98847e4d6db13621dbe9ef37c2fec7c"
+    "reviewedAt": "2026-07-16T20:41:28.065Z",
+    "hash": "86cc17266423ab1b0420cf6b3d0c5d0384be65d9"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1227,8 +1227,8 @@
     "name": "search_feature_highlight",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-13T05:58:04.158Z",
-    "hash": "136a4d021bc86c3b2040081a87eebe1811d54ed1"
+    "reviewedAt": "2026-07-16T20:42:15.241Z",
+    "hash": "b4241f5d999892fcd0c4926e992e8300f42b8b85"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
@@ -1457,8 +1457,8 @@
     "name": "methylation/arabidopsis_wgbs_contexts",
     "status": "good",
     "note": "FIXED: the multiwiggle per-row labels the reviewer asked for already existed (SvgRowLabels via MultiWiggleSvgScales) and render correctly at rowHeight 56 — the committed PNG was just STALE. The three labels are only 0.166% of the frame, under the 0.5% content-stable diff gate, so every regen reported \"kept\". Force-regenerated: CpG/CHG/CHH now label the three aggregate rows. The three per-read tracks already carry their context in their names (\"Per-read WGBS — CpG context\"), so no extra annotations were needed.",
-    "reviewedAt": "2026-07-15T03:11:55.433Z",
-    "hash": "39ca2a13656c667b83a99ccdb26178459bc69a51"
+    "reviewedAt": "2026-07-16T20:41:44.840Z",
+    "hash": "41754a4149475d831682e7e5e80e3155886f37ac"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1597,5 +1597,12 @@
     "note": "FIXED: viewportHeight 760 -> 660, trimming 100px off both frames as asked. MUI reflows the Read-height submenu upward to stay inside the shorter viewport (all rows through \"Fit read height to display\" still visible) and the pin circle anchors to the live element, so it followed. Regenerated + verified.",
     "reviewedAt": "2026-07-15T03:15:18.351Z",
     "hash": "5b01c89980a8e5a328330c19c8a8846c85c95123"
+  },
+  "multiway_synteny/ecoli_stx_island": {
+    "name": "multiway_synteny/ecoli_stx_island",
+    "status": "bad",
+    "note": "zoom out a bit more please",
+    "reviewedAt": "2026-07-16T20:42:05.324Z",
+    "hash": "df56566c699b7752a74d7f84ae436df52499c583"
   }
 }
