@@ -1809,9 +1809,18 @@ export default function baseStateModelFactory(
         // search supersedes the old one, manual highlights accumulate so a user
         // can mark several features at once; skip the add if this feature already
         // resolves to a stored highlight (idempotent re-highlight).
+        //
+        // That dedupe holds only within the target's own scope. An unscoped
+        // (search) highlight fuzzily matches a transcript whose span equals its
+        // gene's while boxing the gene, not the transcript — counting that as a
+        // duplicate would make the menu's "Highlight this transcript" a dead
+        // click, since the entry is offered precisely because the transcript
+        // ISN'T boxed. Removal stays cross-scope on purpose (see below).
         addFeatureHighlightForItem(target: HighlightTarget, refName: string) {
-          const already = self.featureHighlights.some(h =>
-            targetMatchesHighlight(target, refName, h),
+          const already = self.featureHighlights.some(
+            h =>
+              !!h.subfeature === !!target.subfeature &&
+              targetMatchesHighlight(target, refName, h),
           )
           if (!already) {
             self.featureHighlights.push({

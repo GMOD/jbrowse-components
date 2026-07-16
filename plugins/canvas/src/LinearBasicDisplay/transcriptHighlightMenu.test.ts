@@ -207,6 +207,20 @@ describe('transcript highlight context menu', () => {
     expect(menuLabels(display)).toContain('Highlight this mRNA')
   })
 
+  it('falls back to span alone for an unnamed subfeature, boxing its twins', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const unnamed = makeTranscript({ displayLabel: undefined })
+    loadGene(display, [unnamed, eden2])
+
+    display.openContextMenu(gene, 0, 0, 0, unnamed)
+    clickLabel(display, 'Highlight this mRNA')
+
+    // no name to tell it from its same-span sibling, so both get boxed. Deliberate:
+    // requiring a name here would resolve to nothing and make the click dead.
+    expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1', 'EDEN.2'])
+  })
+
   it('boxes the clicked isoform on hover while the menu is open', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -230,5 +244,25 @@ describe('transcript highlight context menu', () => {
 
     // still resolves to the gene by span, unaffected by the new subfeature scope
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN'])
+  })
+
+  it('scopes an isoform highlight down from a search highlight on its gene', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({
+      featureHighlights: [
+        { refName: 'ctgA', start: 1050, end: 9000, name: 'EDEN' },
+      ],
+    })
+    loadGene(display, [eden1, eden2, eden3])
+
+    display.openContextMenu(gene, 0, 0, 0, eden1)
+
+    // the search highlight boxes the gene, so EDEN.1 is NOT highlighted and the
+    // menu offers to add it — the click must not be swallowed as a duplicate
+    // just because the search highlight's span happens to equal EDEN.1's
+    clickLabel(display, 'Highlight mRNA EDEN.1')
+
+    expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN', 'EDEN.1'])
+    expect(menuLabels(display)).toContain('Remove mRNA highlight')
   })
 })

@@ -1,5 +1,8 @@
 import type { FlatbushItem } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
+// The fields any rendered item — top-level feature or subfeature — is matched on
+type HighlightItem = Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>
+
 // A declarative request to highlight a feature by its identity signature rather
 // than by its internal uniqueId. Text search (trix) never serializes the
 // adapter's uniqueId, and that id is synthetic/unstable anyway (file offset or
@@ -13,17 +16,18 @@ export interface FeatureHighlight {
   start: number
   end: number
   name?: string
-  // Resolve against subfeatures (transcripts) only, keyed on an exact name
-  // match. Set by the right-click "highlight this transcript" path, never by
-  // text search.
+  // Resolve against subfeatures (transcripts) only. Set by the right-click
+  // "highlight this transcript" path, never by text search.
   //
   // A span alone cannot address a transcript: isoforms routinely share their
   // gene's exact span AND each other's — GFF3's canonical EDEN has gene,
   // EDEN.1 and EDEN.2 all spanning 1050..9000. Span-first matching would
   // resolve every one of them to the gene and box the whole locus. So a
-  // subfeature-scoped highlight skips top-level features entirely and requires
-  // the name to match exactly, which is the only thing telling EDEN.1 from
-  // EDEN.2 apart.
+  // subfeature-scoped highlight skips top-level features entirely and adds the
+  // name as a REQUIRED exact match, which is the only thing telling EDEN.1 from
+  // EDEN.2 apart. An unnamed subfeature falls back to span alone and so boxes
+  // its same-span siblings too — nothing distinguishes them, and over-boxing
+  // beats a menu entry that does nothing when clicked.
   subfeature?: boolean
 }
 
@@ -57,38 +61,40 @@ function nameMatches(name: string | undefined, h: FeatureHighlight) {
   return !!h.name && !!name && name.toLowerCase() === h.name.toLowerCase()
 }
 
+// The unscoped (text-search) rule: span-first, with an exact name rescuing an
+// overlapping span that drifted.
+function fuzzyMatches(item: HighlightItem, h: FeatureHighlight) {
+  const overlaps = item.endBp > h.start && item.startBp < h.end
+  return spanMatches(item, h) || (overlaps && nameMatches(item.name, h))
+}
+
 export function featureMatchesHighlight(
-  item: Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>,
+  item: HighlightItem,
   itemRefName: string,
   h: FeatureHighlight,
 ) {
   // a subfeature-scoped highlight never resolves to a top-level feature, even
   // when the spans coincide — that's the whole point of the scope
-  if (itemRefName !== h.refName || h.subfeature) {
-    return false
-  }
-  const overlaps = item.endBp > h.start && item.startBp < h.end
-  return spanMatches(item, h) || (overlaps && nameMatches(item.name, h))
+  return itemRefName === h.refName && !h.subfeature && fuzzyMatches(item, h)
 }
 
 // Does this rendered subfeature (transcript) match the highlight? Two callers
 // with different needs:
-//   - scoped (right-click) → exact name + span, the only way to tell same-span
-//     isoforms apart.
+//   - scoped (right-click) → span + the exact name, the only way to tell
+//     same-span isoforms apart (span alone when the subfeature is unnamed).
 //   - unscoped (text search) → the fuzzy fallback, for a searched transcript
 //     whose span is a subspan of its gene, where the gene never matched.
 export function subfeatureMatchesHighlight(
-  item: { startBp: number; endBp: number; name?: string },
+  item: HighlightItem,
   itemRefName: string,
   h: FeatureHighlight,
 ) {
-  if (itemRefName !== h.refName) {
-    return false
-  }
-  const overlaps = item.endBp > h.start && item.startBp < h.end
-  return h.subfeature
-    ? spanMatches(item, h) && (h.name ? nameMatches(item.name, h) : true)
-    : spanMatches(item, h) || (overlaps && nameMatches(item.name, h))
+  return (
+    itemRefName === h.refName &&
+    (h.subfeature
+      ? spanMatches(item, h) && (h.name ? nameMatches(item.name, h) : true)
+      : fuzzyMatches(item, h))
+  )
 }
 
 // Does a stored highlight resolve to this rendered target? Dispatches on the

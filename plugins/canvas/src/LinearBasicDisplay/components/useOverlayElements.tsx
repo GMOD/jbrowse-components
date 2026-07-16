@@ -63,72 +63,75 @@ function overlaysReady(
   return viewInitialized && !!width && !!bpPerPx && visibleRegions.length > 0
 }
 
-const useStyles = makeStyles()(theme => ({
-  // Absolute layer holding every floating label. It owns ONE delegated
-  // click/contextmenu/mousemove handler (see useFloatingLabels) rather than a
-  // per-label closure, so repositioning during zoom/pan — which rebuilds all
-  // labels each frame — allocates no per-feature handlers. pointerEvents:none
-  // lets mouse events fall through to the canvas everywhere except over a
-  // clickable label (which re-enables them and bubbles up to this layer's
-  // delegated handler).
-  labelLayer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    pointerEvents: 'none',
-  },
-  // Color is applied inline per-label from the worker-baked label.color (the
-  // single source of truth the SVG export also consumes), so the DOM overlay
-  // and the export can't drift. It's safe to read here rather than re-deriving
-  // from the live theme because the active theme is an RPC cache key
-  // (rpcProps.theme): switching themes clears and refetches, so a shown label's
-  // baked color always matches the current theme. fontSize is likewise inline
-  // from the model's resolved label size (it shrinks in compact display modes).
-  floatingLabel: {
-    position: 'absolute',
-    lineHeight: 1,
-    whiteSpace: 'nowrap',
-  },
-  floatingLabelClickable: {
-    pointerEvents: 'auto',
-    cursor: 'pointer',
-  },
-  floatingLabelStatic: {
-    pointerEvents: 'none',
-  },
-  // Light backing rect for overlay labels; the text color still comes from the
-  // baked label.color (worker sets it to a dark tone that reads on this rect).
-  floatingLabelOverlay: {
-    background: LABEL_OVERLAY_BACKGROUND,
-  },
-  // Overlay boxes: only left/top/width/height vary per-feature (inline); the
-  // appearance below is all static theme derivation. Weight ranks the states:
-  // selection (2px solid) is the strongest, the search highlight is deliberately
-  // lighter (1px, translucent border + faint tint) so it reads as transient.
-  overlayBase: {
-    position: 'absolute',
-    pointerEvents: 'none',
-  },
-  hoverOverlay: {
-    backgroundColor: theme.palette.featureHover,
-  },
-  soloBox: {
-    border: `2px dashed ${theme.palette.primary.main}`,
-    borderRadius: 3,
-    backgroundColor: alpha(theme.palette.primary.main, 0.15),
-  },
-  searchHighlightBox: {
-    border: `1px solid ${highlightBoxColors(theme.palette.highlight.main).border}`,
-    borderRadius: 3,
-    backgroundColor: highlightBoxColors(theme.palette.highlight.main).fill,
-  },
-  selectedBox: {
-    border: `2px solid ${theme.palette.featureSelected}`,
-    borderRadius: 3,
-  },
-}))
+const useStyles = makeStyles()(theme => {
+  const highlightBox = highlightBoxColors(theme.palette.highlight.main)
+  return {
+    // Absolute layer holding every floating label. It owns ONE delegated
+    // click/contextmenu/mousemove handler (see useFloatingLabels) rather than a
+    // per-label closure, so repositioning during zoom/pan — which rebuilds all
+    // labels each frame — allocates no per-feature handlers. pointerEvents:none
+    // lets mouse events fall through to the canvas everywhere except over a
+    // clickable label (which re-enables them and bubbles up to this layer's
+    // delegated handler).
+    labelLayer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      pointerEvents: 'none',
+    },
+    // Color is applied inline per-label from the worker-baked label.color (the
+    // single source of truth the SVG export also consumes), so the DOM overlay
+    // and the export can't drift. It's safe to read here rather than re-deriving
+    // from the live theme because the active theme is an RPC cache key
+    // (rpcProps.theme): switching themes clears and refetches, so a shown label's
+    // baked color always matches the current theme. fontSize is likewise inline
+    // from the model's resolved label size (it shrinks in compact display modes).
+    floatingLabel: {
+      position: 'absolute',
+      lineHeight: 1,
+      whiteSpace: 'nowrap',
+    },
+    floatingLabelClickable: {
+      pointerEvents: 'auto',
+      cursor: 'pointer',
+    },
+    floatingLabelStatic: {
+      pointerEvents: 'none',
+    },
+    // Light backing rect for overlay labels; the text color still comes from the
+    // baked label.color (worker sets it to a dark tone that reads on this rect).
+    floatingLabelOverlay: {
+      background: LABEL_OVERLAY_BACKGROUND,
+    },
+    // Overlay boxes: only left/top/width/height vary per-feature (inline); the
+    // appearance below is all static theme derivation. Weight ranks the states:
+    // selection (2px solid) is the strongest, the search highlight is deliberately
+    // lighter (1px, translucent border + faint tint) so it reads as transient.
+    overlayBase: {
+      position: 'absolute',
+      pointerEvents: 'none',
+    },
+    hoverOverlay: {
+      backgroundColor: theme.palette.featureHover,
+    },
+    soloBox: {
+      border: `2px dashed ${theme.palette.primary.main}`,
+      borderRadius: 3,
+      backgroundColor: alpha(theme.palette.primary.main, 0.15),
+    },
+    searchHighlightBox: {
+      border: `1px solid ${highlightBox.border}`,
+      borderRadius: 3,
+      backgroundColor: highlightBox.fill,
+    },
+    selectedBox: {
+      border: `2px solid ${theme.palette.featureSelected}`,
+      borderRadius: 3,
+    },
+  }
+})
 
 export function useFloatingLabels(
   renderDataMap: Map<number, FeatureDataResult>,
