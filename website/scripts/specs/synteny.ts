@@ -271,6 +271,73 @@ export const syntenySpecs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
+  // The "Add gene tracks" payoff for allvsall_synteny.md: what a ribbon gap
+  // actually contains. Two rows (K12 over Sakai) at the Sp5 prophage that
+  // carries stx2A/stx2B (Sakai chr:1,267,107-1,268,347).
+  //
+  // The loci are not a free choice — they are read off the PAF. One 35 kb block
+  // (Sakai 1,210,882-1,246,166 <-> K12 1,031,619-1,067,671, 1:1) is the shared
+  // backbone; it ends at Sakai 1,246,166 and nothing from Sakai 1,252,260 to
+  // 1,274,685 aligns to K-12 at all. So the K12 window is placed to end just
+  // past where that block runs out: the ribbon enters from the left, stops, and
+  // the stx2 genes sit in the bare stretch beyond it with no ribbon above them.
+  // (The island's own far flanks align to K12 ~566 kb, a different locus — the
+  // prophage inserted into a rearranged site — which is why this frames the
+  // backbone block rather than the flanks.)
+  //
+  // showOnlyGenes drops the CDS lanes and the full-width `region` feature that
+  // RefSeq GFFs carry for the whole chromosome. No minAlignmentLength: at this
+  // zoom the short alignments are signal, not noise.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_stx_island',
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              {
+                assembly: 'K12',
+                loc: 'chr:1,050,000-1,072,000',
+                tracks: [
+                  {
+                    trackId: 'K12_genes',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                    showDescriptions: false,
+                  },
+                ],
+              },
+              {
+                assembly: 'Sakai',
+                loc: 'chr:1,232,000-1,278,000',
+                tracks: [
+                  {
+                    trackId: 'Sakai_genes',
+                    showOnlyGenes: true,
+                    displayMode: 'compact',
+                    showDescriptions: false,
+                  },
+                ],
+              },
+            ],
+            tracks: [['ecoli_ava']],
+            drawCurves: true,
+            colorBy: 'default',
+          },
+        ],
+      },
+    ),
+    viewportHeight: 560,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
+
   // The Linear synteny view import form for the allvsall_synteny.md "From the
   // UI" section, using the all-vs-all quick-start path. A bare LinearSyntenyView
   // session spec is rejected (needs >=2 views), so open it the way a user does:

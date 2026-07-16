@@ -276,6 +276,12 @@ all. The second copy, `stx1A`/`stx1B`, is at `chr:2,924,600-2,925,900`. That
 absence is the point: these are the prophage-borne genes that make O157:H7
 pathogenic and that K-12 simply does not carry.
 
+<Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The ribbon carries the backbone the two strains share — the tor operon, cbpA, wrbA — and runs out at Sakai 1,246,166. Everything right of it, stx2B included, is ~22 kb of Sakai with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
+
+The row order matters less than the framing: the K-12 window is placed where
+that shared block ends, so the ribbon terminating mid-figure _is_ the island
+boundary.
+
 ## One strain against all the others
 
 Stacking is not the only thing the file is good for. Put the same track in a
