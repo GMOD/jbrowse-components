@@ -193,6 +193,73 @@ test('pileup marks CIGAR deletions/skips/insertions', () => {
   ).toContain('bam_indels(aln, chrom, start, end)')
 })
 
+test('sortedBy reorders the pileup with sorted_pileup_layout', () => {
+  // no sort -> plain pileup_layout
+  const [, plain] = alignmentsFragments(base)
+  expect(plain!.helpers).toContain('pileup_layout')
+  expect(plain!.helpers).not.toContain('sorted_pileup_layout')
+
+  // position / strand sorts thread the type + baked center-line column
+  const [, byPos] = alignmentsFragments({
+    ...base,
+    sortType: 'position',
+    sortPos: 4200,
+  })
+  expect(byPos!.helpers).toContain('sorted_pileup_layout')
+  expect(byPos!.helpers).not.toContain('pileup_layout')
+  expect(byPos!.plotExpr).toContain('sort_pos <- 4200')
+  expect(byPos!.plotExpr).toContain(
+    'sorted_pileup_layout(read_bam(aln, chrom, start, end), sort_pos, "position")',
+  )
+
+  const [, byStrand] = alignmentsFragments({
+    ...base,
+    sortType: 'strand',
+    sortPos: 4200,
+  })
+  expect(byStrand!.plotExpr).toContain(
+    'sorted_pileup_layout(read_bam(aln, chrom, start, end), sort_pos, "strand")',
+  )
+})
+
+test('base sort feeds the MD-tag mismatch base at sort_pos into the layout', () => {
+  const [, byBase] = alignmentsFragments({
+    ...base,
+    sortType: 'base',
+    sortPos: 4200,
+  })
+  // base sort needs bam_mismatches even under a scheme that wouldn't pull it in
+  expect(byBase!.helpers).toEqual(
+    expect.arrayContaining(['sorted_pileup_layout', 'bam_mismatches']),
+  )
+  expect(byBase!.plotExpr).toContain(
+    'sorted_pileup_layout(read_bam(aln, chrom, start, end), sort_pos, "base",',
+  )
+  expect(byBase!.plotExpr).toContain('bam_mismatches(aln, chrom, start, end))')
+
+  // base sort under the modifications scheme (which greys bodies) still sorts
+  const [, modsBase] = alignmentsFragments({
+    ...base,
+    colorBy: 'modifications',
+    sortType: 'base',
+    sortPos: 4200,
+  })
+  expect(modsBase!.helpers).toContain('bam_mismatches')
+})
+
+test('linkReads (chain layout) suppresses the position sort', () => {
+  // chain layout packs whole templates, so a per-read localized sort doesn't apply
+  const [, linked] = alignmentsFragments({
+    ...base,
+    linkReads: true,
+    sortType: 'position',
+    sortPos: 4200,
+  })
+  expect(linked!.helpers).toContain('link_reads')
+  expect(linked!.helpers).not.toContain('sorted_pileup_layout')
+  expect(linked!.plotExpr).not.toContain('sort_pos')
+})
+
 test('SNP coverage thresholds low-frequency mismatches by default', () => {
   const [cov] = alignmentsFragments(base)
   expect(cov!.helpers).toContain('snp_freq_threshold')

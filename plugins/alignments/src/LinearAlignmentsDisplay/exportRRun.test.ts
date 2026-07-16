@@ -13,6 +13,7 @@ const baseParams = {
   linkReads: false,
   showLowFreqMismatches: false,
   modificationThreshold: 0.1,
+  sortPos: -1,
 }
 
 // Only run when R + the Bioconductor alignment stack are installed (skipped in
@@ -288,6 +289,129 @@ cat(nrow(reads), length(unique(linked$reads$name)), nrow(linked$links),
     expect(links!).toBeGreaterThan(0)
     // every read is assigned a chain row
     expect(unrowed).toBe(0)
+  },
+  90000,
+)
+
+// sortedBy "base": the generated sort-pileup script must run, and
+// sorted_pileup_layout must order the reads covering the center column by their
+// base there — the alt-allele reads (the known C-SNP at ctgA:1693) all take
+// lower rows than the reference-matching reads, JBrowse's "Sort by base" grouping
+maybe(
+  'base-sort pileup script runs and groups alt reads above ref reads',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      sortType: 'base',
+      sortPos: 1693,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 1600, end: 1800 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-sortbase-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // probe: the reads covering 1693 must be sorted so every C-allele read sits
+    // above (lower row) every reference-matching read
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+reads <- read_bam(${JSON.stringify(bam)}, "ctgA", 1600, 1800)
+mm <- bam_mismatches(${JSON.stringify(bam)}, "ctgA", 1600, 1800)
+laid <- sorted_pileup_layout(reads, 1693, "base", mm)
+ov <- which(laid$start <= 1693 & laid$end > 1693)
+# alt = reads carrying any mismatch base at the SNP column; ref = reads matching
+# the reference there (no mismatch entry) - the base sort places all alt above ref
+alt <- intersect(mm$read_index[mm$refpos == 1693], ov)
+ref <- setdiff(ov, alt)
+cat(length(alt), length(ref), max(laid$row[alt]), min(laid$row[ref]), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [nAlt, nRef, maxAltRow, minRefRow] = out.split(/\s+/).map(Number)
+    // both allele groups are present at the SNP column (the C-SNP dominates, so
+    // only a few reads still match the reference there)
+    expect(nAlt!).toBeGreaterThan(3)
+    expect(nRef!).toBeGreaterThan(0)
+    // and every alt read is placed strictly above every ref read (the sort)
+    expect(maxAltRow!).toBeLessThan(minRefRow!)
+  },
+  90000,
+)
+
+// sortedBy "position"/"strand": the localized sort at the center line orders the
+// reads covering it (position = ascending start; strand = forward first) and the
+// generated figure runs
+maybe(
+  'position/strand-sort pileup scripts run and order the center reads',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    for (const sortType of ['position', 'strand'] as const) {
+      const fragments = alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox reads',
+        uri: bam,
+        showCoverage: false,
+        showPileup: true,
+        colorBy: 'normal',
+        sortType,
+        sortPos: 3100,
+      })
+      const script = assembleRScript(
+        { refName: 'ctgA', start: 3000, end: 3200 },
+        fragments,
+      )
+      const dir = mkdtempSync(join(tmpdir(), `jb-rexport-sort-${sortType}-`))
+      writeFileSync(join(dir, 'view.R'), script)
+      execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+      expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+    }
+
+    // probe position sort: among the reads covering the column, row order follows
+    // ascending genomic start (each overlapping read gets its own row)
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox reads',
+        uri: bam,
+        showCoverage: false,
+        showPileup: true,
+        colorBy: 'normal',
+        sortType: 'position',
+        sortPos: 3100,
+      })[0]!,
+    ]).split('# Data sources')[0]!
+    const probe = `${helpers}
+reads <- read_bam(${JSON.stringify(bam)}, "ctgA", 3000, 3200)
+laid <- sorted_pileup_layout(reads, 3100, "position")
+ov <- which(laid$start <= 3100 & laid$end > 3100)
+o <- ov[order(laid$row[ov])]
+cat(length(ov), as.integer(!is.unsorted(laid$start[o])), "\\n")
+`
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-sortpos-'))
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [nOverlap, startsAscending] = out.split(/\s+/).map(Number)
+    expect(nOverlap!).toBeGreaterThan(1)
+    // rows follow ascending genomic start for the reads over the sort column
+    expect(startsAscending).toBe(1)
   },
   90000,
 )
