@@ -241,39 +241,39 @@ export function featurizeSAEntries(
 ) {
   const strandNum = strand ?? 1
   return entries.map((aln, index) => {
-        const ret = aln.split(',')
-        const saRef = ret[0]!
-        const saStart = ret[1]!
-        const saStrand = ret[2]!
-        const saCigar = ret[3]!
-        const saOps = parseCigar2(saCigar)
-        const {
-          lengthOnRef: saLengthOnRef,
-          length: saLength,
-          lengthSansClipping: saLengthSansClipping,
-        } = cigarLengths(saOps)
-        const saStrandNormalized: -1 | 1 = saStrand === '-' ? -1 : 1
-        const effectiveStrand: -1 | 1 = normalize
-          ? strandNum === saStrandNormalized
-            ? 1
-            : -1
-          : saStrandNormalized
-        const saClipPos = clipLengthAtStartOfReadNumeric(saOps, effectiveStrand)
-        const saRealStart = +saStart - 1
-        return {
-          refName: saRef,
-          start: saRealStart,
-          end: saRealStart + saLengthOnRef,
-          seqLength: saLength,
-          clipLengthAtStartOfRead: saClipPos,
-          CIGAR: saCigar,
-          strand: effectiveStrand,
-          uniqueId: `${id}_SA${index}`,
-          mate: {
-            start: saClipPos,
-            end: saClipPos + saLengthSansClipping,
-            refName: readName,
-          },
-        }
+    const ret = aln.split(',')
+    const saRef = ret[0]!
+    const saStart = ret[1]!
+    const saStrand = ret[2]!
+    const saCigar = ret[3]!
+    const saOps = parseCigar2(saCigar)
+    const {
+      lengthOnRef: saLengthOnRef,
+      length: saLength,
+      lengthSansClipping: saLengthSansClipping,
+    } = cigarLengths(saOps)
+    const saStrandNormalized: -1 | 1 = saStrand === '-' ? -1 : 1
+    const effectiveStrand: -1 | 1 = normalize
+      ? strandNum === saStrandNormalized
+        ? 1
+        : -1
+      : saStrandNormalized
+    const saClipPos = clipLengthAtStartOfReadNumeric(saOps, effectiveStrand)
+    const saRealStart = +saStart - 1
+    return {
+      refName: saRef,
+      start: saRealStart,
+      end: saRealStart + saLengthOnRef,
+      seqLength: saLength,
+      clipLengthAtStartOfRead: saClipPos,
+      CIGAR: saCigar,
+      strand: effectiveStrand,
+      uniqueId: `${id}_SA${index}`,
+      mate: {
+        start: saClipPos,
+        end: saClipPos + saLengthSansClipping,
+        refName: readName,
+      },
+    }
   })
 }

@@ -65,6 +65,7 @@ agent-docs/ARCHITECTURE.md "Display stacks".
 | [start](#property-start)                                                 | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [end](#property-end)                                                     | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [name](#property-name)                                                   | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| [subfeature](#property-subfeature)                                       | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [configuration](#property-configuration)                                 | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [jexlFiltersSetting](#property-jexlfilterssetting)                       | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Runtime "Filter by..." override. When set (even to an empty list) it replaces the `jexlFilters` config slot; when undefined the config default applies. Stored as already-`jexl:`-prefixed expressions (runtime convention), unlike the deferred-evaluation config slot.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [pinnedFeatureIds](#property-pinnedfeatureids)                           | Properties | [LinearCanvasBaseDisplay](../linearcanvasbasedisplay) | Feature ids the user pinned to the top of the layout via the feature right-click menu. Pinned features are inserted first into the greedy row-packer, so they hold the topmost rows in their bp range across zoom re-packs (see packRef in layout.ts). stripDefault so a display with nothing pinned omits the empty array from its snapshot. Persisted by uniqueId, which resolves back to the same feature after a plain reload of the same remote file: every adapter id is `adp-<configHash>` (idMaker over the config) plus a file byte offset (tabix/BigBed) or a deterministic full-file parse index (plain GFF3/BED/VCF). Caveat: NOT robust to editing a file read by a plain (non-tabix) adapter (the indices shift), nor to local blob files (their handleId changes each session — but a blob can't reload its data across refresh anyway). Same basis for solo/hiddenFeatureIds.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -436,6 +437,15 @@ type name = IMaybe<ISimpleType<string>>
 name: types.maybe(types.string)
 ```
 
+#### property: subfeature
+
+```ts
+// type signature
+type subfeature = IMaybe<ISimpleType<boolean>>
+// code
+subfeature: types.maybe(types.boolean)
+```
+
 #### property: configuration
 
 ```ts
@@ -548,7 +558,7 @@ snapshot.
 
 ```ts
 // type signature
-type featureHighlights = IOptionalIType<IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; name: IMaybe<ISimpleType<string>>; }, {}, _NotCustomized, _NotCustomized>>, [...]>
+type featureHighlights = IOptionalIType<IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; name: IMaybe<ISimpleType<string>>; subfeature: IMaybe<...>; }, {}, _NotCustomized, _NotCustomized>>, [...]>
 // code
 featureHighlights: types.stripDefault(
             types.array(FeatureHighlightModel),
@@ -610,6 +620,7 @@ mouseoverExtraInformation: undefined as string | undefined
 type contextMenuInfo =
   | {
       item: FlatbushItem
+      subfeature?: SubfeatureInfo | undefined
       displayedRegionIndex: number
       clientX: number
       clientY: number
@@ -619,6 +630,8 @@ type contextMenuInfo =
 contextMenuInfo: undefined as
   | {
       item: FlatbushItem
+
+      subfeature?: SubfeatureInfo
       displayedRegionIndex: number
       clientX: number
       clientY: number
@@ -800,7 +813,7 @@ type featureColor = any
 #### getter: utrColor
 
 ```ts
-type utrColor = any
+type utrColor = string
 ```
 
 #### getter: colorByMode
@@ -1430,7 +1443,7 @@ type setFeatureHighlights = (highlights: FeatureHighlight[]) => void
 
 ```ts
 type addFeatureHighlightForItem = (
-  item: Pick<FlatbushItem, 'name' | 'startBp' | 'endBp'>,
+  target: HighlightTarget,
   refName: string,
 ) => void
 ```
@@ -1439,7 +1452,7 @@ type addFeatureHighlightForItem = (
 
 ```ts
 type removeFeatureHighlightsForItem = (
-  item: Pick<FlatbushItem, 'name' | 'startBp' | 'endBp'>,
+  target: HighlightTarget,
   refName: string,
 ) => void
 ```
@@ -1533,6 +1546,7 @@ type openContextMenu = (
   displayedRegionIndex: number,
   clientX: number,
   clientY: number,
+  subfeature?: SubfeatureInfo | undefined,
 ) => void
 ```
 

@@ -248,7 +248,10 @@ describe('findMultiWiggleHit', () => {
       rowHeight: 20,
       sources: [{ name: 's1' }],
       rpcDataMap: new Map([
-        [0, { sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])] }],
+        [
+          0,
+          { sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])] },
+        ],
       ]),
       summaryScoreMode: 'avg',
       isOverlay: false,

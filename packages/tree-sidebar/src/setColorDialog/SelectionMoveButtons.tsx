@@ -9,7 +9,9 @@ import { moveDown, moveUp } from '../sourcesGridUtils.ts'
 
 import type { GridRowId } from '@mui/x-data-grid'
 
-export default observer(function SelectionMoveButtons<T extends { name: string }>({
+export default observer(function SelectionMoveButtons<
+  T extends { name: string },
+>({
   rows,
   selected,
   onChange,

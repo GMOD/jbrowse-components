@@ -1,9 +1,6 @@
 import { waitFor } from '@testing-library/react'
 
-import {
-  utilizeFetchMockForTest,
-  volvoxGetFile,
-} from './generateReadBuffer.ts'
+import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
 
 import type { BreakpointViewModel } from '@jbrowse/plugin-breakpoint-split-view'

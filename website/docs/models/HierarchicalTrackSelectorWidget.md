@@ -394,7 +394,7 @@ type getRefSeqTrackConf = (assemblyName: string) => (ModelInstanceTypeProps<Reco
 type itemOffsets = (
   height: number,
   scrollTop: number,
-) => { startIndex: number; endIndex: number; totalHeight: number }
+) => { startIndex: number; endIndex: number }
 ```
 
 </details>

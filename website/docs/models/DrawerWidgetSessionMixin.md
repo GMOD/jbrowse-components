@@ -13,24 +13,27 @@ JBrowse core.
 
 ## Members
 
-| Member                                               | Kind       | Defined by               | Description                                                                                               |
-| ---------------------------------------------------- | ---------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| [drawerPosition](#property-drawerposition)           | Properties | DrawerWidgetSessionMixin |                                                                                                           |
-| [drawerWidth](#property-drawerwidth)                 | Properties | DrawerWidgetSessionMixin |                                                                                                           |
-| [widgets](#property-widgets)                         | Properties | DrawerWidgetSessionMixin |                                                                                                           |
-| [activeWidgets](#property-activewidgets)             | Properties | DrawerWidgetSessionMixin |                                                                                                           |
-| [minimized](#property-minimized)                     | Properties | DrawerWidgetSessionMixin |                                                                                                           |
-| [visibleWidget](#getter-visiblewidget)               | Getters    | DrawerWidgetSessionMixin |                                                                                                           |
-| [setDrawerPosition](#action-setdrawerposition)       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [updateDrawerWidth](#action-updatedrawerwidth)       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [resizeDrawer](#action-resizedrawer)                 | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [addWidget](#action-addwidget)                       | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [showWidget](#action-showwidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [hideWidget](#action-hidewidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [minimizeWidgetDrawer](#action-minimizewidgetdrawer) | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [showWidgetDrawer](#action-showwidgetdrawer)         | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [hideAllWidgets](#action-hideallwidgets)             | Actions    | DrawerWidgetSessionMixin |                                                                                                           |
-| [editConfiguration](#action-editconfiguration)       | Actions    | DrawerWidgetSessionMixin | opens a configuration editor to configure the given thing, and sets the current task to be configuring it |
+| Member                                               | Kind       | Defined by               | Description                                                                                                                                                                                      |
+| ---------------------------------------------------- | ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [drawerPosition](#property-drawerposition)           | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [drawerWidth](#property-drawerwidth)                 | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [widgets](#property-widgets)                         | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [activeWidgets](#property-activewidgets)             | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [minimized](#property-minimized)                     | Properties | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [poppedOut](#volatile-poppedout)                     | Volatiles  | DrawerWidgetSessionMixin | true while the visible widget is shown in a modal dialog instead of the drawer. Volatile because a restored session that opened straight into a modal, with no drawer behind it, is disorienting |
+| [visibleWidget](#getter-visiblewidget)               | Getters    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [setDrawerPosition](#action-setdrawerposition)       | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [updateDrawerWidth](#action-updatedrawerwidth)       | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [resizeDrawer](#action-resizedrawer)                 | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [addWidget](#action-addwidget)                       | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [showWidget](#action-showwidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [hideWidget](#action-hidewidget)                     | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [minimizeWidgetDrawer](#action-minimizewidgetdrawer) | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [showWidgetDrawer](#action-showwidgetdrawer)         | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [popoutWidget](#action-popoutwidget)                 | Actions    | DrawerWidgetSessionMixin | show the visible widget in a modal dialog, freeing the drawer column                                                                                                                             |
+| [returnWidgetToDrawer](#action-returnwidgettodrawer) | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [hideAllWidgets](#action-hideallwidgets)             | Actions    | DrawerWidgetSessionMixin |                                                                                                                                                                                                  |
+| [editConfiguration](#action-editconfiguration)       | Actions    | DrawerWidgetSessionMixin | opens a configuration editor to configure the given thing, and sets the current task to be configuring it                                                                                        |
 
 <details>
 <summary>DrawerWidgetSessionMixin - Properties</summary>
@@ -95,6 +98,24 @@ minimized: types.stripDefault(types.boolean, false)
 </details>
 
 <details>
+<summary>DrawerWidgetSessionMixin - Volatiles</summary>
+
+#### volatile: poppedOut
+
+true while the visible widget is shown in a modal dialog instead of the drawer.
+Volatile because a restored session that opened straight into a modal, with no
+drawer behind it, is disorienting
+
+```ts
+// type signature
+type poppedOut = false
+// code
+poppedOut: false
+```
+
+</details>
+
+<details>
 <summary>DrawerWidgetSessionMixin - Getters</summary>
 
 #### getter: visibleWidget
@@ -107,6 +128,14 @@ type visibleWidget = any
 
 <details>
 <summary>DrawerWidgetSessionMixin - Actions</summary>
+
+#### action: popoutWidget
+
+show the visible widget in a modal dialog, freeing the drawer column
+
+```ts
+type popoutWidget = () => void
+```
 
 #### action: editConfiguration
 
@@ -173,6 +202,12 @@ type minimizeWidgetDrawer = () => void
 
 ```ts
 type showWidgetDrawer = () => void
+```
+
+#### action: returnWidgetToDrawer
+
+```ts
+type returnWidgetToDrawer = () => void
 ```
 
 #### action: hideAllWidgets

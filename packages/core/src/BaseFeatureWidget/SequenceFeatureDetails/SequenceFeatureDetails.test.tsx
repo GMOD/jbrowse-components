@@ -586,8 +586,7 @@ const renderLegend = (
       feature={utrFeature(subfeatures)}
     />,
   )
-  return getByTestId('sequence_panel')
-    .querySelector('[data-no-plaintext]')
+  return getByTestId('sequence_panel').querySelector('[data-no-plaintext]')
     ?.textContent
 }
 
@@ -597,7 +596,11 @@ test.each([
   // one swatch explains nothing, so no legend at all
   ['a noncoding transcript', [exon], undefined],
   // the naive "has a CDS, so it has a UTR" would wrongly advertise a UTR here
-  ['a transcript that is entirely CDS', [exon, { ...exon, type: 'CDS' }], undefined],
+  [
+    'a transcript that is entirely CDS',
+    [exon, { ...exon, type: 'CDS' }],
+    undefined,
+  ],
 ])('the legend describes %s', (_, subfeatures, expected) => {
   expect(renderLegend(subfeatures, { seq: utrSeq })).toBe(expected)
 })
@@ -728,7 +731,9 @@ test('coordinate spacing continues across exon/intron boundaries', () => {
       }}
     />,
   )
-  expect(getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1]).toBe(
+  expect(
+    getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1],
+  ).toBe(
     '1001   AAAAAAAAAA AAAAAAAAAA cccccccccc GGGGGGGGGG GGGGGGGGGG GGGGGGGGGG',
   )
 })

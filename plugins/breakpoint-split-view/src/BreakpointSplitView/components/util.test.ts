@@ -350,9 +350,9 @@ describe('getBadlyPairedAlignments', () => {
       const mate1 = fakeAlignment('x/1', 'x', 'chr1', 100, 150, PAIRED, 'F1R2')
       const mate2 = fakeAlignment('x/2', 'x', 'chr2', 100, 150, PAIRED, 'F1R2')
       // orphan first, so it would claim the span under a name-agnostic key
-      expect(getBadlyPairedAlignments(mapOf(orphan, mate1, mate2))).toHaveLength(
-        1,
-      )
+      expect(
+        getBadlyPairedAlignments(mapOf(orphan, mate1, mate2)),
+      ).toHaveLength(1)
     })
 
     test('keeps both of two distinct pairs stacked on identical spans', () => {
@@ -769,10 +769,7 @@ describe('markHiddenSegments', () => {
 
   // mirrors the model: the chain comes from the chunk's features' SA tags
   function mark(chunk: LayoutMatch[]) {
-    markHiddenSegments(
-      chunk,
-      readChainSegments(chunk.map(c => c.feature)),
-    )
+    markHiddenSegments(chunk, readChainSegments(chunk.map(c => c.feature)))
   }
 
   // read maps to three loci at read-clip 0, 100, 200; each SA names the others

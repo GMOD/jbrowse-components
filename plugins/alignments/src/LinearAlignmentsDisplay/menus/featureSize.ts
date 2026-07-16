@@ -24,7 +24,6 @@ export {
   featureSpacingForHeight,
 } from './compactnessPresets.ts'
 
-
 // One menu, two independent radio groups: the pixel-size presets (+ Custom) and
 // the fixed/grow/fit track-sizing modes. They're orthogonal axes — the size is
 // what each read is drawn at (used in fixed and grow), the mode is how the track

@@ -26,11 +26,7 @@ export interface SessionDB extends DBSchema {
 // The session-spec shapes (ViewSpec/LayoutNode/TrackInit) live in
 // @jbrowse/app-core alongside loadSessionSpec, so Desktop shares one definition
 // of the spec format with Web.
-export type {
-  LayoutNode,
-  TrackInit,
-  ViewSpec,
-} from '@jbrowse/app-core'
+export type { LayoutNode, TrackInit, ViewSpec } from '@jbrowse/app-core'
 
 export interface SessionTriagedInfo {
   snap: Record<string, unknown>

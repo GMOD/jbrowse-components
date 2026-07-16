@@ -50,13 +50,8 @@ export default observer(function RowPalettizer<
 
   // Row-aligned `values`; undefined unsets, letting the consumer's own color
   // synthesis take back over.
-  const paint = (
-    target: keyof S & string,
-    values: (string | undefined)[],
-  ) => {
-    setCurrLayout(
-      currLayout.map((row, i) => ({ ...row, [target]: values[i] })),
-    )
+  const paint = (target: keyof S & string, values: (string | undefined)[]) => {
+    setCurrLayout(currLayout.map((row, i) => ({ ...row, [target]: values[i] })))
   }
 
   return currLayout.length && colorColumn ? (

@@ -36,7 +36,6 @@ per-panel display options (e.g. a shorter alignments height).
 | ---------------------------------------------------------------- | ---------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [type](#property-type)                                           | Properties | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [height](#property-height)                                       | Properties | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| [trackSelectorType](#property-trackselectortype)                 | Properties | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [showIntraviewLinks](#property-showintraviewlinks)               | Properties | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [linkViews](#property-linkviews)                                 | Properties | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [interactiveOverlay](#property-interactiveoverlay)               | Properties | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -45,15 +44,17 @@ per-panel display options (e.g. a shorter alignments height).
 | [init](#property-init)                                           | Properties | BreakpointSplitView               | declarative child panels (loc/assembly/tracks) resolved into `views` once the view has a width; used for initializing from a session snapshot. Transient — stripped by postProcessSnapshot.                                                                                                                                                                                                                                                                          |
 | [width](#volatile-width)                                         | Volatiles  | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [matchedTrackFeatures](#volatile-matchedtrackfeatures)           | Volatiles  | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [scrollZoom](#getter-scrollzoom)                                 | Getters    | BreakpointSplitView               | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere                                                                                                                                                                                                                                                                                                                                                |
 | [hasSomethingToShow](#getter-hassomethingtoshow)                 | Getters    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [initialized](#getter-initialized)                               | Getters    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [showImportForm](#getter-showimportform)                         | Getters    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [assembly](#getter-assembly)                                     | Getters    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [matchedTracks](#getter-matchedtracks)                           | Getters    | BreakpointSplitView               | Find all track ids that match across multiple views, or return just the single view's track if only a single row is used                                                                                                                                                                                                                                                                                                                                             |
-| [overlayMatches](#getter-overlaymatches)                         | Getters    | BreakpointSplitView               | Zero-arg cached getter: classifies each matched track, pairs its features, looks up layout rectangles, and returns a Map keyed by trackId. Mobx caches this across renders and only invalidates when the underlying feature or layout reads change — so horizontal/vertical scrolling and track resizing do NOT trigger re-pairing or re-lookup.                                                                                                                     |
+| [matchedTrackChunks](#getter-matchedtrackchunks)                 | Getters    | BreakpointSplitView               | Classifies each matched track and pairs its features, keyed by trackId. Everything here is a function of the fetched features alone, so it is deliberately kept out of `overlayMatches`, which additionally reads each track's layout: the layout reads invalidate on a track resize or a compactness change, and fusing the two would re-run this whole pass — including the SA-chain parse, the expensive part — on every drag frame.                              |
+| [overlayMatches](#getter-overlaymatches)                         | Getters    | BreakpointSplitView               | Zero-arg cached getter: resolves each matched chunk's features to layout rectangles, returning a Map keyed by trackId. Mobx caches this across renders and only invalidates when the underlying feature or layout reads change — so scrolling within already-loaded data does NOT trigger a re-lookup.                                                                                                                                                               |
 | [exportSvg](#method-exportsvg)                                   | Methods    | BreakpointSplitView               | creates an svg export and save using FileSaver                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [getMatchedTracks](#method-getmatchedtracks)                     | Methods    | BreakpointSplitView               | Get tracks with a given trackId across multiple views. Callers that index the result by view level (getTrackOverlayData, getMatchedFeaturesInLayout) rely on it staying aligned with `views` — which holds only because overlays are driven by `overlayMatches`, whose trackIds come from `matchedTracks` (the intersect across all views), so the track is present in every view and `filter` drops nothing. Don't level-index the result for an arbitrary trackId. |
-| [getTrackOverlayData](#method-gettrackoverlaydata)               | Methods    | BreakpointSplitView               | Per-render precompute for an overlay track. Gathers scroll top, display height, coverage offset, and view offsetPx per level, then returns getX/getY closures for converting feature layout records to SVG coordinates. `yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed. `domYOffsets` — live rendering: DOM-measured track tops (relative to the overlay SVG), scrollTops still read from model.                                               |
+| [getTrackOverlayData](#method-gettrackoverlaydata)               | Methods    | BreakpointSplitView               | Per-render precompute for an overlay track. Resolves an OverlayLevel of geometry per view level, then returns getX/getY closures for converting feature layout records to SVG coordinates. `yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed. `domYOffsets` — live rendering: DOM-measured track tops (relative to the overlay SVG), scrollTops still read from model.                                                                            |
 | [getMatchedFeaturesInLayout](#method-getmatchedfeaturesinlayout) | Methods    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [menuItems](#method-menuitems)                                   | Methods    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [rubberBandMenuItems](#method-rubberbandmenuitems)               | Methods    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -61,6 +62,7 @@ per-panel display options (e.g. a shorter alignments height).
 | [setInteractiveOverlay](#action-setinteractiveoverlay)           | Actions    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [setShowIntraviewLinks](#action-setshowintraviewlinks)           | Actions    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [setLinkViews](#action-setlinkviews)                             | Actions    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [setScrollZoom](#action-setscrollzoom)                           | Actions    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [setShowHeader](#action-setshowheader)                           | Actions    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [setMatchedTrackFeatures](#action-setmatchedtrackfeatures)       | Actions    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [reverseViewOrder](#action-reversevieworder)                     | Actions    | BreakpointSplitView               |                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -114,15 +116,6 @@ type: types.literal('BreakpointSplitView')
 type height = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 height: types.stripDefault(types.number, defaultHeight)
-```
-
-#### property: trackSelectorType
-
-```ts
-// type signature
-type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
 
 #### property: showIntraviewLinks
@@ -202,24 +195,43 @@ matchedTrackFeatures: {
 <details>
 <summary>BreakpointSplitView - Getters</summary>
 
+#### getter: scrollZoom
+
+scroll-to-zoom is a global, personal preference resolved from the session;
+toggling it in any view applies everywhere
+
+```ts
+type scrollZoom = boolean
+```
+
 #### getter: matchedTracks
 
 Find all track ids that match across multiple views, or return just the single
 view's track if only a single row is used
 
 ```ts
-type matchedTracks =
-  | (IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>)
-  | { configuration: { trackId: string } }[]
+type matchedTracks = OverlayTrack[]
+```
+
+#### getter: matchedTrackChunks
+
+Classifies each matched track and pairs its features, keyed by trackId.
+Everything here is a function of the fetched features alone, so it is
+deliberately kept out of `overlayMatches`, which additionally reads each track's
+layout: the layout reads invalidate on a track resize or a compactness change,
+and fusing the two would re-run this whole pass — including the SA-chain parse,
+the expensive part — on every drag frame.
+
+```ts
+type matchedTrackChunks = Map<string, MatchedChunks>
 ```
 
 #### getter: overlayMatches
 
-Zero-arg cached getter: classifies each matched track, pairs its features, looks
-up layout rectangles, and returns a Map keyed by trackId. Mobx caches this
-across renders and only invalidates when the underlying feature or layout reads
-change — so horizontal/vertical scrolling and track resizing do NOT trigger
-re-pairing or re-lookup.
+Zero-arg cached getter: resolves each matched chunk's features to layout
+rectangles, returning a Map keyed by trackId. Mobx caches this across renders
+and only invalidates when the underlying feature or layout reads change — so
+scrolling within already-loaded data does NOT trigger a re-lookup.
 
 ```ts
 type overlayMatches = Map<string, OverlayMatch>
@@ -277,14 +289,14 @@ across all views), so the track is present in every view and `filter` drops
 nothing. Don't level-index the result for an arbitrary trackId.
 
 ```ts
-type getMatchedTracks = (trackConfigId: string) => any[]
+type getMatchedTracks = (trackConfigId: string) => OverlayTrack[]
 ```
 
 #### method: getTrackOverlayData
 
-Per-render precompute for an overlay track. Gathers scroll top, display height,
-coverage offset, and view offsetPx per level, then returns getX/getY closures
-for converting feature layout records to SVG coordinates.
+Per-render precompute for an overlay track. Resolves an OverlayLevel of geometry
+per view level, then returns getX/getY closures for converting feature layout
+records to SVG coordinates.
 
 `yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed.
 `domYOffsets` — live rendering: DOM-measured track tops (relative to the overlay
@@ -296,11 +308,11 @@ type getTrackOverlayData = (
   yOffsetsOverride?: number[] | undefined,
   domYOffsets?: number[] | undefined,
 ) => {
-  tracks: any[]
-  yOffsets: any[]
-  heights: any[]
+  tracks: OverlayTrack[]
+  levels: OverlayLevel[]
+  layouts: ViewLayout[]
   getX: (level: number, refName: string, coord: number) => number | undefined
-  getY: (level: number, c: LayoutRecord) => number
+  getY: (level: number, layout: LayoutRecord) => number
 }
 ```
 
@@ -362,6 +374,12 @@ type setShowIntraviewLinks = (arg: boolean) => void
 
 ```ts
 type setLinkViews = (arg: boolean) => void
+```
+
+#### action: setScrollZoom
+
+```ts
+type setScrollZoom = (arg: boolean) => void
 ```
 
 #### action: setShowHeader

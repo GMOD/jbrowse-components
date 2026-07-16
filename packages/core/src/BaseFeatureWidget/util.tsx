@@ -37,8 +37,6 @@ export function filterSuccessiveElementsWithSameStartAndEndCoord(list: Feat[]) {
   )
 }
 
-
-
 export function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
 }

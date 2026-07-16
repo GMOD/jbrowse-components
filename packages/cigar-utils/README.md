@@ -8,6 +8,19 @@ Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps
 
 Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 
+### featurizeSAEntries
+
+featurizeSA over pre-split entries (see splitSA). Lets a caller filter the
+entries first — e.g. deduplicating the records repeated across a split read's
+segments — without paying to split and rejoin the tag around the filter.
+
+```js
+// type signature
+(entries: string[], id: string, strand: number | undefined, readName: string | undefined, normalize?: boolean | undefined) => { refName: string; start: number; end: number; seqLength: number; ... 4 more ...; mate: { ...; }; }[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
+
 ### getLength
 
 Length of the read sequence (sum of all ops except D/N).
@@ -87,6 +100,18 @@ single typed-array code path.
 ```js
 // type signature
 (s?: string) => Uint32Array<ArrayBuffer>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
+
+### splitSA
+
+The `;`-separated alignment records of an SA tag, empties dropped — the input
+`featurizeSAEntries` expects.
+
+```js
+// type signature
+(SA: string) => string[]
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)

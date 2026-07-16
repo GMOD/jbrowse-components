@@ -39,8 +39,6 @@ describe('filterSuccessiveElementsWithSameStartAndEndCoord', () => {
   })
 })
 
-
-
 describe('getStrandStr', () => {
   test('plus strand', () => {
     expect(getStrandStr(1)).toBe('(+)')

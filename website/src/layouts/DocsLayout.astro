@@ -52,8 +52,10 @@ const mdHref = isRealDoc
   {toc.length > 0 && <TableOfContents toc={toc} />}
 </SidebarLayout>
 
-{/* Figure recipe dialogs are emitted into the markdown HTML by remark-figure,
-    so they are wired here rather than mounted as an island. */}
+{
+  /* Figure recipe dialogs are emitted into the markdown HTML by remark-figure,
+    so they are wired here rather than mounted as an island. */
+}
 <script>
   document.addEventListener('click', event => {
     const target = event.target
@@ -380,10 +382,22 @@ const mdHref = isRealDoc
   /* Pairs the nth tab with the nth panel. One rule per panel panels() can emit
      (spec-recipe/html.ts) — a figure with fewer panels just leaves later rules
      unmatched, but a new panel needs a rule here or its tab shows nothing. */
-  .docs-content :global(.spec-tabs > .spec-tab-input:nth-of-type(1):checked ~ .spec-panel-1),
-  .docs-content :global(.spec-tabs > .spec-tab-input:nth-of-type(2):checked ~ .spec-panel-2),
-  .docs-content :global(.spec-tabs > .spec-tab-input:nth-of-type(3):checked ~ .spec-panel-3),
-  .docs-content :global(.spec-tabs > .spec-tab-input:nth-of-type(4):checked ~ .spec-panel-4) {
+  .docs-content
+    :global(
+      .spec-tabs > .spec-tab-input:nth-of-type(1):checked ~ .spec-panel-1
+    ),
+  .docs-content
+    :global(
+      .spec-tabs > .spec-tab-input:nth-of-type(2):checked ~ .spec-panel-2
+    ),
+  .docs-content
+    :global(
+      .spec-tabs > .spec-tab-input:nth-of-type(3):checked ~ .spec-panel-3
+    ),
+  .docs-content
+    :global(
+      .spec-tabs > .spec-tab-input:nth-of-type(4):checked ~ .spec-panel-4
+    ) {
     display: block;
   }
   .docs-content :global(.spec-intro) {

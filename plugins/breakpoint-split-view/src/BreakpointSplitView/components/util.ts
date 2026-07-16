@@ -3,11 +3,7 @@ import {
   isAbnormalPairDirection,
   pairDirection,
 } from '@jbrowse/alignments-core'
-import {
-  featurizeSAEntries,
-  getClip,
-  splitSA,
-} from '@jbrowse/cigar-utils'
+import { featurizeSAEntries, getClip, splitSA } from '@jbrowse/cigar-utils'
 import { assembleLocStringFast, notEmpty } from '@jbrowse/core/util'
 
 import type { ChainSegment, LayoutMatch } from '../types.ts'
@@ -128,7 +124,10 @@ export function readChainSegments(features: Feature[]) {
 // view. Comparing against real alignment records (the SA-derived `chain`, from
 // readChainSegments) rather than raw read-coordinate gaps avoids false positives
 // from unaligned or soft-clipped stretches. Mutates the chunk in place.
-export function markHiddenSegments(chunk: LayoutMatch[], chain: ChainSegment[]) {
+export function markHiddenSegments(
+  chunk: LayoutMatch[],
+  chain: ChainSegment[],
+) {
   for (let i = 1; i < chunk.length; i++) {
     const prev = chunk[i - 1]!.clipLengthAtStartOfRead
     const cur = chunk[i]!.clipLengthAtStartOfRead
@@ -253,8 +252,7 @@ export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   for (const f of feats.values()) {
     const mate = f.get('mate') as
-      | { refName: string; start: number; end: number }
-      | undefined
+      { refName: string; start: number; end: number } | undefined
     if (!isPairedFeature(f) || !mate) {
       continue
     }
@@ -263,11 +261,7 @@ export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
       start: f.get('start'),
       end: f.get('end'),
     })
-    bucket(
-      candidates,
-      [self, assembleLocStringFast(mate)].sort().join('\t'),
-      f,
-    )
+    bucket(candidates, [self, assembleLocStringFast(mate)].sort().join('\t'), f)
   }
   return multi(candidates)
 }

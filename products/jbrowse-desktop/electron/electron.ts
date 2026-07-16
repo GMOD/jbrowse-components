@@ -207,7 +207,9 @@ function runApp() {
       app.on('second-instance', (_event, argv, workingDirectory) => {
         // Windows/Linux hand a jbrowse:// link to the running instance here, as
         // an argv entry — the same path a file argument takes
-        wm.ensureWindow(findLaunchTarget(argv, workingDirectory)).catch(logError)
+        wm.ensureWindow(findLaunchTarget(argv, workingDirectory)).catch(
+          logError,
+        )
       })
       app.on('open-file', (event, filePath) => {
         event.preventDefault()

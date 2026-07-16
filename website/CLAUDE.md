@@ -92,27 +92,27 @@ the link to paste into Desktop's **Open JBrowse Web link...**, the session-spec
 JSON, and (for `LinearGenomeView` figures only) a jbrowse-anywidget snippet. All
 of it comes from the link that produced the image, so it can't drift from the
 figure. `panels()` in `spec-recipe/html.ts` is the list; adding one needs a
-matching `nth-of-type` rule in `DocsLayout.astro` or its tab renders blank. Track names and file types are
-resolved by reading the referenced `test_data/` config from the repo; figures on
-a hosted config (`jbrowse.org/demos/…`) fall back to generic wording rather than
-fetching during the build.
+matching `nth-of-type` rule in `DocsLayout.astro` or its tab renders blank.
+Track names and file types are resolved by reading the referenced `test_data/`
+config from the repo; figures on a hosted config (`jbrowse.org/demos/…`) fall
+back to generic wording rather than fetching during the build.
 
 Rules for `spec-recipe/fields.ts`, which maps a spec field to a click-path:
 
-- **Never guess a menu label.** Import the plugin's own option table wherever one
-  exists (`COLOR_SCHEMES`, `GENE_GLYPH_MODE_OPTIONS`, `getHeightModeOptions`,
-  `COMPACTNESS_PRESETS`) so the docs and the menu can't disagree; otherwise
-  verify the label against the menu source. A field with no verified path is
-  deliberately **absent** — the JSON tab still shows it, so a gap understates
-  rather than misleads. (`displayMode` is absent for exactly this reason: it
-  isn't a real slot on every display that accepts it.)
+- **Never guess a menu label.** Import the plugin's own option table wherever
+  one exists (`COLOR_SCHEMES`, `GENE_GLYPH_MODE_OPTIONS`,
+  `getHeightModeOptions`, `COMPACTNESS_PRESETS`) so the docs and the menu can't
+  disagree; otherwise verify the label against the menu source. A field with no
+  verified path is deliberately **absent** — the JSON tab still shows it, so a
+  gap understates rather than misleads. (`displayMode` is absent for exactly
+  this reason: it isn't a real slot on every display that accepts it.)
 - Imports must stay UI-free — the remark plugin runs in Node, so pulling in a
   module that reaches React/`.tsx` breaks the build. That's why
   `COMPACTNESS_PRESETS` lives in `compactnessPresets.ts` rather than the
   React-importing `featureSize.ts` that re-exports it.
 - `pnpm check-spec-recipes` lists every spec field with no click-path yet — the
-  worklist for growing coverage. `--check` fails past `SPEC_RECIPE_BASELINE`.
-  It also round-trips every figure's `jbrowse://` link through Desktop's own
+  worklist for growing coverage. `--check` fails past `SPEC_RECIPE_BASELINE`. It
+  also round-trips every figure's `jbrowse://` link through Desktop's own
   `parseProtocolUrl` + app-core's `parseSessionSpecUrl` and **fails the build**
   on any break — the three modules are only unit-tested apart, and this chain is
   what caught app-core rejecting the deliberate `views: []` of the import-form

@@ -7,7 +7,11 @@ describe('transcriptRegions', () => {
       { start: 200, end: 300 },
     ]
     expect(
-      transcriptRegions({ cds: [{ start: 50, end: 250 }], exons, featureLength: 300 }),
+      transcriptRegions({
+        cds: [{ start: 50, end: 250 }],
+        exons,
+        featureLength: 300,
+      }),
     ).toBe(exons)
   })
 
