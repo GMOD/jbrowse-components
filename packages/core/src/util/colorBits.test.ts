@@ -103,6 +103,17 @@ describe('colorBits helpers', () => {
       expect(getGreen(parseCssColor('a,b,c'))).toBe(0)
     })
 
+    test('an out-of-range triple is magenta, not a wrapped color', () => {
+      // 999 & 0xFF is 231, so masking would paint #e70000 and look deliberate
+      const c = parseCssColor('999,0,0')
+      expect([getRed(c), getGreen(c), getBlue(c)]).toEqual([255, 0, 255])
+    })
+
+    test('a spaced triple parses, matching featureItemRgb', () => {
+      const c = parseCssColor('255, 0, 0')
+      expect([getRed(c), getGreen(c), getBlue(c)]).toEqual([255, 0, 0])
+    })
+
     test('case insensitive named colors', () => {
       expect(getRed(parseCssColor('RED'))).toBe(255)
       expect(getRed(parseCssColor('Red'))).toBe(255)
@@ -158,6 +169,19 @@ describe('colorBits helpers', () => {
       expect(featureItemRgb('red')).toBeUndefined()
       expect(featureItemRgb('some_label')).toBeUndefined()
       expect(featureItemRgb('1,2')).toBeUndefined()
+    })
+
+    test('an out-of-range component reads as absent, never a wrapped color', () => {
+      // the parser masks to 8 bits, so claiming "999,0,0" would paint 231,0,0 —
+      // a plausible-looking but wrong color
+      expect(featureItemRgb('999,0,0')).toBeUndefined()
+      expect(featureItemRgb('256,0,0')).toBeUndefined()
+    })
+
+    test('spaces are tolerated, and the triple comes back canonical', () => {
+      // the spec has no spaces, but ignoring an otherwise-usable color is worse
+      expect(featureItemRgb('255, 0, 0')).toBe('255,0,0')
+      expect(featureItemRgb(' 227,26,28 ')).toBe('227,26,28')
     })
   })
 

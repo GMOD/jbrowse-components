@@ -38,31 +38,44 @@ export type { Color } from './color-bits/index.ts'
 // rest of the render.
 const INVALID_COLOR = newColor(255, 0, 255, 255)
 
-// A bare BED `itemRgb` triple ("255,0,0"), which is not a CSS color but is what
-// BED-family adapters put on the feature verbatim.
-const BED_ITEM_RGB = /^\d{1,3},\d{1,3},\d{1,3}$/
+// A bare BED color triple ("255,0,0"), which is not a CSS color but is what
+// BED-family adapters put on the feature verbatim. The spec has no spaces, but
+// tolerate them rather than silently ignoring an otherwise-usable color.
+const BED_TRIPLE = /^(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})$/
 
-// UCSC's convention is that an `itemRgb` of "0" means "no color specified", and
-// plain BED12 files fill the column with that placeholder (often spelled as the
+// UCSC's convention is that a color of "0" means "no color specified", and plain
+// BED12 files fill the column with that placeholder (often spelled as the
 // all-zero triple) rather than omitting it — every itemRgb in our own
 // volvox-bed12 fixture is "0,0,0". Honoring those literally would paint an
 // ordinary BED12 track solid black, so read them as absent. A file that really
 // wants black can say so with an explicit `color` slot.
-const BED_ITEM_RGB_UNSET = /^0(,0,0)?$/
+const BED_TRIPLE_UNSET = /^0(,0,0)?$/
+
+/**
+ * Normalize a bare BED color triple to canonical "r,g,b", or undefined if the
+ * string isn't one. Each component must be in range: the underlying parser
+ * masks to 8 bits, so a bogus "999,0,0" would otherwise *wrap* to 231 and paint
+ * a plausible-looking but wrong color rather than being caught.
+ */
+function bedTriple(str: string): string | undefined {
+  const m = BED_TRIPLE.exec(str.trim())
+  const rgb = m?.slice(1, 4).map(Number)
+  return rgb?.every(n => n <= 255) ? rgb.join(',') : undefined
+}
 
 /**
  * One raw attribute value as a usable BED color, or undefined when it isn't
  * one. Deliberately strict: this feeds an *automatic* coloring path, so a value
- * is only claimed when it is unambiguously a BED triple. Anything else — a hex
- * string, a `reserved` column holding something that isn't a color at all —
- * reads as absent and leaves the configured default alone, rather than
+ * is only claimed when it is unambiguously an in-range BED triple. Anything
+ * else — a hex string, a `reserved` column holding something that isn't a color
+ * at all — reads as absent and leaves the configured default alone, rather than
  * rendering as the magenta invalid-color sentinel. Takes the raw value so it
  * stays dependency-free and directly testable.
  */
 export function featureItemRgb(raw: unknown): string | undefined {
-  const str = typeof raw === 'string' ? raw.trim() : ''
-  return BED_ITEM_RGB.test(str) && !BED_ITEM_RGB_UNSET.test(str)
-    ? str
+  const triple = typeof raw === 'string' ? bedTriple(raw) : undefined
+  return triple !== undefined && !BED_TRIPLE_UNSET.test(triple)
+    ? triple
     : undefined
 }
 
@@ -86,10 +99,12 @@ export function featureBedColor(feature: Feature): string | undefined {
 }
 
 // Resolve a CSS color string to a Color: honors named colors, `transparent`,
-// and bare BED `itemRgb` triples, and returns `fallback` on
-// malformed-but-nonempty input. `parse` throws on e.g. an empty "rgb()";
-// callers pass a fallback so one bad per-feature color can't crash a whole
-// render/RPC.
+// and bare BED color triples, and returns `fallback` on malformed-but-nonempty
+// input. `parse` throws on e.g. an empty "rgb()"; callers pass a fallback so one
+// bad per-feature color can't crash a whole render/RPC. An out-of-range triple
+// is left to throw into `fallback` (magenta) rather than wrapping to a wrong
+// color — the same rule featureItemRgb applies, so a jexl callback reading an
+// itemRgb column and the automatic path agree on what counts as a color.
 export function parseCssColorOr(color: string, fallback: Color): Color {
   const str = color.trim().toLowerCase()
   if (str === 'transparent') {
@@ -97,7 +112,8 @@ export function parseCssColorOr(color: string, fallback: Color): Color {
   }
   try {
     const hex = namedColorToHex(str)
-    return parse(hex ? hex : BED_ITEM_RGB.test(str) ? `rgb(${str})` : str)
+    const triple = bedTriple(str)
+    return parse(hex ? hex : triple ? `rgb(${triple})` : str)
   } catch {
     return fallback
   }
