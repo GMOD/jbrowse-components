@@ -110,7 +110,7 @@ import type {
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
 import type { FeatureHighlight, HighlightTarget } from './featureHighlight.ts'
 import type { FitStage } from './fitLadder.ts'
-import type { IncrementalLayout, LabelDecimation } from './layout.ts'
+import type { IncrementalLayout } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
@@ -1052,16 +1052,12 @@ export default function baseStateModelFactory(
           memo: IncrementalLayout,
           showLabels: boolean,
           showDescriptions: boolean,
-          labelDecimation: LabelDecimation = 'all',
-          labelRoomFactor = 1,
         ): Map<number, FeatureDataResult> {
           return self.layoutReady
             ? memo(self.rpcDataMap, {
                 ...self.layoutInputs,
                 showLabels,
                 showDescriptions,
-                labelDecimation,
-                labelRoomFactor,
               })
             : new Map<number, FeatureDataResult>()
         },
@@ -1081,14 +1077,19 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
-         * Names reserved, descriptions dropped — the `labels` stage's stack.
+         * Names reserved, descriptions dropped — the `labels` stage's stack. With
+         * descriptions already off (config, or the auto density gate) this rung's
+         * reservation is the base one, so reuse that stack by reference rather than
+         * packing a byte-identical copy into a second memo.
          */
         get fitLabelsOnlyLayout(): Map<number, FeatureDataResult> {
-          return self.fitLayoutAt(
-            self.incrementalLayoutLabelsOnly,
-            self.showLabels,
-            false,
-          )
+          return self.effectiveShowDescriptions
+            ? self.fitLayoutAt(
+                self.incrementalLayoutLabelsOnly,
+                self.showLabels,
+                false,
+              )
+            : this.baseLaidOutDataMap
         },
         /**
          * #getter
@@ -1112,12 +1113,20 @@ export default function baseStateModelFactory(
          * from the old factor's rows packs the stack taller than the fresh probe,
          * pushing the committed stack over `trackHeight` and making the ladder
          * wrongly fall through to `bodies` (every label vanishing as the track
-         * grows). When even `FIT_MAX_ROOM_FACTOR` overflows, the returned stack
-         * still overflows and `resolveFitLadder` descends to `bodies`.
+         * grows). When even `FIT_MAX_ROOM_FACTOR` overflows, the `labels` stack is
+         * returned — it overflows (that is why the ladder reached this rung), so
+         * `resolveFitLadder` descends to `bodies`, and reusing a stack already
+         * packed spares the solve one more pack that would only be discarded.
+         *
+         * With names off entirely there is nothing to decimate — every factor packs
+         * the `labels` stack (see keepFeatureLabel's `showLabels` guard) — so the
+         * solve is skipped and that stack reused, turning the ~9 probes this rung
+         * costs into zero on exactly the dense tracks where the auto density gate
+         * hides names and fit mode is most used.
          */
         get fitDecimatedSolved(): Map<number, FeatureDataResult> {
-          if (!self.layoutReady) {
-            return new Map<number, FeatureDataResult>()
+          if (!self.layoutReady || !self.showLabels) {
+            return this.fitLabelsOnlyLayout
           }
           const trackHeight = self.fitTargetHeight
           const layoutAtFactor = (labelRoomFactor: number) =>
@@ -1134,9 +1143,9 @@ export default function baseStateModelFactory(
           // committed layout, so the stack the ladder measured IS the stack it
           // renders — the probe/commit identity the solve depends on becomes the
           // same object, not a re-run that has to match. `hiLayout` stays
-          // undefined only when nothing fit; then the most-decimated stack
-          // (factor FIT_MAX_ROOM_FACTOR) is returned still overflowing, so
-          // resolveFitLadder descends to `bodies`.
+          // undefined only when nothing fit; then the `labels` stack — already
+          // packed, and known to overflow since the ladder descended past it to
+          // reach this rung — is returned so resolveFitLadder falls to `bodies`.
           let lo = 0
           let hi = FIT_MAX_ROOM_FACTOR
           let hiLayout: Map<number, FeatureDataResult> | undefined
@@ -1150,19 +1159,19 @@ export default function baseStateModelFactory(
               lo = mid
             }
           }
-          return hiLayout ?? layoutAtFactor(hi)
+          return hiLayout ?? this.fitLabelsOnlyLayout
         },
         /**
          * #getter
          * Nothing reserved: bodies packed edge-to-edge (the tightest stack),
-         * labels hidden — the `bodies` stage's stack.
+         * labels hidden — the `bodies` stage's stack. With names already off this
+         * is what the `labels` rung packed, so reuse that stack by reference
+         * instead of re-packing it into a third memo.
          */
         get fitBodiesOnlyLayout(): Map<number, FeatureDataResult> {
-          return self.fitLayoutAt(
-            self.incrementalLayoutBodiesOnly,
-            false,
-            false,
-          )
+          return self.showLabels
+            ? self.fitLayoutAt(self.incrementalLayoutBodiesOnly, false, false)
+            : this.fitLabelsOnlyLayout
         },
         /**
          * #getter

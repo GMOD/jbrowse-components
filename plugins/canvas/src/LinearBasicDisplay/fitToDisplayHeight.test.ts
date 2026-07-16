@@ -703,6 +703,9 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.effectiveShowDescriptions).toBe(false)
 
     const labelsH = maxBottom(display.baseLaidOutDataMap)
+    // The labels rung's reservation IS the base one here, so it reuses that
+    // stack by reference rather than packing a byte-identical copy.
+    expect(display.fitLabelsOnlyLayout).toBe(display.baseLaidOutDataMap)
     expect(maxBottom(display.fitLabelsOnlyLayout)).toBe(labelsH)
     const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
     expect(labelsH).toBeGreaterThan(bodiesH)
@@ -727,6 +730,12 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.showLabels).toBe(false)
 
     const h = maxBottom(display.baseLaidOutDataMap)
+    // Nothing is reserved anywhere, so all four rungs are the one base stack —
+    // shared by reference, not packed four times. The decimated rung skips its
+    // whole factor solve too: with names off there is nothing to decimate.
+    expect(display.fitLabelsOnlyLayout).toBe(display.baseLaidOutDataMap)
+    expect(display.fitDecimatedSolved).toBe(display.baseLaidOutDataMap)
+    expect(display.fitBodiesOnlyLayout).toBe(display.baseLaidOutDataMap)
     expect(maxBottom(display.fitLabelsOnlyLayout)).toBe(h)
     expect(maxBottom(display.fitBodiesOnlyLayout)).toBe(h)
 
