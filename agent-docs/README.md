@@ -87,7 +87,6 @@ how-tos in **[guides/](guides/)**, and design rationale in
 | **[OTHER_IDEAS.md](OTHER_IDEAS.md)**    | Future / exploratory concepts + folded proposals, incl. block-level synteny import and request-abort (not current work) | Brainstorming, product direction |
 | **[ARCHITECTURE.md](ARCHITECTURE.md)**  | Canonical GPU lifecycle / shaders / HAL reference           | Touching a display, backend, or shader        |
 | **[LAZY_DISPLAY_BEHAVIOR_PLAN.md](LAZY_DISPLAY_BEHAVIOR_PLAN.md)** | Design note: defer displays' interaction surface (menus/dialogs) out of the eager bundle via the MST fork's `extendInstance` (not implemented) | Bundle-size work on display models; considering lazy MST behavior |
-| **[R_EXPORT_VISION.md](R_EXPORT_VISION.md)** | Vision: native-R figure export (not htmlwidget) via a language-neutral render IR — one brain, N pens — to close the reproducibility loop (not implemented; `R_export2` branch) | Working on R export; designing the render IR or SVG-export-through-IR |
 
 ### `reference/` — how the system works
 
