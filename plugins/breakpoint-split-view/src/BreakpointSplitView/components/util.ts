@@ -192,16 +192,26 @@ export function getMatchedTranslocationFeatures(feats: Map<string, Feature>) {
   return ret
 }
 
+// Feature types whose adapter emits one record as two halves, each anchored at
+// one endpoint and carrying `mate` pointing at the other: bedpe
+// (`paired_feature`) and STAR-Fusion (`fusion`). They differ only in the type
+// string, so they rejoin identically — see getMatchedPairedFeatures.
+const pairedFeatureTypes = new Set(['paired_feature', 'fusion'])
+
+function isPairedFeature(f: Feature) {
+  const type = f.get('type')
+  return type === undefined ? false : pairedFeatureTypes.has(type)
+}
+
 export function classifyVariantFeatures(features: Map<string, Feature>) {
   let hasTranslocation = false
   let hasPaired = false
   for (const f of features.values()) {
-    const t = f.get('type')
-    if (t === 'translocation') {
+    if (f.get('type') === 'translocation') {
       hasTranslocation = true
       break
     }
-    if (t === 'paired_feature') {
+    if (isPairedFeature(f)) {
       hasPaired = true
     }
   }
@@ -212,7 +222,7 @@ export function classifyVariantFeatures(features: Map<string, Feature>) {
       : ('breakend' as const)
 }
 
-// Each half of a bedpe record is anchored at one endpoint and carries `mate`
+// Each half of a paired record is anchored at one endpoint and carries `mate`
 // pointing at the other, so the unordered pair of loc strings is identical for
 // the two halves and unique to the record. Same canonical-key trick as
 // getMatchedBreakendFeatures.
@@ -228,7 +238,7 @@ export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
     const mate = f.get('mate') as
       | { refName: string; start: number; end: number }
       | undefined
-    if (f.get('type') !== 'paired_feature' || !mate) {
+    if (!isPairedFeature(f) || !mate) {
       continue
     }
     const self = assembleLocStringFast({

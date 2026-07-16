@@ -140,6 +140,12 @@ describe('classifyVariantFeatures', () => {
     ).toBe('paired')
   })
 
+  test('STAR-Fusion features classify as paired', () => {
+    expect(classifyVariantFeatures(mapOf(fakeFeature('a', 'fusion')))).toBe(
+      'paired',
+    )
+  })
+
   test('defaults to breakend', () => {
     expect(classifyVariantFeatures(mapOf(fakeFeature('a', 'breakend')))).toBe(
       'breakend',
@@ -652,6 +658,17 @@ describe('getMatchedPairedFeatures', () => {
     expect(
       getMatchedPairedFeatures(mapOf(half('test-chr1-0-r1', sv1a, sv1b))),
     ).toHaveLength(0)
+  })
+
+  test('groups STAR-Fusion halves, which pair like bedpe but type "fusion"', () => {
+    const result = getMatchedPairedFeatures(
+      mapOf(
+        half('test-chr1-0-r1', sv1a, sv1b, 'fusion'),
+        half('test-chr2-0-r2', sv1b, sv1a, 'fusion'),
+      ),
+    )
+    expect(result).toHaveLength(1)
+    expect(result[0]).toHaveLength(2)
   })
 
   test('a paired_feature without a mate is skipped', () => {

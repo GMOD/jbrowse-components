@@ -19,35 +19,25 @@ jest.mock('../makeWorkerInstance', () => () => {})
 
 utilizeFetchMockForTest(volvoxGetFile)
 
-// volvox.bedpe pairs A(=ctgA) with B(=ctgB) — the interchromosomal case the
-// breakpoint split view exists to show. The two halves of a record arrive as
-// separate features, one per row, so this asserts the view actually rejoins
-// them into a drawable connection rather than only checking the helper.
-function createBedpeBreakpointView(): BreakpointViewModel {
+// The two halves of a paired record arrive as separate features, one per row,
+// so these drive the real flow (adapter -> worker RPC -> overlayMatches) to
+// assert the view rejoins them into a drawable connection, rather than only
+// checking the helper in isolation.
+function createBreakpointView(
+  trackId: string,
+  locs: [string, string],
+): BreakpointViewModel {
   const { rootModel } = getPluginManager()
   rootModel.setDefaultSession()
   const session = rootModel.session!
   const view = session.addView('BreakpointSplitView', {
-    init: [
-      {
-        loc: 'ctgA:21,000..24,000',
-        assembly: 'volvox',
-        tracks: ['volvox_bedpe'],
-      },
-      {
-        loc: 'ctgB:1,500..2,500',
-        assembly: 'volvox',
-        tracks: ['volvox_bedpe'],
-      },
-    ],
+    init: locs.map(loc => ({ loc, assembly: 'volvox', tracks: [trackId] })),
   })
   view.setWidth(800)
   return view
 }
 
-test('pairs the two halves of an interchromosomal bedpe record', async () => {
-  const view = createBedpeBreakpointView()
-
+async function waitForMatches(view: BreakpointViewModel, trackId: string) {
   await waitFor(
     () => {
       expect(view.initialized).toBe(true)
@@ -56,15 +46,22 @@ test('pairs the two halves of an interchromosomal bedpe record', async () => {
   )
   await waitFor(
     () => {
-      expect(view.matchedTrackFeatures.volvox_bedpe).toBeDefined()
+      expect(view.matchedTrackFeatures[trackId]).toBeDefined()
     },
     { timeout: 30000 },
   )
+  return view.overlayMatches.get(trackId)!
+}
 
-  const match = view.overlayMatches.get('volvox_bedpe')!
+test('pairs the two halves of an interchromosomal bedpe record', async () => {
+  // volvox.bedpe row 2 spans A:21681-21682 <-> B:1982-1983
+  const view = createBreakpointView('volvox_bedpe', [
+    'ctgA:21,000..24,000',
+    'ctgB:1,500..2,500',
+  ])
+  const match = await waitForMatches(view, 'volvox_bedpe')
   expect(match.kind).toBe('paired')
 
-  // A:21681-21682 <-> B:1982-1983 is the record spanning the two rows
   const pair = match.layoutMatches.find(chunk =>
     chunk.some(m => m.feature.get('start') === 21681),
   )
@@ -75,4 +72,21 @@ test('pairs the two halves of an interchromosomal bedpe record', async () => {
   // ctgA/ctgB happens where they're resolved against a view, not on the feature
   expect(pair!.map(m => m.level).sort()).toEqual([0, 1])
   expect(pair!.map(m => m.feature.get('refName')).sort()).toEqual(['A', 'B'])
+}, 40000)
+
+test('pairs the two halves of an interchromosomal STAR-Fusion record', async () => {
+  // volvox.star-fusion.tsv EDEN--IPKMT2 spans A:2700 <-> B:1982. Fusion
+  // features are paired the same way bedpe ones are, differing only in type
+  const view = createBreakpointView('volvox_star_fusion', [
+    'ctgA:2,000..3,500',
+    'ctgB:1,500..2,500',
+  ])
+  const match = await waitForMatches(view, 'volvox_star_fusion')
+  expect(match.kind).toBe('paired')
+
+  const pair = match.layoutMatches.find(chunk =>
+    chunk.some(m => m.feature.get('name') === 'EDEN--IPKMT2'),
+  )
+  expect(pair).toHaveLength(2)
+  expect(pair!.map(m => m.level).sort()).toEqual([0, 1])
 }, 40000)
