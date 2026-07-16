@@ -509,8 +509,31 @@ test.each([
       { refName: 'chr1', start: 1300, end: 1400, type: 'three_prime_UTR' },
     ],
   ],
+  [
+    // more CDS blocks than exons: no UTR can be derived from this pairing, and
+    // the annotation only covers one side, so anything trusting either would
+    // drop the 3' end
+    'more CDS blocks than exons and a partial annotation',
+    [
+      { refName: 'chr1', start: 1000, end: 1400, type: 'exon' },
+      { refName: 'chr1', start: 1000, end: 1100, type: 'five_prime_UTR' },
+      { refName: 'chr1', start: 1100, end: 1200, type: 'CDS' },
+      { refName: 'chr1', start: 1200, end: 1300, type: 'CDS' },
+    ],
+  ],
 ])('cDNA spans the whole transcript with %s', (_, subfeatures) => {
   expect(renderCdna(subfeatures)).toBe(utrSeq)
+})
+
+test('a CDS annotated outside the exons renders the exon untranslated', () => {
+  // no exon contains the CDS, so there is no coding stretch to color; the exon
+  // sequence must still render rather than throwing
+  expect(
+    renderCdna([
+      { refName: 'chr1', start: 1000, end: 1100, type: 'exon' },
+      { refName: 'chr1', start: 1200, end: 1300, type: 'CDS' },
+    ]),
+  ).toBe('a'.repeat(100))
 })
 
 test('coordinate labels stay column-aligned when a row gains a digit', () => {

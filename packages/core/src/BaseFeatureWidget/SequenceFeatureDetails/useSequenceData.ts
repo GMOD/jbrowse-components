@@ -1,9 +1,5 @@
 import { revcom, revlist } from '../../util/seqUtils.ts'
-import {
-  calculateUTRs2,
-  calculateUTRs,
-  filterSuccessiveElementsWithSameStartAndEndCoord,
-} from '../util.tsx'
+import { filterSuccessiveElementsWithSameStartAndEndCoord } from '../util.tsx'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Feat, SeqState } from '../util.tsx'
@@ -12,7 +8,6 @@ interface FeatureData {
   sequence: SeqState
   cds: Feat[]
   exons: Feat[]
-  utr: Feat[]
 }
 
 function prepareSubfeatures(feature: SimpleFeatureSerialized) {
@@ -48,34 +43,17 @@ function processFeatureData(
   const exons = filterSuccessiveElementsWithSameStartAndEndCoord(
     children.filter(sub => sub.type?.toLowerCase() === 'exon'),
   )
-  // A UTR is by definition the exonic sequence outside the CDS, so derive it
-  // rather than trust the annotation: the renderer stitches the transcript from
-  // cds+utr and ignores exons once there is a CDS, so a transcript annotating
-  // only one of its UTRs (a common GFF shape) would silently drop the other
-  // side from the cDNA. Deriving covers both sides or neither. Annotated UTRs
-  // are the fallback for when there is nothing to derive from, e.g. calculateUTRs
-  // bails on a malformed exon/CDS pairing.
-  const annotatedUtr = filterSuccessiveElementsWithSameStartAndEndCoord(
-    children.filter(sub => /utr/i.test(sub.type ?? '')),
-  )
-  const derivedUtr = !cds.length
-    ? []
-    : exons.length
-      ? calculateUTRs(cds, exons)
-      : calculateUTRs2(cds, {
-          start: 0,
-          end: feature.end - feature.start,
-          type: 'gene',
-        })
-
-  return { cds, exons, utr: derivedUtr.length ? derivedUtr : annotatedUtr }
+  // annotated UTRs are deliberately not read: a UTR is just the exonic sequence
+  // outside the CDS, so the renderer derives the split from cds+exons. Trusting
+  // the annotation meant a transcript that named only one of its UTRs lost the
+  // other side from the cDNA entirely.
+  return { cds, exons }
 }
 
 function handleReverseStrand(
   sequence: SeqState,
   cds: Feat[],
   exons: Feat[],
-  utr: Feat[],
 ): FeatureData {
   const { seq, upstream = '', downstream = '' } = sequence
   return {
@@ -86,7 +64,6 @@ function handleReverseStrand(
     },
     cds: revlist(cds, seq.length),
     exons: revlist(exons, seq.length),
-    utr: revlist(utr, seq.length),
   }
 }
 
@@ -98,20 +75,18 @@ export function getSequenceData({
   sequence: SeqState
 }) {
   const children = prepareSubfeatures(feature)
-  const { cds, exons, utr } = processFeatureData(children, feature)
+  const { cds, exons } = processFeatureData(children, feature)
   const {
     sequence: adjusted,
     cds: adjustedCds,
     exons: adjustedExons,
-    utr: adjustedUtr,
   } = feature.strand === -1
-    ? handleReverseStrand(sequence, cds, exons, utr)
-    : { sequence, cds, exons, utr }
+    ? handleReverseStrand(sequence, cds, exons)
+    : { sequence, cds, exons }
 
   return {
     ...adjusted,
     cds: adjustedCds,
     exons: adjustedExons,
-    utr: adjustedUtr,
   }
 }

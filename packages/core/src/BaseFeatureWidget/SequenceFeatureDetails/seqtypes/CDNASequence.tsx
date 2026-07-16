@@ -1,7 +1,12 @@
 import { observer } from 'mobx-react'
 
 import { cdsColor, updownstreamColor, utrColor } from '../consts.ts'
-import { computeCoordProps, getIntronDisplayStr } from '../util.ts'
+import {
+  computeCoordProps,
+  getIntronDisplayStr,
+  splitRegionByCds,
+  transcriptRegions,
+} from '../util.ts'
 import {
   flankSegment,
   renderSequenceSegments,
@@ -13,7 +18,6 @@ import type { Feat } from '../../util.tsx'
 import type { SequenceFeatureDetailsModel } from '../model.ts'
 
 const CDNASequence = observer(function CDNASequence({
-  utr,
   cds,
   exons,
   sequence,
@@ -26,7 +30,6 @@ const CDNASequence = observer(function CDNASequence({
   onHoverBase,
   model,
 }: {
-  utr: Feat[]
   cds: Feat[]
   exons: Feat[]
   sequence: string
@@ -45,9 +48,6 @@ const CDNASequence = observer(function CDNASequence({
 }) {
   const { upperCaseCDS, intronBp } = model
   const hasCds = cds.length > 0
-  const chunks = (
-    hasCds ? [...cds, ...utr].sort((a, b) => a.start - b.start) : exons
-  ).filter(f => f.start !== f.end)
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
 
@@ -57,24 +57,35 @@ const CDNASequence = observer(function CDNASequence({
     upstream,
   )
 
-  const middle: SeqSegment[] = []
-  for (let idx = 0; idx < chunks.length; idx++) {
-    const chunk = chunks[idx]!
-    const s = sequence.slice(chunk.start, chunk.end)
-    const isCds = chunk.type === 'CDS'
-    middle.push({
-      key: `${chunk.start}-${chunk.end}-${chunk.type}-mid`,
-      // uppercase CDS (and whole-exon chunks when there's no CDS); lowercase UTR
-      str: isCds || !hasCds ? toUpper(s) : toLower(s),
-      color: isCds ? cdsColor : utrColor,
-    })
+  // the transcript is its exons; the CDS only decides how each stretch is
+  // colored and cased. Deriving that split here, rather than stitching a
+  // separately-supplied UTR list, keeps the rendered sequence complete however
+  // the annotation expresses its UTRs -- or whether it expresses them at all.
+  const regions = transcriptRegions({
+    cds,
+    exons,
+    featureLength: sequence.length,
+  }).filter(f => f.start !== f.end)
 
-    const next = chunks[idx + 1]
+  const middle: SeqSegment[] = []
+  for (let idx = 0; idx < regions.length; idx++) {
+    const region = regions[idx]!
+    for (const { start, end, isCds } of splitRegionByCds(region, cds)) {
+      const s = sequence.slice(start, end)
+      middle.push({
+        key: `${start}-${end}-${isCds ? 'cds' : 'utr'}`,
+        // uppercase CDS (and every region of a noncoding transcript); lower UTR
+        str: isCds || !hasCds ? toUpper(s) : toLower(s),
+        color: isCds ? cdsColor : utrColor,
+      })
+    }
+
+    const next = regions[idx + 1]
     if (includeIntrons && next) {
-      const intron = sequence.slice(chunk.end, next.start)
+      const intron = sequence.slice(region.end, next.start)
       if (intron) {
         middle.push({
-          key: `${chunk.start}-${chunk.end}-${chunk.type}-intron`,
+          key: `${region.start}-${region.end}-intron`,
           str: toLower(
             getIntronDisplayStr(intron, intronBp, collapseIntron ?? false),
           ),

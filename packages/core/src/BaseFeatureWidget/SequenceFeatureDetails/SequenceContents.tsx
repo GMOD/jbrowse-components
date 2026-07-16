@@ -77,7 +77,7 @@ function RenderedSequenceComponent({
   sequenceData: SequenceData
   onHoverBase?: (base0: number) => void
 }) {
-  const { seq, upstream, downstream, cds, exons, utr } = sequenceData
+  const { seq, upstream, downstream, cds, exons } = sequenceData
   const withUpDown = modeHasUpDownstream(mode)
   const useGenomicCoords =
     resolveShowCoordinates(model.showCoordinatesSetting, mode) === 'genomic'
@@ -128,7 +128,6 @@ function RenderedSequenceComponent({
           exons={exons}
           feature={feature}
           cds={cds}
-          utr={utr}
           sequence={seq}
           upstream={withUpDown ? upstream : undefined}
           downstream={withUpDown ? downstream : undefined}

@@ -1,4 +1,93 @@
-import { splitString } from './util.ts'
+import { splitRegionByCds, splitString, transcriptRegions } from './util.ts'
+
+describe('transcriptRegions', () => {
+  test('uses the exons when the transcript has them', () => {
+    const exons = [
+      { start: 0, end: 100 },
+      { start: 200, end: 300 },
+    ]
+    expect(
+      transcriptRegions({ cds: [{ start: 50, end: 250 }], exons, featureLength: 300 }),
+    ).toBe(exons)
+  })
+
+  test('stands the CDS blocks in for missing exons, stretched to the bounds', () => {
+    // the flanking UTRs are only reachable by stretching the outermost blocks
+    expect(
+      transcriptRegions({
+        cds: [
+          { start: 100, end: 200 },
+          { start: 250, end: 350 },
+        ],
+        exons: [],
+        featureLength: 400,
+      }),
+    ).toStrictEqual([
+      { start: 0, end: 200 },
+      { start: 250, end: 400 },
+    ])
+  })
+
+  test('a single CDS block with no exons spans the whole feature', () => {
+    expect(
+      transcriptRegions({
+        cds: [{ start: 100, end: 300 }],
+        exons: [],
+        featureLength: 400,
+      }),
+    ).toStrictEqual([{ start: 0, end: 400 }])
+  })
+
+  test('nothing to render without exons or CDS', () => {
+    expect(
+      transcriptRegions({ cds: [], exons: [], featureLength: 400 }),
+    ).toStrictEqual([])
+  })
+})
+
+describe('splitRegionByCds', () => {
+  test('splits an exon into UTR/CDS/UTR', () => {
+    expect(
+      splitRegionByCds({ start: 0, end: 400 }, [{ start: 100, end: 300 }]),
+    ).toStrictEqual([
+      { start: 0, end: 100, isCds: false },
+      { start: 100, end: 300, isCds: true },
+      { start: 300, end: 400, isCds: false },
+    ])
+  })
+
+  test('handles several CDS blocks inside one region', () => {
+    expect(
+      splitRegionByCds({ start: 0, end: 400 }, [
+        { start: 100, end: 200 },
+        { start: 200, end: 300 },
+      ]),
+    ).toStrictEqual([
+      { start: 0, end: 100, isCds: false },
+      { start: 100, end: 200, isCds: true },
+      { start: 200, end: 300, isCds: true },
+      { start: 300, end: 400, isCds: false },
+    ])
+  })
+
+  test('clips a CDS that overruns the region', () => {
+    expect(
+      splitRegionByCds({ start: 100, end: 200 }, [{ start: 0, end: 300 }]),
+    ).toStrictEqual([{ start: 100, end: 200, isCds: true }])
+  })
+
+  test('a non-overlapping CDS leaves the region untranslated', () => {
+    expect(
+      splitRegionByCds({ start: 0, end: 100 }, [{ start: 200, end: 300 }]),
+    ).toStrictEqual([{ start: 0, end: 100, isCds: false }])
+  })
+
+  test('a fully coding region yields one CDS part', () => {
+    expect(
+      splitRegionByCds({ start: 0, end: 100 }, [{ start: 0, end: 100 }]),
+    ).toStrictEqual([{ start: 0, end: 100, isCds: true }])
+  })
+})
 
 describe('splitString', () => {
   test('splits a string into rows of charactersPerRow', () => {

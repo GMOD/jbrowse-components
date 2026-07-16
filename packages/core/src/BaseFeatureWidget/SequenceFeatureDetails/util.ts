@@ -1,4 +1,5 @@
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { Feat } from '../util.tsx'
 
 /**
  * Splits a string into chunks for display with optional coordinate spacing.
@@ -93,6 +94,54 @@ export function computeCoordProps(
       : feature.end + (upstream?.length ?? 0)
     : 0
   return { mult, coordStart }
+}
+
+/**
+ * The exonic blocks making up a transcript, feature-relative. Without exon
+ * subfeatures the CDS blocks stand in for them, the first and last stretched to
+ * the feature bounds so the untranslated flanks are still rendered.
+ */
+export function transcriptRegions({
+  cds,
+  exons,
+  featureLength,
+}: {
+  cds: Feat[]
+  exons: Feat[]
+  featureLength: number
+}): Feat[] {
+  return exons.length
+    ? exons
+    : cds.map((sub, idx) => ({
+        start: idx === 0 ? 0 : sub.start,
+        end: idx === cds.length - 1 ? featureLength : sub.end,
+      }))
+}
+
+/**
+ * Splits an exonic region into its coding and untranslated stretches. `cds` must
+ * be sorted by start. A region no CDS overlaps comes back wholly untranslated,
+ * so a CDS annotated outside the exons degrades to an uncolored transcript
+ * rather than dropping sequence or throwing.
+ */
+export function splitRegionByCds(region: Feat, cds: Feat[]) {
+  const parts: { start: number; end: number; isCds: boolean }[] = []
+  let pos = region.start
+  for (const sub of cds) {
+    const start = Math.max(sub.start, region.start)
+    const end = Math.min(sub.end, region.end)
+    if (start < end) {
+      if (start > pos) {
+        parts.push({ start: pos, end: start, isCds: false })
+      }
+      parts.push({ start, end, isCds: true })
+      pos = end
+    }
+  }
+  if (pos < region.end) {
+    parts.push({ start: pos, end: region.end, isCds: false })
+  }
+  return parts
 }
 
 /**
