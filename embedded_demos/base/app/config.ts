@@ -80,7 +80,7 @@ const config = {
       assemblyNames: ['hg38'],
       adapter: {
         type: 'BigWigAdapter',
-        uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
       },
     },
     {
