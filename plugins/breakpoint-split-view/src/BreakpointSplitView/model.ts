@@ -191,15 +191,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * Find all track ids that match across multiple views, or return just
-       * the single view's track if only a single row is used.
-       *
-       * The `OverlayTrack` annotation is load-bearing, exactly as on
-       * `getMatchedTracks`: the LGV's `tracks` array is an MST pluggable union
-       * that TS widens to `any`, so without it every field read here is
-       * unchecked. That's how a `display.notReady?.()` guard against a method no
-       * display defines survived in the fetcher below — it optional-called into
-       * `any` and silently did nothing.
+       * the single view's track if only a single row is used
        */
+      // The `OverlayTrack` return annotation is load-bearing, exactly as on
+      // `getMatchedTracks`: the LGV's `tracks` array is an MST pluggable union
+      // that TS widens to `any`, so without it every field read through this
+      // getter is unchecked. That's how a `display.notReady?.()` guard against a
+      // method no display defines survived in the fetcher below — it
+      // optional-called into `any` and silently did nothing.
       get matchedTracks(): OverlayTrack[] {
         return self.views.length === 1
           ? self.views[0]!.tracks

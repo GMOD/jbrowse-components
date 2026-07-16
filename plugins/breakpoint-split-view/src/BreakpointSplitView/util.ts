@@ -11,16 +11,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // array is an MST pluggable union, which TS widens to `any`, so naming the
 // shape here is what makes these field reads checked at all — see the
 // OverlayTrack annotation on getMatchedTracks.
-export interface OverlayDisplay {
+interface OverlayDisplayBase {
   height: number
-  searchFeatureByID?: (str: string) => LayoutRecord | undefined
-  /**
-   * whether `searchFeatureByID` currently has a laid-out pileup to search.
-   * False while the display holds no data (mid-load, or the region-too-large
-   * banner replaced the pileup) — see layoutUnknown. Absent on display types
-   * that keep no layout at all, which have no searchFeatureByID either.
-   */
-  layoutReady?: boolean
   scrollTop?: number
   regionTooLarge?: boolean
   /** height of the coverage subtrack, on displays that have one */
@@ -34,6 +26,36 @@ export interface OverlayDisplay {
    */
   linkedReads?: 'off' | 'normal'
 }
+
+/**
+ * A display that indexes its features, so an overlay can ask where one landed.
+ * `layoutReady` is NOT optional here: a lookup's answer is uninterpretable
+ * without it (see `layoutUnknown`), so the pair is what makes a display
+ * searchable. Declaring one without the other is the mistake this union exists
+ * to reject — it used to typecheck, and reading a missing `layoutReady` as
+ * "false" would silently drop every overlay curve.
+ */
+interface SearchableOverlayDisplay extends OverlayDisplayBase {
+  searchFeatureByID: (str: string) => LayoutRecord | undefined
+  /**
+   * whether `searchFeatureByID` currently has a laid-out pileup to search.
+   * False while the display holds no data (mid-load, or the region-too-large
+   * banner replaced the pileup).
+   */
+  layoutReady: boolean
+}
+
+/** A display that keeps no feature layout at all (the paired/arc displays). */
+interface OpaqueOverlayDisplay extends OverlayDisplayBase {
+  searchFeatureByID?: undefined
+  layoutReady?: undefined
+}
+
+// The subset of a display the overlays actually read. The two variants are what
+// keep `layoutUnknown` honest: after `searchFeatureByID !== undefined` narrows to
+// the searchable branch, `layoutReady` is a required boolean rather than a
+// `boolean | undefined` whose absence is indistinguishable from `false`.
+export type OverlayDisplay = SearchableOverlayDisplay | OpaqueOverlayDisplay
 
 export interface OverlayTrack {
   /** the track-type name, e.g. 'AlignmentsTrack' — how matches are classified */
@@ -151,6 +173,7 @@ export function calc(track: OverlayTrack, f: Feature) {
 // line for the length of the transition, so callers drop them instead.
 export function layoutUnknown(track: OverlayTrack) {
   const d = track.displays[0]!
+  // narrows to SearchableOverlayDisplay, where layoutReady is a required boolean
   return d.searchFeatureByID !== undefined && !d.layoutReady
 }
 

@@ -1406,16 +1406,14 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Whether reads can be laid out, i.e. whether `searchFeatureByID` has a
-         * pileup to search. Same name and meaning as the canvas display's.
-         * Consumers outside the display (BreakpointSplitView's overlays) read it
-         * to tell "this read is off-display" apart from "there is no layout to
-         * be off-display *of*". The too-large term matters independently of the
-         * data one: `clearAllRpcData` deliberately leaves the gate alone, so a
-         * zoom-out into the banner can leave the previous region's data sitting
-         * in `rpcDataMap` with no pileup on screen to point at.
+         * Whether `searchFeatureByID` has a pileup to search. Same name and
+         * meaning as the canvas display's; see MultiRegionDisplayMixin.
          */
         get layoutReady() {
+          // The too-large term is independent of the data one, not redundant
+          // with it: `clearAllRpcData` deliberately leaves the gate alone, so a
+          // zoom-out into the banner can leave the previous region's data
+          // sitting in `rpcDataMap` with no pileup on screen to point at.
           return !self.regionTooLarge && self.rpcDataMap.size > 0
         },
       }))

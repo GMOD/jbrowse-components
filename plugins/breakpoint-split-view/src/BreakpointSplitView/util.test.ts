@@ -9,27 +9,43 @@ import {
 
 import type { OverlayDisplay, OverlayTrack } from './util.ts'
 
-function trackWith(display: Partial<OverlayDisplay>) {
-  return {
-    displays: [{ height: 100, ...display }],
-  } as OverlayTrack
+function trackWith(display: OverlayDisplay) {
+  return { displays: [display] } as OverlayTrack
 }
+
+// Compile-time half of the contract: a display that indexes features MUST
+// declare layoutReady alongside. This used to typecheck, and a missing
+// layoutReady read as falsy — which is precisely the "no layout" verdict, so
+// every overlay curve silently vanished. Pinned here so the union can't be
+// relaxed back into two independent optionals.
+test('declaring searchFeatureByID without layoutReady is a type error', () => {
+  // @ts-expect-error searchFeatureByID requires layoutReady alongside it
+  const bad: OverlayDisplay = {
+    height: 100,
+    searchFeatureByID: () => undefined,
+  }
+  expect(bad).toBeDefined()
+})
 
 describe('layoutUnknown', () => {
   test('a display with a populated layout knows off-display from missing', () => {
     expect(
-      layoutUnknown(trackWith({ searchFeatureByID: () => undefined, layoutReady: true })),
+      layoutUnknown(
+        trackWith({ height: 100, searchFeatureByID: () => undefined, layoutReady: true }),
+      ),
     ).toBe(false)
   })
 
   test('a display whose data is cleared cannot place anything', () => {
     expect(
-      layoutUnknown(trackWith({ searchFeatureByID: () => undefined, layoutReady: false })),
+      layoutUnknown(
+        trackWith({ height: 100, searchFeatureByID: () => undefined, layoutReady: false }),
+      ),
     ).toBe(true)
   })
 
   test('a display that keeps no layout at all keeps the bottom-edge behavior', () => {
-    expect(layoutUnknown(trackWith({}))).toBe(false)
+    expect(layoutUnknown(trackWith({ height: 100 }))).toBe(false)
   })
 })
 
