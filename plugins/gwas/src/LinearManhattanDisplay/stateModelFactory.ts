@@ -31,6 +31,7 @@ import {
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
@@ -420,7 +421,13 @@ export function stateModelFactory(
       trackMenuItems() {
         return [
           makeScoreSubMenu(self, { scaleType: false }),
-          makeScatterPointSizeMenuItem(self, { label: 'Point size' }),
+          {
+            label: 'Point size',
+            icon: ScatterPlotIcon,
+            subMenu: [
+              makeScatterPointSizeMenuItem(self, { label: 'Point size' }),
+            ],
+          },
           makeCrossHatchItem(self),
           {
             // whole submenu greys out without a configured .ld adapter
