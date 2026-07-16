@@ -8,6 +8,9 @@ The in-app plugin store lets you browse, search, and install community plugins
 into the current session. Plugins can add new track types, view types, data
 adapters, custom menu items, and more.
 
+The full catalog of white-listed plugins, each with its config snippet, is also
+listed on the [plugin store page](/plugin_store).
+
 To write your own plugin, see the [developer guide](/docs/developer_guide).
 
 Where the install persists depends on the context:
@@ -25,6 +28,8 @@ yourself.
 
 ## See also
 
+- [Plugin store page](/plugin_store) - the browsable catalog of white-listed
+  plugins with ready-to-paste config snippets
 - [Developer guide](/docs/developer_guide) - writing your own plugin
 - [Plugin configuration](/docs/config_guides/plugins) - adding plugins to a
   config file
