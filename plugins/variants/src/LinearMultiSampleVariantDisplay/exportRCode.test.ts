@@ -14,20 +14,22 @@ const base: VariantRowRParams = {
 test('reads genotypes with read_vcf_gt and emits no bespoke package', () => {
   const f = variantRowFragment(base)
   expect(f.plotVariable).toBe('p_variants')
-  expect(f.helpers).toEqual(['read_vcf_gt', 'bp_axis'])
+  expect(f.helpers).toEqual(['read_vcf_gt'])
   expect(f.packages).toEqual(['Rsamtools', 'GenomicRanges', 'ggplot2'])
   expect(f.packages).not.toContain('VariantAnnotation')
   // no patchwork / dendrogram — this is a plain 1-D panel, not the matrix
   expect(f.packages).not.toContain('patchwork')
   expect(f.plotExpr).toContain(
-    'read_vcf_gt(variants, chrom, start, end, FALSE)',
+    'read_vcf_gt(variants, regions$chrom[ri], regions$start[ri], regions$end[ri], FALSE)',
   )
   expect(f.plotExpr).not.toContain('dendro_segments')
 })
 
 test('phased mode reads per-haplotype genotypes and uses the phased palette', () => {
   const f = variantRowFragment({ ...base, phased: true })
-  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end, TRUE)')
+  expect(f.plotExpr).toContain(
+    'read_vcf_gt(variants, regions$chrom[ri], regions$start[ri], regions$end[ri], TRUE)',
+  )
   expect(f.plotExpr).toContain('levels = c("ref", "alt", "other", "nocall")')
   expect(f.plotExpr).toContain('alt = "#377eb8"')
   expect(f.plotExpr).not.toContain('het = "#6699cc"')
@@ -36,9 +38,7 @@ test('phased mode reads per-haplotype genotypes and uses the phased palette', ()
 test('draws one genotype row per sample at genomic position', () => {
   const f = variantRowFragment(base)
   expect(f.plotExpr).toContain('geom_rect(aes(xmin = xmin, xmax = xmax')
-  // genomic x, so it shares the coord_cartesian(xlim=) contract with 1-D tracks
-  expect(f.plotExpr).toContain('coord_cartesian(xlim = c(start, end))')
-  expect(f.plotExpr).toContain('bp_axis()')
+  // reads each region onto the cumulative-bp axis; shared axis added centrally
   expect(f.plotExpr).toContain('vstart <- gt$start[keep]; vend <- gt$end[keep]')
   expect(f.plotExpr).toContain('scale_fill_manual')
 })

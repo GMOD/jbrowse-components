@@ -146,24 +146,36 @@ function resolveColorScheme(colorBy: string) {
  * (`read_fill_colors`: normal/strand/mappingQuality/insertSize/pairOrientation) with per-base
  * mismatch ticks — both derived from the MD tag by `bam_mismatches()`
  * (reference-free, the same signal JBrowse's canvas renderer shows). Row layout
- * is the visible, editable `pileup_layout()` helper. Panels read `chrom`,
- * `start`, `end` from the enclosing plot_region().
+ * is the visible, editable `pileup_layout()` helper.
+ *
+ * Each region in the view is read separately and placed on one cumulative-bp
+ * x-axis (JBrowse's multi-region view). Per-read overlays (mismatches, indels,
+ * clips, mods, base quality) join to their pileup row by `read_index`, so each
+ * region's index is renumbered to its position in the combined `reads` frame
+ * before concatenation; layout then runs over the combined reads, giving
+ * cross-region-consistent rows and — in chain mode (link_reads) — connectors
+ * that span the gap between a mate/segment in one region and its partner in
+ * another. The shared axis + inter-region dividers come from plot_regions().
  */
 export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
   const scheme = resolveColorScheme(p.colorBy)
   const pathVar = safeVarName(p.trackId)
   const refVar = `${pathVar}_ref`
-  // Rsamtools can't read CRAM, so a CRAM track reads through a per-region
-  // temporary BAM (cram_to_bam) in a distinct variable; a BAM reads its path
-  // directly. bamVar is what every bam_* helper call is handed.
-  const bamVar = p.isCram ? `${pathVar}_bam` : pathVar
   const setup = p.isCram
     ? `${pathVar} <- ${rStr(p.uri)}\n${refVar} <- ${p.reference ? rStr(p.reference) : 'NULL'}`
     : `${pathVar} <- ${rStr(p.uri)}`
-  const cramPrelude = p.isCram
-    ? `  # Rsamtools can't read CRAM: decode this region to a temporary BAM first
-  ${bamVar} <- cram_to_bam(${pathVar}, chrom, start, end, ${refVar})\n`
-    : ''
+  // Rsamtools can't read CRAM, so a CRAM track decodes each region to a
+  // temporary BAM (cram_to_bam) inside the per-region loop; a BAM reads directly.
+  // The file path is aliased to a dot-name once before the loop (`.bampath`) so
+  // the per-region `reads`/`bam`/... locals can't shadow it even if the track id
+  // sanitizes to one of those names (safeVarName never emits a leading dot).
+  const pathAlias = p.isCram
+    ? `  .bampath <- ${pathVar}; .refpath <- ${refVar}`
+    : `  .bampath <- ${pathVar}`
+  const bamAssign = p.isCram
+    ? `# Rsamtools can't read CRAM: decode this region to a temporary BAM first
+    bam <- cram_to_bam(.bampath, chrom, start, end, .refpath)`
+    : `bam <- .bampath`
   const cramHelpers = p.isCram ? ['cram_to_bam'] : []
   const packages = ['Rsamtools', 'GenomicAlignments', 'ggplot2']
   const fragments: RTrackFragment[] = []
@@ -183,36 +195,55 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
         'interbase_indicators',
         'gap_colors',
         'clip_colors',
-        'bp_axis',
       ],
       setup,
       plotVariable: `p_${pathVar}_coverage`,
       heightWeight: 1,
+      // read every region's coverage / SNP counts / interbase indicators, shift
+      // each onto the cumulative axis, then draw one continuous SNP-coverage panel
       plotExpr: `{
-${cramPrelude}  cov <- bam_coverage(${bamVar}, chrom, start, end)
-  mm <- bam_mismatches(${bamVar}, chrom, start, end)
+${pathAlias}
+  parts <- list()
+  for (ri in seq_len(nrow(regions))) {
+    chrom <- regions$chrom[ri]; start <- regions$start[ri]; end <- regions$end[ri]
+    shift <- regions$offset[ri] - regions$start[ri]
+    ${bamAssign}
+    cov0 <- bam_coverage(bam, chrom, start, end)
+    ind <- interbase_indicators(bam_indels(bam, chrom, start, end),
+                                bam_clips(bam, chrom, start, end), cov0)
+    mm <- bam_mismatches(bam, chrom, start, end)
+    snp <- NULL
+    if (!is.null(mm) && nrow(mm)) {
+      mm <- mm[mm$refpos >= start & mm$refpos < end, , drop = FALSE]
+      if (nrow(mm)) {
+        # per-base mismatch counts (colored) stacked over the grey total = SNP
+        # coverage. JBrowse's coverage panel shows every mismatch fraction; the
+        # low-frequency fade applies to the pileup ticks, not here.
+        snp <- aggregate(read_index ~ refpos + base, data = mm, FUN = length)
+        names(snp)[names(snp) == "read_index"] <- "count"
+        snp$refpos <- snp$refpos + shift; snp$.region <- ri
+      }
+    }
+    cov0$pos <- cov0$pos + shift; cov0$.region <- ri
+    if (nrow(ind)) { ind$pos <- ind$pos + shift; ind$.region <- ri } else ind <- NULL
+    parts[[ri]] <- list(cov = cov0, snp = snp, ind = ind)
+  }
+  cov <- do.call(rbind, lapply(parts, \`[[\`, "cov"))
+  snp <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "snp")))
+  ind <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "ind")))
   p <- ggplot() +
-    geom_area(data = cov, aes(pos, depth), fill = "#888888") +
+    geom_area(data = cov, aes(pos, depth, group = .region), fill = "#888888") +
     scale_fill_identity() +
-    bp_axis() +
-    coord_cartesian(xlim = c(start, end)) +
     labs(title = ${rStr(`${p.trackName} coverage`)}, x = NULL, y = "Depth") +
     theme_minimal()
-  # stack the per-base mismatch counts (colored) over the grey total = SNP
-  # coverage. JBrowse's coverage panel shows every mismatch fraction; the
-  # low-frequency fade applies to the pileup ticks, not here (computeSNPCoverage).
-  if (!is.null(mm) && nrow(mm)) {
-    snp <- aggregate(read_index ~ refpos + base, data = mm, FUN = length)
-    names(snp)[names(snp) == "read_index"] <- "count"
+  if (!is.null(snp) && nrow(snp)) {
     snp$fill <- base_colors[toupper(snp$base)]
     p <- p + geom_col(data = snp, aes(refpos + 0.5, count, fill = fill), width = 1)
   }
   # interbase indicators: a marker above the coverage where insertions / soft- or
   # hard-clips pile up past 30% of local depth (JBrowse's breakpoint flags),
   # colored by the dominant event (insertion purple / softclip blue / hardclip red)
-  ind <- interbase_indicators(bam_indels(${bamVar}, chrom, start, end),
-                              bam_clips(${bamVar}, chrom, start, end), cov)
-  if (nrow(ind)) {
+  if (!is.null(ind) && nrow(ind)) {
     ind$fill <- c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])[ind$type]
     p <- p + geom_point(data = ind, aes(pos + 0.5, max(cov$depth, 1) * 1.06, fill = fill),
       shape = 25, size = 2, color = "black", stroke = 0.2)
@@ -230,111 +261,96 @@ ${cramPrelude}  cov <- bam_coverage(${bamVar}, chrom, start, end)
     const isMods = scheme === 'modifications'
     const isQual = scheme === 'perBaseQuality'
     const bodyScheme = isMods || isQual ? 'normal' : scheme
-    const modsOverlay = `  # per-base modification ticks (MM/ML), joined to their pileup row and colored
-  # by modification type; raise to hide low-confidence calls like JBrowse
-  min_prob <- ${p.modificationThreshold}
-  mm <- bam_modifications(${bamVar}, chrom, start, end, min_prob)
-  if (!is.null(mm) && nrow(mm)) {
-    mm$row <- reads$row[mm$read_index]
-    mm$fill <- mod_colors(mm$modtype)
-    p <- p + geom_rect(data = mm,
-      aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
-  }`
-    const qualOverlay = `  # per-base quality: color every aligned base by its Phred score on JBrowse's
-  # perBaseQuality ramp (red low -> green high), joined to its pileup row. This is
-  # one rect per aligned base, so like JBrowse it only makes sense zoomed in; over
-  # a wide region it would emit millions of rects and exhaust ggplot's memory, so
-  # cap it (raise max_quality_rects if you really want a wider view).
-  max_quality_rects <- 200000
-  bq <- bam_base_quality(${bamVar}, chrom, start, end)
-  if (!is.null(bq) && nrow(bq)) {
-    if (nrow(bq) > max_quality_rects) {
-      message(sprintf("perBaseQuality: %d aligned bases in view exceeds max_quality_rects (%d); skipping the per-base overlay. Narrow the region to draw it.", nrow(bq), max_quality_rects))
-    } else {
-      bq$row <- reads$row[bq$read_index]
-      bq$fill <- quality_colors(bq$score)
-      p <- p + geom_rect(data = bq,
-        aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
-    }
-  }`
-    const mismatchOverlay = `  # per-base mismatch ticks, joined to their pileup row and colored by read base.
-  # JBrowse fades low-frequency mismatches when zoomed out past 1 bp/px and the
-  # frequency filter is on (the default): each tick's alpha is pxPerBp lifted
-  # toward 1 by its base frequency (count of that base / depth), and a base below
-  # snp_freq_threshold(depth) stays at the faint pxPerBp noise floor. Zoomed in
-  # (<= 1 bp/px) every tick is opaque. Mirrors frequencyFade + the depth-dependent
-  # threshold; the alpha is baked into the fill hex so one scale_fill_identity()
-  # still covers read bodies + ticks. Set filter_low_freq <- FALSE to keep all.
-  filter_low_freq <- ${p.showLowFreqMismatches ? 'FALSE' : 'TRUE'}
-  bp_per_px <- ${p.bpPerPx}
-  mm <- bam_mismatches(${bamVar}, chrom, start, end)
-  if (!is.null(mm) && nrow(mm)) {
-    mm$row <- reads$row[mm$read_index]
-    fill <- base_colors[toupper(mm$base)]
-    if (filter_low_freq && bp_per_px > 1) {
-      alpha <- mismatch_fade_alpha(mm$refpos, mm$base,
-        bam_coverage(${bamVar}, chrom, start, end), bp_per_px)
-      fill <- paste0(fill, sprintf("%02X", pmin(255L, as.integer(round(alpha * 255)))))
-    }
-    mm$fill <- fill
-    p <- p + geom_rect(data = mm,
-      aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
-  }`
-    const overlay = isMods
-      ? modsOverlay
-      : isQual
-        ? qualOverlay
-        : mismatchOverlay
-    // JBrowse's localized "Sort by..." reorders reads overlapping the center-line
-    // column (sort_pos) before packing rows; only in the flat pileup (chain layout
-    // packs whole templates, so sorting doesn't apply). base sort needs the MD-tag
-    // mismatch base at sort_pos, so it feeds bam_mismatches into the layout.
     const sortType = p.linkReads ? undefined : p.sortType
-    // read the region then apply JBrowse's "Filter by" (flags/read name/tags),
-    // marking a keep column so the layout drops filtered reads to an NA row
-    const readsSetup = `  # JBrowse "Filter by": SAM flags + optional read-name / tag filters (edit freely)
-  flag_include <- ${p.filterFlagInclude ?? 0}
-  flag_exclude <- ${p.filterFlagExclude ?? 1540}
-  read_name <- ${p.filterReadName ? rStr(p.filterReadName) : 'NULL'}
-  tag_filters <- ${emitTagFilters(p.filterTagFilters ?? [])}
-  reads <- read_filter(read_bam(${bamVar}, chrom, start, end), ${bamVar}, chrom, start, end,
-    flag_include, flag_exclude, read_name, tag_filters)`
-    // chain layout groups mates + supplementary segments onto one row and draws
-    // a connector across each gap (under the read rects, which paint on top)
+    // mismatch base is needed by the mismatch scheme and by the base sort; the
+    // coverage depth is needed by the mismatch overlay's low-frequency fade
+    const needsMm = (!isMods && !isQual) || sortType === 'base'
+    const needsCov = !isMods && !isQual
+
+    // per-region reads of the overlay frames, gathered inside the loop
+    const loopReads = [
+      needsMm ? `    mm <- bam_mismatches(bam, chrom, start, end)` : '',
+      needsCov
+        ? `    cov0 <- bam_coverage(bam, chrom, start, end)
+    cov0$pos <- cov0$pos + shift; cov0$.region <- ri`
+        : '',
+      isMods
+        ? `    mods <- bam_modifications(bam, chrom, start, end, min_prob)`
+        : '',
+      isQual ? `    bq <- bam_base_quality(bam, chrom, start, end)` : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+    // entries stored in the per-region parts list (reg() clips to the region,
+    // shifts onto the cumulative axis and renumbers read_index into the combined
+    // reads frame; cov carries no read_index so it is shifted directly above)
+    const loopParts = [
+      needsMm ? `mm = reg(mm, "refpos")` : '',
+      needsCov ? `cov = cov0` : '',
+      isMods ? `mods = reg(mods, "refpos")` : '',
+      isQual ? `bq = reg(bq, "refpos")` : '',
+    ].filter(Boolean)
+    const combine = [
+      needsMm
+        ? `  mm <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "mm")))`
+        : '',
+      needsCov
+        ? `  cov <- do.call(rbind, lapply(parts, \`[[\`, "cov"))`
+        : '',
+      isMods
+        ? `  mods <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "mods")))`
+        : '',
+      isQual
+        ? `  bq <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "bq")))`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    // constants set once before the loop
+    const consts = [
+      isMods ? `  min_prob <- ${p.modificationThreshold}` : '',
+      isQual ? `  max_quality_rects <- 200000` : '',
+      !isMods && !isQual
+        ? `  filter_low_freq <- ${p.showLowFreqMismatches ? 'FALSE' : 'TRUE'}
+  bp_per_px <- ${p.bpPerPx}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+
+    // map the center-line sort position (genomic) onto the cumulative axis
+    const sortPosMap = `  sort_pos <- ${p.sortPos ?? -1}
+  sr <- which(regions$start <= sort_pos & regions$end > sort_pos)
+  sort_pos <- if (length(sr)) sort_pos + (regions$offset[sr[1]] - regions$start[sr[1]]) else -1`
+    // layout over the COMBINED reads: consistent rows across regions, and in
+    // chain mode a connector spanning a mate/segment split across regions
     const layout = p.linkReads
-      ? `${readsSetup}
-  linked <- link_reads(reads)
+      ? `  linked <- link_reads(reads)
   reads <- linked$reads`
       : sortType === 'base'
-        ? `${readsSetup}
+        ? `${sortPosMap}
   # sort reads by their base at the center-line column (a deletion sorts as '*',
   # ahead of the ACGT bases, like JBrowse), then pack rows
-  sort_pos <- ${p.sortPos ?? -1}
-  reads <- sorted_pileup_layout(reads, sort_pos, "base",
-    bam_mismatches(${bamVar}, chrom, start, end), bam_indels(${bamVar}, chrom, start, end))`
+  reads <- sorted_pileup_layout(reads, sort_pos, "base", mm, indels)`
         : sortType !== undefined
-          ? `${readsSetup}
+          ? `${sortPosMap}
   # sort reads by ${sortType} at the center-line column, then pack rows
-  sort_pos <- ${p.sortPos ?? -1}
   reads <- sorted_pileup_layout(reads, sort_pos, ${rStr(sortType)})`
-          : `${readsSetup}
-  reads <- pileup_layout(reads)`
+          : `  reads <- pileup_layout(reads)`
     const connector = p.linkReads
       ? `
     geom_segment(data = linked$links,
       aes(x = xstart, xend = xend, y = row + 0.4, yend = row + 0.4),
       color = "#999999", linewidth = 0.3) +`
       : ''
-    // CIGAR indels that read_bam's start..end swallow. Deletions (short) paint a
-    // grey full-height rect over the read body (JBrowse's deletion rect). Skips
-    // (N, spliced introns, long) instead erase the body and leave a thin teal
-    // connector line between the flanking exons (JBrowse's spliced-read look) --
-    // a full-height fill there would read as a colored read segment, not a gap.
-    // Insertions (thin purple ticks) mark inserted sequence absent from the
-    // reference. Drawn after the read body but before the mismatch ticks (which
-    // sit on aligned columns, never inside a gap), independent of the color scheme.
+
+    // overlays consume the pre-combined frames (already row-joined by read_index
+    // into the combined reads). indels: deletion grey rect / spliced intron teal
+    // line / insertion purple tick. mismatch/mods/quality per the scheme. clips:
+    // soft blue / hard red bars. All independent of the color scheme except the
+    // scheme-specific base overlay.
     const indelOverlay = `  # CIGAR indels: deletion (grey rect) / spliced intron (teal line) / insertion (purple tick)
-  indels <- bam_indels(${bamVar}, chrom, start, end)
   if (!is.null(indels) && nrow(indels)) {
     indels$row <- reads$row[indels$read_index]
     dels <- indels[indels$type == "D", ]
@@ -361,12 +377,54 @@ ${cramPrelude}  cov <- bam_coverage(${bamVar}, chrom, start, end)
         color = gap_colors[["I"]], linewidth = 0.8)
     }
   }`
-    // soft-clip (blue) / hard-clip (red) indicator bars at read ends: a
-    // fixed-width vertical mark where a read carries unaligned sequence, the
-    // same breakpoint signal JBrowse's clip indicators show. Independent of the
-    // color scheme, so it draws under every scheme.
+    const modsOverlay = `  # per-base modification ticks (MM/ML), joined to their pileup row and colored
+  # by modification type; raise min_prob to hide low-confidence calls like JBrowse
+  if (!is.null(mods) && nrow(mods)) {
+    mods$row <- reads$row[mods$read_index]
+    mods$fill <- mod_colors(mods$modtype)
+    p <- p + geom_rect(data = mods,
+      aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
+  }`
+    const qualOverlay = `  # per-base quality: color every aligned base by its Phred score on JBrowse's
+  # perBaseQuality ramp (red low -> green high), joined to its pileup row. This is
+  # one rect per aligned base, so like JBrowse it only makes sense zoomed in; over
+  # a wide region it would emit millions of rects and exhaust ggplot's memory, so
+  # cap it (raise max_quality_rects if you really want a wider view).
+  if (!is.null(bq) && nrow(bq)) {
+    if (nrow(bq) > max_quality_rects) {
+      message(sprintf("perBaseQuality: %d aligned bases in view exceeds max_quality_rects (%d); skipping the per-base overlay. Narrow the region to draw it.", nrow(bq), max_quality_rects))
+    } else {
+      bq$row <- reads$row[bq$read_index]
+      bq$fill <- quality_colors(bq$score)
+      p <- p + geom_rect(data = bq,
+        aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
+    }
+  }`
+    const mismatchOverlay = `  # per-base mismatch ticks, joined to their pileup row and colored by read base.
+  # JBrowse fades low-frequency mismatches when zoomed out past 1 bp/px and the
+  # frequency filter is on (the default): each tick's alpha is pxPerBp lifted
+  # toward 1 by its base frequency (count of that base / depth), and a base below
+  # snp_freq_threshold(depth) stays at the faint pxPerBp noise floor. Zoomed in
+  # (<= 1 bp/px) every tick is opaque. Mirrors frequencyFade + the depth-dependent
+  # threshold; the alpha is baked into the fill hex so one scale_fill_identity()
+  # still covers read bodies + ticks. Set filter_low_freq <- FALSE to keep all.
+  if (!is.null(mm) && nrow(mm)) {
+    mm$row <- reads$row[mm$read_index]
+    fill <- base_colors[toupper(mm$base)]
+    if (filter_low_freq && bp_per_px > 1) {
+      alpha <- mismatch_fade_alpha(mm$refpos, mm$base, cov, bp_per_px)
+      fill <- paste0(fill, sprintf("%02X", pmin(255L, as.integer(round(alpha * 255)))))
+    }
+    mm$fill <- fill
+    p <- p + geom_rect(data = mm,
+      aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
+  }`
+    const overlay = isMods
+      ? modsOverlay
+      : isQual
+        ? qualOverlay
+        : mismatchOverlay
     const clipOverlay = `  # clip indicator bars (soft = blue, hard = red) at read ends
-  clips <- bam_clips(${bamVar}, chrom, start, end)
   if (!is.null(clips) && nrow(clips)) {
     clips$row <- reads$row[clips$read_index]
     clips$color <- clip_colors[clips$type]
@@ -375,6 +433,7 @@ ${cramPrelude}  cov <- bam_coverage(${bamVar}, chrom, start, end)
       linewidth = 1) +
       scale_color_identity()
   }`
+
     fragments.push({
       trackId: p.trackId,
       trackName: p.trackName,
@@ -389,9 +448,6 @@ ${cramPrelude}  cov <- bam_coverage(${bamVar}, chrom, start, end)
           : sortType !== undefined
             ? 'sorted_pileup_layout'
             : 'pileup_layout',
-        // base sort reads the mismatch base at sort_pos even when the color
-        // scheme wouldn't otherwise pull in bam_mismatches
-        ...(sortType === 'base' ? ['bam_mismatches'] : []),
         'read_fill_colors',
         ...(isMods
           ? ['bam_modifications', 'mod_colors']
@@ -406,25 +462,68 @@ ${cramPrelude}  cov <- bam_coverage(${bamVar}, chrom, start, end)
                 'snp_freq_threshold',
                 'mismatch_fade_alpha',
               ]),
+        // base sort reads the mismatch base at sort_pos even when the color
+        // scheme wouldn't otherwise pull in bam_mismatches
+        ...(sortType === 'base' && (isMods || isQual)
+          ? ['bam_mismatches']
+          : []),
         'bam_indels',
         'gap_colors',
         'bam_clips',
         'clip_colors',
-        'bp_axis',
       ],
       setup,
       plotVariable: `p_${pathVar}_pileup`,
       heightWeight: 3,
+      // read every region (renumbering read_index into the combined reads frame),
+      // lay out over the combined reads, then draw the pileup + overlays
       plotExpr: `{
-${cramPrelude}${layout}
+${[
+  pathAlias,
+  `  # JBrowse "Filter by": SAM flags + optional read-name / tag filters (edit freely)
+  flag_include <- ${p.filterFlagInclude ?? 0}
+  flag_exclude <- ${p.filterFlagExclude ?? 1540}
+  read_name <- ${p.filterReadName ? rStr(p.filterReadName) : 'NULL'}
+  tag_filters <- ${emitTagFilters(p.filterTagFilters ?? [])}`,
+  consts,
+]
+  .filter(Boolean)
+  .join('\n')}
+  parts <- list(); racc <- 0L
+  for (ri in seq_len(nrow(regions))) {
+    chrom <- regions$chrom[ri]; start <- regions$start[ri]; end <- regions$end[ri]
+    shift <- regions$offset[ri] - regions$start[ri]
+    ${bamAssign}
+    # clip an overlay frame to the region, shift onto the cumulative axis, and
+    # renumber read_index to its row in the combined reads frame
+    reg <- function(df, col) {
+      if (is.null(df) || !nrow(df)) return(NULL)
+      df <- df[df[[col]] >= start & df[[col]] < end, , drop = FALSE]
+      if (!nrow(df)) return(NULL)
+      df[[col]] <- df[[col]] + shift; df$read_index <- df$read_index + racc; df$.region <- ri
+      df
+    }
+    reads <- read_filter(read_bam(bam, chrom, start, end), bam, chrom, start, end,
+      flag_include, flag_exclude, read_name, tag_filters)
+    n <- nrow(reads)
+    reads$start <- pmin(pmax(reads$start, start), end) + shift
+    reads$end   <- pmin(pmax(reads$end, start), end) + shift
+    reads$.region <- ri
+    indels <- bam_indels(bam, chrom, start, end)
+    clips  <- bam_clips(bam, chrom, start, end)
+${loopReads ? `${loopReads}\n` : ''}    parts[[ri]] <- list(reads = reads, indels = reg(indels, "refpos"), clips = reg(clips, "pos")${loopParts.length ? `,\n      ${loopParts.join(', ')}` : ''})
+    racc <- racc + n
+  }
+  reads  <- do.call(rbind, lapply(parts, \`[[\`, "reads"))
+  indels <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "indels")))
+  clips  <- do.call(rbind, Filter(Negate(is.null), lapply(parts, \`[[\`, "clips")))
+${combine ? `${combine}\n` : ''}${layout}
   # color reads by the track's color-by scheme (edit to try another scheme)
   reads$fill <- read_fill_colors(reads, ${rStr(bodyScheme)})
   p <- ggplot(reads) +${connector}
     geom_rect(aes(xmin = start, xmax = end, ymin = row, ymax = row + 0.8, fill = fill)) +
     scale_fill_identity() +
     scale_y_reverse() +
-    bp_axis() +
-    coord_cartesian(xlim = c(start, end)) +
     labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL) +
     theme_minimal() +
     theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())

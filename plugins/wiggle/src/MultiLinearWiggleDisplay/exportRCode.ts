@@ -83,38 +83,37 @@ export interface MultiWiggleRParams {
  * (a `source` column), then either overlays the sources in one panel (colored
  * by source) or stacks them with `facet_grid(rows = vars(source))` for the
  * multi-row modes. Density is a per-source viridis strip heatmap. Pure ggplot2 +
- * inline helpers, no bespoke package. The panel reads `chrom`, `start`, `end`
- * from the enclosing plot_region() so it redraws for any locus.
+ * inline helpers, no bespoke package. `read_regions()` reads each region in the
+ * view onto one cumulative-bp x-axis (JBrowse's multi-region view); the shared
+ * axis + dividers come from plot_regions(). Line-like geoms group by
+ * (source, .region) so a line never connects across a region gap.
  */
 export function multiWiggleFragment(p: MultiWiggleRParams): RTrackFragment {
   const pathVar = safeVarName(p.trackId)
   const urisVar = `${pathVar}_uris`
   const namesVar = `${pathVar}_names`
-  const data = `read_multibigwig(${urisVar}, ${namesVar}, chrom, start, end)`
+  const data = `read_regions(function(chrom, start, end) read_multibigwig(${urisVar}, ${namesVar}, chrom, start, end), regions, c("start", "end"))`
   const palette = `c(${p.sources
     .map(s => `${rName(s.name)} = ${rStr(s.color)}`)
     .join(', ')})`
   const isDensity = p.renderingType.includes('density')
   const facet = p.isOverlay ? '' : 'facet_grid(rows = vars(source)) +\n  '
-  const tail = `bp_axis() +
-  coord_cartesian(xlim = c(start, end)) +`
 
   let body: string
   if (isDensity) {
     // per-source viridis strip: score maps to fill, one row per source
     body = `geom_rect(aes(xmin = start, xmax = end, ymin = 0, ymax = 1, fill = score)) +
   scale_fill_viridis_c() +
-  ${facet}${tail}
-  labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL, fill = "Score") +
+  ${facet}labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL, fill = "Score") +
   theme_minimal() +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(), strip.text.y = element_text(angle = 0))`
   } else {
     const geom = geomKind(p.renderingType)
     const usesFill = geom === 'area'
     const geomExpr = {
-      area: `geom_area(aes(x = start, y = score, fill = source), position = "identity"${p.isOverlay ? ', alpha = 0.4' : ''})`,
-      step: 'geom_step(aes(x = start, y = score, color = source))',
-      line: 'geom_line(aes(x = start, y = score, color = source))',
+      area: `geom_area(aes(x = start, y = score, fill = source, group = interaction(source, .region)), position = "identity"${p.isOverlay ? ', alpha = 0.4' : ''})`,
+      step: 'geom_step(aes(x = start, y = score, color = source, group = interaction(source, .region)))',
+      line: 'geom_line(aes(x = start, y = score, color = source, group = interaction(source, .region)))',
       point:
         'geom_point(aes(x = start, y = score, color = source), size = 0.6)',
     }[geom]
@@ -129,8 +128,7 @@ export function multiWiggleFragment(p: MultiWiggleRParams): RTrackFragment {
       : ' +\n  theme(strip.text.y = element_text(angle = 0))'
     body = `${geomExpr} +
   ${scaleExpr} +
-  ${facet}${tail}
-  labs(title = ${rStr(p.trackName)}, x = NULL, y = "Score") +
+  ${facet}labs(title = ${rStr(p.trackName)}, x = NULL, y = "Score") +
   theme_minimal()${stripTheme}`
   }
 
@@ -138,7 +136,7 @@ export function multiWiggleFragment(p: MultiWiggleRParams): RTrackFragment {
     trackId: p.trackId,
     trackName: p.trackName,
     packages: ['rtracklayer', 'ggplot2'],
-    helpers: ['read_bigwig', 'read_multibigwig', 'bp_axis'],
+    helpers: ['read_bigwig', 'read_multibigwig'],
     setup: `${urisVar} <- c(${p.sources.map(s => rStr(s.uri)).join(', ')})
 ${namesVar} <- c(${p.sources.map(s => rStr(s.name)).join(', ')})`,
     plotVariable: `p_${pathVar}`,

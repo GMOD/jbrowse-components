@@ -63,3 +63,36 @@ for (r in list(c(0, 10000), c(14000, 20000))) {
   },
   60000,
 )
+
+maybe(
+  'multi-region wiggle concatenates regions on one cumulative axis',
+  () => {
+    const bw = resolve(process.cwd(), 'test_data/volvox/volvox.bw')
+    const fragment = wiggleFragment({
+      trackId: 'volvox',
+      trackName: 'Volvox microarray',
+      uri: bw,
+      isDensity: false,
+      isLine: false,
+      useBicolor: false,
+      color: '#2166ac',
+      posColor: 'blue',
+      negColor: 'red',
+      bicolorPivot: 0,
+    })
+    // two different-width regions exercise region_layout / read_regions /
+    // region_scale / region_ruler over the real generated script
+    const script = assembleRScript(
+      [
+        { refName: 'ctgA', start: 1000, end: 6000 },
+        { refName: 'ctgA', start: 20000, end: 22000 },
+      ],
+      [fragment],
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-mr-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  60000,
+)

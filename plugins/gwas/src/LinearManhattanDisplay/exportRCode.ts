@@ -47,8 +47,9 @@ export interface ManhattanRParams {
  * scanTabix, looking the score column up by name in the header), draws each
  * association as a `geom_point` at its genomic position against -log10(p), and
  * marks the 5e-8 genome-wide significance line with `geom_hline`. Pure ggplot2 +
- * inline helpers, no bespoke package. Reads `chrom`, `start`, `end` from the
- * enclosing plot_region() so it redraws for any locus. LD (r²) coloring is not
+ * inline helpers, no bespoke package. `read_regions()` reads every region in the
+ * view onto one cumulative-bp x-axis (JBrowse's multi-region view); the shared
+ * axis + dividers are added by plot_regions(). LD (r²) coloring is not
  * reproduced — the panel is the standard single-color Manhattan.
  */
 export function manhattanFragment(p: ManhattanRParams): RTrackFragment {
@@ -56,20 +57,18 @@ export function manhattanFragment(p: ManhattanRParams): RTrackFragment {
   const color = p.color.startsWith('jexl') ? DEFAULT_MANHATTAN_COLOR : p.color
   const size = Math.max(0.4, p.pointSize / 4)
   const y = scoreExpr(p.scoreTransform)
-  const data = `read_gwas(${pathVar}, chrom, start, end, ${rStr(p.scoreColumn)})`
+  const data = `read_regions(function(chrom, start, end) read_gwas(${pathVar}, chrom, start, end, ${rStr(p.scoreColumn)}), regions, c("pos"))`
   return {
     trackId: p.trackId,
     trackName: p.trackName,
     packages: ['Rsamtools', 'GenomicRanges', 'ggplot2'],
-    helpers: ['read_gwas', 'bp_axis'],
+    helpers: ['read_gwas'],
     setup: `${pathVar} <- ${rStr(p.uri)}`,
     plotVariable: `p_${pathVar}`,
     heightWeight: 2,
     plotExpr: `ggplot(${data}) +
   geom_hline(yintercept = -log10(5e-8), linetype = "dashed", color = "grey60") +
   geom_point(aes(x = pos, y = ${y}), color = ${rStr(color)}, size = ${size}, na.rm = TRUE) +
-  bp_axis() +
-  coord_cartesian(xlim = c(start, end)) +
   labs(title = ${rStr(p.trackName)}, x = NULL, y = "-log10(p)") +
   theme_minimal()`,
   }

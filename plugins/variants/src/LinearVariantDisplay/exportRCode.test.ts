@@ -12,12 +12,12 @@ test('reads the VCF with read_vcf and emits no bespoke package', () => {
   const f = variantFragment(base)
   expect(f.plotVariable).toBe('p_variants')
   expect(f.setup).toBe('variants <- "https://example.com/volvox.vcf.gz"')
-  expect(f.helpers).toEqual(['read_vcf', 'vcf_layout', 'bp_axis'])
+  expect(f.helpers).toEqual(['read_vcf', 'vcf_layout'])
   // Rsamtools scanTabix path — no VariantAnnotation dependency
   expect(f.packages).toEqual(['Rsamtools', 'GenomicRanges', 'ggplot2'])
   expect(f.packages).not.toContain('VariantAnnotation')
   expect(f.plotExpr).toContain(
-    'vcf_layout(read_vcf(variants, chrom, start, end))',
+    'vcf_layout(read_regions(function(chrom, start, end) read_vcf(variants, chrom, start, end), regions, c("start", "end")))',
   )
   expect(f.plotExpr).not.toMatch(/jb_features|geom_variant|scale_x_genomic/)
 })

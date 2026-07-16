@@ -183,3 +183,18 @@ so `plot_region(chrom, start, end)` redraws the whole panel for any locus (loop
 it over a BED file for batch figures).
 
 ![combined](./combined.png)
+
+## Multi-region
+
+When the view shows several discontiguous regions, they are concatenated
+left-to-right on a single **cumulative-bp** x-axis — the way JBrowse lays out a
+multi-region view — with a region-name ruler on top, a divider between regions,
+and each region keeping its own genomic tick labels. Every track shares the
+axis, so rows line up across the divider. `plot_regions(regions)` takes a
+`data.frame(chrom, start, end)`; `plot_region()` is just the one-row shorthand.
+This figure is genuine `assembleRScript` output: a BigWig, a gene track, and a
+strand-colored pileup over two volvox regions
+(`ctgA:1,001-6,000` + `ctgA:15,001-17,000`), each region's features clipped at
+its boundary.
+
+![multi-region](./multiregion.png)

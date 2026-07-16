@@ -15,11 +15,11 @@ test('reads the BED with read_gwas and emits no bespoke package', () => {
   const f = manhattanFragment(base)
   expect(f.plotVariable).toBe('p_gwas')
   expect(f.setup).toBe('gwas <- "https://example.com/summary_stats.bed.gz"')
-  expect(f.helpers).toEqual(['read_gwas', 'bp_axis'])
+  expect(f.helpers).toEqual(['read_gwas'])
   // Rsamtools scanTabix path — no bespoke GWAS package
   expect(f.packages).toEqual(['Rsamtools', 'GenomicRanges', 'ggplot2'])
   expect(f.plotExpr).toContain(
-    'read_gwas(gwas, chrom, start, end, "neg_log_pvalue")',
+    'read_regions(function(chrom, start, end) read_gwas(gwas, chrom, start, end, "neg_log_pvalue"), regions, c("pos"))',
   )
   expect(f.plotExpr).not.toMatch(/jb_features|geom_manhattan|scale_x_genomic/)
 })

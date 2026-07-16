@@ -13,19 +13,38 @@ with ordinary ggplot2 knowledge.
 
 ## What the script contains
 
-The download is a single script with one function, `plot_region(chrom, start,
-end)`, that reads every track in the view and stacks one panel per track with
+The download reads every track in the view and stacks one panel per track with
 [`patchwork`](https://patchwork.data-imaginist.com/), sharing a genomic x-axis.
-The current view is one call at the bottom:
+The main function is `plot_regions(regions)`, which takes a
+`data.frame(chrom, start, end)`; `plot_region(chrom, start, end)` is the
+single-region shorthand. The current view is one call at the bottom:
 
 ```r
 p <- plot_region("ctgA", 1620, 1780)
 ggsave("jbrowse_region.png", p, width = 12, height = 8, dpi = 150)
 ```
 
-Because the whole figure is a function of the region, you can loop it over a BED
-file to batch-render many loci (a commented example is included at the end of the
-script).
+Because the whole figure is a function of the region, you can loop
+`plot_region()` over a BED file to batch-render many loci (a commented example is
+included at the end of the script).
+
+### Multiple regions
+
+If the view is showing several regions at once (a discontiguous view), they are
+concatenated left-to-right onto one continuous axis — the same layout JBrowse
+uses — with a region-name ruler on top, a divider between regions, and each
+region keeping its own coordinate labels. Every track shares the axis, so rows
+stay aligned across the divider, and an alignments track drawn with linked reads
+will connect a mate or split-read segment to its partner even when the two land
+in different regions. You can render your own multi-region figure any time by
+passing several loci at once:
+
+```r
+p <- plot_regions(data.frame(
+  chrom = c("ctgA", "ctgA"),
+  start = c(1000, 15000),
+  end   = c(6000, 17000)))
+```
 
 Everything the script needs is emitted as small, visible helper functions
 (`read_bigwig`, `read_bam`, `read_vcf`, …) rather than hidden in a package, so you
