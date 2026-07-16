@@ -48,21 +48,27 @@ function processFeatureData(
   const exons = filterSuccessiveElementsWithSameStartAndEndCoord(
     children.filter(sub => sub.type?.toLowerCase() === 'exon'),
   )
-  let utr = filterSuccessiveElementsWithSameStartAndEndCoord(
+  // A UTR is by definition the exonic sequence outside the CDS, so derive it
+  // rather than trust the annotation: the renderer stitches the transcript from
+  // cds+utr and ignores exons once there is a CDS, so a transcript annotating
+  // only one of its UTRs (a common GFF shape) would silently drop the other
+  // side from the cDNA. Deriving covers both sides or neither. Annotated UTRs
+  // are the fallback for when there is nothing to derive from, e.g. calculateUTRs
+  // bails on a malformed exon/CDS pairing.
+  const annotatedUtr = filterSuccessiveElementsWithSameStartAndEndCoord(
     children.filter(sub => /utr/i.test(sub.type ?? '')),
   )
+  const derivedUtr = !cds.length
+    ? []
+    : exons.length
+      ? calculateUTRs(cds, exons)
+      : calculateUTRs2(cds, {
+          start: 0,
+          end: feature.end - feature.start,
+          type: 'gene',
+        })
 
-  if (!utr.length && cds.length && exons.length) {
-    utr = calculateUTRs(cds, exons)
-  } else if (!utr.length && cds.length && !exons.length) {
-    utr = calculateUTRs2(cds, {
-      start: 0,
-      end: feature.end - feature.start,
-      type: 'gene',
-    })
-  }
-
-  return { cds, exons, utr }
+  return { cds, exons, utr: derivedUtr.length ? derivedUtr : annotatedUtr }
 }
 
 function handleReverseStrand(

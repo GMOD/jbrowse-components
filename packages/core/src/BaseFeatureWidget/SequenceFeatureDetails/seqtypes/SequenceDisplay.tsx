@@ -52,10 +52,15 @@ const SequenceDisplay = observer(function SequenceDisplay({
   model: SequenceFeatureDetailsModel
 }) {
   const { charactersPerRow, showCoordinates } = model
+  // rows only become visible through the labels and line breaks that
+  // showCoordinates turns on; without it the container wraps the text itself,
+  // so collapsing to a single span renders identically out of far fewer nodes
+  // (a 100kb gene is ~1000 rows)
+  const rows = showCoordinates ? chunks : [chunks.join('')]
   const sequenceOffsets =
-    highlight || onHoverBase ? chunkSequenceOffsets(chunks) : undefined
+    highlight || onHoverBase ? chunkSequenceOffsets(rows) : undefined
 
-  return chunks.map((chunk, idx) => {
+  return rows.map((chunk, idx) => {
     // coordinate of the row's first column, which for a mid-row first chunk sits
     // `remainder` characters back
     const f = coordStart - remainder * strand
@@ -63,7 +68,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
       idx > 0 || remainder === 0
         ? `${`${f + idx * strand * charactersPerRow}`.padStart(labelWidth)}   `
         : ''
-    const isLastChunk = idx === chunks.length - 1
+    const isLastChunk = idx === rows.length - 1
     // a partial final row (not filled to charactersPerRow) gets no trailing
     // newline; every full row does
     const lastRowCharCount =

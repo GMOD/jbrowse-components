@@ -8,6 +8,8 @@ import DLGAP3 from './test_data/DLGAP3.ts'
 import NCDN from './test_data/NCDN.ts'
 import { getSequencePlaintext } from './util.ts'
 
+import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
+
 // Usage reference for the public SequencePanel component (it has external
 // consumers): each test below renders <SequencePanel> with a different mode and
 // coordinate setting, showing how to wire up the model, sequence, and feature
@@ -454,6 +456,61 @@ test('hovering does not report positions when coordinates are not genomic', () =
   fireEvent.mouseMove(span, { clientX: 55 })
   expect(model.hoverPosition).toBeUndefined()
   rectSpy.mockRestore()
+})
+
+// 400bp single-exon transcript: 100bp 5'UTR, 200bp CDS, 100bp 3'UTR
+const utrSeq = `${'a'.repeat(100)}${'C'.repeat(200)}${'g'.repeat(100)}`
+const utrFeature = (subfeatures: SimpleFeatureSerializedNoId[]) => ({
+  start: 1000,
+  end: 1400,
+  refName: 'chr1',
+  strand: 1,
+  type: 'mRNA',
+  uniqueId: 'utrs',
+  name: 'utrs',
+  subfeatures,
+})
+
+const renderCdna = (subfeatures: SimpleFeatureSerializedNoId[]) => {
+  const { getByTestId } = render(
+    <SequencePanel
+      model={SequenceFeatureDetailsF().create()}
+      mode="cdna"
+      sequence={{ seq: utrSeq }}
+      feature={utrFeature(subfeatures)}
+    />,
+  )
+  return getByTestId('sequence_panel').textContent.split('\n')[1]
+}
+
+test.each([
+  [
+    'no UTRs annotated',
+    [
+      { refName: 'chr1', start: 1000, end: 1400, type: 'exon' },
+      { refName: 'chr1', start: 1100, end: 1300, type: 'CDS' },
+    ],
+  ],
+  [
+    // the un-annotated side has to be derived too, or it drops out of the cDNA
+    'only the 5prime UTR annotated',
+    [
+      { refName: 'chr1', start: 1000, end: 1400, type: 'exon' },
+      { refName: 'chr1', start: 1000, end: 1100, type: 'five_prime_UTR' },
+      { refName: 'chr1', start: 1100, end: 1300, type: 'CDS' },
+    ],
+  ],
+  [
+    'both UTRs annotated',
+    [
+      { refName: 'chr1', start: 1000, end: 1400, type: 'exon' },
+      { refName: 'chr1', start: 1000, end: 1100, type: 'five_prime_UTR' },
+      { refName: 'chr1', start: 1100, end: 1300, type: 'CDS' },
+      { refName: 'chr1', start: 1300, end: 1400, type: 'three_prime_UTR' },
+    ],
+  ],
+])('cDNA spans the whole transcript with %s', (_, subfeatures) => {
+  expect(renderCdna(subfeatures)).toBe(utrSeq)
 })
 
 test('coordinate labels stay column-aligned when a row gains a digit', () => {
