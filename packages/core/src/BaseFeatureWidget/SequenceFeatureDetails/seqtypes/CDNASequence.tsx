@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import SequenceLegend from '../SequenceLegend.tsx'
 import { cdsColor, updownstreamColor, utrColor } from '../consts.ts'
 import {
   computeCoordProps,
@@ -96,18 +97,32 @@ const CDNASequence = observer(function CDNASequence({
     }
   }
 
+  const segments = [
+    ...flankSegment('upstream', upstream, updownstreamColor, caseNoncoding),
+    ...middle,
+    ...flankSegment('downstream', downstream, updownstreamColor, caseNoncoding),
+  ]
+
+  // keyed off the colors actually emitted, so the legend can never advertise a
+  // swatch that is not on screen (e.g. a transcript with no UTR). Introns are
+  // deliberately absent: they are the uncolored stretches, so there is no
+  // swatch to explain. A lone swatch explains nothing, hence the >1.
+  const usedColors = new Set(segments.map(seg => seg.color))
+  const legendItems = [
+    { color: cdsColor, label: 'CDS' },
+    { color: utrColor, label: hasCds ? 'UTR' : 'exon' },
+    { color: updownstreamColor, label: 'up/downstream' },
+  ].filter(item => usedColors.has(item.color))
+
   return (
     <>
+      {legendItems.length > 1 ? <SequenceLegend items={legendItems} /> : null}
       {renderSequenceSegments({
         model,
         mult,
         coordStart,
         onHoverBase: useGenomicCoords ? onHoverBase : undefined,
-        segments: [
-          ...flankSegment('upstream', upstream, updownstreamColor, caseNoncoding),
-          ...middle,
-          ...flankSegment('downstream', downstream, updownstreamColor, caseNoncoding),
-        ],
+        segments,
       })}
     </>
   )

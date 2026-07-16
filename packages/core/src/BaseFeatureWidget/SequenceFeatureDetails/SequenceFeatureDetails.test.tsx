@@ -8,7 +8,9 @@ import DLGAP3 from './test_data/DLGAP3.ts'
 import NCDN from './test_data/NCDN.ts'
 import { getSequencePlaintext } from './util.ts'
 
+import type { SequenceDisplayMode } from './model.ts'
 import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
+import type { SeqState } from '../util.tsx'
 
 // Usage reference for the public SequencePanel component (it has external
 // consumers): each test below renders <SequencePanel> with a different mode and
@@ -128,7 +130,7 @@ test('NCDN collapsed intron', () => {
   const element = getByTestId('sequence_panel')
 
   // UTR
-  expect(element.textContent).toMatchSnapshot()
+  expect(getSequencePlaintext(element)).toMatchSnapshot()
 })
 
 test('NCDN updownstream', () => {
@@ -152,7 +154,7 @@ test('NCDN updownstream', () => {
   )
 
   const element = getByTestId('sequence_panel')
-  expect(element.textContent).toMatchSnapshot()
+  expect(getSequencePlaintext(element)).toMatchSnapshot()
 })
 
 test('updownstream annotation shown in header for collapsed-intron+flanks mode', () => {
@@ -190,7 +192,7 @@ test('single exon cDNA should not have duplicate sequences', () => {
   const element = getByTestId('sequence_panel')
 
   expect(
-    element.textContent
+    getSequencePlaintext(element)
       .split('\n')
       .slice(1)
       .map(s => s.trim())
@@ -209,7 +211,7 @@ test('single exon cDNA display genomic coords', () => {
   )
 
   const element = getByTestId('sequence_panel')
-  expect(element.textContent).toMatchSnapshot()
+  expect(getSequencePlaintext(element)).toMatchSnapshot()
 })
 
 test('reverse strand genomic coords count down across rows', () => {
@@ -234,8 +236,8 @@ test('reverse strand genomic coords count down across rows', () => {
     />,
   )
 
-  const rowStarts = getByTestId('sequence_panel')
-    .textContent.split('\n')
+  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
+    .split('\n')
     .slice(1)
     .map(s => s.trim())
     .filter(Boolean)
@@ -260,8 +262,8 @@ test('a sticky genomic setting renders relative coords in cDNA mode', () => {
     />,
   )
 
-  const rowStarts = getByTestId('sequence_panel')
-    .textContent.split('\n')
+  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
+    .split('\n')
     .slice(1)
     .map(s => s.trim())
     .filter(Boolean)
@@ -298,8 +300,8 @@ test('reverse strand rows break where a flank leaves a row half filled', () => {
     />,
   )
 
-  const rowStarts = getByTestId('sequence_panel')
-    .textContent.split('\n')
+  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
+    .split('\n')
     .slice(1)
     .map(s => s.trim())
     .filter(Boolean)
@@ -326,8 +328,8 @@ test('genomic coords thread continuously across the upstream flank boundary', ()
     />,
   )
 
-  const rowStarts = getByTestId('sequence_panel')
-    .textContent.split('\n')
+  const rowStarts = getSequencePlaintext(getByTestId('sequence_panel'))
+    .split('\n')
     .slice(1)
     .map(s => s.trim())
     .filter(Boolean)
@@ -480,7 +482,7 @@ const renderCdna = (subfeatures: SimpleFeatureSerializedNoId[]) => {
       feature={utrFeature(subfeatures)}
     />,
   )
-  return getByTestId('sequence_panel').textContent.split('\n')[1]
+  return getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1]
 }
 
 test.each([
@@ -564,7 +566,68 @@ test.each([
       feature={revFeat(subfeatures)}
     />,
   )
-  expect(getByTestId('sequence_panel').textContent.split('\n')[1]).toBe(revCdna)
+  expect(
+    getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1],
+  ).toBe(revCdna)
+})
+
+const exon = { refName: 'chr1', start: 1000, end: 1400, type: 'exon' }
+const innerCds = { refName: 'chr1', start: 1100, end: 1300, type: 'CDS' }
+
+const renderLegend = (
+  subfeatures: SimpleFeatureSerializedNoId[],
+  { mode = 'cdna', ...seq }: { mode?: SequenceDisplayMode } & SeqState,
+) => {
+  const { getByTestId } = render(
+    <SequencePanel
+      model={SequenceFeatureDetailsF().create()}
+      mode={mode}
+      sequence={seq}
+      feature={utrFeature(subfeatures)}
+    />,
+  )
+  return getByTestId('sequence_panel')
+    .querySelector('[data-no-plaintext]')
+    ?.textContent
+}
+
+test.each([
+  // only the swatches actually on screen are listed
+  ['a coding transcript', [exon, innerCds], 'CDSUTR'],
+  // one swatch explains nothing, so no legend at all
+  ['a noncoding transcript', [exon], undefined],
+  // the naive "has a CDS, so it has a UTR" would wrongly advertise a UTR here
+  ['a transcript that is entirely CDS', [exon, { ...exon, type: 'CDS' }], undefined],
+])('the legend describes %s', (_, subfeatures, expected) => {
+  expect(renderLegend(subfeatures, { seq: utrSeq })).toBe(expected)
+})
+
+test('the legend picks up the flanks in an up/downstream mode', () => {
+  expect(
+    renderLegend([exon, innerCds], {
+      mode: 'gene_updownstream',
+      seq: utrSeq,
+      upstream: 'C'.repeat(50),
+      downstream: 'G'.repeat(50),
+    }),
+  ).toBe('CDSUTRup/downstream')
+})
+
+test('the rendered legend stays out of the copyable sequence', () => {
+  const { getByTestId } = render(
+    <SequencePanel
+      model={SequenceFeatureDetailsF().create()}
+      mode="cdna"
+      sequence={{ seq: utrSeq }}
+      feature={utrFeature([exon, innerCds])}
+    />,
+  )
+  const panel = getByTestId('sequence_panel')
+  // it is on screen, but must not reach the FASTA the user copies out
+  expect(panel.querySelector('[data-no-plaintext]')).toBeTruthy()
+  expect(getSequencePlaintext(panel)).toBe(
+    `>utrs-cdna chr1:1,001-1,400(+)\n${utrSeq}`,
+  )
 })
 
 test('a CDS annotated outside the exons renders the exon untranslated', () => {
@@ -665,7 +728,7 @@ test('coordinate spacing continues across exon/intron boundaries', () => {
       }}
     />,
   )
-  expect(getByTestId('sequence_panel').textContent.split('\n')[1]).toBe(
+  expect(getSequencePlaintext(getByTestId('sequence_panel')).split('\n')[1]).toBe(
     '1001   AAAAAAAAAA AAAAAAAAAA cccccccccc GGGGGGGGGG GGGGGGGGGG GGGGGGGGGG',
   )
 })
@@ -679,5 +742,5 @@ test('single exon cDNA display relative coords', () => {
   )
 
   const element = getByTestId('sequence_panel')
-  expect(element.textContent).toMatchSnapshot()
+  expect(getSequencePlaintext(element)).toMatchSnapshot()
 })
