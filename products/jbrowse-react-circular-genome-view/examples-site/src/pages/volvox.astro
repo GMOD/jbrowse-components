@@ -1,12 +1,15 @@
 ---
-import Example from '../examples/Volvox.tsx'
-import code from '../examples/Volvox.tsx?raw'
-import { examples } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
+import Example from "../examples/Volvox.tsx"
+import code from "../examples/Volvox.tsx?raw"
+import { pages } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
 
-const meta = examples.find(e => e.slug === 'volvox')!
+const page = pages.find(p => p.slug === "volvox")!
 ---
 
-<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
-  <Example client:only="react" />
+<Layout page={page}>
+  <Section slug="volvox" code={code}>
+    <Example client:only="react" />
+  </Section>
 </Layout>
