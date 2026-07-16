@@ -5,7 +5,7 @@ description: Vision + design principles for exporting JBrowse figures to native 
 
 # Native R export — closing the reproducibility loop
 
-Design note / handoff. Not implemented on `webgl-poc`; the work lives on the
+Design note / handoff. Not implemented on `main`; the work lives on the
 `R_export` / `R_export2` branches. This doc is the *why* and the *invariants* —
 the decisions that determine whether this ages into an asset or into a third
 renderer to keep in sync by hand.
@@ -36,7 +36,7 @@ this is the figure engine as a first-class R citizen.
 
 ## Why this is tractable now (and wasn't before)
 
-The `webgl-poc` rearchitecture already paid the expensive, load-bearing cost: it
+The GPU rearchitecture already paid the expensive, load-bearing cost: it
 separated **what to draw** from **how to draw it**.
 
 - GPU and Canvas2D are *not* two independent renderers. They share the

@@ -8,7 +8,7 @@ import { specSessionUrls } from './galleryLinks.generated.ts'
 
 // The hosted app build these sessions open in. Change only this to retarget
 // every live link on both pages.
-export const CODE_BASE = 'https://jbrowse.org/code/jb2/webgl-poc/'
+export const CODE_BASE = 'https://jbrowse.org/code/jb2/main/'
 
 export interface GalleryItem {
   label: string

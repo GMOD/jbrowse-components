@@ -1,7 +1,7 @@
 /**
  * Migrates old session and config snapshots to be compatible with the current
  * display type registrations. Handles display types that were removed or
- * renamed in the webgl-poc branch.
+ * renamed in the v4 rendering rearchitecture.
  *
  * Remapped display types:
  *   LinearPileupDisplay → LinearAlignmentsDisplay
@@ -109,7 +109,7 @@ function extractNestedAlignmentsSettings(
   return rest
 }
 
-// Pre-webgl-poc the display height lived in a per-instance `heightPreConfig` MST
+// Pre-v4 the display height lived in a per-instance `heightPreConfig` MST
 // prop (`height = heightPreConfig ?? config-height`); the drag-resize handle
 // wrote it. That prop is gone — the height is now the `height` config slot only
 // — so an old session's `heightPreConfig` is silently dropped on load and the

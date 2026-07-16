@@ -17,23 +17,23 @@ mapping (RFC → adopted): `GpuRenderingBackendLifecycleSlotMixin` →
 yet implemented — current Canvas2D paths use the same
 `attachRenderingBackend({ upload, render })` shape as GPU.
 
-**Branch:** `webgl-poc`
+**Branch:** `main` (the GPU rearchitecture, formerly `webgl-poc`)
 **Scope:** Core, plugin-linear-genome-view, plugin-wiggle, plugin-canvas, all built-in LGV-family plugins still using `FeatureRendererType`. Linear Genome View only — circular, dotplot-shape, and custom views are out of scope.
 
 ---
 
 ## 1. Problem
 
-The webgl-poc rendering architecture (Slang shaders, HAL, MST autorun lifecycle, RPC = data not pixels) has stabilized for built-in plugins. Community plugins are still expressed in JBrowse-1 shape:
+The GPU rendering architecture (Slang shaders, HAL, MST autorun lifecycle, RPC = data not pixels) has stabilized for built-in plugins. Community plugins are still expressed in JBrowse-1 shape:
 
 - They `extends FeatureRendererType` (worker-side render, return bitmap).
 - They compose `linearWiggleDisplayModelFactory(pluginManager, configSchema)` to inherit y-axis scaling.
 - They reach across plugins via `pluginManager.getPlugin('WigglePlugin').exports`.
 - They have no first-class GPU path.
 
-Two external plugins are immediate forcing functions — both must port to webgl-poc:
+Two external plugins are immediate forcing functions — both must port to the GPU architecture:
 
-- `jbrowse-plugin-gwas` — Manhattan plot scatter. Currently composes `linearWiggleDisplayModelFactory` (broken on webgl-poc since wiggle's factory now installs the GPU lifecycle expecting bigwig-shaped data) and extends `FeatureRendererType` (worker-side render-to-bitmap, doesn't fit the data-not-pixels worker boundary).
+- `jbrowse-plugin-gwas` — Manhattan plot scatter. Currently composes `linearWiggleDisplayModelFactory` (broken since wiggle's factory now installs the GPU lifecycle expecting bigwig-shaped data) and extends `FeatureRendererType` (worker-side render-to-bitmap, doesn't fit the data-not-pixels worker boundary).
 - `jbrowse-plugin-mafviewer` — multi-sample MAF/sequence rendering with phylogenetic tree. Currently extends `FeatureRendererType` and uses `pluginManager.getPlugin('LinearGenomeViewPlugin').exports` for `BaseLinearDisplay`. Has three distinct data flows (samples + tree at init, sequences on demand, MAF features per region) which the RFC's "one RPC method" framing wouldn't have covered without §3c's multi-flow note.
 
 Common gaps both plugins hit:
@@ -429,7 +429,7 @@ Any LGV plugin with a numeric y-axis (Manhattan, custom score tracks, methylatio
 
 ## 9. Legacy renderer audit
 
-### 9a. Current callsites (webgl-poc, non-test)
+### 9a. Current callsites (non-test)
 
 | Plugin | File | Pattern |
 |---|---|---|
@@ -444,7 +444,7 @@ Plus the core class hierarchy itself:
 ### 9b. Migration plan per plugin
 
 - **arc**: empty subclass hasn't been migrated to the GPU lifecycle yet. Port: define an RPC method, define a display model that composes `MultiRegionDisplayMixin`, write a render callback. Simple enough for the Canvas2D path; no performance pressure that demands GPU.
-- **variants/LD**: extends `ServerSideRendererType` with non-trivial overrides. LD already has a GPU compute path on webgl-poc (`ldComputeShader.ts`); the *render* still goes through `LDRenderer.tsx`. Migration: compute output feeds a new `installGpuDisplay` lifecycle.
+- **variants/LD**: extends `ServerSideRendererType` with non-trivial overrides. LD already has a GPU compute path (`ldComputeShader.ts`); the *render* still goes through `LDRenderer.tsx`. Migration: compute output feeds a new `installGpuDisplay` lifecycle.
 - **CircularChordRendererType**: out of scope per RFC scope (LGV only). After audit confirms no active LGV-family use, retire the class entirely along with the rest of the renderer hierarchy.
 
 ### 9c. After migration

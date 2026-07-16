@@ -1,6 +1,7 @@
 # Agent documentation
 
-Front door for agent work on `webgl-poc`. This file holds the invariants and
+Front door for agent work on the GPU rendering pipeline (formerly the
+`webgl-poc` branch, now merged to `main`). This file holds the invariants and
 definition of done; **backlog and priorities live in [TODO.md](TODO.md)**.
 
 ## Mission
