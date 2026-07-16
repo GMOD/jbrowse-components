@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { LoadingEllipses } from '@jbrowse/core/ui'
 import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button } from '@mui/material'
 import deepmerge from 'deepmerge'
 
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
@@ -11,9 +10,8 @@ import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
 import { useNotifyError } from '../../NotifyContext.ts'
 import defaultFavs from '../defaultFavs.ts'
-import OpenLinkDialog from '../dialogs/OpenLinkDialog.tsx'
 import { newSessionName } from '../sessionName.ts'
-import { fetchConfig, loadPluginManager, openSpecLink } from '../util.tsx'
+import { fetchConfig, loadPluginManager } from '../util.tsx'
 
 import type { Fav, JBrowseConfig } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -47,7 +45,6 @@ export default function LeftSidePanel({
   const { classes } = useStyles()
   const notifyError = useNotifyError()
   const [loading, setLoading] = useState('')
-  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
 
   const [favorites, setFavorites] = useLocalStorage<Fav[]>(
     'startScreen-favEntries',
@@ -82,18 +79,6 @@ export default function LeftSidePanel({
     }
   }
 
-  // A pasted link builds its session from a spec rather than a config's
-  // defaultSession, so it can't go through launchSession — openSpecLink needs
-  // the plugin manager in hand before loadSessionSpec runs against it.
-  async function launchLink(link: string) {
-    setLoading('Opening link')
-    try {
-      setPluginManager(await openSpecLink(link))
-    } finally {
-      setLoading('')
-    }
-  }
-
   const launchFromConfig = (
     sel: { shortName: string; jbrowseConfig: string }[],
   ) => launchSession(() => fetchData(sel))
@@ -121,22 +106,6 @@ export default function LeftSidePanel({
           <QuickstartPanel
             launch={sel => launchSession(() => getQuickstarts(sel))}
           />
-          <Button
-            variant="outlined"
-            onClick={() => {
-              setLinkDialogOpen(true)
-            }}
-          >
-            Open JBrowse Web link...
-          </Button>
-          {linkDialogOpen ? (
-            <OpenLinkDialog
-              onSubmit={launchLink}
-              onClose={() => {
-                setLinkDialogOpen(false)
-              }}
-            />
-          ) : null}
         </>
       )}
     </div>

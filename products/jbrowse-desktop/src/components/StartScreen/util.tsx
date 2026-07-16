@@ -20,7 +20,6 @@ import { fetchCJS } from '../../util.tsx'
 import type { JBrowseConfig } from './types.ts'
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 
-
 export { addRelativeUris } from '@jbrowse/product-core'
 
 const { ipcRenderer } = window.require('electron')
@@ -47,7 +46,7 @@ export async function fetchConfig(url: string) {
 }
 
 /**
- * Open a JBrowse Web link as a new session. Shared by the start screen's "Open
+ * Open a JBrowse Web link as a new session. Shared by the File → Session → "Open
  * JBrowse Web link..." dialog and by a jbrowse:// link the main process
  * forwarded as ?specLink=, so both routes build the session identically.
  */

@@ -59,21 +59,6 @@ or a pre-loaded one:
   publicly available reference genomes.
 - **Favorite genomes** and **Quickstart list** are one-click launchers for
   genomes you've starred or saved.
-- **Open JBrowse Web link...** (JBrowse Desktop 5.0 and newer) rebuilds a
-  JBrowse Web view here: paste a link containing a
-  [session spec](/docs/urlparams/#session-spec) — such as the "Open this view in
-  JBrowse" link under any figure in these docs — and its genome, tracks, and
-  location open as a new session. Share links (`&session=share-...`) can't be
-  opened this way: only the JBrowse Web instance that created one can resolve
-  it.
-
-  Figures in these docs also offer an "Open this view in JBrowse Desktop" button
-  that hands the view straight to Desktop. That relies on your OS knowing which
-  app owns `jbrowse://` links, which the macOS and Windows installers set up for
-  you. **On Linux the AppImage doesn't register anything by itself** — the link
-  works only if you've integrated the AppImage with your desktop (e.g. with
-  [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)), so
-  otherwise use **Open JBrowse Web link...** and paste the link instead.
 
 The right panel, "Recently opened sessions", holds sessions you've saved, plus
 autosaves. Click a session name to reopen it (see
@@ -184,6 +169,25 @@ This writes a `.jbrowse` file you can reopen later (or share). Reopen one with
 To hand a session off to someone running JBrowse web, use **File → Session →
 Export session to web...**, which produces a shareable URL.
 
+### Opening a JBrowse web link
+
+The reverse direction works too, in JBrowse Desktop 5.0 and newer: **File →
+Session → Open JBrowse Web link...** takes a JBrowse web URL containing a
+[session spec](/docs/urlparams/#session-spec) — such as the "Open this view in
+JBrowse" link under any figure in these docs — and rebuilds it here as a new
+session. The config the link names is downloaded and saved alongside the
+session, so it reopens later like any other. Share links
+(`&session=share-...`) can't be opened this way: only the JBrowse web instance
+that created one can resolve it.
+
+Figures in these docs also offer an "Open this view in JBrowse Desktop" button,
+which hands the view straight to Desktop through a `jbrowse://` link that the
+macOS and Windows installers register for you. **The Linux AppImage doesn't
+register anything by itself**, so that button generally won't work there unless
+you've integrated the AppImage with your desktop (e.g. with
+[AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)) — paste the
+link instead, or pass it on the command line (below).
+
 ### Saving a genome to the quickstart list
 
 To turn a session into a reusable quickstart entry, select it in "Recently
@@ -211,6 +215,14 @@ open -a "JBrowse 2" myproject/config.json
 Relative paths inside a `config.json` are resolved against that file's own
 folder, so a config the [CLI builds](/docs/tutorials/cli_desktop) opens with no
 extra setup.
+
+A `jbrowse://` link works as an argument too, which is the simplest way to open
+one on Linux, where the AppImage doesn't register the URL scheme itself (quote
+it, so the shell leaves the `&` alone):
+
+```sh
+./jbrowse-desktop-*-linux.AppImage 'jbrowse://open?url=https%3A%2F%2Fjbrowse.org%2F...'
+```
 
 Other flags:
 

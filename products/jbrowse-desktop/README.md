@@ -17,25 +17,26 @@ relative to the web instance still resolves against it.
 
 The pieces, and where each platform registers the scheme:
 
-| Piece                                                | Where                                                                |
-| ---------------------------------------------------- | -------------------------------------------------------------------- |
-| Wrap/unwrap + argv parsing (pure, unit-tested)        | `electron/launchTarget.ts`                                           |
-| Delivery: argv, `second-instance`, macOS `open-url`   | `electron/electron.ts`                                               |
-| Handed to the renderer as `?specLink=`                | `electron/window.ts` (`buildAppUrl`)                                 |
-| Renderer builds the session                           | `src/components/useSpecLinkLoad.ts` → `StartScreen/util.tsx`         |
-| macOS registration (`CFBundleURLTypes` in Info.plist) | `scripts/packaging/packager.ts` (`protocols`)                        |
-| Windows registration (`HKLM\Software\Classes`)        | `scripts/packaging/windows.ts` (NSIS install/uninstall)              |
+| Piece                                                 | Where                                                                  |
+| ----------------------------------------------------- | ---------------------------------------------------------------------- |
+| Wrap/unwrap + argv parsing (pure, unit-tested)        | `electron/launchTarget.ts`                                             |
+| Delivery: argv, `second-instance`, macOS `open-url`   | `electron/electron.ts`                                                 |
+| Handed to the renderer as `?specLink=`                | `electron/window.ts` (`buildAppUrl`)                                   |
+| Renderer builds the session                           | `src/components/useSpecLinkLoad.ts` → `openSpecLink` (`StartScreen/util.tsx`) |
+| Same session, pasted instead of linked                | File → Session → "Open JBrowse Web link..." (`src/rootModel/rootModel.ts`) |
+| macOS registration (`CFBundleURLTypes` in Info.plist) | `scripts/packaging/packager.ts` (`protocols`)                          |
+| Windows registration (`HKLM\Software\Classes`)        | `scripts/packaging/windows.ts` (NSIS install/uninstall)                |
 | Linux — see the caveat below                          | `scripts/packaging/linux.ts` (`.desktop` `MimeType`, `Exec=AppRun %U`) |
 
 **Linux registers nothing on its own.** We ship a bare AppImage, which doesn't
 install its `.desktop` file, and nothing reads a scheme handler out of an
 un-integrated AppImage. The `x-scheme-handler/jbrowse` MimeType we embed is a
-*prerequisite*, not a registration: it only takes effect if the user integrates
+_prerequisite_, not a registration: it only takes effect if the user integrates
 the AppImage with their desktop (AppImageLauncher, `appimaged`), which copies
 that `.desktop` into `~/.local/share/applications`. So on Linux the link usually
-does nothing, and **"Open JBrowse Web link..." on the start screen is the real
-path** — it needs no OS registration and works everywhere. Don't claim
-otherwise in the docs.
+does nothing, and **File → Session → "Open JBrowse Web link..." is the real
+path** — it needs no OS registration and works everywhere, as does passing the
+`jbrowse://` url as a command-line argument. Don't claim otherwise in the docs.
 
 **A jbrowse:// url is untrusted input** — any web page can make the OS open one.
 `parseProtocolUrl` therefore only ever yields an `http`/`https` link, so

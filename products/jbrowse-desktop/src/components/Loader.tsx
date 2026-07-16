@@ -14,7 +14,11 @@ import { useConfigLoad } from './useConfigLoad.ts'
 import { useSpecLinkLoad } from './useSpecLinkLoad.ts'
 import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
-import { destroyPluginManager, loadPluginManager } from './StartScreen/util.tsx'
+import {
+  destroyPluginManager,
+  loadPluginManager,
+  openSpecLink,
+} from './StartScreen/util.tsx'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -34,6 +38,9 @@ const LoaderContents = observer(function LoaderContents() {
     const rootModel = pm.rootModel as DesktopRootModel | undefined
     rootModel?.setOpenNewSessionCallback(async (path: string) => {
       handleSetPluginManager(await loadPluginManager(path))
+    })
+    rootModel?.setOpenLinkCallback(async (link: string) => {
+      handleSetPluginManager(await openSpecLink(link))
     })
     rootModel?.setReturnToStartScreenCallback(() => {
       // "Return to start screen": tear down the manager and clear it so its

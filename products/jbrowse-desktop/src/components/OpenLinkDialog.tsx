@@ -4,7 +4,7 @@ import { ErrorMessage } from '@jbrowse/core/ui'
 import ConfirmDialog from '@jbrowse/core/ui/ConfirmDialog'
 import { DialogContentText, TextField } from '@mui/material'
 
-import { useIpcAction } from './useIpcAction.ts'
+import { useIpcAction } from './StartScreen/dialogs/useIpcAction.ts'
 
 // Opens a JBrowse Web link (a jbrowse.org figure/share link with a
 // `&session=spec-…`) as a Desktop session: the URL names a config and a session

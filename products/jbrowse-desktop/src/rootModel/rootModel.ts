@@ -25,6 +25,7 @@ import {
 import AppsIcon from '@mui/icons-material/Apps'
 import DescriptionIcon from '@mui/icons-material/Description'
 import OpenIcon from '@mui/icons-material/FolderOpen'
+import LinkIcon from '@mui/icons-material/Link'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import PublicIcon from '@mui/icons-material/Public'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
@@ -50,6 +51,7 @@ const PreferencesDialog = lazy(
 const ExportToWebDialog = lazy(
   () => import('../components/ExportToWebDialog.tsx'),
 )
+const OpenLinkDialog = lazy(() => import('../components/OpenLinkDialog.tsx'))
 
 const { ipcRenderer } = window.require('electron')
 
@@ -119,6 +121,9 @@ export default function rootModelFactory({
         openNewSessionCallback: async (_path: string) => {
           console.error('openNewSessionCallback unimplemented')
         },
+        openLinkCallback: async (_link: string) => {
+          console.error('openLinkCallback unimplemented')
+        },
         returnToStartScreenCallback: () => {
           console.error('returnToStartScreenCallback unimplemented')
         },
@@ -129,6 +134,14 @@ export default function rootModelFactory({
          */
         setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
           self.openNewSessionCallback = cb
+        },
+        /**
+         * #action
+         * Wired by the Loader to open a JBrowse Web link as a new session (the
+         * Loader owns plugin-manager lifecycle, as with openNewSessionCallback).
+         */
+        setOpenLinkCallback(cb: (arg: string) => Promise<void>) {
+          self.openLinkCallback = cb
         },
         /**
          * #action
@@ -247,6 +260,26 @@ export default function rootModelFactory({
                           } catch (e) {
                             console.error(e)
                             self.session?.notifyError(`${e}`, e)
+                          }
+                        },
+                      },
+                      // A session can also come from a JBrowse Web link (the
+                      // docs' figure links), so it opens alongside the file
+                      // that is its closest equivalent. The dialog reports its
+                      // own errors, hence no try/catch here.
+                      {
+                        label: 'Open JBrowse Web link...',
+                        icon: LinkIcon,
+                        onClick: () => {
+                          if (self.session) {
+                            const session = self.session as BaseSession
+                            session.queueDialog(handleClose => [
+                              OpenLinkDialog,
+                              {
+                                onSubmit: self.openLinkCallback,
+                                onClose: handleClose,
+                              },
+                            ])
                           }
                         },
                       },
