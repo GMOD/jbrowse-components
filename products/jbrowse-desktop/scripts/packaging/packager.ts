@@ -12,6 +12,7 @@ import {
   VERSION,
 } from './config.ts'
 import { ensureDir, generateAppUpdateYml, log } from './utils.ts'
+import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 
 export async function packageApp(
   platform: 'darwin' | 'linux' | 'win32',
@@ -73,6 +74,10 @@ export async function packageApp(
       quiet: true,
       appCategoryType: 'public.app-category.science',
       extraResource: [appUpdateYmlPath],
+      // Claims jbrowse:// links (a docs "open in Desktop" link). macOS only —
+      // packager writes CFBundleURLTypes into Info.plist; Windows registers the
+      // scheme from the NSIS installer and Linux from the .desktop file.
+      protocols: [{ name: PRODUCT_NAME, schemes: [JBROWSE_PROTOCOL] }],
       osxSign,
     })
     return appPaths[0]!

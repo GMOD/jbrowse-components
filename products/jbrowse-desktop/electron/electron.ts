@@ -1,5 +1,3 @@
-import path from 'node:path'
-
 import { app, dialog } from 'electron'
 import contextMenu from 'electron-context-menu'
 import debug from 'electron-debug'
@@ -12,10 +10,16 @@ import { registerBlatHandlers } from './ipc/blatHandlers.ts'
 import { registerFileHandlers } from './ipc/fileHandlers.ts'
 import { registerQuickstartHandlers } from './ipc/quickstartHandlers.ts'
 import { registerSessionHandlers } from './ipc/sessionHandlers.ts'
+import {
+  JBROWSE_PROTOCOL,
+  findLaunchTarget,
+  parseProtocolUrl,
+} from './launchTarget.ts'
 import { initializePaths } from './paths.ts'
 import { logError } from './util.ts'
 import { buildAppUrl, createMainWindow } from './window.ts'
 
+import type { LaunchTarget } from './launchTarget.ts'
 import type { BrowserWindow } from 'electron'
 
 const { autoUpdater } = pkg
@@ -25,15 +29,9 @@ debug({ showDevTools: false, isEnabled: true })
 
 const DEV_SERVER_URL = process.env.DEV_SERVER_URL
 
-// A launch argument may be a saved session (.jbrowse) or a hand-written /
-// CLI-generated config (config.json); both are JSON snapshots loaded the same
-// way, and the start screen's "Open config.json or .jbrowse file" accepts the
-// same pair.
-const LAUNCH_FILE_EXTENSIONS = ['.jbrowse', '.json']
-
 const HELP_TEXT = `JBrowse 2 desktop
 
-Usage: jbrowse-desktop [options] [file]
+Usage: jbrowse-desktop [options] [file | jbrowse://open?url=<JBrowse Web link>]
 
   file          Path to a session (.jbrowse) or configuration (config.json)
                 file to open on launch
@@ -46,13 +44,6 @@ Options:
   --version          Print the version number and exit
 
 Documentation: https://jbrowse.org/jb2/docs/`
-
-function findLaunchFileArg(argv: readonly string[], cwd: string) {
-  const arg = argv
-    .slice(1)
-    .find(a => LAUNCH_FILE_EXTENSIONS.some(ext => a.endsWith(ext)))
-  return arg ? path.resolve(cwd, arg) : undefined
-}
 
 // Accepts either --renderer=webgl or --renderer webgl. The value is forwarded
 // to the renderer as a ?renderer= query param and consumed by setGpuOverride.
@@ -90,26 +81,36 @@ function showFatalError(title: string, error: unknown) {
   app.quit()
 }
 
-// Resolves to the .jbrowse path that should drive the first window: either an
-// argv argument, or the first 'open-file' event that fires before 'ready'
-// (macOS Open-With launch). Resolves exactly once, when 'ready' fires.
-function getInitialSession(): Promise<string | undefined> {
+// Resolves to what should drive the first window: an argv argument (a file, or
+// a jbrowse:// link on Windows/Linux), or the first 'open-file'/'open-url'
+// event that fires before 'ready' (macOS delivers both that way on a cold
+// launch). Resolves exactly once, when 'ready' fires.
+function getInitialTarget(): Promise<LaunchTarget | undefined> {
   return new Promise(resolve => {
     const onOpenFile = (event: Electron.Event, filePath: string) => {
       event.preventDefault()
-      resolve(filePath)
+      resolve({ type: 'file', path: filePath })
+    }
+    const onOpenUrl = (event: Electron.Event, url: string) => {
+      event.preventDefault()
+      const link = parseProtocolUrl(url)
+      if (link) {
+        resolve({ type: 'link', url: link })
+      }
     }
     app.once('open-file', onOpenFile)
+    app.once('open-url', onOpenUrl)
     void app.whenReady().then(() => {
       app.off('open-file', onOpenFile)
-      resolve(findLaunchFileArg(process.argv, process.cwd()))
+      app.off('open-url', onOpenUrl)
+      resolve(findLaunchTarget(process.argv, process.cwd()))
     })
   })
 }
 
-function loadSession(win: BrowserWindow, sessionPath: string) {
+function loadTarget(win: BrowserWindow, target: LaunchTarget) {
   win
-    .loadURL(buildAppUrl(DEV_SERVER_URL, sessionPath, RENDERER_OVERRIDE).href)
+    .loadURL(buildAppUrl(DEV_SERVER_URL, target, RENDERER_OVERRIDE).href)
     .catch(logError)
 }
 
@@ -120,12 +121,12 @@ function createWindowManager() {
   let mainWindow: BrowserWindow | null = null
   let creating: Promise<BrowserWindow> | null = null
 
-  async function startCreate(sessionPath: string | undefined) {
+  async function startCreate(target: LaunchTarget | undefined) {
     try {
       const win = await createMainWindow(
         autoUpdater,
         DEV_SERVER_URL,
-        sessionPath,
+        target,
         RENDERER_OVERRIDE,
       )
       mainWindow = win
@@ -142,25 +143,25 @@ function createWindowManager() {
     }
   }
 
-  async function ensureWindow(sessionPath?: string): Promise<BrowserWindow> {
+  async function ensureWindow(target?: LaunchTarget): Promise<BrowserWindow> {
     if (mainWindow) {
       if (mainWindow.isMinimized()) {
         mainWindow.restore()
       }
       mainWindow.focus()
-      if (sessionPath) {
-        loadSession(mainWindow, sessionPath)
+      if (target) {
+        loadTarget(mainWindow, target)
       }
       return mainWindow
     }
     if (creating) {
       const win = await creating
-      if (sessionPath) {
-        loadSession(win, sessionPath)
+      if (target) {
+        loadTarget(win, target)
       }
       return win
     }
-    creating = startCreate(sessionPath)
+    creating = startCreate(target)
     return creating
   }
 
@@ -173,8 +174,15 @@ function createWindowManager() {
 }
 
 function runApp() {
-  const initialSession = getInitialSession()
+  const initialTarget = getInitialTarget()
   const wm = createWindowManager()
+
+  // Claims the jbrowse:// scheme so an "open in Desktop" link resolves here.
+  // An installed app is already registered by its packaging — Info.plist on
+  // macOS (scripts/packaging/packager.ts), the NSIS installer on Windows, the
+  // .desktop file on Linux — so this mainly covers a dev run, and re-asserts
+  // the claim if another install took the scheme over.
+  app.setAsDefaultProtocolClient(JBROWSE_PROTOCOL)
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -194,23 +202,32 @@ function runApp() {
       setupAutoUpdater(autoUpdater, () => wm.current)
 
       // Register app-level event handlers before any await so a second-instance
-      // launch or macOS open-file that fires during filesystem init is not
-      // dropped for lack of a listener
+      // launch or macOS open-file/open-url that fires during filesystem init is
+      // not dropped for lack of a listener
       app.on('second-instance', (_event, argv, workingDirectory) => {
-        wm.ensureWindow(findLaunchFileArg(argv, workingDirectory)).catch(
-          logError,
-        )
+        // Windows/Linux hand a jbrowse:// link to the running instance here, as
+        // an argv entry — the same path a file argument takes
+        wm.ensureWindow(findLaunchTarget(argv, workingDirectory)).catch(logError)
       })
       app.on('open-file', (event, filePath) => {
         event.preventDefault()
-        wm.ensureWindow(filePath).catch(logError)
+        wm.ensureWindow({ type: 'file', path: filePath }).catch(logError)
+      })
+      // macOS delivers a jbrowse:// link this way, whether or not the app is
+      // already running
+      app.on('open-url', (event, url) => {
+        event.preventDefault()
+        const link = parseProtocolUrl(url)
+        if (link) {
+          wm.ensureWindow({ type: 'link', url: link }).catch(logError)
+        }
       })
       app.on('activate', () => {
         wm.ensureWindow().catch(logError)
       })
 
       await initializeFileSystem(paths)
-      await wm.ensureWindow(await initialSession)
+      await wm.ensureWindow(await initialTarget)
     } catch (error) {
       showFatalError('Failed to initialize application', error)
     }

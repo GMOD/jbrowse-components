@@ -7,6 +7,7 @@ import { checkForUpdatesManually } from './autoUpdater.ts'
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
+import type { LaunchTarget } from './launchTarget.ts'
 import type { AppUpdater } from 'electron-updater'
 
 const DEFAULT_WINDOW_WIDTH = 1400
@@ -19,16 +20,22 @@ export interface AuthWindowParams {
   url: string
 }
 
+// The renderer is told what to open through its own query string: `config` for
+// a local session/config file, `specLink` for a JBrowse Web link that arrived
+// over the jbrowse:// protocol. Both are read by the Loader on startup.
 export function buildAppUrl(
   devServerUrl: string | undefined,
-  sessionPath?: string,
+  target?: LaunchTarget,
   renderer?: string,
 ) {
   const url = app.isPackaged
     ? pathToFileURL(path.join(app.getAppPath(), 'index.html'))
     : new URL(devServerUrl ?? DEFAULT_DEV_SERVER_URL)
-  if (sessionPath) {
-    url.searchParams.set('config', sessionPath)
+  if (target?.type === 'file') {
+    url.searchParams.set('config', target.path)
+  }
+  if (target?.type === 'link') {
+    url.searchParams.set('specLink', target.url)
   }
   if (renderer) {
     url.searchParams.set('renderer', renderer)
@@ -67,7 +74,7 @@ function createMenu(autoUpdater: AppUpdater) {
 export async function createMainWindow(
   autoUpdater: AppUpdater,
   devServerUrl: string | undefined,
-  initialSessionPath: string | undefined,
+  initialTarget: LaunchTarget | undefined,
   renderer: string | undefined,
 ): Promise<BrowserWindow> {
   const mainWindowState = windowStateKeeper({
@@ -101,7 +108,7 @@ export async function createMainWindow(
   }
 
   await mainWindow.loadURL(
-    buildAppUrl(devServerUrl, initialSessionPath, renderer).href,
+    buildAppUrl(devServerUrl, initialTarget, renderer).href,
   )
 
   mainWindow.webContents.setWindowOpenHandler(edata => {

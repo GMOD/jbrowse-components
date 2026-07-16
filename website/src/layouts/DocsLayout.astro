@@ -52,6 +52,38 @@ const mdHref = isRealDoc
   {toc.length > 0 && <TableOfContents toc={toc} />}
 </SidebarLayout>
 
+{/* Figure recipe dialogs are emitted into the markdown HTML by remark-figure,
+    so they are wired here rather than mounted as an island. */}
+<script>
+  document.addEventListener('click', event => {
+    const target = event.target
+    if (target instanceof HTMLElement) {
+      const button = target.closest('[data-spec-dialog]')
+      const id = button?.dataset.specDialog
+      const dialog = id ? document.getElementById(id) : null
+      if (dialog instanceof HTMLDialogElement) {
+        dialog.showModal()
+      }
+    }
+  })
+
+  // clicking the backdrop (outside the dialog's own box) closes it
+  document.addEventListener('click', event => {
+    const target = event.target
+    if (target instanceof HTMLDialogElement && target.open) {
+      const box = target.getBoundingClientRect()
+      const outside =
+        event.clientX < box.left ||
+        event.clientX > box.right ||
+        event.clientY < box.top ||
+        event.clientY > box.bottom
+      if (outside) {
+        target.close()
+      }
+    }
+  })
+</script>
+
 <style>
   .docs-content {
     flex: 1;
@@ -268,6 +300,136 @@ const mdHref = isRealDoc
   }
   .docs-content :global(.admonition-warning .admonition-title) {
     color: #e53e3e;
+  }
+
+  /* Figure recipe: the "?" in a figure caption and the dialog it opens.
+     Markup comes from src/lib/spec-recipe/html.ts. */
+  .docs-content :global(.spec-help) {
+    margin-left: 0.5rem;
+    width: 1.15rem;
+    height: 1.15rem;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-style: normal;
+    line-height: 1;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+  .docs-content :global(.spec-help:hover) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .docs-content :global(.spec-dialog) {
+    width: min(46rem, 92vw);
+    max-height: 85vh;
+    padding: 1.25rem 1.5rem 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--color-text);
+  }
+  .docs-content :global(.spec-dialog::backdrop) {
+    background: rgba(0, 0, 0, 0.55);
+  }
+  .docs-content :global(.spec-dialog-close-form) {
+    float: right;
+    margin: -0.5rem -0.75rem 0 0;
+  }
+  .docs-content :global(.spec-dialog-close) {
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  /* radio-driven tabs: no JS, the checked input selects its panel */
+  .docs-content :global(.spec-tab-input) {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .docs-content :global(.spec-tab-label) {
+    display: inline-block;
+    padding: 0.4rem 0.85rem;
+    border-bottom: 2px solid transparent;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    font-style: normal;
+    cursor: pointer;
+  }
+  .docs-content :global(.spec-tab-input:checked + .spec-tab-label) {
+    border-bottom-color: var(--color-accent);
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+  .docs-content :global(.spec-tab-input:focus-visible + .spec-tab-label) {
+    outline: 2px solid var(--color-accent);
+  }
+  .docs-content :global(.spec-panel) {
+    display: none;
+    margin-top: 1rem;
+    max-height: 65vh;
+    overflow-y: auto;
+    text-align: left;
+    font-style: normal;
+  }
+  /* Pairs the nth tab with the nth panel. One rule per panel panels() can emit
+     (spec-recipe/html.ts) — a figure with fewer panels just leaves later rules
+     unmatched, but a new panel needs a rule here or its tab shows nothing. */
+  .docs-content :global(.spec-tabs > .spec-tab-input:nth-of-type(1):checked ~ .spec-panel-1),
+  .docs-content :global(.spec-tabs > .spec-tab-input:nth-of-type(2):checked ~ .spec-panel-2),
+  .docs-content :global(.spec-tabs > .spec-tab-input:nth-of-type(3):checked ~ .spec-panel-3),
+  .docs-content :global(.spec-tabs > .spec-tab-input:nth-of-type(4):checked ~ .spec-panel-4) {
+    display: block;
+  }
+  .docs-content :global(.spec-intro) {
+    margin: 0 0 0.85rem;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+  .docs-content :global(.spec-desktop-open) {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  .docs-content :global(.spec-steps) {
+    margin: 0;
+    padding-left: 1.25rem;
+    font-size: 0.9rem;
+  }
+  .docs-content :global(.spec-steps li) {
+    margin-bottom: 0.7rem;
+  }
+  .docs-content :global(.spec-step-title) {
+    display: block;
+  }
+  .docs-content :global(.spec-step-note),
+  .docs-content :global(.spec-step-example) {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+  }
+  /* the docs `pre` rule pairs --color-code-text with --color-code-bg; keep both
+     together here (a light background with that text color is unreadable) */
+  .docs-content :global(.spec-json),
+  .docs-content :global(.spec-python) {
+    max-height: 45vh;
+    overflow: auto;
+    padding: 0.75rem;
+    border-radius: 4px;
+    background: var(--color-code-bg);
+    color: var(--color-code-text);
+    font-size: 0.8rem;
+  }
+  .docs-content :global(.spec-config) {
+    margin-top: 0.6rem;
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
   }
 
   @media (max-width: 768px) {

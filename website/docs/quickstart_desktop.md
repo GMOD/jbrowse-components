@@ -59,6 +59,21 @@ or a pre-loaded one:
   publicly available reference genomes.
 - **Favorite genomes** and **Quickstart list** are one-click launchers for
   genomes you've starred or saved.
+- **Open JBrowse Web link...** (JBrowse Desktop 5.0 and newer) rebuilds a
+  JBrowse Web view here: paste a link containing a
+  [session spec](/docs/urlparams/#session-spec) — such as the "Open this view in
+  JBrowse" link under any figure in these docs — and its genome, tracks, and
+  location open as a new session. Share links (`&session=share-...`) can't be
+  opened this way: only the JBrowse Web instance that created one can resolve
+  it.
+
+  Figures in these docs also offer an "Open this view in JBrowse Desktop" button
+  that hands the view straight to Desktop. That relies on your OS knowing which
+  app owns `jbrowse://` links, which the macOS and Windows installers set up for
+  you. **On Linux the AppImage doesn't register anything by itself** — the link
+  works only if you've integrated the AppImage with your desktop (e.g. with
+  [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)), so
+  otherwise use **Open JBrowse Web link...** and paste the link instead.
 
 The right panel, "Recently opened sessions", holds sessions you've saved, plus
 autosaves. Click a session name to reopen it (see

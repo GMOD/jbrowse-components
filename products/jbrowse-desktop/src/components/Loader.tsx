@@ -11,6 +11,7 @@ import JBrowse from './JBrowse.tsx'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
 import { useConfigLoad } from './useConfigLoad.ts'
+import { useSpecLinkLoad } from './useSpecLinkLoad.ts'
 import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import { destroyPluginManager, loadPluginManager } from './StartScreen/util.tsx'
@@ -25,6 +26,8 @@ setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 const LoaderContents = observer(function LoaderContents() {
   const [pluginManager, setPluginManager] = useState<PluginManager>()
   const [config, setConfig] = useQueryParam('config')
+  // a jbrowse:// link the main process resolved to a JBrowse Web url
+  const [specLink, setSpecLink] = useQueryParam('specLink')
   const notifyError = useNotifyError()
 
   const handleSetPluginManager = useEventCallback((pm: PluginManager) => {
@@ -53,6 +56,7 @@ const LoaderContents = observer(function LoaderContents() {
       return pm
     })
     setConfig(undefined)
+    setSpecLink(undefined)
   })
 
   const handleConfigError = useEventCallback((e: unknown) => {
@@ -75,11 +79,19 @@ const LoaderContents = observer(function LoaderContents() {
     setConfig(undefined)
   })
 
+  // A bad link is not a recent-session entry, so it gets a plain error and
+  // drops to the start screen rather than offering to prune anything.
+  const handleSpecLinkError = useEventCallback((e: unknown) => {
+    notifyError(e)
+    setSpecLink(undefined)
+  })
+
   useConfigLoad(config, handleSetPluginManager, handleConfigError)
+  useSpecLinkLoad(specLink, handleSetPluginManager, handleSpecLinkError)
 
   return pluginManager?.rootModel?.session ? (
     <JBrowse pluginManager={pluginManager} />
-  ) : config ? (
+  ) : config || specLink ? (
     <LoadingEllipses variant="h6" message="Loading session" />
   ) : (
     <StartScreen setPluginManager={handleSetPluginManager} />

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import { fetchJson as fetchjson, useLocalStorage } from '@jbrowse/core/util'
+import { useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button } from '@mui/material'
 import deepmerge from 'deepmerge'
 
 import FavoriteGenomesPanel from './FavoriteGenomesPanel.tsx'
@@ -10,8 +11,9 @@ import OpenSequencePanel from './OpenSequencePanel.tsx'
 import QuickstartPanel from './QuickstartPanel.tsx'
 import { useNotifyError } from '../../NotifyContext.ts'
 import defaultFavs from '../defaultFavs.ts'
+import OpenLinkDialog from '../dialogs/OpenLinkDialog.tsx'
 import { newSessionName } from '../sessionName.ts'
-import { addRelativeUris, loadPluginManager } from '../util.tsx'
+import { fetchConfig, loadPluginManager, openSpecLink } from '../util.tsx'
 
 import type { Fav, JBrowseConfig } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -28,20 +30,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 async function fetchData(sel: { shortName: string; jbrowseConfig: string }[]) {
-  return Promise.all(
-    sel.map(async r => {
-      const ret = await fetchjson(r.jbrowseConfig)
-      addRelativeUris(ret as Record<string, unknown>, new URL(r.jbrowseConfig))
-      // record where this hub config came from so "export to web" can reuse it
-      // as the session base (?config=<sourceConfigUrl>)
-      const cfg = ret as JBrowseConfig
-      cfg.configuration = {
-        ...cfg.configuration,
-        sourceConfigUrl: r.jbrowseConfig,
-      }
-      return cfg
-    }),
-  )
+  return Promise.all(sel.map(r => fetchConfig(r.jbrowseConfig)))
 }
 
 async function getQuickstarts(sel: string[]) {
@@ -58,6 +47,7 @@ export default function LeftSidePanel({
   const { classes } = useStyles()
   const notifyError = useNotifyError()
   const [loading, setLoading] = useState('')
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
 
   const [favorites, setFavorites] = useLocalStorage<Fav[]>(
     'startScreen-favEntries',
@@ -92,6 +82,18 @@ export default function LeftSidePanel({
     }
   }
 
+  // A pasted link builds its session from a spec rather than a config's
+  // defaultSession, so it can't go through launchSession — openSpecLink needs
+  // the plugin manager in hand before loadSessionSpec runs against it.
+  async function launchLink(link: string) {
+    setLoading('Opening link')
+    try {
+      setPluginManager(await openSpecLink(link))
+    } finally {
+      setLoading('')
+    }
+  }
+
   const launchFromConfig = (
     sel: { shortName: string; jbrowseConfig: string }[],
   ) => launchSession(() => fetchData(sel))
@@ -119,6 +121,22 @@ export default function LeftSidePanel({
           <QuickstartPanel
             launch={sel => launchSession(() => getQuickstarts(sel))}
           />
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setLinkDialogOpen(true)
+            }}
+          >
+            Open JBrowse Web link...
+          </Button>
+          {linkDialogOpen ? (
+            <OpenLinkDialog
+              onSubmit={launchLink}
+              onClose={() => {
+                setLinkDialogOpen(false)
+              }}
+            />
+          ) : null}
         </>
       )}
     </div>

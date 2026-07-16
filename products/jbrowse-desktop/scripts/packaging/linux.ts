@@ -4,6 +4,7 @@ import path from 'path'
 import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
 import { ensureDir, fileSizeMB, generateLatestYml, log, run } from './utils.ts'
+import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 
 export async function buildLinux({ noInstaller = false } = {}) {
   log('Building Linux package...')
@@ -55,7 +56,7 @@ Terminal=false
 Type=Application
 Icon=${APP_NAME}
 Categories=Science;Biology;
-MimeType=application/x-jbrowse;
+MimeType=application/x-jbrowse;x-scheme-handler/${JBROWSE_PROTOCOL};
 `,
   )
 

@@ -8,6 +8,46 @@ While in the jbrowse-desktop directory, you can run `pnpm start` to start a
 development build of JBrowse Desktop. This both starts the development server
 and opens the Electron window when the server is ready.
 
+### The `jbrowse://` url scheme
+
+Desktop claims `jbrowse://open?url=<url-encoded JBrowse Web link>`, so a web
+page (the docs' figure links) can open a view here. The whole web link is
+carried as one encoded parameter rather than by copying its query, so a config
+relative to the web instance still resolves against it.
+
+The pieces, and where each platform registers the scheme:
+
+| Piece                                                | Where                                                                |
+| ---------------------------------------------------- | -------------------------------------------------------------------- |
+| Wrap/unwrap + argv parsing (pure, unit-tested)        | `electron/launchTarget.ts`                                           |
+| Delivery: argv, `second-instance`, macOS `open-url`   | `electron/electron.ts`                                               |
+| Handed to the renderer as `?specLink=`                | `electron/window.ts` (`buildAppUrl`)                                 |
+| Renderer builds the session                           | `src/components/useSpecLinkLoad.ts` → `StartScreen/util.tsx`         |
+| macOS registration (`CFBundleURLTypes` in Info.plist) | `scripts/packaging/packager.ts` (`protocols`)                        |
+| Windows registration (`HKLM\Software\Classes`)        | `scripts/packaging/windows.ts` (NSIS install/uninstall)              |
+| Linux — see the caveat below                          | `scripts/packaging/linux.ts` (`.desktop` `MimeType`, `Exec=AppRun %U`) |
+
+**Linux registers nothing on its own.** We ship a bare AppImage, which doesn't
+install its `.desktop` file, and nothing reads a scheme handler out of an
+un-integrated AppImage. The `x-scheme-handler/jbrowse` MimeType we embed is a
+*prerequisite*, not a registration: it only takes effect if the user integrates
+the AppImage with their desktop (AppImageLauncher, `appimaged`), which copies
+that `.desktop` into `~/.local/share/applications`. So on Linux the link usually
+does nothing, and **"Open JBrowse Web link..." on the start screen is the real
+path** — it needs no OS registration and works everywhere. Don't claim
+otherwise in the docs.
+
+**A jbrowse:// url is untrusted input** — any web page can make the OS open one.
+`parseProtocolUrl` therefore only ever yields an `http`/`https` link, so
+`jbrowse://open?url=file:///…` cannot turn a link click into a local-file read.
+Keep that restriction if you touch it.
+
+Only the pure parsing is unit-tested (`electron/launchTarget.test.ts`); the OS
+registration cannot be tested from a checkout. After changing anything in the
+table above, smoke-test a **packaged** build per platform: install it, then open
+a `jbrowse://open?url=…` link from a browser, both with the app closed (cold
+start) and already running (`second-instance` / `open-url`).
+
 ### Packaging
 
 You will need some development libraries installed to be able to package the

@@ -1,5 +1,7 @@
 import { SKIP, visit } from 'unist-util-visit'
 
+import { recipeButtonHtml, recipeDialogHtml } from './spec-recipe/html.ts'
+import { buildRecipe } from './spec-recipe/recipe.ts'
 import { screenshotLiveUrls } from '../../scripts/screenshot-specs.ts'
 
 import type { Image, Paragraph, Root } from 'mdast'
@@ -7,6 +9,9 @@ import type { Plugin } from 'unified'
 
 const attrRe = /(\w+)=(?:"([^"]*)"|'([^']*)')/g
 const figureRe = /<Figure\s+([\s\S]*?)\s*\/>/
+
+// each figure's dialog needs an id unique to the page it renders on
+let dialogCount = 0
 
 // map each /img/<name>.png to the live JBrowse instance that produced it, so a
 // screenshot links to a running view the reader can open and explore
@@ -96,7 +101,19 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
         const linkHtml = multi.map(l => a(l.url, `${l.label} ↗`)).join(' · ')
         node.value = `<figure>${a(multi[0]!.url, img)}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption></figure>`
       } else if (liveUrl) {
-        node.value = `<figure>${a(liveUrl, img)}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}</figcaption></figure>`
+        // the live link hands the reader the finished view; the dialog next to
+        // it shows how to build the same thing from their own data
+        const recipe = buildRecipe(liveUrl)
+        const help = recipe
+          ? (() => {
+              const id = `spec-dialog-${dialogCount++}`
+              return {
+                button: recipeButtonHtml(id),
+                dialog: recipeDialogHtml(recipe, id),
+              }
+            })()
+          : { button: '', dialog: '' }
+        node.value = `<figure>${a(liveUrl, img)}<figcaption>${caption} ${a(liveUrl, 'Open this view in JBrowse ↗')}${help.button}</figcaption>${help.dialog}</figure>`
       } else {
         node.value = `<figure>${img}<figcaption>${caption}</figcaption></figure>`
       }

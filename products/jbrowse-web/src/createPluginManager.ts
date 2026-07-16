@@ -1,3 +1,4 @@
+import { loadSessionSpec } from '@jbrowse/app-core'
 import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { doAnalytics } from '@jbrowse/core/util/analytics'
@@ -5,7 +6,6 @@ import { doAnalytics } from '@jbrowse/core/util/analytics'
 import { applyDefaultSessionViewInit } from './applyDefaultSessionViewInit.ts'
 import corePlugins from './corePlugins.ts'
 import { loadHubSpec } from './loadHubSpec.ts'
-import { loadSessionSpec } from './loadSessionSpec.ts'
 import JBrowseRootModelFactory from './rootModel/rootModel.ts'
 import sessionModelFactory from './sessionModel/index.ts'
 

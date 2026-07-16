@@ -1,15 +1,17 @@
 import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { readConfObject } from '@jbrowse/core/configuration'
-import { dedupe } from '@jbrowse/core/util'
+import { dedupe, fetchJson } from '@jbrowse/core/util'
 import {
   writeAWSAnalytics,
   writeGAAnalytics,
 } from '@jbrowse/core/util/analytics'
 import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
+import { addRelativeUris } from '@jbrowse/product-core'
 import deepmerge from 'deepmerge'
 
-import { resolveSessionName } from './sessionName.ts'
+import { launchFromLink } from './launchFromLink.ts'
+import { newSessionName, resolveSessionName } from './sessionName.ts'
 import corePlugins from '../../corePlugins.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
@@ -17,6 +19,7 @@ import { fetchCJS } from '../../util.tsx'
 
 import type { JBrowseConfig } from './types.ts'
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
+
 
 export { addRelativeUris } from '@jbrowse/product-core'
 
@@ -27,6 +30,40 @@ export async function loadPluginManager(configPath: string) {
   const pm = await createPluginManager(snap)
   ;(pm.rootModel as DesktopRootModel | undefined)?.setSessionPath(configPath)
   return pm
+}
+
+// Fetch one remote config and make it loadable here: rebase its relative uris
+// on where it was served from, and record that url so "export to web" can reuse
+// it as the session base (?config=<sourceConfigUrl>).
+export async function fetchConfig(url: string) {
+  const ret = await fetchJson(url)
+  addRelativeUris(ret as Record<string, unknown>, new URL(url))
+  const cfg = ret as JBrowseConfig
+  cfg.configuration = {
+    ...cfg.configuration,
+    sourceConfigUrl: url,
+  }
+  return cfg
+}
+
+/**
+ * Open a JBrowse Web link as a new session. Shared by the start screen's "Open
+ * JBrowse Web link..." dialog and by a jbrowse:// link the main process
+ * forwarded as ?specLink=, so both routes build the session identically.
+ */
+export async function openSpecLink(link: string) {
+  return launchFromLink(link, {
+    fetchConfig,
+    createPluginManager: async config =>
+      loadPluginManager(
+        await ipcRenderer.invoke('createInitialAutosaveFile', {
+          ...config,
+          // a placeholder: loadSessionSpec replaces this session with the one
+          // the spec describes (and names it)
+          defaultSession: { name: newSessionName() },
+        }),
+      ),
+  })
 }
 
 // Tear down a plugin manager that is being replaced: terminate its RPC worker

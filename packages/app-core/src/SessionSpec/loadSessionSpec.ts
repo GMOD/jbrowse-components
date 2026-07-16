@@ -4,7 +4,7 @@ import {
 } from '@jbrowse/core/util'
 
 import type { LayoutNode, ViewSpec } from './types.ts'
-import type { DockviewLayoutNode } from '@jbrowse/app-core'
+import type { DockviewLayoutNode } from '../DockviewLayout/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // Convert LayoutNode (with view indices) to DockviewLayoutNode (with view IDs)

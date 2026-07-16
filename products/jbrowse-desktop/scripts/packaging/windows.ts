@@ -5,6 +5,7 @@ import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
 import { signWindowsFile } from './signing.ts'
 import { generateLatestYml, log, run, runQuiet } from './utils.ts'
+import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 
 // Convert Unix path to Windows path for Wine (e.g., /home/user -> Z:\home\user)
 function toWinePath(unixPath: string) {
@@ -69,6 +70,14 @@ Section "Install"
   WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "Publisher" "JBrowse Team"
   WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayVersion" "${VERSION}"
 
+  ; Register the ${JBROWSE_PROTOCOL}:// url scheme, so an "open in Desktop" link
+  ; on a web page launches this install. macOS gets this from Info.plist and
+  ; Linux from the .desktop file; on Windows it is registry-only.
+  WriteRegStr HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}" "" "URL:${PRODUCT_NAME} Protocol"
+  WriteRegStr HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}" "URL Protocol" ""
+  WriteRegStr HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}\\DefaultIcon" "" "$INSTDIR\\${APP_NAME}.exe,0"
+  WriteRegStr HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}\\shell\\open\\command" "" '"$INSTDIR\\${APP_NAME}.exe" "%1"'
+
   ; Get installed size
   \${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
   IntFmt $0 "0x%08X" $0
@@ -87,6 +96,7 @@ Section "Uninstall"
 
   ; Remove registry keys
   DeleteRegKey HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}"
+  DeleteRegKey HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}"
 SectionEnd
 `
 }
