@@ -135,7 +135,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
        */
       rowProportion: {
         type: 'number',
-        defaultValue: 0.9,
+        defaultValue: 1,
         description: 'fraction of the row height each block fills',
         advanced: true,
       },
