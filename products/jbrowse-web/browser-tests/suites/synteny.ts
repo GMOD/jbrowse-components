@@ -86,6 +86,9 @@ const identityLegendTest: TestCase = {
             type: 'LinearSyntenyView',
             tracks: ['subset'],
             colorBy: 'identity',
+            // opt in explicitly: the legend defaulted to on when it was added
+            // (477292a223) but is off by default since e9e8eeff9c
+            showColorLegend: true,
             views: [
               { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
               { loc: 'chr1:316,306..316,364', assembly: 'grape' },
@@ -100,7 +103,7 @@ const identityLegendTest: TestCase = {
     })
     await waitForDataLoaded(page, 60000)
 
-    // legend is visible by default; full-page capture records it
+    // full-page capture records the legend
     await findByTestId(page, 'color-by-legend', 60000)
     await dualSnapshot(
       page,

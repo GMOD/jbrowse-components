@@ -33,7 +33,8 @@ const suite: TestSuite = {
         await menuIcon?.click()
         await delay(300)
 
-        const colorItem = await findByText(page, 'Color', 10000)
+        // renamed from "Color" in 569af0a120; findByText is case-sensitive
+        const colorItem = await findByText(page, 'Edit color...', 10000)
         await colorItem?.click()
         await delay(500)
 
