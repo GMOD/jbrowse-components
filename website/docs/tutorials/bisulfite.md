@@ -200,10 +200,10 @@ cytosines). Methylated cytosines paint red and unmethylated ones paint blue.
 It's reference-based and only makes sense for bisulfite/EM-seq libraries — no
 MM/ML tags are involved.
 
-That same submenu has a **Show unmethylated (blue)** toggle; turning it off draws
-a methylated-only view (red marks only, unmethylated sites left blank). The
-figures below use that view, so methylation reads directly as the presence of
-red and the three contexts contrast cleanly without the blue.
+That same submenu has a **Show unmethylated (blue)** toggle; turning it off
+draws a methylated-only view (red marks only, unmethylated sites left blank).
+The figures below use that view, so methylation reads directly as the presence
+of red and the three contexts contrast cleanly without the blue.
 
 Type `NC_003070.9:4,398,000–4,412,000` into the location box to reach the window
 below (chromosome 1). It places two methylation regimes side by side. On the
@@ -222,11 +222,11 @@ up red; over the silenced element (right) all three copies do.
 
 Each per-read copy is just the same alignment track re-colored: switch a
 pileup's context with **Color by → Bisulfite / EM-seq**, then CpG / CHG / CHH /
-all (the last one marks every cytosine at once). Because the call is
-made per read, zooming in to the gene→element boundary lets you follow the
-methylation on individual molecules — in the CHG/CHH copies each read stays blank
-over the gene body and picks up red (methylated) marks as it crosses into the
-silenced element.
+all (the last one marks every cytosine at once). Because the call is made per
+read, zooming in to the gene→element boundary lets you follow the methylation on
+individual molecules — in the CHG/CHH copies each read stays blank over the gene
+body and picks up red (methylated) marks as it crosses into the silenced
+element.
 
 ## See also
 

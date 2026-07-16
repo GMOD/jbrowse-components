@@ -298,7 +298,10 @@ function bisulfiteItem(model: ModificationsModel): MenuItem {
   const context = mods.cytosineContext ?? 'CG'
   const twoColor = mods.twoColor !== false
 
-  const setBisulfite = (nextContext: CytosineContext, nextTwoColor: boolean) => {
+  const setBisulfite = (
+    nextContext: CytosineContext,
+    nextTwoColor: boolean,
+  ) => {
     model.setColorScheme({
       type: 'bisulfite',
       modifications: {

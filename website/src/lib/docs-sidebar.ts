@@ -201,34 +201,41 @@ export function buildSidebar(
 }
 
 // The "showcase" pages (Features / Plugins / Gallery / Demos) hang off the same
-// sidebar as the docs, so navigation is identical everywhere on the site. All
-// four are plain top-level links to their respective pages.
+// sidebar as the docs, so navigation is identical everywhere on the site.
+// They're grouped under one "Showcase" category rather than sitting as four
+// top-level links.
 export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
   const pageUrl = (path: string) => `${baseUrl}/${path}/`
   return [
     {
-      type: 'link',
-      label: 'Features',
-      href: pageUrl('features'),
-      slug: 'features',
-    },
-    {
-      type: 'link',
-      label: 'Plugins',
-      href: pageUrl('plugin_store'),
-      slug: 'plugin_store',
-    },
-    {
-      type: 'link',
-      label: 'Gallery',
-      href: pageUrl('gallery'),
-      slug: 'gallery',
-    },
-    {
-      type: 'link',
-      label: 'Demos',
-      href: pageUrl('demos'),
-      slug: 'demos',
+      type: 'group',
+      label: 'Showcase',
+      items: [
+        {
+          type: 'link',
+          label: 'Features',
+          href: pageUrl('features'),
+          slug: 'features',
+        },
+        {
+          type: 'link',
+          label: 'Plugins',
+          href: pageUrl('plugin_store'),
+          slug: 'plugin_store',
+        },
+        {
+          type: 'link',
+          label: 'Gallery',
+          href: pageUrl('gallery'),
+          slug: 'gallery',
+        },
+        {
+          type: 'link',
+          label: 'Demos',
+          href: pageUrl('demos'),
+          slug: 'demos',
+        },
+      ],
     },
   ]
 }

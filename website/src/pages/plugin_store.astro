@@ -1,9 +1,9 @@
 ---
 import { Icon } from 'astro-icon/components'
 
+import pluginJSON from '../../plugins.json'
 import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import SidebarLayout from '../layouts/SidebarLayout.astro'
-import pluginJSON from '../../plugins.json'
 import btn from '../styles/button.module.css'
 import page from '../styles/page.module.css'
 
@@ -21,23 +21,17 @@ const { plugins } = pluginJSON
     <div class={page.content}>
       <h1>Plugin Store</h1>
 
-      <div class="info-row">
-        <div class="info-box">
-          <div class="info-box-title">About the plugin store</div>
-          <div class="info-body">
-            <p>
-              This store contains the current list of white-listed JBrowse 2
-              plugins. Plugins can add functionality that doesn't exist in the
-              core application, such as a new data adapter or a custom track
-              type.
-            </p>
-            <p>
-              The configuration specified for each plugin can be added to the{
-                ' '
-              }
-              <code>plugins</code> array as a top-level entry. For example:
-            </p>
-            <pre><code>{`{
+      <div class="info-section">
+        <p>
+          This store contains the current list of white-listed JBrowse 2
+          plugins. Plugins can add functionality that doesn't exist in the core
+          application, such as a new data adapter or a custom track type.
+        </p>
+        <p>
+          The configuration specified for each plugin can be added to the{' '}
+          <code>plugins</code> array as a top-level entry. For example:
+        </p>
+        <pre><code>{`{
   "plugins": [
     {
       "name": "Msaview",
@@ -45,40 +39,28 @@ const { plugins } = pluginJSON
     }
   ]
 }`}</code></pre>
-            <p>
-              Plugins can also be added directly inside the app via the File
-              menu.
-            </p>
-          </div>
-        </div>
-
-        <div class="info-box">
-          <div class="info-box-title">Developer information</div>
-          <div class="info-body">
-            <p>
-              We welcome developers who want to create a new JBrowse 2 plugin.
-              The primary resource for getting started is the{' '}
-              <a
-                href="https://github.com/GMOD/jbrowse-plugin-template"
-                target="_blank"
-                rel="noopener"
-              >
-                plugin template
-              </a>.
-            </p>
-            <p>
-              If you build a plugin you'd like featured in this store, follow
-              the instructions found{' '}
-              <a
-                href="https://github.com/GMOD/jbrowse-plugin-list"
-                target="_blank"
-                rel="noopener"
-              >
-                here
-              </a>.
-            </p>
-          </div>
-        </div>
+        <p>
+          Plugins can also be added directly inside the app via the File menu.
+        </p>
+        <p>
+          We welcome developers who want to create a new JBrowse 2 plugin. The
+          primary resource for getting started is the{' '}
+          <a
+            href="https://github.com/GMOD/jbrowse-plugin-template"
+            target="_blank"
+            rel="noopener"
+          >
+            plugin template
+          </a>. If you build a plugin you'd like featured in this store, follow
+          the instructions found{' '}
+          <a
+            href="https://github.com/GMOD/jbrowse-plugin-list"
+            target="_blank"
+            rel="noopener"
+          >
+            here
+          </a>.
+        </p>
       </div>
 
       <div class="plugin-list">
@@ -155,42 +137,21 @@ const { plugins } = pluginJSON
     padding-bottom: 0.75rem;
   }
 
-  .info-row {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
+  .info-section {
     margin-bottom: 2rem;
-  }
-  .info-box {
-    flex: 1;
-    min-width: 240px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .info-box-title {
-    background: var(--color-surface);
-    color: var(--color-text);
-    padding: 0.7rem 1rem;
-    font-weight: 500;
-    font-size: 0.9rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-  .info-body {
-    padding: 1rem;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     line-height: 1.6;
   }
-  .info-body p {
-    margin: 0 0 0.5rem;
+  .info-section p {
+    margin: 0 0 0.75rem;
   }
-  .info-body pre {
+  .info-section pre {
     background: var(--color-surface);
     padding: 0.75rem 1rem;
     border-radius: 4px;
     overflow-x: auto;
     font-size: 0.82rem;
-    margin: 0.5rem 0;
+    margin: 0.5rem 0 0.75rem;
   }
 
   .plugin-list {

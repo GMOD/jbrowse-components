@@ -5,15 +5,15 @@ description:
   labels, tooltips, tracks, themes, and more'
 ---
 
-Short, copy-paste recipes for the `config.json` settings people reach for
-most. Examples use the `volvox` sample data
+Short, copy-paste recipes for the `config.json` settings people reach for most.
+Examples use the `volvox` sample data
 ([`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox))
 so you can try them directly. For the full reference, see the
 [Config guide](/docs/config_guide).
 
 **New here?** Read the [TL;DR](#tldr-a-complete-config-on-one-screen) and
-[shorthand](#how-config-shorthand-works) sections first, then use the **"On
-this page"** panel (top right) to jump to a recipe.
+[shorthand](#how-config-shorthand-works) sections first, then use the **"On this
+page"** panel (top right) to jump to a recipe.
 
 ---
 
@@ -125,8 +125,8 @@ index, or an index whose name doesn't follow `file + .bai/.crai/.tbi`:
 
 A location is a `{ "uri": "..." }` object. `"locationType": "UriLocation"` is
 only needed for local desktop paths. See
-[supported file types](/docs/config_guides/file_types) for every format's
-`uri` shorthand.
+[supported file types](/docs/config_guides/file_types) for every format's `uri`
+shorthand.
 
 ### `displayDefaults` shorthand
 
@@ -152,10 +152,10 @@ expands to:
 ]
 ```
 
-If a track can be drawn more than one way, each setting lands where it fits.
-For example, a `VariantTrack` uses `color` for its linear display and
-`strokeColor` for its circular one, both in the same object. A setting nothing
-uses is ignored with a console warning, so typos surface.
+If a track can be drawn more than one way, each setting lands where it fits. For
+example, a `VariantTrack` uses `color` for its linear display and `strokeColor`
+for its circular one, both in the same object. A setting nothing uses is ignored
+with a console warning, so typos surface.
 
 Reach for the **full `displays` array** only when you need precise control:
 selecting a non-default display type (like the
@@ -269,8 +269,8 @@ See [assemblies](/docs/config_guides/assemblies) for the file-based form.
 ## Colors
 
 **The one thing to know:** a track's color is the `color` setting in
-`displayDefaults`, either a plain CSS color or a `jexl:` expression JBrowse
-runs per feature, returning that feature's color.
+`displayDefaults`, either a plain CSS color or a `jexl:` expression JBrowse runs
+per feature, returning that feature's color.
 
 ### What you can color by
 
@@ -316,19 +316,19 @@ strand**; the table after it shows just the line to swap for everything else:
 ### More ways to set `color`
 
 Drop any of these into the same `displayDefaults` in place of the line above.
-The first six are `FeatureTrack` recipes; the last two are for
-`AlignmentsTrack` and `VariantTrack`, whose color slot works the same way.
+The first six are `FeatureTrack` recipes; the last two are for `AlignmentsTrack`
+and `VariantTrack`, whose color slot works the same way.
 
-| Recipe                            | `displayDefaults`                                                                          | Notes                                          |
-| ---------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Solid color                        | `{ "color": "#6a3d9a" }`                                                                     | any CSS color: hex, `rgb()`/`hsl()`, or a name |
-| By feature type (lookup table)     | `{ "color": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4'}[feature.type] \|\| 'gray'" }` | `\|\| 'gray'` catches anything not listed        |
-| By a numeric threshold             | `{ "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'" }`                                | a hard cutoff, not a gradient                   |
-| Continuous gradient from a number  | ``{ "color": "jexl:`hsl(${feature.score*3},50%,50%)`" }``                                    | maps `feature.score` onto an HSL hue            |
-| Auto color per category            | `{ "color": "jexl:randomColor(feature.type)" }`                                              | same string always gets the same color         |
-| BED file's own colors (`itemRgb`)  | `{ "color": "jexl:feature.itemRgb \|\| 'gray'" }`                                             | only guaranteed for BED12/bigBed (see note)     |
-| BAM/CRAM tag (`AlignmentsTrack`)   | `{ "colorBy": { "type": "tag", "tag": "HP" } }`                                               | built-in, reads the tag and picks colors        |
-| SNPs vs indels (`VariantTrack`)    | `{ "color": "jexl:feature.type=='SNV'?'green':'purple'" }`                                    | branch on `feature.type` or any VCF `INFO` field |
+| Recipe                            | `displayDefaults`                                                                             | Notes                                            |
+| --------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Solid color                       | `{ "color": "#6a3d9a" }`                                                                      | any CSS color: hex, `rgb()`/`hsl()`, or a name   |
+| By feature type (lookup table)    | `{ "color": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4'}[feature.type] \|\| 'gray'" }` | `\|\| 'gray'` catches anything not listed        |
+| By a numeric threshold            | `{ "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'" }`                                 | a hard cutoff, not a gradient                    |
+| Continuous gradient from a number | ``{ "color": "jexl:`hsl(${feature.score*3},50%,50%)`" }``                                     | maps `feature.score` onto an HSL hue             |
+| Auto color per category           | `{ "color": "jexl:randomColor(feature.type)" }`                                               | same string always gets the same color           |
+| BED file's own colors (`itemRgb`) | `{ "color": "jexl:feature.itemRgb \|\| 'gray'" }`                                             | only guaranteed for BED12/bigBed (see note)      |
+| BAM/CRAM tag (`AlignmentsTrack`)  | `{ "colorBy": { "type": "tag", "tag": "HP" } }`                                               | built-in, reads the tag and picks colors         |
+| SNPs vs indels (`VariantTrack`)   | `{ "color": "jexl:feature.type=='SNV'?'green':'purple'" }`                                    | branch on `feature.type` or any VCF `INFO` field |
 
 A few of these need more than the one line above:
 
@@ -337,16 +337,15 @@ A few of these need more than the one line above:
   extra columns surface generically as `field6`, `field7`, and so on. See the
   BED column-names note in
   [customizing feature colors](/docs/config_guides/customizing_feature_colors).
-- **Auto color per category**: `randomColor`, `alpha`, `hsl`, `colorString`,
-  and `interpolate` are the built-in
-  [color helpers](/docs/config_guides/jexl) in the jexl catalog, e.g.
-  `alpha('#1f77b4', 0.4)` for a semi-transparent fill where features overlap.
+- **Auto color per category**: `randomColor`, `alpha`, `hsl`, `colorString`, and
+  `interpolate` are the built-in [color helpers](/docs/config_guides/jexl) in
+  the jexl catalog, e.g. `alpha('#1f77b4', 0.4)` for a semi-transparent fill
+  where features overlap.
 - **BAM/CRAM tag**: other `colorBy` schemes (`mappingQuality`, `strand`,
   `pairOrientation`, `insertSize`, `modifications`) are in
-  [alignments tracks](#alignments-tracks). To color by a tag on a
-  `FeatureTrack` instead, read it in jexl with `getTag`, which smooths over
-  BAM/CRAM tag differences:
-  `"color": "jexl:getTag(feature, 'HP')==1?'crimson':'steelblue'"`.
+  [alignments tracks](#alignments-tracks). To color by a tag on a `FeatureTrack`
+  instead, read it in jexl with `getTag`, which smooths over BAM/CRAM tag
+  differences: `"color": "jexl:getTag(feature, 'HP')==1?'crimson':'steelblue'"`.
 - If the callback outgrows a one-liner (**plugin function**), move it into a
   small plugin that registers a jexl function (e.g. `colorFeature`) and call it
   by name: `{ "color": "jexl:colorFeature(feature)" }`. This needs a companion
@@ -372,8 +371,7 @@ Two things catch most mistakes:
 ## Labels, tooltips & details
 
 These all build on the [canonical track above](#color-by-strand): same
-`assemblyNames`/`adapter`, only `displayDefaults` (or `formatDetails`)
-changes.
+`assemblyNames`/`adapter`, only `displayDefaults` (or `formatDetails`) changes.
 
 ### Labels
 
@@ -398,8 +396,8 @@ Labels route through `displayDefaults` exactly like `color`:
 
 ### Tooltips (mouseover)
 
-`mouseover` is a per-feature callback whose returned string shows on hover,
-same as color and labels:
+`mouseover` is a per-feature callback whose returned string shows on hover, same
+as color and labels:
 
 ```json
 "displayDefaults": {
@@ -457,8 +455,8 @@ file into memory:
 ```
 
 Or skip files entirely and embed a handful of features straight in the config
-with `FromConfigAdapter`, handy for demos, tests, or annotations you maintain
-by hand. See [inline data](#inline-data-no-files) below.
+with `FromConfigAdapter`, handy for demos, tests, or annotations you maintain by
+hand. See [inline data](#inline-data-no-files) below.
 
 ### Set the drawing height
 
@@ -469,9 +467,9 @@ by hand. See [inline data](#inline-data-no-files) below.
 ### Draw features as arcs, with a jexl-computed height
 
 Useful for interactions, breakpoints, or paired features. The arc display isn't
-a `FeatureTrack`'s default, so select it with a `displays` array. Its
-appearance slots (`color`, `arcHeight`, `thickness`, `label`) sit directly on
-the display, each accepting a `jexl:` expression:
+a `FeatureTrack`'s default, so select it with a `displays` array. Its appearance
+slots (`color`, `arcHeight`, `thickness`, `label`) sit directly on the display,
+each accepting a `jexl:` expression:
 
 ```json
 "displays": [
@@ -485,8 +483,8 @@ the display, each accepting a `jexl:` expression:
 
 ### Showing only some features (filtering) {#showing-only-some-features-filtering}
 
-`jexlFilters` shows only features that pass every expression listed. One
-gotcha: unlike `color`, filter expressions **leave off the `jexl:` prefix**.
+`jexlFilters` shows only features that pass every expression listed. One gotcha:
+unlike `color`, filter expressions **leave off the `jexl:` prefix**.
 
 ```json
 "displayDefaults": {
@@ -664,8 +662,8 @@ while `color` keeps it:
 ```
 
 Multi-sample VCFs open in the standard variant display. To see genotypes as a
-grid, switch to the genotype-matrix display from the track menu, or select it
-in the config:
+grid, switch to the genotype-matrix display from the track menu, or select it in
+the config:
 
 ```json
 "displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay" }]
@@ -690,8 +688,8 @@ minimap2 grape.fa peach.fa > out.paf   # minimap2 target.fa query.fa
 ```
 
 so here the **target is grape** and the **query is peach**. Name them outright
-with `queryAssembly` and `targetAssembly` on the adapter instead of tracking
-the order yourself:
+with `queryAssembly` and `targetAssembly` on the adapter instead of tracking the
+order yourself:
 
 ```json
 {
@@ -716,8 +714,8 @@ already exist in `assemblies`.
 coordinates don't line up with the assemblies on screen, so nothing draws. Flip
 `queryAssembly` and `targetAssembly` (or, if you used the positional
 `assemblyNames: [query, target]` array instead, reverse it). minimap2's
-`target query` argument order is the _reverse_ of the array's
-`[query, target]`, the usual culprit.
+`target query` argument order is the _reverse_ of the array's `[query, target]`,
+the usual culprit.
 
 To open a dotplot or linear synteny view pointed at this track, see the
 [synteny track guide](/docs/config_guides/synteny_track) and the
@@ -769,8 +767,8 @@ See [text searching](/docs/config_guides/text_searching).
 
 ### Theming
 
-Set `configuration.theme.palette`. `primary` and `secondary` drive the
-toolbars and highlights, and `tertiary`/`quaternary` handle accents:
+Set `configuration.theme.palette`. `primary` and `secondary` drive the toolbars
+and highlights, and `tertiary`/`quaternary` handle accents:
 
 ```json
 "configuration": {
@@ -805,9 +803,8 @@ plugin store.
 
 ### Opening to a specific view on load
 
-`defaultSession` opens JBrowse at a region with tracks already showing, the
-same slot used in the [TL;DR config](#tldr-a-complete-config-on-one-screen)
-above:
+`defaultSession` opens JBrowse at a region with tracks already showing, the same
+slot used in the [TL;DR config](#tldr-a-complete-config-on-one-screen) above:
 
 ```json
 "defaultSession": {
@@ -837,8 +834,8 @@ than a screenshot or a list of click-here-then-here steps, send a link that
 opens JBrowse already pointed at the right place, with the right tracks turned
 on.
 
-That's what URL parameters are for. A link doesn't set up anything new. It
-just refers to things your `config.json` already defines, by name. Here's a
+That's what URL parameters are for. A link doesn't set up anything new. It just
+refers to things your `config.json` already defines, by name. Here's a
 stripped-down config:
 
 ```json
@@ -867,21 +864,21 @@ Reading it left to right, every piece is just a value copied out of the config:
 - `&tracks=genes,coverage` - a comma-separated list of `trackId`s to turn on,
   taken straight from the `tracks` array.
 
-Building a link is mostly reading `trackId`s and the assembly `name` out of
-your config and stringing them together. Nothing in the URL exists that isn't
-already in the config.
+Building a link is mostly reading `trackId`s and the assembly `name` out of your
+config and stringing them together. Nothing in the URL exists that isn't already
+in the config.
 
 One thing to know: a link like this starts a **fresh** view and ignores any
-`defaultSession` you configured. To jump to a different region within a
-curated default session instead, add `&extendSession=true`. JBrowse keeps the
-session's tracks and settings and only changes the location (and you can drop
+`defaultSession` you configured. To jump to a different region within a curated
+default session instead, add `&extendSession=true`. JBrowse keeps the session's
+tracks and settings and only changes the location (and you can drop
 `&assembly=`, since it comes from the session).
 
 ### Setting a track's color (or height) in the link
 
-Everything above turns tracks _on_. To control how a track _looks_ from the
-link too, the same settings you'd put in `displayDefaults`, list it as an
-object with a `displaySnapshot` instead of a plain `"genes"`:
+Everything above turns tracks _on_. To control how a track _looks_ from the link
+too, the same settings you'd put in `displayDefaults`, list it as an object with
+a `displaySnapshot` instead of a plain `"genes"`:
 
 ```
 &session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-50000","tracks":[{"trackId":"genes","displaySnapshot":{"color":"green"}}]}]}
@@ -894,10 +891,10 @@ works here too.
 ### Adding a whole track that isn't in the config
 
 Add a track the config has never heard of with `&sessionTracks=`, which takes
-the same track config objects as the config's `tracks` array. For example,
-drop in a few features inline with a
-[`FromConfigAdapter`](#inline-data-no-files) (handy for sharing a BLAST hit or
-a region of interest) straight from the URL bar:
+the same track config objects as the config's `tracks` array. For example, drop
+in a few features inline with a [`FromConfigAdapter`](#inline-data-no-files)
+(handy for sharing a BLAST hit or a region of interest) straight from the URL
+bar:
 
 ```
 &sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"1","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]
@@ -909,8 +906,8 @@ the shareable encoded links the "Share" button produces, see the
 
 ### The same view definition works everywhere
 
-Once you've described a view (an assembly, a location, some tracks, maybe a
-few display settings), you can reuse it in three places without rewriting it:
+Once you've described a view (an assembly, a location, some tracks, maybe a few
+display settings), you can reuse it in three places without rewriting it:
 
 - in the config, as `defaultSession.views[].init`, so it loads for everyone
 - in a URL, as a session spec, so you can hand it to one person
