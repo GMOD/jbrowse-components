@@ -305,6 +305,46 @@ describe('computePileupBezierArcs — discordant curves dip', () => {
   })
 })
 
+describe('computePileupBezierArcs — off-screen culling', () => {
+  // readScreenY = y*rowH + pileupTopOffset - scrollTop + featureHeight/2, so
+  // scrollTop 25 puts row 0 at -20: both reads sit just above the viewport.
+  // The pair is wide, so its dip is deep enough to hang back into view — the
+  // curve bows away from its endpoints, and culling on the endpoints alone
+  // would drop a connector the user can see.
+  const scrolledJustAbove = { ...baseOpts, scrollTop: 25 }
+  const wideInversion = makeData({
+    names: ['r', 'r'],
+    flags: [0, SAM_FLAG_SUPPLEMENTARY],
+    strands: [1, -1],
+    positions: [
+      [100, 200],
+      [3000, 3100],
+    ],
+    ys: [0, 0],
+  })
+
+  it('keeps a curve whose endpoints are off-screen but whose body is not', () => {
+    const arcs = computePileupBezierArcs({
+      ...scrolledJustAbove,
+      pairs: enumerateBezierPairs(new Map([[0, wideInversion]])),
+    })
+    expect(arcs).toHaveLength(1)
+    const { sy1, sy2 } = controlPoints(arcs[0]!.d)
+    // the endpoints really are above the viewport — the dip is what's visible
+    expect(sy1).toBeLessThan(0)
+    expect(sy2).toBeLessThan(0)
+  })
+
+  it('still culls a curve that is wholly off-screen', () => {
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      scrollTop: 5000,
+      pairs: enumerateBezierPairs(new Map([[0, wideInversion]])),
+    })
+    expect(arcs).toHaveLength(0)
+  })
+})
+
 describe('computePileupBezierArcs — exclusions', () => {
   // Normal-orientation within-region pairs are drawn by the GPU/Canvas2D
   // straight-line pass, so the bezier overlay must not duplicate them.

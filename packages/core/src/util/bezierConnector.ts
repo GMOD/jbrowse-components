@@ -54,6 +54,14 @@ const MAX_BOW_PX = 30
 const MAX_DIP_PX = 110
 const DIP_HALF_SPAN_PX = 500
 
+// How far a curve can stray outside the band between its two endpoints. A cubic
+// with both control points offset by `d` apexes at 0.75 * d, and the dip — the
+// deeper of the two shaping terms — saturates toward MAX_DIP_PX, so this bounds
+// both. A caller that culls off-screen curves has to pad its viewport test by
+// this: the shaping is applied to the *control points*, so a curve whose two
+// endpoints both sit just outside the viewport can still have a visible body.
+export const BEZIER_CONNECTOR_MAX_REACH_PX = 0.75 * MAX_DIP_PX
+
 interface Pt {
   x: number
   y: number

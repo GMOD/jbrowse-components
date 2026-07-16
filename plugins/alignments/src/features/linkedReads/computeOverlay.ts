@@ -1,4 +1,7 @@
-import { bezierConnectorPath } from '@jbrowse/core/util'
+import {
+  BEZIER_CONNECTOR_MAX_REACH_PX,
+  bezierConnectorPath,
+} from '@jbrowse/core/util'
 
 import { connectionLabel, iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -11,8 +14,15 @@ import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 // Cull by endpoint Y. A same-row connection is bowed up by a small fixed apex
 // (see bezierConnector), so a curve whose endpoints sit just off-screen can peek
 // in; the apex is tiny relative to the band, so testing the endpoints is enough.
+// The endpoints alone don't bound the curve — it bows away from them — so pad
+// by the shaping's reach. Without this, a connector whose reads have both
+// scrolled just past an edge takes its visible body with it.
 function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
-  return Math.min(sy1, sy2) < viewportBottom && Math.max(sy1, sy2) > 0
+  const reach = BEZIER_CONNECTOR_MAX_REACH_PX
+  return (
+    Math.min(sy1, sy2) - reach < viewportBottom &&
+    Math.max(sy1, sy2) + reach > 0
+  )
 }
 
 export interface PileupArc {
