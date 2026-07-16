@@ -133,7 +133,7 @@ whenever they carry an `HP` haplotype tag (from WhatsHap, HiPhase, or ONT's
 the track menu, leave coloring on modifications (or methylation), and the pileup
 stacks into one profile per haplotype, computed live in the browser with no
 external tool. Allele-specific methylation then shows up as a difference between
-the haplotype bands, and it's clearest at a germline imprinting center.
+the two haplotype bands.
 
 You can also compute that split ahead of time.
 `modkit pileup --partition-tag HP` writes an aggregate bedMethyl per haplotype
