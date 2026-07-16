@@ -133,7 +133,7 @@ export async function createView(args?: any, adminMode?: boolean) {
   return ret
 }
 
-interface Results extends ReturnType<typeof render> {
+export interface Results extends ReturnType<typeof render> {
   view: LGV
   session: WebSessionModel
   rootModel: AppRootModel

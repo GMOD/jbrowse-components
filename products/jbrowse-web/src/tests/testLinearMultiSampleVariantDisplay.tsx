@@ -2,6 +2,8 @@ import { fireEvent } from '@testing-library/react'
 
 import { createView, expectCanvasMatch, hts } from './util.tsx'
 
+import type { Results } from './util.tsx'
+
 type DisplayType = 'matrix' | 'regular'
 
 export const multiSampleVariantDisplayInfo = {
@@ -28,7 +30,9 @@ export async function openMultiSampleVariantDisplay({
 }: {
   displayType: DisplayType
   timeout?: number
-}) {
+}): Promise<
+  Results & { info: (typeof multiSampleVariantDisplayInfo)[DisplayType] }
+> {
   const opts = [{}, { timeout }] as const
   const info = multiSampleVariantDisplayInfo[displayType]
 
