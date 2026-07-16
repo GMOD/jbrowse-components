@@ -731,12 +731,19 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => {
-      // recentlyUsed/collapsed/folderCategories keys are scoped to the current
-      // assembly (+ view type), so the load autorun re-reads them whenever that
-      // scope changes. `loaded` gates persist so it can't write the model's empty
-      // defaults before the first load runs — this removes any dependence on the
-      // load/persist setup order.
-      let loaded = false
+      // collapsed/folderCategories/recentlyUsed keys are scoped to the assembly
+      // (+ view type), which isn't known until the view resolves, so they load
+      // lazily. `loadedScope` = the scope now in the model; persist writes only
+      // for that scope, so load/persist order never matters and an assembly
+      // switch can't write the old scope's state under the new key.
+      let loadedScope: string | undefined
+
+      function scopeKey(
+        assemblyNames: string[],
+        view: { type: string } | undefined,
+      ) {
+        return view ? `${assemblyNames.join(',')}|${view.type}` : ''
+      }
 
       // apply saved collapse state, or seed it from the hierarchical config
       // defaults when nothing is persisted yet
@@ -789,7 +796,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           loadCollapsed(assemblyNames, view.type)
           loadFolderCategories(assemblyNames, view.type)
         }
-        loaded = true
+        loadedScope = scopeKey(assemblyNames, view)
       }
 
       function persistToLocalStorage() {
@@ -803,7 +810,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           folderCategories,
           view,
         } = self
-        if (loaded) {
+        // skip until load has populated this scope (guards against writing empty
+        // defaults or a previous scope's state)
+        if (scopeKey(assemblyNames, view) === loadedScope) {
           localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
           localStorageSetJSON(favoritesK(), favorites)
           localStorageSetJSON(sortTrackNamesK, sortTrackNames)
@@ -819,10 +828,6 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       return {
         afterAttach() {
-          // load re-reads localStorage when its assembly/view scope changes;
-          // persist is gated by `loaded` so it can't clobber saved settings with
-          // the model's empty defaults before the first load — the two no longer
-          // depend on registration order
           addDisposer(
             self,
             autorun(loadFromLocalStorage, { name: 'TrackSelectorInit' }),
