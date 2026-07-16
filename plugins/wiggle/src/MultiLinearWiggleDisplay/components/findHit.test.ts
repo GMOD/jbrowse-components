@@ -1,5 +1,6 @@
-import { findOverlayHit, findRowHit } from './findHit.ts'
+import { findMultiWiggleHit, findOverlayHit, findRowHit } from './findHit.ts'
 
+import type { MultiWiggleHitModel } from './findHit.ts'
 import type { WiggleFeatureArrays, WiggleSourceData } from '../../util.ts'
 
 function makeSource(
@@ -227,5 +228,98 @@ describe('findRowHit', () => {
       minScore: 1,
       maxScore: 9,
     })
+  })
+})
+
+describe('findMultiWiggleHit', () => {
+  const regions = [
+    {
+      refName: 'chr1',
+      screenStartPx: 0,
+      screenEndPx: 100,
+      start: 0,
+      end: 100,
+      displayedRegionIndex: 0,
+    },
+  ]
+
+  function makeModel(over: Partial<MultiWiggleHitModel> = {}) {
+    return {
+      rowHeight: 20,
+      sources: [{ name: 's1' }],
+      rpcDataMap: new Map([
+        [0, { sources: [makeSource('s1', [{ start: 0, end: 100, score: 5 }])] }],
+      ]),
+      summaryScoreMode: 'avg',
+      isOverlay: false,
+      showTree: false,
+      treeAreaWidth: 0,
+      ...over,
+    }
+  }
+
+  test('finds the feature under the cursor', () => {
+    const hit = findMultiWiggleHit(makeModel(), regions, 50, 5)
+    expect(hit?.rows[0]?.score).toBe(5)
+  })
+
+  test('returns undefined with no sources', () => {
+    const model = makeModel({ sources: [] })
+    expect(findMultiWiggleHit(model, regions, 50, 5)).toBeUndefined()
+  })
+
+  // The tree sidebar overlays the left of the same container the mouse handlers
+  // are bound to and does not stop propagation, so without this gate a click on
+  // a tree node also opens a feature widget behind the node menu.
+  test('ignores cursor positions over the tree sidebar', () => {
+    const model = makeModel({
+      showTree: true,
+      hierarchy: {},
+      treeAreaWidth: 40,
+    })
+    // 40 wide + a resize handle, so 40 is still sidebar and 50 is plot
+    expect(findMultiWiggleHit(model, regions, 10, 5)).toBeUndefined()
+    expect(findMultiWiggleHit(model, regions, 40, 5)).toBeUndefined()
+    expect(findMultiWiggleHit(model, regions, 50, 5)?.rows[0]?.score).toBe(5)
+  })
+
+  test('hit-tests the full width when the tree is hidden', () => {
+    const model = makeModel({ showTree: false, treeAreaWidth: 40 })
+    expect(findMultiWiggleHit(model, regions, 10, 5)?.rows[0]?.score).toBe(5)
+  })
+
+  test('a hierarchy-less model has no sidebar to exclude', () => {
+    const model = makeModel({ showTree: true, treeAreaWidth: 40 })
+    expect(findMultiWiggleHit(model, regions, 10, 5)?.rows[0]?.score).toBe(5)
+  })
+
+  test('overlay mode collects a row per source at the cursor bp', () => {
+    const model = makeModel({
+      isOverlay: true,
+      sources: [{ name: 's1' }, { name: 's2' }],
+      rpcDataMap: new Map([
+        [
+          0,
+          {
+            sources: [
+              makeSource('s1', [{ start: 0, end: 100, score: 5 }]),
+              makeSource('s2', [{ start: 0, end: 100, score: 9 }]),
+            ],
+          },
+        ],
+      ]),
+    })
+    const hit = findMultiWiggleHit(model, regions, 50, 5)
+    expect(hit?.rows.map(r => r.score)).toEqual([5, 9])
+  })
+
+  test('row mode past the last row is a miss, not the last source', () => {
+    const model = makeModel({ rowHeight: 20 })
+    expect(findMultiWiggleHit(model, regions, 50, 25)).toBeUndefined()
+  })
+
+  test('a zero-height display is a miss rather than NaN row math', () => {
+    const model = makeModel({ rowHeight: 0 })
+    expect(findMultiWiggleHit(model, regions, 50, 0)).toBeUndefined()
   })
 })

@@ -259,7 +259,7 @@ export function findSourceHit(
       }
 }
 
-interface MouseRegion {
+export interface MouseRegion {
   refName: string
   screenStartPx: number
   screenEndPx: number
@@ -267,6 +267,25 @@ interface MouseRegion {
   end: number
   reversed?: boolean
   displayedRegionIndex: number
+}
+
+// The 0-based base under a fractional position through a region.
+//
+// Counts bases from the region's left screen edge and flips for `reversed`,
+// rather than flooring a flipped continuous coordinate. Two reasons:
+//   - `floor`, not `round`. Rounding snaps to the nearest base *boundary*, so it
+//     reports the next base across the right half of every base's pixels — an
+//     off-by-one tooltip on base-resolution data at high zoom.
+//   - flooring a *decreasing* coordinate (the `reversed` case) is itself off by
+//     one at exact base boundaries, which at high zoom land on integer pixels
+//     constantly. Indexing from the left keeps both orientations exact.
+// `frac < 1` holds (screenEndPx is exclusive), so the index stays within the
+// region; the clamp is float-rounding insurance only.
+function baseAtFraction(region: MouseRegion, frac: number) {
+  const { start, end, reversed } = region
+  const span = end - start
+  const index = Math.min(span - 1, Math.max(0, Math.floor(frac * span)))
+  return reversed ? end - 1 - index : start + index
 }
 
 // Maps a screen x coordinate to the region containing it, the per-region data
@@ -289,11 +308,7 @@ export function hitTestMouse<R extends MouseRegion, D>(
   }
   const blockWidth = region.screenEndPx - region.screenStartPx
   const frac = (offsetX - region.screenStartPx) / blockWidth
-  const span = region.end - region.start
-  const bp = Math.round(
-    region.reversed ? region.end - frac * span : region.start + frac * span,
-  )
-  return { region, data, bp }
+  return { region, data, bp: baseAtFraction(region, frac) }
 }
 
 export function makeRenderState(

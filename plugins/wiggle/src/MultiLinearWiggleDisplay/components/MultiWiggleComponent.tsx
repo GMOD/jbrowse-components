@@ -2,18 +2,15 @@ import { useCallback } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
+import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import MultiWiggleLegendOverlay from './MultiWiggleLegendOverlay.tsx'
-import { findOverlayHit, findRowHit } from './findHit.ts'
+import { findMultiWiggleHit } from './findHit.ts'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
-import {
-  hitTestMouse,
-  legendRightEdgePx,
-} from '../../shared/wiggleComponentUtils.ts'
+import { legendRightEdgePx } from '../../shared/wiggleComponentUtils.ts'
 import MultiWiggleOverlayLines from '../MultiWiggleOverlayLines.tsx'
 import MultiWiggleSvgScales from '../MultiWiggleSvgScales.tsx'
 
@@ -39,32 +36,8 @@ const MultiWiggleComponent = observer(function MultiWiggleComponent({
   const height = model.height
 
   const computeHit = useCallback(
-    (offsetX: number, offsetY: number) => {
-      const { rowHeight, sources, rpcDataMap, summaryScoreMode } = model
-      const hit =
-        sources.length === 0
-          ? undefined
-          : hitTestMouse(view.visibleRegions, rpcDataMap, offsetX)
-      return hit
-        ? model.isOverlay
-          ? findOverlayHit(
-              hit.data,
-              sources,
-              hit.bp,
-              hit.region.refName,
-              summaryScoreMode,
-            )
-          : findRowHit(
-              hit.data,
-              sources,
-              hit.bp,
-              offsetY,
-              rowHeight,
-              hit.region.refName,
-              summaryScoreMode,
-            )
-        : undefined
-    },
+    (offsetX: number, offsetY: number) =>
+      findMultiWiggleHit(model, view.visibleRegions, offsetX, offsetY),
     [model, view],
   )
 
@@ -175,7 +148,6 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
         height={height}
         clientMouseCoord={clientMouseCoord}
         offsetMouseCoord={offsetMouseCoord}
-        minLeft={treeSidebarRightEdge(model)}
       />
     </>
   )

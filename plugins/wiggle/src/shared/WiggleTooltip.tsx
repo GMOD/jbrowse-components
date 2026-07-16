@@ -90,23 +90,22 @@ function TooltipContents({ feature }: { feature: WiggleFeatureUnderMouse }) {
   )
 }
 
+// Non-plot areas (e.g. the tree sidebar) are excluded by the caller's
+// `computeHit` returning undefined, not by a geometry check here — so hover, the
+// vertical guide, and click-to-select share one definition of "over the plot".
 const WiggleTooltip = observer(function WiggleTooltip({
   model,
   clientMouseCoord,
   offsetMouseCoord,
   height,
-  // Cursor x positions left of this (e.g. over the tree sidebar) suppress the
-  // tooltip and vertical guide so they don't clutter the sidebar resize handle.
-  minLeft = 0,
 }: {
   model: { featureUnderMouse?: WiggleFeatureUnderMouse }
   clientMouseCoord: Coord
   offsetMouseCoord: Coord
   height: number
-  minLeft?: number
 }) {
   const { featureUnderMouse } = model
-  return featureUnderMouse && offsetMouseCoord[0] >= minLeft ? (
+  return featureUnderMouse ? (
     <>
       <BaseTooltip
         clientPoint={{ x: clientMouseCoord[0] + 10, y: clientMouseCoord[1] }}
