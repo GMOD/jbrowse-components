@@ -96,10 +96,9 @@ maybe(
       showPileup: false,
       colorBy: 'normal',
     })
-    const script = assembleRScript(
-      { refName: 'ctgA', start: 100, end: 110 },
-      [cov!],
-    )
+    const script = assembleRScript({ refName: 'ctgA', start: 100, end: 110 }, [
+      cov!,
+    ])
     const helpers = script.split('# Data sources')[0]!
     const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-interbase-'))
     // depth 10 everywhere except pos 109 (5, below the min-depth gate). Events:
@@ -173,10 +172,9 @@ maybe(
       showPileup: true,
       colorBy: 'insertSize',
     })
-    const helpers = assembleRScript(
-      { refName: 'ctgA', start: 0, end: 1 },
-      [pileup!],
-    ).split('# Data sources')[0]!
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      pileup!,
+    ]).split('# Data sources')[0]!
     const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-isize-'))
     const probe = `${helpers}
 reads <- data.frame(isize = c(${reads.map(r => r.isize).join(', ')}),
@@ -251,10 +249,9 @@ maybe(
       colorBy: 'normal',
       bpPerPx,
     })
-    const helpers = assembleRScript(
-      { refName: 'ctgA', start: 0, end: 1 },
-      [pileup!],
-    ).split('# Data sources')[0]!
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      pileup!,
+    ]).split('# Data sources')[0]!
     const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-fade-'))
     const probe = `${helpers}
 refpos <- c(${ticks.map(t => t.pos).join(', ')})
@@ -270,7 +267,9 @@ cat(sprintf("%.6f", a), "\\n")
     }).trim()
     const rAlpha = out.split(/\s+/).map(Number)
     expect(rAlpha).toHaveLength(jsAlpha.length)
-    rAlpha.forEach((a, i) => { expect(a).toBeCloseTo(jsAlpha[i]!, 5) })
+    rAlpha.forEach((a, i) => {
+      expect(a).toBeCloseTo(jsAlpha[i]!, 5)
+    })
     // and the test must actually exercise the fade: low-freq A (idx 0) faint at
     // the noise floor, high-freq C (idx 3) near opaque
     expect(jsAlpha[0]).toBeCloseTo(baseAlpha, 5) // A → noise floor
@@ -639,7 +638,10 @@ maybe(
       )
       const dir = mkdtempSync(join(tmpdir(), `jb-rexport-sort-${sortType}-`))
       writeFileSync(join(dir, 'view.R'), script)
-      execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+      execFileSync('Rscript', [join(dir, 'view.R')], {
+        cwd: dir,
+        stdio: 'pipe',
+      })
       expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
     }
 
@@ -1004,10 +1006,9 @@ maybe(
       linkReads: true,
       colorBy: 'normal',
     })
-    const helpers = assembleRScript(
-      { refName: 'ctgA', start: 0, end: 1 },
-      [pileup!],
-    ).split('# Data sources')[0]!
+    const helpers = assembleRScript({ refName: 'ctgA', start: 0, end: 1 }, [
+      pileup!,
+    ]).split('# Data sources')[0]!
     const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-xregion-'))
     const probe = `${helpers}
 regions <- region_layout(data.frame(chrom = c("ctgA", "ctgA"),
@@ -1035,6 +1036,75 @@ cat(nrow(links), spanning, "\\n")
     // some links exist, and at least one connects a mate across the divider
     expect(Number(total)).toBeGreaterThan(0)
     expect(Number(spanning)).toBeGreaterThan(0)
+  },
+  90000,
+)
+
+// The coverage panel must respect "Filter by" like JBrowse does. JBrowse filters
+// in the adapter, so the filtered read stream feeds the SNP coverage as well as
+// the pileup; this panel used to count every read, contradicting the pileup drawn
+// directly below it. volvox-rg.bam splits its reads across read groups, so a
+// tag filter is a clean way to prove the depth actually responds.
+maybe(
+  'coverage counts only reads passing "Filter by" (tag + flag)',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-rg.bam')
+    const build = (filterTagFilters?: { tag: string; value?: string }[]) =>
+      alignmentsFragments({
+        ...baseParams,
+        trackId: 'aln',
+        trackName: 'Volvox RG',
+        uri: bam,
+        showCoverage: true,
+        showPileup: false,
+        colorBy: 'normal',
+        filterTagFilters,
+      })
+
+    // the filtered script runs end to end and draws a figure
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 5000 },
+      build([{ tag: 'RG', value: '4' }]),
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-covfilter-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    // total depth over the region, unfiltered vs filtered to one read group
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+uri <- ${JSON.stringify(bam)}
+chrom <- "ctgA"; start <- 0; end <- 5000
+all_reads <- read_filter(read_bam(uri, chrom, start, end), uri, chrom, start, end,
+  0, 1540, NULL, list())
+rg4 <- read_filter(read_bam(uri, chrom, start, end), uri, chrom, start, end,
+  0, 1540, NULL, list(list(tag = "RG", value = "4")))
+cov_all <- bam_coverage(uri, chrom, start, end, all_reads$keep)
+cov_rg4 <- bam_coverage(uri, chrom, start, end, rg4$keep)
+# a mismatch overlay must lose the filtered reads' rows too
+mm_all <- bam_mismatches(uri, chrom, start, end)
+cat(sum(all_reads$keep), sum(rg4$keep),
+    sum(cov_all$depth), sum(cov_rg4$depth),
+    nrow(mm_all), nrow(keep_rows(mm_all, rg4$keep)), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [keptAll, keptRg4, depthAll, depthRg4, mmAll, mmRg4] = out
+      .split(/\s+/)
+      .map(Number)
+
+    // the tag filter keeps a strict, non-empty subset of the reads...
+    expect(keptRg4).toBeGreaterThan(0)
+    expect(keptRg4).toBeLessThan(keptAll!)
+    // ...and the coverage follows it down, rather than counting every read
+    expect(depthRg4).toBeGreaterThan(0)
+    expect(depthRg4).toBeLessThan(depthAll!)
+    // as do the stacked per-base mismatch counts
+    expect(mmRg4).toBeLessThan(mmAll!)
   },
   90000,
 )

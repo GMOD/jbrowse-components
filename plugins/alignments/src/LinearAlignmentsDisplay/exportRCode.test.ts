@@ -24,16 +24,14 @@ test('emits a coverage panel and a pileup panel, coverage on top', () => {
   expect(cov!.plotVariable).toBe('p_aln_coverage')
   expect(cov!.heightWeight).toBe(1)
   expect(cov!.helpers).toContain('bam_coverage')
-  expect(cov!.plotExpr).toContain('bam_coverage(bam, chrom, start, end)')
+  expect(cov!.plotExpr).toContain('bam_coverage(bam, chrom, start, end, keep)')
 
   expect(pileup!.plotVariable).toBe('p_aln_pileup')
   expect(pileup!.heightWeight).toBe(3)
   expect(pileup!.helpers).toEqual(
     expect.arrayContaining(['read_bam', 'pileup_layout']),
   )
-  expect(pileup!.plotExpr).toContain(
-    'pileup_layout(reads)',
-  )
+  expect(pileup!.plotExpr).toContain('pileup_layout(reads)')
 })
 
 test('both panels draw MD-tag mismatches (reference-free SNP coloring)', () => {
@@ -68,9 +66,14 @@ test('coverage panel carves deletions and draws interbase indicators', () => {
       'clip_colors',
     ]),
   )
-  // the SV-breakpoint indicators (insertion/soft-/hard-clip pileups) above the bars
-  expect(cov!.plotExpr).toContain('interbase_indicators(bam_indels(')
-  expect(cov!.plotExpr).toContain('bam_clips(bam, chrom, start, end), cov0)')
+  // the SV-breakpoint indicators (insertion/soft-/hard-clip pileups) above the
+  // bars, over the filtered reads like the depth beneath them
+  expect(cov!.plotExpr).toContain(
+    'interbase_indicators(keep_rows(bam_indels(bam, chrom, start, end), keep)',
+  )
+  expect(cov!.plotExpr).toContain(
+    'keep_rows(bam_clips(bam, chrom, start, end), keep), cov0)',
+  )
   // colored by the dominant event, drawn as a down-triangle above the histogram
   expect(cov!.plotExpr).toContain(
     'c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])',
@@ -159,18 +162,14 @@ test('linkReads uses chain layout with mate/supplementary connectors', () => {
   // default flat pileup
   const [, flat] = alignmentsFragments(base)
   expect(flat!.helpers).toContain('pileup_layout')
-  expect(flat!.plotExpr).toContain(
-    'pileup_layout(reads)',
-  )
+  expect(flat!.plotExpr).toContain('pileup_layout(reads)')
   expect(flat!.plotExpr).not.toContain('link_reads')
 
   // linkReads: group by read name into chains + draw gap connectors
   const [, linked] = alignmentsFragments({ ...base, linkReads: true })
   expect(linked!.helpers).toContain('link_reads')
   expect(linked!.helpers).not.toContain('pileup_layout')
-  expect(linked!.plotExpr).toContain(
-    'link_reads(reads)',
-  )
+  expect(linked!.plotExpr).toContain('link_reads(reads)')
   // connector segments drawn from linked$links, under the read rects
   expect(linked!.plotExpr).toContain('geom_segment(data = linked$links')
   expect(linked!.plotExpr.indexOf('geom_segment')).toBeLessThan(
@@ -294,6 +293,44 @@ test('linkReads (chain layout) suppresses the position sort', () => {
   expect(linked!.helpers).toContain('link_reads')
   expect(linked!.helpers).not.toContain('sorted_pileup_layout')
   expect(linked!.plotExpr).not.toContain('sort_pos')
+})
+
+test('the coverage panel applies "Filter by" too, like JBrowse', () => {
+  // JBrowse filters in the adapter, so the filtered read stream feeds the SNP
+  // coverage as well as the pileup: a filtered-out read must contribute to
+  // neither the grey depth nor the colored mismatch counts. The panel used to
+  // count every read, disagreeing with the pileup drawn right below it.
+  const [cov] = alignmentsFragments({
+    ...base,
+    filterFlagExclude: 1796,
+    filterReadName: 'read123',
+    filterTagFilters: [{ tag: 'HP', value: '1' }],
+  })
+  expect(cov!.helpers).toEqual(
+    expect.arrayContaining(['read_bam', 'read_filter', 'keep_rows']),
+  )
+  // the same filter constants the pileup emits
+  expect(cov!.plotExpr).toContain('flag_exclude <- 1796')
+  expect(cov!.plotExpr).toContain('read_name <- "read123"')
+  expect(cov!.plotExpr).toContain(
+    'tag_filters <- list(list(tag = "HP", value = "1"))',
+  )
+  // depth counts only surviving reads...
+  expect(cov!.plotExpr).toContain('keep <- reads$keep')
+  expect(cov!.plotExpr).toContain('bam_coverage(bam, chrom, start, end, keep)')
+  // ...and so do the stacked per-base mismatch counts
+  expect(cov!.plotExpr).toContain(
+    'mm <- keep_rows(bam_mismatches(bam, chrom, start, end), keep)',
+  )
+})
+
+test('the pileup fade denominator is the filtered depth', () => {
+  // the low-frequency fade divides by depth; that depth must be the depth of the
+  // reads actually drawn, or a filtered pileup fades against a phantom total
+  const [, pileup] = alignmentsFragments({ ...base, bpPerPx: 5 })
+  expect(pileup!.plotExpr).toContain(
+    'cov0 <- bam_coverage(bam, chrom, start, end, reads$keep)',
+  )
 })
 
 test('pileup applies the JBrowse "Filter by" via read_filter', () => {

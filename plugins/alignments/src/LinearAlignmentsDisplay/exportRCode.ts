@@ -180,6 +180,17 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
   const packages = ['Rsamtools', 'GenomicAlignments', 'ggplot2']
   const fragments: RTrackFragment[] = []
 
+  // JBrowse applies "Filter by" in the *adapter*, so the filtered read stream
+  // feeds every consumer — the pileup and the SNP coverage alike. Both panels
+  // therefore emit the same filter constants and read through read_filter.
+  const filterConsts = `  # JBrowse "Filter by": SAM flags + optional read-name / tag filters (edit freely)
+  flag_include <- ${p.filterFlagInclude ?? 0}
+  flag_exclude <- ${p.filterFlagExclude ?? 1540}
+  read_name <- ${p.filterReadName ? rStr(p.filterReadName) : 'NULL'}
+  tag_filters <- ${emitTagFilters(p.filterTagFilters ?? [])}`
+  const readFilteredReads = `reads <- read_filter(read_bam(bam, chrom, start, end), bam, chrom, start, end,
+      flag_include, flag_exclude, read_name, tag_filters)`
+
   if (p.showCoverage) {
     fragments.push({
       trackId: p.trackId,
@@ -187,6 +198,9 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
       packages,
       helpers: [
         ...cramHelpers,
+        'read_bam',
+        'read_filter',
+        'keep_rows',
         'bam_coverage',
         'bam_mismatches',
         'base_colors',
@@ -203,22 +217,30 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
       // each onto the cumulative axis, then draw one continuous SNP-coverage panel
       plotExpr: `{
 ${pathAlias}
+${filterConsts}
   parts <- list()
   for (ri in seq_len(nrow(regions))) {
     chrom <- regions$chrom[ri]; start <- regions$start[ri]; end <- regions$end[ri]
     shift <- regions$offset[ri] - regions$start[ri]
     ${bamAssign}
-    cov0 <- bam_coverage(bam, chrom, start, end)
-    ind <- interbase_indicators(bam_indels(bam, chrom, start, end),
-                                bam_clips(bam, chrom, start, end), cov0)
-    mm <- bam_mismatches(bam, chrom, start, end)
+    # count only reads that pass "Filter by", like JBrowse's SNP coverage: it
+    # reads the adapter's filtered stream, so a filtered-out read contributes to
+    # neither the grey depth nor the colored mismatch counts. keep is in
+    # readGAlignments order, so it subsets each overlay by its read_index.
+    ${readFilteredReads}
+    keep <- reads$keep
+    cov0 <- bam_coverage(bam, chrom, start, end, keep)
+    ind <- interbase_indicators(keep_rows(bam_indels(bam, chrom, start, end), keep),
+                                keep_rows(bam_clips(bam, chrom, start, end), keep), cov0)
+    mm <- keep_rows(bam_mismatches(bam, chrom, start, end), keep)
     snp <- NULL
     if (!is.null(mm) && nrow(mm)) {
       mm <- mm[mm$refpos >= start & mm$refpos < end, , drop = FALSE]
       if (nrow(mm)) {
         # per-base mismatch counts (colored) stacked over the grey total = SNP
-        # coverage. JBrowse's coverage panel shows every mismatch fraction; the
-        # low-frequency fade applies to the pileup ticks, not here.
+        # coverage, over the filtered reads only. JBrowse's coverage panel shows
+        # every mismatch fraction; the low-frequency fade applies to the pileup
+        # ticks, not here.
         snp <- aggregate(read_index ~ refpos + base, data = mm, FUN = length)
         names(snp)[names(snp) == "read_index"] <- "count"
         snp$refpos <- snp$refpos + shift; snp$.region <- ri
@@ -271,7 +293,9 @@ ${pathAlias}
     const loopReads = [
       needsMm ? `    mm <- bam_mismatches(bam, chrom, start, end)` : '',
       needsCov
-        ? `    cov0 <- bam_coverage(bam, chrom, start, end)
+        ? // the fade's denominator is the depth of the reads actually drawn, so
+          // it reads the same filtered coverage the coverage panel does
+          `    cov0 <- bam_coverage(bam, chrom, start, end, reads$keep)
     cov0$pos <- cov0$pos + shift; cov0$.region <- ri`
         : '',
       isMods
@@ -473,17 +497,7 @@ ${pathAlias}
       // read every region (renumbering read_index into the combined reads frame),
       // lay out over the combined reads, then draw the pileup + overlays
       plotExpr: `{
-${[
-  pathAlias,
-  `  # JBrowse "Filter by": SAM flags + optional read-name / tag filters (edit freely)
-  flag_include <- ${p.filterFlagInclude ?? 0}
-  flag_exclude <- ${p.filterFlagExclude ?? 1540}
-  read_name <- ${p.filterReadName ? rStr(p.filterReadName) : 'NULL'}
-  tag_filters <- ${emitTagFilters(p.filterTagFilters ?? [])}`,
-  consts,
-]
-  .filter(Boolean)
-  .join('\n')}
+${[pathAlias, filterConsts, consts].filter(Boolean).join('\n')}
   parts <- list(); racc <- 0L
   for (ri in seq_len(nrow(regions))) {
     chrom <- regions$chrom[ri]; start <- regions$start[ri]; end <- regions$end[ri]
@@ -498,8 +512,7 @@ ${[
       df[[col]] <- df[[col]] + shift; df$read_index <- df$read_index + racc; df$.region <- ri
       df
     }
-    reads <- read_filter(read_bam(bam, chrom, start, end), bam, chrom, start, end,
-      flag_include, flag_exclude, read_name, tag_filters)
+    ${readFilteredReads}
     n <- nrow(reads)
     reads$start <- pmin(pmax(reads$start, start), end) + shift
     reads$end   <- pmin(pmax(reads$end, start), end) + shift

@@ -148,7 +148,15 @@ low-frequency fade (`mismatch_fade_alpha`, zoom-gated on `bpPerPx>1` like
 pileup ticks), MM/ML modifications, per-base quality, soft/hard clips, CIGAR
 indels, linked reads, center-line **sort** (position/strand/base — base sorts a
 deletion over `sort_pos` as `*`, ahead of the ACGT bases, matching JBrowse), and
-**Filter by** (flags/read-name/tags). See the gallery README section per type.
+**Filter by** (flags/read-name/tags) — applied to the **coverage panel as well as
+the pileup**, because JBrowse filters in the *adapter*
+(`BamAdapter.getFeatures`), so one filtered read stream feeds every consumer.
+`read_filter`'s `keep` is a logical in `readGAlignments` order, so it subsets
+`bam_coverage(uri, chrom, start, end, keep)` and (via `keep_rows`) the coverage
+panel's mismatch/indel/clip overlays; the pileup's fade denominator reads the
+same filtered depth. `keep_rows` is **only** for the coverage panel — dropping
+rows from a pileup overlay would desync the `read_index` join (see Gotchas).
+See the gallery README section per type.
 
 Cross-implementation equivalence tests (`exportRRun.test.ts`) run the *actual*
 JS (`getInsertSizeStats`/`classifyInsertSize`,
@@ -163,10 +171,6 @@ guard that the two implementations stay semantically aligned.
   `softclip`/`hardclip` reproducible from `bam_clips` (clip length at `sort_pos`,
   longest first — JBrowse `desc=true`); `insertion` from `bam_indels`
   (`type=="I"`); `tag` needs a per-read tag read (like `read_filter`'s tag path).
-- **Coverage-panel filtering.** `read_filter` is applied to the pileup only; the
-  SNP coverage panel (`bam_coverage`/`bam_mismatches`) still counts all reads.
-  JBrowse's SNP coverage respects the filter. Would need flag/tag filtering inside
-  `bam_coverage` (currently `coverage(ga)` over everything).
 - **Bisulfite / 5mC-5hmC methylation.** `bam_modifications` handles MM/ML modBAM
   but not reference-dependent bisulfite C→T (no MM tag), the 5mC/5hmC
   winner-take-all collapse, or `shownModifications`/`hiddenModifications` per-type
