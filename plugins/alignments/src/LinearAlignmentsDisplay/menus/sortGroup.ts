@@ -8,6 +8,7 @@ import { isInterbaseType } from '../../shared/types.ts'
 
 import type { SortedBy } from '../../shared/types.ts'
 import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'
+import type { RadioMenuItem } from '@jbrowse/core/ui'
 
 const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
 const GroupByDialog = lazy(() => import('../dialogs/GroupByDialog.tsx'))
@@ -33,8 +34,21 @@ interface SortByModel {
 // need to spell out the mechanic). A base-pair sort can also come from a
 // context-menu "sort at position"; those interbase types keep "Base pair"
 // checked.
+//
+// Callers pick which modes apply to their data and the noun the labels read in
+// (like pickColorOptions for the color menu): a plain alignments pileup takes
+// every mode with noun 'read'; LGVSyntenyDisplay drops base pair / tag — PAF
+// blocks carry neither per-base sequence nor SAM tags — and reads 'feature'.
 
-type SortMode = 'position' | 'strand' | 'basePair' | 'tag' | 'length'
+export type SortMode = 'position' | 'strand' | 'basePair' | 'tag' | 'length'
+
+const ALL_SORT_MODES: SortMode[] = [
+  'position',
+  'length',
+  'strand',
+  'basePair',
+  'tag',
+]
 
 function getSortMode(model: SortByModel): SortMode {
   const type = model.sortedBy?.type
@@ -50,12 +64,71 @@ function getSortMode(model: SortByModel): SortMode {
 
 export function getSortByMenuItem(
   model: SortByModel,
-  opts?: { disabled?: boolean; disabledHelpText?: string },
+  opts?: {
+    noun?: string
+    modes?: SortMode[]
+    disabled?: boolean
+    disabledHelpText?: string
+  },
 ) {
+  const noun = opts?.noun ?? 'read'
   const mode = getSortMode(model)
   function setSort(type: string) {
     model.setLargeFeaturesFirst(false)
     model.setSortedBy(type)
+  }
+  const items: Record<SortMode, RadioMenuItem> = {
+    position: {
+      label: 'Start location',
+      type: 'radio',
+      checked: mode === 'position',
+      onClick: () => {
+        model.setLargeFeaturesFirst(false)
+        model.clearSortedBy()
+      },
+    },
+    length: {
+      label: `Longest ${noun}s first`,
+      type: 'radio',
+      checked: mode === 'length',
+      onClick: () => {
+        model.clearSortedBy()
+        model.setLargeFeaturesFirst(true)
+      },
+    },
+    strand: {
+      label: `${noun.charAt(0).toUpperCase()}${noun.slice(1)} strand`,
+      type: 'radio',
+      checked: mode === 'strand',
+      onClick: () => {
+        setSort('strand')
+      },
+    },
+    basePair: {
+      label: 'Base pair',
+      type: 'radio',
+      checked: mode === 'basePair',
+      onClick: () => {
+        setSort('basePair')
+      },
+    },
+    tag: {
+      label: 'Tag...',
+      type: 'radio',
+      checked: mode === 'tag',
+      onClick: () => {
+        model.setLargeFeaturesFirst(false)
+        getSession(model).queueDialog(handleClose => [
+          SortByTagDialog,
+          {
+            handleClose,
+            onSubmit: (tag: string) => {
+              model.setSortedBy('tag', tag)
+            },
+          },
+        ])
+      },
+    },
   }
   return {
     label: 'Sort by...',
@@ -63,59 +136,7 @@ export function getSortByMenuItem(
     icon: SwapVertIcon,
     disabled: opts?.disabled,
     disabledHelpText: opts?.disabledHelpText,
-    subMenu: [
-      {
-        label: 'Start location',
-        type: 'radio' as const,
-        checked: mode === 'position',
-        onClick: () => {
-          model.setLargeFeaturesFirst(false)
-          model.clearSortedBy()
-        },
-      },
-      {
-        label: 'Longest reads first',
-        type: 'radio' as const,
-        checked: mode === 'length',
-        onClick: () => {
-          model.clearSortedBy()
-          model.setLargeFeaturesFirst(true)
-        },
-      },
-      {
-        label: 'Read strand',
-        type: 'radio' as const,
-        checked: mode === 'strand',
-        onClick: () => {
-          setSort('strand')
-        },
-      },
-      {
-        label: 'Base pair',
-        type: 'radio' as const,
-        checked: mode === 'basePair',
-        onClick: () => {
-          setSort('basePair')
-        },
-      },
-      {
-        label: 'Tag...',
-        type: 'radio' as const,
-        checked: mode === 'tag',
-        onClick: () => {
-          model.setLargeFeaturesFirst(false)
-          getSession(model).queueDialog(handleClose => [
-            SortByTagDialog,
-            {
-              handleClose,
-              onSubmit: (tag: string) => {
-                model.setSortedBy('tag', tag)
-              },
-            },
-          ])
-        },
-      },
-    ],
+    subMenu: (opts?.modes ?? ALL_SORT_MODES).map(m => items[m]),
   }
 }
 

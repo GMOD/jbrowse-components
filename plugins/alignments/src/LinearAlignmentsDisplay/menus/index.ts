@@ -10,6 +10,7 @@ export {
 } from './featureSize.ts'
 export { getFiltersMenuItem } from './filters.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
-export { getReadsMenuItem } from './reads.ts'
+export { getMaxHeightMenuItem, getReadsMenuItem } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'
 export { getGroupByMenuItem, getSortByMenuItem } from './sortGroup.ts'
+export type { SortMode } from './sortGroup.ts'

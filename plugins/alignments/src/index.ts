@@ -39,6 +39,10 @@ export {
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
+  getMaxHeightMenuItem,
+  getSortByMenuItem,
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export { pickColorOptions } from './shared/colorSchemes.ts'
+export { pickGroupByOptions } from './shared/groupFeatures.ts'
+export type { GroupByType } from './shared/types.ts'
 export { CoverageTooltipContents } from './LinearAlignmentsDisplay/components/AlignmentsTooltip.tsx'

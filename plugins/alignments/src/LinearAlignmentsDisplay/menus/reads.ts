@@ -13,7 +13,27 @@ const SetMaxHeightDialog = lazy(
   () => import('../dialogs/SetMaxHeightDialog.tsx'),
 )
 
-interface ReadsModel {
+interface MaxHeightModel {
+  maxHeight: number
+  setMaxHeight: (height?: number) => void
+}
+
+// The pileup row cap is a plain layout limit with no read-specific meaning, so
+// it's shared with the synteny display's own "Show..." menu rather than
+// re-spelled there (the dialog stays lazy behind this helper).
+export function getMaxHeightMenuItem(model: MaxHeightModel) {
+  return {
+    label: 'Set max layout height...',
+    onClick: () => {
+      getSession(model).queueDialog(handleClose => [
+        SetMaxHeightDialog,
+        { model, handleClose },
+      ])
+    },
+  }
+}
+
+interface ReadsModel extends MaxHeightModel {
   showLegend: boolean
   setShowLegend: (show: boolean | undefined) => void
   showCoverage: boolean
@@ -36,8 +56,6 @@ interface ReadsModel {
   setDrawSingletons: (v: boolean) => void
   showOnlySplitAlignments: boolean
   setShowOnlySplitAlignments: (v: boolean) => void
-  maxHeight: number
-  setMaxHeight: (height?: number) => void
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
@@ -130,15 +148,7 @@ export function getReadsMenuItem(model: ReadsModel) {
         },
       ),
       { type: 'divider' as const },
-      {
-        label: 'Set max layout height...',
-        onClick: () => {
-          getSession(model).queueDialog(handleClose => [
-            SetMaxHeightDialog,
-            { model, handleClose },
-          ])
-        },
-      },
+      getMaxHeightMenuItem(model),
     ] satisfies MenuItem[],
   }
 }

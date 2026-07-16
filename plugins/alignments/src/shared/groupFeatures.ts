@@ -37,8 +37,12 @@ interface GroupKey {
   label: string
 }
 
+// Keyed off `strand`, not SAM_FLAG_REVERSE: BAM/CRAM features derive `strand`
+// from that very flag, so reads group identically, while synteny (PAF) features
+// carry a real `strand` and no flags at all — reading the flag collapsed every
+// synteny block into one "Forward strand" section.
 function strandKey(feature: Feature): GroupKey {
-  return getFlags(feature) & SAM_FLAG_REVERSE
+  return feature.get('strand') === -1
     ? { key: '-', label: 'Reverse strand' }
     : { key: '+', label: 'Forward strand' }
 }
@@ -296,6 +300,14 @@ export const GROUP_BY_DIMENSIONS: Record<GroupByType, GroupByDimension> = {
 
 export function isChainGroupableType(type: GroupByType | undefined) {
   return type !== undefined && GROUP_BY_DIMENSIONS[type].chainConsistent
+}
+
+// Curated subset of dimensions, in the given order, with labels sourced from the
+// registry — for displays (e.g. synteny) that offer a handful of dimensions as
+// plain radios instead of the general Group-by dialog, and shouldn't re-spell
+// the labels at the call site. Mirrors pickColorOptions.
+export function pickGroupByOptions(...types: GroupByType[]) {
+  return types.map(type => ({ type, label: GROUP_BY_DIMENSIONS[type].label }))
 }
 
 // Chain-aware partition for linked-reads/chain mode: reads sharing a QNAME form

@@ -27,15 +27,27 @@ test('ungrouped is a single section holding every read', () => {
   expect(groups[0]!.features).toHaveLength(2)
 })
 
-test('strand grouping splits forward/reverse by the reverse flag', () => {
+// BAM/CRAM features expose `strand` derived from SAM_FLAG_REVERSE, so the two
+// always agree on reads; the fixtures carry both, as real adapters do.
+test('strand grouping splits forward/reverse reads', () => {
   const features = [
-    feat('a', { flags: 0 }),
-    feat('b', { flags: 16 }),
-    feat('c', { flags: 0 }),
+    feat('a', { flags: 0, strand: 1 }),
+    feat('b', { flags: 16, strand: -1 }),
+    feat('c', { flags: 0, strand: 1 }),
   ]
   const groups = partitionFeatures(features, { type: 'strand' })
   expect(keys(groups)).toEqual(['+', '-'])
   expect(groups[0]!.features.map(f => f.id())).toEqual(['a', 'c'])
+  expect(groups[1]!.features.map(f => f.id())).toEqual(['b'])
+})
+
+// Synteny (PAF) features carry a real strand and no SAM flags at all. Keying off
+// the reverse flag put every block in '+', silently collapsing the grouping.
+test('strand grouping splits synteny features, which have no SAM flags', () => {
+  const features = [feat('a', { strand: 1 }), feat('b', { strand: -1 })]
+  const groups = partitionFeatures(features, { type: 'strand' })
+  expect(keys(groups)).toEqual(['+', '-'])
+  expect(groups[0]!.features.map(f => f.id())).toEqual(['a'])
   expect(groups[1]!.features.map(f => f.id())).toEqual(['b'])
 })
 

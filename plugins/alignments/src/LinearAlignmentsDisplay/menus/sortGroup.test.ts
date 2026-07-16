@@ -92,6 +92,33 @@ describe('sort menu radio selection', () => {
   })
 })
 
+// LGVSyntenyDisplay passes a curated subset — PAF blocks have no per-base
+// sequence to sort a column by and no SAM tags — and its own noun.
+describe('curated modes', () => {
+  const opts = {
+    noun: 'feature',
+    modes: ['position', 'length', 'strand'] as const,
+  }
+
+  test('offers only the requested modes, in the requested order', () => {
+    expect(
+      getSortByMenuItem(makeModel(), { ...opts, modes: [...opts.modes] }).subMenu.map(
+        i => i.label,
+      ),
+    ).toEqual(['Start location', 'Longest features first', 'Feature strand'])
+  })
+
+  test('still tracks the checked mode', () => {
+    const item = getSortByMenuItem(makeModel({ largeFeaturesFirst: true }), {
+      ...opts,
+      modes: [...opts.modes],
+    })
+    expect(item.subMenu.filter(i => i.checked).map(i => i.label)).toEqual([
+      'Longest features first',
+    ])
+  })
+})
+
 describe('sort menu keeps the two ordering slots mutually exclusive', () => {
   test('Start location clears both slots (it is the reset)', () => {
     const model = makeModel({ largeFeaturesFirst: true })

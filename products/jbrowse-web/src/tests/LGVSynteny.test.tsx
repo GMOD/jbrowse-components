@@ -1,5 +1,5 @@
 import { getEnv } from '@jbrowse/core/util'
-import { fireEvent, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
 import {
@@ -118,5 +118,56 @@ test('nav to synteny from right click, with launch connection plugin', async () 
       expect(v?.views[1]?.coarseVisibleLocStrings).toBe('ctgA:27,499..29,810')
     }, delay)
     expectCanvasMatch(await findByTestId('synteny_canvas_done', ...opts))
+  })
+}, 60000)
+
+// The track menu is all submenus, so every setting costs one hover past the
+// first click. These drive the two that used to be bare top-level checkboxes,
+// through the real menu, and assert the display state they land on.
+test('group by mate assembly from the Group by submenu', async () => {
+  await mockConsoleWarn(async () => {
+    const user = userEvent.setup()
+    const { view } = await createView()
+
+    await view.navToLocString('ctgA:30,222..33,669')
+    await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
+    await screen.findByTestId('pileup-display-done', ...opts)
+
+    await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+    await user.click(await screen.findByText('Group by...'))
+    await user.click(await screen.findByText('Mate assembly'))
+
+    const display = view.tracks[0]!.displays[0]!
+    await waitFor(() => {
+      expect(display.groupBy).toEqual({ type: 'mateAssembly' })
+    }, delay)
+  })
+}, 60000)
+
+test('sort by longest features first from the Sort by submenu', async () => {
+  await mockConsoleWarn(async () => {
+    const user = userEvent.setup()
+    const { view } = await createView()
+
+    await view.navToLocString('ctgA:30,222..33,669')
+    await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
+    await screen.findByTestId('pileup-display-done', ...opts)
+
+    const display = view.tracks[0]!.displays[0]!
+    // largeFeaturesFirst is the synteny config default, so flip it off through
+    // "Start location" first and prove the radio brings it back.
+    await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+    await user.click(await screen.findByText('Sort by...'))
+    await user.click(await screen.findByText('Start location'))
+    await waitFor(() => {
+      expect(display.largeFeaturesFirst).toBe(false)
+    }, delay)
+
+    await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+    await user.click(await screen.findByText('Sort by...'))
+    await user.click(await screen.findByText('Longest features first'))
+    await waitFor(() => {
+      expect(display.largeFeaturesFirst).toBe(true)
+    }, delay)
   })
 }, 60000)

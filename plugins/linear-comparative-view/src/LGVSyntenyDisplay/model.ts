@@ -11,20 +11,25 @@ import {
   getColorByMenuItem,
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
+  getSortByMenuItem,
   linearAlignmentsDisplayStateModelFactory,
   pickColorOptions,
 } from '@jbrowse/plugin-alignments'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import {
   canLaunchSyntenyForMate,
   findVisibleBlockForFeature,
   getMate,
 } from './components/util.ts'
+import {
+  getSyntenyGroupByMenuItem,
+  getSyntenyShowMenuItem,
+} from './menus.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LaunchSyntenyViewDialog = lazy(
@@ -166,10 +171,13 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         /**
          * #method
          */
+        // Every entry is a submenu, in the same order as the alignments display's
+        // track menu (color, sort, filter, group, show, height) — the two share a
+        // state model and a component, so the menus should read the same way. The
+        // per-setting curation (which color schemes, which sort modes, which
+        // layers) is what makes this synteny's menu rather than a copy.
         trackMenuItems() {
-          const groupedByMate = self.groupBy?.type === 'mateAssembly'
           return [
-            getFeatureHeightMenuItem(self, 'feature'),
             getColorByMenuItem(self, {
               colorOptions: pickColorOptions(
                 'normal',
@@ -177,35 +185,19 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                 'mappingQuality',
               ),
             }),
+            // No base pair / tag: a PAF block has no per-base sequence to sort a
+            // column by, and no SAM tags. 'Longest features first' is the
+            // largeFeaturesFirst layout flag, folded in as a peer radio because
+            // it competes with a real sort for the same ordering.
+            getSortByMenuItem(self, {
+              noun: 'feature',
+              modes: ['position', 'length', 'strand'],
+            }),
             getFiltersMenuItem(self),
-            {
-              label: 'Show coverage',
-              type: 'checkbox' as const,
-              checked: self.showCoverage,
-              onClick: () => {
-                self.setShowCoverage(!self.showCoverage)
-              },
-            },
-            {
-              label: 'Lay out large features first',
-              type: 'checkbox' as const,
-              checked: self.largeFeaturesFirst,
-              onClick: () => {
-                self.setLargeFeaturesFirst(!self.largeFeaturesFirst)
-              },
-            },
-            {
-              label: 'Group by mate sample',
-              type: 'checkbox' as const,
-              checked: groupedByMate,
-              icon: WorkspacesIcon,
-              onClick: () => {
-                self.setGroupBy(
-                  groupedByMate ? undefined : { type: 'mateAssembly' },
-                )
-              },
-            },
-          ]
+            getSyntenyGroupByMenuItem(self),
+            getSyntenyShowMenuItem(self),
+            getFeatureHeightMenuItem(self, 'feature'),
+          ] satisfies MenuItem[]
         },
       }))
   )
