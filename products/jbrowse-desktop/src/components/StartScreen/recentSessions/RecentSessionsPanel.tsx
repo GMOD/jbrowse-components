@@ -1,14 +1,18 @@
 import { useState } from 'react'
 
-import { ErrorMessage } from '@jbrowse/core/ui'
+import { CascadingMenuButton, ErrorMessage } from '@jbrowse/core/ui'
 import { mutate, useFetch, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import DeleteIcon from '@mui/icons-material/Delete'
+import OpenIcon from '@mui/icons-material/FolderOpen'
+import LinkIcon from '@mui/icons-material/Link'
 import ListIcon from '@mui/icons-material/List'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
 import ViewComfyIcon from '@mui/icons-material/ViewComfy'
 import {
+  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -24,10 +28,10 @@ import {
 import RecentSessionsCards from './RecentSessionsCards.tsx'
 import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
 import { useNotifyError } from '../../NotifyContext.ts'
-import OpenLocalFileButton from '../OpenLocalFileButton.tsx'
+import OpenLinkDialog from '../../OpenLinkDialog.tsx'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
-import { loadPluginManager } from '../util.tsx'
+import { loadPluginManager, openSpecLink } from '../util.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -40,6 +44,13 @@ const useStyles = makeStyles()({
     display: 'flex',
     alignItems: 'center',
     gap: 10,
+    // a narrow panel used to crush the row's items below their content width,
+    // clipping the open button's label; let it spill onto a second line instead
+    flexWrap: 'wrap',
+  },
+  openButton: {
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
   },
 })
 
@@ -96,6 +107,7 @@ export default function RecentSessionPanel({
   const [selectedSessions, setSelectedSessions] = useState<RecentSessions>([])
   const [sessionsToDelete, setSessionsToDelete] = useState<RecentSessions>()
   const [moreMenuAnchor, setMoreMenuAnchor] = useState<HTMLElement>()
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [now] = useState(() => Date.now())
   const [showAutosaves, setShowAutosaves] = useLocalStorage(
     'showAutosaves',
@@ -137,6 +149,17 @@ export default function RecentSessionPanel({
 
   const refreshSessions = () => {
     mutateSessions().catch(console.error)
+  }
+
+  // the native picker is the same one File -> Open uses, so the start screen and
+  // the in-session menu share its filters and default directory
+  const promptOpenFile = async () => {
+    const path = (await ipcRenderer.invoke('promptOpenFile')) as
+      | string
+      | undefined
+    if (path) {
+      await launch(path)
+    }
   }
 
   async function addToQuickstartList(arg: RecentSessionData[]) {
@@ -200,6 +223,16 @@ export default function RecentSessionPanel({
           onClose={() => {
             setSessionsToDelete(undefined)
             refreshSessions()
+          }}
+        />
+      ) : null}
+      {linkDialogOpen ? (
+        <OpenLinkDialog
+          onSubmit={async link => {
+            setPluginManager(await openSpecLink(link))
+          }}
+          onClose={() => {
+            setLinkDialogOpen(false)
           }}
         />
       ) : null}
@@ -267,17 +300,33 @@ export default function RecentSessionPanel({
           }
         />
 
-        <OpenLocalFileButton
+        <CascadingMenuButton
+          ButtonComponent={Button}
+          className={classes.openButton}
           variant="contained"
-          accept=".jbrowse,.json,application/json"
-          onPick={path => {
-            launch(path).catch((e: unknown) => {
-              console.error(e)
-            })
-          }}
+          endIcon={<ArrowDropDownIcon />}
+          menuItems={[
+            {
+              label: 'Open .jbrowse or config.json file...',
+              icon: OpenIcon,
+              onClick: () => {
+                promptOpenFile().catch((e: unknown) => {
+                  console.error(e)
+                  notifyError(e)
+                })
+              },
+            },
+            {
+              label: 'Open JBrowse Web link...',
+              icon: LinkIcon,
+              onClick: () => {
+                setLinkDialogOpen(true)
+              },
+            },
+          ]}
         >
-          Open .jbrowse or config.json file
-        </OpenLocalFileButton>
+          Open .jbrowse or config.json or link
+        </CascadingMenuButton>
         <Tooltip title="More actions">
           <IconButton
             onClick={event => {
