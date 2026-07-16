@@ -113,7 +113,6 @@ haven't, see the
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "broad_chromhmm_multirow_hg19-LinearMultiRowFeatureDisplay",
       "partitionField": "cellType",
-      "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
       "rowOrder": [
         "GM12878",
         "H1-hESC",
@@ -139,11 +138,12 @@ The fields that drive the display:
 - `partitionField` - the feature attribute to split rows by. Every distinct
   `cellType` value becomes its own labeled sub-row, so a 9-cell-type file draws
   as 9 stacked rows.
-- `color` - a [jexl](/docs/config_guides/jexl) callback. Here it turns the BED
-  `itemRgb` triple (e.g. `255,0,0`) into a CSS `rgb(255,0,0)`, so each feature
-  is painted with its ChromHMM state color straight from the file.
 - `rowOrder` - pins the sub-rows to a chosen order. Omit it and rows fall back
   to the order the partition values are first seen.
+
+Note there's no color setting: a BED carrying `itemRgb` is painted with it
+automatically, so each feature gets its ChromHMM state color straight from the
+file. Set the `color` slot only to override that.
 
 **Using JBrowse Desktop?** These steps work unchanged. Desktop opens
 `wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point
@@ -173,7 +173,7 @@ state** categories.
 - [Single-cell ATAC pseudobulk tracks](/docs/tutorials/scatac_pseudobulk) - the
   continuous-signal analog of this one-row-per-group pattern, using MultiWiggle
   instead of discrete features
-- [jexl](/docs/config_guides/jexl) - the color callback syntax used to map
-  itemRgb to a CSS color
+- [jexl](/docs/config_guides/jexl) - the callback syntax for coloring features
+  off an attribute other than `itemRgb`
 - [Configuring tracks](/docs/config_guides/tracks) - general
   FeatureTrack/BedTabixAdapter config referenced above

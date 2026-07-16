@@ -118,7 +118,6 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
-      "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
       "showTree": true
     }
   ]
@@ -127,9 +126,8 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
 
 - `partitionField: "sample"` splits the one file into one labeled row per
   strain.
-- `color` is a [jexl](/docs/config_guides/jexl) callback turning the BED
-  `itemRgb` triple (e.g. `65,105,225`) into a CSS `rgb(...)`, so every block is
-  painted with its genotype color straight from the file.
+- No color setting is needed: a BED carrying `itemRgb` is painted with it
+  automatically, so every block gets its genotype color straight from the file.
 - `showTree: true` adds a clustering sidebar that groups strains by genotype
   similarity, and related substrains and F1s fall next to each other.
 - `disableGeneHeuristic: true` keeps the BED adapter from reading each block as
