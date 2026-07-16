@@ -38,10 +38,11 @@
     "release-electron:win": "pnpm package:win && node scripts/publish.ts --win --publish",
     "test:e2e": "node test/e2e.ts",
     "test:e2e:headless": "xvfb-run --auto-servernum node test/e2e.ts --headless",
+    "test:e2e:headless:win": "node test/e2e.ts --headless",
     "test:e2e:build": "pnpm package:linux:no-installer && pnpm test:e2e",
     "test:e2e:ci": "pnpm package:linux:no-installer && pnpm test:e2e:headless",
     "test:e2e:build:win": "pnpm package:win:no-installer && pnpm test:e2e",
-    "test:e2e:ci:win": "pnpm package:win:no-installer && pnpm test:e2e:headless",
+    "test:e2e:ci:win": "pnpm package:win:no-installer && pnpm test:e2e:headless:win",
     "screenshots": "node test/screenshots.ts",
     "screenshots:headless": "xvfb-run --auto-servernum node test/screenshots.ts --headless",
     "screenshots:build": "pnpm package:linux:no-installer && pnpm screenshots:headless"
@@ -108,7 +109,7 @@
     "@types/selenium-webdriver": "^4.35.6",
     "cross-env": "^10.1.0",
     "electron": "^43.1.1",
-    "electron-chromedriver": "^43.1.0",
+    "electron-chromedriver": "^43.1.1",
     "esbuild": "^0.28.1",
     "selenium-webdriver": "^4.46.0"
   },
