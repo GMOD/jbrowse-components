@@ -134,9 +134,9 @@ describe('makeChromSizesAssembly', () => {
 describe('makeMultiWiggleTrackConfig', () => {
   const asm = makeFastaAssembly('hg38.fa', undefined, undefined, 'rs')
 
-  // A plain URL array is the `bigWigs` shorthand — one row per file, name
-  // derived from the filename by the adapter.
-  test('string sources → bigWigs shorthand', () => {
+  // A plain string array becomes one BigWigAdapter subadapter per file, the
+  // location run through makeLocation so a URL is a `uri`...
+  test('URL string sources → subadapters with uri locations', () => {
     const t = makeMultiWiggleTrackConfig(
       ['https://e.com/a.bw', 'https://e.com/b.bw'],
       'sources.json',
@@ -147,7 +147,23 @@ describe('makeMultiWiggleTrackConfig', () => {
     expect(t.assemblyNames).toEqual([asm.name])
     expect(t.adapter).toEqual({
       type: 'MultiWiggleAdapter',
-      bigWigs: ['https://e.com/a.bw', 'https://e.com/b.bw'],
+      subadapters: [
+        { type: 'BigWigAdapter', bigWigLocation: { uri: 'https://e.com/a.bw' } },
+        { type: 'BigWigAdapter', bigWigLocation: { uri: 'https://e.com/b.bw' } },
+      ],
+    })
+    expect(t.adapter?.bigWigs).toBeUndefined()
+  })
+
+  // ...and a LOCAL path is a `localPath` (the `bigWigs` shorthand could only ever
+  // make a `uri`, so a local file used to 404 — see makeMultiWiggleTrackConfig).
+  test('local path string sources → subadapters with localPath locations', () => {
+    const t = makeMultiWiggleTrackConfig(['data/a.bw'], 'a.bw', asm)
+    expect(t.adapter).toEqual({
+      type: 'MultiWiggleAdapter',
+      subadapters: [
+        { type: 'BigWigAdapter', bigWigLocation: { localPath: 'data/a.bw' } },
+      ],
     })
   })
 

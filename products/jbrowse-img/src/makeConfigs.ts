@@ -237,11 +237,15 @@ export function makeChromSizesAssembly(
   )
 }
 
-// Build a MultiQuantitativeTrack from a `--multiwig` sources list: a plain array
-// of BigWig URL strings maps to the adapter's `bigWigs` shorthand (subtrack name
-// derived from the filename), while an array of subadapter objects (each a
-// BigWigAdapter config carrying its own name/color/group) maps to `subadapters`,
-// so a curated multi-sample track keeps its per-row labels, colors, and grouping.
+// Build a MultiQuantitativeTrack from a `--multiwig` sources list. A plain array
+// of BigWig path/URL strings becomes one BigWigAdapter subadapter each, with the
+// location run through makeLocation so a LOCAL path works as well as a URL — the
+// adapter's own `bigWigs` shorthand can only express URIs, so a bare local path
+// would 404 there. The subtrack name still derives from the filename (the
+// adapter falls back to the bigWigLocation basename when a subadapter carries no
+// explicit name), matching the shorthand. An array of subadapter objects (each a
+// BigWigAdapter config carrying its own name/color/group) passes through as
+// `subadapters`, so a curated multi-sample track keeps its per-row metadata.
 export function makeMultiWiggleTrackConfig(
   sources: unknown[],
   file: string,
@@ -249,6 +253,12 @@ export function makeMultiWiggleTrackConfig(
   name?: string,
 ): Track {
   const allStrings = sources.every(s => typeof s === 'string')
+  const subadapters = allStrings
+    ? sources.map(s => ({
+        type: 'BigWigAdapter',
+        bigWigLocation: makeLocation(s),
+      }))
+    : sources
   return {
     type: 'MultiQuantitativeTrack',
     trackId: path.basename(file),
@@ -256,7 +266,7 @@ export function makeMultiWiggleTrackConfig(
     assemblyNames: [assembly.name],
     adapter: {
       type: 'MultiWiggleAdapter',
-      ...(allStrings ? { bigWigs: sources } : { subadapters: sources }),
+      subadapters,
     },
   }
 }
