@@ -1,4 +1,9 @@
-import { findFileHandleIds, getFileName, getTrackName } from './tracks.ts'
+import {
+  findFileHandleIds,
+  getFileName,
+  getTrackName,
+  stripFileExtension,
+} from './tracks.ts'
 
 describe('findFileHandleIds', () => {
   test('finds FileHandleLocation in flat object', () => {
@@ -240,5 +245,36 @@ describe('getTrackName', () => {
   test('uses generic reference sequence label when no assembly matches', () => {
     const conf = { type: 'ReferenceSequenceTrack', trackId: 'hg38-ref' }
     expect(getTrackName(conf, session)).toBe('Reference sequence')
+  })
+})
+
+describe('stripFileExtension', () => {
+  test('drops a plain extension', () => {
+    expect(stripFileExtension('volvox-sorted.bam')).toBe('volvox-sorted')
+  })
+
+  test('drops the format extension along with a compression suffix', () => {
+    expect(stripFileExtension('volvox.vcf.gz')).toBe('volvox')
+    expect(stripFileExtension('volvox.gff3.bgz')).toBe('volvox')
+  })
+
+  test('keeps interior dots that are part of the name', () => {
+    expect(stripFileExtension('volvox.sorted.bam')).toBe('volvox.sorted')
+  })
+
+  test('is case insensitive about the compression suffix', () => {
+    expect(stripFileExtension('volvox.VCF.GZ')).toBe('volvox')
+  })
+
+  test('leaves a name with no extension alone', () => {
+    expect(stripFileExtension('volvox')).toBe('volvox')
+  })
+
+  test('leaves a dotfile alone', () => {
+    expect(stripFileExtension('.bam')).toBe('.bam')
+  })
+
+  test('handles a bare compression suffix', () => {
+    expect(stripFileExtension('volvox.gz')).toBe('volvox')
   })
 })

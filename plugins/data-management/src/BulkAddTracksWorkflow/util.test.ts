@@ -1,5 +1,6 @@
-import { locationWarnings, parseUrlList } from './util.ts'
+import { locationWarnings, parseUrlList, resolveTrackName } from './util.ts'
 
+import type { TrackConfRow } from './buildConfigs.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 function uri(s: string): FileLocation {
@@ -43,4 +44,30 @@ test('warns about relative urls but not absolute or ftp ones', () => {
     uri('ftp://a.com/z.bam'),
   ])
   expect(warnings).toContainEqual(expect.stringContaining('1 URL is relative'))
+})
+
+describe('resolveTrackName', () => {
+  const row = { id: 'r1', name: 'volvox.vcf.gz' } as TrackConfRow
+
+  test('keeps the full filename when not stripping', () => {
+    expect(
+      resolveTrackName({ row, customNames: {}, stripExtensions: false }),
+    ).toBe('volvox.vcf.gz')
+  })
+
+  test('strips the extension when toggled on', () => {
+    expect(
+      resolveTrackName({ row, customNames: {}, stripExtensions: true }),
+    ).toBe('volvox')
+  })
+
+  test('an explicit rename wins over the strip toggle', () => {
+    expect(
+      resolveTrackName({
+        row,
+        customNames: { r1: 'My variants' },
+        stripExtensions: true,
+      }),
+    ).toBe('My variants')
+  })
 })

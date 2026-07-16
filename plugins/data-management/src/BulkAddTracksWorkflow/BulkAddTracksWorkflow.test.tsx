@@ -155,3 +155,29 @@ test('notifies when submitted tracks are for an assembly not open in the view', 
     'warning',
   )
 })
+
+test('the strip-extensions checkbox renames every row at once', () => {
+  const { model } = getSession()
+  const { getByLabelText, getByRole, getByText } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  pasteUrls(getByLabelText, 'https://x.com/a.vcf.gz\nhttps://x.com/b.bam')
+  expect(getByText('a.vcf.gz')).toBeTruthy()
+
+  fireEvent.click(getByRole('checkbox', { name: /Strip file extensions/ }))
+
+  expect(getByText('a')).toBeTruthy()
+  expect(getByText('b')).toBeTruthy()
+})
+
+test('stripped names are what actually get added', () => {
+  const { session, model } = getSession()
+  const { getByLabelText, getByRole } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  pasteUrls(getByLabelText, 'https://x.com/a.vcf.gz')
+  fireEvent.click(getByRole('checkbox', { name: /Strip file extensions/ }))
+  fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
+
+  expect(readConfObject(session.sessionTracks.at(-1), 'name')).toBe('a')
+})

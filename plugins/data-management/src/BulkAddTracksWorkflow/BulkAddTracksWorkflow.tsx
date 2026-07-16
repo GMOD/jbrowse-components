@@ -3,7 +3,13 @@ import { useState } from 'react'
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Link, Paper, Typography } from '@mui/material'
+import {
+  Checkbox,
+  FormControlLabel,
+  Link,
+  Paper,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LocationInput from './LocationInput.tsx'
@@ -43,6 +49,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   // one, and setAssembly is reactive via observer.
   const assembly = model.assembly ?? ''
   const [customNames, setCustomNames] = useState<Record<string, string>>({})
+  const [stripExtensions, setStripExtensions] = useState(false)
   const [timestamp] = useState(() => Date.now())
 
   const { pairs, rows, okRows, skippedCount, orphanIndexCount, warnings } =
@@ -97,12 +104,26 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
       </div>
 
       {rows.length > 0 ? (
-        <TrackPreviewTable
-          rows={rows}
-          customNames={customNames}
-          setCustomNames={setCustomNames}
-          onRemove={removeRow}
-        />
+        <>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={stripExtensions}
+                onChange={event => {
+                  setStripExtensions(event.target.checked)
+                }}
+              />
+            }
+            label="Strip file extensions from track names"
+          />
+          <TrackPreviewTable
+            rows={rows}
+            customNames={customNames}
+            setCustomNames={setCustomNames}
+            stripExtensions={stripExtensions}
+            onRemove={removeRow}
+          />
+        </>
       ) : null}
 
       <PreviewMessages
@@ -115,6 +136,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
         model={model}
         okRows={okRows}
         customNames={customNames}
+        stripExtensions={stripExtensions}
         assembly={assembly}
       />
     </Paper>

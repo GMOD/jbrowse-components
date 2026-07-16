@@ -335,6 +335,22 @@ export function getFileName(track: FileLocation) {
   }
 }
 
+const COMPRESSION_SUFFIXES = ['.gz', '.bgz', '.bz2', '.zst']
+
+/**
+ * Drop the format extension from a filename, plus any compression suffix, so
+ * `volvox.vcf.gz` becomes `volvox` rather than `volvox.vcf`. Names with no
+ * extension, and dotfiles, are returned unchanged.
+ */
+export function stripFileExtension(name: string) {
+  const lower = name.toLowerCase()
+  const base = COMPRESSION_SUFFIXES.some(suffix => lower.endsWith(suffix))
+    ? name.slice(0, name.lastIndexOf('.'))
+    : name
+  const dot = base.lastIndexOf('.')
+  return dot > 0 ? base.slice(0, dot) : base
+}
+
 export function guessAdapter(
   file: FileLocation,
   index: FileLocation | undefined,

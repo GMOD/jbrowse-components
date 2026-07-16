@@ -4,6 +4,7 @@ import {
   isSessionWithAddTracks,
   isUriLocation,
 } from '@jbrowse/core/util'
+import { stripFileExtension } from '@jbrowse/core/util/tracks'
 
 import {
   isBlockedHttpUrl,
@@ -16,6 +17,26 @@ import type { AddTrackModel } from '../AddTrackWidget/model.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export type InputMode = 'remote' | 'local'
+
+/**
+ * The name a row is added under. An explicit user edit always wins; otherwise
+ * the strip-extensions toggle decides. Shared by the preview table and submit
+ * so what the table shows is what gets added.
+ */
+export function resolveTrackName({
+  row,
+  customNames,
+  stripExtensions,
+}: {
+  row: TrackConfRow
+  customNames: Record<string, string>
+  stripExtensions: boolean
+}) {
+  return (
+    customNames[row.id] ??
+    (stripExtensions ? stripFileExtension(row.name) : row.name)
+  )
+}
 
 /** Pick the singular or plural wording for a count (1 is singular). */
 export function plural(count: number, singular: string, plural: string) {
@@ -71,18 +92,23 @@ export function submitBulkTracks({
   model,
   rows,
   customNames,
+  stripExtensions,
   assembly,
 }: {
   model: AddTrackModel
   rows: TrackConfRow[]
   customNames: Record<string, string>
+  stripExtensions: boolean
   assembly: string
 }) {
   const session = getSession(model)
   if (isSessionWithAddTracks(session)) {
     const showInView = model.view?.assemblyNames?.includes(assembly)
     for (const row of rows) {
-      const conf = { ...row.conf, name: customNames[row.id] ?? row.name }
+      const conf = {
+        ...row.conf,
+        name: resolveTrackName({ row, customNames, stripExtensions }),
+      }
       session.addTrackConf(conf)
       if (showInView) {
         model.view?.showTrack(conf.trackId)

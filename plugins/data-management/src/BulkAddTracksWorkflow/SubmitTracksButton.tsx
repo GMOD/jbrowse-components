@@ -19,11 +19,13 @@ const SubmitTracksButton = observer(function SubmitTracksButton({
   model,
   okRows,
   customNames,
+  stripExtensions,
   assembly,
 }: {
   model: AddTrackModel
   okRows: TrackConfRow[]
   customNames: Record<string, string>
+  stripExtensions: boolean
   assembly: string
 }) {
   const { classes } = useStyles()
@@ -35,7 +37,13 @@ const SubmitTracksButton = observer(function SubmitTracksButton({
       disabled={okRows.length === 0 || !assembly}
       onClick={() => {
         try {
-          submitBulkTracks({ model, rows: okRows, customNames, assembly })
+          submitBulkTracks({
+            model,
+            rows: okRows,
+            customNames,
+            stripExtensions,
+            assembly,
+          })
         } catch (e) {
           getSession(model).notifyError(`${e}`, e)
         }
