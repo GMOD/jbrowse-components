@@ -9,8 +9,8 @@ import {
 } from '../helpers.ts'
 import { dualSnapshot, pageSnapshot } from '../snapshot.ts'
 
-import type { Page } from 'puppeteer'
 import type { TestSuite } from '../types.ts'
+import type { Page } from 'puppeteer'
 
 // Leading x of every overlay connector path (the `M <x> <y> ...` moveto).
 async function overlayPathStartXs(page: Page) {
