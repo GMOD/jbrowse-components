@@ -19,7 +19,11 @@ export default function OpenLinkDialog({
   onClose: () => void
 }) {
   const [link, setLink] = useState('')
-  const { error, onSubmit: submit } = useIpcAction(async () => {
+  const {
+    error,
+    pending,
+    onSubmit: submit,
+  } = useIpcAction(async () => {
     if (!link.trim()) {
       throw new Error('Please paste a JBrowse Web link')
     }
@@ -31,6 +35,8 @@ export default function OpenLinkDialog({
       maxWidth="sm"
       fullWidth
       title="Open JBrowse Web link"
+      submitText={pending ? 'Opening...' : 'OK'}
+      submitDisabled={pending}
       onSubmit={submit}
       onCancel={onClose}
     >
