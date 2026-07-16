@@ -6,6 +6,7 @@ import {
   makeSyntenyTrackConfig,
   syntenyTrackTypes,
 } from './makeConfigs.ts'
+import { splitModifier } from './parseArgv.ts'
 
 import type { Entry } from './parseArgv.ts'
 import type { Assembly, Track } from './types.ts'
@@ -16,9 +17,9 @@ import type { Assembly, Track } from './types.ts'
 function parseModifiers(vals: string[]) {
   const mods: Record<string, string> = {}
   for (const v of vals.slice(1)) {
-    const i = v.indexOf(':')
-    if (i > 0) {
-      mods[v.slice(0, i)] = v.slice(i + 1)
+    const split = splitModifier(v)
+    if (split) {
+      mods[split[0]] = split[1]
     }
   }
   return mods

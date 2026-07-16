@@ -1,4 +1,4 @@
-import { parseArgv } from './parseArgv.ts'
+import { modifierValue, parseArgv, splitModifier } from './parseArgv.ts'
 
 test('parses track types, flags, and per-track options', () => {
   const args =
@@ -52,4 +52,22 @@ test('featureHeight options are parsed as track options', () => {
     ['bam', ['alignment.bam', 'color:tag:XS', 'featureHeight:super-compact']],
     ['out', ['out.svg']],
   ])
+})
+
+test('splitModifier keeps colons in the value; rejects colon-less/leading-colon', () => {
+  expect(splitModifier('loc:chr1:1-100')).toEqual(['loc', 'chr1:1-100'])
+  expect(splitModifier('index:https://x/a.bai.csi')).toEqual([
+    'index',
+    'https://x/a.bai.csi',
+  ])
+  expect(splitModifier('name:')).toEqual(['name', ''])
+  expect(splitModifier('force')).toBeUndefined()
+  expect(splitModifier(':leading')).toBeUndefined()
+})
+
+test('modifierValue returns the first matching key value, else undefined', () => {
+  const tokens = ['color:red', 'index:https://x/a.csi', 'name:My Track']
+  expect(modifierValue(tokens, 'index')).toBe('https://x/a.csi')
+  expect(modifierValue(tokens, 'name')).toBe('My Track')
+  expect(modifierValue(tokens, 'missing')).toBeUndefined()
 })

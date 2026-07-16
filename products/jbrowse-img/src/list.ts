@@ -1,4 +1,5 @@
 import { resolveConfigObject } from './resolveHub.ts'
+import { trackName, trackType } from './trackFields.ts'
 
 import type { Track } from './types.ts'
 
@@ -15,14 +16,6 @@ interface UcscGenome {
 }
 
 const LIST_URL = 'https://jbrowse.org/ucsc/list.json'
-
-function trackName(track: Track) {
-  return typeof track.name === 'string' ? track.name : ''
-}
-
-function trackType(track: Track) {
-  return typeof track.type === 'string' ? track.type : ''
-}
 
 export function formatAssemblies(genomes: Record<string, UcscGenome>) {
   const names = Object.keys(genomes).sort()

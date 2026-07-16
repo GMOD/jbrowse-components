@@ -13,6 +13,11 @@ export interface OptionDef {
 // (main.ts), and the renderRegion library default so they can't drift.
 export const DEFAULT_WIDTH = 1500
 
+// Default font for the whole SVG, shared by the --fontFamily help default and
+// the renderRegion library default (applied in baseSvgOpts) so the CLI and
+// library agree and the value lives in one place.
+export const DEFAULT_FONT_FAMILY = 'serif'
+
 export const optionDefs: OptionDef[] = [
   { name: 'fasta', description: 'Path to indexed FASTA file' },
   {
@@ -69,7 +74,7 @@ export const optionDefs: OptionDef[] = [
     name: 'fontFamily',
     description:
       'Font family for all text (serif, sans-serif, monospace, or a named family)',
-    default: 'serif',
+    default: DEFAULT_FONT_FAMILY,
   },
   {
     name: 'showGridlines',

@@ -129,7 +129,7 @@ async function main() {
       tracks: getString(rest, 'tracks'),
       cytobands: getString(rest, 'cytobands'),
       themeName: getThemeName(rest),
-      fontFamily: getString(rest, 'fontFamily') ?? 'serif',
+      fontFamily: getString(rest, 'fontFamily'),
       showGridlines: getBoolean(rest, 'showGridlines'),
       trackLabels: getTrackLabels(rest),
       refseq: getBoolean(rest, 'refseq'),

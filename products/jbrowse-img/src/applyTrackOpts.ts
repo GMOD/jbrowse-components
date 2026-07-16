@@ -1,6 +1,7 @@
 import path from 'node:path'
 
 import { getBooleanValue } from './options.ts'
+import { trackName } from './trackFields.ts'
 
 import type { Entry } from './parseArgv.ts'
 import type { Track } from './types.ts'
@@ -65,10 +66,6 @@ export function configTrackCategory(
   const category =
     typeof type === 'string' ? categoryByConfigType[type] : undefined
   return category ?? 'feature'
-}
-
-function trackName(track: Track) {
-  return typeof track.name === 'string' ? track.name : ''
 }
 
 // Resolve a user's --track token to a real trackId in the config. Hosted

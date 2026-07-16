@@ -8,6 +8,7 @@ import {
   makeTrackConfig,
   syntenyTrackTypes,
 } from './makeConfigs.ts'
+import { modifierValue } from './parseArgv.ts'
 
 import type { Assembly, Config, Opts, Track } from './types.ts'
 
@@ -178,13 +179,13 @@ export function readData(
   // are built per-level in buildComparative above.
   for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
-    const index = rest.find(r => r.startsWith('index:'))?.slice('index:'.length)
+    const index = modifierValue(rest, 'index')
     if (syntenyTrackTypes.includes(type)) {
       continue
     } else if (!file) {
       throw new Error('no file specified')
     } else if (type === 'multiwig') {
-      const name = rest.find(r => r.startsWith('name:'))?.slice('name:'.length)
+      const name = modifierValue(rest, 'name')
       configData.tracks.push(
         makeMultiWiggleTrackConfig(
           readMultiWiggleSources(file),

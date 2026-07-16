@@ -16,7 +16,7 @@ import {
   configTrackCategory,
   resolveTrackId,
 } from './applyTrackOpts.ts'
-import { DEFAULT_WIDTH } from './options.ts'
+import { DEFAULT_FONT_FAMILY, DEFAULT_WIDTH } from './options.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
 import { initFromSpec, parseSpec, specMode } from './spec.ts'
@@ -115,7 +115,7 @@ function baseSvgOpts(opts: Opts) {
   return {
     rasterizeLayers: !opts.noRasterize,
     themeName: opts.themeName,
-    fontFamily: opts.fontFamily,
+    fontFamily: opts.fontFamily ?? DEFAULT_FONT_FAMILY,
   }
 }
 
