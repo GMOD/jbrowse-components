@@ -1,23 +1,7 @@
-// A section is one live demo: it maps to src/examples/<name>.tsx (component +
-// ?raw source) and an optional src/docs/<slug>.md prose file.
-export interface ExampleSection {
-  slug: string
-  name: string
-  title: string
-  description: string
-}
+import { type ExamplePage, flattenExamples } from './exampleModel.ts'
 
-// A page is one sidebar entry / one URL. Most pages hold a single section, but
-// closely-related demos are grouped onto one page (several sections) to keep the
-// sidebar short. Each section keeps its own slug, so its doc/source and any
-// `../<slug>/#<slug>` cross-links still resolve.
-export interface ExamplePage {
-  slug: string
-  title: string
-  description: string
-  group: string
-  sections: ExampleSection[]
-}
+export type { ExamplePage, ExampleSection } from './exampleModel.ts'
+export { section } from './exampleModel.ts'
 
 export const pages: ExamplePage[] = [
   // --- Getting started ---
@@ -30,7 +14,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'basic-example',
-        name: 'BasicExample',
         title: 'Basic example',
         description:
           'A minimal app: one assembly, one alignments track, opened in a linear genome view, via the managed JBrowse component.',
@@ -46,20 +29,17 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'dark-theme',
-        name: 'DarkTheme',
         title: 'Dark theme',
         description: 'Use the built-in dark theme via the config theme palette.',
       },
       {
         slug: 'with-on-change',
-        name: 'WithOnChange',
         title: 'Observe state with onChange',
         description:
           'onChange fires on every MST patch — persist the session, drive undo/redo, or sync external UI.',
       },
       {
         slug: 'fit-to-container',
-        name: 'FitToContainer',
         title: 'Fit the app to a container',
         description:
           'By default the app fills the viewport (100vh). Set the --jbrowse-app-height CSS variable to make it fit a sized container instead — e.g. below your own header bar.',
@@ -77,20 +57,17 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'with-import-config-json',
-        name: 'WithImportConfigJson',
         title: 'Import a config.json',
         description:
           'Bundle a config.json at build time and pass it to createViewState.',
       },
       {
         slug: 'with-fetch-config-json',
-        name: 'WithFetchConfigJson',
         title: 'Fetch a config.json',
         description: 'Fetch a config.json at runtime, then build the view state.',
       },
       {
         slug: 'add-tracks-programmatically',
-        name: 'AddTracksProgrammatically',
         title: 'Add tracks programmatically',
         description:
           'Add a track config at runtime with addTrackConf + showTrack.',
@@ -108,7 +85,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'with-launch-linear-genome-view',
-        name: 'WithLaunchLinearGenomeView',
         title: 'Launch a linear genome view',
         description:
           'Open a linear genome view imperatively via the LaunchView extension point.',
@@ -123,7 +99,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'circular-example',
-        name: 'CircularExample',
         title: 'Circular view',
         description: 'Show structural variants in a circular view.',
       },
@@ -137,7 +112,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'dotplot-example',
-        name: 'DotplotExample',
         title: 'Dotplot view',
         description: 'A self-vs-self volvox dotplot.',
       },
@@ -152,20 +126,17 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'synteny-example',
-        name: 'SyntenyExample',
         title: 'Linear synteny view',
         description: 'Compare two assemblies with a PAF synteny track.',
       },
       {
         slug: 'embedded-app-synteny',
-        name: 'EmbeddedAppSynteny',
         title: 'Synteny via the imperative mount',
         description:
           'Mount the full app with createApp() — the framework-agnostic primitive non-React hosts (anywidget, htmlwidgets) use — and open a synteny view declaratively.',
       },
       {
         slug: 'multiway-synteny-example',
-        name: 'MultiwaySyntenyExample',
         title: 'Multi-way linear synteny view',
         description:
           'Stack four E. coli strains in one synteny view, all backed by a single all-vs-all PAF.',
@@ -180,7 +151,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'breakpoint-split-example',
-        name: 'BreakpointSplitExample',
         title: 'Breakpoint split view',
         description: 'Visualize a structural variant across two regions.',
       },
@@ -194,7 +164,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'spreadsheet-example',
-        name: 'SpreadsheetExample',
         title: 'Spreadsheet view',
         description: 'Load a VCF into a sortable, filterable spreadsheet.',
       },
@@ -209,7 +178,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'sv-inspector-example',
-        name: 'SvInspectorExample',
         title: 'SV inspector',
         description:
           'Inspect a structural-variant VCF with a paired spreadsheet + circular view.',
@@ -225,7 +193,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'multi-view-session',
-        name: 'MultiViewSession',
         title: 'Multiple views in one session',
         description:
           'Stack a circular SV overview and a linear detail view — the app manages both at once.',
@@ -243,14 +210,12 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'embedded-plugin',
-        name: 'EmbeddedPlugin',
         title: 'Embedded (inline) plugin',
         description:
           'Register a plugin defined inline in your code — here adding a rubber-band menu item.',
       },
       {
         slug: 'with-external-plugin',
-        name: 'WithExternalPlugin',
         title: 'External plugin',
         description: 'Load a plugin at runtime from a URL with loadPlugins.',
       },
@@ -264,7 +229,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'with-web-worker',
-        name: 'WithWebWorker',
         title: 'Web worker RPC',
         description: 'Offload data parsing/rendering to a web worker.',
       },
@@ -281,7 +245,6 @@ export const pages: ExamplePage[] = [
     sections: [
       {
         slug: 'human-demo',
-        name: 'HumanDemo',
         title: 'Human demo (hg38)',
         description:
           'A richer hg38 session: genes, repeats, exome alignments, variants, and conservation.',
@@ -290,21 +253,4 @@ export const pages: ExamplePage[] = [
   },
 ]
 
-// look up a section by slug within a page — used by the multi-section pages to
-// pass each section's title/description into <ExampleSection> type-safely
-export function section(page: ExamplePage, slug: string): ExampleSection {
-  const found = page.sections.find(s => s.slug === slug)
-  if (!found) {
-    throw new Error(`no section "${slug}" on page "${page.slug}"`)
-  }
-  return found
-}
-
-// flat, one-entry-per-page list for the shared Shell sidebar + Gallery grid and
-// the build smoke test, which only need {slug, title, description, group}
-export const examples = pages.map(({ slug, title, description, group }) => ({
-  slug,
-  title,
-  description,
-  group,
-}))
+export const examples = flattenExamples(pages)
