@@ -1,3 +1,5 @@
+import 'dockview-react/dist/styles/dockview.css'
+
 export { default as JBrowseApp } from './JBrowseApp/index.ts'
 export { default as JBrowse } from './JBrowse/index.ts'
 export type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
