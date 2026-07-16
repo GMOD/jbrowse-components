@@ -253,7 +253,9 @@ the assembly kept only the chromosome:
 for strain in K12 Sakai CFT073 NCTC86; do
   # the chromosome is the FASTA's first record, whose accession is the seqid to keep
   acc=$(awk '/^>/{print substr($1, 2); exit}' "$strain"/ncbi_dataset/data/*/*.fna)
-  awk -v acc="$acc" -v OFS='\t' '$1 == acc {$1 = "chr"; print}' \
+  # -F'\t' matters: the default separator also splits on the spaces inside GFF
+  # attributes, which rewriting the line with OFS would then turn into tabs
+  awk -F'\t' -v acc="$acc" -v OFS='\t' '$1 == acc {$1 = "chr"; print}' \
     "$strain"/ncbi_dataset/data/*/genomic.gff > "$strain.gff"
 
   jbrowse sort-gff "$strain.gff" | bgzip > "$strain.gff.gz"
