@@ -23,10 +23,10 @@ export function CrossHatchLines({
           y1={offsetY + y}
           y2={offsetY + y}
           stroke="rgb(200,200,200)"
-          // faint so the grid recedes behind the data. A separate stroke-opacity
-          // attribute (not baked into an rgba() string) survives the SVG export,
-          // whose renderToStaticMarkup strips rgba() alpha.
-          strokeOpacity={0.18}
+          // a separate stroke-opacity attribute (not baked into an rgba()
+          // string) survives the SVG export, whose renderToStaticMarkup strips
+          // rgba() alpha
+          strokeOpacity={0.8}
           strokeWidth={1}
         />
       ))}

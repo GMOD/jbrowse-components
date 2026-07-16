@@ -187,12 +187,12 @@ test('wiggle SVG export includes cross-hatches when enabled', async () => {
   display.toggleCrossHatches()
 
   await view.exportSvg({ rasterizeLayers: false })
-  // CrossHatchLines draws a faint guide line at each Y-scale tick. Its opacity is
-  // a separate stroke-opacity attribute (not baked into rgba) so it survives the
+  // CrossHatchLines draws a guide line at each Y-scale tick. Its opacity is a
+  // separate stroke-opacity attribute (not baked into rgba) so it survives the
   // export, which strips rgba() alpha.
   const svg = getSavedSvg()
   expect(svg).toContain('stroke="rgb(200,200,200)"')
-  expect(svg).toContain('stroke-opacity="0.18"')
+  expect(svg).toContain('stroke-opacity="0.8"')
 }, 45000)
 
 test('multi-wiggle SVG export includes row separators and cross-hatches when enabled', async () => {
@@ -218,5 +218,5 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
   // sub-1 stroke-opacity, so this uniquely identifies the separators.
   expect(svg).toMatch(/stroke-opacity="0\.1\d+" stroke="#000000"/)
   expect(svg).toContain('stroke="rgb(200,200,200)"') // cross-hatches
-  expect(svg).toContain('stroke-opacity="0.18"')
+  expect(svg).toContain('stroke-opacity="0.8"')
 }, 45000)
