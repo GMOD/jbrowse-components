@@ -1,4 +1,5 @@
 export { default as AboutDialog } from './AboutDialog.tsx'
+export { default as Drawer } from './Drawer.tsx'
 export { default as DrawerControls } from './DrawerControls.tsx'
 export { default as DrawerHeader } from './DrawerHeader.tsx'
 export { default as DrawerWidget } from './DrawerWidget.tsx'
