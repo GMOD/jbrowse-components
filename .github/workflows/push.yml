@@ -199,20 +199,29 @@ jobs:
         run: npm run typecheck
         working-directory: infrastructure/newsletter
 
-  # typecheck_aws:
-  #   name: Typecheck AWS Lambdas
-  #   if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-  #       with:
-  #         persist-credentials: false
-  #     - uses: ./.github/actions/setup
-  #       with:
-  #         working-directory: aws/blat-proxy
-  #     - name: Typecheck blat-proxy Lambda
-  #       run: pnpm run typecheck
-  #       working-directory: aws/blat-proxy
+  # blat-proxy is a standalone pnpm project (its own lockfile + pnpm-workspace.yaml
+  # workspace-root marker), not a member of the root workspace, so it installs and
+  # runs independently in aws/blat-proxy.
+  blat_proxy:
+    name: Test blat-proxy Lambda
+    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          working-directory: aws/blat-proxy
+      - name: Typecheck
+        run: pnpm typecheck
+        working-directory: aws/blat-proxy
+      - name: Test
+        run: pnpm test
+        working-directory: aws/blat-proxy
+      - name: Build bundle
+        run: pnpm build
+        working-directory: aws/blat-proxy
 
   spellcheck:
     name: Spell check
