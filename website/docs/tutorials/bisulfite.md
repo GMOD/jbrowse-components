@@ -194,11 +194,11 @@ no web server. See the [desktop quickstart](/docs/quickstart_desktop).
 
 ## Coloring reads in JBrowse
 
-Open the alignments track and, from the track menu, choose **Color by → Advanced
-→ Bisulfite / EM-seq**, then pick a cytosine context (CpG, CHG, CHH, or all
-cytosines). Methylated cytosines paint red and unmethylated ones paint blue. It
-lives under **Advanced** because it's reference-based and only makes sense for
-bisulfite/EM-seq libraries — no MM/ML tags are involved.
+Open the alignments track and, from the track menu, choose **Color by →
+Bisulfite / EM-seq**, then pick a cytosine context (CpG, CHG, CHH, or all
+cytosines). Methylated cytosines paint red and unmethylated ones paint blue.
+It's reference-based and only makes sense for bisulfite/EM-seq libraries — no
+MM/ML tags are involved.
 
 That same submenu has a **Show unmethylated (blue)** toggle; turning it off draws
 a methylated-only view (red marks only, unmethylated sites left blank). The
@@ -221,8 +221,8 @@ up red; over the silenced element (right) all three copies do.
 <Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn (methylated-only view). Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Red marks methylation; unmethylated sites are left blank." />
 
 Each per-read copy is just the same alignment track re-colored: switch a
-pileup's context with **Color by → Advanced → Bisulfite / EM-seq**, then CpG /
-CHG / CHH / all (the last one marks every cytosine at once). Because the call is
+pileup's context with **Color by → Bisulfite / EM-seq**, then CpG / CHG / CHH /
+all (the last one marks every cytosine at once). Because the call is
 made per read, zooming in to the gene→element boundary lets you follow the
 methylation on individual molecules — in the CHG/CHH copies each read stays blank
 over the gene body and picks up red (methylated) marks as it crosses into the
