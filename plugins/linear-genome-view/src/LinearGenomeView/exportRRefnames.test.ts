@@ -9,22 +9,20 @@ import type { RTrackFragment } from './types.ts'
 
 // A minimal one-panel BigWig fragment, standing in for what a display's
 // exportRCode builder returns, plus the refNameMap the view attaches when the
-// track's file names contigs differently from the assembly.
+// track's file names contigs differently from the assembly. Like every simple
+// track it reads through read_regions(), which calls the genomic-coordinate
+// reader once per region and shifts the result onto the cumulative-bp axis; the
+// shared scale/dividers/coord come from plot_regions().
 function bigwigFragment(uri: string, refNameMap?: Record<string, string>) {
   const frag: RTrackFragment = {
     trackId: 'micro.array',
     trackName: 'Microarray',
     packages: ['rtracklayer', 'ggplot2'],
-    helpers: ['read_bigwig', 'bp_axis'],
+    helpers: ['read_bigwig'],
     setup: `bw <- ${JSON.stringify(uri)}`,
     plotVariable: 'p_bw',
-    plotExpr: `{
-  df <- read_bigwig(bw, chrom, start, end)
-  ggplot(df) +
-    geom_col(aes(start, score)) +
-    coord_cartesian(xlim = c(start, end)) +
-    bp_axis()
-}`,
+    plotExpr: `ggplot(read_regions(function(chrom, start, end) read_bigwig(bw, chrom, start, end), regions, c("start", "end"))) +
+  geom_col(aes(start, score))`,
   }
   return refNameMap ? { ...frag, refNameMap } : frag
 }
@@ -36,8 +34,8 @@ describe('refname alias codegen', () => {
     ])
     expect(script).not.toContain('resolve_chrom')
     expect(script).not.toContain('_refnames')
-    // the panel reads chrom directly
-    expect(script).toContain('p_bw <- {')
+    // the panel is assigned the plot expression directly, with no local() wrap
+    expect(script).toContain('p_bw <- ggplot(read_regions(')
   })
 
   test('refNameMap emits the helper, per-track vector, and local() wrap', () => {
@@ -48,9 +46,10 @@ describe('refname alias codegen', () => {
     expect(script).toContain(
       'micro_array_refnames <- c(`ctgA` = "contigA", `ctgB` = "contigB")',
     )
-    expect(script).toContain(
-      'chrom <- resolve_chrom(chrom, micro_array_refnames)',
-    )
+    // the panel is wrapped in a local() that translates the regions' chrom
+    // column to this track's file names before reading
+    expect(script).toContain('p_bw <- local({')
+    expect(script).toContain('resolve_chrom(cc, micro_array_refnames)')
     // the reader still references the (now-translated) chrom
     expect(script).toContain('read_bigwig(bw, chrom, start, end)')
   })
@@ -124,6 +123,6 @@ maybe('alias translation makes the canonical name read real data', () => {
   // and the real generated script (which calls plot_region with the canonical
   // name and translates internally via resolve_chrom) runs and draws a figure
   const runScript = readFileSync(withPath, 'utf8')
-  expect(runScript).toContain('resolve_chrom(chrom, micro_array_refnames)')
+  expect(runScript).toContain('resolve_chrom(cc, micro_array_refnames)')
   execFileSync('Rscript', [withPath], { cwd: dir, stdio: 'pipe' })
 })
