@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { avg, getSession, notEmpty } from '@jbrowse/core/util'
 import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
-import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
@@ -193,12 +193,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * Find all track ids that match across multiple views, or return just
        * the single view's track if only a single row is used
        */
-      // The `OverlayTrack` return annotation is load-bearing, exactly as on
-      // `getMatchedTracks`: the LGV's `tracks` array is an MST pluggable union
-      // that TS widens to `any`, so without it every field read through this
-      // getter is unchecked. That's how a `display.notReady?.()` guard against a
-      // method no display defines survived in the fetcher below — it
-      // optional-called into `any` and silently did nothing.
+      // The OverlayTrack annotation is load-bearing: `view.tracks` is an MST
+      // pluggable union TS widens to `any`, so without it every field read
+      // through this getter is unchecked. A `display.notReady?.()` guard against
+      // a method no display defines survived here for exactly that reason.
       get matchedTracks(): OverlayTrack[] {
         return self.views.length === 1
           ? self.views[0]!.tracks
@@ -311,18 +309,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   return { feature, layout, level, clipLengthAtStartOfRead }
                 }
               }
-              // Feature wasn't found in any track's pileup layout: the display
-              // keeps no layout at all (the paired/arc displays), or the read
-              // never entered the fetched data (filterBy, showOnlySplitAlignments
-              // — the worker drops it). Synthesize an off-display LayoutRecord so
-              // the connection still draws to the track's bottom edge (see
-              // makeOffscreenLayout / getY).
-              //
-              // A maxHeight-truncated read does NOT come through here: layout
-              // gives it the `maxRows` overflow sentinel rather than no row at
-              // all, so `calc` returns a real record with a huge top and
-              // computeOverlayY's clamp lands it on the same bottom edge. Two
-              // paths, one appearance — don't "simplify" either into the other.
+              // No row in any track's layout: the display keeps none (paired/arc
+              // displays), or the worker dropped the read (filterBy and friends).
+              // Synthesize an off-display record so the connection still draws to
+              // the bottom edge. NOT the maxHeight case — see makeOffscreenLayout.
               const start = feature.get('start')
               // bpToPx matches displayedRegions by exact refName, so the raw
               // adapter refName has to be canonicalized first or an aliased
@@ -559,20 +549,23 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             { name: 'BreakpointSplitViewInit' },
           ),
         )
+        // Staleness epoch for the fetcher below — FetchMixin's `isStale` shape,
+        // reimplemented because a view can't compose that display mixin. RPC
+        // latency varies with viewport size, so two runs can resolve out of
+        // order and the loser would commit features for a viewport already left.
+        // The 1s debounce spaces runs out; it doesn't order their completions.
+        let fetchGeneration = 0
         addDisposer(
           self,
           autorun(
             async () => {
+              const generation = ++fetchGeneration
               try {
                 if (!self.views.every(view => view.initialized)) {
                   return
                 }
-                // Don't fetch against a track whose banner has replaced its
-                // features. `notReady?.()` used to be ORed in here, but no
-                // display has ever defined it in this repo's history — the
-                // optional call silently no-op'd, so this guard has only ever
-                // been the too-large half. Spelled out rather than left as a
-                // call that reads like it gates on load state and doesn't.
+                // the banner has replaced the features, so there's nothing to
+                // match against
                 if (
                   self.matchedTracks.some(
                     track => track.displays[0]!.regionTooLarge,
@@ -581,19 +574,24 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   return
                 }
 
-                self.setMatchedTrackFeatures(
-                  Object.fromEntries(
-                    await Promise.all(
-                      self.matchedTracks.map(async track => [
-                        track.configuration.trackId,
-                        await getBlockFeatures(self, track),
-                      ]),
-                    ),
+                const fetched = Object.fromEntries(
+                  await Promise.all(
+                    self.matchedTracks.map(async track => [
+                      track.configuration.trackId,
+                      await getBlockFeatures(self, track),
+                    ]),
                   ),
                 )
+                if (generation === fetchGeneration && isAlive(self)) {
+                  self.setMatchedTrackFeatures(fetched)
+                }
               } catch (e) {
                 console.error(e)
-                getSession(self).notifyError(`${e}`, e)
+                // getSession throws on a dead node, turning a handled error
+                // into an unhandled one
+                if (isAlive(self)) {
+                  getSession(self).notifyError(`${e}`, e)
+                }
               }
             },
             {

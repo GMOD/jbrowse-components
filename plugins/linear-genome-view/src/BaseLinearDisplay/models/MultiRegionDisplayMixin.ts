@@ -149,9 +149,8 @@ export default function MultiRegionDisplayMixin() {
        * "The three readiness axes".
        */
       get layoutReady(): boolean {
-        // Default false is fail-safe: a display that forgets the override has
-        // its overlays dropped (visibly absent) rather than pinned to one edge
-        // (a plausible lie). See `layoutUnknown` in BreakpointSplitView.
+        // fail-safe: forgetting the override drops overlays (visibly absent)
+        // rather than pinning them to one edge (a plausible lie)
         return false
       },
 

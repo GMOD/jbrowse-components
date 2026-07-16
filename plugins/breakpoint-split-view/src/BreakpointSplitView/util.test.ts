@@ -13,11 +13,9 @@ function trackWith(display: OverlayDisplay) {
   return { displays: [display] } as OverlayTrack
 }
 
-// Compile-time half of the contract: a display that indexes features MUST
-// declare layoutReady alongside. This used to typecheck, and a missing
-// layoutReady read as falsy — which is precisely the "no layout" verdict, so
-// every overlay curve silently vanished. Pinned here so the union can't be
-// relaxed back into two independent optionals.
+// Compile-time half of the contract. This used to typecheck, and a missing
+// layoutReady reads as falsy — precisely the "no layout" verdict — so every
+// overlay curve silently vanished.
 test('declaring searchFeatureByID without layoutReady is a type error', () => {
   // @ts-expect-error searchFeatureByID requires layoutReady alongside it
   const bad: OverlayDisplay = {

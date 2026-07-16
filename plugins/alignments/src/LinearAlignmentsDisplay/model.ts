@@ -1410,10 +1410,9 @@ export default function stateModelFactory(
          * meaning as the canvas display's; see MultiRegionDisplayMixin.
          */
         get layoutReady() {
-          // The too-large term is independent of the data one, not redundant
-          // with it: `clearAllRpcData` deliberately leaves the gate alone, so a
-          // zoom-out into the banner can leave the previous region's data
-          // sitting in `rpcDataMap` with no pileup on screen to point at.
+          // the too-large term isn't redundant: clearAllRpcData deliberately
+          // leaves the gate alone, so a zoom-out into the banner can strand the
+          // previous region's data in rpcDataMap with no pileup on screen
           return !self.regionTooLarge && self.rpcDataMap.size > 0
         },
       }))

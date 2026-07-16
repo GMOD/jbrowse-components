@@ -62,8 +62,12 @@ export interface LayoutMatch {
   hiddenSegmentsBefore?: string[]
 }
 
+// The discriminant Overlay.tsx dispatches on. 'alignment' comes from an
+// AlignmentsTrack, the rest from a VariantTrack (see classifyVariantFeatures).
+export type OverlayKind = 'alignment' | 'translocation' | 'paired' | 'breakend'
+
 export interface OverlayMatch {
-  kind: 'alignment' | 'translocation' | 'paired' | 'breakend'
+  kind: OverlayKind
   allFeatures: Map<string, Feature>
   layoutMatches: LayoutMatch[][]
   hasPairedReads?: boolean
@@ -81,7 +85,7 @@ export interface ChainSegment {
 // chain — everything overlayMatches needs that depends on features alone and not
 // on any track's layout.
 export interface MatchedChunks {
-  kind: 'alignment' | 'translocation' | 'paired' | 'breakend'
+  kind: OverlayKind
   allFeatures: Map<string, Feature>
   matched: Feature[][]
   hasPairedReads?: boolean

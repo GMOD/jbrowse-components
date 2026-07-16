@@ -27,21 +27,10 @@ interface OverlayDisplayBase {
   linkedReads?: 'off' | 'normal'
 }
 
-/**
- * A display that indexes its features, so an overlay can ask where one landed.
- * `layoutReady` is NOT optional here: a lookup's answer is uninterpretable
- * without it (see `layoutUnknown`), so the pair is what makes a display
- * searchable. Declaring one without the other is the mistake this union exists
- * to reject — it used to typecheck, and reading a missing `layoutReady` as
- * "false" would silently drop every overlay curve.
- */
+/** A display that indexes its features, so an overlay can ask where one landed. */
 interface SearchableOverlayDisplay extends OverlayDisplayBase {
   searchFeatureByID: (str: string) => LayoutRecord | undefined
-  /**
-   * whether `searchFeatureByID` currently has a laid-out pileup to search.
-   * False while the display holds no data (mid-load, or the region-too-large
-   * banner replaced the pileup).
-   */
+  /** whether searchFeatureByID has a laid-out pileup to search right now */
   layoutReady: boolean
 }
 
@@ -51,10 +40,9 @@ interface OpaqueOverlayDisplay extends OverlayDisplayBase {
   layoutReady?: undefined
 }
 
-// The subset of a display the overlays actually read. The two variants are what
-// keep `layoutUnknown` honest: after `searchFeatureByID !== undefined` narrows to
-// the searchable branch, `layoutReady` is a required boolean rather than a
-// `boolean | undefined` whose absence is indistinguishable from `false`.
+// Two variants, not one shape with two optionals, so `layoutUnknown` narrows to
+// a required boolean instead of a `boolean | undefined` whose absence is
+// indistinguishable from `false` — i.e. from "no layout", which drops the curve.
 export type OverlayDisplay = SearchableOverlayDisplay | OpaqueOverlayDisplay
 
 export interface OverlayTrack {
@@ -68,18 +56,14 @@ export interface OverlayTrack {
 // Must match the CSS height of viewDivider in BreakpointSplitView.tsx
 export const VIEW_DIVIDER_HEIGHT = 3
 
-// Sentinel y placed in a synthesized LayoutRecord when a feature has no row in
-// its track's pileup layout: the display keeps no layout at all (paired/arc), or
-// the read never reached the fetched data (filterBy and friends). `getY` checks
-// for this and snaps the endpoint to the track's bottom edge so the connecting
-// spline terminates there instead of being skipped.
+// Sentinel y for a feature with no row in its track's layout; `getY` snaps it to
+// the track's bottom edge so the spline terminates there instead of being
+// skipped. Only for a layout that genuinely lacks the feature — never for one
+// whose position is merely unknown because no layout exists (see layoutUnknown).
 //
 // NOT the maxHeight case, despite looking identical on screen: a truncated read
-// gets layout's `maxRows` overflow sentinel, so it has a row, and
-// computeOverlayY's clamp is what puts it on the bottom edge.
-//
-// Only ever for a feature the layout genuinely lacks — never for one whose
-// position is merely unknown because there is no layout yet. See layoutUnknown.
+// gets layout's `maxRows` overflow sentinel, so it has a row, and it's
+// computeOverlayY's clamp that puts it on the bottom edge.
 export const OFFSCREEN_Y_SENTINEL = Number.POSITIVE_INFINITY
 
 export function makeOffscreenLayout(
@@ -164,13 +148,10 @@ export function calc(track: OverlayTrack, f: Feature) {
   return track.displays[0]!.searchFeatureByID?.(f.id())
 }
 
-// A failed `calc` means two very different things. If the display has a layout,
-// the feature really is off-display (filtered, past maxHeight) and the overlay
-// draws to the bottom edge — that IS the signal the segment exists. If the
-// display has no layout at all right now, the position is merely unknown: the
-// data was cleared for a refetch, or the region-too-large banner replaced the
-// pileup. Snapping to the bottom edge then collapses every connection onto one
-// line for the length of the transition, so callers drop them instead.
+// A failed `calc` is ambiguous. With a layout, the feature really is off-display
+// and the bottom-edge curve is the signal it exists. With no layout — data
+// cleared, or the too-large banner up — its position is merely unknown, and
+// snapping collapses every connection onto one line until the data lands.
 export function layoutUnknown(track: OverlayTrack) {
   const d = track.displays[0]!
   // narrows to SearchableOverlayDisplay, where layoutReady is a required boolean
