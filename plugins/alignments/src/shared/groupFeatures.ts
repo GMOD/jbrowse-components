@@ -233,7 +233,8 @@ export interface GroupByDimension {
   chainConsistent: boolean
   // True for dimensions that don't apply to ordinary alignment reads and so are
   // not offered in the general Group-by dialog; a display that supports them
-  // (e.g. LGVSyntenyDisplay's "Group by species") surfaces them itself.
+  // surfaces them itself — mateAssembly is offered by LGVSyntenyDisplay's own
+  // "Group by..." radios (see its menus.ts).
   hidden?: boolean
   // The group-key generator for this dimension. Co-located with the metadata so
   // each dimension is defined in exactly one place — `groupKeyFor` just looks it
