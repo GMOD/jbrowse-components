@@ -1,0 +1,22 @@
+---
+import WithJexlFeatureColorsAndLabels from "../examples/WithJexlFeatureColorsAndLabels.tsx"
+import WithJexlFeatureColorsAndLabelsCode from "../examples/WithJexlFeatureColorsAndLabels.tsx?raw"
+import WithTrackColorShorthand from "../examples/WithTrackColorShorthand.tsx"
+import WithTrackColorShorthandCode from "../examples/WithTrackColorShorthand.tsx?raw"
+import { pages, section } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "feature-colors-and-labels")!
+const sec0 = section(page, "with-jexl-feature-colors-and-labels")
+const sec1 = section(page, "with-track-color-shorthand")
+---
+
+<Layout page={page}>
+  <Section {...sec0} code={WithJexlFeatureColorsAndLabelsCode}>
+    <WithJexlFeatureColorsAndLabels client:only="react" />
+  </Section>
+  <Section {...sec1} code={WithTrackColorShorthandCode}>
+    <WithTrackColorShorthand client:only="react" />
+  </Section>
+</Layout>

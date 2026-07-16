@@ -25,5 +25,5 @@ const state = createViewState({
 
 Because `loadPlugins` is async, run it in an effect and render the view only
 once the state resolves. For plugins you author or `npm install` yourself, pass
-the class directly — see [inline plugins](../with-inline-plugins/). The
+the class directly — see [inline plugins](../plugins/#with-inline-plugins). The
 [plugin store](https://jbrowse.org/jb2/plugin_store/) lists published plugins.

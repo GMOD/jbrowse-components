@@ -11,6 +11,6 @@ const state = createViewState({
 })
 ```
 
-For overriding individual colors, see the [custom theme](../with-custom-theme/)
+For overriding individual colors, see the [custom theme](../theming/#with-custom-theme)
 example and the
 [theming guide](https://jbrowse.org/jb2/docs/config_guides/theme/).

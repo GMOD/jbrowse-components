@@ -9,4 +9,4 @@ dialogs) a target **inside** the shadow root, so their styles stay scoped there
 and host-page styles can't leak in.
 
 For the simpler case of composing with — rather than isolating from — parent
-styles, see [styling from outside](../with-outside-styling/).
+styles, see [styling from outside](../style-isolation/#with-outside-styling).

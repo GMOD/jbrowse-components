@@ -12,4 +12,4 @@ const state = createViewState({
 ```
 
 For opening tracks declaratively alongside the location, prefer the
-[`init`](../with-init/) field instead.
+[`init`](../setting-up-the-view/#with-init) field instead.

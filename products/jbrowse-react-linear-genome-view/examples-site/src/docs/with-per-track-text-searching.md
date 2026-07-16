@@ -22,6 +22,6 @@ track:
 
 Build it with `jbrowse text-index --file myfile.gff3.gz --fileId my_track`
 (where `--fileId` matches the runtime `trackId`). For one index spanning many
-tracks, see [aggregate text searching](../with-aggregate-text-searching/).
+tracks, see [aggregate text searching](../text-searching/#with-aggregate-text-searching).
 Adapter slots are documented in
 [TrixTextSearchAdapter](https://jbrowse.org/jb2/docs/config/trixtextsearchadapter/).

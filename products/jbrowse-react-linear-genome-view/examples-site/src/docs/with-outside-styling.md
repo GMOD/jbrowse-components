@@ -9,4 +9,4 @@ composes normally — borders, margins, and backgrounds all work as you'd expect
 ```
 
 If you need the opposite — guaranteed isolation from a host page's global styles
-— render the view inside a [Shadow DOM](../shadow-dom/) instead.
+— render the view inside a [Shadow DOM](../style-isolation/#shadow-dom) instead.

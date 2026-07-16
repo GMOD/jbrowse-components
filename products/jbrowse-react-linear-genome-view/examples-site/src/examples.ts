@@ -1,6 +1,18 @@
-export interface ExampleMeta {
+// A section is one live demo: it maps to src/examples/<name>.tsx (component +
+// ?raw source) and an optional src/docs/<slug>.md prose file.
+export interface ExampleSection {
   slug: string
   name: string
+  title: string
+  description: string
+}
+
+// A page is one sidebar entry / one URL. Most pages hold a single section, but
+// closely-related demos are grouped onto one page (several sections) to keep the
+// sidebar short. Each section keeps its own slug, so its doc/source and any
+// `../<slug>/#<slug>` cross-links still resolve.
+export interface ExamplePage {
+  slug: string
   title: string
   description: string
   group: string
@@ -8,317 +20,513 @@ export interface ExampleMeta {
   // still ships and works in a real browser; it's only skipped in CI's headless
   // software-WebGL (swiftshader), where its rendering crashes the renderer.
   skipSmoke?: boolean
+  sections: ExampleSection[]
 }
 
-// single source of truth for the gallery index and each example page's
-// title/description. each `slug` has a matching src/pages/<slug>.astro and
-// src/examples/<name>.tsx
-export const examples: ExampleMeta[] = [
+export const pages: ExamplePage[] = [
   // --- Getting started ---
   {
-    slug: 'with-init',
-    name: 'WithInit',
-    title: 'WithInit',
+    slug: 'setting-up-the-view',
+    title: 'Setting up the view',
     description:
-      'Initialize the view with an assembly, a track, and a starting location.',
+      'The core ways to render the component and give it a starting state: the declarative props, the createViewState hook, and the minimal end-to-end example.',
     group: 'Getting started',
+    sections: [
+      {
+        slug: 'one-linear-genome-view',
+        name: 'OneLinearGenomeView',
+        title: 'The simplest example',
+        description:
+          'The simplest example: an assembly, tracks, an initial location, and an onChange handler.',
+      },
+      {
+        slug: 'with-init',
+        name: 'WithInit',
+        title: 'Declarative init',
+        description:
+          'Initialize the view with an assembly, a track, and a starting location.',
+      },
+      {
+        slug: 'use-create-view-state',
+        name: 'UseCreateViewState',
+        title: 'useCreateViewState',
+        description:
+          'useCreateViewState keeps view state stable across parent re-renders.',
+      },
+    ],
   },
   {
     slug: 'default-session',
-    name: 'DefaultSession',
-    title: 'DefaultSession',
+    title: 'Default session & locked-down embeds',
     description:
-      'Open the view on a predefined session that shows specific tracks.',
+      'Open on a predefined session snapshot, and hide editing UI for a locked-down embed.',
     group: 'Getting started',
-  },
-  {
-    slug: 'one-linear-genome-view',
-    name: 'OneLinearGenomeView',
-    title: 'OneLinearGenomeView',
-    description:
-      'The simplest example: an assembly, tracks, an initial location, and an onChange handler.',
-    group: 'Getting started',
-  },
-  {
-    slug: 'use-create-view-state',
-    name: 'UseCreateViewState',
-    title: 'useCreateViewState',
-    description:
-      'useCreateViewState keeps view state stable across parent re-renders.',
-    group: 'Getting started',
-  },
-  {
-    slug: 'disable-add-track',
-    name: 'DisableAddTrack',
-    title: 'DisableAddTrack',
-    description: 'Hide the "add track" UI for a locked-down embed.',
-    group: 'Getting started',
+    sections: [
+      {
+        slug: 'default-session',
+        name: 'DefaultSession',
+        title: 'Open on a default session',
+        description:
+          'Open the view on a predefined session that shows specific tracks.',
+      },
+      {
+        slug: 'disable-add-track',
+        name: 'DisableAddTrack',
+        title: 'Disable the add-track UI',
+        description: 'Hide the "add track" UI for a locked-down embed.',
+      },
+    ],
   },
 
   // --- Navigation ---
   {
-    slug: 'external-navigate',
-    name: 'ExternalNavigate',
-    title: 'External navigation',
+    slug: 'navigate-to-location',
+    title: 'Navigating to a location',
     description:
-      'Drive the view from your own UI with navToLocString (a location string) or navToLocations (a {refName, start, end} object).',
+      'Drive the view to a region from your own UI, or with a {refName, start, end} location object.',
     group: 'Navigation',
+    sections: [
+      {
+        slug: 'external-navigate',
+        name: 'ExternalNavigate',
+        title: 'External navigation',
+        description:
+          'Drive the view from your own UI with navToLocString (a location string) or navToLocations (a {refName, start, end} object).',
+      },
+      {
+        slug: 'using-loc-object',
+        name: 'UsingLocObject',
+        title: 'Using a location object',
+        description:
+          'Initialize the starting location with a {refName, start, end} object.',
+      },
+    ],
   },
   {
-    slug: 'using-loc-object',
-    name: 'UsingLocObject',
-    title: 'Using a location object',
+    slug: 'flipping-regions',
+    title: 'Flipping regions',
     description:
-      'Initialize the starting location with a {refName, start, end} object.',
+      'Reverse-complement the whole view, or mix orientations across multiple displayed regions.',
     group: 'Navigation',
+    sections: [
+      {
+        slug: 'horizontally-flip',
+        name: 'HorizontallyFlip',
+        title: 'Horizontally flip the view',
+        description:
+          'Reverse-complement the view, either imperatively with a button or by opening on a [rev] location string.',
+      },
+      {
+        slug: 'with-multiple-displayed-regions-flipped',
+        name: 'WithMultipleDisplayedRegionsFlipped',
+        title: 'Multiple displayed regions, some flipped',
+        description:
+          'Show several regions at once, with individual regions reverse-complemented.',
+      },
+    ],
   },
   {
-    slug: 'horizontally-flip',
-    name: 'HorizontallyFlip',
-    title: 'Horizontally flip the view',
+    slug: 'controlling-the-view',
+    title: 'Controlling the view',
     description:
-      'Reverse-complement the view, either imperatively with a button or by opening on a [rev] location string.',
+      'Lock down interaction, or toggle tracks on from your own code.',
     group: 'Navigation',
-  },
-  {
-    slug: 'with-multiple-displayed-regions-flipped',
-    name: 'WithMultipleDisplayedRegionsFlipped',
-    title: 'Multiple displayed regions, some flipped',
-    description:
-      'Show several regions at once, with individual regions reverse-complemented.',
-    group: 'Navigation',
-  },
-  {
-    slug: 'with-disable-zoom-and-side-scroll',
-    name: 'WithDisableZoomAndSideScroll',
-    title: 'Disable zoom and side scroll',
-    description: 'Lock the view so users cannot zoom or pan.',
-    group: 'Navigation',
-  },
-  {
-    slug: 'with-show-track',
-    name: 'WithShowTrack',
-    title: 'Show a track programmatically',
-    description: 'Turn a track on from code via showTrack.',
-    group: 'Navigation',
+    sections: [
+      {
+        slug: 'with-disable-zoom-and-side-scroll',
+        name: 'WithDisableZoomAndSideScroll',
+        title: 'Disable zoom and side scroll',
+        description: 'Lock the view so users cannot zoom or pan.',
+      },
+      {
+        slug: 'with-show-track',
+        name: 'WithShowTrack',
+        title: 'Show a track programmatically',
+        description: 'Turn a track on from code via showTrack.',
+      },
+    ],
   },
 
   // --- Styling & theming ---
   {
-    slug: 'with-custom-theme',
-    name: 'WithCustomTheme',
-    title: 'Custom theme',
-    description: 'Apply a custom Material UI theme to the view.',
-    group: 'Styling & theming',
-  },
-  {
-    slug: 'with-dark-theme',
-    name: 'WithDarkTheme',
-    title: 'Dark theme',
-    description: 'Use the built-in dark theme.',
-    group: 'Styling & theming',
-  },
-  {
-    slug: 'with-outside-styling',
-    name: 'WithOutsideStyling',
-    title: 'Styling from outside the component',
-    description: 'Style the embed from your surrounding page CSS.',
-    group: 'Styling & theming',
-  },
-  {
-    slug: 'shadow-dom',
-    name: 'ShadowDOMOneLinearGenomeView',
-    title: 'Render inside a Shadow DOM',
+    slug: 'theming',
+    title: 'Theming',
     description:
-      'Isolate the view inside a shadow root with its own emotion cache and MUI portal containers.',
+      'Apply a custom Material UI theme, or switch on the built-in dark theme.',
     group: 'Styling & theming',
+    sections: [
+      {
+        slug: 'with-custom-theme',
+        name: 'WithCustomTheme',
+        title: 'Custom theme',
+        description: 'Apply a custom Material UI theme to the view.',
+      },
+      {
+        slug: 'with-dark-theme',
+        name: 'WithDarkTheme',
+        title: 'Dark theme',
+        description: 'Use the built-in dark theme.',
+      },
+    ],
+  },
+  {
+    slug: 'style-isolation',
+    title: 'Styling & isolation',
+    description:
+      'Style the embed from your surrounding page, or isolate it entirely inside a Shadow DOM.',
+    group: 'Styling & theming',
+    sections: [
+      {
+        slug: 'with-outside-styling',
+        name: 'WithOutsideStyling',
+        title: 'Styling from outside the component',
+        description: 'Style the embed from your surrounding page CSS.',
+      },
+      {
+        slug: 'shadow-dom',
+        name: 'ShadowDOMOneLinearGenomeView',
+        title: 'Render inside a Shadow DOM',
+        description:
+          'Isolate the view inside a shadow root with its own emotion cache and MUI portal containers.',
+      },
+    ],
   },
 
   // --- Track display & coloring ---
   {
-    slug: 'with-jexl-feature-colors-and-labels',
-    name: 'WithJexlFeatureColorsAndLabels',
-    title: 'Jexl feature colors and labels',
+    slug: 'feature-colors-and-labels',
+    title: 'Feature colors & labels',
     description:
-      'Color and label features dynamically with jexl callback expressions.',
+      'Color and label features — dynamically with jexl callbacks, or quickly with the displayDefaults color shorthand.',
     group: 'Track display & coloring',
+    sections: [
+      {
+        slug: 'with-jexl-feature-colors-and-labels',
+        name: 'WithJexlFeatureColorsAndLabels',
+        title: 'Jexl feature colors and labels',
+        description:
+          'Color and label features dynamically with jexl callback expressions.',
+      },
+      {
+        slug: 'with-track-color-shorthand',
+        name: 'WithTrackColorShorthand',
+        title: 'Track color shorthand',
+        description:
+          'Set a track color with the displayDefaults color shorthand.',
+      },
+    ],
   },
   {
-    slug: 'with-track-color-shorthand',
-    name: 'WithTrackColorShorthand',
-    title: 'Track color shorthand',
-    description: 'Set a track color with the displayDefaults color shorthand.',
-    group: 'Track display & coloring',
-  },
-  {
-    slug: 'with-wiggle-track',
-    name: 'WithWiggleTrack',
-    title: 'Quantitative (BigWig) track',
+    slug: 'alignments-tracks',
+    title: 'Alignments tracks',
     description:
-      'Render quantitative signal from a BigWig as a wiggle display, configured via the displayDefaults shorthand.',
+      'Open an alignments (BAM/CRAM) track with a chosen display, and group reads by a SAM tag.',
     group: 'Track display & coloring',
+    sections: [
+      {
+        slug: 'with-init-alignments-display',
+        name: 'WithInitAlignmentsDisplay',
+        title: 'Initialize an alignments display',
+        description:
+          'Open an alignments (BAM/CRAM) track with a chosen display.',
+      },
+      {
+        slug: 'with-group-by-tag',
+        name: 'WithGroupByTag',
+        title: 'Group alignments by tag',
+        description: 'Group reads in an alignments track by a SAM tag.',
+      },
+    ],
   },
   {
-    slug: 'with-gtf-track',
-    name: 'WithGtfTrack',
-    title: 'GTF gene model track',
+    slug: 'specialized-track-types',
+    title: 'Quantitative, gene & variant tracks',
     description:
-      'Load gene models from a GTF file, with genes/transcripts built from per-feature lines via aggregateField.',
+      'Load specific data types: quantitative signal from a BigWig, gene models from a GTF, and a multi-sample VCF as a matrix.',
     group: 'Track display & coloring',
-  },
-  {
-    slug: 'with-init-alignments-display',
-    name: 'WithInitAlignmentsDisplay',
-    title: 'Initialize an alignments display',
-    description: 'Open an alignments (BAM/CRAM) track with a chosen display.',
-    group: 'Track display & coloring',
-  },
-  {
-    slug: 'with-group-by-tag',
-    name: 'WithGroupByTag',
-    title: 'Group alignments by tag',
-    description: 'Group reads in an alignments track by a SAM tag.',
-    group: 'Track display & coloring',
-  },
-  {
-    slug: 'with-multi-sample-variant-display',
-    name: 'WithMultiSampleVariantDisplay',
-    title: 'Multi-sample variant display',
-    description: 'Show a multi-sample VCF as a matrix display.',
-    group: 'Track display & coloring',
+    sections: [
+      {
+        slug: 'with-wiggle-track',
+        name: 'WithWiggleTrack',
+        title: 'Quantitative (BigWig) track',
+        description:
+          'Render quantitative signal from a BigWig as a wiggle display, configured via the displayDefaults shorthand.',
+      },
+      {
+        slug: 'with-gtf-track',
+        name: 'WithGtfTrack',
+        title: 'GTF gene model track',
+        description:
+          'Load gene models from a GTF file, with genes/transcripts built from per-feature lines via aggregateField.',
+      },
+      {
+        slug: 'with-multi-sample-variant-display',
+        name: 'WithMultiSampleVariantDisplay',
+        title: 'Multi-sample variant display',
+        description: 'Show a multi-sample VCF as a matrix display.',
+      },
+    ],
   },
 
   // --- Sessions & state ---
   {
-    slug: 'with-init-advanced',
-    name: 'WithInitAdvanced',
-    title: 'Advanced init',
-    description: 'Use the advanced init blob to set up a richer initial view.',
+    slug: 'session-setup',
+    title: 'Advanced init & session highlights',
+    description:
+      'Use the advanced init blob for a richer initial view, and add highlighted regions to the session.',
     group: 'Sessions & state',
-  },
-  {
-    slug: 'with-session-highlights',
-    name: 'WithSessionHighlights',
-    title: 'Session highlights',
-    description: 'Add highlighted regions to the session.',
-    group: 'Sessions & state',
+    sections: [
+      {
+        slug: 'with-init-advanced',
+        name: 'WithInitAdvanced',
+        title: 'Advanced init',
+        description:
+          'Use the advanced init blob to set up a richer initial view.',
+      },
+      {
+        slug: 'with-session-highlights',
+        name: 'WithSessionHighlights',
+        title: 'Session highlights',
+        description: 'Add highlighted regions to the session.',
+      },
+    ],
   },
   {
     slug: 'observe-visible',
-    name: 'ObserveVisible',
     title: 'Observe the visible view',
     description:
       'React to the regions and features currently visible in the view from your own companion panels.',
     group: 'Sessions & state',
+    sections: [
+      {
+        slug: 'observe-visible',
+        name: 'ObserveVisible',
+        title: 'Observe the visible view',
+        description:
+          'React to the regions and features currently visible in the view from your own companion panels.',
+      },
+    ],
   },
   {
     slug: 'with-two-linear-genome-views',
-    name: 'WithTwoLinearGenomeViews',
     title: 'Two linear genome views',
     description: 'Render two independent views on one page.',
     group: 'Sessions & state',
+    sections: [
+      {
+        slug: 'with-two-linear-genome-views',
+        name: 'WithTwoLinearGenomeViews',
+        title: 'Two linear genome views',
+        description: 'Render two independent views on one page.',
+      },
+    ],
   },
   {
     slug: 'with-error-handler',
-    name: 'WithErrorHandler',
     title: 'Custom error handling',
     description: 'Catch and render view errors with your own UI.',
     group: 'Sessions & state',
+    sections: [
+      {
+        slug: 'with-error-handler',
+        name: 'WithErrorHandler',
+        title: 'Custom error handling',
+        description: 'Catch and render view errors with your own UI.',
+      },
+    ],
   },
 
   // --- Text searching ---
   {
-    slug: 'with-aggregate-text-searching',
-    name: 'WithAggregateTextSearching',
-    title: 'Aggregate text searching',
-    description: 'Search across tracks with an aggregate text-search adapter.',
+    slug: 'text-searching',
+    title: 'Text searching',
+    description:
+      'Search by gene name or ID — across all tracks with an aggregate adapter, or per-track.',
     group: 'Text searching',
-  },
-  {
-    slug: 'with-per-track-text-searching',
-    name: 'WithPerTrackTextSearching',
-    title: 'Per-track text searching',
-    description: 'Attach a text-search adapter to an individual track.',
-    group: 'Text searching',
+    sections: [
+      {
+        slug: 'with-aggregate-text-searching',
+        name: 'WithAggregateTextSearching',
+        title: 'Aggregate text searching',
+        description:
+          'Search across tracks with an aggregate text-search adapter.',
+      },
+      {
+        slug: 'with-per-track-text-searching',
+        name: 'WithPerTrackTextSearching',
+        title: 'Per-track text searching',
+        description: 'Attach a text-search adapter to an individual track.',
+      },
+    ],
   },
 
   // --- Plugins & accounts ---
   {
-    slug: 'with-external-plugin',
-    name: 'WithExternalPlugin',
-    title: 'External plugin',
-    description: 'Load a plugin at runtime from a URL.',
+    slug: 'plugins',
+    title: 'Plugins',
+    description:
+      'Extend the view with plugins — loaded at runtime from a URL, or defined inline in your own code.',
     group: 'Plugins & accounts',
-  },
-  {
-    slug: 'with-inline-plugins',
-    name: 'WithInlinePlugins',
-    title: 'Inline plugins',
-    description: 'Register a plugin defined inline in your own code.',
-    group: 'Plugins & accounts',
+    sections: [
+      {
+        slug: 'with-external-plugin',
+        name: 'WithExternalPlugin',
+        title: 'External plugin',
+        description: 'Load a plugin at runtime from a URL.',
+      },
+      {
+        slug: 'with-inline-plugins',
+        name: 'WithInlinePlugins',
+        title: 'Inline plugins',
+        description: 'Register a plugin defined inline in your own code.',
+      },
+    ],
   },
   {
     slug: 'with-internet-accounts',
-    name: 'WithInternetAccounts',
     title: 'Internet accounts (authentication)',
     description: 'Access authenticated data sources via internet accounts.',
     group: 'Plugins & accounts',
+    sections: [
+      {
+        slug: 'with-internet-accounts',
+        name: 'WithInternetAccounts',
+        title: 'Internet accounts (authentication)',
+        description: 'Access authenticated data sources via internet accounts.',
+      },
+    ],
   },
   {
     slug: 'with-web-worker',
-    name: 'WithWebWorker',
     title: 'Web worker RPC',
     description: 'Offload data parsing/rendering to a web worker.',
     group: 'Plugins & accounts',
+    sections: [
+      {
+        slug: 'with-web-worker',
+        name: 'WithWebWorker',
+        title: 'Web worker RPC',
+        description: 'Offload data parsing/rendering to a web worker.',
+      },
+    ],
   },
   {
     slug: 'with-drawer-widget',
-    name: 'WithDrawerWidget',
     title: 'Drawer widget',
     description: 'Show feature details and other widgets in the drawer.',
     group: 'Plugins & accounts',
+    sections: [
+      {
+        slug: 'with-drawer-widget',
+        name: 'WithDrawerWidget',
+        title: 'Drawer widget',
+        description: 'Show feature details and other widgets in the drawer.',
+      },
+    ],
   },
 
   // --- Real-world demos ---
   {
     slug: 'human-exome-example',
-    name: 'HumanExomeExample',
     title: 'Human exome example',
     description: 'A human exome sequencing dataset on hg38.',
     group: 'Real-world demos',
+    sections: [
+      {
+        slug: 'human-exome-example',
+        name: 'HumanExomeExample',
+        title: 'Human exome example',
+        description: 'A human exome sequencing dataset on hg38.',
+      },
+    ],
   },
   {
     slug: 'nextstrain-pathogens',
-    name: 'NextstrainPathogens',
     title: 'Nextstrain pathogens',
     description:
       'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A — pick a pathogen from the dropdown.',
     group: 'Real-world demos',
     // the genotype-matrix GPU render crashes CI's headless software-WebGL
     skipSmoke: true,
+    sections: [
+      {
+        slug: 'nextstrain-pathogens',
+        name: 'NextstrainPathogens',
+        title: 'Nextstrain pathogens',
+        description:
+          'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A — pick a pathogen from the dropdown.',
+      },
+    ],
   },
   {
     slug: 'nextstrain-msa',
-    name: 'NextstrainMsa',
     title: 'Nextstrain MSA + tree',
     description:
       'The Nextstrain tree + reconstructed reference-coordinate MSA, embedded with react-msaview.',
     group: 'Real-world demos',
+    sections: [
+      {
+        slug: 'nextstrain-msa',
+        name: 'NextstrainMsa',
+        title: 'Nextstrain MSA + tree',
+        description:
+          'The Nextstrain tree + reconstructed reference-coordinate MSA, embedded with react-msaview.',
+      },
+    ],
   },
   {
     slug: 'locus-zoom-ld',
-    name: 'LocusZoomLD',
     title: 'LocusZoom-style LD',
     description:
       'GWAS summary stats colored by LD r² to the lead SNP, LocusZoom-style.',
     group: 'Real-world demos',
+    sections: [
+      {
+        slug: 'locus-zoom-ld',
+        name: 'LocusZoomLD',
+        title: 'LocusZoom-style LD',
+        description:
+          'GWAS summary stats colored by LD r² to the lead SNP, LocusZoom-style.',
+      },
+    ],
   },
   {
     slug: 'pan-ukb-gwas',
-    name: 'PanUKBGWAS',
     title: 'Pan-UKB GWAS',
     description:
       'Browse Pan-UK Biobank GWAS summary statistics across phenotypes.',
     group: 'Real-world demos',
+    sections: [
+      {
+        slug: 'pan-ukb-gwas',
+        name: 'PanUKBGWAS',
+        title: 'Pan-UKB GWAS',
+        description:
+          'Browse Pan-UK Biobank GWAS summary statistics across phenotypes.',
+      },
+    ],
   },
 ]
+
+// look up a section by slug within a page — used by the multi-section pages to
+// pass each section's title/description into <ExampleSection> type-safely
+export function section(page: ExamplePage, slug: string): ExampleSection {
+  const found = page.sections.find(s => s.slug === slug)
+  if (!found) {
+    throw new Error(`no section "${slug}" on page "${page.slug}"`)
+  }
+  return found
+}
+
+// flat, one-entry-per-page list for the shared Shell sidebar + Gallery grid and
+// the build smoke test, which only need {slug, title, description, group} (plus
+// skipSmoke)
+export const examples = pages.map(
+  ({ slug, title, description, group, skipSmoke }) => ({
+    slug,
+    title,
+    description,
+    group,
+    skipSmoke,
+  }),
+)

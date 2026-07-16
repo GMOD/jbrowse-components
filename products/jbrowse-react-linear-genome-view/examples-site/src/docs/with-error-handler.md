@@ -13,6 +13,6 @@ with helpful context, adding a stack-trace button and, for `createViewState`
 validation failures, the offending config snapshot. Its plainer sibling
 `ErrorMessage` renders just the message text.
 
-This example wraps [`createViewState`](../use-create-view-state/) in a
+This example wraps [`createViewState`](../setting-up-the-view/#use-create-view-state) in a
 try/catch, configures a `BadTrack` track type that fails validation, and renders
 the caught error with `ErrorBanner`.

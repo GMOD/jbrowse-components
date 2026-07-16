@@ -1,0 +1,22 @@
+---
+import WithOutsideStyling from "../examples/WithOutsideStyling.tsx"
+import WithOutsideStylingCode from "../examples/WithOutsideStyling.tsx?raw"
+import ShadowDOMOneLinearGenomeView from "../examples/ShadowDOMOneLinearGenomeView.tsx"
+import ShadowDOMOneLinearGenomeViewCode from "../examples/ShadowDOMOneLinearGenomeView.tsx?raw"
+import { pages, section } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "style-isolation")!
+const sec0 = section(page, "with-outside-styling")
+const sec1 = section(page, "shadow-dom")
+---
+
+<Layout page={page}>
+  <Section {...sec0} code={WithOutsideStylingCode}>
+    <WithOutsideStyling client:only="react" />
+  </Section>
+  <Section {...sec1} code={ShadowDOMOneLinearGenomeViewCode}>
+    <ShadowDOMOneLinearGenomeView client:only="react" />
+  </Section>
+</Layout>

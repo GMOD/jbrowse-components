@@ -19,6 +19,6 @@ init={{ loc: 'ctgA:1,000..5,000[rev]' }}
 ```
 
 To flip only some regions in a multi-region view, see
-[mixing orientations](../with-multiple-displayed-regions-flipped/).
+[mixing orientations](../flipping-regions/#with-multiple-displayed-regions-flipped).
 `horizontallyFlip` and the rest of the view's actions are listed in the
 [LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

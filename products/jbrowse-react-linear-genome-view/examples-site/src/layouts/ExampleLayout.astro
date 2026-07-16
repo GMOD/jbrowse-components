@@ -1,44 +1,40 @@
 ---
-import { Code } from 'astro:components'
-
 import Shell from './Shell.astro'
-import { examples } from '../examples.ts'
-import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
+import { examples, type ExamplePage } from '../examples.ts'
+import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 
-import type { MarkdownInstance } from 'astro'
-
+// Page-level chrome for an example page. The live demos are supplied as slotted
+// <ExampleSection> children so their React islands hydrate in the page file.
+// When a page stacks several sections, a "jump to" nav surfaces them up front —
+// otherwise the extra demos are only discoverable by scrolling.
 interface Props {
-  slug: string
-  title: string
-  description?: string
-  code: string
+  page: ExamplePage
 }
 
-const { slug, title, description, code } = Astro.props
-
-// each example page may have a hand-written doc at src/docs/<slug>.md; render it
-// above the live demo when present
-const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
-  '../docs/*.md',
-)
-const loader = docs[`../docs/${slug}.md`]
-const doc = loader ? await loader() : undefined
-const Doc = doc?.Content
+const { page } = Astro.props
+const multiSection = page.sections.length > 1
 ---
 
 <Shell
-  title={title}
+  title={page.title}
   componentLabel={componentLabel}
   examples={examples}
   mainMaxWidth={mainMaxWidth}
 >
-  <h1>{title}</h1>
-  {description && <p class="lead">{description}</p>}
-  {Doc && <div class="doc"><Doc /></div>}
-  <h2>Live demo</h2>
-  <div class:list={['demo', { fill: demoFillHeight }]}><slot /></div>
-  <details class="source">
-    <summary>View source</summary>
-    <Code code={code} lang="tsx" />
-  </details>
+  <h1>{page.title}</h1>
+  <p class="lead">{page.description}</p>
+  {
+    multiSection && (
+      <p>
+        On this page:{' '}
+        {page.sections.map((s, i) => (
+          <>
+            {i > 0 && ' · '}
+            <a href={`#${s.slug}`}>{s.title}</a>
+          </>
+        ))}
+      </p>
+    )
+  }
+  <slot />
 </Shell>

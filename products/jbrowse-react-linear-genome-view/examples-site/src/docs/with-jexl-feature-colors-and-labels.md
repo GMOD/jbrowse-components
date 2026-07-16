@@ -13,7 +13,7 @@ displayDefaults: {
 ```
 
 This uses the same
-[`displayDefaults` object shorthand](../with-track-color-shorthand/) — JBrowse
+[`displayDefaults` object shorthand](../feature-colors-and-labels/#with-track-color-shorthand) — JBrowse
 routes the settings to the track's
 [`LinearBasicDisplay`](https://jbrowse.org/jb2/docs/config/linearbasicdisplay/),
 whose `color` and `labels` config slots accept these callbacks. See the

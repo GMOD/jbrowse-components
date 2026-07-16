@@ -1,0 +1,22 @@
+---
+import HorizontallyFlip from "../examples/HorizontallyFlip.tsx"
+import HorizontallyFlipCode from "../examples/HorizontallyFlip.tsx?raw"
+import WithMultipleDisplayedRegionsFlipped from "../examples/WithMultipleDisplayedRegionsFlipped.tsx"
+import WithMultipleDisplayedRegionsFlippedCode from "../examples/WithMultipleDisplayedRegionsFlipped.tsx?raw"
+import { pages, section } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "flipping-regions")!
+const sec0 = section(page, "horizontally-flip")
+const sec1 = section(page, "with-multiple-displayed-regions-flipped")
+---
+
+<Layout page={page}>
+  <Section {...sec0} code={HorizontallyFlipCode}>
+    <HorizontallyFlip client:only="react" />
+  </Section>
+  <Section {...sec1} code={WithMultipleDisplayedRegionsFlippedCode}>
+    <WithMultipleDisplayedRegionsFlipped client:only="react" />
+  </Section>
+</Layout>

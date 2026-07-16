@@ -1,0 +1,22 @@
+---
+import WithExternalPlugin from "../examples/WithExternalPlugin.tsx"
+import WithExternalPluginCode from "../examples/WithExternalPlugin.tsx?raw"
+import WithInlinePlugins from "../examples/WithInlinePlugins.tsx"
+import WithInlinePluginsCode from "../examples/WithInlinePlugins.tsx?raw"
+import { pages, section } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "plugins")!
+const sec0 = section(page, "with-external-plugin")
+const sec1 = section(page, "with-inline-plugins")
+---
+
+<Layout page={page}>
+  <Section {...sec0} code={WithExternalPluginCode}>
+    <WithExternalPlugin client:only="react" />
+  </Section>
+  <Section {...sec1} code={WithInlinePluginsCode}>
+    <WithInlinePlugins client:only="react" />
+  </Section>
+</Layout>

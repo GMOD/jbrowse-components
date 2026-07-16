@@ -1,12 +1,22 @@
 ---
-import Example from '../examples/DefaultSession.tsx'
-import code from '../examples/DefaultSession.tsx?raw'
-import { examples } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
+import DefaultSession from "../examples/DefaultSession.tsx"
+import DefaultSessionCode from "../examples/DefaultSession.tsx?raw"
+import DisableAddTrack from "../examples/DisableAddTrack.tsx"
+import DisableAddTrackCode from "../examples/DisableAddTrack.tsx?raw"
+import { pages, section } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
 
-const meta = examples.find(e => e.slug === 'default-session')!
+const page = pages.find(p => p.slug === "default-session")!
+const sec0 = section(page, "default-session")
+const sec1 = section(page, "disable-add-track")
 ---
 
-<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
-  <Example client:only="react" />
+<Layout page={page}>
+  <Section {...sec0} code={DefaultSessionCode}>
+    <DefaultSession client:only="react" />
+  </Section>
+  <Section {...sec1} code={DisableAddTrackCode}>
+    <DisableAddTrack client:only="react" />
+  </Section>
 </Layout>

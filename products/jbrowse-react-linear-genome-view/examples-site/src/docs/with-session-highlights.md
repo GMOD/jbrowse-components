@@ -22,7 +22,7 @@ view: {
 }
 ```
 
-The simpler [`init.highlight`](../with-init-advanced/) field also exists, but it
+The simpler [`init.highlight`](../session-setup/#with-init-advanced) field also exists, but it
 only accepts plain loc-strings (no per-highlight color or label). The
 `highlight` property and its `addToHighlights`/`removeHighlight` actions are
 documented in the

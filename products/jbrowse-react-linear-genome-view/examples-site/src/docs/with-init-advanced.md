@@ -26,4 +26,4 @@ state-model reference — e.g.
 (quantitative tracks) — and the URL-param form is covered in
 [URL query parameters](https://jbrowse.org/jb2/docs/urlparams/). For an
 alignments-specific `displaySnapshot`, see
-[initializing an alignments display](../with-init-alignments-display/).
+[initializing an alignments display](../alignments-tracks/#with-init-alignments-display).

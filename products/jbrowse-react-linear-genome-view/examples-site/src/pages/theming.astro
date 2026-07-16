@@ -1,0 +1,22 @@
+---
+import WithCustomTheme from "../examples/WithCustomTheme.tsx"
+import WithCustomThemeCode from "../examples/WithCustomTheme.tsx?raw"
+import WithDarkTheme from "../examples/WithDarkTheme.tsx"
+import WithDarkThemeCode from "../examples/WithDarkTheme.tsx?raw"
+import { pages, section } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "theming")!
+const sec0 = section(page, "with-custom-theme")
+const sec1 = section(page, "with-dark-theme")
+---
+
+<Layout page={page}>
+  <Section {...sec0} code={WithCustomThemeCode}>
+    <WithCustomTheme client:only="react" />
+  </Section>
+  <Section {...sec1} code={WithDarkThemeCode}>
+    <WithDarkTheme client:only="react" />
+  </Section>
+</Layout>

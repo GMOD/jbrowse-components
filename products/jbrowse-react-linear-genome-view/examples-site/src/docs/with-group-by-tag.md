@@ -26,5 +26,5 @@ The demo pairs `groupBy` with a matching `colorBy` so each haplotype lane
 part of the
 [LinearAlignmentsDisplay](https://jbrowse.org/jb2/docs/config/linearalignmentsdisplay/)
 config. See
-[initializing an alignments display](../with-init-alignments-display/) for the
+[initializing an alignments display](../alignments-tracks/#with-init-alignments-display) for the
 broader set of alignments display settings.

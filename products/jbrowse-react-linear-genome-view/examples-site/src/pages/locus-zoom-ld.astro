@@ -1,12 +1,15 @@
 ---
-import Example from '../examples/LocusZoomLD.tsx'
-import code from '../examples/LocusZoomLD.tsx?raw'
-import { examples } from '../examples.ts'
-import Layout from '../layouts/ExampleLayout.astro'
+import Example from "../examples/LocusZoomLD.tsx"
+import code from "../examples/LocusZoomLD.tsx?raw"
+import { pages } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
 
-const meta = examples.find(e => e.slug === 'locus-zoom-ld')!
+const page = pages.find(p => p.slug === "locus-zoom-ld")!
 ---
 
-<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
-  <Example client:only="react" />
+<Layout page={page}>
+  <Section slug="locus-zoom-ld" code={code}>
+    <Example client:only="react" />
+  </Section>
 </Layout>
