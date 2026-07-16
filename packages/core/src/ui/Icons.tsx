@@ -34,23 +34,12 @@ export function DNA(props: SvgIconProps) {
   )
 }
 
-// highlighter from https://lucide.dev/ — a stroke-only icon, so fill="none" is
-// set on each path (MUI's .MuiSvgIcon-root CSS forces fill:currentColor, which
-// would beat a fill="none" attribute on the root svg and paint the strokes in)
+// bx-highlight from https://boxicons.com/ (MIT License, Copyright (c) Aniket
+// Suvarna) — https://github.com/atisawd/boxicons/blob/master/svg/regular/bx-highlight.svg
 export function Highlighter(props: SvgIconProps) {
   return (
-    <SvgIcon
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path fill="none" d="m9 11-6 6v3h9l3-3" />
-      <path
-        fill="none"
-        d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"
-      />
+    <SvgIcon {...props}>
+      <path d="m20.707 5.826-3.535-3.533a.999.999 0 0 0-1.408-.006L7.096 10.82a1.01 1.01 0 0 0-.273.488l-1.024 4.437L4 18h2.828l1.142-1.129 3.588-.828c.18-.042.345-.133.477-.262l8.667-8.535a1 1 0 0 0 .005-1.42zm-9.369 7.833-2.121-2.12 7.243-7.131 2.12 2.12-7.242 7.131zM4 20h16v2H4z" />
     </SvgIcon>
   )
 }
