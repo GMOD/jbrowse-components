@@ -143,7 +143,8 @@ The fields that drive the display:
 
 Note there's no color setting: a BED carrying `itemRgb` is painted with it
 automatically, so each feature gets its ChromHMM state color straight from the
-file. Set the `color` slot only to override that.
+file. Set the [`color`](/docs/config/linearmultirowfeaturedisplay/#slot-color)
+slot only to override that.
 
 **Using JBrowse Desktop?** These steps work unchanged. Desktop opens
 `wgEncodeBroadHmm.multirow.bed.gz` straight from your local disk (point

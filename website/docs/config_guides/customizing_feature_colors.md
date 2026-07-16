@@ -81,6 +81,12 @@ means, so columns past `name`/`score`/`strand` are exposed generically as
 To reference columns by stable name, add `columnNames` (or a full `autoSql`) to
 the adapter config.
 
+For color this rarely matters: a BED that carries its own colors needs no
+callback, since an unset
+[`color`](/docs/config/linearcanvasbasedisplay/#slot-color) slot paints each
+feature from them under whichever of those names they land. Write a callback to
+override that, or to read a color from some other column.
+
 `myplugin.js` doesn't need the jbrowse-plugin-template if it's self-contained
 and has no external imports. If it does import other modules, use the template.
 For embedded components, see the
