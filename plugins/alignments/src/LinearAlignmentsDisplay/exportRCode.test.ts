@@ -29,7 +29,7 @@ test('emits a coverage panel and a pileup panel, coverage on top', () => {
     expect.arrayContaining(['read_bam', 'pileup_layout']),
   )
   expect(pileup!.plotExpr).toContain(
-    'pileup_layout(read_bam(aln, chrom, start, end))',
+    'pileup_layout(reads)',
   )
 })
 
@@ -131,7 +131,7 @@ test('linkReads uses chain layout with mate/supplementary connectors', () => {
   const [, flat] = alignmentsFragments(base)
   expect(flat!.helpers).toContain('pileup_layout')
   expect(flat!.plotExpr).toContain(
-    'pileup_layout(read_bam(aln, chrom, start, end))',
+    'pileup_layout(reads)',
   )
   expect(flat!.plotExpr).not.toContain('link_reads')
 
@@ -140,7 +140,7 @@ test('linkReads uses chain layout with mate/supplementary connectors', () => {
   expect(linked!.helpers).toContain('link_reads')
   expect(linked!.helpers).not.toContain('pileup_layout')
   expect(linked!.plotExpr).toContain(
-    'link_reads(read_bam(aln, chrom, start, end))',
+    'link_reads(reads)',
   )
   // connector segments drawn from linked$links, under the read rects
   expect(linked!.plotExpr).toContain('geom_segment(data = linked$links')
@@ -209,7 +209,7 @@ test('sortedBy reorders the pileup with sorted_pileup_layout', () => {
   expect(byPos!.helpers).not.toContain('pileup_layout')
   expect(byPos!.plotExpr).toContain('sort_pos <- 4200')
   expect(byPos!.plotExpr).toContain(
-    'sorted_pileup_layout(read_bam(aln, chrom, start, end), sort_pos, "position")',
+    'sorted_pileup_layout(reads, sort_pos, "position")',
   )
 
   const [, byStrand] = alignmentsFragments({
@@ -218,7 +218,7 @@ test('sortedBy reorders the pileup with sorted_pileup_layout', () => {
     sortPos: 4200,
   })
   expect(byStrand!.plotExpr).toContain(
-    'sorted_pileup_layout(read_bam(aln, chrom, start, end), sort_pos, "strand")',
+    'sorted_pileup_layout(reads, sort_pos, "strand")',
   )
 })
 
@@ -233,7 +233,7 @@ test('base sort feeds the MD-tag mismatch base at sort_pos into the layout', () 
     expect.arrayContaining(['sorted_pileup_layout', 'bam_mismatches']),
   )
   expect(byBase!.plotExpr).toContain(
-    'sorted_pileup_layout(read_bam(aln, chrom, start, end), sort_pos, "base",',
+    'sorted_pileup_layout(reads, sort_pos, "base",',
   )
   expect(byBase!.plotExpr).toContain('bam_mismatches(aln, chrom, start, end))')
 
@@ -258,6 +258,37 @@ test('linkReads (chain layout) suppresses the position sort', () => {
   expect(linked!.helpers).toContain('link_reads')
   expect(linked!.helpers).not.toContain('sorted_pileup_layout')
   expect(linked!.plotExpr).not.toContain('sort_pos')
+})
+
+test('pileup applies the JBrowse "Filter by" via read_filter', () => {
+  // defaults: flag include 0 / exclude 1540, no name, no tag filters
+  const [, def] = alignmentsFragments(base)
+  expect(def!.helpers).toContain('read_filter')
+  expect(def!.plotExpr).toContain('flag_include <- 0')
+  expect(def!.plotExpr).toContain('flag_exclude <- 1540')
+  expect(def!.plotExpr).toContain('read_name <- NULL')
+  expect(def!.plotExpr).toContain('tag_filters <- list()')
+  expect(def!.plotExpr).toContain(
+    'reads <- read_filter(read_bam(aln, chrom, start, end), aln, chrom, start, end,',
+  )
+  // the layout runs on the filtered reads, not a fresh read_bam
+  expect(def!.plotExpr).toContain('pileup_layout(reads)')
+
+  // explicit flags + read name + tag filters thread through
+  const [, filtered] = alignmentsFragments({
+    ...base,
+    filterFlagInclude: 2,
+    filterFlagExclude: 1796,
+    filterReadName: 'read123',
+    filterTagFilters: [{ tag: 'HP', value: '1' }, { tag: 'RG' }],
+  })
+  expect(filtered!.plotExpr).toContain('flag_include <- 2')
+  expect(filtered!.plotExpr).toContain('flag_exclude <- 1796')
+  expect(filtered!.plotExpr).toContain('read_name <- "read123"')
+  // a value-less tag filter becomes "*" (has-the-tag)
+  expect(filtered!.plotExpr).toContain(
+    'tag_filters <- list(list(tag = "HP", value = "1"), list(tag = "RG", value = "*"))',
+  )
 })
 
 test('SNP coverage thresholds low-frequency mismatches by default', () => {

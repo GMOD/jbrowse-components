@@ -412,10 +412,38 @@ bam_modifications <- function(uri, chrom, start, end, min_prob = 0.1) {
 snp_freq_threshold <- function(depth) {
   ifelse(depth < 10, 0.8, ifelse(depth >= 30, 0.3, 0.8 + (depth - 10) / 20 * (0.3 - 0.8)))
 }`,
+  read_filter: `# Apply JBrowse's "Filter by" to the reads: SAM flag include/exclude, an optional
+# read-name match, and tag filters (all AND-ed; a value of "*" means "has the
+# tag"). Marks a logical 'keep' column rather than dropping rows, so read_index
+# still lines up with the mismatch/mod/clip overlays - the layout then gives a
+# filtered read an NA row and ggplot drops its body and ticks. Mirrors JBrowse's
+# filterReadFlag / filterTagValue. flag_exclude default 1540 = unmapped + QC-fail +
+# duplicate. Tag values are read only when a tag filter is set (an extra scan).
+read_filter <- function(reads, uri, chrom, start, end, flag_include = 0,
+                        flag_exclude = 1540, read_name = NULL, tag_filters = list()) {
+  keep <- bitwAnd(reads$flag, flag_include) == flag_include &
+          bitwAnd(reads$flag, flag_exclude) == 0
+  if (!is.null(read_name)) keep <- keep & !is.na(reads$name) & reads$name == read_name
+  if (length(tag_filters)) {
+    tags <- unique(vapply(tag_filters, function(f) f$tag, character(1)))
+    tv <- mcols(readGAlignments(uri, param = ScanBamParam(
+      which = GRanges(chrom, IRanges(start + 1, end)), tag = tags)))
+    for (f in tag_filters) {
+      val <- tv[[f$tag]]; has <- !is.na(val)
+      keep <- keep & (if (identical(f$value, "*")) has else has & as.character(val) == f$value)
+    }
+  }
+  reads$keep <- keep
+  reads
+}`,
   pileup_layout: `# Stack overlapping reads into rows. IRanges::disjointBins is the standard
-# interval-stacking primitive - the same idea as the JBrowse pileup layout.
+# interval-stacking primitive - the same idea as the JBrowse pileup layout. A
+# 'keep' column (from read_filter) leaves filtered reads at an NA row (undrawn).
 pileup_layout <- function(reads) {
-  reads$row <- disjointBins(IRanges(reads$start + 1L, reads$end))
+  keep <- if (is.null(reads$keep)) rep(TRUE, nrow(reads)) else reads$keep
+  row <- rep(NA_integer_, nrow(reads))
+  row[keep] <- disjointBins(IRanges(reads$start[keep] + 1L, reads$end[keep]))
+  reads$row <- row
   reads
 }`,
   sorted_pileup_layout: `# Localized sort layout - JBrowse's "Sort by..." at the center line. Reads
@@ -428,7 +456,8 @@ pileup_layout <- function(reads) {
 # sort_pos of -1 (no center line) leaves every read in genomic order. Note the
 # baked sort_pos is the exported locus's column - move it to re-sort elsewhere.
 sorted_pileup_layout <- function(reads, sort_pos, sort_type = "position", mm = NULL) {
-  ov <- which(reads$start <= sort_pos & reads$end > sort_pos)
+  keep <- if (is.null(reads$keep)) rep(TRUE, nrow(reads)) else reads$keep
+  ov <- which(keep & reads$start <= sort_pos & reads$end > sort_pos)
   key <- switch(sort_type,
     strand = ifelse(reads$strand[ov] == "-", 1L, 0L),
     base = {
@@ -441,12 +470,13 @@ sorted_pileup_layout <- function(reads, sort_pos, sort_type = "position", mm = N
       k
     },
     reads$start[ov])
-  order_idx <- c(ov[order(key)], setdiff(seq_len(nrow(reads)), ov))
+  order_idx <- c(ov[order(key)], setdiff(which(keep), ov))
 
   # greedy first-fit-lowest-row placement in that order: each row keeps the
   # intervals placed on it so far, and a read takes the lowest row it clears.
+  # Filtered reads (not in order_idx) keep an NA row and go undrawn.
   starts <- ends <- list()
-  row <- integer(nrow(reads))
+  row <- rep(NA_integer_, nrow(reads))
   for (i in order_idx) {
     s <- reads$start[i]; e <- reads$end[i]
     r <- 1L
@@ -469,16 +499,20 @@ sorted_pileup_layout <- function(reads, sort_pos, sort_type = "position", mm = N
 # junction). A record whose mate/other segment falls outside the fetched window
 # simply has no connector (only the segments actually in view are linked).
 link_reads <- function(reads) {
-  nm <- ifelse(is.na(reads$name), paste0("_r", seq_len(nrow(reads))), reads$name)
-  chain_start <- tapply(reads$start, nm, min)
-  chain_end   <- tapply(reads$end, nm, max)
-  row <- disjointBins(IRanges(as.integer(chain_start) + 1L, as.integer(chain_end)))
-  names(row) <- names(chain_start)
-  reads$row <- unname(row[nm])
-  ord <- order(nm, reads$start); s <- reads[ord, ]; g <- nm[ord]
+  keep <- if (is.null(reads$keep)) rep(TRUE, nrow(reads)) else reads$keep
+  k <- which(keep); sub <- reads[k, ]
+  nm <- ifelse(is.na(sub$name), paste0("_r", k), sub$name)
+  chain_start <- tapply(sub$start, nm, min)
+  chain_end   <- tapply(sub$end, nm, max)
+  crow <- disjointBins(IRanges(as.integer(chain_start) + 1L, as.integer(chain_end)))
+  names(crow) <- names(chain_start)
+  row <- rep(NA_integer_, nrow(reads))
+  row[k] <- unname(crow[nm])
+  reads$row <- row
+  ord <- order(nm, sub$start); s <- sub[ord, ]; g <- nm[ord]
   same <- g[-1] == g[-length(g)]
-  x0 <- s$end[-nrow(s)]; x1 <- s$start[-1]; keep <- same & x1 > x0
-  links <- data.frame(xstart = x0[keep], xend = x1[keep], row = s$row[-1][keep])
+  x0 <- s$end[-nrow(s)]; x1 <- s$start[-1]; keeplink <- same & x1 > x0
+  links <- data.frame(xstart = x0[keeplink], xend = x1[keeplink], row = row[k][ord][-1][keeplink])
   list(reads = reads, links = links)
 }`,
   bam_coverage: `# Per-base read depth over the region.

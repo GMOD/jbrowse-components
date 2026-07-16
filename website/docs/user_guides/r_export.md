@@ -54,8 +54,8 @@ the browser draws:
   multi-wiggle
 - **Alignments** (BAM/CRAM) — a coverage histogram plus a pileup with
   reference-free mismatch ticks (from the MD tag), color-by schemes, modifications
-  (MM/ML), per-base quality, clip indicators, CIGAR indels, linked reads, and the
-  center-line sorts below
+  (MM/ML), per-base quality, clip indicators, CIGAR indels, linked reads, the
+  "Filter by" flag/read-name/tag filters, and the center-line sorts below
 - **Features / genes** (GFF3, BED)
 - **Variants** (VCF), including the multi-sample matrix and per-sample rows
 - **Hi-C** (`.hic`) — the rotated contact triangle
@@ -70,6 +70,17 @@ first, so they line up as a block, and the remaining reads fill in around them.
 The sort column is baked into the script as an editable `sort_pos` variable.
 
 <Figure caption="Alignments pileup exported with 'Sort by base' at ctgA:1,693: reads carrying the alternate allele (blue mismatch ticks) are grouped at the top, reference-matching reads below." src="/img/rexport/alignments_sort.png"/>
+
+## Filtering
+
+The alignments "Filter by" settings (SAM flag include/exclude, read-name match,
+and tag filters like HP or RG) are reproduced by a `read_filter` helper emitted
+as editable script variables (`flag_include`, `flag_exclude`, `read_name`,
+`tag_filters`). Rather than dropping reads, it marks a `keep` column so the
+per-base overlays still line up by read index; the layout then leaves a filtered
+read at an NA row, which ggplot omits. The flag defaults match JBrowse
+(`flag_exclude <- 1540` = unmapped + QC-fail + duplicate). Note the coverage
+panel is computed over all reads, so only the pileup reflects the filter.
 
 ## Not pixel-perfect, by design
 

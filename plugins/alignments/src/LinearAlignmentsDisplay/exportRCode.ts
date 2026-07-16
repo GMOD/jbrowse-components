@@ -77,6 +77,24 @@ export interface AlignmentsRParams {
   // genomic column the sort anchors on (the center line at export); -1 (default)
   // when no center line, which leaves every read in genomic order
   sortPos?: number
+  // JBrowse "Filter by" (read_filter): SAM flag include/exclude bitmasks, an
+  // optional exact read-name match, and AND-ed tag filters (value "*" = has tag).
+  // Applied to the pileup; a filtered read gets an NA row and goes undrawn.
+  // Flags default to JBrowse's defaultFilterFlags (0 include / 1540 exclude).
+  filterFlagInclude?: number
+  filterFlagExclude?: number
+  filterReadName?: string
+  filterTagFilters?: { tag: string; value?: string }[]
+}
+
+// Emit the tag-filter list read_filter consumes: list() when empty, else a list
+// of list(tag=, value=) (a missing value defaults to "*" = "read has the tag").
+function emitTagFilters(filters: { tag: string; value?: string }[]) {
+  return filters.length === 0
+    ? 'list()'
+    : `list(${filters
+        .map(f => `list(tag = ${rStr(f.tag)}, value = ${rStr(f.value ?? '*')})`)
+        .join(', ')})`
 }
 
 // Map self.sortedBy.type to the sort the R sorted_pileup_layout reproduces.
@@ -244,21 +262,33 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
     // packs whole templates, so sorting doesn't apply). base sort needs the MD-tag
     // mismatch base at sort_pos, so it feeds bam_mismatches into the layout.
     const sortType = p.linkReads ? undefined : p.sortType
+    // read the region then apply JBrowse's "Filter by" (flags/read name/tags),
+    // marking a keep column so the layout drops filtered reads to an NA row
+    const readsSetup = `  # JBrowse "Filter by": SAM flags + optional read-name / tag filters (edit freely)
+  flag_include <- ${p.filterFlagInclude ?? 0}
+  flag_exclude <- ${p.filterFlagExclude ?? 1540}
+  read_name <- ${p.filterReadName ? rStr(p.filterReadName) : 'NULL'}
+  tag_filters <- ${emitTagFilters(p.filterTagFilters ?? [])}
+  reads <- read_filter(read_bam(${bamVar}, chrom, start, end), ${bamVar}, chrom, start, end,
+    flag_include, flag_exclude, read_name, tag_filters)`
     // chain layout groups mates + supplementary segments onto one row and draws
     // a connector across each gap (under the read rects, which paint on top)
     const layout = p.linkReads
-      ? `  linked <- link_reads(read_bam(${bamVar}, chrom, start, end))
+      ? `${readsSetup}
+  linked <- link_reads(reads)
   reads <- linked$reads`
       : sortType === 'base'
-        ? `  # sort reads by their base at the center-line column, then pack rows
+        ? `${readsSetup}
+  # sort reads by their base at the center-line column, then pack rows
   sort_pos <- ${p.sortPos ?? -1}
-  reads <- sorted_pileup_layout(read_bam(${bamVar}, chrom, start, end), sort_pos, "base",
-    bam_mismatches(${bamVar}, chrom, start, end))`
+  reads <- sorted_pileup_layout(reads, sort_pos, "base", bam_mismatches(${bamVar}, chrom, start, end))`
         : sortType !== undefined
-          ? `  # sort reads by ${sortType} at the center-line column, then pack rows
+          ? `${readsSetup}
+  # sort reads by ${sortType} at the center-line column, then pack rows
   sort_pos <- ${p.sortPos ?? -1}
-  reads <- sorted_pileup_layout(read_bam(${bamVar}, chrom, start, end), sort_pos, ${rStr(sortType)})`
-          : `  reads <- pileup_layout(read_bam(${bamVar}, chrom, start, end))`
+  reads <- sorted_pileup_layout(reads, sort_pos, ${rStr(sortType)})`
+          : `${readsSetup}
+  reads <- pileup_layout(reads)`
     const connector = p.linkReads
       ? `
     geom_segment(data = linked$links,
@@ -322,6 +352,7 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
       helpers: [
         ...cramHelpers,
         'read_bam',
+        'read_filter',
         'pair_orientation',
         p.linkReads
           ? 'link_reads'
@@ -393,6 +424,10 @@ export function exportRCode(
     linkReads: self.linkedReads !== 'off',
     sortType: resolveSortType(self.sortedBy?.type),
     sortPos: self.sortedBy?.pos ?? -1,
+    filterFlagInclude: self.filterBy.flagInclude,
+    filterFlagExclude: self.filterBy.flagExclude,
+    filterReadName: self.filterBy.readName,
+    filterTagFilters: self.filterBy.tagFilters ?? [],
     // JBrowse stores the threshold as a percent (default 10); the R helper wants
     // a 0..1 probability
     modificationThreshold:
