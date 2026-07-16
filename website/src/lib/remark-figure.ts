@@ -14,11 +14,12 @@ const figureRe = /<Figure\s+([\s\S]*?)\s*\/>/
 let dialogCount = 0
 
 // map each /img/<name>.png to the live JBrowse instance that produced it, so a
-// screenshot links to a running view the reader can open and explore
-const liveUrlByImg = new Map(
+// screenshot links to a running view the reader can open and explore. The spec
+// name rides along: opening a figure in Desktop names a session after it.
+const liveByImg = new Map(
   Object.entries(screenshotLiveUrls).map(([name, url]) => [
     `/img/${name}.png`,
-    url,
+    { name, url },
   ]),
 )
 
@@ -96,14 +97,15 @@ const remarkFigure: Plugin<[{ base?: string }?], Root> = (options = {}) => {
 
       // explicit link= wins; otherwise auto-link screenshots that came from a
       // screenshot-spec session
-      const liveUrl = attrs.link ?? liveUrlByImg.get(rawSrc)
+      const live = liveByImg.get(rawSrc)
+      const liveUrl = attrs.link ?? live?.url
       if (multi.length) {
         const linkHtml = multi.map(l => a(l.url, `${l.label} ↗`)).join(' · ')
         node.value = `<figure>${a(multi[0]!.url, img)}<figcaption>${caption} Open in JBrowse: ${linkHtml}</figcaption></figure>`
       } else if (liveUrl) {
         // the live link hands the reader the finished view; the dialog next to
         // it shows how to build the same thing from their own data
-        const recipe = buildRecipe(liveUrl)
+        const recipe = buildRecipe(liveUrl, live?.name)
         const help = recipe
           ? (() => {
               const id = `spec-dialog-${dialogCount++}`

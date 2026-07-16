@@ -59,8 +59,8 @@ function panels(recipe: Recipe): Panel[] {
       body: [
         `<p class="spec-desktop-open"><a href="${escapeHtml(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
         `<p class="spec-intro">Opens an installed JBrowse Desktop straight at this view (your browser will ask permission the first time), in <strong>${DESKTOP_LINK_MIN_VERSION} and newer</strong>. If nothing happens — Desktop isn't installed, the link is blocked, or you run the Linux AppImage, which doesn't register links unless you've integrated it with your desktop — copy the link below and use <strong>Open JBrowse Web link...</strong> on Desktop's start screen, which always works.</p>`,
-        `<pre class="spec-json"><code>${escapeHtml(recipe.liveUrl)}</code></pre>`,
-        '<p class="spec-config">The genome and tracks are downloaded on demand — swap in your own files afterwards, or follow the steps in the first tab to build it from scratch.</p>',
+        `<pre class="spec-json"><code>${escapeHtml(recipe.desktopWebUrl)}</code></pre>`,
+        '<p class="spec-config">Desktop downloads this config and saves the result as a session on your machine, so you can reopen it later — swap in your own files afterwards, or follow the steps in the first tab to build it from scratch.</p>',
       ].join(''),
     },
     {

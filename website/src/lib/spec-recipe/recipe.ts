@@ -27,7 +27,10 @@ export interface RecipeStep {
 
 export interface Recipe {
   liveUrl: string
-  // the same view as a jbrowse:// link, which an installed JBrowse Desktop
+  // liveUrl renamed for Desktop, where the session name is persisted rather
+  // than throwaway (see withSessionName). This is what a reader pastes.
+  desktopWebUrl: string
+  // desktopWebUrl as a jbrowse:// link, which an installed JBrowse Desktop
   // opens directly
   desktopUrl: string
   config: string
@@ -174,7 +177,29 @@ function viewSteps(
   return { steps, unmapped }
 }
 
-export function buildRecipe(liveUrl: string): Recipe | undefined {
+// Opening a figure in Desktop writes a real session to disk, so the name it
+// carries is the one the reader lives with — in the session UI, and in the
+// recent-sessions list once autosaves are shown. Every figure link says
+// `sessionName=Screenshot` (the screenshot generator's own name, see
+// sessionSpecQuery), which would name every session a reader ever opened
+// "Screenshot". Rename to the figure it came from, which is both meaningful and
+// distinct per figure. The web link keeps the generator's name: it isn't
+// persisted there, and changing it would re-capture every figure.
+function withSessionName(url: string, figureName: string | undefined) {
+  const rewritten = new URL(url)
+  rewritten.searchParams.set(
+    'sessionName',
+    figureName ? `JBrowse docs: ${figureName}` : 'JBrowse docs example',
+  )
+  return rewritten.href
+}
+
+export function buildRecipe(
+  liveUrl: string,
+  // the screenshot-spec name of the figure this link belongs to, when it has
+  // one (a hand-set `link=` on a <Figure> does not)
+  figureName?: string,
+): Recipe | undefined {
   const decoded = decodeSpecUrl(liveUrl)
   if (!decoded) {
     return undefined
@@ -183,11 +208,13 @@ export function buildRecipe(liveUrl: string): Recipe | undefined {
   const views = spec.views ?? []
   const collected = views.map(view => viewSteps(view, config))
   const firstView = views[0]
+  const desktopWebUrl = withSessionName(liveUrl, figureName)
   return {
     liveUrl,
+    desktopWebUrl,
     // built with Desktop's own helper, so the link the docs hand out and the
     // one the app parses cannot drift apart
-    desktopUrl: toProtocolUrl(liveUrl),
+    desktopUrl: toProtocolUrl(desktopWebUrl),
     config,
     specJson: JSON.stringify(spec, null, 2),
     steps: collected.flatMap(c => c.steps),

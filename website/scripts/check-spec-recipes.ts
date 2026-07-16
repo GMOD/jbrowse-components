@@ -36,15 +36,24 @@ for (const [name, url] of Object.entries(screenshotLiveUrls)) {
     }
     try {
       const unwrapped = parseProtocolUrl(recipe.desktopUrl)
-      if (unwrapped !== recipe.liveUrl) {
-        throw new Error("jbrowse:// link doesn't unwrap to the figure's url")
+      if (unwrapped !== recipe.desktopWebUrl) {
+        throw new Error("jbrowse:// link doesn't unwrap to the link shown")
       }
-      const { spec, configUrl } = parseSessionSpecUrl(unwrapped)
-      if (JSON.stringify(spec) !== JSON.stringify(JSON.parse(recipe.specJson))) {
-        throw new Error('Desktop would load a different spec than the one shown')
+      const { spec, configUrl, sessionName } = parseSessionSpecUrl(unwrapped)
+      if (
+        JSON.stringify(spec) !== JSON.stringify(JSON.parse(recipe.specJson))
+      ) {
+        throw new Error(
+          'Desktop would load a different spec than the one shown',
+        )
       }
       if (recipe.config && !configUrl) {
         throw new Error('config url lost in the round trip')
+      }
+      // Desktop persists the session name, so the screenshot generator's own
+      // name must never reach a reader's session list
+      if (!sessionName || /screenshot/i.test(sessionName)) {
+        throw new Error(`session would be named "${sessionName}" in Desktop`)
       }
     } catch (e) {
       roundTripFailures.push(`${name}: ${e instanceof Error ? e.message : e}`)
