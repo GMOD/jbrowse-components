@@ -841,13 +841,20 @@ export default function stateModelFactory(
           // otherwise the fixed bands make the dragged edge lag the cursor by
           // rowsTopOffset/height (~20% with the coverage band on). Mirrors the
           // variants display's available-height scaling.
+          //
+          // Scale `effectiveRowHeight`, never the raw slot: `oldHeight` reflects
+          // the `maxRowsHeight` cap, so ratioing the (larger) uncapped slot
+          // against it drifts the slot while the rows stay pinned — a dead
+          // handle on species counts that reach the cap. Re-seeding from the
+          // resolved height mirrors the fit-mode path.
           const oldRows = oldHeight - self.rowsTopOffset
           if (self.rowHeight > 0 && oldRows > 0) {
             self.configuration.setSlot(
               'rowHeight',
               Math.max(
                 1,
-                (self.rowHeight * (newHeight - self.rowsTopOffset)) / oldRows,
+                (self.effectiveRowHeight * (newHeight - self.rowsTopOffset)) /
+                  oldRows,
               ),
             )
           }
@@ -1140,74 +1147,58 @@ export default function stateModelFactory(
             : undefined
         },
       }))
-      .views(self => ({
-        /**
-         * #getter
-         * Positioned bridge-line segments for `e`-line (empty/bridged) rows.
-         */
-        get visibleEmptyLines() {
-          const view = self.lgv
-          if (!view.initialized) {
-            return []
-          }
-          return computeVisibleEmptyLines({
-            view,
-            rpcDataMap: self.rpcDataMap,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
-          })
-        },
-        /**
-         * #getter
-         * Positioned insertion markers (interbase) for the visible aligned rows.
-         */
-        get visibleInsertions() {
-          const view = self.lgv
-          if (!view.initialized) {
-            return []
-          }
-          return computeVisibleInsertions({
-            view,
-            rpcDataMap: self.rpcDataMap,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
-          })
-        },
-        /**
-         * #getter
-         * Positioned deletion runs for the visible aligned rows; the overlay draws
-         * the deleted-base count inside each run when it fits.
-         */
-        get visibleDeletions() {
-          const view = self.lgv
-          if (!view.initialized) {
-            return []
-          }
-          return computeVisibleDeletions({
-            view,
-            rpcDataMap: self.rpcDataMap,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
-          })
-        },
-        /**
-         * #getter
-         * Positioned strand-flip (inversion) markers for the visible aligned rows.
-         * Empty unless the indicator is toggled on.
-         */
-        get visibleInversions() {
-          const view = self.lgv
-          if (!view.initialized || !self.showInversions) {
-            return []
-          }
-          return computeVisibleInversions({
-            view,
-            rpcDataMap: self.rpcDataMap,
-            rowHeight: self.effectiveRowHeight,
-            rowProportion: self.rowProportion,
-          })
-        },
-      }))
+      .views(self => {
+        // The block-overlay helpers all take this same bundle. Centralizing it
+        // keeps every overlay on the *resolved* row height — a new overlay that
+        // spelled out its own params could quietly read the raw `rowHeight`
+        // sentinel and mis-place its markers in fit-to-height mode.
+        const overlayParams = () => ({
+          view: self.lgv,
+          rpcDataMap: self.rpcDataMap,
+          rowHeight: self.effectiveRowHeight,
+          rowProportion: self.rowProportion,
+        })
+        return {
+          /**
+           * #getter
+           * Positioned bridge-line segments for `e`-line (empty/bridged) rows.
+           */
+          get visibleEmptyLines() {
+            return self.lgv.initialized
+              ? computeVisibleEmptyLines(overlayParams())
+              : []
+          },
+          /**
+           * #getter
+           * Positioned insertion markers (interbase) for the visible aligned rows.
+           */
+          get visibleInsertions() {
+            return self.lgv.initialized
+              ? computeVisibleInsertions(overlayParams())
+              : []
+          },
+          /**
+           * #getter
+           * Positioned deletion runs for the visible aligned rows; the overlay draws
+           * the deleted-base count inside each run when it fits.
+           */
+          get visibleDeletions() {
+            return self.lgv.initialized
+              ? computeVisibleDeletions(overlayParams())
+              : []
+          },
+          /**
+           * #getter
+           * Positioned strand-flip (inversion) markers for the visible aligned rows.
+           * Empty unless the indicator is toggled on.
+           */
+          get visibleInversions() {
+            return self.lgv.initialized && self.showInversions
+              ? computeVisibleInversions(overlayParams())
+              : []
+          },
+        }
+      })
       .views(self => ({
         /**
          * #getter

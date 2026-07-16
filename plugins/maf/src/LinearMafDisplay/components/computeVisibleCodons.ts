@@ -3,7 +3,7 @@ import { codonTable } from '@jbrowse/core/util'
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
+import type { BpToPx, VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type {
   MafBlock,
   MafRegionData,
@@ -196,16 +196,6 @@ function buildRefColumns(refSeqBytes: Uint8Array): Int32Array {
   return out
 }
 
-interface ComputeVisibleCodonsParams {
-  view: VisibleRegionsView
-  rpcDataMap: { get(idx: number): MafRegionData | undefined }
-  framesDataMap: { get(idx: number): MafFrameRecord[] | undefined }
-  /** Anchor species whose frames define the reading frame for every row. */
-  defaultSrc: string
-  rowHeight: number
-  rowProportion: number
-}
-
 /** A codon's three reference bytes (from the reference row or a species row),
  * gathered in ascending genomic order — possibly across two blocks. */
 type CodonBytes = [number, number, number]
@@ -301,6 +291,88 @@ function rowCodonBytes(
   return b0 === undefined || b1 === undefined || b2 === undefined
     ? undefined
     : [b0, b1, b2]
+}
+
+/** The per-region inputs both codon consumers walk. */
+interface EachLocatedCodonParams {
+  view: VisibleRegionsView
+  rpcDataMap: { get(idx: number): MafRegionData | undefined }
+  framesDataMap: { get(idx: number): MafFrameRecord[] | undefined }
+  /** Anchor species whose frames define the reading frame for every row. */
+  defaultSrc: string
+}
+
+/** One reference codon resolved against the fetched blocks of its region. */
+interface LocatedCodon {
+  /** the codon's three reference positions (ascending) + reading strand */
+  codon: Codon
+  /** its three reference bytes, in the same ascending order */
+  refBytes: CodonBytes
+  /** absolute genomic bp → screen px, for this codon's region */
+  bpToPx: BpToPx
+  /**
+   * The species rows carrying a complete codon here, each with its three
+   * alignment bytes in ascending order. A row absent from any block the codon
+   * spans has no complete codon and is skipped, as is a row whose bytes can't
+   * be read. Iterated in block row order, so marker order stays stable.
+   */
+  rows: () => Generator<{ rowIndex: number; bytes: CodonBytes }>
+}
+
+/**
+ * Walk every reference codon (from the anchor species' `mafFrames`) that the
+ * fetched blocks can resolve, across the visible regions — the shared spine of
+ * the codon overlay (`computeVisibleCodons`) and the codon conservation band
+ * (`computeCodonConservation`). Both need the identical setup: enumerate the
+ * anchor's codons, index each block's reference columns, then resolve each
+ * codon's three positions to per-block columns and gather the reference + per-row
+ * bytes. Only what they do with those bytes differs — colored cells vs. a match
+ * fraction — so keeping the resolution here means the band and the cells can't
+ * drift on reading frame, block straddling, or which rows count.
+ */
+function* eachLocatedCodon(
+  params: EachLocatedCodonParams,
+): Generator<LocatedCodon> {
+  const { view, rpcDataMap, framesDataMap, defaultSrc } = params
+  for (const {
+    data: regionData,
+    bpToPx,
+    displayedRegionIndex,
+  } of eachVisibleRegion(view, rpcDataMap)) {
+    const frames = framesDataMap.get(displayedRegionIndex)
+    if (!frames) {
+      continue
+    }
+    const codons = enumerateCodons(frames, defaultSrc)
+    if (codons.length === 0) {
+      continue
+    }
+    const blocks = regionData.blocks
+    const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
+    const rowMapsPerBlock = blocks.map(rowByteMap)
+    for (const codon of codons) {
+      const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
+      if (!locs) {
+        continue
+      }
+      yield {
+        codon,
+        refBytes: refCodonBytes(locs, blocks),
+        bpToPx,
+        // A species must appear in every block the codon spans; iterate the rows
+        // of the block holding its first (lowest) base and pull the other bases
+        // from their blocks (all the same block in the common single-block case).
+        *rows () {
+          for (const row of blocks[locs[0].blockIdx]!.rows) {
+            const bytes = rowCodonBytes(locs, rowMapsPerBlock, row.rowIndex)
+            if (bytes) {
+              yield { rowIndex: row.rowIndex, bytes }
+            }
+          }
+        },
+      }
+    }
+  }
 }
 
 /**
@@ -402,96 +474,50 @@ function widestCell(cells: CodonCell[]): number {
  * always computes when called.
  */
 export function computeVisibleCodons(
-  params: ComputeVisibleCodonsParams,
+  params: EachLocatedCodonParams & {
+    rowHeight: number
+    rowProportion: number
+  },
 ): CodonMarker[] {
-  const {
-    view,
-    rpcDataMap,
-    framesDataMap,
-    defaultSrc,
-    rowHeight,
-    rowProportion,
-  } = params
+  const { rowHeight, rowProportion } = params
   const markers: CodonMarker[] = []
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
   const hp2 = h / 2
 
-  for (const {
-    data: regionData,
-    bpToPx,
-    displayedRegionIndex,
-  } of eachVisibleRegion(view, rpcDataMap)) {
-    const frames = framesDataMap.get(displayedRegionIndex)
-    if (!frames) {
+  for (const { codon, refBytes, bpToPx, rows } of eachLocatedCodon(params)) {
+    const refCodon = orientedTriplet(...refBytes, codon.strand)
+    // A reference codon with a gap/`N` has no amino acid to compare against,
+    // so no species codon can be classified here (mirrors the conservation
+    // band, which skips the same codon) — draw nothing rather than guess.
+    if (refCodon === undefined || codonTable[refCodon] === undefined) {
       continue
     }
-    const codons = enumerateCodons(frames, defaultSrc)
-    if (codons.length === 0) {
-      continue
-    }
-
-    const blocks = regionData.blocks
-    const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
-    const rowMapsPerBlock = blocks.map(rowByteMap)
-
-    for (const codon of codons) {
-      const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
-      if (!locs) {
+    const cells = codonCells(codon.positions, bpToPx)
+    const glyphIdx = widestCell(cells)
+    for (const { rowIndex, bytes } of rows()) {
+      const rowCodon = orientedTriplet(...bytes, codon.strand)
+      if (rowCodon === undefined) {
         continue
       }
-      const refBytes = refCodonBytes(locs, blocks)
-      const refCodon = orientedTriplet(
-        refBytes[0],
-        refBytes[1],
-        refBytes[2],
-        codon.strand,
-      )
-      // A reference codon with a gap/`N` has no amino acid to compare against,
-      // so no species codon can be classified here (mirrors the conservation
-      // band, which skips the same codon) — draw nothing rather than guess.
-      if (refCodon === undefined || codonTable[refCodon] === undefined) {
+      const cls = classifyChange(rowCodon, refCodon)
+      if (!cls) {
         continue
       }
-      const cells = codonCells(codon.positions, bpToPx)
-      const glyphIdx = widestCell(cells)
-      // A species must appear in every block the codon spans to have a complete
-      // codon; iterate the rows of the block holding its first (lowest) base and
-      // pull the other bases from their blocks (all the same block in the common
-      // single-block case). Row order is preserved for a stable marker order.
-      for (const row of blocks[locs[0].blockIdx]!.rows) {
-        const rowBytes = rowCodonBytes(locs, rowMapsPerBlock, row.rowIndex)
-        if (!rowBytes) {
-          continue
-        }
-        const rowCodon = orientedTriplet(
-          rowBytes[0],
-          rowBytes[1],
-          rowBytes[2],
-          codon.strand,
-        )
-        if (rowCodon === undefined) {
-          continue
-        }
-        const cls = classifyChange(rowCodon, refCodon)
-        if (!cls) {
-          continue
-        }
-        const rowTop = offset + rowHeight * row.rowIndex
-        const y = Math.round(hp2 + rowTop)
-        cells.forEach((cell, i) => {
-          markers.push({
-            xLeft: cell.xLeft,
-            width: cell.width,
-            rowTop,
-            h,
-            x: cell.x,
-            y,
-            aa: cls.aa,
-            change: cls.change,
-            drawGlyph: i === glyphIdx,
-          })
+      const rowTop = offset + rowHeight * rowIndex
+      const y = Math.round(hp2 + rowTop)
+      cells.forEach((cell, i) => {
+        markers.push({
+          xLeft: cell.xLeft,
+          width: cell.width,
+          rowTop,
+          h,
+          x: cell.x,
+          y,
+          aa: cls.aa,
+          change: cls.change,
+          drawGlyph: i === glyphIdx,
         })
-      }
+      })
     }
   }
   return markers
@@ -517,12 +543,7 @@ export interface CodonConservationBar {
   fraction: number
 }
 
-interface ComputeCodonConservationParams {
-  view: VisibleRegionsView
-  rpcDataMap: { get(idx: number): MafRegionData | undefined }
-  framesDataMap: { get(idx: number): MafFrameRecord[] | undefined }
-  /** Anchor species whose frames define the reading frame (the reference). */
-  defaultSrc: string
+interface ComputeCodonConservationParams extends EachLocatedCodonParams {
   /**
    * Display row of the reference species, excluded from the numerator and
    * denominator so its trivial self-match doesn't inflate conservation (same
@@ -547,64 +568,29 @@ interface ComputeCodonConservationParams {
 export function computeCodonConservation(
   params: ComputeCodonConservationParams,
 ): CodonConservationBar[] {
-  const { view, rpcDataMap, framesDataMap, defaultSrc, refRowIndex } = params
+  const { refRowIndex } = params
   const bars: CodonConservationBar[] = []
-  for (const {
-    data: regionData,
-    bpToPx,
-    displayedRegionIndex,
-  } of eachVisibleRegion(view, rpcDataMap)) {
-    const frames = framesDataMap.get(displayedRegionIndex)
-    if (!frames) {
+  for (const { codon, refBytes, bpToPx, rows } of eachLocatedCodon(params)) {
+    const refAa = translateCodonBytes(...refBytes, codon.strand)
+    if (refAa === undefined) {
       continue
     }
-    const codons = enumerateCodons(frames, defaultSrc)
-    if (codons.length === 0) {
-      continue
-    }
-    const blocks = regionData.blocks
-    const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
-    const rowMapsPerBlock = blocks.map(rowByteMap)
-    for (const codon of codons) {
-      const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
-      if (!locs) {
-        continue
-      }
-      const refBytes = refCodonBytes(locs, blocks)
-      const refAa = translateCodonBytes(
-        refBytes[0],
-        refBytes[1],
-        refBytes[2],
-        codon.strand,
-      )
-      if (refAa === undefined) {
-        continue
-      }
-      let matches = 0
-      let classifiable = 0
-      for (const row of blocks[locs[0].blockIdx]!.rows) {
-        if (row.rowIndex !== refRowIndex) {
-          const rowBytes = rowCodonBytes(locs, rowMapsPerBlock, row.rowIndex)
-          const aa =
-            rowBytes &&
-            translateCodonBytes(
-              rowBytes[0],
-              rowBytes[1],
-              rowBytes[2],
-              codon.strand,
-            )
-          if (aa) {
-            classifiable += 1
-            if (aa === refAa) {
-              matches += 1
-            }
+    let matches = 0
+    let classifiable = 0
+    for (const { rowIndex, bytes } of rows()) {
+      if (rowIndex !== refRowIndex) {
+        const aa = translateCodonBytes(...bytes, codon.strand)
+        if (aa) {
+          classifiable += 1
+          if (aa === refAa) {
+            matches += 1
           }
         }
       }
-      const fraction = classifiable > 0 ? matches / classifiable : Number.NaN
-      for (const cell of codonCells(codon.positions, bpToPx)) {
-        bars.push({ xLeft: cell.xLeft, width: cell.width, fraction })
-      }
+    }
+    const fraction = classifiable > 0 ? matches / classifiable : Number.NaN
+    for (const cell of codonCells(codon.positions, bpToPx)) {
+      bars.push({ xLeft: cell.xLeft, width: cell.width, fraction })
     }
   }
   return bars

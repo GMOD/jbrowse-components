@@ -19,17 +19,34 @@ export interface CoverageInsertionHit {
 // insertion coordinate — we instead snap to the closest recorded insertion so
 // the bar stays hoverable at any zoom (mirrors alignments' `hitTestCoverage`
 // bin scan). The pixel-proximity gate below still rejects far snaps.
+//
+// `positions` is emitted in ascending order by the worker's block walk (see
+// `computeMafCoverage`), so binary search for the insertion point and compare
+// only the two neighbors — this runs on every mousemove over the coverage band.
 function nearestInsertionPosition(positions: Uint32Array, gposFrac: number) {
-  let best: number | undefined
-  let bestDist = Infinity
-  for (const pos of positions) {
-    const dist = Math.abs(pos - gposFrac)
-    if (dist < bestDist) {
-      bestDist = dist
-      best = pos
+  if (positions.length === 0) {
+    return undefined
+  }
+  let lo = 0
+  let hi = positions.length
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1
+    if (positions[mid]! < gposFrac) {
+      lo = mid + 1
+    } else {
+      hi = mid
     }
   }
-  return best
+  // `lo` is the first position >= gposFrac; the nearest is it or its predecessor.
+  const after = positions[lo]
+  const before = positions[lo - 1]
+  if (after === undefined) {
+    return before
+  }
+  if (before === undefined) {
+    return after
+  }
+  return gposFrac - before <= after - gposFrac ? before : after
 }
 
 /**
