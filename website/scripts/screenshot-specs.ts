@@ -47,7 +47,12 @@ export const specs: ScreenshotSpec[] = [
 // these specs load, so every spec's session can be opened as a live, clickable
 // instance. The website Figure macro uses screenshotLiveUrls to link each
 // screenshot to the running view that produced it.
-const JBROWSE_LATEST = 'https://jbrowse.org/code/jb2/latest/'
+//
+// `JBROWSE_CODE_BASE` overrides the hosted build these links open in (must end
+// in a slash). Staging deploys point it at `main`, whose app matches the docs
+// being staged; the default is the released `latest`.
+const JBROWSE_CODE_BASE =
+  process.env.JBROWSE_CODE_BASE || 'https://jbrowse.org/code/jb2/latest/'
 
 export function specLiveUrl(spec: ScreenshotSpec): string | undefined {
   if (spec.mode === 'url') {
@@ -61,7 +66,7 @@ export function specLiveUrl(spec: ScreenshotSpec): string | undefined {
     } else {
       // a bare `?config=...` captured against the local build opens identically
       // on the public latest instance
-      return `${JBROWSE_LATEST}${spec.url}`
+      return `${JBROWSE_CODE_BASE}${spec.url}`
     }
   } else {
     return undefined
