@@ -65,16 +65,16 @@
         "trackId": "P6R5xbRqRr3",
         "adapter": {
           "type": "TwoBitAdapter",
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.2bit",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hs1/bigZips/hs1.2bit",
           "chromSizesLocation": {
-            "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.chrom.sizes"
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hs1/bigZips/hs1.chrom.sizes"
           }
         }
       },
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/hs1.chromAlias.txt"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hs1/bigZips/hs1.chromAlias.txt"
         }
       }
     }
@@ -3249,7 +3249,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
           "locationType": "UriLocation"
         }
       },
@@ -3270,7 +3270,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
           "locationType": "UriLocation"
         }
       },
@@ -3291,7 +3291,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw",
           "locationType": "UriLocation"
         }
       }
@@ -3305,7 +3305,7 @@
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw",
           "locationType": "UriLocation"
         }
       }
@@ -3638,7 +3638,7 @@
         "assemblyNames": ["hg38", "hg19"],
         "chainLocation": {
           "locationType": "UriLocation",
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
         }
       }
     },
@@ -3653,7 +3653,7 @@
         "assemblyNames": ["hs1", "hg38"],
         "chainLocation": {
           "locationType": "UriLocation",
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg38/liftOver/hg38ToHs1.over.chain.gz"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hg38/liftOver/hg38ToHs1.over.chain.gz"
         }
       }
     },
@@ -4873,7 +4873,7 @@
       "adapter": {
         "type": "GtfAdapter",
         "gtfLocation": {
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hs1/bigZips/genes/hs1.ncbiRefSeq.gtf.gz",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hs1/bigZips/genes/hs1.ncbiRefSeq.gtf.gz",
           "locationType": "UriLocation"
         }
       },

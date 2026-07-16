@@ -40,7 +40,7 @@
         "assemblyNames": ["hg38", "hg19"],
         "chainLocation": {
           "locationType": "UriLocation",
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/hg19/liftOver/hg19ToHg38.over.chain.gz"
         }
       }
     }
