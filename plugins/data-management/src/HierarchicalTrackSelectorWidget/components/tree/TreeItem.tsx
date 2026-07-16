@@ -3,10 +3,10 @@ import { observer } from 'mobx-react'
 
 import TrackCategory from './TrackCategory.tsx'
 import TrackLabel from './TrackLabel.tsx'
-import { getItemHeight } from '../../model.ts'
+import { getNodePresentation } from '../../model.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { TreeNode } from '../../types.ts'
+import type { TreeCategoryNode, TreeNode } from '../../types.ts'
 
 const levelWidth = 10
 
@@ -51,6 +51,28 @@ function NestingMarkers({
   )
 }
 
+// an expandable (non-folder) category gets the accordion background; a folder
+// category renders bare
+const CategoryRow = observer(function CategoryRow({
+  item,
+  model,
+  useAccordionStyle,
+  className,
+}: {
+  item: TreeCategoryNode
+  model: HierarchicalTrackSelectorModel
+  useAccordionStyle: boolean
+  className: string
+}) {
+  return useAccordionStyle ? (
+    <div className={className}>
+      <TrackCategory model={model} item={item} />
+    </div>
+  ) : (
+    <TrackCategory model={model} item={item} />
+  )
+})
+
 const TreeItem = observer(function TreeItem({
   item,
   model,
@@ -61,17 +83,13 @@ const TreeItem = observer(function TreeItem({
   top: number
 }) {
   const { classes } = useStyles()
-  const isCategory = item.type === 'category'
-  const isFolder = isCategory && model.folderCategories.has(item.id)
-  const useAccordionStyle = isCategory && !isFolder
-  const { nestingLevel } = item
-  const height = getItemHeight(item, model.folderCategories)
-  const marginLeft = nestingLevel * levelWidth + (isCategory ? 0 : levelWidth)
-  const content = isCategory ? (
-    <TrackCategory model={model} item={item} />
-  ) : (
-    <TrackLabel model={model} item={item} />
+  const { useAccordionStyle, height } = getNodePresentation(
+    item,
+    model.folderCategories,
   )
+  const { nestingLevel } = item
+  const marginLeft =
+    nestingLevel * levelWidth + (item.type === 'category' ? 0 : levelWidth)
 
   return (
     <div
@@ -93,10 +111,15 @@ const TreeItem = observer(function TreeItem({
         className={useAccordionStyle ? classes.accordionCard : undefined}
         style={{ marginLeft, whiteSpace: 'nowrap', flex: 1 }}
       >
-        {useAccordionStyle ? (
-          <div className={classes.accordionColor}>{content}</div>
+        {item.type === 'category' ? (
+          <CategoryRow
+            item={item}
+            model={model}
+            useAccordionStyle={useAccordionStyle}
+            className={classes.accordionColor}
+          />
         ) : (
-          content
+          <TrackLabel model={model} item={item} />
         )}
       </div>
     </div>

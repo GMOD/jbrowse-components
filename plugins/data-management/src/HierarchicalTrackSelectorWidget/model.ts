@@ -31,13 +31,30 @@ const MAX_RECENTLY_USED = 10
 const sortTrackNamesK = 'sortTrackNames'
 const sortCategoriesK = 'sortCategories'
 
-export function getItemHeight(item: TreeNode, folderCategories: Set<string>) {
-  if (item.type === 'category') {
-    return folderCategories.has(item.id)
-      ? defaultItemHeight
-      : categoryItemHeight
+// single source of truth for how a node renders, so virtual-scroll offset math
+// (getItemHeight) and the row component (TreeItem) can't drift apart. A folder
+// category collapses to a track-height row; only an expandable (non-folder)
+// category gets the taller accordion styling
+export function getNodePresentation(
+  item: TreeNode,
+  folderCategories: { has(key: string): boolean },
+) {
+  const isCategory = item.type === 'category'
+  const isFolder = isCategory && folderCategories.has(item.id)
+  const useAccordionStyle = isCategory && !isFolder
+  return {
+    isCategory,
+    isFolder,
+    useAccordionStyle,
+    height: useAccordionStyle ? categoryItemHeight : defaultItemHeight,
   }
-  return defaultItemHeight
+}
+
+export function getItemHeight(
+  item: TreeNode,
+  folderCategories: { has(key: string): boolean },
+) {
+  return getNodePresentation(item, folderCategories).height
 }
 
 function recentlyUsedK(assemblyNames: string[]) {
@@ -298,7 +315,9 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       removeFromFavorites(trackId: string) {
         if (self.favoritesSet.has(trackId)) {
-          self.favoritesCounter = Math.max(0, self.favoritesCounter - 1)
+          // don't touch favoritesCounter: it tracks additions unseen since the
+          // dropdown was last opened, so removing an already-seen favorite must
+          // not decrement it (that would under-count genuinely new additions)
           self.favorites = self.favorites.filter(f => f !== trackId)
         }
       },
@@ -332,15 +351,16 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       addToRecentlyUsed(id: string) {
-        if (!self.recentlyUsedSet.has(id)) {
+        const isNew = !self.recentlyUsedSet.has(id)
+        // re-using an existing track moves it to the most-recent (end) slot;
+        // only a genuinely new track bumps the unseen-since-opened badge counter
+        const next = [...self.recentlyUsed.filter(f => f !== id), id]
+        self.recentlyUsed = next.slice(-MAX_RECENTLY_USED)
+        if (isNew) {
           self.recentlyUsedCounter = Math.min(
             self.recentlyUsedCounter + 1,
             MAX_RECENTLY_USED,
           )
-          self.recentlyUsed =
-            self.recentlyUsed.length >= MAX_RECENTLY_USED
-              ? [...self.recentlyUsed.slice(1), id]
-              : [...self.recentlyUsed, id]
         }
       },
       /**
@@ -455,10 +475,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       getRefSeqTrackConf(
         assemblyName: string,
       ): AnyConfigurationModel | undefined {
+        const { view } = self
         const { assemblyManager } = getSession(self)
         const assembly = assemblyManager.get(assemblyName)
         const trackConf = assembly?.configuration.sequence
-        const viewType = pluginManager.getViewType(self.view.type)
+        if (!view) {
+          return undefined
+        }
+        const viewType = pluginManager.getViewType(view.type)
         const viewDisplayNames = new Set(viewType.displayTypes.map(d => d.name))
         const matches = trackConf?.displays.some((display: { type: string }) =>
           viewDisplayNames.has(display.type),
@@ -641,11 +665,10 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
     }))
     .views(self => ({
       itemOffsets(height: number, scrollTop: number) {
-        const { flattenedItemOffsets } = self
-        const { cumulativeHeight, offsets } = flattenedItemOffsets
+        const { offsets } = self.flattenedItemOffsets
 
         if (offsets.length === 0) {
-          return { startIndex: 0, endIndex: -1, totalHeight: 0 }
+          return { startIndex: 0, endIndex: -1 }
         }
 
         const start = Math.max(
@@ -657,11 +680,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           findIndexAtOffset(offsets, scrollTop + height) + overscan,
         )
 
-        return {
-          startIndex: start,
-          endIndex: end,
-          totalHeight: cumulativeHeight,
-        }
+        return { startIndex: start, endIndex: end }
       },
       get folderCategoryStats() {
         const stats = new Map<string, { active: number; total: number }>()
@@ -711,96 +730,102 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
         )
       },
     }))
-    .actions(self => ({
-      afterAttach() {
-        // Ordering matters: this load autorun must register before the persist
-        // autorun below. Both run once immediately on registration; if persist
-        // ran first it would write the model's empty defaults to localStorage,
-        // clobbering saved settings before this autorun could load them.
-        addDisposer(
-          self,
-          autorun(
-            function trackSelectorInitAutorun() {
-              const { assemblyNames, view } = self
-              self.setRecentlyUsed(
-                localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
-              )
-              if (view) {
-                const lc = localStorageGetJSON<[string, boolean][] | undefined>(
-                  collapsedK(assemblyNames, view.type),
-                  undefined,
-                )
-                const r = ['hierarchical', 'defaultCollapsed']
-                const session = getSession(self)
-                if (!lc) {
-                  self.expandAllCategories()
-                  if (getConf(session, [...r, 'topLevelCategories'])) {
-                    self.collapseTopLevelCategories()
-                  }
-                  if (getConf(session, [...r, 'subCategories'])) {
-                    self.collapseSubCategories()
-                  }
-                  for (const elt of getConf(session, [...r, 'categoryNames'])) {
-                    self.setCategoryCollapsed(`Tracks-${elt}`, true)
-                  }
-                } else {
-                  self.setCollapsedCategories(lc)
-                }
+    .actions(self => {
+      // apply saved collapse state, or seed it from the hierarchical config
+      // defaults when nothing is persisted yet
+      function loadCollapsed(assemblyNames: string[], viewType: string) {
+        const lc = localStorageGetJSON<[string, boolean][] | undefined>(
+          collapsedK(assemblyNames, viewType),
+          undefined,
+        )
+        if (lc) {
+          self.setCollapsedCategories(lc)
+        } else {
+          const session = getSession(self)
+          const r = ['hierarchical', 'defaultCollapsed']
+          self.expandAllCategories()
+          if (getConf(session, [...r, 'topLevelCategories'])) {
+            self.collapseTopLevelCategories()
+          }
+          if (getConf(session, [...r, 'subCategories'])) {
+            self.collapseSubCategories()
+          }
+          for (const elt of getConf(session, [...r, 'categoryNames'])) {
+            self.setCategoryCollapsed(`Tracks-${elt}`, true)
+          }
+        }
+      }
 
-                const stc = localStorageGetJSON<string[] | undefined>(
-                  folderCategoriesK(assemblyNames, view.type),
-                  undefined,
-                )
-                if (stc) {
-                  self.setFolderCategories(stc)
-                } else {
-                  self.setFolderCategories(
-                    getConf(session, [
-                      'hierarchical',
-                      'defaultFolderCategories',
-                    ]).map((elt: string) => `Tracks-${elt}`),
-                  )
-                }
-              }
-            },
-            { name: 'TrackSelectorInit' },
-          ),
+      function loadFolderCategories(assemblyNames: string[], viewType: string) {
+        const stc = localStorageGetJSON<string[] | undefined>(
+          folderCategoriesK(assemblyNames, viewType),
+          undefined,
         )
-        // persist autorun: must stay second (see ordering note above)
-        addDisposer(
-          self,
-          autorun(
-            function trackSelectorLocalStorageAutorun() {
-              const {
-                sortTrackNames,
-                sortCategories,
-                favorites,
-                recentlyUsed,
-                assemblyNames,
-                collapsed,
-                folderCategories,
-                view,
-              } = self
-              localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
-              localStorageSetJSON(favoritesK(), favorites)
-              localStorageSetJSON(sortTrackNamesK, sortTrackNames)
-              localStorageSetJSON(sortCategoriesK, sortCategories)
-              if (view) {
-                localStorageSetJSON(
-                  collapsedK(assemblyNames, view.type),
-                  collapsed,
-                )
-                localStorageSetJSON(
-                  folderCategoriesK(assemblyNames, view.type),
-                  [...folderCategories],
-                )
-              }
-            },
-            { name: 'TrackSelectorLocalStorage' },
-          ),
+        if (stc) {
+          self.setFolderCategories(stc)
+        } else {
+          self.setFolderCategories(
+            getConf(getSession(self), [
+              'hierarchical',
+              'defaultFolderCategories',
+            ]).map((elt: string) => `Tracks-${elt}`),
+          )
+        }
+      }
+
+      function loadFromLocalStorage() {
+        const { assemblyNames, view } = self
+        self.setRecentlyUsed(
+          localStorageGetJSON<string[]>(recentlyUsedK(assemblyNames), []),
         )
-      },
-    }))
+        if (view) {
+          loadCollapsed(assemblyNames, view.type)
+          loadFolderCategories(assemblyNames, view.type)
+        }
+      }
+
+      function persistToLocalStorage() {
+        const {
+          sortTrackNames,
+          sortCategories,
+          favorites,
+          recentlyUsed,
+          assemblyNames,
+          collapsed,
+          folderCategories,
+          view,
+        } = self
+        localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
+        localStorageSetJSON(favoritesK(), favorites)
+        localStorageSetJSON(sortTrackNamesK, sortTrackNames)
+        localStorageSetJSON(sortCategoriesK, sortCategories)
+        if (view) {
+          localStorageSetJSON(collapsedK(assemblyNames, view.type), collapsed)
+          localStorageSetJSON(folderCategoriesK(assemblyNames, view.type), [
+            ...folderCategories,
+          ])
+        }
+      }
+
+      return {
+        afterAttach() {
+          // Ordering matters: the load autorun must register before persist.
+          // Both run once immediately on registration; if persist ran first it
+          // would write the model's empty defaults to localStorage, clobbering
+          // saved settings before the load autorun could read them.
+          addDisposer(
+            self,
+            autorun(loadFromLocalStorage, { name: 'TrackSelectorInit' }),
+          )
+          addDisposer(
+            self,
+            autorun(persistToLocalStorage, {
+              name: 'TrackSelectorLocalStorage',
+            }),
+          )
+        },
+      }
+    })
 }
 
 export type HierarchicalTrackSelectorStateModel = ReturnType<

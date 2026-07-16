@@ -5,6 +5,18 @@ import { containsAll, intersects } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
+// by default a track shows only if it supports every assembly the view displays;
+// any-overlap mode relaxes this to sharing any one assembly
+function assemblyMatches(
+  trackAssemblyNames: string[] | undefined,
+  viewAssemblyNames: string[],
+  anyOverlap: boolean | undefined,
+) {
+  return anyOverlap
+    ? intersects(trackAssemblyNames, viewAssemblyNames)
+    : containsAll(trackAssemblyNames, viewAssemblyNames)
+}
+
 export function filterTracks(
   tracks: AnyConfigurationModel[],
   self: {
@@ -34,15 +46,15 @@ export function filterTracks(
       const trackCanonicalAssemblyNames = trackConfigAssemblyNames
         ?.map(name => assemblyManager.getCanonicalAssemblyName(name))
         .filter(notEmpty)
-      if (viewAssemblyNames.length > 0) {
-        // by default a track shows only if it supports every assembly the view
-        // displays; any-overlap mode relaxes this to sharing any one assembly
-        const assemblyMatch = view.trackSelectorAnyOverlap
-          ? intersects(trackCanonicalAssemblyNames, viewAssemblyNames)
-          : containsAll(trackCanonicalAssemblyNames, viewAssemblyNames)
-        if (!assemblyMatch) {
-          return false
-        }
+      if (
+        viewAssemblyNames.length > 0 &&
+        !assemblyMatches(
+          trackCanonicalAssemblyNames,
+          viewAssemblyNames,
+          view.trackSelectorAnyOverlap,
+        )
+      ) {
+        return false
       }
       return (
         viewDisplaysSet.size === 0 ||
