@@ -29,6 +29,7 @@ import {
   findFeatureViewLevel,
   getBlockFeatures,
   intersect,
+  layoutUnknown,
   makeOffscreenLayout,
 } from './util.ts'
 
@@ -190,16 +191,21 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * Find all track ids that match across multiple views, or return just
-       * the single view's track if only a single row is used
+       * the single view's track if only a single row is used.
+       *
+       * The `OverlayTrack` annotation is load-bearing, exactly as on
+       * `getMatchedTracks`: the LGV's `tracks` array is an MST pluggable union
+       * that TS widens to `any`, so without it every field read here is
+       * unchecked. That's how a `display.notReady?.()` guard against a method no
+       * display defines survived in the fetcher below — it optional-called into
+       * `any` and silently did nothing.
        */
-      get matchedTracks() {
+      get matchedTracks(): OverlayTrack[] {
         return self.views.length === 1
           ? self.views[0]!.tracks
           : intersect(
               elt => elt.configuration.trackId,
-              ...self.views.map(
-                view => view.tracks as { configuration: { trackId: string } }[],
-              ),
+              ...self.views.map(view => view.tracks as OverlayTrack[]),
             )
       },
 
@@ -306,12 +312,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   return { feature, layout, level, clipLengthAtStartOfRead }
                 }
               }
-              // Feature wasn't found in any track's pileup layout — usually the
-              // display keeps no layout at all (the paired/arc displays),
-              // filterBy excluded it, the alignments display's maxHeight pushed
-              // it off the bottom, or it hasn't loaded yet. Synthesize an
-              // off-display LayoutRecord so the connection still draws to the
-              // track's bottom edge (see makeOffscreenLayout / getY).
+              // Feature wasn't found in any track's pileup layout: the display
+              // keeps no layout at all (the paired/arc displays), or the read
+              // never entered the fetched data (filterBy, showOnlySplitAlignments
+              // — the worker drops it). Synthesize an off-display LayoutRecord so
+              // the connection still draws to the track's bottom edge (see
+              // makeOffscreenLayout / getY).
+              //
+              // A maxHeight-truncated read does NOT come through here: layout
+              // gives it the `maxRows` overflow sentinel rather than no row at
+              // all, so `calc` returns a real record with a huge top and
+              // computeOverlayY's clamp lands it on the same bottom edge. Two
+              // paths, one appearance — don't "simplify" either into the other.
               const start = feature.get('start')
               // bpToPx matches displayedRegions by exact refName, so the raw
               // adapter refName has to be canonicalized first or an aliased
@@ -324,7 +336,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   feature.get('refName'),
                 start,
               )
-              return level === undefined
+              return level === undefined || tracks.some(layoutUnknown)
                 ? undefined
                 : {
                     feature,
@@ -556,11 +568,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 if (!self.views.every(view => view.initialized)) {
                   return
                 }
+                // Don't fetch against a track whose banner has replaced its
+                // features. `notReady?.()` used to be ORed in here, but no
+                // display has ever defined it in this repo's history — the
+                // optional call silently no-op'd, so this guard has only ever
+                // been the too-large half. Spelled out rather than left as a
+                // call that reads like it gates on load state and doesn't.
                 if (
-                  self.matchedTracks.some(track => {
-                    const display = track.displays[0]
-                    return display.notReady?.() || display.regionTooLarge
-                  })
+                  self.matchedTracks.some(
+                    track => track.displays[0]!.regionTooLarge,
+                  )
                 ) {
                   return
                 }

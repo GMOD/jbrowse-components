@@ -147,9 +147,10 @@ export function createAlignmentMouseHandlers(
 // curve just doubles it up.
 //
 // It only holds for segments the pileup actually laid out. An off-display one
-// (filtered, past maxHeight, not yet loaded — see makeOffscreenLayout) gets no
-// connecting line, so the overlay keeps its curve to the track's bottom edge as
-// the only sign the segment exists.
+// (see makeOffscreenLayout) gets no connecting line, so the overlay keeps its
+// curve to the track's bottom edge as the only sign the segment exists. A
+// segment whose position is merely unknown (no layout yet) never reaches here —
+// it's dropped upstream, see layoutUnknown.
 export function isDrawnByPileup({
   level,
   levels,

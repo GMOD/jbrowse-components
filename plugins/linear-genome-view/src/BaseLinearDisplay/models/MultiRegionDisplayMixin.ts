@@ -141,6 +141,39 @@ export default function MultiRegionDisplayMixin() {
 
       /**
        * #getter
+       * Overridable hook (default false): whether the display currently holds a
+       * feature layout to be searched. **Any display defining a feature-lookup
+       * method (`searchFeatureByID`, `getFeatureById`) must override this**, or
+       * its lookups can't be interpreted — see below.
+       *
+       * A third readiness axis, deliberately distinct from the two above.
+       * `isReady` is the render-lifecycle axis (has it painted, is a fetch in
+       * flight) and `viewportWithinLoadedData` is the spatial-staleness axis
+       * (does the fetched span still cover the viewport). Neither answers
+       * "does a layout exist at all", and a caller can't subtract it out of
+       * them: `clearAllRpcData` empties the data while the too-large gate is
+       * untouched, and a zoom-out into the banner leaves the previous region's
+       * data in place. Both those states show a screen with no pileup on it.
+       *
+       * Why it must be public: a failed feature lookup is ambiguous from the
+       * outside. It means "laid out, but off-display" (filtered, past maxHeight)
+       * — a real answer — *or* "there is no layout to be off-display of", which
+       * is no answer at all. Only the display can tell them apart, and a
+       * consumer that guesses gets it wrong for the whole width of a load.
+       * BreakpointSplitView's overlays are the caller (see `layoutUnknown`);
+       * they draw a connection to the track's bottom edge on the first, and must
+       * draw nothing on the second.
+       *
+       * The default is false so that forgetting the override drops overlays
+       * (visibly absent) rather than pinning them all to one edge (a plausible
+       * lie) — fail-safe, not fail-wrong.
+       */
+      get layoutReady(): boolean {
+        return false
+      },
+
+      /**
+       * #getter
        * Shared cached view for every LGV-based GPU display. A single
        * displayedRegion may produce multiple render blocks (shared GPU
        * buffer, different scissor clips on screen). Plugins that want to

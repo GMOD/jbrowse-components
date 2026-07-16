@@ -63,6 +63,26 @@ reuses indices, so a stale entry would apply to the wrong chromosome (canvas's
 | `getByteEstimateConfig()`    | `null`      | return config to enable byte-estimate gating before fetch                                                                                                                                                                                                                                    |
 | `clearDisplaySpecificData()` | no-op       | clear subclass-owned data maps (rpcDataMap, cellData, etc.)                                                                                                                                                                                                                                  |
 | `onRegionTooLarge()`         | no-op       | clear transient hover/tooltip state when `regionTooLarge` becomes true (the banner replaces the content); fired by the `ClearHoverOnRegionTooLarge` autorun                                                                                                                                  |
+| `layoutReady`                | `false`     | **required if the display defines a feature-lookup method** (`searchFeatureByID`/`getFeatureById`) — return whether a searchable layout currently exists                                                                                                                                     |
+
+### The three readiness axes — don't collapse them
+
+`isReady` (`canvasDrawn && !isLoading`) is the **render-lifecycle** axis.
+`viewportWithinLoadedData` is the **spatial-staleness** axis.
+`layoutReady` is the **does-a-layout-exist** axis. They're independent, and a
+consumer can't derive the third from the other two — `clearAllRpcData` empties
+the data while deliberately leaving the too-large gate alone, and a zoom-out into
+the banner leaves the previous region's data sitting in `rpcDataMap`.
+
+`layoutReady` exists because a failed feature lookup is ambiguous from outside
+the display: "laid out, but off-display" (filtered, past `maxHeight`) is a real
+answer; "there is no layout to be off-display *of*" is no answer at all. Only the
+display can tell them apart. BreakpointSplitView's overlays are the caller — they
+draw a connection to the track's bottom edge on the first and must draw nothing
+on the second, and conflating the two pinned every curve in the view to one line
+for the width of a load (and permanently under the too-large banner). Default is
+`false` so a missing override drops overlays rather than pinning them — fail-safe
+over fail-wrong.
 
 The region-too-large gate itself lives in `RegionTooLargeMixin`: a derived byte
 estimate (the old imperative `setRegionTooLarge` flag path was removed). A

@@ -14,6 +14,13 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 export interface OverlayDisplay {
   height: number
   searchFeatureByID?: (str: string) => LayoutRecord | undefined
+  /**
+   * whether `searchFeatureByID` currently has a laid-out pileup to search.
+   * False while the display holds no data (mid-load, or the region-too-large
+   * banner replaced the pileup) — see layoutUnknown. Absent on display types
+   * that keep no layout at all, which have no searchFeatureByID either.
+   */
+  layoutReady?: boolean
   scrollTop?: number
   regionTooLarge?: boolean
   /** height of the coverage subtrack, on displays that have one */
@@ -29,6 +36,8 @@ export interface OverlayDisplay {
 }
 
 export interface OverlayTrack {
+  /** the track-type name, e.g. 'AlignmentsTrack' — how matches are classified */
+  type: string
   minimized: boolean
   displays: OverlayDisplay[]
   configuration: AnyConfigurationModel
@@ -37,10 +46,18 @@ export interface OverlayTrack {
 // Must match the CSS height of viewDivider in BreakpointSplitView.tsx
 export const VIEW_DIVIDER_HEIGHT = 3
 
-// Sentinel y placed in a synthesized LayoutRecord when a feature isn't in its
-// track's pileup layout (filtered out, off-display past maxHeight, or not yet
-// loaded). `getY` checks for this and snaps the endpoint to the track's bottom
-// edge so the connecting spline terminates there instead of being skipped.
+// Sentinel y placed in a synthesized LayoutRecord when a feature has no row in
+// its track's pileup layout: the display keeps no layout at all (paired/arc), or
+// the read never reached the fetched data (filterBy and friends). `getY` checks
+// for this and snaps the endpoint to the track's bottom edge so the connecting
+// spline terminates there instead of being skipped.
+//
+// NOT the maxHeight case, despite looking identical on screen: a truncated read
+// gets layout's `maxRows` overflow sentinel, so it has a row, and
+// computeOverlayY's clamp is what puts it on the bottom edge.
+//
+// Only ever for a feature the layout genuinely lacks — never for one whose
+// position is merely unknown because there is no layout yet. See layoutUnknown.
 export const OFFSCREEN_Y_SENTINEL = Number.POSITIVE_INFINITY
 
 export function makeOffscreenLayout(
@@ -123,6 +140,18 @@ export function intersect<T>(
 
 export function calc(track: OverlayTrack, f: Feature) {
   return track.displays[0]!.searchFeatureByID?.(f.id())
+}
+
+// A failed `calc` means two very different things. If the display has a layout,
+// the feature really is off-display (filtered, past maxHeight) and the overlay
+// draws to the bottom edge — that IS the signal the segment exists. If the
+// display has no layout at all right now, the position is merely unknown: the
+// data was cleared for a refetch, or the region-too-large banner replaced the
+// pileup. Snapping to the bottom edge then collapses every connection onto one
+// line for the length of the transition, so callers drop them instead.
+export function layoutUnknown(track: OverlayTrack) {
+  const d = track.displays[0]!
+  return d.searchFeatureByID !== undefined && !d.layoutReady
 }
 
 export async function getBlockFeatures(

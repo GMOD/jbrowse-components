@@ -3,8 +3,35 @@ import {
   computeOverlayY,
   findFeatureViewLevel,
   isOffscreenLayout,
+  layoutUnknown,
   makeOffscreenLayout,
 } from './util.ts'
+
+import type { OverlayDisplay, OverlayTrack } from './util.ts'
+
+function trackWith(display: Partial<OverlayDisplay>) {
+  return {
+    displays: [{ height: 100, ...display }],
+  } as OverlayTrack
+}
+
+describe('layoutUnknown', () => {
+  test('a display with a populated layout knows off-display from missing', () => {
+    expect(
+      layoutUnknown(trackWith({ searchFeatureByID: () => undefined, layoutReady: true })),
+    ).toBe(false)
+  })
+
+  test('a display whose data is cleared cannot place anything', () => {
+    expect(
+      layoutUnknown(trackWith({ searchFeatureByID: () => undefined, layoutReady: false })),
+    ).toBe(true)
+  })
+
+  test('a display that keeps no layout at all keeps the bottom-edge behavior', () => {
+    expect(layoutUnknown(trackWith({}))).toBe(false)
+  })
+})
 
 describe('makeOffscreenLayout / isOffscreenLayout', () => {
   test('round-trips through the predicate', () => {
