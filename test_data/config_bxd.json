@@ -14,7 +14,7 @@
       "refNameAliases": {
         "adapter": {
           "type": "RefNameAliasAdapter",
-          "uri": "https://hgdownload.cse.ucsc.edu/goldenpath/mm10/bigZips/latest/mm10.chromAlias.txt"
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenpath/mm10/bigZips/latest/mm10.chromAlias.txt"
         }
       },
       "cytobands": {
