@@ -71,6 +71,35 @@ against the stored snapshot.
 Use `--update-snapshots` or `-u` to update snapshots when intentional visual
 changes are made.
 
+### The goldens are a local tool — CI never runs them
+
+Nothing in CI compares against a committed golden. The only render check on
+`push` is the **cross-backend gate** (`pnpm test:browser:gate`), which renders
+canvas2d and webgl in one run and diffs them against _each other_ — no
+cross-machine baseline, so nothing to drift. It is `continue-on-error` anyway.
+
+So the goldens only get refreshed when someone runs `-u` locally, and they drift
+silently in between: as of 2026-07, 133 of 187 came from a single 2026-05-30
+commit. **A large diff usually means weeks of other people's accumulated work,
+not your change.** A 20% diff on a breakpoint golden turned out to be track
+labels moving `overlapping` → `offset` (each track grows by a label row,
+cascading every panel below it) — nothing to do with the change under test.
+
+Before you `-u`:
+
+1. **Prove the diff isn't yours.** Revert your change, rebuild, re-run. If it
+   still fails, it is drift, and you are rubber-stamping someone else's work —
+   fine, but say so, and eyeball `<name>.diff-visual.png` first.
+2. **Check the capture is real.** `-u` writes whatever is on screen, including a
+   half-loaded frame. Open the new PNG and confirm the data actually rendered.
+3. **Only update goldens whose test failed.** The fullpage shots embed a live
+   clock in the header, so every one of them differs slightly on every run (the
+   thresholds absorb it). Rewriting a passing golden is pure churn.
+
+Because a golden encodes one machine's rendering, treat a fresh one as evidence
+about _this_ machine, not a cross-platform contract — that is exactly why the
+cross-backend gate exists instead.
+
 ## Reviewing Snapshots
 
 After a run, review the committed snapshots in a browser UI (mirrors the
