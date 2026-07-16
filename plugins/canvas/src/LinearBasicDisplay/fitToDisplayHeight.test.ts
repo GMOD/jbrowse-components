@@ -463,6 +463,57 @@ describe('canvas display fit escalation ladder', () => {
     expect(display.hasOverflow).toBe(false)
   })
 
+  // A fit stack shorter than the track (grow capped at the normal height) is
+  // vertically centered in the allotted area rather than hugging the top with all
+  // the slack as a bottom void, so "fit" visibly uses the whole display height.
+  it('centers a short fit stack in the track', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(3, 10), view.bpPerPx, ctgA)
+    const fullH = maxBottom(display.baseLaidOutDataMap)
+    display.setHeightMode('fit')
+
+    display.setHeight(fullH * 3)
+    // Grow is pinned at 1 (normal mode), so the content stays fullH tall and the
+    // 2×fullH of slack is split evenly above and below it.
+    expect(display.fitScale).toBe(1)
+    expect(display.fitContentOffsetY).toBeCloseTo(fullH)
+    // Every rendered box is shifted down by the offset: the stack now spans
+    // [offset, offset + fullH], centered in the 3×fullH track.
+    const layout: Map<number, FeatureDataResult> = display.laidOutDataMap
+    const tops = [...layout.values()].flatMap(d =>
+      d.flatbushItems.map(i => i.topPx),
+    )
+    expect(Math.min(...tops)).toBeCloseTo(fullH)
+    expect(maxBottom(layout)).toBeCloseTo(fullH * 2)
+    // Scroll extent still measures content only (no bottom void baked in), so the
+    // centered stack does not spuriously overflow.
+    expect(display.maxY).toBeCloseTo(fullH)
+    expect(display.hasOverflow).toBe(false)
+  })
+
+  // Centering is fit-specific: fixed mode top-anchors and scrolls, and an
+  // overflowing (squeezed, still-scrolling) fit stack has no slack to center, so
+  // both leave the offset at 0.
+  it('does not offset in fixed mode or when the stack overflows', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display, view } = createDisplay()
+    display.setRpcData(0, labeledStackedRegionData(10, 10), view.bpPerPx, ctgA)
+    const bodiesH = maxBottom(display.fitBodiesOnlyLayout)
+
+    // Fixed mode, tall track: content hugs the top, slack scrolls — no centering.
+    display.setHeightMode('fixed')
+    display.setHeight(bodiesH * 3)
+    expect(display.fitContentOffsetY).toBe(0)
+
+    // Fit mode squeezed to its floor and still overflowing: no slack to center.
+    display.setHeightMode('fit')
+    display.setHeight(Math.max(20, Math.round((bodiesH * display.fitMinScale) / 2)))
+    expect(display.fitScale).toBe(display.fitMinScale)
+    expect(display.hasOverflow).toBe(true)
+    expect(display.fitContentOffsetY).toBe(0)
+  })
+
   // In a compact mode the laid-out bodies start below the normal height, so a
   // tall track may grow them to fill it — but the grow ceiling is the normal
   // height (fitMaxScale = 1 / multiplier), never taller.

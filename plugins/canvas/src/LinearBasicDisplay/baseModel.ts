@@ -140,6 +140,7 @@ export const displayModeOptions: { value: DisplayMode; label: string }[] = [
   { value: 'normal', label: 'Normal' },
   { value: 'compact', label: 'Compact' },
   { value: 'superCompact', label: 'Super-compact' },
+  { value: 'collapsed', label: 'Collapsed' },
 ]
 
 // Persistent, declarative feature-highlight request (see featureHighlight.ts).
@@ -573,6 +574,13 @@ export default function baseStateModelFactory(
         // space, the rendered DOM elements, and the hit-test geometry all
         // agree — otherwise rows reserve label height that never gets used.
         get showLabels() {
+          // Collapsed mode is a single-row overview — every label (name,
+          // description, subfeature) is suppressed so nothing paints on top of
+          // the piled-up boxes. Forcing this here cascades to layout row
+          // reservation, the DOM overlay, hit testing, and SVG export.
+          if (this.displayMode === 'collapsed') {
+            return false
+          }
           const mode = this.showLabelsMode
           if (mode === 'off') {
             return false
@@ -590,7 +598,12 @@ export default function baseStateModelFactory(
          * #getter
          */
         get showDescriptions() {
-          return getConf(self, 'showDescriptions')
+          // Suppressed in collapsed mode alongside names (see showLabels) —
+          // effectiveShowDescriptions doesn't fold names in outside auto mode, so
+          // gate here too rather than relying on the showLabels cascade.
+          return (
+            this.displayMode !== 'collapsed' && getConf(self, 'showDescriptions')
+          )
         },
 
         /**
@@ -1269,14 +1282,37 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
+         * Vertical offset (px) that centers a fit stack shorter than the track
+         * within it, so "fit" uses the whole allotted area instead of leaving all
+         * the slack as a bottom void with the features hugging the top. Non-zero
+         * only in fit mode when the scaled content is shorter than the track — the
+         * sparse case where grow is capped at the normal feature height
+         * (`fitMaxScale`), so the surplus would otherwise strand as whitespace.
+         * Reads the scaled candidate height off `fitStage` (not `settledMaxY`,
+         * defined later) and the config-slot `fitTargetHeight` (not the reactive
+         * `height`, which would cycle in grow mode), so it can't feed back on
+         * itself. 0 whenever the content fills or overflows the track (exact fit,
+         * grow, or a squeeze that still scrolls), leaving those top-anchored.
+         */
+        get fitContentOffsetY() {
+          const { scale, contentHeight } = self.fitStage
+          const slack = self.fitTargetHeight - contentHeight * scale
+          return self.fitHeightToDisplay && slack > 0 ? slack / 2 : 0
+        },
+        /**
+         * #getter
          * What every consumer (hit test, GPU upload, React render) reads: the
-         * resolved fit layout, cloned and scaled only when grown or squeezed.
-         * Returned by reference off the unscaled path so the incremental-layout
-         * upload diff and Y-morph idle check stay intact.
+         * resolved fit layout, cloned and scaled only when grown or squeezed, and
+         * shifted down by `fitContentOffsetY` to center a short stack in the track.
+         * Returned by reference off the untransformed path (scale 1, no offset) so
+         * the incremental-layout upload diff and Y-morph idle check stay intact.
          */
         get laidOutDataMap(): Map<number, FeatureDataResult> {
           const { layout, scale } = self.fitStage
-          return scale === 1 ? layout : scaleLaidOutData(layout, scale)
+          const offsetY = this.fitContentOffsetY
+          return scale === 1 && offsetY === 0
+            ? layout
+            : scaleLaidOutData(layout, scale, offsetY)
         },
         /**
          * #getter
@@ -2493,6 +2529,7 @@ export default function baseStateModelFactory(
                   renderedShowLabels: self.renderedShowLabels,
                   renderedShowDescriptions: self.renderedShowDescriptions,
                   fitScale: self.fitScale,
+                  offsetY: self.fitContentOffsetY,
                 })
                 const scaleUnchanged = geometry === prevGeometry
                 const from = prevLayout
