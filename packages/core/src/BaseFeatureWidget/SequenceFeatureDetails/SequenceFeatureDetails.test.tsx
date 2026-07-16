@@ -525,6 +525,48 @@ test.each([
   expect(renderCdna(subfeatures)).toBe(utrSeq)
 })
 
+// A 400bp minus-strand transcript, 50bp of 3'UTR / 200bp CDS / 150bp of 5'UTR
+// in genomic order. Read 5'->3' the transcript is the reverse complement, so
+// the cDNA is 150 lowercase UTR, 200 uppercase CDS, then 50 lowercase UTR.
+const revSeq = `${'A'.repeat(50)}${'C'.repeat(200)}${'G'.repeat(150)}`
+const revCdna = `${'c'.repeat(150)}${'G'.repeat(200)}${'t'.repeat(50)}`
+const revFeat = (subfeatures: SimpleFeatureSerializedNoId[]) => ({
+  start: 1000,
+  end: 1400,
+  refName: 'chr1',
+  strand: -1,
+  type: 'mRNA',
+  uniqueId: 'rev',
+  name: 'rev',
+  subfeatures,
+})
+
+test.each([
+  [
+    'with the exon annotated',
+    [
+      { refName: 'chr1', start: 1000, end: 1400, type: 'exon' },
+      { refName: 'chr1', start: 1050, end: 1250, type: 'CDS' },
+    ],
+  ],
+  [
+    // no exon: the CDS block stands in for it, stretched to the feature bounds.
+    // Renders identically to the annotated case
+    'with only the CDS annotated',
+    [{ refName: 'chr1', start: 1050, end: 1250, type: 'CDS' }],
+  ],
+])('minus-strand cDNA is the reverse complement %s', (_, subfeatures) => {
+  const { getByTestId } = render(
+    <SequencePanel
+      model={SequenceFeatureDetailsF().create()}
+      mode="cdna"
+      sequence={{ seq: revSeq }}
+      feature={revFeat(subfeatures)}
+    />,
+  )
+  expect(getByTestId('sequence_panel').textContent.split('\n')[1]).toBe(revCdna)
+})
+
 test('a CDS annotated outside the exons renders the exon untranslated', () => {
   // no exon contains the CDS, so there is no coding stretch to color; the exon
   // sequence must still render rather than throwing

@@ -48,8 +48,10 @@ const CDNASequence = observer(function CDNASequence({
 }) {
   const { upperCaseCDS, intronBp } = model
   const hasCds = cds.length > 0
-  const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
-  const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
+  // upperCaseCDS capitalizes the coding sequence and lowercases everything
+  // else; otherwise every stretch keeps the reference genome's own casing
+  const caseCoding = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
+  const caseNoncoding = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
 
   const { mult, coordStart } = computeCoordProps(
     feature,
@@ -75,7 +77,7 @@ const CDNASequence = observer(function CDNASequence({
       middle.push({
         key: `${start}-${end}-${isCds ? 'cds' : 'utr'}`,
         // uppercase CDS (and every region of a noncoding transcript); lower UTR
-        str: isCds || !hasCds ? toUpper(s) : toLower(s),
+        str: isCds || !hasCds ? caseCoding(s) : caseNoncoding(s),
         color: isCds ? cdsColor : utrColor,
       })
     }
@@ -86,7 +88,7 @@ const CDNASequence = observer(function CDNASequence({
       if (intron) {
         middle.push({
           key: `${region.start}-${region.end}-intron`,
-          str: toLower(
+          str: caseNoncoding(
             getIntronDisplayStr(intron, intronBp, collapseIntron ?? false),
           ),
         })
@@ -102,9 +104,9 @@ const CDNASequence = observer(function CDNASequence({
         coordStart,
         onHoverBase: useGenomicCoords ? onHoverBase : undefined,
         segments: [
-          ...flankSegment('upstream', upstream, updownstreamColor, toLower),
+          ...flankSegment('upstream', upstream, updownstreamColor, caseNoncoding),
           ...middle,
-          ...flankSegment('downstream', downstream, updownstreamColor, toLower),
+          ...flankSegment('downstream', downstream, updownstreamColor, caseNoncoding),
         ],
       })}
     </>

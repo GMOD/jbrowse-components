@@ -42,7 +42,9 @@ const SequenceDisplay = observer(function SequenceDisplay({
   color?: string
   // Maps a 0-based sequence index (ignoring coordinate-spacing spaces) to a
   // background color, or undefined to use the base `color`. When provided, each
-  // character is rendered in its own span so it can be highlighted individually.
+  // character is rendered in its own span so it can be highlighted individually
+  // -- that path takes precedence over `onHoverBase`, so the two are mutually
+  // exclusive today (only protein highlights, and it does not report hovers).
   highlight?: (index: number) => string | undefined
   // Reports the 0-based genomic base under the cursor as it moves over a chunk,
   // resolved from `coordStart`/`strand` (only wired for contiguous genomic
