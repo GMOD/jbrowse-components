@@ -212,16 +212,35 @@ export function classifyVariantFeatures(features: Map<string, Feature>) {
       : ('breakend' as const)
 }
 
+// Each half of a bedpe record is anchored at one endpoint and carries `mate`
+// pointing at the other, so the unordered pair of loc strings is identical for
+// the two halves and unique to the record. Same canonical-key trick as
+// getMatchedBreakendFeatures.
+//
+// Don't be tempted back to the feature's uniqueId: the adapter mints it as
+// `<prefix>-<refName>-<index>-r1|r2`, where the index counts within that
+// refName's bucket. The two halves of one record therefore disagree on both the
+// refName and the index, so stripping the `-r1`/`-r2` suffix neither rejoins a
+// real pair nor keeps unrelated ones apart.
 export function getMatchedPairedFeatures(feats: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
   for (const f of feats.values()) {
-    if (f.get('type') !== 'paired_feature') {
+    const mate = f.get('mate') as
+      | { refName: string; start: number; end: number }
+      | undefined
+    if (f.get('type') !== 'paired_feature' || !mate) {
       continue
     }
-    const baseId = f.id().replace(/-r[12]$/, '')
-    if (f.id() !== baseId) {
-      bucket(candidates, baseId, f)
-    }
+    const self = assembleLocStringFast({
+      refName: f.get('refName'),
+      start: f.get('start'),
+      end: f.get('end'),
+    })
+    bucket(
+      candidates,
+      [self, assembleLocStringFast(mate)].sort().join('\t'),
+      f,
+    )
   }
   return multi(candidates)
 }

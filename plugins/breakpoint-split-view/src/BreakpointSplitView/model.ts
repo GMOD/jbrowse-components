@@ -34,6 +34,7 @@ import type {
   BreakpointSplitViewInitView,
   ExportSvgOptions,
   LayoutRecord,
+  OverlayLevel,
   OverlayMatch,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -210,10 +211,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #method
-       * Per-render precompute for an overlay track. Gathers scroll top,
-       * display height, coverage offset, and view offsetPx per level, then
-       * returns getX/getY closures for converting feature layout records to SVG
-       * coordinates.
+       * Per-render precompute for an overlay track. Resolves an OverlayLevel of
+       * geometry per view level, then returns getX/getY closures for converting
+       * feature layout records to SVG coordinates.
        *
        * `yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed.
        * `domYOffsets` — live rendering: DOM-measured track tops (relative to
@@ -226,53 +226,42 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       ) {
         const { views } = self
         const tracks = this.getMatchedTracks(trackId)
-        const n = views.length
-        const scrollTops = new Array(n)
-        const heights = new Array(n)
-        const coverageOffsets = new Array(n)
-        const viewOffsetPxs = new Array(n)
-        const yOffsets = yOffsetsOverride ?? new Array(n)
+        const levels: OverlayLevel[] = []
 
         let viewTop = 0
-        for (let level = 0; level < n; level++) {
-          const view = views[level]!
-          if (!view.initialized) {
-            continue
-          }
+        for (const [level, view] of views.entries()) {
+          // Every read here is plain layout state, valid whether or not the view
+          // has initialized, so no level is skipped: a gap would read back as
+          // NaN coordinates and would drop that level's height from viewTop,
+          // shifting every level below it. An uninitialized view resolves no
+          // bpToPx, so getX already returns undefined and callers drop the
+          // connection.
           const d = tracks[level]!.displays[0]!
-          scrollTops[level] = yOffsetsOverride ? 0 : (d.scrollTop ?? 0)
-          heights[level] = d.height
-          coverageOffsets[level] = d.coverageDisplayHeight ?? 0
-          viewOffsetPxs[level] = view.offsetPx
-
-          if (!yOffsetsOverride) {
-            yOffsets[level] =
+          levels.push({
+            yOffset:
+              yOffsetsOverride?.[level] ??
               domYOffsets?.[level] ??
-              viewTop + (view.getTrackYOffset(trackId) ?? 0)
-          }
-          if (level < n - 1) {
-            viewTop += view.height + VIEW_DIVIDER_HEIGHT
-          }
+              viewTop + (view.getTrackYOffset(trackId) ?? 0),
+            height: d.height,
+            coverageOffset: d.coverageDisplayHeight ?? 0,
+            scrollTop: yOffsetsOverride ? 0 : (d.scrollTop ?? 0),
+            offsetPx: view.offsetPx,
+          })
+          viewTop += view.height + VIEW_DIVIDER_HEIGHT
         }
 
-        function getY(level: number, c: LayoutRecord) {
-          return computeOverlayY({
-            yOffset: yOffsets[level],
-            height: heights[level],
-            coverageOffset: coverageOffsets[level],
-            scrollTop: scrollTops[level],
-            layout: c,
-          })
+        function getY(level: number, layout: LayoutRecord) {
+          return computeOverlayY({ ...levels[level]!, layout })
         }
 
         function getX(level: number, refName: string, coord: number) {
           const offsetPx = views[level]!.bpToPx({ refName, coord })?.offsetPx
-          return offsetPx !== undefined
-            ? offsetPx - viewOffsetPxs[level]
-            : undefined
+          return offsetPx === undefined
+            ? undefined
+            : offsetPx - levels[level]!.offsetPx
         }
 
-        return { tracks, yOffsets, heights, getX, getY }
+        return { tracks, levels, getX, getY }
       },
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {
@@ -289,15 +278,22 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   return { feature, layout, level, clipLengthAtStartOfRead }
                 }
               }
-              // Feature wasn't found in any track's pileup layout — usually
-              // filterBy excluded it, the alignments display's maxHeight
-              // pushed it off the bottom, or it hasn't loaded yet. Synthesize
-              // an off-display LayoutRecord so the connection still draws to
-              // the track's bottom edge (see makeOffscreenLayout / getY).
+              // Feature wasn't found in any track's pileup layout — usually the
+              // display keeps no layout at all (the paired/arc displays),
+              // filterBy excluded it, the alignments display's maxHeight pushed
+              // it off the bottom, or it hasn't loaded yet. Synthesize an
+              // off-display LayoutRecord so the connection still draws to the
+              // track's bottom edge (see makeOffscreenLayout / getY).
               const start = feature.get('start')
+              // bpToPx matches displayedRegions by exact refName, so the raw
+              // adapter refName has to be canonicalized first or an aliased
+              // one (bedpe 'A' vs the view's 'ctgA') resolves to no level and
+              // the feature is dropped. The drawing side canonicalizes too,
+              // via getCanonicalRefPair.
               const level = findFeatureViewLevel(
                 views,
-                feature.get('refName'),
+                self.assembly?.getCanonicalRefName(feature.get('refName')) ??
+                  feature.get('refName'),
                 start,
               )
               return level === undefined

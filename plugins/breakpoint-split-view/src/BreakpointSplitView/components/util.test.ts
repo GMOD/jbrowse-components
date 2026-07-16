@@ -577,35 +577,89 @@ describe('getMatchedAlignmentFeatures', () => {
 })
 
 describe('getMatchedPairedFeatures', () => {
-  const paired = (id: string, type = 'paired_feature') =>
-    ({
-      id: () => id,
-      get: (k: string) => (k === 'type' ? type : undefined),
-    }) as unknown as Feature
+  interface Endpoint {
+    refName: string
+    start: number
+    end: number
+  }
 
-  test('groups -r1/-r2 halves sharing a base id', () => {
+  // Mirrors BedpeAdapter: one half per endpoint, each anchored at its own end
+  // with `mate` pointing at the other, and a uniqueId whose `-r1`/`-r2` suffix
+  // sits on top of a per-refName index (so the two halves disagree on the
+  // prefix as well as the suffix).
+  const half = (
+    id: string,
+    self: Endpoint,
+    mate: Endpoint,
+    type = 'paired_feature',
+  ) => {
+    const fields: Record<string, unknown> = { ...self, type, mate }
+    return {
+      id: () => id,
+      get: (k: string) => fields[k],
+    } as unknown as Feature
+  }
+
+  const sv1a = { refName: 'chr1', start: 1000, end: 2000 }
+  const sv1b = { refName: 'chr2', start: 3000, end: 4000 }
+  const sv2a = { refName: 'chr1', start: 5000, end: 6000 }
+  const sv2b = { refName: 'chr1', start: 8000, end: 9000 }
+
+  test('groups the two halves of an interchromosomal pair', () => {
     const result = getMatchedPairedFeatures(
-      mapOf(paired('sv1-r1'), paired('sv1-r2')),
+      mapOf(
+        half('test-chr1-0-r1', sv1a, sv1b),
+        half('test-chr2-0-r2', sv1b, sv1a),
+      ),
     )
     expect(result).toHaveLength(1)
     expect(result[0]).toHaveLength(2)
   })
 
+  test('groups the two halves of an intrachromosomal pair', () => {
+    const result = getMatchedPairedFeatures(
+      mapOf(
+        half('test-chr1-1-r1', sv2a, sv2b),
+        half('test-chr1-0-r2', sv2b, sv2a),
+      ),
+    )
+    expect(result).toHaveLength(1)
+  })
+
+  test('does not join halves of different records that collide on base id', () => {
+    // test-chr1-0-r1 (SV1) and test-chr1-0-r2 (SV2) share the base id
+    // `test-chr1-0` despite belonging to unrelated records
+    const result = getMatchedPairedFeatures(
+      mapOf(
+        half('test-chr1-0-r1', sv1a, sv1b),
+        half('test-chr1-0-r2', sv2b, sv2a),
+      ),
+    )
+    expect(result).toHaveLength(0)
+  })
+
   test('ignores features that are not paired_feature type', () => {
     const result = getMatchedPairedFeatures(
-      mapOf(paired('sv1-r1', 'breakend'), paired('sv1-r2', 'breakend')),
+      mapOf(
+        half('test-chr1-0-r1', sv1a, sv1b, 'breakend'),
+        half('test-chr2-0-r2', sv1b, sv1a, 'breakend'),
+      ),
     )
     expect(result).toHaveLength(0)
   })
 
   test('a lone half does not match', () => {
-    expect(getMatchedPairedFeatures(mapOf(paired('sv1-r1')))).toHaveLength(0)
+    expect(
+      getMatchedPairedFeatures(mapOf(half('test-chr1-0-r1', sv1a, sv1b))),
+    ).toHaveLength(0)
   })
 
-  test('ids without an -r1/-r2 suffix are skipped', () => {
-    expect(
-      getMatchedPairedFeatures(mapOf(paired('sv1'), paired('sv2'))),
-    ).toHaveLength(0)
+  test('a paired_feature without a mate is skipped', () => {
+    const noMate = {
+      id: () => 'test-chr1-0-r1',
+      get: (k: string) => (k === 'type' ? 'paired_feature' : undefined),
+    } as unknown as Feature
+    expect(getMatchedPairedFeatures(mapOf(noMate))).toHaveLength(0)
   })
 })
 

@@ -29,6 +29,21 @@ export interface BreakpointSplitViewInitView {
 
 export type LayoutRecord = [number, number, number, number]
 
+// Per-view-level geometry an overlay needs to place a feature, resolved once per
+// render by getTrackOverlayData. One entry per entry in `views`, same order.
+export interface OverlayLevel {
+  /** top of this level's track body, relative to the overlay SVG */
+  yOffset: number
+  /** rendered height of the track body */
+  height: number
+  /** height of the coverage subtrack sitting above the pileup */
+  coverageOffset: number
+  /** the track body's vertical scroll; zeroed for SVG export */
+  scrollTop: number
+  /** the view's horizontal scroll, to turn absolute bp px into screen px */
+  offsetPx: number
+}
+
 export interface LayoutMatch {
   feature: Feature
   layout: LayoutRecord

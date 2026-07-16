@@ -32,7 +32,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
   if (!assembly || !match) {
     return null
   }
-  const { tracks, yOffsets, heights, getX, getY } = overlayData
+  const { tracks, levels, getX, getY } = overlayData
   const { layoutMatches, hasPairedReads: hasPaired, allFeatures } = match
 
   const connections = [...resolvedPairs({ match, assembly, tracks })].flatMap(
@@ -91,7 +91,8 @@ const AlignmentConnections = observer(function AlignmentConnections({
       // Same-row abnormal connections bow the bezier's control points down to
       // the track's bottom edge. getY always clamps within the track, so both
       // endpoints resolve to this same edge.
-      const trackBottom = yOffsets[level1]! + heights[level1]!
+      const { yOffset, height } = levels[level1]!
+      const trackBottom = yOffset + height
       const cy1 = abnormalSpecialRenderFlag ? trackBottom : y1
       const cy2 = abnormalSpecialRenderFlag ? trackBottom : y2
       // Cross-view connections in a stacked split view use a fixed 200px handle

@@ -36,6 +36,15 @@ export interface BreakpointVcfInfo {
   STRANDS?: string[]
 }
 
+// The opposite endpoint of a bedpe-style paired feature, as emitted by
+// BedpeAdapter. Present on both halves of the pair, each pointing at the other.
+export interface BreakpointMate {
+  refName: string
+  start: number
+  end: number
+  strand?: number
+}
+
 // Shape emitted by the worker for each feature. Consumed by `deserializeReturn`
 // which wraps each one in a `SimpleFeature`. Covers both:
 //   1. AlignmentsTrack (BAM/CRAM): strand/flags/pair_orientation/CIGAR-derived
@@ -60,6 +69,9 @@ export interface BreakpointSerializedFeature {
   // Variant-specific
   ALT?: string[]
   INFO?: BreakpointVcfInfo
+  // paired_feature (bedpe) only: the record's other endpoint. Both halves of a
+  // pair carry it, which is what lets getMatchedPairedFeatures rejoin them.
+  mate?: BreakpointMate
 }
 
 export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegions {
@@ -126,6 +138,7 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
         type: feature.get('type'),
         ALT: feature.get('ALT') as string[] | undefined,
         INFO: feature.get('INFO') as BreakpointVcfInfo | undefined,
+        mate: feature.get('mate') as BreakpointMate | undefined,
         clipLengthAtStartOfRead:
           cigar && strand !== undefined ? getClip(cigar, strand) : undefined,
       }
