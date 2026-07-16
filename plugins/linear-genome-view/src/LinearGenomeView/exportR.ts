@@ -451,21 +451,35 @@ pileup_layout <- function(reads) {
 # own row, since they all cover sort_pos), then the remaining reads fill the gaps
 # around them in genomic order (first-fit-lowest-row, like disjointBins). Mirrors
 # JBrowse's computeSortedLayout. sort_type: "position" (read start, ascending),
-# "strand" (forward strand first), or "base" (read base at sort_pos from the
-# MD-tag mismatches, passed in mm; A,C,G,T,N then reference-matching reads last). A
-# sort_pos of -1 (no center line) leaves every read in genomic order. Note the
-# baked sort_pos is the exported locus's column - move it to re-sort elsewhere.
-sorted_pileup_layout <- function(reads, sort_pos, sort_type = "position", mm = NULL) {
+# "strand" (forward strand first), or "base" (read char at sort_pos: a deletion
+# '*' first, then the MD-tag mismatch base by ASCII A,C,G,N,T [passed in mm], and
+# reference-matching reads last - JBrowse's buildSortKeyMap ordering, deletions
+# spanning sort_pos detected from the CIGAR indels passed in 'indels'). A sort_pos
+# of -1 (no center line) leaves every read in genomic order. Note the baked
+# sort_pos is the exported locus's column - move it to re-sort elsewhere.
+sorted_pileup_layout <- function(reads, sort_pos, sort_type = "position", mm = NULL, indels = NULL) {
   keep <- if (is.null(reads$keep)) rep(TRUE, nrow(reads)) else reads$keep
   ov <- which(keep & reads$start <= sort_pos & reads$end > sort_pos)
   key <- switch(sort_type,
     strand = ifelse(reads$strand[ov] == "-", 1L, 0L),
     base = {
-      rank <- c(A = 1L, C = 2L, G = 3L, T = 4L, N = 5L)
-      k <- rep(6L, length(ov))
+      # JBrowse ranks the read's char at sort_pos by ASCII: '*' deletion (42),
+      # then the mismatch base A(65) C(67) G(71) N(78) T(84), reference-matching
+      # reads (no key) last. Inf sentinel sorts those last via order() below.
+      k <- rep(Inf, length(ov))
       hit <- if (is.null(mm)) NULL else mm[mm$refpos == sort_pos, , drop = FALSE]
       if (!is.null(hit) && nrow(hit)) {
-        k[match(hit$read_index, ov)] <- unname(rank[toupper(hit$base)])
+        k[match(hit$read_index, ov)] <-
+          vapply(toupper(hit$base), utf8ToInt, integer(1), USE.NAMES = FALSE)
+      }
+      # a deletion spanning sort_pos ranks as '*' (42), but only for reads without
+      # a mismatch base there (JBrowse's !baseAtPos.has(readIdx) guard)
+      del <- if (is.null(indels)) NULL else indels[indels$type == "D" &
+        indels$refpos <= sort_pos & indels$refpos + indels$length > sort_pos, , drop = FALSE]
+      if (!is.null(del) && nrow(del)) {
+        di <- match(del$read_index, ov); di <- di[!is.na(di)]
+        di <- di[is.infinite(k[di])]
+        k[di] <- 42
       }
       k
     },

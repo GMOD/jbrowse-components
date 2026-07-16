@@ -351,6 +351,59 @@ cat(length(alt), length(ref), max(laid$row[alt]), min(laid$row[ref]), "\\n")
   90000,
 )
 
+// base sort deletion fidelity: JBrowse ranks a read carrying a *deletion* over
+// sort_pos as '*' (ASCII 42), ahead of every ACGT mismatch base and ahead of the
+// reference-matching reads. sorted_pileup_layout must reproduce that ordering
+// from the CIGAR indels passed alongside the mismatches. Synthetic reads (four
+// reads all covering the center column: a deletion, a 'T' mismatch, an 'A'
+// mismatch, and a reference match) make the expected order deterministic.
+maybe(
+  'base sort places a deletion over sort_pos ahead of ACGT and reference reads',
+  () => {
+    // any base-sort fragment emits the sorted_pileup_layout helper def; reuse it
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'x',
+      uri: '/dev/null',
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      sortType: 'base',
+      sortPos: 100,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 200 },
+      fragments,
+    )
+    const helpers = script.split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-delsort-'))
+    // read 1 reference-matching (no mm, no indel), 2 = 'T' (84), 3 = 'A' (65),
+    // 4 = deletion over 100 (should rank '*' = 42, ahead of all)
+    const probe = `${helpers}
+reads <- data.frame(name = paste0("r", 1:4), start = rep(50L, 4),
+                    end = rep(150L, 4), strand = "+", stringsAsFactors = FALSE)
+mm <- data.frame(read_index = c(2L, 3L), refpos = c(100L, 100L),
+                 base = c("T", "A"), stringsAsFactors = FALSE)
+indels <- data.frame(read_index = 4L, refpos = 98L, length = 5L, type = "D",
+                     stringsAsFactors = FALSE)
+laid <- sorted_pileup_layout(reads, 100, "base", mm, indels)
+cat(laid$row[4], laid$row[3], laid$row[2], laid$row[1], "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [delRow, aRow, tRow, refRow] = out.split(/\s+/).map(Number)
+    // deletion above 'A' above 'T' above the reference-matching read
+    expect(delRow!).toBeLessThan(aRow!)
+    expect(aRow!).toBeLessThan(tRow!)
+    expect(tRow!).toBeLessThan(refRow!)
+  },
+  90000,
+)
+
 // sortedBy "position"/"strand": the localized sort at the center line orders the
 // reads covering it (position = ascending start; strand = forward first) and the
 // generated figure runs

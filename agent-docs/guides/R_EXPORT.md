@@ -67,20 +67,12 @@ wiggle, multi-wiggle, alignments (BAM/CRAM), genes (GFF3 + BED), variants,
 multi-sample variant matrix + rows, Hi-C, GWAS. Alignments is the richest: SNP
 coverage, color-by schemes, MD-tag mismatches, MM/ML modifications, per-base
 quality, soft/hard clips, CIGAR indels, linked reads, center-line **sort**
-(position/strand/base), and **Filter by** (flags/read-name/tags). See the gallery
-README section per type.
+(position/strand/base — base sorts a deletion over `sort_pos` as `*`, ahead of
+the ACGT bases, matching JBrowse), and **Filter by** (flags/read-name/tags). See
+the gallery README section per type.
 
 ## Next steps (prioritized)
 
-- **Base-sort deletion fidelity** (quickest correctness win). `sorted_pileup_layout`'s
-  `base` sort ranks A/C/G/T/N then reference-matching reads last, but a read with
-  a *deletion* at `sort_pos` is currently treated as reference-matching. JBrowse
-  sorts deletions as `*` (`DELETION_CHAR = 42`, *before* the ACGT bases — see
-  `RenderAlignmentDataRPC/sortLayout.ts` `buildSortKeyMap`). Fix: detect a
-  deletion spanning `sort_pos` via `bam_indels` (`type == "D"`, `refpos <=
-  sort_pos < refpos + length`) and give it rank 0 in the base-sort key. Add the
-  `bam_indels` call to the base-sort layout in
-  `plugins/alignments/.../exportRCode.ts`.
 - **Interbase/tag sorts.** `sorted_pileup_layout` falls back to plain layout for
   `insertion`/`softclip`/`hardclip`/`tag` (`resolveSortType` returns undefined).
   `softclip`/`hardclip` reproducible from `bam_clips` (clip length at `sort_pos`,

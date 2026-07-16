@@ -235,7 +235,12 @@ test('base sort feeds the MD-tag mismatch base at sort_pos into the layout', () 
   expect(byBase!.plotExpr).toContain(
     'sorted_pileup_layout(reads, sort_pos, "base",',
   )
-  expect(byBase!.plotExpr).toContain('bam_mismatches(aln, chrom, start, end))')
+  // feeds both the mismatch base and the CIGAR deletions at sort_pos: JBrowse
+  // sorts a deletion as '*', ahead of the ACGT bases
+  expect(byBase!.plotExpr).toContain('bam_mismatches(aln, chrom, start, end)')
+  expect(byBase!.plotExpr).toContain(
+    'bam_indels(aln, chrom, start, end))',
+  )
 
   // base sort under the modifications scheme (which greys bodies) still sorts
   const [, modsBase] = alignmentsFragments({
