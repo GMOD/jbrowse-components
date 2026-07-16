@@ -13,8 +13,17 @@ const diffDir = path.resolve(__dirname, '__snapshots__', 'backend-diffs')
 // are independent implementations of the same drawing, so when they disagree on
 // the same run one of them is wrong — a correctness oracle that needs no
 // committed golden and so has no cross-machine drift (both renders happen in one
-// process). This is the CI-facing counterpart to compare-backends.ts, which
-// diffs the committed per-backend snapshot dirs for local visual review.
+// process). Its counterpart is compare-backends.ts, which diffs the committed
+// per-backend snapshot dirs for local visual review.
+//
+// Run this by hand (`pnpm test:browser:gate`) when touching a shader or a
+// backend. It no longer runs in CI: it was non-blocking, so it only ever
+// published drift logs nobody read, while costing a build plus a two-backend
+// render of every suite per push (removed 2026-07-16). Note it is a
+// *differential* oracle — it is blind to a bug both backends share, so it would
+// not have caught either real render bug found on 2026-07-16 (a stale mobx read
+// in the breakpoint overlay, and GC content rendering empty). See
+// browser-tests/README.md for what making it a blocking gate would take.
 //
 // Captures are collected in memory during a multi-backend run (see
 // recordCapture, tapped from snapshot.ts) and compared pairwise once every

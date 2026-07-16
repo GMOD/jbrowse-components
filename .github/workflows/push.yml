@@ -340,48 +340,6 @@ jobs:
       - name: Smoke-test examples-site
         run: pnpm --filter ${{ matrix.site }} smoke
 
-  # Differential render test: build jbrowse-web, then render every local suite
-  # with both the canvas2d and (swiftshader) webgl backends and diff the two in
-  # memory. canvas2d and webgl are independent implementations of the same
-  # drawing, so a pair that disagrees past its threshold means one backend is
-  # wrong — a shader-regression oracle that needs no GPU (swiftshader) and no
-  # committed golden (the two renders are compared to each other in one run, so
-  # there is no cross-machine baseline to drift). See
-  # products/jbrowse-web/browser-tests/crossBackendGate.ts.
-  cross_backend_gate:
-    name: Cross-backend render gate
-    if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}
-    runs-on: ubuntu-latest
-    steps:
-      - run: sudo apt-get update && sudo apt-get -y install tabix
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup
-      - name: Build jbrowse-web
-        uses: ./.github/actions/build-jbrowse-web
-      # Non-blocking (continue-on-error): three real runs showed a rare (~1% of
-      # pairs) intermittent cross-process race on alignment PILEUP views — a
-      # different pileup drifts 7-27% each run; no non-pileup view ever drifts,
-      # and same-backend re-renders reproduce exactly (so it's a race, not gross
-      # nondeterminism). The deterministic view types are a clean oracle, but a
-      # trustworthy *blocking* full-suite gate needs the pileup race isolated/
-      # fixed or the gate scoped to non-pileup views. Until then this runs for
-      # signal (drift log + diff artifacts) without gating merges. See
-      # products/jbrowse-web/browser-tests/crossBackendGate.ts EXCLUDED_SUBSTRINGS.
-      - name: Run cross-backend render gate
-        run: pnpm test:browser:gate
-        working-directory: products/jbrowse-web
-        continue-on-error: true
-      - name: Upload backend diff images
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: backend-diffs
-          path: products/jbrowse-web/browser-tests/__snapshots__/backend-diffs/*.png
-          retention-days: 7
-          if-no-files-found: ignore
-
   buildwebsite:
     name: Build website
     if: ${{ !contains(github.event.head_commit.message, '[update docs only]') }}

@@ -71,19 +71,32 @@ against the stored snapshot.
 Use `--update-snapshots` or `-u` to update snapshots when intentional visual
 changes are made.
 
-### The goldens are a local tool — CI never runs them
+### Nothing here runs in CI — these are local tools
 
-Nothing in CI compares against a committed golden. The only render check on
-`push` is the **cross-backend gate** (`pnpm test:browser:gate`), which renders
-canvas2d and webgl in one run and diffs them against _each other_ — no
-cross-machine baseline, so nothing to drift. It is `continue-on-error` anyway.
+**No part of this directory runs on `push`.** Not the goldens, and (since
+2026-07-16) not the cross-backend gate either. Rendering is checked when a human
+runs it, and only then.
 
-So the goldens only get refreshed when someone runs `-u` locally, and they drift
-silently in between: as of 2026-07, 133 of 187 came from a single 2026-05-30
-commit. **A large diff usually means weeks of other people's accumulated work,
-not your change.** A 20% diff on a breakpoint golden turned out to be track
-labels moving `overlapping` → `offset` (each track grows by a label row,
-cascading every panel below it) — nothing to do with the change under test.
+The gate used to run non-blocking (`continue-on-error`) purely to publish drift
+logs and diff artifacts. Nobody read them, its own premise turned out to be
+false (see "Pileup goldens" below), and it cost a full jbrowse-web build plus a
+two-backend render of every suite on every push. A check that gates nothing and
+nobody reads is decoration, so it was removed. `pnpm test:browser:gate` is still
+the right tool to run **by hand** when touching shaders or a backend — that is a
+differential canvas2d-vs-webgl oracle and it does not need goldens.
+
+Bringing it back as a real CI gate needs, in order: the pileup arrival-order
+race isolated (or those names put back in `EXCLUDED_SUBSTRINGS`), a few
+consecutive clean runs on an idle machine to prove the false-positive rate is 0,
+and then `continue-on-error` dropped. Re-adding it non-blocking just recreates
+the decoration.
+
+Because nothing refreshes the goldens but `-u`, they drift silently: as of
+2026-07, 133 of 187 came from a single 2026-05-30 commit. **A large diff usually
+means weeks of other people's accumulated work, not your change.** A 20% diff on
+a breakpoint golden turned out to be track labels moving `overlapping` →
+`offset` (each track grows by a label row, cascading every panel below it) —
+nothing to do with the change under test.
 
 Before you `-u`:
 
@@ -97,8 +110,8 @@ Before you `-u`:
    thresholds absorb it). Rewriting a passing golden is pure churn.
 
 Because a golden encodes one machine's rendering, treat a fresh one as evidence
-about _this_ machine, not a cross-platform contract — that is exactly why the
-cross-backend gate exists instead.
+about _this_ machine, not a cross-platform contract — that is what the
+cross-backend gate is for, run by hand.
 
 ### Pileup goldens re-drift on every run — don't chase them
 
