@@ -422,11 +422,31 @@ bam_modifications <- function(uri, chrom, start, end, min_prob = 0.1) {
   }
   if (length(out)) do.call(rbind, out) else NULL
 }`,
-  snp_freq_threshold: `# Minimum mismatch frequency drawn in the SNP-coverage track at a given depth -
-# JBrowse hides low-frequency noise by default (80% below 10x depth, easing to
-# 30% at >=30x). Return 0 (via show_low_freq) to keep every mismatch.
+  snp_freq_threshold: `# JBrowse's depth-dependent low-frequency threshold (featureFrequencyThreshold):
+# a mismatch base is significant only above 80% of depth below 10x, easing to 30%
+# at >=30x. Drives the pileup mismatch fade (mismatch_fade_alpha), not the coverage
+# panel (which shows every fraction).
 snp_freq_threshold <- function(depth) {
   ifelse(depth < 10, 0.8, ifelse(depth >= 30, 0.3, 0.8 + (depth - 10) / 20 * (0.3 - 0.8)))
+}`,
+  mismatch_fade_alpha: `# JBrowse's low-frequency mismatch fade, per tick: frequencyFade over
+# computeMismatchFrequencies + the depth threshold. Zoomed in (<= 1 bp/px) every
+# tick is opaque (1). Zoomed out, alpha = pxPerBp lifted toward 1 by the base's
+# frequency (reads with that base at the column / depth, rounded to a 0-255 byte
+# like the shader), and a base whose byte-frequency is below snp_freq_threshold(
+# depth) is held at the faint pxPerBp noise floor. 'depth' is a bam_coverage()
+# data.frame(pos, depth). Returns an alpha vector aligned to refpos/base.
+mismatch_fade_alpha <- function(refpos, base, depth, bp_per_px) {
+  n <- length(refpos)
+  if (bp_per_px <= 1) return(rep(1, n))
+  base_alpha <- 1 / bp_per_px
+  count <- ave(refpos, refpos, base, FUN = length)     # reads with this base here
+  d <- depth$depth[match(refpos, depth$pos)]
+  freq <- ifelse(!is.na(d) & d > 0, count / d, 0)
+  fb <- pmin(255L, as.integer(round(freq * 255)))      # frequency as a 0-255 byte
+  thr <- snp_freq_threshold(d)
+  fb[!is.na(thr) & (fb / 255) < thr] <- 0L             # below threshold -> noise floor
+  base_alpha + (fb / 255) * (1 - base_alpha)
 }`,
   read_filter: `# Apply JBrowse's "Filter by" to the reads: SAM flag include/exclude, an optional
 # read-name match, and tag filters (all AND-ed; a value of "*" means "has the

@@ -14,6 +14,7 @@ const base: AlignmentsRParams = {
   linkReads: false,
   isCram: false,
   reference: '',
+  bpPerPx: 1,
 }
 
 test('emits a coverage panel and a pileup panel, coverage on top', () => {
@@ -319,15 +320,35 @@ test('pileup applies the JBrowse "Filter by" via read_filter', () => {
   )
 })
 
-test('SNP coverage thresholds low-frequency mismatches by default', () => {
-  const [cov] = alignmentsFragments(base)
-  expect(cov!.helpers).toContain('snp_freq_threshold')
-  expect(cov!.plotExpr).toContain('show_low_freq <- FALSE')
-  expect(cov!.plotExpr).toContain('snp_freq_threshold(snp$depth)')
+test('low-frequency fade lives on the pileup, not the coverage panel', () => {
+  // JBrowse's coverage panel always shows every mismatch fraction; it must not
+  // threshold (that was inverted — the fade belongs on the pileup ticks)
+  const [cov, pileup] = alignmentsFragments({ ...base, bpPerPx: 5 })
+  expect(cov!.helpers).not.toContain('snp_freq_threshold')
+  expect(cov!.plotExpr).not.toContain('snp_freq_threshold')
+  expect(cov!.plotExpr).not.toContain('show_low_freq')
 
-  // showLowFreqMismatches keeps every mismatch (no thresholding)
-  const [covAll] = alignmentsFragments({ ...base, showLowFreqMismatches: true })
-  expect(covAll!.plotExpr).toContain('show_low_freq <- TRUE')
+  // the pileup fades ticks below snp_freq_threshold(depth) once zoomed out past
+  // 1 bp/px, with the filter on by default (showLowFreqMismatches false)
+  expect(pileup!.helpers).toEqual(
+    expect.arrayContaining([
+      'snp_freq_threshold',
+      'bam_coverage',
+      'mismatch_fade_alpha',
+    ]),
+  )
+  expect(pileup!.plotExpr).toContain('filter_low_freq <- TRUE')
+  expect(pileup!.plotExpr).toContain('bp_per_px <- 5')
+  expect(pileup!.plotExpr).toContain('filter_low_freq && bp_per_px > 1')
+  expect(pileup!.plotExpr).toContain('mismatch_fade_alpha(mm$refpos, mm$base,')
+
+  // showLowFreqMismatches turns the fade off (every tick opaque)
+  const [, keepAll] = alignmentsFragments({
+    ...base,
+    bpPerPx: 5,
+    showLowFreqMismatches: true,
+  })
+  expect(keepAll!.plotExpr).toContain('filter_low_freq <- FALSE')
 })
 
 test('both panels share one file-path setup and pure Bioc packages', () => {
