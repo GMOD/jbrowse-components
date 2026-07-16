@@ -21,27 +21,39 @@ function rWithRtracklayer() {
 
 const maybe = rWithRtracklayer() ? test : test.skip
 
+function runsToFigure(uri: string, format: 'gff' | 'bed') {
+  const fragment = geneFragment({
+    trackId: 'genes',
+    trackName: 'Volvox genes',
+    uri: resolve(process.cwd(), uri),
+    format,
+  })
+  const script = assembleRScript({ refName: 'ctgA', start: 1000, end: 9000 }, [
+    fragment,
+  ])
+  const dir = mkdtempSync(join(tmpdir(), `jb-rexport-${format}-`))
+  const scriptPath = join(dir, 'view.R')
+  writeFileSync(scriptPath, script)
+  execFileSync('Rscript', [scriptPath], { cwd: dir, stdio: 'pipe' })
+  return existsSync(join(dir, 'jbrowse_region.png'))
+}
+
 maybe(
-  'generated gene-track R script runs and produces a figure',
+  'generated GFF3 gene-track R script runs and produces a figure',
   () => {
-    const gff = resolve(process.cwd(), 'test_data/volvox/volvox.sort.gff3.gz')
-    const fragment = geneFragment({
-      trackId: 'genes',
-      trackName: 'Volvox genes',
-      uri: gff,
-    })
-    const script = assembleRScript(
-      { refName: 'ctgA', start: 1000, end: 9000 },
-      [fragment],
+    expect(runsToFigure('test_data/volvox/volvox.sort.gff3.gz', 'gff')).toBe(
+      true,
     )
+  },
+  60000,
+)
 
-    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-gff-'))
-    const scriptPath = join(dir, 'view.R')
-    writeFileSync(scriptPath, script)
-
-    execFileSync('Rscript', [scriptPath], { cwd: dir, stdio: 'pipe' })
-
-    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+maybe(
+  'generated BED12 gene-track R script runs and produces a figure',
+  () => {
+    expect(runsToFigure('test_data/volvox/volvox-bed12.bed.gz', 'bed')).toBe(
+      true,
+    )
   },
   60000,
 )
