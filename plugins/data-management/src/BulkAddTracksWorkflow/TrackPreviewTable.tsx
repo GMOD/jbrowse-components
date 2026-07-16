@@ -10,10 +10,13 @@ import type { TrackConfRow, TrackStatus } from './buildConfigs.ts'
 import type { NamedRow } from './util.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 
+const ROW_HEIGHT = 30
+const HEADER_HEIGHT = 35
+const MAX_HEIGHT = 300
+
 const useStyles = makeStyles()(theme => ({
   section: {
     marginTop: theme.spacing(2),
-    height: 300,
   },
 }))
 
@@ -95,13 +98,18 @@ const TrackPreviewTable = observer(function TrackPreviewTable({
     },
   ]
 
+  const height = Math.min(
+    MAX_HEIGHT,
+    HEADER_HEIGHT + gridRows.length * ROW_HEIGHT + 2,
+  )
+
   return (
-    <div className={classes.section}>
+    <div className={classes.section} style={{ height }}>
       <DataGrid
         rows={gridRows}
         columns={columns}
-        rowHeight={30}
-        columnHeaderHeight={35}
+        rowHeight={ROW_HEIGHT}
+        columnHeaderHeight={HEADER_HEIGHT}
         hideFooter
         disableRowSelectionOnClick
         processRowUpdate={newRow => {

@@ -89,8 +89,10 @@ const LocationInput = observer(function LocationInput({
             'https://example.com/a.bam\nhttps://example.com/a.bam.bai'
           }
           multiline
-          minRows={4}
+          minRows={8}
+          maxRows={16}
           fullWidth
+          variant="outlined"
           value={text}
           onChange={event => {
             setText(event.target.value)
