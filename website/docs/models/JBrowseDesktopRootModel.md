@@ -23,9 +23,11 @@ model (via e.g. getRoot) in plugin code
 | [adminMode](#volatile-adminmode)                                         | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [rpcManager](#volatile-rpcmanager)                                       | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [openNewSessionCallback](#volatile-opennewsessioncallback)               | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [openLinkCallback](#volatile-openlinkcallback)                           | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [returnToStartScreenCallback](#volatile-returntostartscreencallback)     | Volatiles  | JBrowseDesktopRootModel                             |                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [menus](#method-menus)                                                   | Methods    | JBrowseDesktopRootModel                             |                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [setOpenNewSessionCallback](#action-setopennewsessioncallback)           | Actions    | JBrowseDesktopRootModel                             |                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [setOpenLinkCallback](#action-setopenlinkcallback)                       | Actions    | JBrowseDesktopRootModel                             | Wired by the Loader to open a JBrowse Web link as a new session (the Loader owns plugin-manager lifecycle, as with openNewSessionCallback).                                                                                                                                                                                                                                                     |
 | [setReturnToStartScreenCallback](#action-setreturntostartscreencallback) | Actions    | JBrowseDesktopRootModel                             | Wired by the Loader to tear down this plugin manager and show the start screen (the Loader owns plugin-manager lifecycle).                                                                                                                                                                                                                                                                      |
 | [saveSession](#action-savesession)                                       | Actions    | JBrowseDesktopRootModel                             |                                                                                                                                                                                                                                                                                                                                                                                                 |
 | [setPluginsUpdated](#action-setpluginsupdated)                           | Actions    | JBrowseDesktopRootModel                             | Persist the session, then rebuild the plugin manager from disk so the changed plugin set takes effect (Loader wires openNewSessionCallback to reload from the session path).                                                                                                                                                                                                                    |
@@ -113,6 +115,17 @@ openNewSessionCallback: async (_path: string) => {
 }
 ```
 
+#### volatile: openLinkCallback
+
+```ts
+// type signature
+type openLinkCallback = (_link: string) => Promise<void>
+// code
+openLinkCallback: async (_link: string) => {
+  console.error('openLinkCallback unimplemented')
+}
+```
+
 #### volatile: returnToStartScreenCallback
 
 ```ts
@@ -139,6 +152,15 @@ type menus = () => Menu[]
 
 <details>
 <summary>JBrowseDesktopRootModel - Actions</summary>
+
+#### action: setOpenLinkCallback
+
+Wired by the Loader to open a JBrowse Web link as a new session (the Loader owns
+plugin-manager lifecycle, as with openNewSessionCallback).
+
+```ts
+type setOpenLinkCallback = (cb: (arg: string) => Promise<void>) => void
+```
 
 #### action: setReturnToStartScreenCallback
 

@@ -37,7 +37,10 @@ test('fetches the config the link names, then builds the spec session on it', as
   const fetchConfig = jest.fn().mockResolvedValue(config)
   const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
 
-  const result = await launchFromLink(link, { fetchConfig, createPluginManager })
+  const result = await launchFromLink(link, {
+    fetchConfig,
+    createPluginManager,
+  })
 
   // the link's config is relative to the instance it points at
   expect(fetchConfig).toHaveBeenCalledWith(resolvedConfigUrl)

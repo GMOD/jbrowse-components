@@ -33,7 +33,9 @@ test('a spec with no config is allowed (self-contained sessionAssemblies)', () =
 
 test('explains that a share link cannot be opened elsewhere', () => {
   expect(() =>
-    parseSessionSpecUrl('https://jbrowse.org/code/jb2/main/?session=share-abc123'),
+    parseSessionSpecUrl(
+      'https://jbrowse.org/code/jb2/main/?session=share-abc123',
+    ),
   ).toThrow(/only the JBrowse Web instance that created it/)
 })
 
@@ -61,7 +63,9 @@ test('rejects a spec with no views key at all', () => {
 
 test('rejects malformed spec JSON', () => {
   expect(() =>
-    parseSessionSpecUrl('https://jbrowse.org/code/jb2/main/?session=spec-{oops'),
+    parseSessionSpecUrl(
+      'https://jbrowse.org/code/jb2/main/?session=spec-{oops',
+    ),
   ).toThrow(/isn't valid JSON/)
 })
 

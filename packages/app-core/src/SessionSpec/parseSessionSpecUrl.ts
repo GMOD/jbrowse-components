@@ -50,7 +50,9 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
 
   let spec: ParsedSessionSpec['spec']
   try {
-    spec = JSON.parse(session.slice('spec-'.length)) as ParsedSessionSpec['spec']
+    spec = JSON.parse(
+      session.slice('spec-'.length),
+    ) as ParsedSessionSpec['spec']
   } catch (e) {
     throw new Error(`The session spec in that link isn't valid JSON: ${e}`, {
       cause: e,

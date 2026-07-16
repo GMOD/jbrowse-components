@@ -35,9 +35,9 @@ test('finds a jbrowse:// link in argv (windows/linux delivery)', () => {
 })
 
 test('finds a session file in argv, resolved against the working directory', () => {
-  expect(findLaunchTarget(['jbrowse-desktop', 'my.jbrowse'], '/home/me')).toEqual(
-    { type: 'file', path: '/home/me/my.jbrowse' },
-  )
+  expect(
+    findLaunchTarget(['jbrowse-desktop', 'my.jbrowse'], '/home/me'),
+  ).toEqual({ type: 'file', path: '/home/me/my.jbrowse' })
   expect(
     findLaunchTarget(['jbrowse-desktop', '/tmp/config.json'], '/home/me'),
   ).toEqual({ type: 'file', path: '/tmp/config.json' })
@@ -61,6 +61,9 @@ test('a link wins over a file, and a malformed link never falls back to one', ()
 
 test('ignores flags and the argv[0] binary path', () => {
   expect(
-    findLaunchTarget(['/apps/jbrowse.json/jbrowse-desktop', '--renderer=webgl'], '/'),
+    findLaunchTarget(
+      ['/apps/jbrowse.json/jbrowse-desktop', '--renderer=webgl'],
+      '/',
+    ),
   ).toBeUndefined()
 })
