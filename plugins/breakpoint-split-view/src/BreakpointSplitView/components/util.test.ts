@@ -330,6 +330,43 @@ describe('getBadlyPairedAlignments', () => {
     expect(result).toHaveLength(0)
   })
 
+  describe('same-position suppression', () => {
+    // both mates on one span would draw a read connected to itself
+    test('drops a pair whose two mates sit on the same span', () => {
+      const result = getBadlyPairedAlignments(
+        mapOf(
+          fakeAlignment('self/1', 'self', 'chr1', 100, 150, PAIRED, 'F1R2'),
+          fakeAlignment('self/2', 'self', 'chr1', 100, 150, PAIRED, 'F1R2'),
+        ),
+      )
+      expect(result).toHaveLength(0)
+    })
+
+    // suppression is keyed per read name: an unrelated read sharing a span must
+    // not consume it and silently drop the real pair's connection
+    test('keeps a pair when an unrelated read occupies the same span', () => {
+      const orphan = fakeAlignment('z/1', 'z', 'chr1', 100, 150, PAIRED, 'F1R2')
+      const mate1 = fakeAlignment('x/1', 'x', 'chr1', 100, 150, PAIRED, 'F1R2')
+      const mate2 = fakeAlignment('x/2', 'x', 'chr2', 100, 150, PAIRED, 'F1R2')
+      // orphan first, so it would claim the span under a name-agnostic key
+      expect(getBadlyPairedAlignments(mapOf(orphan, mate1, mate2))).toHaveLength(
+        1,
+      )
+    })
+
+    test('keeps both of two distinct pairs stacked on identical spans', () => {
+      const result = getBadlyPairedAlignments(
+        mapOf(
+          fakeAlignment('x/1', 'x', 'chr1', 100, 150, PAIRED, 'F1R2'),
+          fakeAlignment('x/2', 'x', 'chr2', 100, 150, PAIRED, 'F1R2'),
+          fakeAlignment('y/1', 'y', 'chr1', 100, 150, PAIRED, 'F1R2'),
+          fakeAlignment('y/2', 'y', 'chr2', 100, 150, PAIRED, 'F1R2'),
+        ),
+      )
+      expect(result).toHaveLength(2)
+    })
+  })
+
   test('handles F2F1 mis-orientation (equivalent to F1F2)', () => {
     const read1 = fakeAlignment(
       'read7/1',

@@ -24,15 +24,26 @@ function multi<K, V>(map: Map<K, V[]>) {
 
 export function getBadlyPairedAlignments(features: Map<string, Feature>) {
   const candidates = new Map<string, Feature[]>()
-  const alreadyPairedWithSamePosition = new Set<string>()
+  // Reads of one pair that land on the same span would connect a read to
+  // itself: a degenerate arc pinned to a single spot. Keep only the first at a
+  // given (name, span) so the name's bucket falls below the two multi()
+  // requires and nothing is drawn.
+  //
+  // The name belongs in the key. Keying on the span alone (what this was) also
+  // dropped *unrelated* reads that happened to share an identical span, which
+  // silently lost their pair's connection and made the result depend on
+  // iteration order. Everything this suppresses shares a name with what it
+  // would otherwise pair to, so scoping per name loses nothing.
+  const seenNameAtPosition = new Set<string>()
 
   for (const feature of features.values()) {
     const flags = feature.get('flags') as number
-    const locString = assembleLocStringFast({
+    const name = feature.get('name')!
+    const key = `${name}\t${assembleLocStringFast({
       refName: feature.get('refName'),
       start: feature.get('start'),
       end: feature.get('end'),
-    })
+    })}`
     const unmapped = flags & 4
     const correctlyPaired = flags & 2
     // Include reads that either don't have the proper-pair flag set, or have
@@ -42,14 +53,10 @@ export function getBadlyPairedAlignments(features: Map<string, Feature>) {
     )
     const isBadlyPaired = !correctlyPaired || isAbnormalPairDirection(dir)
 
-    if (
-      !alreadyPairedWithSamePosition.has(locString) &&
-      isBadlyPaired &&
-      !unmapped
-    ) {
-      bucket(candidates, feature.get('name')!, feature)
+    if (!seenNameAtPosition.has(key) && isBadlyPaired && !unmapped) {
+      bucket(candidates, name, feature)
     }
-    alreadyPairedWithSamePosition.add(locString)
+    seenNameAtPosition.add(key)
   }
 
   return multi(candidates)
