@@ -174,6 +174,11 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
         'bam_mismatches',
         'base_colors',
         'snp_freq_threshold',
+        'bam_indels',
+        'bam_clips',
+        'interbase_indicators',
+        'gap_colors',
+        'clip_colors',
         'bp_axis',
       ],
       setup,
@@ -186,6 +191,7 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
   mm <- bam_mismatches(${bamVar}, chrom, start, end)
   p <- ggplot() +
     geom_area(data = cov, aes(pos, depth), fill = "#888888") +
+    scale_fill_identity() +
     bp_axis() +
     coord_cartesian(xlim = c(start, end)) +
     labs(title = ${rStr(`${p.trackName} coverage`)}, x = NULL, y = "Depth") +
@@ -200,9 +206,18 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
     }
     if (nrow(snp)) {
       snp$fill <- base_colors[toupper(snp$base)]
-      p <- p + geom_col(data = snp, aes(refpos + 0.5, count, fill = fill), width = 1) +
-        scale_fill_identity()
+      p <- p + geom_col(data = snp, aes(refpos + 0.5, count, fill = fill), width = 1)
     }
+  }
+  # interbase indicators: a marker above the coverage where insertions / soft- or
+  # hard-clips pile up past 30% of local depth (JBrowse's breakpoint flags),
+  # colored by the dominant event (insertion purple / softclip blue / hardclip red)
+  ind <- interbase_indicators(bam_indels(${bamVar}, chrom, start, end),
+                              bam_clips(${bamVar}, chrom, start, end), cov)
+  if (nrow(ind)) {
+    ind$fill <- c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])[ind$type]
+    p <- p + geom_point(data = ind, aes(pos + 0.5, max(cov$depth, 1) * 1.06, fill = fill),
+      shape = 25, size = 2, color = "black", stroke = 0.2)
   }
   p
 }`,

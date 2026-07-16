@@ -52,6 +52,29 @@ test('both panels draw MD-tag mismatches (reference-free SNP coloring)', () => {
   expect(pileup!.plotExpr).toContain('scale_fill_identity()')
 })
 
+test('coverage panel carves deletions and draws interbase indicators', () => {
+  const [cov] = alignmentsFragments(base)
+  // bam_coverage now drops D ranges so the grey total dips at deletions like
+  // JBrowse (helper body lives in exportR.ts; the panel just calls it)
+  expect(cov!.helpers).toEqual(
+    expect.arrayContaining([
+      'bam_indels',
+      'bam_clips',
+      'interbase_indicators',
+      'gap_colors',
+      'clip_colors',
+    ]),
+  )
+  // the SV-breakpoint indicators (insertion/soft-/hard-clip pileups) above the bars
+  expect(cov!.plotExpr).toContain('interbase_indicators(bam_indels(')
+  expect(cov!.plotExpr).toContain('bam_clips(aln, chrom, start, end), cov)')
+  // colored by the dominant event, drawn as a down-triangle above the histogram
+  expect(cov!.plotExpr).toContain(
+    'c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])',
+  )
+  expect(cov!.plotExpr).toContain('shape = 25')
+})
+
 test('pileup colors reads by the resolved color-by scheme', () => {
   // default (normal) — grey read bodies via read_fill_colors
   const [, normal] = alignmentsFragments(base)

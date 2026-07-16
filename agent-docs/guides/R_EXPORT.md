@@ -65,11 +65,13 @@ record* lives elsewhere and is not duplicated here:
 
 wiggle, multi-wiggle, alignments (BAM/CRAM), genes (GFF3 + BED), variants,
 multi-sample variant matrix + rows, Hi-C, GWAS. Alignments is the richest: SNP
-coverage, color-by schemes, MD-tag mismatches, MM/ML modifications, per-base
-quality, soft/hard clips, CIGAR indels, linked reads, center-line **sort**
-(position/strand/base — base sorts a deletion over `sort_pos` as `*`, ahead of
-the ACGT bases, matching JBrowse), and **Filter by** (flags/read-name/tags). See
-the gallery README section per type.
+coverage (`bam_coverage` carves deletions from depth via `grglist(drop.D.ranges)`
++ `interbase_indicators` breakpoint triangles, both matching JBrowse), color-by
+schemes, MD-tag mismatches, MM/ML modifications, per-base quality, soft/hard
+clips, CIGAR indels, linked reads, center-line **sort** (position/strand/base —
+base sorts a deletion over `sort_pos` as `*`, ahead of the ACGT bases, matching
+JBrowse), and **Filter by** (flags/read-name/tags). See the gallery README
+section per type.
 
 ## Next steps (prioritized)
 
