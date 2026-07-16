@@ -14,6 +14,7 @@ import { observer } from 'mobx-react'
 
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
+import { makeStyles } from '../util/tss-react/index.ts'
 
 import type {
   BaseMenuItem,
@@ -25,6 +26,23 @@ import type {
 import type { PopoverOrigin } from '@mui/material'
 
 export type { MenuItemsGetter } from './MenuTypes.ts'
+
+// Compact section headers so tall menus (e.g. a display's flat "Show..."
+// settings list with several subHeader-separated radio groups) stay short.
+// Row heights are left at the MUI default.
+const useStyles = makeStyles()(theme => ({
+  subHeader: {
+    lineHeight: '1.8em',
+    fontSize: '0.7rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: theme.palette.text.secondary,
+    // doubles as the section divider: a rule above the header groups the rows
+    // beneath it without spending a separate divider row
+    borderTop: `1px solid ${theme.palette.divider}`,
+    marginTop: 4,
+  },
+}))
 
 interface CascadingMenuListProps {
   menuItems: JBMenuItem[]
@@ -295,6 +313,7 @@ function CascadingMenuList({
   onCloseRoot,
   onNavigateBack,
 }: CascadingMenuListProps) {
+  const { classes } = useStyles()
   const [openSubmenuIdx, setOpenSubmenuIdx] = useState<number | undefined>()
   const closeSubmenu = () => {
     setOpenSubmenuIdx(undefined)
@@ -346,7 +365,13 @@ function CascadingMenuList({
         }
         if (item.type === 'subHeader') {
           return (
-            <ListSubheader key={`subHeader-${item.label}`}>
+            <ListSubheader
+              key={`subHeader-${item.label}`}
+              className={classes.subHeader}
+              // a leading subHeader has no rows above it to divide from, so drop
+              // the divider rule that would otherwise float at the menu's top edge
+              sx={idx === 0 ? { borderTop: 'none', marginTop: 0 } : undefined}
+            >
               {item.label}
             </ListSubheader>
           )

@@ -56,7 +56,7 @@ import {
   fetchCanvasFeatureDetails,
   findSubfeatureById,
   indexById,
-  radioSubMenu,
+  inlineRadioGroup,
   screenDensity,
   toggleArrayMember,
 } from './baseModelHelpers.ts'
@@ -2622,26 +2622,17 @@ export default function baseStateModelFactory(
         /**
          * #method
          */
-        // Extension point for subclasses to add checkbox/radio items to the
-        // "Show..." submenu without rebuilding trackMenuItems from scratch.
-        showSubmenuMenuItems() {
+        // The checkbox rows of the "Show..." submenu. Subclasses override to
+        // append their own toggles; the flat list of all checkboxes is rendered
+        // before the radio groups so the menu reads top-to-bottom as
+        // checkboxes-then-radios rather than an interleaved mix.
+        showSubmenuCheckboxItems(): MenuItem[] {
           return [
-            radioSubMenu(
-              'Show labels',
-              self.showLabelsMode,
-              [
-                { value: 'auto', label: 'Auto (hide when dense)' },
-                { value: 'on', label: 'Always on' },
-                { value: 'off', label: 'Always off' },
-              ],
-              mode => {
-                self.setShowLabels(mode)
-              },
-            ),
             {
               label: 'Show descriptions',
               type: 'checkbox' as const,
               checked: self.showDescriptions,
+              keepMenuOpen: true,
               onClick: () => {
                 self.setShowDescriptions(!self.showDescriptions)
               },
@@ -2650,10 +2641,42 @@ export default function baseStateModelFactory(
               label: 'Show outline',
               type: 'checkbox' as const,
               checked: self.showOutline,
+              keepMenuOpen: true,
               onClick: () => {
                 self.setShowOutline(!self.showOutline)
               },
             },
+          ]
+        },
+        // The radio groups of the "Show..." submenu, each a subHeader + inline
+        // radios. Rendered after the checkboxes; subclasses override to append.
+        showSubmenuRadioGroups(): MenuItem[] {
+          return inlineRadioGroup(
+            'Feature labels',
+            self.showLabelsMode,
+            [
+              { value: 'auto', label: 'Auto (hide when dense)' },
+              { value: 'on', label: 'Always on' },
+              { value: 'off', label: 'Always off' },
+            ],
+            mode => {
+              self.setShowLabels(mode)
+            },
+          )
+        },
+      }))
+      .views(self => ({
+        /**
+         * #method
+         */
+        // Flattened "Show..." submenu: all checkbox toggles first, then the
+        // radio groups (each under its own subHeader). Composed from the two
+        // extension points above so subclasses inject toggles/groups in place
+        // without rebuilding trackMenuItems from scratch.
+        showSubmenuMenuItems(): MenuItem[] {
+          return [
+            ...self.showSubmenuCheckboxItems(),
+            ...self.showSubmenuRadioGroups(),
           ]
         },
       }))

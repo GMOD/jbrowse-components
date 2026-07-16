@@ -13,18 +13,21 @@ export function promotableToggleItem({
   checked,
   onToggle,
   displayTypeDefault,
+  keepMenuOpen,
 }: {
   label: string
   helpText?: string
   checked: boolean
   onToggle: () => void
   displayTypeDefault: DisplayTypeDefaultControl
+  keepMenuOpen?: boolean
 }): CheckboxMenuItem {
   return {
     label,
     helpText,
     type: 'checkbox',
     checked,
+    keepMenuOpen,
     onClick: () => {
       onToggle()
     },

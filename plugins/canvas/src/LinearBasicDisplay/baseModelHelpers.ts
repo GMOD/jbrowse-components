@@ -87,6 +87,29 @@ export function radioSubMenu<T extends string>(
   }
 }
 
+// Same option data as radioSubMenu but rendered inline: a subHeader followed by
+// the radios, so a settings menu reads as one flat list of checkboxes/radios
+// instead of nesting a submenu the user has to hover into.
+export function inlineRadioGroup<T extends string>(
+  header: string,
+  current: T,
+  options: readonly { value: T; label: string }[],
+  onSelect: (value: T) => void,
+) {
+  return [
+    { type: 'subHeader' as const, label: header },
+    ...options.map(option => ({
+      label: option.label,
+      type: 'radio' as const,
+      checked: current === option.value,
+      keepMenuOpen: true,
+      onClick: () => {
+        onSelect(option.value)
+      },
+    })),
+  ]
+}
+
 // Per-region density sample written after each fetch. featureCount comes from
 // the worker; regionWidthBp is derived locally from the request's region.
 export interface RegionDensityStats {

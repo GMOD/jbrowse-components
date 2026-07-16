@@ -2,10 +2,12 @@ import { createTestEnvironment } from './testEnv.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Structural coverage for the "Subfeature labels" submenu: a three-way radio
+// Structural coverage for the "Subfeature labels" radio group: a three-way radio
 // (Off/Below/Overlay) over the promotable `subfeatureLabels` slot, each option
-// promotable as the session-wide default. Render-side handling of `below` vs
-// `overlay` is covered in labelUtils.test.ts / glyphs/subfeatures.test.ts.
+// promotable as the session-wide default. The group is rendered inline in the
+// "Show..." submenu under a "Subfeature labels" subHeader. Render-side handling
+// of `below` vs `overlay` is covered in labelUtils.test.ts /
+// glyphs/subfeatures.test.ts.
 
 function hasLabel(item: MenuItem, label: string) {
   return 'label' in item && item.label === label
@@ -20,11 +22,19 @@ function subMenuOf(items: MenuItem[], label: string) {
   }
 }
 
+// The radios that follow the "Subfeature labels" subHeader in the flat "Show..."
+// submenu, up to the next subHeader/divider.
 function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
-  return subMenuOf(
-    subMenuOf(display.trackMenuItems(), 'Show...'),
-    'Subfeature labels',
+  const items = subMenuOf(display.trackMenuItems(), 'Show...')
+  const start = items.findIndex(
+    i => i.type === 'subHeader' && i.label === 'Subfeature labels',
   )
+  if (start === -1) {
+    throw new Error('"Subfeature labels" subHeader not found')
+  }
+  const rest = items.slice(start + 1)
+  const end = rest.findIndex(i => i.type === 'subHeader' || i.type === 'divider')
+  return end === -1 ? rest : rest.slice(0, end)
 }
 
 function radio(subMenu: MenuItem[], label: string) {
