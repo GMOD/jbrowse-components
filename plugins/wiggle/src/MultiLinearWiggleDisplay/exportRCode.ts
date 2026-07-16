@@ -136,7 +136,7 @@ export function multiWiggleFragment(p: MultiWiggleRParams): RTrackFragment {
     trackId: p.trackId,
     trackName: p.trackName,
     packages: ['rtracklayer', 'ggplot2'],
-    helpers: ['read_bigwig', 'read_multibigwig'],
+    helpers: ['read_multibigwig'],
     setup: `${urisVar} <- c(${p.sources.map(s => rStr(s.uri)).join(', ')})
 ${namesVar} <- c(${p.sources.map(s => rStr(s.name)).join(', ')})`,
     plotVariable: `p_${pathVar}`,

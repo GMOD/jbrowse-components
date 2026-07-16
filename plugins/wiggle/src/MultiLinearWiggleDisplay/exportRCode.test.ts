@@ -16,7 +16,9 @@ const base: MultiWiggleRParams = {
 test('reads sources with read_multibigwig and emits no bespoke package', () => {
   const f = multiWiggleFragment(base)
   expect(f.plotVariable).toBe('p_multicov')
-  expect(f.helpers).toEqual(['read_bigwig', 'read_multibigwig'])
+  // read_bigwig is not declared here: assembleRScript pulls it in as a
+  // dependency of read_multibigwig
+  expect(f.helpers).toEqual(['read_multibigwig'])
   expect(f.packages).toEqual(['rtracklayer', 'ggplot2'])
   expect(f.plotExpr).toContain(
     'read_regions(function(chrom, start, end) read_multibigwig(multicov_uris, multicov_names, chrom, start, end), regions, c("start", "end"))',

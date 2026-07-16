@@ -207,7 +207,7 @@ export { renderToSvg } from './LinearGenomeView/svgcomponents/SVGLinearGenomeVie
 export { default as SVGTracks } from './LinearGenomeView/svgcomponents/SVGTracks.tsx'
 export { default as SVGView } from './LinearGenomeView/svgcomponents/SVGView.tsx'
 export { default as SVGRowHeader } from './LinearGenomeView/svgcomponents/SVGRowHeader.tsx'
-export { assembleRScript } from './LinearGenomeView/exportR.ts'
+export { assembleRScript, resolveHelpers } from './LinearGenomeView/exportR.ts'
 export {
   firstUri,
   getTrackRMeta,
