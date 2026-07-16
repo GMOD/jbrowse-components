@@ -4,6 +4,7 @@ import {
   featureHasExonOrCDS,
   getTranscripts,
   pickDefaultTranscriptIndex,
+  resolveShowCoordinates,
 } from './featureTypeUtil.ts'
 
 describe('hasExonOrCDS', () => {
@@ -136,5 +137,39 @@ describe('getTranscripts/pickDefaultTranscriptIndex', () => {
     const transcripts = getTranscripts(mrna)
     expect(transcripts).toEqual([])
     expect(pickDefaultTranscriptIndex(transcripts)).toBe(0)
+  })
+})
+
+describe('resolveShowCoordinates', () => {
+  test('genomic survives in contiguous genome-based modes', () => {
+    expect(resolveShowCoordinates('genomic', 'gene')).toBe('genomic')
+    expect(resolveShowCoordinates('genomic', 'gene_updownstream')).toBe(
+      'genomic',
+    )
+    expect(resolveShowCoordinates('genomic', 'genomic')).toBe('genomic')
+    expect(
+      resolveShowCoordinates('genomic', 'genomic_sequence_updownstream'),
+    ).toBe('genomic')
+  })
+
+  test('a sticky genomic setting falls back to relative in spliced/collapsed modes', () => {
+    // these modes render relative coordinates, so reporting 'genomic' would
+    // leave the menu radio group with nothing checked
+    expect(resolveShowCoordinates('genomic', 'cdna')).toBe('relative')
+    expect(resolveShowCoordinates('genomic', 'cds')).toBe('relative')
+    expect(resolveShowCoordinates('genomic', 'protein')).toBe('relative')
+    expect(resolveShowCoordinates('genomic', 'gene_collapsed_intron')).toBe(
+      'relative',
+    )
+    expect(
+      resolveShowCoordinates('genomic', 'gene_updownstream_collapsed_intron'),
+    ).toBe('relative')
+  })
+
+  test('none and relative pass through unchanged in every mode', () => {
+    expect(resolveShowCoordinates('none', 'cdna')).toBe('none')
+    expect(resolveShowCoordinates('none', 'gene')).toBe('none')
+    expect(resolveShowCoordinates('relative', 'cdna')).toBe('relative')
+    expect(resolveShowCoordinates('relative', 'gene')).toBe('relative')
   })
 })

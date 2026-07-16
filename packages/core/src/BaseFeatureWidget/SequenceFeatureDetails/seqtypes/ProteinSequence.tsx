@@ -70,7 +70,7 @@ const ProteinSequence = observer(function ProteinSequence({
         model={model}
         color={proteinColor}
         chunks={segments}
-        start={0}
+        coordStart={0}
         highlight={
           highlightPositions?.size
             ? index =>

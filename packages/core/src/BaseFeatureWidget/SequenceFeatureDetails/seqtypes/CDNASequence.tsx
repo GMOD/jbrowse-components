@@ -22,6 +22,7 @@ const CDNASequence = observer(function CDNASequence({
   feature,
   includeIntrons,
   collapseIntron,
+  useGenomicCoords,
   onHoverBase,
   model,
 }: {
@@ -34,10 +35,15 @@ const CDNASequence = observer(function CDNASequence({
   feature: SimpleFeatureSerialized
   includeIntrons?: boolean
   collapseIntron?: boolean
+  // label rows (and report hovers) as genomic positions rather than offsets
+  // from the feature start. Mapping display index to genome linearly only holds
+  // when introns are shown uncollapsed, so the caller resolves this from the
+  // mode rather than reading the setting directly.
+  useGenomicCoords: boolean
   onHoverBase?: (base0: number) => void
   model: SequenceFeatureDetailsModel
 }) {
-  const { upperCaseCDS, intronBp, showCoordinatesSetting } = model
+  const { upperCaseCDS, intronBp } = model
   const hasCds = cds.length > 0
   const chunks = (
     hasCds ? [...cds, ...utr].sort((a, b) => a.start - b.start) : exons
@@ -45,10 +51,6 @@ const CDNASequence = observer(function CDNASequence({
   const toLower = (s: string) => (upperCaseCDS ? s.toLowerCase() : s)
   const toUpper = (s: string) => (upperCaseCDS ? s.toUpperCase() : s)
 
-  // hover-to-position maps display index to genome linearly, which only holds
-  // when the view is contiguous genomic: introns shown, not collapsed
-  const useGenomicCoords =
-    showCoordinatesSetting === 'genomic' && !!includeIntrons && !collapseIntron
   const { mult, coordStart } = computeCoordProps(
     feature,
     useGenomicCoords,
@@ -67,14 +69,17 @@ const CDNASequence = observer(function CDNASequence({
       color: isCds ? cdsColor : utrColor,
     })
 
-    const intron = sequence.slice(chunk.end, chunks[idx + 1]?.start)
-    if (intron && includeIntrons && idx < chunks.length - 1) {
-      middle.push({
-        key: `${chunk.start}-${chunk.end}-${chunk.type}-intron`,
-        str: toLower(
-          getIntronDisplayStr(intron, intronBp, collapseIntron ?? false),
-        ),
-      })
+    const next = chunks[idx + 1]
+    if (includeIntrons && next) {
+      const intron = sequence.slice(chunk.end, next.start)
+      if (intron) {
+        middle.push({
+          key: `${chunk.start}-${chunk.end}-${chunk.type}-intron`,
+          str: toLower(
+            getIntronDisplayStr(intron, intronBp, collapseIntron ?? false),
+          ),
+        })
+      }
     }
   }
 

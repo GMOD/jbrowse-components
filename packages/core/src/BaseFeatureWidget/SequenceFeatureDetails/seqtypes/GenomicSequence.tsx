@@ -15,6 +15,7 @@ const GenomicSequence = observer(function GenomicSequence({
   upstream,
   feature,
   downstream,
+  useGenomicCoords,
   onHoverBase,
   model,
 }: {
@@ -22,10 +23,10 @@ const GenomicSequence = observer(function GenomicSequence({
   feature: SimpleFeatureSerialized
   upstream?: string
   downstream?: string
+  useGenomicCoords: boolean
   onHoverBase?: (base0: number) => void
   model: SequenceFeatureDetailsModel
 }) {
-  const useGenomicCoords = model.showCoordinatesSetting === 'genomic'
   const { mult, coordStart } = computeCoordProps(
     feature,
     useGenomicCoords,

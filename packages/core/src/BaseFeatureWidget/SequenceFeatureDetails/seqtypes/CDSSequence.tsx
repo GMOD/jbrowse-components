@@ -28,7 +28,7 @@ const CDSSequence = observer(function CDSSequence({
       model={model}
       color={cdsColor}
       chunks={segments}
-      start={0}
+      coordStart={0}
     />
   )
 })

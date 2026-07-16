@@ -42,7 +42,7 @@ export function renderSequenceSegments({
   onHoverBase?: (base0: number) => void
 }) {
   const { charactersPerRow, showCoordinates } = model
-  let currStart = 0
+  let currCoord = coordStart
   let currRemainder = 0
   const nodes: React.ReactNode[] = []
   for (const { key, str, color } of segments) {
@@ -59,14 +59,14 @@ export function renderSequenceSegments({
           model={model}
           color={color}
           strand={mult}
-          start={currStart}
-          coordStart={coordStart + currStart}
+          coordStart={currCoord}
+          remainder={currRemainder}
           chunks={chunks}
           onHoverBase={onHoverBase}
         />,
       )
       currRemainder = remainder
-      currStart += str.length * mult
+      currCoord += str.length * mult
     }
   }
   return nodes

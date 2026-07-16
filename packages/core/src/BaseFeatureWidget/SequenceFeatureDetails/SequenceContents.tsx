@@ -1,6 +1,9 @@
 import { observer } from 'mobx-react'
 
-import { modeHasUpDownstream } from './featureTypeUtil.ts'
+import {
+  modeHasUpDownstream,
+  resolveShowCoordinates,
+} from './featureTypeUtil.ts'
 import CDNASequence from './seqtypes/CDNASequence.tsx'
 import CDSSequence from './seqtypes/CDSSequence.tsx'
 import GenomicSequence from './seqtypes/GenomicSequence.tsx'
@@ -76,6 +79,8 @@ function RenderedSequenceComponent({
 }) {
   const { seq, upstream, downstream, cds, exons, utr } = sequenceData
   const withUpDown = modeHasUpDownstream(mode)
+  const useGenomicCoords =
+    resolveShowCoordinates(model.showCoordinatesSetting, mode) === 'genomic'
 
   switch (mode) {
     case 'genomic':
@@ -87,6 +92,7 @@ function RenderedSequenceComponent({
           sequence={seq}
           upstream={withUpDown ? upstream : undefined}
           downstream={withUpDown ? downstream : undefined}
+          useGenomicCoords={useGenomicCoords}
           onHoverBase={onHoverBase}
         />
       )
@@ -128,6 +134,7 @@ function RenderedSequenceComponent({
           downstream={withUpDown ? downstream : undefined}
           includeIntrons={mode.startsWith('gene')}
           collapseIntron={mode.includes('collapsed_intron')}
+          useGenomicCoords={useGenomicCoords}
           onHoverBase={onHoverBase}
         />
       )

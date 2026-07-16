@@ -243,6 +243,70 @@ test('reverse strand genomic coords count down across rows', () => {
   expect(rowStarts).toEqual([300, 200, 100])
 })
 
+test('a sticky genomic setting renders relative coords in cDNA mode', () => {
+  // the setting is global and persisted, so it outlives the mode it was chosen
+  // in; cDNA is spliced and cannot label genomic positions, so it must fall
+  // back to relative rather than mislabel rows as genomic
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="cdna"
+      sequence={{ seq: 'A'.repeat(300) }}
+      feature={f}
+    />,
+  )
+
+  const rowStarts = getByTestId('sequence_panel')
+    .textContent.split('\n')
+    .slice(1)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => +s.split(/\s+/, 1)[0]!)
+
+  // relative to the feature start, not the genomic 1200
+  expect(rowStarts).toEqual([0, 100, 200])
+})
+
+test('reverse strand rows break where a flank leaves a row half filled', () => {
+  // the 150bp display upstream flank fills row 0 and half of row 1; the 50bp
+  // feature completes row 1, which must still end in a newline so the
+  // downstream flank starts its own row
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic_sequence_updownstream"
+      sequence={{
+        seq: 'A'.repeat(50),
+        upstream: 'C'.repeat(150),
+        downstream: 'G'.repeat(150),
+      }}
+      feature={{
+        start: 1000,
+        end: 1050,
+        refName: 'chr1',
+        strand: -1,
+        type: 'region',
+        uniqueId: 'rev',
+        name: 'rev',
+      }}
+    />,
+  )
+
+  const rowStarts = getByTestId('sequence_panel')
+    .textContent.split('\n')
+    .slice(1)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map(s => +s.split(/\s+/, 1)[0]!)
+
+  // feature end 1050 + 150bp flank => first label 1200, counting down
+  expect(rowStarts).toEqual([1200, 1100, 1000, 900])
+})
+
 test('genomic coords thread continuously across the upstream flank boundary', () => {
   // 100bp upstream flank fills row 0, then the 300bp feature fills rows 1-3.
   // Row labels must count from the flank start (feature.start+1 - flankLen) and

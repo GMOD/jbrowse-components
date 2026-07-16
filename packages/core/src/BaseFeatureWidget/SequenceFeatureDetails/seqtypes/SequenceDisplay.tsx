@@ -19,17 +19,20 @@ function chunkSequenceOffsets(chunks: string[]) {
 
 const SequenceDisplay = observer(function SequenceDisplay({
   chunks,
-  start,
+  coordStart,
+  remainder = 0,
   color,
   strand = 1,
-  coordStart = start,
   highlight,
   onHoverBase,
   model,
 }: {
   chunks: string[]
-  start: number
-  coordStart?: number
+  // coordinate label for the first character of `chunks`
+  coordStart: number
+  // characters a prior segment already placed on the row this one continues, so
+  // the first chunk knows it is mid-row
+  remainder?: number
   strand?: number
   color?: string
   // Maps a 0-based sequence index (ignoring coordinate-spacing spaces) to a
@@ -48,17 +51,18 @@ const SequenceDisplay = observer(function SequenceDisplay({
     highlight || onHoverBase ? chunkSequenceOffsets(chunks) : undefined
 
   return chunks.map((chunk, idx) => {
-    const f = coordStart - (start % charactersPerRow)
+    // coordinate of the row's first column, which for a mid-row first chunk sits
+    // `remainder` characters back
+    const f = coordStart - remainder * strand
     const prefix =
-      idx > 0 || start % charactersPerRow === 0
+      idx > 0 || remainder === 0
         ? `${`${f + idx * strand * charactersPerRow}`.padStart(4)}   `
         : ''
     const isLastChunk = idx === chunks.length - 1
     // a partial final row (not filled to charactersPerRow) gets no trailing
     // newline; every full row does
     const lastRowCharCount =
-      chunk.replaceAll(' ', '').length +
-      (idx === 0 ? start % charactersPerRow : 0)
+      chunk.replaceAll(' ', '').length + (idx === 0 ? remainder : 0)
     const postfix =
       isLastChunk && lastRowCharCount !== charactersPerRow
         ? null

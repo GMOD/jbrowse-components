@@ -1,4 +1,4 @@
-import type { SequenceDisplayMode } from './model.ts'
+import type { SequenceDisplayMode, ShowCoordinatesMode } from './model.ts'
 import type {
   SimpleFeatureSerialized,
   SimpleFeatureSerializedNoId,
@@ -95,4 +95,19 @@ export function showGenomicCoordsOption(mode: SequenceDisplayMode) {
     'genomic',
     'genomic_sequence_updownstream',
   ].includes(mode)
+}
+
+// The coordinate mode a given sequence type actually renders. The setting is
+// sticky and global, so a 'genomic' preference picked in e.g. gene mode
+// survives a switch to a spliced mode that cannot label genomic positions;
+// there it falls back to relative. Shared by the seqtypes (which render it) and
+// the menu (which shows it as the checked radio) so the panel can't display one
+// coordinate mode while the menu reports another.
+export function resolveShowCoordinates(
+  setting: ShowCoordinatesMode,
+  mode: SequenceDisplayMode,
+): ShowCoordinatesMode {
+  return setting === 'genomic' && !showGenomicCoordsOption(mode)
+    ? 'relative'
+    : setting
 }

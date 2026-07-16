@@ -7,7 +7,10 @@ import { observer } from 'mobx-react'
 
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
 import { saveAs } from '../../../util/index.ts'
-import { showGenomicCoordsOption } from '../featureTypeUtil.ts'
+import {
+  resolveShowCoordinates,
+  showGenomicCoordsOption,
+} from '../featureTypeUtil.ts'
 import { getSequencePlaintext } from '../util.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
@@ -32,7 +35,13 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
   extraItems = [],
 }: Props) {
   const [showSettings, setShowSettings] = useState(false)
-  const { showCoordinatesSetting } = model
+  // the radio reflects what the panel renders, not the raw stored setting: a
+  // sticky 'genomic' preference renders as relative in modes that can't label
+  // genomic positions, and would otherwise leave every radio unchecked
+  const coordinatesMode = resolveShowCoordinates(
+    model.showCoordinatesSetting,
+    mode,
+  )
 
   return (
     <>
@@ -98,7 +107,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
               {
                 label: 'No coordinates',
                 type: 'radio',
-                checked: showCoordinatesSetting === 'none',
+                checked: coordinatesMode === 'none',
                 onClick: () => {
                   model.setShowCoordinates('none')
                 },
@@ -106,7 +115,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
               {
                 label: 'Coordinates relative to feature start',
                 type: 'radio',
-                checked: showCoordinatesSetting === 'relative',
+                checked: coordinatesMode === 'relative',
                 onClick: () => {
                   model.setShowCoordinates('relative')
                 },
@@ -117,7 +126,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
                       label:
                         'Coordinates relative to genome (only available for continuous genome based sequence types)',
                       type: 'radio' as const,
-                      checked: showCoordinatesSetting === 'genomic',
+                      checked: coordinatesMode === 'genomic',
                       onClick: () => {
                         model.setShowCoordinates('genomic')
                       },
