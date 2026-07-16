@@ -35,6 +35,11 @@ function isPortFree(port: number) {
   })
 }
 
+/**
+ * Starts the dev server and resolves with the URL it actually bound to, which
+ * is not necessarily :3000 — callers that need to point something else at the
+ * server (e.g. desktop's electron window) must use this rather than assume.
+ */
 export default async function startWebpack(config: webpack.Configuration) {
   const appName = JSON.parse(fs.readFileSync('package.json', 'utf8'))
     .name as string
@@ -90,15 +95,21 @@ export default async function startWebpack(config: webpack.Configuration) {
     },
     compiler,
   )
-  devServer.startCallback(err => {
-    if (err) {
-      console.log(err.message)
-      process.exit(1)
-    }
-    const addr = devServer.server?.address()
-    if (typeof addr === 'object' && addr) {
-      url = `http://localhost:${addr.port}`
-      console.log(`You can view ${chalk.bold(appName)} at ${chalk.bold(url)}`)
-    }
+  return new Promise<string>(resolve => {
+    devServer.startCallback(err => {
+      if (err) {
+        console.log(err.message)
+        process.exit(1)
+      }
+      const addr = devServer.server?.address()
+      if (typeof addr === 'object' && addr) {
+        url = `http://localhost:${addr.port}`
+        console.log(`You can view ${chalk.bold(appName)} at ${chalk.bold(url)}`)
+        resolve(url)
+      } else {
+        console.log(chalk.red('Dev server started but reported no address'))
+        process.exit(1)
+      }
+    })
   })
 }
