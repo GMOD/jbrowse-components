@@ -265,6 +265,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             coverageOffset: d.coverageDisplayHeight ?? 0,
             scrollTop: yOffsetsOverride ? 0 : (d.scrollTop ?? 0),
             offsetPx: view.offsetPx,
+            linksReads: d.linkedReads !== undefined && d.linkedReads !== 'off',
           })
           layouts.push({
             displayedRegions: view.displayedRegions,

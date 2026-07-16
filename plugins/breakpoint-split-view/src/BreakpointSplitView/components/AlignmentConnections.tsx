@@ -48,7 +48,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
   if (!assembly || !match) {
     return null
   }
-  const { tracks, layouts, getX, getY } = overlayData
+  const { tracks, levels, layouts, getX, getY } = overlayData
   const { layoutMatches, hasPairedReads: hasPaired, allFeatures } = match
 
   const connections = [...resolvedPairs({ match, assembly, tracks })].flatMap(
@@ -63,7 +63,13 @@ const AlignmentConnections = observer(function AlignmentConnections({
       f2ref,
       hiddenSegmentsBetween,
     }) => {
-      if (!showIntraviewLinks && level1 === level2) {
+      // A connection that stays inside one view is redundant when that level's
+      // track links its own reads (view-as-pairs / link supplementary
+      // alignments) — the pileup already draws it.
+      if (
+        level1 === level2 &&
+        (!showIntraviewLinks || levels[level1]!.linksReads)
+      ) {
         return []
       }
       const s1 = f1.get('strand')!

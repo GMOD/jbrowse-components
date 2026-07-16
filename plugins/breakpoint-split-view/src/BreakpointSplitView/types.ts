@@ -42,6 +42,12 @@ export interface OverlayLevel {
   scrollTop: number
   /** the view's horizontal scroll, to turn absolute bp px into screen px */
   offsetPx: number
+  /**
+   * the display links its own reads (view-as-pairs / link supplementary
+   * alignments), so it already connects everything that stays inside this
+   * level and an intra-view overlay curve would just double it up
+   */
+  linksReads: boolean
 }
 
 export interface LayoutMatch {
