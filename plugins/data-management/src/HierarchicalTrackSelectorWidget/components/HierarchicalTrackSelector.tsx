@@ -19,33 +19,6 @@ const useStyles = makeStyles()({
   },
 })
 
-const HierarchicalTrackSelectorContainer = observer(
-  function HierarchicalTrackSelectorContainer({
-    model,
-    toolbarHeight,
-    overrideDimensions,
-  }: {
-    model: HierarchicalTrackSelectorModel
-    toolbarHeight: number
-    overrideDimensions?: { width: number; height: number }
-  }) {
-    const inner = (
-      <>
-        <HierarchicalTrackSelector
-          model={model}
-          toolbarHeight={toolbarHeight}
-        />
-        <HierarchicalFab model={model} />
-      </>
-    )
-    return overrideDimensions ? (
-      <div style={overrideDimensions}>{inner}</div>
-    ) : (
-      inner
-    )
-  },
-)
-
 const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
   model,
   toolbarHeight = 0,
@@ -64,8 +37,9 @@ const HierarchicalTrackSelector = observer(function HierarchicalTrackSelector({
       <div ref={ref} className={classes.treeContainer}>
         {height ? <HierarchicalTree height={height} model={model} /> : null}
       </div>
+      <HierarchicalFab model={model} />
     </div>
   )
 })
 
-export default HierarchicalTrackSelectorContainer
+export default HierarchicalTrackSelector

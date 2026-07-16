@@ -72,6 +72,15 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
         return undefined
       },
     }))
+    .volatile(() => ({
+      /**
+       * #volatile
+       * true while the visible widget is shown in a modal dialog instead of the
+       * drawer. Volatile because a restored session that opened straight into a
+       * modal, with no drawer behind it, is disorienting
+       */
+      poppedOut: false,
+    }))
     .actions(self => ({
       /**
        * #action
@@ -139,6 +148,9 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
        */
       hideWidget(widget: WidgetStateModel) {
         self.activeWidgets.delete(widget.id)
+        if (self.activeWidgets.size === 0) {
+          self.poppedOut = false
+        }
       },
 
       /**
@@ -155,9 +167,23 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * show the visible widget in a modal dialog, freeing the drawer column
+       */
+      popoutWidget() {
+        self.poppedOut = true
+      },
+      /**
+       * #action
+       */
+      returnWidgetToDrawer() {
+        self.poppedOut = false
+      },
+      /**
+       * #action
        */
       hideAllWidgets() {
         self.activeWidgets.clear()
+        self.poppedOut = false
       },
 
       /**

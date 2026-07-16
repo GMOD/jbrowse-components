@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { drawerGridTemplateColumns } from '@jbrowse/product-core'
+import { ModalWidget, drawerGridTemplateColumns } from '@jbrowse/product-core'
 import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -49,8 +49,9 @@ interface Props {
 const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
-  const { minimized, visibleWidget, drawerWidth, drawerPosition } = session
-  const drawerVisible = Boolean(visibleWidget) && !minimized
+  const { minimized, visibleWidget, drawerWidth, drawerPosition, poppedOut } =
+    session
+  const drawerVisible = Boolean(visibleWidget) && !minimized && !poppedOut
   const gridTemplateColumns = drawerGridTemplateColumns({
     drawerVisible,
     drawerPosition,
@@ -69,6 +70,14 @@ const App = observer(function App(props: Props) {
   return (
     <div className={classes.root} style={{ gridTemplateColumns }}>
       {drawerPosition === 'left' ? drawerWidget : null}
+      {poppedOut ? (
+        <ModalWidget
+          session={session}
+          onClose={() => {
+            session.returnWidgetToDrawer()
+          }}
+        />
+      ) : null}
       <DialogQueue session={session} />
       <div className={classes.appContainer}>
         <AppBar className={classes.appBar} position="static">

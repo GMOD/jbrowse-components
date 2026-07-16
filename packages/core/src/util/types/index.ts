@@ -350,6 +350,10 @@ export interface SessionWithDrawerWidgets extends SessionWithWidgets {
   showWidgetDrawer: () => void
   drawerPosition: string
   setDrawerPosition(arg: string): void
+  /** true while the visible widget is shown in a modal instead of the drawer */
+  poppedOut: boolean
+  popoutWidget(): void
+  returnWidgetToDrawer(): void
 }
 
 export function isSessionModelWithWidgets(

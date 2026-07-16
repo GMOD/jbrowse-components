@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 
-import { fireEvent, getByRole } from '@testing-library/react'
+import { fireEvent, getByRole, waitFor } from '@testing-library/react'
 
 import { createView, doBeforeEach, hts } from './util.tsx'
 
@@ -84,4 +84,38 @@ test('widget drawer navigation', async () => {
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
   // @ts-expect-error
   expect(session.activeWidgets.size).toEqual(1)
+}, 40000)
+
+test('widget pops out into a dialog and returns to the drawer', async () => {
+  const { session, findByTestId, queryByTestId } = await createView()
+  await findByTestId('drawer-widget', {}, delay)
+
+  fireEvent.click(await findByTestId('drawer-popout'))
+  // @ts-expect-error
+  expect(session.poppedOut).toBe(true)
+  // the drawer releases its column rather than sitting there as dead space
+  await waitFor(() => {
+    expect(queryByTestId('drawer-widget')).not.toBeInTheDocument()
+  })
+  await findByTestId('hierarchical_track_selector', {}, delay)
+
+  fireEvent.click(await findByTestId('modal-close'))
+  // @ts-expect-error
+  expect(session.poppedOut).toBe(false)
+  await findByTestId('drawer-widget', {}, delay)
+}, 40000)
+
+test('hiding the last widget clears popped-out state', async () => {
+  const { session, findByTestId } = await createView()
+  await findByTestId('drawer-widget', {}, delay)
+  fireEvent.click(await findByTestId('drawer-popout'))
+  // @ts-expect-error
+  expect(session.poppedOut).toBe(true)
+
+  // a widget that dismisses itself must not leave the session in a mode where
+  // the next widget opens in a modal out of nowhere
+  // @ts-expect-error
+  session.hideAllWidgets()
+  // @ts-expect-error
+  expect(session.poppedOut).toBe(false)
 }, 40000)

@@ -38,7 +38,14 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
               <ReactComponent model={view} session={session} />
             </Suspense>
           </EmbeddedViewContainer>
-          <ModalWidget session={session} />
+          <ModalWidget
+            session={session}
+            onClose={() => {
+              // the modal is this product's only widget surface, so closing it
+              // dismisses the widget rather than returning it to a drawer
+              session.hideAllWidgets()
+            }}
+          />
         </ScopedCssBaseline>
       </div>
     </ThemeProvider>

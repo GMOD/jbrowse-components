@@ -30,11 +30,9 @@ const useStyles = makeStyles()(theme => ({
 const DrawerHeader = observer(function DrawerHeader({
   session,
   setToolbarHeight,
-  onPopoutDrawer,
 }: {
   session: SessionWithFocusedViewAndDrawerWidgets
   setToolbarHeight: (arg: number) => void
-  onPopoutDrawer: () => void
 }) {
   const { classes } = useStyles()
   const focusedViewId = session.focusedViewId
@@ -68,8 +66,9 @@ const DrawerHeader = observer(function DrawerHeader({
         <Tooltip title="Open drawer in dialog">
           <IconButton
             color="inherit"
+            data-testid="drawer-popout"
             onClick={() => {
-              onPopoutDrawer()
+              session.popoutWidget()
             }}
           >
             <LaunchIcon />
