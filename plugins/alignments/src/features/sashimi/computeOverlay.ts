@@ -73,6 +73,15 @@ function getArcColor(strand: number) {
 // Screen-px span below which the count label can't fit and is suppressed.
 const MIN_LABEL_SPAN_PX = 22
 
+// Screen-px the count text actually needs: ~0.6em per digit at SashimiArcLabel's
+// fontSize 9, plus breathing room. Floored at MIN_LABEL_SPAN_PX so short counts
+// keep the conservative span they always had; the digit term only ever
+// suppresses *more* — a 4-5 digit count on deep RNA-seq overflowed its arc when
+// the threshold was a flat 22px regardless of how wide the text was.
+function labelSpanPx(count: number) {
+  return Math.max(MIN_LABEL_SPAN_PX, `${count}`.length * 6 + 6)
+}
+
 // Fraction of the band a span-scaled arc may occupy. Arc height scales with the
 // junction's *genomic* span on a fixed log scale: a junction at/below
 // SPAN_REF_MIN_BP rises to MIN_ARC_FRAC, at/above SPAN_REF_MAX_BP to
@@ -87,6 +96,13 @@ const SPAN_REF_MIN_BP = 50
 const SPAN_REF_MAX_BP = 100_000
 
 // A junction resolved to screen space, before side-assignment / height-scaling.
+// `left`/`right` are screen-ordered (left <= right), NOT start/end-ordered: a
+// reversed displayed region maps the junction's start to the larger screen x, so
+// the raw projection comes back flipped. The cubic is symmetric under the swap
+// (both interior controls share one y), so drawing was never affected — but
+// `crosses` compares left edges to decide interleaving, and fed a flipped pair
+// it read the arc as spanning the wrong interval and mis-assigned sides in
+// 'auto'. Normalizing once here keeps every downstream consumer on screen order.
 interface RawArc {
   left: number
   right: number
@@ -199,8 +215,8 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
         existing.count = Math.max(existing.count, count)
       } else {
         rawByJunction.set(junctionKey, {
-          left,
-          right,
+          left: Math.min(left, right),
+          right: Math.max(left, right),
           spanPx: Math.abs(right - left),
           count,
           strand,
@@ -254,7 +270,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       labelX: (a.left + a.right) / 2,
       // Cubic midpoint with both interior controls at `ctrl`: baseline + 0.75·Δ.
       labelY: baseline + dir * arcHeight * 0.75,
-      showLabel: a.spanPx >= MIN_LABEL_SPAN_PX,
+      showLabel: a.spanPx >= labelSpanPx(a.count),
     })
   }
   return arcs

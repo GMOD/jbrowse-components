@@ -173,10 +173,26 @@ into `drawAlignmentBlocks`.
 
 Sashimi (`SashimiArcsOverlay.tsx` / `computeSashimiArcs`) and linked-read bezier
 (`PileupBezierOverlay.tsx` / `computePileupBezierArcsFromModel`) are vector SVG
-on both the on-screen and export paths. Each shares one geometry function
-between the live overlay and `renderSvg.tsx`, so the two paths cannot drift in
-curve shape, color, or stroke width. Don't add a second draw path; if the arcs
-need to change, change the shared compute.
+on both the on-screen and export paths. Each shares one geometry source between
+the live overlay and `renderSvg.tsx`, so the two paths cannot drift in curve
+shape, color, or stroke width. Don't add a second draw path; if the arcs need to
+change, change the shared compute.
+
+Sashimi shares that source as a **model computed** — `sashimiArcSections` (tier
+3), which pairs each section's band tops with its arcs already split into
+`up`/`down`. The overlay and `SashimiArcsSvg` both just map over it. It's a
+computed rather than a per-render call because the arc math depends on the
+view's pan/zoom but **not** on `scrollTop`: computing it inside the overlay's
+render re-ran the O(n²) 'auto' side assignment for every section on every scroll
+frame of a grouped track. Anything scroll-dependent stays at the call site (as
+bezier does with its `scrollTop` parameter over `bezierPairSections`).
+
+Screen-x is not start/end-ordered — a reversed displayed region projects a
+junction's start to the larger x. `computeSashimiArcs` normalizes each arc to
+screen order (`left <= right`) as it builds `RawArc`; the cubic is symmetric
+under that swap, but `crosses` compares left edges and silently mis-assigns
+sides in 'auto' if fed a flipped pair. Keep new geometry on the normalized
+fields.
 
 The "vector by design" choice is about the rendering medium (low arc count +
 native SVG hover/click behavior the rasterized pipeline can't match), not the

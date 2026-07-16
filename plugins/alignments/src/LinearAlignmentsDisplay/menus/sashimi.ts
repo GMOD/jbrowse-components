@@ -6,6 +6,7 @@ import {
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
 import { checkboxItem } from './menuHelpers.ts'
+import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
@@ -84,19 +85,20 @@ export function getSashimiMenuItem(model: SashimiModel) {
             label: 'Filter by score',
             title: 'Min read support',
             // read support spans small integers to thousands on deep RNA-seq,
-            // so log-scale; 0 (default) shows every arc. Recomputes arcs on the
-            // main thread (tier 3), so a live onChange is fine.
+            // so log-scale; 0 shows every arc, including the single-read
+            // junctions the default filters out. Recomputes arcs on the main
+            // thread (tier 3), so a live onChange is fine.
             scale: 'log',
             min: 0,
             max: 10_000,
             format: n => `${n}`,
             getValue: () => model.minSashimiScore,
-            isDefault: model.minSashimiScore === 0,
+            isDefault: model.minSashimiScore === DEFAULT_MIN_SASHIMI_SCORE,
             onChange: score => {
               model.setMinSashimiScore(score)
             },
             onReset: () => {
-              model.setMinSashimiScore(0)
+              model.setMinSashimiScore(DEFAULT_MIN_SASHIMI_SCORE)
             },
           }),
         ]

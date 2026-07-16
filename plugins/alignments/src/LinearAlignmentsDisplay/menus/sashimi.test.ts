@@ -1,4 +1,5 @@
 import { getSashimiMenuItem } from './sashimi.ts'
+import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
@@ -30,7 +31,7 @@ function makeModel() {
     },
     sashimiDownDisplayTypeDefault: control(),
     sashimiAutoDisplayTypeDefault: control(),
-    minSashimiScore: 0,
+    minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
     setMinSashimiScore() {},
   }
 }

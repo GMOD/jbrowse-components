@@ -515,7 +515,7 @@ Sashimi junction-arc placement
 
 Hide sashimi arcs with fewer than this many supporting reads
 
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0`
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `2`
 
 #### slot: sashimiArcsHeight
 

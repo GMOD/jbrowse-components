@@ -85,6 +85,41 @@ test('suppresses the count label on sub-pixel-narrow junctions', () => {
   expect(arcs[1]!.showLabel).toBe(true)
 })
 
+test('suppresses the count label when the digits, not the span, overflow', () => {
+  // Same 30px span, different counts. A flat span threshold showed both; a
+  // 5-digit count needs ~36px of text and has to stay suppressed.
+  const data = {
+    sashimiX1: new Uint32Array([100, 500]),
+    sashimiX2: new Uint32Array([130, 530]),
+    sashimiCounts: new Uint32Array([5, 12345]),
+    sashimiColorTypes: new Uint8Array([0, 0]),
+  } as unknown as PileupDataResult
+  const arcs = computeSashimiArcs(baseOpts(data, 0))
+  const showByStart = new Map(arcs.map(a => [a.start, a.showLabel]))
+  expect(showByStart.get(100)).toBe(true)
+  expect(showByStart.get(500)).toBe(false)
+})
+
+test('auto splits crossing junctions in a reversed displayed region', () => {
+  // A reversed region projects a junction's start to the LARGER screen x, so the
+  // raw left/right come back flipped. The same crossing pair as the forward-
+  // strand test above must still split — before the screen-order normalization,
+  // `crosses` read the flipped pair as non-interleaving and left both on 'up'.
+  const data = {
+    sashimiX1: new Uint32Array([100, 200]),
+    sashimiX2: new Uint32Array([300, 400]),
+    sashimiCounts: new Uint32Array([5, 5]),
+    sashimiColorTypes: new Uint8Array([0, 0]),
+  } as unknown as PileupDataResult
+  const arcs = computeSashimiArcs({
+    ...baseOpts(data, 0),
+    mode: 'auto',
+    bpToScreenX: (_refName: string, bp: number) => 1000 - bp,
+  })
+  const byStart = new Map(arcs.map(a => [a.start, a.side]))
+  expect(byStart.get(100)).not.toBe(byStart.get(200))
+})
+
 test('tints arcs with the read-alignment strand colors', () => {
   // colorType 0/1/2 -> strand fwd/rev/unknown; each arc reuses the matching
   // read strand color so a junction reads the same hue as its supporting reads.

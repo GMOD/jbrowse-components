@@ -66,6 +66,15 @@ export type ReadConnectionsMode = 'off' | 'arc' | 'cloud'
 // menus. 'auto' is the default.
 export type { SashimiArcsMode } from '../features/sashimi/computeOverlay.ts'
 
+// Default supporting-read floor for a sashimi junction: hide single-read
+// junctions, which are dominated by alignment noise and unreadable at the 1px
+// stroke `strokeWidthForCount` floors them to. Lets the menu's reset/is-default
+// check name the default instead of hardcoding a bare 2. Must match the
+// `minSashimiScore` slot default in configSchema.ts, which spells the same
+// number as a literal so the config docgen can render it (it reads the AST
+// node's source text, so a reference here would publish as the identifier).
+export const DEFAULT_MIN_SASHIMI_SCORE = 2
+
 // Whether a point feature (mismatch / small insertion) may intercept a
 // click/hover. Clickable when zoomed to base level (bpPerPx <= 1), when
 // frequency filtering is off (the feature then draws fully opaque), or when its

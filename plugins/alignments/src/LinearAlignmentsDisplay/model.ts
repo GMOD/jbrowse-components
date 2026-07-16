@@ -44,7 +44,10 @@ import { autorun, observable, reaction } from 'mobx'
 
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
 import { readColorCategory } from './colorUtils.ts'
-import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
+import {
+  buildColorPaletteFromTheme,
+  makeBpToScreenX,
+} from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { ColorScheme } from './constants.ts'
@@ -94,6 +97,7 @@ import {
   enumerateBezierPairs,
   isBezierArcPair,
 } from '../features/linkedReads/computeOverlay.ts'
+import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
 import {
   COLOR_SCHEMES,
   isModificationScheme,
@@ -1590,30 +1594,58 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Per-section sashimi band placement, in stacking order. Each entry pairs
-         * a group's raw data (sashimi counts live per-group) with the
-         * content-space tops of *both* sub-bands: `coverageOverlayTop` for arcs
-         * drawn over the coverage histogram and `sashimiBandTop` for arcs in the
-         * reserved strip below it. In 'auto' both are used at once; 'up'/'down'
-         * use one. The overlay and SVG export both map over this so their
-         * geometry can't drift; ungrouped is the single-section case (sticky band
-         * below sticky coverage, raw map == the only group). Empty when sashimi
-         * is off.
+         * Per-section sashimi arcs, in stacking order: each group's junction
+         * geometry (sashimi counts live per-group) already split into the two
+         * sub-bands, paired with their content-space tops — `coverageOverlayTop`
+         * for `up` arcs drawn over the coverage histogram, `sashimiBandTop` for
+         * `down` arcs in the reserved strip below it. In 'auto' both are
+         * populated; 'up'/'down' leave the other empty. The overlay and SVG
+         * export both map over this, so it is the single source for sashimi
+         * geometry and neither path can drift; ungrouped is the single-section
+         * case (sticky band below sticky coverage). Empty when sashimi is off.
+         *
+         * A computed on purpose (tier 3 — mirrors `bezierPairSections`): the arc
+         * math depends on the view's pan/zoom but NOT on scrollTop, so MobX
+         * replays the cache while the user scrolls a grouped track. Computing it
+         * in the overlay's render instead re-ran the O(n^2) 'auto' side
+         * assignment for every section on every scroll frame.
          */
-        get sashimiSections() {
-          if (!self.showSashimiArcs || !self.showCoverage) {
+        get sashimiArcSections() {
+          const view = getContainingView(self) as LGV
+          if (
+            !self.showSashimiArcs ||
+            !self.showCoverage ||
+            !view.initialized
+          ) {
             return []
           }
           const byGroup = self.rawDataByGroup
           const empty = new Map<number, PileupDataResult>()
-          return this.sections.sections.map(sec => ({
-            groupKey: sec.groupKey,
-            rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
-            // Content-space band tops; the overlay scrolls them for grouped, the
-            // export reads them as-is (scrollTop 0).
-            coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
-            sashimiBandTop: sec.sashimiBandTop,
-          }))
+          const bpToScreenX = makeBpToScreenX(view)
+          return this.sections.sections.map(sec => {
+            const arcs = computeSashimiArcs({
+              rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
+              visibleRegions: view.visibleRegions,
+              bpToScreenX,
+              coverageHeight: self.coverageHeight,
+              sashimiArcsHeight: self.sashimiArcsHeight,
+              mode: self.sashimiArcsMode,
+              minSashimiScore: self.minSashimiScore,
+            })
+            // Ascending score so high-count arcs paint over low-count ones — and,
+            // since overlapping hit targets resolve to the last-painted path, so
+            // the heavier junction also wins the hover.
+            arcs.sort((a, b) => a.score - b.score)
+            return {
+              groupKey: sec.groupKey,
+              up: arcs.filter(a => a.side === 'up'),
+              down: arcs.filter(a => a.side === 'down'),
+              // Content-space band tops; the overlay scrolls them for grouped,
+              // the export reads them as-is (scrollTop 0).
+              coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
+              sashimiBandTop: sec.sashimiBandTop,
+            }
+          })
         },
 
         /**

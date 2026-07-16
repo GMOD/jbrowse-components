@@ -97,7 +97,11 @@ export function openSashimiWidget(
   },
 ) {
   openFeatureWidget(model, {
-    uniqueId: `sashimi-${arc.refName}-${arc.start}-${arc.end}`,
+    // Strand is part of the identity: the compute layer emits one arc per
+    // (junction, strand), so a junction with both forward- and reverse-tagged
+    // support becomes two distinct clickable arcs that would otherwise share a
+    // uniqueId — and with it the session selection this feature drives.
+    uniqueId: `sashimi-${arc.refName}-${arc.start}-${arc.end}-${arc.strand}`,
     type: 'skip',
     refName: arc.refName,
     start: arc.start,

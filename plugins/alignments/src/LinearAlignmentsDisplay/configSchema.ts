@@ -513,7 +513,12 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       minSashimiScore: {
         type: 'number',
-        defaultValue: 0,
+        // Hides single-read junctions; set 0 to show every arc. Spelled as a
+        // literal, not DEFAULT_MIN_SASHIMI_SCORE: the config docgen renders this
+        // default by reading the AST node's source text, so a constant reference
+        // publishes the identifier name instead of the value. Keep the two in
+        // step — `constants.ts` names the same number for the menu's reset.
+        defaultValue: 2,
         description:
           'Hide sashimi arcs with fewer than this many supporting reads',
       },
