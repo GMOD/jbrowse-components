@@ -66,7 +66,7 @@ import page from '../styles/page.module.css'
           ))
         }
 
-        <section>
+        <section class="breakable">
           <h2 id="guided">Conference and other guided demos</h2>
           <ul>
             {
@@ -124,6 +124,14 @@ import page from '../styles/page.module.css'
   section {
     break-inside: avoid;
     margin-bottom: 1.5rem;
+  }
+  /* the guided-demos list is long enough that keeping it whole leaves a gap;
+     let it flow across a column boundary while its heading stays with content */
+  section.breakable {
+    break-inside: auto;
+  }
+  section.breakable h2 {
+    break-after: avoid;
   }
   h2 {
     font-size: 1.3rem;
