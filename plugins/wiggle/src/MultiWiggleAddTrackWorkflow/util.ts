@@ -1,4 +1,6 @@
-import { addAndShowTrack, makeTrackId } from '@jbrowse/core/util'
+import { addAndShowTrack, fileToLocation, makeTrackId } from '@jbrowse/core/util'
+
+import { getFilename } from '../util.ts'
 
 import type { SessionWithAddTracks } from '@jbrowse/core/util'
 
@@ -49,6 +51,16 @@ export function applyName(item: TrackItem, name: string): TrackItem {
     return name === item ? item : urlToSubadapter(item, name)
   } else {
     return { ...item, source: name }
+  }
+}
+
+// Strip the extension so a dropped file names its subtrack the same way a
+// pasted URL with the same basename would (both derive from getFilename).
+export function fileToTrackItem(file: File): TrackItem {
+  return {
+    type: 'BigWigAdapter',
+    bigWigLocation: fileToLocation(file),
+    source: getFilename(file.name),
   }
 }
 

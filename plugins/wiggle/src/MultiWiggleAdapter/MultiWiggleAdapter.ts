@@ -8,7 +8,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { firstValueFrom, merge } from 'rxjs'
 import { map, toArray } from 'rxjs/operators'
 
-import { featuresToRaw } from '../util.ts'
+import { featuresToRaw, getFilename } from '../util.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
@@ -21,12 +21,6 @@ import type {
 
 interface WiggleOptions extends WiggleAdapterOptions {
   sources?: { name: string }[]
-}
-
-function getFilename(uri: string) {
-  const filename = uri.slice(uri.lastIndexOf('/') + 1)
-  const dotIdx = filename.lastIndexOf('.')
-  return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename
 }
 
 interface AdapterConfig {

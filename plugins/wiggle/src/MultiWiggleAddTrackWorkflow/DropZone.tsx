@@ -1,6 +1,7 @@
 import { FileDropZone } from '@jbrowse/core/ui'
-import { fileToLocation } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
+
+import { fileToTrackItem } from './util.ts'
 
 import type { TrackItem } from './util.ts'
 
@@ -12,13 +13,7 @@ const DropZone = observer(function DropZone({
   return (
     <FileDropZone
       onDrop={accepted => {
-        addTracks(
-          accepted.map(file => ({
-            type: 'BigWigAdapter',
-            bigWigLocation: fileToLocation(file),
-            source: file.name,
-          })),
-        )
+        addTracks(accepted.map(fileToTrackItem))
       }}
     />
   )

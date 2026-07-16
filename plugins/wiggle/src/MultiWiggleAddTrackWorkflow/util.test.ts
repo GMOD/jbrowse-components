@@ -2,6 +2,7 @@ import {
   applyName,
   buildAdapterPayload,
   canSubmit,
+  fileToTrackItem,
   itemToName,
   parseItems,
   urlToSubadapter,
@@ -47,6 +48,23 @@ describe('itemToName', () => {
 
   it('falls back to "unnamed" when neither present', () => {
     expect(itemToName({})).toBe('unnamed')
+  })
+})
+
+describe('fileToTrackItem', () => {
+  it('strips the extension, matching a pasted URL with the same basename', () => {
+    const item = fileToTrackItem(new File(['data'], 'sample.bw'))
+    expect(item).toMatchObject({
+      type: 'BigWigAdapter',
+      source: 'sample',
+    })
+  })
+
+  it('only strips the last extension', () => {
+    const item = fileToTrackItem(new File(['data'], 'sample.txt.bw'))
+    expect(item).toMatchObject({
+      source: 'sample.txt',
+    })
   })
 })
 

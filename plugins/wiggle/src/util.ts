@@ -226,6 +226,15 @@ export const WIGGLE_FUDGE_FACTOR = 0.8
 
 export const WIGGLE_MIN_PX = 1.5
 
+// Shared by MultiWiggleAdapter (bigWigs shorthand entries) and the multiwiggle
+// add-track drop zone, so a dropped file and a pasted URL with the same
+// basename derive the same display name.
+export function getFilename(uriOrName: string) {
+  const filename = uriOrName.slice(uriOrName.lastIndexOf('/') + 1)
+  const dotIdx = filename.lastIndexOf('.')
+  return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename
+}
+
 export function formatScore(n: number) {
   if (n === 0) {
     return '0'
