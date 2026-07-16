@@ -86,19 +86,12 @@ const AlignmentConnections = observer(function AlignmentConnections({
       const reversed2 = isReversed(views, level2, x2)
       const y1 = getY(level1, c1)
       const y2 = getY(level2, c2)
-      const sameLevel = level1 === level2
-      const abnormalSpecialRenderFlag = sameLevel && isAbnormal
-      // Same-row abnormal connections bow the bezier's control points down to
-      // the track's bottom edge. getY always clamps within the track, so both
-      // endpoints resolve to this same edge.
+      // Same-level abnormal connections dip the bezier's control points down to
+      // the track's bottom edge.
       const { yOffset, height } = levels[level1]!
-      const trackBottom = yOffset + height
-      const cy1 = abnormalSpecialRenderFlag ? trackBottom : y1
-      const cy2 = abnormalSpecialRenderFlag ? trackBottom : y2
-      // Cross-view connections in a stacked split view use a fixed 200px handle
-      // (ends are separated vertically). Endpoint 1 is read1's 3' edge; endpoint
-      // 2 is the next segment's 5' leading edge for a split junction, or the
-      // mate's 3' edge for a pair. Same shared curve as the alignments overlay.
+      // Endpoint 1 is read1's 3' edge; endpoint 2 is the next segment's 5'
+      // leading edge for a split junction, or the mate's 3' edge for a pair.
+      // Same shared curve as the alignments overlay.
       const path = bezierConnectorPath({
         x1,
         y1,
@@ -109,9 +102,8 @@ const AlignmentConnections = observer(function AlignmentConnections({
         leadingEnd2: !hasPaired,
         reversed1,
         reversed2,
-        handlePx: 200,
-        cy1,
-        cy2,
+        dipToY:
+          level1 === level2 && isAbnormal ? yOffset + height : undefined,
       })
       const hiddenNote = hiddenSegmentsBetween?.length
         ? `hidden segment${hiddenSegmentsBetween.length > 1 ? 's' : ''} not in view: ${hiddenSegmentsBetween.join(', ')}`

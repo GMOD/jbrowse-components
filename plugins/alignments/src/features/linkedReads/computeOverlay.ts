@@ -1,7 +1,4 @@
-import {
-  bezierConnectorHandlePx,
-  bezierConnectorPath,
-} from '@jbrowse/core/util'
+import { bezierConnectorPath } from '@jbrowse/core/util'
 
 import { connectionLabel, iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
@@ -141,8 +138,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
     // Normal within-region pairs are drawn upstream; aberrant/cross-region pairs
     // get the shared connector curve. Endpoint 2 is a split junction's 5' leading
-    // edge (folds back) for a split read, or the mate's 3' edge for a pair. The
-    // proportional handle scales with horizontal separation (single-view pileup).
+    // edge (folds back) for a split read, or the mate's 3' edge for a pair.
     const d = c.isNormal
       ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
       : bezierConnectorPath({
@@ -155,7 +151,6 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           leadingEnd2: c.isSplit,
           reversed1: !!r1.reversed,
           reversed2: !!r2.reversed,
-          handlePx: bezierConnectorHandlePx(sx1, sx2),
         })
     const stroke = rgb255(linkedReadColorPalette[c.colorType % paletteLen]!)
 

@@ -6,25 +6,34 @@
 // is a split junction's 5' edge — and this owns the curve geometry, so the
 // direction logic can't drift between them.
 
-// Horizontal control-handle length, in px. Scales with the endpoints' horizontal
-// separation so wider connections bulge more, with a floor so tightly-spaced
-// endpoints still show a visible tangent. Use this for connections whose two
-// ends sit in the same view (mates across a pileup / a single-view breakpoint
-// connection); cross-view connections in a stacked breakpoint split view supply
-// their own fixed length instead, since their ends are separated vertically.
-const MIN_HANDLE_PX = 15
-const HANDLE_FACTOR = 0.3
+// A handle or bow larger than the endpoints' own separation folds the cubic
+// back over itself: the curve leaves along its tangent, overshoots the far
+// endpoint, and has to curl back to arrive — the "loop-de-loop"/squiggle seen
+// on tightly-spaced reads. So every shaping term stays under this fraction of
+// the span the curve actually has to cover. Endpoints that nearly touch
+// therefore get no shaping at all and draw as the straight line they should be.
+const SPAN_FACTOR = 0.3
+
+// Ceiling on the control-handle length. The span budget is what actually scales
+// the handle — it resolves below this for any connection whose endpoints are
+// closer than ~667px apart, which is nearly all of them — so this only bites on
+// very wide arcs. There it bounds the fold-back hook that an inversion draws at
+// its leading end: unbounded, that hook grows with the arc, and a full-width
+// inversion flings a ~500px curl back across unrelated reads.
+const MAX_HANDLE_PX = 200
 
 // Vertical bow applied to a connection whose two endpoints share (or nearly
 // share) a row — e.g. a chain whose split segments are all laid out on one
 // pileup row. Without it the horizontal-only handles collapse the cubic to a
 // flat, invisible line lying on the row; the bow lifts the control points so
-// the curve arcs into a visible hump. Fades to zero as the endpoints' rows
-// separate, since a cross-row curve already has vertical extent.
+// the curve arcs into a visible hump. This is the control-point lift, not the
+// height the curve reaches: a cubic with both control points lifted by `bow`
+// apexes at 0.75 * bow.
 const MAX_BOW_PX = 30
 
-export function bezierConnectorHandlePx(x1: number, x2: number) {
-  return Math.max(MIN_HANDLE_PX, Math.abs(x2 - x1) * HANDLE_FACTOR)
+interface Pt {
+  x: number
+  y: number
 }
 
 // Sign (+1/-1) of an endpoint's horizontal control handle. The handle leaves a
@@ -34,6 +43,27 @@ export function bezierConnectorHandlePx(x1: number, x2: number) {
 // straight across). `reversed` flips screen-x for a reverse-complemented region.
 function tangentSign(strand: number, leading: boolean, reversed: boolean) {
   return strand * (leading ? -1 : 1) * (reversed ? -1 : 1)
+}
+
+// How much shaping (handle length, bow height) this curve may spend: a fraction
+// of the distance it has to cover. Vertical reach counts the control rows too,
+// so the abnormal dip's deliberate stretch down to the track edge still earns a
+// full-length handle even though its endpoints sit on one row.
+function shapingBudget(p1: Pt, p2: Pt, cy1: number, cy2: number) {
+  const ys = [p1.y, p2.y, cy1, cy2]
+  const spanY = Math.max(...ys) - Math.min(...ys)
+  return Math.hypot(p2.x - p1.x, spanY) * SPAN_FACTOR
+}
+
+// Fades to zero as the endpoints' rows separate, since a cross-row curve
+// already has vertical extent — and via the budget as they close in
+// horizontally, since a short connector is legible without a hump.
+function bowHeight(p1: Pt, p2: Pt, budget: number) {
+  return Math.min(budget, Math.max(0, MAX_BOW_PX - Math.abs(p2.y - p1.y)))
+}
+
+function cubicPath(from: Pt, ctrl1: Pt, ctrl2: Pt, to: Pt) {
+  return `M ${from.x} ${from.y} C ${ctrl1.x} ${ctrl1.y} ${ctrl2.x} ${ctrl2.y} ${to.x} ${to.y}`
 }
 
 export function bezierConnectorPath({
@@ -48,11 +78,11 @@ export function bezierConnectorPath({
   leadingEnd2 = false,
   reversed1 = false,
   reversed2 = false,
-  handlePx,
-  // Control-point Y override (default: each endpoint's own Y) — the abnormal
-  // same-level breakpoint case pulls both control points to a shared row.
-  cy1 = y1,
-  cy2 = y2,
+  maxHandlePx = MAX_HANDLE_PX,
+  // Pull both control points down to this row instead of each endpoint's own Y
+  // — the abnormal same-level breakpoint connection's deliberate dip to the
+  // track's bottom edge. Such a caller owns its own shape, so the bow is off.
+  dipToY,
 }: {
   x1: number
   y1: number
@@ -63,15 +93,20 @@ export function bezierConnectorPath({
   leadingEnd2?: boolean
   reversed1?: boolean
   reversed2?: boolean
-  handlePx: number
-  cy1?: number
-  cy2?: number
+  maxHandlePx?: number
+  dipToY?: number
 }) {
-  const dx1 = handlePx * tangentSign(s1, false, reversed1)
-  const dx2 = handlePx * tangentSign(s2, leadingEnd2, reversed2)
-  // A caller that overrides the control-point Y (the abnormal same-level dip)
-  // owns its own shape, so only bow the default same-row case (see MAX_BOW_PX).
-  const overridden = cy1 !== y1 || cy2 !== y2
-  const bow = overridden ? 0 : Math.max(0, MAX_BOW_PX - Math.abs(y2 - y1))
-  return `M ${x1} ${y1} C ${x1 + dx1} ${cy1 - bow} ${x2 + dx2} ${cy2 - bow} ${x2} ${y2}`
+  const from = { x: x1, y: y1 }
+  const to = { x: x2, y: y2 }
+  const cy1 = dipToY ?? y1
+  const cy2 = dipToY ?? y2
+  const budget = shapingBudget(from, to, cy1, cy2)
+  const handle = Math.min(maxHandlePx, budget)
+  const bow = dipToY === undefined ? bowHeight(from, to, budget) : 0
+  return cubicPath(
+    from,
+    { x: x1 + handle * tangentSign(s1, false, reversed1), y: cy1 - bow },
+    { x: x2 + handle * tangentSign(s2, leadingEnd2, reversed2), y: cy2 - bow },
+    to,
+  )
 }

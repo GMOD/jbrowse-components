@@ -351,10 +351,7 @@ export {
   mergeTrackConfig,
 } from './trackConfigDelta.ts'
 export type { TrackConfigChange } from './trackConfigDelta.ts'
-export {
-  bezierConnectorHandlePx,
-  bezierConnectorPath,
-} from './bezierConnector.ts'
+export { bezierConnectorPath } from './bezierConnector.ts'
 export {
   type AlignmentData,
   type DiagonalizationResult,
