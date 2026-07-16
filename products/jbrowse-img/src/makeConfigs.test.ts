@@ -148,8 +148,14 @@ describe('makeMultiWiggleTrackConfig', () => {
     expect(t.adapter).toEqual({
       type: 'MultiWiggleAdapter',
       subadapters: [
-        { type: 'BigWigAdapter', bigWigLocation: { uri: 'https://e.com/a.bw' } },
-        { type: 'BigWigAdapter', bigWigLocation: { uri: 'https://e.com/b.bw' } },
+        {
+          type: 'BigWigAdapter',
+          bigWigLocation: { uri: 'https://e.com/a.bw' },
+        },
+        {
+          type: 'BigWigAdapter',
+          bigWigLocation: { uri: 'https://e.com/b.bw' },
+        },
       ],
     })
     expect(t.adapter?.bigWigs).toBeUndefined()

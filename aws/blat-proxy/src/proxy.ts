@@ -18,3 +18,19 @@ export function buildUpstreamBody(clientBody: string, apiKey: string) {
 export function looksLikeHtml(text: string) {
   return text.trimStart().startsWith('<')
 }
+
+// UCSC caps a BLAT submission at ~250 kb of query sequence total; this proxy
+// spends ONE shared apiKey, so reject an over-budget (or empty) userSeq here
+// rather than burning a slot on a call hgBlat will refuse anyway.
+export const MAX_USER_SEQ_LENGTH = 300_000
+
+// Returns a human-readable reason to reject the request before the upstream
+// call, or undefined if it's worth relaying.
+export function validateClientBody(clientBody: string) {
+  const userSeq = new URLSearchParams(clientBody).get('userSeq')
+  return userSeq
+    ? userSeq.length > MAX_USER_SEQ_LENGTH
+      ? `userSeq too large (${userSeq.length} > ${MAX_USER_SEQ_LENGTH} chars)`
+      : undefined
+    : 'missing or empty userSeq'
+}

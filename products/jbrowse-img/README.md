@@ -347,8 +347,8 @@ jb2export --loc all \
 `--multiwig` aggregates many BigWig files into a single multi-row
 `MultiQuantitativeTrack`, where each subtrack shares one autoscale so the rows
 are directly comparable. Its argument is either a comma-separated list of BigWig
-files (local paths or URLs), or a `.json` file holding an array — of plain BigWig
-paths/URLs, or of _subadapter_ objects that give each row its own `name`,
+files (local paths or URLs), or a `.json` file holding an array — of plain
+BigWig paths/URLs, or of _subadapter_ objects that give each row its own `name`,
 `color`, and `group`:
 
 ```bash

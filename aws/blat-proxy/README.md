@@ -48,7 +48,7 @@ avoids the shared budget entirely.
 ## Local
 
 ```bash
-pnpm test        # unit tests for the pure body-building / html-detection logic
+pnpm test        # unit tests for the body-building/validation helpers + handler
 pnpm build       # esbuild bundle to dist/index.mjs
 pnpm typecheck
 ```

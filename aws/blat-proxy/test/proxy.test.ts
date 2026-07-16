@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildUpstreamBody, looksLikeHtml } from '../src/proxy.ts'
+import {
+  MAX_USER_SEQ_LENGTH,
+  buildUpstreamBody,
+  looksLikeHtml,
+  validateClientBody,
+} from '../src/proxy.ts'
 
 describe('buildUpstreamBody', () => {
   it('injects the server apiKey and forces json output', () => {
@@ -32,5 +37,23 @@ describe('looksLikeHtml', () => {
   it('treats JSON as not-HTML', () => {
     expect(looksLikeHtml('{"blat":[]}')).toBe(false)
     expect(looksLikeHtml('  {"fields":[]}')).toBe(false)
+  })
+})
+
+describe('validateClientBody', () => {
+  it('accepts a normal query', () => {
+    expect(validateClientBody('userSeq=ACGT&db=hg38')).toBeUndefined()
+  })
+
+  it('rejects a missing or empty userSeq', () => {
+    expect(validateClientBody('db=hg38')).toBe('missing or empty userSeq')
+    expect(validateClientBody('userSeq=&db=hg38')).toBe(
+      'missing or empty userSeq',
+    )
+  })
+
+  it('rejects an over-budget userSeq', () => {
+    const body = `userSeq=${'A'.repeat(MAX_USER_SEQ_LENGTH + 1)}`
+    expect(validateClientBody(body)).toMatch(/userSeq too large/)
   })
 })

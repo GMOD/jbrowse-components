@@ -24,7 +24,6 @@ minimumReleaseAgeExclude:
   - 'electron'
   - 'generic-filehandle2'
   - '@jbrowse/mobx-state-tree'
-  - 'eslint-plugin-unicorn'
   - 'typescript'
   - '@typescript/*'
-  - 'jest-fetch-mock'
+  - 'astro'

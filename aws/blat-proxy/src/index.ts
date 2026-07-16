@@ -2,6 +2,7 @@ import {
   DEFAULT_UPSTREAM_URL,
   buildUpstreamBody,
   looksLikeHtml,
+  validateClientBody,
 } from './proxy.ts'
 
 import type {
@@ -46,38 +47,43 @@ export const handler = async (
             Uint8Array.from(atob(event.body), char => char.charCodeAt(0)),
           )
         : (event.body ?? '')
+    const invalidReason = validateClientBody(clientBody)
 
-    try {
-      const upstream = await fetch(upstreamUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: buildUpstreamBody(clientBody, apiKey),
-      })
-      const text = await upstream.text()
-      if (!upstream.ok) {
-        return json(502, {
-          error: `hgBlat responded ${upstream.status}`,
-          detail: text.slice(0, 500),
+    if (invalidReason) {
+      return json(400, { error: `Invalid BLAT request: ${invalidReason}` })
+    } else {
+      try {
+        const upstream = await fetch(upstreamUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: buildUpstreamBody(clientBody, apiKey),
         })
-      } else if (looksLikeHtml(text)) {
-        return json(502, {
-          error:
-            'hgBlat returned HTML (CAPTCHA challenge or error page) instead ' +
-            'of JSON — the apiKey may be invalid or rate-limited',
-        })
-      } else {
-        return {
-          statusCode: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          body: text,
+        const text = await upstream.text()
+        if (!upstream.ok) {
+          return json(502, {
+            error: `hgBlat responded ${upstream.status}`,
+            detail: text.slice(0, 500),
+          })
+        } else if (looksLikeHtml(text)) {
+          return json(502, {
+            error:
+              'hgBlat returned HTML (CAPTCHA challenge or error page) instead ' +
+              'of JSON — the apiKey may be invalid or rate-limited',
+          })
+        } else {
+          return {
+            statusCode: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            body: text,
+          }
         }
+      } catch (error) {
+        console.error('BLAT proxy request failed:', error)
+        return json(500, {
+          error: 'BLAT proxy request failed',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        })
       }
-    } catch (error) {
-      console.error('BLAT proxy request failed:', error)
-      return json(500, {
-        error: 'BLAT proxy request failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      })
     }
   }
 }
