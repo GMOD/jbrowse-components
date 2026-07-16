@@ -147,7 +147,12 @@ export function writeColorDocs({ check = false } = {}) {
           `${file}: COLOR_TABLE group "${group}" has no #color-tagged colors in ${COLOR_SOURCES.join(', ')}`,
         )
       }
-      const block = `${start(group)}\n\n${renderTable(rows)}\n\n${end(group)}`
+      // `prettier-ignore` pins the compact table `markdownTable` emits: prettier
+      // would otherwise pad every cell to column width, so `pnpm format` and this
+      // regen fought over the block (regen's own check is whitespace-insensitive
+      // via `normalizeMarkerWhitespace`, so the drift slipped past CI and only
+      // surfaced as diff churn). Ignoring it keeps one canonical form.
+      const block = `${start(group)}\n\n<!-- prettier-ignore -->\n${renderTable(rows)}\n\n${end(group)}`
       const re = new RegExp(`${start(group)}[\\s\\S]*?${end(group)}`)
       updated = updated.replace(re, () => block)
     }

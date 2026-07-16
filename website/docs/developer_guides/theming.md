@@ -55,15 +55,16 @@ group):
 
 <!-- COLOR_TABLE theme-colors START -->
 
-| Color                                                                                                                                                                       | Name                    | Value     | Description                                            |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | --------- | ------------------------------------------------------ |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#e22;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#e22"></span>       | Stop codon              | `#e22`    | Stop codon in gene/CDS tracks                          |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3e3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3e3"></span>       | Start codon             | `#3e3`    | Start codon in gene/CDS tracks                         |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#808080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#808080"></span> | Deletion                | `#808080` | Deletion markers in alignments                         |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#009a8a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#009a8a"></span> | Skip (intron)           | `#009a8a` | Skipped regions such as introns in RNA-seq reads       |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c8c8c8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c8c8c8"></span> | Base modification (fwd) | `#c8c8c8` | Base modifications on the forward strand               |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c8dcc8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c8dcc8"></span> | Base modification (rev) | `#c8dcc8` | Base modifications on the reverse strand               |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#888;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#888"></span>       | Muted SNP base          | `#888`    | SNP bases muted when show-modifications coloring is on |
+<!-- prettier-ignore -->
+| Color | Name | Value | Description |
+| --- | --- | --- | --- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#e22;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#e22"></span> | Stop codon | `#e22` | Stop codon in gene/CDS tracks |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3e3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3e3"></span> | Start codon | `#3e3` | Start codon in gene/CDS tracks |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#808080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#808080"></span> | Deletion | `#808080` | Deletion markers in alignments |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#009a8a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#009a8a"></span> | Skip (intron) | `#009a8a` | Skipped regions such as introns in RNA-seq reads |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c8c8c8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c8c8c8"></span> | Base modification (fwd) | `#c8c8c8` | Base modifications on the forward strand |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c8dcc8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c8dcc8"></span> | Base modification (rev) | `#c8dcc8` | Base modifications on the reverse strand |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#888;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#888"></span> | Muted SNP base | `#888` | SNP bases muted when show-modifications coloring is on |
 
 <!-- COLOR_TABLE theme-colors END -->
 
@@ -82,11 +83,12 @@ import {
 
 <!-- COLOR_TABLE theme-methylation START -->
 
-| Color                                                                                                                                                                       | Name            | Value     | Description                         |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | --------- | ----------------------------------- |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | methylated5mC   | `#ff0000` | 5-methylcytosine, methylated        |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0000ff;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0000ff"></span> | unmethylated5mC | `#0000ff` | 5-methylcytosine, unmethylated      |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffc0cb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffc0cb"></span> | methylated5hmC  | `#ffc0cb` | 5-hydroxymethylcytosine, methylated |
+<!-- prettier-ignore -->
+| Color | Name | Value | Description |
+| --- | --- | --- | --- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | methylated5mC | `#ff0000` | 5-methylcytosine, methylated |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0000ff;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0000ff"></span> | unmethylated5mC | `#0000ff` | 5-methylcytosine, unmethylated |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffc0cb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffc0cb"></span> | methylated5hmC | `#ffc0cb` | 5-hydroxymethylcytosine, methylated |
 
 <!-- COLOR_TABLE theme-methylation END -->
 
