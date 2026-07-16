@@ -50,20 +50,17 @@ export function itemImg(item: GalleryItem) {
   return item.img ?? (item.spec ? `${item.spec}.png` : undefined)
 }
 
-// Destination for an item. A `session` override wins (it's set precisely to
-// point somewhere other than the spec/guide default); then a docs `guide`; then
-// the spec-derived live session. `baseUrl` is the site base (e.g. /jb2) so guide
-// links resolve under the deployed path.
-export function itemHref(item: GalleryItem, baseUrl: string) {
+// The live app (or external) destination for an item: a `session` override
+// wins (set precisely to point somewhere other than the spec default), then an
+// external `href`, then the spec-derived live session. Ignores `guide` — the
+// backing tutorial is surfaced as its own "read more" link on the card rather
+// than as the primary destination.
+export function itemLiveHref(item: GalleryItem) {
   if (item.href) {
     return item.href
   }
   if (item.session) {
     return CODE_BASE + item.session
-  }
-  if (item.guide) {
-    const [path, hash] = item.guide.split('#')
-    return `${baseUrl}/docs/${path}/${hash ? `#${hash}` : ''}`
   }
   if (item.spec) {
     const url = specSessionUrls[item.spec]
@@ -77,6 +74,22 @@ export function itemHref(item: GalleryItem, baseUrl: string) {
   return ''
 }
 
+// Docs URL for the tutorial / user guide backing an item, if it names one.
+// `baseUrl` is the site base (e.g. /jb2) so the link resolves under the deploy.
+export function itemGuideHref(item: GalleryItem, baseUrl: string) {
+  if (!item.guide) {
+    return undefined
+  }
+  const [path, hash] = item.guide.split('#')
+  return `${baseUrl}/docs/${path}/${hash ? `#${hash}` : ''}`
+}
+
+// Single best destination for an item (used by the demos page's compact link
+// list): the live session if there is one, otherwise the backing guide.
+export function itemHref(item: GalleryItem, baseUrl: string) {
+  return itemLiveHref(item) || itemGuideHref(item, baseUrl) || ''
+}
+
 export const gallerySections: readonly GallerySection[] = [
   {
     id: 'synteny',
@@ -85,30 +98,35 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Dotplot (grape vs peach)',
         spec: 'dotplot',
+        guide: 'user_guides/dotplot_view',
         description:
           'Grape vs peach genome alignment as a dotplot, from a minimap2 PAF.',
       },
       {
         label: 'Linear synteny (grape vs peach)',
         spec: 'linear_synteny_gallery',
+        guide: 'tutorials/synteny_visualization',
         description:
-          'Grape vs peach MCScan synteny: per-gene connections plus the larger synteny blocks, drawn as red (non-inverted) and blue (inverted) blocks on each genome.',
+          'Grape vs peach MCScan synteny: fine per-gene links riding on top of the larger blocks, red where colinear and blue where inverted.',
       },
       {
         label: 'Whole-genome synteny (human hs1 vs mouse mm39)',
         spec: 'hs1_vs_mm39_synteny',
+        guide: 'tutorials/synteny_visualization',
         description:
           'Whole-genome human (hs1/T2T-CHM13) vs mouse (mm39) synteny from liftOver chains. Auto-diagonalized and colored by query chromosome, turning a dense hairball into a readable map of conserved blocks.',
       },
       {
         label: 'Grape / peach / cacao 3-way synteny (MCScan blocks)',
         spec: 'multiway_synteny/grape_peach_cacao',
+        guide: 'tutorials/multiway_synteny',
         description:
           'Three plant genomes stacked in one synteny view, MCScan blocks connecting each adjacent pair. Auto-diagonalized and colored by the shared anchor genome.',
       },
       {
         label: 'E. coli 4-strain pangenome (all-vs-all PAF)',
         spec: 'multiway_synteny/ecoli_pangenome',
+        guide: 'tutorials/allvsall_synteny',
         description:
           'Four E. coli strains as a stacked pangenome, with one all-vs-all PAF track backing every band.',
       },
@@ -121,18 +139,21 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'SV inspector (SKBR3 translocations)',
         spec: 'sv_inspector_importform_loaded',
+        guide: 'user_guides/sv_inspector_view',
         description:
           'Inter-chromosomal translocations in the SKBR3 cell line: a sortable table alongside a whole-genome circular overview.',
       },
       {
         label: 'Breakpoint split view (SKBR3 translocation)',
         spec: 'breakpoint_split_view',
+        guide: 'user_guides/sv_visualization',
         description:
           'An SKBR3 translocation in the breakpoint split view, connecting supporting reads (black curves) and the variant call (green, with feet showing directionality).',
       },
       {
         label: '1000 genomes structural variants (chr19 inversion)',
         spec: 'multisv',
+        guide: 'tutorials/sv_multisamples',
         description:
           'A large chr19 inversion in the 1000 Genomes SV VCF, found with the in-app clustering workflow.',
       },
@@ -155,12 +176,14 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Heterozygous small deletion (GIAB, haplotype-sorted)',
         spec: 'smalldel',
+        guide: 'user_guides/alignments_track',
         description:
           'A heterozygous small deletion in GIAB nanopore reads, colored and grouped by HP (haplotype) tag — the deletion sits on one haplotype only.',
       },
       {
         label: 'Insertion with multi-platform reads (GIAB)',
         spec: 'insertion',
+        guide: 'user_guides/alignments_track',
         description:
           'A ~1.5kb GIAB insertion across Nanopore, PacBio, and Illumina reads. Soft clipping on the Illumina reads marks the insertion boundaries the long reads span.',
       },
@@ -174,8 +197,9 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Fiber-seq 6mA (GAPDH promoter)',
         spec: 'gallery/fiberseq_gapdh',
+        guide: 'tutorials/methylation',
         description:
-          'ONT single-molecule fiber-seq over the GAPDH promoter, each read colored per-base by its 6mA (A+a) calls; single-cell ATAC above corroborates the open promoter. Source data: Oxford Nanopore HG002 chromatin-accessibility fiber-seq (epi2me.nanoporetech.com/chromatin-acc-hg002) and CATlas single-cell ATAC (Zhang et al. 2021, catlas.org).',
+          'ONT single-molecule fiber-seq over the GAPDH promoter, each read colored per-base by its 6mA (A+a) calls; single-cell ATAC above corroborates the open promoter. Data: nanopore HG002 fiber-seq and CATlas single-cell ATAC.',
       },
     ],
   },
@@ -186,6 +210,7 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Nanopore methylation / modifications coloring',
         spec: 'gallery/nanopore_methylation',
+        guide: 'tutorials/methylation',
         description:
           'Human nanopore reads colored by base-modification (methylation) calls over a chr20 CpG island.',
       },
@@ -194,7 +219,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'methylation/arabidopsis_wgbs_contexts',
         guide: 'tutorials/bisulfite',
         description:
-          'Arabidopsis WGBS colored per read by the bisulfite C→T signal (no MM/ML tags), with aggregate CpG/CHG/CHH methylation and gene annotation — CpG marks the gene body while all three plant contexts mark the silenced element.',
+          'Arabidopsis WGBS colored per read by the bisulfite C→T signal (no MM/ML tags), shown with aggregate CpG/CHG/CHH methylation and gene annotation. CpG marks the gene body, while all three plant contexts mark the silenced element.',
       },
     ],
   },
@@ -205,8 +230,9 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: '1000 genomes extended trio',
         spec: 'multi-sv-trio',
+        guide: 'tutorials/sv_multisamples',
         description:
-          'A 1000 Genomes trio (mother, child, father) coverage beneath the ensemble structural-variant VCF.',
+          'Coverage for a 1000 Genomes trio — mother, child, and father — beneath the ensemble structural-variant VCF.',
       },
       {
         label: 'Trio phased VCF (inheritance in the genotype matrix)',
@@ -218,6 +244,7 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'GWAS LocusZoom-style LD coloring (GIANT BMI, FTO locus)',
         spec: 'gallery/gwas_bmi_fto',
+        guide: 'user_guides/gwas_track',
         description:
           'A Manhattan plot with LocusZoom-style LD coloring around the FTO obesity locus.',
       },
@@ -234,6 +261,7 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'CNV multi-quantitative track (COLO829 tumor vs normal)',
         spec: 'cnv',
+        guide: 'user_guides/multiquantitative_track',
         description:
           'Whole-genome COLO829 melanoma coverage, tumor and normal on one multi-quantitative track (mosdepth BigWigs).',
       },
@@ -247,20 +275,23 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'Hi-C contact matrix (chr8, hg19)',
         spec: 'hic_track',
+        guide: 'user_guides/hic_track',
         description:
           'A Hi-C contact matrix from a .hic file (Juicebox format) over ~11 Mb of chr8, with the RefSeq gene track above.',
       },
       {
         label: 'ChromHMM state painting (Roadmap)',
         spec: 'chromhmm',
+        guide: 'tutorials/chromhmm',
         description:
           'Dense chromatin-state annotations from Roadmap Epigenomics (127 epigenomes) in the multi-row feature display.',
       },
       {
         label: 'Single-cell ATAC by cell type (CATlas, INS locus)',
         spec: 'gallery/scatac_catlas',
+        guide: 'tutorials/scatac_pseudobulk',
         description:
-          'Single-cell ATAC accessibility by cell type around the INS locus, one coverage row per cell type. Source data: CATlas (Zhang et al. 2021), catlas.org.',
+          'Single-cell ATAC accessibility by cell type around the INS locus, one coverage row per cell type. Data: CATlas (Zhang et al. 2021).',
       },
     ],
   },
@@ -282,12 +313,14 @@ export const gallerySections: readonly GallerySection[] = [
       {
         label: 'SARS-CoV2 polyprotein (ORF1ab mature peptides)',
         spec: 'gallery/sarscov2_polyprotein',
+        guide: 'user_guides/gene_track',
         description:
           'The SARS-CoV-2 ORF1ab polyprotein colored by CDS frame and cleaved into its mature peptides.',
       },
       {
         label: 'GPX1 selenoprotein (UGA→Sec readthrough)',
         spec: 'gene_track_selenocysteine',
+        guide: 'user_guides/feature_sequence',
         description:
           'GPX1\'s in-frame UGA is recoded as selenocysteine. With amino-acid lettering on, that codon shows as a "U" on orange instead of a stop.',
       },
