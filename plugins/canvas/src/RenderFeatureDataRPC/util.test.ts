@@ -1,3 +1,9 @@
+import createJexlInstance from '@jbrowse/core/util/jexl'
+
+import {
+  FEATURE_DEFAULT_COLOR,
+  UTR_DEFAULT_COLOR,
+} from './featureColors.ts'
 import { layoutBox } from './glyphs/box.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutMatureProteinRegion } from './glyphs/matureProteinRegion.ts'
@@ -5,23 +11,36 @@ import { layoutProcessedTranscript } from './glyphs/processed.ts'
 import { layoutSegments } from './glyphs/segments.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
-import { isUTR, truncateLabel } from './util.ts'
+import { getBoxColor, isUTR, truncateLabel } from './util.ts'
 
+import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
 function createMockFeature(opts: {
   type?: string
   subfeatures?: Feature[]
   parent?: () => Feature | undefined
+  attrs?: Record<string, unknown>
 }): Feature {
   const data: Record<string, unknown> = {
     type: opts.type,
     subfeatures: opts.subfeatures,
+    ...opts.attrs,
   }
   return {
     get: (key: string) => data[key],
     parent: opts.parent,
   } as unknown as Feature
+}
+
+// A BED12 gene as the glyph actually sees it: itemRgb rides on the mRNA parent
+// and the drawn box is a child that carries none of it.
+function bed12Child(childType: string, parentItemRgb?: string): Feature {
+  const parent = createMockFeature({
+    type: 'mRNA',
+    attrs: { itemRgb: parentItemRgb },
+  })
+  return createMockFeature({ type: childType, parent: () => parent })
 }
 
 const defaultConfig = mockDisplayConfig({
@@ -245,5 +264,59 @@ describe('truncateLabel', () => {
   it('respects custom maxLength', () => {
     const label = 'ABCDEFGHIJ'
     expect(truncateLabel(label, 5)).toBe('ABCD…')
+  })
+})
+
+describe('getBoxColor (BED itemRgb)', () => {
+  const theme = { palette: { framesCDS: [] } } as unknown as Theme
+  const jexl = createJexlInstance()
+
+  function boxColor(feature: Feature, config = mockDisplayConfig()) {
+    return getBoxColor({ feature, config, colorByCDS: false, theme, jexl })
+  }
+
+  it('inherits itemRgb from the parent for a drawn exon', () => {
+    // the box the glyph draws is the child, which carries no itemRgb of its own
+    expect(boxColor(bed12Child('exon', '227,26,28'))).toBe('227,26,28')
+  })
+
+  it('colors UTRs with itemRgb too, matching UCSC whole-item coloring', () => {
+    expect(boxColor(bed12Child('five_prime_UTR', '227,26,28'))).toBe(
+      '227,26,28',
+    )
+  })
+
+  it('an explicit color slot beats itemRgb', () => {
+    const config = mockDisplayConfig({ color: 'red' })
+    expect(boxColor(bed12Child('exon', '227,26,28'), config)).toBe('red')
+  })
+
+  it('an explicit utrColor restores the contrasting-UTR look', () => {
+    const config = mockDisplayConfig({ utrColor: 'cyan' })
+    expect(boxColor(bed12Child('five_prime_UTR', '227,26,28'), config)).toBe(
+      'cyan',
+    )
+    // the exon still takes itemRgb — the slots are independent
+    expect(boxColor(bed12Child('exon', '227,26,28'), config)).toBe('227,26,28')
+  })
+
+  it('a placeholder itemRgb leaves the defaults alone', () => {
+    // every itemRgb in the volvox-bed12 fixture is this placeholder; honoring it
+    // would paint an ordinary BED12 gene track black
+    expect(boxColor(bed12Child('exon', '0,0,0'))).toBe(FEATURE_DEFAULT_COLOR)
+    expect(boxColor(bed12Child('five_prime_UTR', '0'))).toBe(UTR_DEFAULT_COLOR)
+  })
+
+  it('no itemRgb anywhere on the chain keeps the slot defaults', () => {
+    expect(boxColor(bed12Child('exon'))).toBe(FEATURE_DEFAULT_COLOR)
+    expect(boxColor(bed12Child('five_prime_UTR'))).toBe(UTR_DEFAULT_COLOR)
+  })
+
+  it('a parentless feature with its own itemRgb still works (flat BED9)', () => {
+    const flat = createMockFeature({
+      type: 'block',
+      attrs: { itemRgb: '31,120,180' },
+    })
+    expect(boxColor(flat)).toBe('31,120,180')
   })
 })

@@ -1,5 +1,7 @@
 import { getFrame, measureText } from '@jbrowse/core/util'
+import { featureItemRgb } from '@jbrowse/core/util/colorBits'
 
+import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
 import {
   THEME_DERIVED_COLOR,
   readConfigValueSafe,
@@ -90,6 +92,20 @@ export function isExon(feature: Feature) {
   return featureType(feature).toLowerCase() === 'exon'
 }
 
+// A BED's itemRgb rides on the top-level feature, but the gene glyph draws one
+// box per subfeature (exon/CDS/UTR), which carry none — so look up the parent
+// chain. Bare "255,0,0" is understood downstream by parseCssColor, so the value
+// goes through as-is.
+function inheritedItemRgb(feature: Feature) {
+  let cur: Feature | undefined = feature
+  let found: string | undefined
+  while (cur !== undefined && found === undefined) {
+    found = featureItemRgb(cur.get('itemRgb'))
+    cur = cur.parent?.()
+  }
+  return found
+}
+
 export function getBoxColor({
   feature,
   config,
@@ -103,15 +119,21 @@ export function getBoxColor({
   theme: Theme
   jexl: JexlInstance
 }) {
-  let fill = isUTR(feature)
-    ? readConfigValueSafe<string>(
-        config,
-        'utrColor',
-        feature,
-        jexl,
-        INVALID_COLOR,
-      )
-    : readConfigValueSafe<string>(config, 'color', feature, jexl, INVALID_COLOR)
+  // Each slot yields to the file's own itemRgb only while it sits at its
+  // default — an explicit color always wins, so "the config beats the file" is
+  // the single rule. utrColor deferring too is what reproduces UCSC's
+  // whole-item coloring, where a thin block is thinner but not a different
+  // color; setting utrColor restores the contrasting-UTR look.
+  const utr = isUTR(feature)
+  const slot = utr ? 'utrColor' : 'color'
+  const slotIsDefault = utr
+    ? config.utrColor === UTR_DEFAULT_COLOR
+    : config.color === FEATURE_DEFAULT_COLOR
+  const itemRgb = slotIsDefault ? inheritedItemRgb(feature) : undefined
+
+  let fill =
+    itemRgb ??
+    readConfigValueSafe<string>(config, slot, feature, jexl, INVALID_COLOR)
 
   const featureStrand = feature.get('strand')
   const featurePhase = feature.get('phase')

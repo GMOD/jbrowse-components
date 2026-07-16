@@ -81,6 +81,7 @@ import {
   maxBottom,
   rowGeometrySignature,
 } from './yMorph.ts'
+import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 import {
   HEIGHT_MULTIPLIERS,
   labelFontSize,
@@ -215,8 +216,8 @@ const STRAND_COLOR_JEXL =
   "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
 
 // Swatch fallback when the active color is a jexl (per-feature) expression
-// rather than a solid CSS color. Mirrors the baseConfigSchema.ts color default.
-const FEATURE_COLOR_DEFAULT = 'goldenrod'
+// rather than a solid CSS color.
+const FEATURE_COLOR_DEFAULT = FEATURE_DEFAULT_COLOR
 
 // Floor for the auto-fit height so a sparse/empty track doesn't collapse to a
 // sliver. Capped by the maxHeight config in naturalContentHeight.

@@ -1,3 +1,4 @@
+import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 import { THEME_DERIVED_COLOR } from './renderConfig.ts'
 
@@ -19,9 +20,9 @@ export function mockDisplayConfig(
     displayDirectionalChevrons: true,
     mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
     jexlFilters: [],
-    color: 'goldenrod',
+    color: FEATURE_DEFAULT_COLOR,
     connectorColor: THEME_DERIVED_COLOR,
-    utrColor: '#357089',
+    utrColor: UTR_DEFAULT_COLOR,
     outlineColor: '',
     labels: {
       name: '',

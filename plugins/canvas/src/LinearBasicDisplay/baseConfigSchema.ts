@@ -8,6 +8,10 @@ import {
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
+import {
+  FEATURE_DEFAULT_COLOR,
+  UTR_DEFAULT_COLOR,
+} from '../RenderFeatureDataRPC/featureColors.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -85,8 +89,8 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       color: {
         type: 'color',
         description:
-          'the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)',
-        defaultValue: 'goldenrod',
+          "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring); left at its default, a feature's own BED itemRgb is used if it has one",
+        defaultValue: FEATURE_DEFAULT_COLOR,
         contextVariable: ['feature'],
       },
       /**
@@ -106,8 +110,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       // Fill color for UTRs on gene/transcript glyphs. Legacy: `color3`.
       utrColor: {
         type: 'color',
-        description: 'fill color for UTRs on gene/transcript glyphs',
-        defaultValue: '#357089',
+        description:
+          "fill color for UTRs on gene/transcript glyphs; left at its default, a feature's own BED itemRgb is used if it has one, matching UCSC's whole-item coloring",
+        defaultValue: UTR_DEFAULT_COLOR,
         contextVariable: ['feature'],
       },
       /**
