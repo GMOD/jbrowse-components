@@ -21,8 +21,12 @@ sorted_pileup_layout <- function(reads, sort_pos, sort_type = "position", mm = N
       k <- rep(Inf, length(ov))
       hit <- if (is.null(mm)) NULL else mm[mm$refpos == sort_pos, , drop = FALSE]
       if (!is.null(hit) && nrow(hit)) {
-        k[match(hit$read_index, ov)] <-
-          vapply(toupper(hit$base), utf8ToInt, integer(1), USE.NAMES = FALSE)
+        # mm keeps every read's rows (dropping them would desync the read_index
+        # join), so a mismatch here may belong to a read "Filter by" rejected -
+        # which is not in ov and has no row to rank. Drop those NA matches.
+        hi <- match(hit$read_index, ov); ok <- !is.na(hi)
+        k[hi[ok]] <-
+          vapply(toupper(hit$base[ok]), utf8ToInt, integer(1), USE.NAMES = FALSE)
       }
       # a deletion spanning sort_pos ranks as '*' (42), but only for reads without
       # a mismatch base there (JBrowse's !baseAtPos.has(readIdx) guard)
