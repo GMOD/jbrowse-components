@@ -69,8 +69,8 @@ package_.
 - **WebGPU uniform ring buffer.** `writeUniforms` post-increments the slot;
   `drawPass` reads slot `n-1`. Always pair one `writeUniforms` with the
   `drawPass`(es) that consume it; the per-frame cap is `MAX_UNIFORM_SLOTS`.
-- **Two uniform-write patterns, pick by write shape — don't invent a third.**
-  A renderer fills its uniform buffer one of two ways: the generated
+- **Two uniform-write patterns, pick by write shape — don't invent a third.** A
+  renderer fills its uniform buffer one of two ways: the generated
   **object-packer** `shader.writeUniforms(buf, { …every field… })` when it sets
   all fields each frame (rect/`GpuCanvasFeatureRenderer`), or **offset-pokes**
   `const U = shader.UNIFORM_OFFSET_F32; f32[U.field] = …` when writes are

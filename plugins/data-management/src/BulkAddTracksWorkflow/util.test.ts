@@ -101,7 +101,11 @@ describe('resolveTrackNames', () => {
   test('a collision only un-strips the rows involved', () => {
     expect(
       namesOf({
-        rows: [rowOf('r1', 'a.bam'), rowOf('r2', 'a.vcf.gz'), rowOf('r3', 'b.bam')],
+        rows: [
+          rowOf('r1', 'a.bam'),
+          rowOf('r2', 'a.vcf.gz'),
+          rowOf('r3', 'b.bam'),
+        ],
         stripExtensions: true,
       }),
     ).toEqual(['a.bam', 'a.vcf.gz', 'b'])

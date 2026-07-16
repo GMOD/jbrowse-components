@@ -362,7 +362,7 @@ function* eachLocatedCodon(
         // A species must appear in every block the codon spans; iterate the rows
         // of the block holding its first (lowest) base and pull the other bases
         // from their blocks (all the same block in the common single-block case).
-        *rows () {
+        *rows() {
           for (const row of blocks[locs[0].blockIdx]!.rows) {
             const bytes = rowCodonBytes(locs, rowMapsPerBlock, row.rowIndex)
             if (bytes) {

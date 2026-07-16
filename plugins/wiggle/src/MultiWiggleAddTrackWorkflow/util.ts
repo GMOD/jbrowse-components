@@ -1,4 +1,8 @@
-import { addAndShowTrack, fileToLocation, makeTrackId } from '@jbrowse/core/util'
+import {
+  addAndShowTrack,
+  fileToLocation,
+  makeTrackId,
+} from '@jbrowse/core/util'
 
 import { getFilename } from '../util.ts'
 

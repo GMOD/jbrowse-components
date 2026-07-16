@@ -136,11 +136,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
         skippedCount={skippedCount}
       />
 
-      <SubmitTracksButton
-        model={model}
-        okNamed={okNamed}
-        assembly={assembly}
-      />
+      <SubmitTracksButton model={model} okNamed={okNamed} assembly={assembly} />
     </Paper>
   )
 })
