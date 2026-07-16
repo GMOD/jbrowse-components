@@ -5,11 +5,19 @@ description: Why babel-plugin-react-compiler can stale a MobX read, and the obse
 
 # Finding: the DisplayChrome early-`return` rule is a React-Compiler bug, not a jsdom artifact
 
-> **RESOLVED.** `DisplayChromeInner` now carries `'use no memo'`, so the compiler
-> no longer compiles it — the only compiled `observer` in the codebase. With zero
-> compiled observers, this staleness class is structurally impossible; the
-> early-`return`-vs-ternary sensitivity below is neutralized (early-`return` is
-> kept only as a clear pattern). Everything below is the historical analysis.
+> **RESOLVED for observers.** `DisplayChromeInner` now carries `'use no memo'`,
+> so the compiler no longer compiles it — the only compiled `observer` in the
+> codebase. With zero compiled observers, this staleness class is structurally
+> impossible *for observers*; the early-`return`-vs-ternary sensitivity below is
+> neutralized (early-`return` is kept only as a clear pattern). Everything below
+> is the historical analysis.
+>
+> **NOT resolved for custom hooks — see "The general rule" below.** "No compiled
+> observers" is not the same as "no compiled code that reads MobX": a
+> `use`-prefixed function is a hook, and the compiler *does* compile it even when
+> every caller is an inline observer. `useOverlayState`
+> (breakpoint-split-view) hit exactly this and shipped a real bug — panning froze
+> the overlay connectors in place, zooming threw them millions of px off-screen.
 
 Investigation of deferred item **#5** (the "early-return-vs-ternary jsdom rule").
 The rule is **real and load-bearing** — but every doc that describes it
@@ -219,3 +227,63 @@ This is a known, documented mobx × React-Compiler class, which corroborates the
 None of these documents the specific **memo-dependency coarsening** mechanism
 (`model.<scalar>` → `model` identity when the node is passed whole in a
 conditional block) — this writeup is more precise than the general advice.
+
+## The general rule (what actually decides safety)
+
+Established by compiling probes with the real babel plugin (`@1.0.0`) and reading
+the output. Inside **any** compiled function — component *or* `use`-prefixed hook
+— the two shapes are treated differently:
+
+```js
+const a = model.someGetter;        // emitted verbatim, re-read every render
+                                   // → mobx tracks it → SAFE, invalidates correctly
+
+if ($[0] !== id || $[1] !== model) // memoized on (receiver identity, args)
+  t1 = model.someMethod(id);       // MST mutates in place → identity never changes
+else t1 = $[2];                    // → PERMANENTLY STALE
+```
+
+So the hazard is **not** "the compiler breaks MobX" broadly. It is narrow:
+
+> **A compiled function must not call a model *method* whose return value feeds
+> render.** Property/getter reads are safe — the compiler lifts the read itself
+> into the dep comparison, so it stays live.
+
+Why the codebase mostly gets away with it:
+
+- **Inline `observer(function(){})` isn't compiled** — the dominant pattern, so
+  most MobX reads never reach the compiler at all.
+- **Property reads dominate** (`const { views, assembly } = model`), and those
+  are safe even when compiled.
+- **Setters/actions in hooks are safe**: `model.setHoverState(...)` inside an
+  event handler or effect memoizes the *callback identity*, not a value, and the
+  call still runs fresh at event time. An audit of all 59 files defining custom
+  hooks found 15 calling model methods — 14 are this benign shape.
+
+The one dangerous shape is a method call **during render** returning
+observable-derived data. Known instances:
+
+| Site | Status |
+| --- | --- |
+| `useOverlayState` → `getTrackOverlayData()` | fixed with `'use no memo'` |
+| `useVariantCanvasInteraction` → `contextMenuItems()` in JSX | latent, masked: memoized on `[contextMenuCoord, model]`, and `contextMenuCoord` is a fresh `[clientX, clientY]` array per right-click, so it re-evaluates on every menu open. Would stale if that coord ever became stable. |
+
+**Writing a hook that reads MobX?** Prefer passing already-read *values* in, or
+keep the read a plain property access. If you must call a model method that reads
+observables, add `'use no memo'` (with the
+`eslint-disable-next-line react-compiler/react-compiler` above it — the ESLint
+plugin `@19.1.0-rc.2` wrongly calls the directive unused; the babel plugin `@1.0.0`
+that builds the app really does compile the function).
+
+**Verifying a suspicion takes one command** — compile the file and look for a
+`_c(n)` cache around the call:
+
+```js
+babel.transformSync(src, { filename, presets: [['@babel/preset-react',{runtime:'automatic'}],'@babel/preset-typescript'], plugins: ['babel-plugin-react-compiler'] })
+```
+
+Unit tests **do** run the compiler (`babel.config.cjs`), but only catch this if
+they re-render after mutating the observable; the breakpoint bug needed a real
+pan/zoom, so its regression guard is a browser test
+(`browser-tests/suites/breakpoint-split-view.ts`, "overlay connectors track pan
+and zoom").
