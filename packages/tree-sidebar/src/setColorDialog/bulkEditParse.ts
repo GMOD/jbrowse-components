@@ -14,12 +14,9 @@ function detectDelimiter(header: string): string {
   return ti < ci ? '\t' : ','
 }
 
-// CSV parser for one already-split line. Handles quoted fields containing the
-// delimiter and "" as an escaped quote. A newline *inside* a quoted field is
-// not supported — callers split on newlines before this sees the text (see
-// nonEmptyLines) — so this is RFC-4180 minus the embedded-newline case. Falls
-// back to a plain split when no quotes are present (fast path for the common
-// case).
+// CSV parser for one line. Handles quoted fields containing the delimiter and
+// "" as an escaped quote; a newline inside a quoted field is not (callers split
+// on newlines first). Falls back to a plain split when no quotes are present.
 function parseCSVRow(line: string, delim: string): string[] {
   if (!line.includes('"')) {
     return line.split(delim)
