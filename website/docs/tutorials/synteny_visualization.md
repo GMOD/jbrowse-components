@@ -83,14 +83,6 @@ the PAF columns.
 
 <Figure caption="The dotplot import form. The red callouts point at the two assembly selectors: choose a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 
-### Reading the dotplot
-
-- Diagonal lines (slope ≈ 1) represent collinear aligned regions.
-- Off-diagonal lines indicate rearrangements: inversions, translocations, or
-  duplications.
-- Scattered points represent short local alignments or repetitive regions.
-- Gaps suggest missing or misaligned sequence.
-
 <Figure caption="A dotplot of the H. pylori J99 (X-axis) vs 26695 (Y-axis) whole-genome alignment. The long diagonal is the collinear backbone, and the off-diagonal segments are rearrangements between the two strains." src="/img/sv_synteny/dotplot.png" />
 
 ### Launching a linear synteny view from the dotplot
