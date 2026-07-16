@@ -2,7 +2,7 @@
 
 Figures produced by **View menu → "Export R script"**, which downloads a
 self-contained `.R` that redraws the current view from source in pure
-`rtracklayer` + `ggplot2` (no bespoke package — see `agent-docs/R_EXPORT.md`).
+`rtracklayer` + `ggplot2` (no bespoke package).
 Every image below was rendered by running the _actual_ generated script through
 `Rscript` (against `test_data/volvox`, except Hi-C which uses the published hg19
 GM12878/HMEC contact maps from `config_demo.json` plus an Ensembl GRCh37 gene
