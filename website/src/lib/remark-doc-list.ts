@@ -6,10 +6,11 @@ import type { Plugin } from 'unified'
 // Replaces a `<!-- doclist:<dir> -->` marker with a bullet list of every page
 // under that top-level docs dir, each rendered as "[title](url) — description"
 // from frontmatter. Keeps an index page (introduction.md) from hand-mirroring a
-// directory's titles/descriptions, which then drift as pages are added.
-const markerRe = /^<!--\s*doclist:([a-z0-9_-]+)\s*-->$/
+// directory's titles/descriptions, which then drift as pages are added. Add a
+// `nodesc` flag (`<!-- doclist:<dir> nodesc -->`) to list titles only.
+const markerRe = /^<!--\s*doclist:([a-z0-9_-]+)(\s+nodesc)?\s*-->$/
 
-function listItem(entry: DocListEntry): ListItem {
+function listItem(entry: DocListEntry, showDescription: boolean): ListItem {
   const children: PhrasingContent[] = [
     {
       type: 'link',
@@ -17,7 +18,7 @@ function listItem(entry: DocListEntry): ListItem {
       children: [{ type: 'text', value: entry.title }],
     },
   ]
-  if (entry.description) {
+  if (showDescription && entry.description) {
     children.push({ type: 'text', value: ` — ${entry.description}` })
   }
   return {
@@ -38,11 +39,12 @@ const remarkDocList: Plugin<[], Root> = () => tree => {
       if (entries.length === 0) {
         throw new Error(`<!-- doclist:${match[1]} --> matched no docs`)
       }
+      const showDescription = !match[2]
       const list: List = {
         type: 'list',
         ordered: false,
         spread: false,
-        children: entries.map(listItem),
+        children: entries.map(entry => listItem(entry, showDescription)),
       }
       tree.children[i] = list
     }

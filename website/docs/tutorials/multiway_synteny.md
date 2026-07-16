@@ -1,7 +1,6 @@
 ---
 title: Synteny from ortholog tables
-description:
-  Stack N genomes in a linear synteny view from a jcvi MCScan .blocks file
+description: Stack N genomes from a jcvi MCScan .blocks file
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -9,9 +8,9 @@ tutorial_category: Synteny & comparative genomics
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. This tutorial builds a
 three-way grape / peach / cacao view from a single
-[jcvi](https://github.com/tanghaibao/jcvi) MCScan **`.blocks`** file, the
-standard way the comparative-genomics community encodes a cross-species,
-gene-level ortholog table.
+[jcvi](https://github.com/tanghaibao/jcvi) MCScan `.blocks` file, the standard
+way the comparative-genomics community encodes a cross-species, gene-level
+ortholog table.
 
 For closely related genomes (strains or accessions of one species), a
 whole-genome all-vs-all PAF is usually a better source. See
@@ -22,9 +21,9 @@ stacked view from its caption to explore it yourself.
 
 ## What a `.blocks` file is
 
-jcvi does not align all genomes at once. It runs **pairwise** comparisons
-against one reference genome, then joins the results on the reference gene into
-a single wide, tab-delimited table:
+jcvi does not align all genomes at once. It runs pairwise comparisons against
+one reference genome, then joins the results on the reference gene into a single
+wide, tab-delimited table:
 
 ```
 GSVIVT01012255001   Prupe.1G290900.1   Thecc1EG011472t1
@@ -32,7 +31,7 @@ GSVIVT01012253001   Prupe.1G290800.2   Thecc1EG011473t1
 GSVIVT01012261001   .                  .
 ```
 
-- Column 0 is a **reference** gene (grape here).
+- Column 0 is a reference gene (grape here).
 - Each further column is that gene's ortholog in another genome (`.` = none).
 - One row per reference gene.
 
@@ -119,8 +118,8 @@ equivalent JSON.
 ## Loading it in JBrowse with MCScanBlocksAdapter
 
 A synteny band draws one pair of genomes, but a `.blocks` file describes N. The
-`MCScanBlocksAdapter` bridges this: **one `.blocks` file, and one track, backs
-every band of the stacked view.** List all the genomes in `assemblyNames`. The
+`MCScanBlocksAdapter` bridges this: one `.blocks` file, and one track, backs
+every band of the stacked view. List all the genomes in `assemblyNames`. The
 view tells the adapter which pair each band draws, and the adapter pulls those
 two columns from the table.
 
@@ -211,10 +210,10 @@ which lists all three genomes in `assemblyNames` so it can back any pair.
 `autoDiagonalize`) go under `init`.
 
 `autoDiagonalize` reorders and flips each row's chromosomes on load so the
-ribbons run along the diagonal instead of crossing into a hairball. It sweeps
-top-down: the top row stays put, the middle row is reordered to follow it, then
-the bottom row is reordered to follow the _reordered_ middle row, so the
-diagonal cascades down the whole stack.
+ribbons run along the diagonal instead of crossing over each other. It works
+top-down: the top row stays put, the middle row is reordered to follow it, and
+then the bottom row is reordered to follow the reordered middle row, so the
+diagonal carries all the way down the stack.
 
 `colorBy: "reference"` anchors every band on the shared middle row (cacao, the
 one genome both bands touch) so a cacao chromosome keeps a single color as its
@@ -226,13 +225,13 @@ offers the other modes (`query`, `strand`, `identity`, …).
 ## Direct vs transitive pairs
 
 Because a `.blocks` table is reference-anchored on grape (column 0), only pairs
-that **include** grape are direct alignments. The adapter still serves a pair
-where neither side is the reference (e.g. peach–cacao above) by joining the two
-columns on their shared grape gene: a **transitive** ortholog link, not a direct
-alignment. So row order is a choice. When one genome dominates (grape's 19
-chromosomes vs peach's 8 / cacao's 10) put the cleaner pair on top, otherwise
-put the reference in the **middle** (peach – grape – cacao) so every band is
-direct.
+that include grape are direct alignments. The adapter can still serve a pair
+where neither side is the reference (peach–cacao above, say) by joining the two
+columns on their shared grape gene, but that's a transitive ortholog link rather
+than a direct alignment. So row order is a real choice. When one genome
+dominates — grape's 19 chromosomes against peach's 8 or cacao's 10 — put the
+cleaner pair on top; otherwise put the reference in the middle (peach – grape –
+cacao) so every band is direct.
 
 ## Zooming to a conserved block
 

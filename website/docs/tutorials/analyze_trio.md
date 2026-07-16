@@ -5,9 +5,9 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-A **trio** is sequencing data from a mother, father, and child together. A
-**phased** VCF assigns each variant to one of the two haplotypes (`0|1` vs
-`1|0`), so you can trace which copy of the genome each variant came from.
+A trio is sequencing data from a mother, father, and child together. A phased
+VCF assigns each variant to one of the two haplotypes (`0|1` vs `1|0`), so you
+can trace which copy of the genome each variant came from.
 
 This tutorial uses a pre-built phased VCF from the 1000 Genomes Project, the
 Kinh-Vietnamese trio HG02024 (chr1 only):
@@ -44,10 +44,10 @@ program such as SHAPEIT.
 
 ## Reading matching haplotypes off the matrix
 
-In the phased display each row reads like a barcode, so matching stretches
-between rows stand out by eye: the child's two haplotypes match the mother's in
-some blocks and the father's in others. The rest of this tutorial turns that
-by-eye pattern into a painted track.
+In the phased display each row is a strip of colored blocks, so matching
+stretches between rows are easy to spot by eye: the child's two haplotypes match
+the mother's in some blocks and the father's in others. The rest of this
+tutorial turns that by-eye pattern into a painted track.
 
 <Figure caption="Screenshot showing the phased rendering mode without any added markup. You can look at this figure and see various areas where rows match one another. The first two rows are the two haplotypes of the child, next two rows are the two haplotypes of the mom, and next two rows are the two haplotypes of the father" src="/img/trio-matrix-phased-clean.png"/>
 
@@ -70,10 +70,10 @@ with the GRCh38 PLINK maps linked there; running it (and FLARE later) needs Java
 
 ## What we're visualizing: crossover points
 
-Each of the child's inherited chromosomes is a mosaic of the two copies its
-parent carries, joined at crossover breakpoints. The painting below marks where
-those joins fall: one row per parental haplotype, with the block stepping
-between a parent's two rows at each crossover.
+Each chromosome the child inherits is made of alternating stretches of the two
+copies its parent carries, joined at crossover breakpoints. The painting below
+marks where those joins fall: one row per parental haplotype, with the block
+stepping between a parent's two rows at each crossover.
 
 ## Running hap-ibd
 
@@ -112,7 +112,7 @@ into clean inheritance blocks.
 
 ## Converting hap-ibd data into painted inheritance blocks
 
-We want **one row per parental haplotype** (father copy 1, father copy 2, mother
+We want one row per parental haplotype (father copy 1, father copy 2, mother
 copy 1, mother copy 2), with the child's inherited chromosome tiled across each
 parent's pair of rows. A crossover then shows up as the painted block stepping
 from one row to its partner.
@@ -191,19 +191,19 @@ mother HG02025):
 
 <Figure caption="hap-ibd inheritance blocks painted with the multi-row feature display. The top two rows (blue) are father HG02026's two haplotypes, and the bottom two (red) are mother HG02025's. The child's paternal chromosome is tiled across the two blue rows and its maternal chromosome across the two red rows, so each crossover is the boundary where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
 
-Read the two blue rows together as the child's single **paternal** chromosome:
-at any position exactly one of them is filled, telling you which of the father's
+Read the two blue rows together as the child's single paternal chromosome: at
+any position exactly one of them is filled, telling you which of the father's
 two copies the child inherited there. Each place the block steps between the two
-blue rows is a **crossing-over point**. The two red rows work the same way for
-the **maternal** chromosome.
+blue rows is a crossing-over point. The two red rows work the same way for the
+maternal chromosome.
 
 ## Coloring an admixed trio by ancestry
 
-Haplotypes can also be painted by **continental ancestry**. That is only
-informative for an _admixed_ individual, so this section switches to a 1000
-Genomes **African-American (ASW) trio**: child NA19828 with parents NA19818 and
-NA19819. African-American genomes are a two-way mosaic of **African** and
-**European** ancestry, and 1000 Genomes has clean reference panels for both.
+Haplotypes can also be painted by continental ancestry. That is only informative
+for an admixed individual, so this section switches to a 1000 Genomes
+African-American (ASW) trio: child NA19828 with parents NA19818 and NA19819.
+Their genomes mix African and European ancestry, and 1000 Genomes has clean
+reference panels for both.
 
 [FLARE](https://github.com/browning-lab/flare) infers per-haplotype local
 ancestry by comparing each target haplotype against labeled reference samples.
@@ -274,9 +274,9 @@ array or paste it via the add-track JSON editor):
 }
 ```
 
-Each of the six rows is one haplotype, painted as an African (orange) / European
-(blue) mosaic. The parents carry their own long ancestry blocks, and the child's
-two haplotypes recombine the blocks inherited from each parent.
+Each of the six rows is one haplotype, painted African (orange) or European
+(blue) block by block. The parents carry their own long ancestry blocks, and the
+child's two haplotypes recombine the blocks inherited from each parent.
 
 <Figure caption="Per-haplotype FLARE local-ancestry calls for a 1000 Genomes African-American (ASW) trio along chromosome 1, painted with the multi-row feature display. Each of the six rows is one haplotype (child, mother, father), colored African (orange) or European (blue) against African + European 1000 Genomes reference panels. The African/European mosaic and its inheritance from parents to child are visible across the chromosome." src="/img/trio-ancestry.png"/>
 
@@ -293,12 +293,12 @@ A crossover spans a single base, so the whole-chromosome view is too zoomed-out
 to read it off the genotypes. At that scale the matrix is a solid block of
 color. Zoom instead to a few hundred kb around one boundary, where the
 painting's block-step is clear and the genotype columns resolve into individual
-variants. The clearest crossover to start with is the **paternal** one near
+variants. The clearest crossover to start with is the paternal one near
 chr1:29.7 Mb:
 
 <Figure caption="Paternal crossover near chr1:29.7 Mb (~400 kb wide). In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue), and an arrow drops to the same breakpoint in the genotypes below. The tinted frames read the switch off the raw genotypes: left of the crossover the yellow frame ties Child hap1 to Father hap2, right of it the purple frame ties Child hap1 to Father hap1, and the yellow/purple blocks on the Child hap1 row abut exactly at the breakpoint." src="/img/trio-crossover-paternal.png"/>
 
-The **maternal** chromosome does the same thing at its own boundaries. Near
+The maternal chromosome does the same thing at its own boundaries. Near
 chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
 copies:
 
@@ -316,7 +316,7 @@ next section explains why.
 ## A caveat on the input data
 
 This 1000 Genomes VCF is _statistically_ phased, not trio- or read-backed
-phased, so its haplotypes carry **switch errors** roughly every megabase. Read
+phased, so its haplotypes carry switch errors roughly every megabase. Read
 straight off the genotypes, those errors look like dozens of extra crossovers
 per chromosome. hap-ibd's cM-length threshold acts as a switch-error filter,
 which is why its post-processed blocks track the real boundaries more closely,

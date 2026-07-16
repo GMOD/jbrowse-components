@@ -1,29 +1,28 @@
 ---
 title: Bisulfite / EM-seq methylation
 description:
-  A full Arabidopsis WGBS pipeline, from SRA reads through bisulfite alignment
-  to per-read CpG/CHG/CHH methylation coloring in JBrowse 2
+  A WGBS pipeline from SRA reads to per-read CpG/CHG/CHH methylation coloring
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
 Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation
-without any long-read basecaller: a chemical (sodium bisulfite) or enzymatic
-(APOBEC) step converts every **unmethylated** cytosine to uracil (read as **T**)
-while a **methylated** cytosine is protected and still reads as **C**. So
-methylation is recoverable from short Illumina reads by comparing each read to
-the reference: a C→T change at a cytosine means unmethylated, a retained C means
-methylated.
+without any long-read basecaller. A chemical (sodium bisulfite) or enzymatic
+(APOBEC) step converts every unmethylated cytosine to uracil, which reads as T,
+while a methylated cytosine is protected and still reads as C. So you can
+recover methylation from ordinary short Illumina reads just by comparing each
+read to the reference: a C→T change at a cytosine means it was unmethylated, and
+a retained C means it was methylated.
 
-JBrowse 2 reads this directly off the aligned reads (no MM/ML tags, no external
-methylation caller needed to color the pileup) via the **bisulfite** color mode.
-This tutorial runs the whole pipeline on real _Arabidopsis thaliana_ data, from
-SRA reads to a colored browser view.
+JBrowse 2 reads all of this straight off the aligned reads through its bisulfite
+color mode — no MM/ML tags and no external methylation caller needed to color
+the pileup. This tutorial runs the whole pipeline on real _Arabidopsis thaliana_
+data, from SRA reads to a colored browser view.
 
-Plants make this a compelling example: unlike mammals (methylation almost
-entirely at **CpG**), plants methylate cytosines in **three** sequence contexts,
-**CpG**, **CHG**, and **CHH** (H = A, C, or T). JBrowse can restrict the
-coloring to any one context, so all three are visible on the same reads.
+Plants make a compelling example here. Mammals methylate almost entirely at CpG,
+but plants also methylate cytosines in three sequence contexts — CpG, CHG, and
+CHH (where H is A, C, or T). JBrowse can restrict the coloring to any one
+context, so you can see all three on the same reads.
 
 ## The pipeline
 
@@ -67,7 +66,7 @@ trim_galore --paired DRR029742_1.fastq.gz DRR029742_2.fastq.gz
 
 [bwameth](https://github.com/brentp/bwa-meth) aligns bisulfite reads by
 in-silico C→T converting both reads and reference, then running `bwa mem`. It
-emits an ordinary BAM with the **original** read sequences, so the C→T signal is
+emits an ordinary BAM with the original read sequences, so the C→T signal is
 preserved for JBrowse to read.
 
 ```bash
@@ -86,8 +85,8 @@ the same way.)
 
 ### (Optional) Aggregate methylation calling
 
-For a whole-genome, per-position methylation **fraction** track, complementary
-to the per-read coloring, call methylation with
+For a whole-genome, per-position methylation fraction track, complementary to
+the per-read coloring, call methylation with
 [MethylDackel](https://github.com/dpryan79/MethylDackel), which understands all
 three plant contexts:
 
@@ -108,7 +107,7 @@ done
 
 Group the three bigWigs into one `MultiQuantitativeTrack` (a subadapter per
 context, each with its own `name` and `color`) so they render as three labeled
-rows, the **Aggregate methylation** track in the figure below. This is the same
+rows, the Aggregate methylation track in the figure below. This is the same
 mechanism as the
 [DNA methylation tutorial's aggregate section](/docs/tutorials/methylation#aggregate-methylation-with-modkit-bedmethyl).
 
@@ -185,7 +184,7 @@ tabix -p gff tair10.gff.gz
 jbrowse add-track tair10.gff.gz --name "TAIR10 genes" --load copy
 ```
 
-The **Aggregate methylation** row is the optional MethylDackel track from the
+The Aggregate methylation row is the optional MethylDackel track from the
 section above. Load it too if you built the bigWigs, or leave it out; the
 per-read coloring below stands on its own.
 
@@ -197,32 +196,32 @@ no web server. See the [desktop quickstart](/docs/quickstart_desktop).
 
 Open the alignments track and, from the track menu, choose **Color by → Advanced
 → Bisulfite / EM-seq**, then pick a cytosine context (CpG, CHG, CHH, or all
-cytosines). Methylated cytosines paint **red**, unmethylated **blue**. (It is
-under **Advanced** because it is reference-based and only meaningful for
-bisulfite/EM-seq libraries, no MM/ML tags are involved.)
+cytosines). Methylated cytosines paint red and unmethylated ones paint blue. It
+lives under **Advanced** because it's reference-based and only makes sense for
+bisulfite/EM-seq libraries — no MM/ML tags are involved.
 
 Type `NC_003070.9:4,398,000–4,412,000` into the location box to reach the window
 below (chromosome 1). It places two methylation regimes side by side. On the
-left, the expressed ARM-repeat gene **AT1G12930** carries **gene-body
-methylation**, cytosines methylated only in the **CpG** context. On the right, a
-silenced element (the pseudogene **AT1G12935** and the repeat sequence beyond
-it) is methylated in **all three** contexts.
+left, the expressed ARM-repeat gene AT1G12930 carries gene-body methylation,
+with cytosines methylated only in the CpG context. On the right, a silenced
+element (the pseudogene AT1G12935 and the repeat sequence beyond it) is
+methylated in all three contexts.
 
-The figure below shows the three contexts at two levels: the **gene
-annotation**, the **aggregate methylation** track (one row per context, from
-MethylDackel, see the previous section), and then **the same per-read pileup
-colored three separate ways**, one copy per context. Over the gene body (left)
-only the CpG copy lights up red; over the silenced element (right) all three
-copies do.
+The figure below shows the three contexts at two levels: the gene annotation,
+the aggregate methylation track (one row per context, from MethylDackel, see the
+previous section), and then the same per-read pileup colored three separate
+ways, one copy per context. Over the gene body (left) only the CpG copy lights
+up red; over the silenced element (right) all three copies do.
 
 <Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn. Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Blue = unmethylated." />
 
-Each per-read copy is just the one alignment track re-colored: switch a pileup's
-context with **Color by → Advanced → Bisulfite / EM-seq**, then CpG / CHG / CHH
-/ all (the last marks every cytosine at once). Because the call is per read,
-zooming in to the gene→element boundary resolves the methylation on individual
-molecules: each read runs blue (unmethylated) over the gene body and turns red
-(methylated) as it crosses into the silenced element.
+Each per-read copy is just the same alignment track re-colored: switch a
+pileup's context with **Color by → Advanced → Bisulfite / EM-seq**, then CpG /
+CHG / CHH / all (the last one marks every cytosine at once). Because the call is
+made per read, zooming in to the gene→element boundary lets you follow the
+methylation on individual molecules — each read runs blue (unmethylated) over
+the gene body and turns red (methylated) as it crosses into the silenced
+element.
 
 ## See also
 

@@ -318,12 +318,13 @@ per-bin _average_ of a raw LOH bin (a genuine mix of points near 0 and 1)
 collapses back toward ~0.5, indistinguishable from a balanced bin.
 
 The production fix is to compute the allelic signal _per haplotype_ rather than
-per allele. [Wakhan](https://github.com/KolmogorovLab/Wakhan), a
-haplotype-specific long-read CNV caller, phases the normal's germline
-heterozygous SNPs, assigns each SNP's tumor read support to a haplotype,
-corrects phase-switch errors from coverage, and emits one already-summarized
-value per phase block, so the LOH signal is clean by construction rather than
-recovered from a smoothed average. C-GIAB publishes Wakhan analyses for HG008-T.
+per allele. [Wakhan](https://github.com/KolmogorovLab/Wakhan) is a
+haplotype-specific long-read CNV caller that does this: it phases the normal's
+germline heterozygous SNPs, assigns each SNP's tumor read support to a
+haplotype, corrects phase-switch errors from coverage, and emits one summarized
+value per phase block. Because that value is already per-haplotype, the LOH
+signal stays clean instead of being averaged away. C-GIAB publishes Wakhan
+analyses for HG008-T.
 
 ```bash
 # 1. phase the normal's germline hets against its own long reads
@@ -428,10 +429,10 @@ options and the
 
 ## Walkthroughs
 
-Once your JBrowse 2 instance is live, you can explore the loaded data using
-three complementary approaches: the SV inspector for whole-genome triage, the
-linear genome view for read-level detail and copy number, and the
-dotplot/synteny views for chromosome-scale rearrangements in the assembly.
+Once your JBrowse 2 instance is live, we can explore the loaded data three
+complementary ways: the SV inspector for whole-genome triage, the linear genome
+view for read-level detail and copy number, and the dotplot/synteny views for
+chromosome-scale rearrangements in the assembly.
 
 A
 [live demo](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json)
@@ -461,8 +462,8 @@ the circular overview), see the
 
 ### Walkthrough: a small deletion in CUZD1
 
-For small to medium SVs, the linear genome view is usually all you need. Use the
-**search** (magnifying glass) button in the SV inspector to find a specific
+For small to medium SVs, the linear genome view is usually all we need. We use
+the **search** (magnifying glass) button in the SV inspector to find a specific
 call, for example `SV_85`, a heterozygous deletion that affects two exons of the
 CUZD1 gene.
 
@@ -483,7 +484,7 @@ For background on SV signals in the alignments track, see the
 
 Whole-genome coverage stored as a bigWig is fast at any zoom level, so the
 quickest copy-number check is to open the tumor and normal coverage bigWigs as a
-single **multi-bigwig** track. From the linear genome view start screen, click
+single multi-bigwig track. From the linear genome view start screen, click
 **Show all regions in assembly** to open every chromosome at once. Apply a
 manual **min/max score** cap from the track menu (a few centromere and repeat
 spikes otherwise compress the copy-number signal), then switch to **overlapping
@@ -598,7 +599,7 @@ tumor vs normal coverage comparison.
 ### Walkthrough: synteny and dotplot views of the tumor assembly
 
 Showing the tumor assembly side-by-side with the reference can make complex SVs
-easier to read than the alignment track alone. Open a dotplot view from the
+easier to read than the alignment track alone. We open a dotplot view from the
 start screen, set the de novo assembly as one axis and GRCh38 as the other, and
 pick the matching synteny track.
 

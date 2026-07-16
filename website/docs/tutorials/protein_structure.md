@@ -61,7 +61,7 @@ BRAF (UniProt P15056) directly in the hg38 browser:
 
 ## Installing the plugins
 
-You only need this to add the feature to your **own** JBrowse. Both plugins are
+You only need this to add the feature to your own JBrowse. Both plugins are
 already deployed on the public browsers at
 [genomes.jbrowse.org](https://genomes.jbrowse.org), so if you just want to use
 them, open a genome there and skip this section. To add the feature to your own

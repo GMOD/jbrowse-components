@@ -1,8 +1,6 @@
 ---
 title: Synteny all-vs-all
-description:
-  Stack strains or accessions in a linear synteny view from a single all-vs-all
-  PAF
+description: Stack strains in a linear synteny view from one all-vs-all PAF
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -10,8 +8,8 @@ tutorial_category: Synteny & comparative genomics
 A linear synteny view can stack more than two genomes: N genome rows with a
 synteny "ribbon" band between each adjacent pair. When the genomes are closely
 related (strains or accessions of one species), the most convenient source is a
-single **all-vs-all** PAF, with every genome aligned to every other. This
-tutorial builds a four-strain _E. coli_ pangenome view from one such file.
+single all-vs-all PAF, with every genome aligned to every other. This tutorial
+builds a four-strain _E. coli_ pangenome view from one such file.
 
 Every figure below links to the live session that produced it. Open the finished
 stacked view from its caption to explore it yourself.
@@ -22,13 +20,13 @@ For cross-species comparisons built from gene-level ortholog tables instead, see
 ## Producing an all-vs-all PAF
 
 An all-vs-all PAF is what the [PGGB](https://github.com/pangenome/pggb) mapping
-step produces, and you can make one directly by concatenating
-[PanSN](https://github.com/pangenome/PanSN-spec)-named genomes and self-aligning
-with [minimap2](https://github.com/lh3/minimap2). **PanSN** (Pangenome Sequence
+step produces, but you can also make one yourself: concatenate
+[PanSN](https://github.com/pangenome/PanSN-spec)-named genomes and self-align
+them with [minimap2](https://github.com/lh3/minimap2). PanSN (Pangenome Sequence
 Naming) names every sequence `sample#haplotype#contig`, e.g.
-`K12#1#NC_000913.3`; it is how pangenome tools tell which genome a sequence
-belongs to, and the adapter later classifies each PAF record by its `sample`
-prefix.
+`K12#1#NC_000913.3`. It's how pangenome tools tell which genome a sequence
+belongs to, and later on the adapter uses that `sample` prefix to classify each
+PAF record.
 
 First obtain each strain's genome FASTA. This example uses four complete NCBI
 RefSeq assemblies, fetched with the NCBI
@@ -66,10 +64,11 @@ cat K12.fa Sakai.fa CFT073.fa NCTC86.fa > all.fa
 minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
-`-c` emits the base-level CIGAR the linear synteny view needs, `-X` skips self-
-and dual-mappings (a sequence against itself, and the redundant reverse of each
-pair, since the adapter draws both directions from one record), and the PanSN
-prefixes let the adapter tell which record belongs to which pair.
+Here `-c` emits the base-level CIGAR the linear synteny view needs, and `-X`
+skips self- and dual-mappings — a sequence against itself, plus the redundant
+reverse of each pair, since the adapter already draws both directions from one
+record. The PanSN prefixes are what let the adapter tell which record belongs to
+which pair.
 
 ## Set up the four assemblies
 
@@ -92,10 +91,10 @@ equivalent JSON and indexing options.
 ## Loading it with AllVsAllPAFAdapter
 
 Because the file already contains every pairwise comparison,
-`AllVsAllPAFAdapter` lets **one track back every band** of the stacked view,
-with no per-pair alignment step and no duplicate tracks. List every assembly the
-file covers in `assemblyNames`. The synteny view tells the adapter which pair
-each band draws, and the adapter keeps only those records (classified by PanSN
+`AllVsAllPAFAdapter` lets one track back every band of the stacked view, with no
+per-pair alignment step and no duplicate tracks. List every assembly the file
+covers in `assemblyNames`. The synteny view tells the adapter which pair each
+band draws, and the adapter keeps only those records (classified by PanSN
 prefix):
 
 ```json
@@ -232,16 +231,16 @@ walk-through of the `defaultSession` structure.
 
 <Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all four strains; the gaps are strain-specific islands." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-Unlike a reference-anchored `.blocks` table, an all-vs-all file is a **complete
-graph**: every adjacent band is a real, direct alignment, so you can stack the
+Unlike a reference-anchored `.blocks` table, an all-vs-all file is a complete
+graph: every adjacent band is a real, direct alignment, so you can stack the
 genomes in any order without worrying about transitive links. This makes it the
 most convenient source when you have it.
 
 ## Backbone and islands
 
-The four strains share a ~4 Mb collinear **backbone** (the continuous ribbons),
-and each carries its own **islands** in the gaps, such as the Sakai prophage
-S-loops carrying the Shiga-toxin genes
+The four strains share a ~4 Mb collinear backbone (the continuous ribbons), and
+each carries its own islands in the gaps, such as the Sakai prophage S-loops
+carrying the Shiga-toxin genes
 ([Hayashi et al. 2001](https://academic.oup.com/dnaresearch/article/8/1/11/466363))
 and CFT073's pathogenicity islands
 ([Welch et al. 2002](https://www.pnas.org/doi/10.1073/pnas.252529799)).

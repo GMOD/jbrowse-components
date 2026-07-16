@@ -1,32 +1,28 @@
 ---
 title: QTL mapping in the BXD family
 description:
-  Systems genetics with real GeneNetwork BXD data, using a chromosome-painting
-  multi-row track and a QTL Manhattan plot from the same mouse
-  recombinant-inbred panel
+  Chromosome-painting and a QTL Manhattan plot from GeneNetwork BXD data
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
 The [BXD family](https://www.genenetwork.org) is a panel of ~200 mouse
-recombinant-inbred (RI) strains bred from a cross of **C57BL/6J** (the "B"
-parent) and **DBA/2J** (the "D" parent). After many generations of inbreeding
-each strain's genome is a fixed **mosaic of B and D haplotype blocks**, and
-because the same strains have been phenotyped for thousands of traits at
-[GeneNetwork](https://www.genenetwork.org), the panel is a workhorse for
-_systems genetics_: map a trait to the genome by asking which haplotype blocks
-track with it.
+recombinant-inbred (RI) strains bred from a cross of C57BL/6J (the "B" parent)
+and DBA/2J (the "D" parent). Each strain's genome is a fixed pattern of B and D
+blocks, and the same strains have been phenotyped for thousands of traits at
+[GeneNetwork](https://www.genenetwork.org). That combination is what this
+tutorial visualizes: a trait scan on top, and the B/D blocks underneath it.
 
-This tutorial builds two JBrowse tracks from the **same BXD panel**, on mm10:
+This tutorial builds two JBrowse tracks from the same BXD panel, on mm10:
 
-- a **chromosome-painting** track (the
-  [multi-row feature display](/docs/tutorials/chromhmm)) showing each strain's
-  B/D mosaic, and
-- a **QTL Manhattan** track ([plugins/gwas](/docs/config_guides/gwas_track))
-  from a single-marker scan of a real BXD phenotype.
+- a chromosome-painting track (the
+  [multi-row feature display](/docs/tutorials/chromhmm)) showing each strain's B
+  and D blocks, and
+- a QTL Manhattan track ([plugins/gwas](/docs/config_guides/gwas_track)) from a
+  single-marker scan of a real BXD phenotype.
 
-Stacked in one view they show the core systems-genetics move: a trait peak, and
-the recombination structure underneath it.
+Stack them in one view and you see the trait peak on top with the B/D blocks
+that drive it directly underneath.
 
 Working in a notebook? The GWAS/Manhattan and multi-row feature tracks shown
 here also render inline through the
@@ -144,10 +140,10 @@ the [assemblies configuration guide](/docs/config_guides/assemblies).
 
 To map a trait, score every marker for how well its B/D genotype predicts the
 phenotype. GeneNetwork uses a linear mixed model (GEMMA, Genome-wide Efficient
-Mixed Model Association); this demo uses a simpler **single-marker regression**
-of the phenotype on the 0/1 (B/D) genotype, converting each marker's t-statistic
-to a `-log10(p)`. Those are the same B/D calls the painting draws, so the peak
-and the painting come from one genotype matrix. Real BXD phenotypes and the mm10
+Mixed Model Association); this demo uses a simpler single-marker regression of
+the phenotype on the 0/1 (B/D) genotype, converting each marker's t-statistic to
+a `-log10(p)`. Those are the same B/D calls the painting draws, so the peak and
+the painting come from one genotype matrix. Real BXD phenotypes and the mm10
 marker map are in the
 [`rqtl/qtl2data/BXD`](https://github.com/rqtl/qtl2data/tree/master/BXD) dataset.
 
@@ -220,17 +216,16 @@ set `scoreColumn` and
 
 ## Reading the result
 
-Scanning ~7,300 markers against BXD **coat color** puts the tallest peak on
-chr4, over **_Tyrp1_** (the coat-color gene). The painting is sorted by genotype
-at that peak, so the clean B/D split directly beneath it is exactly the contrast
-the scan scores, and it breaks up into a recombinant mosaic away from the locus.
+Scanning ~7,300 markers against BXD coat color puts the tallest peak on chr4,
+over _Tyrp1_ (the coat-color gene). We sort the painting by genotype at that
+peak, so the clean B/D split directly beneath it is exactly the contrast the
+scan scores, and it breaks up into mixed B/D blocks away from the locus.
 
 <Figure src="/img/qtl/bxd_sort_before_after.png" links="Input order=qtl/bxd_painting_input_order,Sorted at peak=qtl/bxd_painting_sorted" caption="The same whole-chr4 view with the painting's row sort toggled. Top: strains in default (alphabetical) order, salt-and-pepper under the peak. Bottom: sorted by genotype at the peak, resolving into a clean, wide red-over-blue split directly beneath the Manhattan peak."/>
 
 <Figure src="/img/qtl/bxd_tyrp1_locus.png" caption="The whole of chr4 (~156 Mb): the coat-color association rises to a sharp peak at ~80 Mb over Tyrp1, and the haplotype painting (sorted by genotype at that peak) resolves into a clean B (red) over D (blue) split at the gene."/>
 
-A second scan in the demo config maps **brain weight** to a subtler QTL on
-chr19.
+A second scan in the demo config maps brain weight to a subtler QTL on chr19.
 
 Open the whole demo live in the
 [JBrowse BXD demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_bxd.json),

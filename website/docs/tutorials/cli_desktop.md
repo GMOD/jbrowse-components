@@ -1,8 +1,7 @@
 ---
 title: Building a config with the CLI for Desktop
 description:
-  Use the jbrowse CLI to assemble a config.json plus local data files, then open
-  it directly in JBrowse Desktop. The same config also serves on the web
+  Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
 guide_category: Tutorials
 tutorial_category: Getting started
 ---
@@ -10,8 +9,8 @@ tutorial_category: Getting started
 The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
 command line instead of clicking through the **Add track** form. You run a few
 commands and end up with one folder (a `config.json` sitting next to your data
-files) that you can **open directly in JBrowse Desktop** _or_ **serve on the
-web**, unchanged.
+files) that you can open directly in JBrowse Desktop _or_ serve on the web,
+unchanged.
 
 It works in both places because the CLI records each file by a path _relative_
 to `config.json`: Desktop resolves those paths against the folder on disk, and a
@@ -29,8 +28,8 @@ jbrowse --version
 
 ## Prepare your files first
 
-The CLI references and copies your data, but it does **not** compress or index
-it, and JBrowse reads only indexed, compressed formats. So get each input into a
+The CLI references and copies your data, but it does not compress or index it,
+and JBrowse reads only indexed, compressed formats. So get each input into a
 JBrowse-ready form first, using [samtools](http://www.htslib.org/) / htslib:
 
 ```bash
@@ -65,8 +64,8 @@ jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variant
 `--name hg38` is the assembly name you'll type into the location box; `--name`
 on a track is its label in the track list.
 
-`--load` says how the CLI places a **local** file relative to the config (omit
-it for a remote URL, which is referenced in place):
+`--load` says how the CLI places a local file relative to the config (omit it
+for a remote URL, which is referenced in place):
 
 | `--load`  | What it does                                                       |
 | --------- | ------------------------------------------------------------------ |

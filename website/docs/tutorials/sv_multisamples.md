@@ -1,8 +1,6 @@
 ---
 title: 1000 Genomes SVs
-description:
-  Inspect population-level SVs, explore a family trio, and characterize a large
-  chromosomal inversion
+description: Population SVs, a family trio, and a large chromosomal inversion
 guide_category: Tutorials
 tutorial_category: Structural variation
 ---
@@ -133,7 +131,7 @@ The 1KGP SV callset includes a large inversion call on chromosome 19:
 It is an imprecise, manually-flagged call that overlaps neighboring complex
 (CPX) events, which makes it a good case for reading the read-level evidence at
 the breakpoints rather than trusting the call outright. Navigate to
-**chr19:41,700,000–42,000,000** to start at its left breakpoint region.
+`chr19:41,700,000–42,000,000` to start at its left breakpoint region.
 
 At this scale the variant track shows the inversion call as a wide bar spanning
 the region. Use the **Cluster by genotype** option in the track menu to group
@@ -169,13 +167,13 @@ alignments for 1,019 samples, the
 [1KG ONT Vienna resource](https://www.internationalgenome.org/data-portal/data-collection/1kg_ont_vienna)
 ([Schloissnig et al., 2025](https://doi.org/10.1038/s41586-025-09290-7)), under
 **1000 Genomes → Alignments → ONT (Vienna long-read)**. `HGSV_72999` is a
-heterozygous call in 274 of the 3,202 samples, 72 of which have ONT data, so
-pick a carrier and load its ONT track, for example **HG00637 ONT (Vienna)**.
-Where a short read can only imply the rearrangement through pair orientation, a
-single ONT read reads straight through a breakpoint: the part before the
-junction aligns forward and the part after aligns to the reverse strand (shown
-as a supplementary/split alignment), so one read directly records the strand
-flip that defines the inversion.
+heterozygous call in 274 of the 3,202 samples, 72 of which have ONT data, so we
+can pick a carrier and load its ONT track, for example **HG00637 ONT (Vienna)**.
+A short read can only imply the rearrangement through pair orientation, but a
+single ONT read runs straight through the breakpoint: the part before the
+junction aligns forward and the part after aligns to the reverse strand, shown
+as a supplementary/split alignment. So one read directly records the strand flip
+that defines the inversion.
 
 ### Breakpoint split view
 

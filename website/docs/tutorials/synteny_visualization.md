@@ -38,16 +38,16 @@ To generate a PAF alignment, install
 minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
 ```
 
-The `-x asm5` preset is for whole-genome assembly comparison, and `-c` emits the
-base-level CIGAR that the linear synteny view needs to draw alignments at base
-resolution. The `--eqx` flag makes minimap2 distinguish matches (`=`) from
-mismatches (`X`) in the CIGAR, which lets JBrowse compute per-alignment identity
-and offer the **Color by → Identity** mode described below. You can also use
-[MUMmer](https://github.com/mummer4/mummer) and convert the `.delta` output to
-PAF with `delta2paf` from
+The `-x asm5` preset is tuned for whole-genome assembly comparison, and `-c`
+emits the base-level CIGAR that the linear synteny view needs to draw alignments
+at base resolution. The `--eqx` flag tells minimap2 to distinguish matches (`=`)
+from mismatches (`X`) in the CIGAR, which lets JBrowse compute per-alignment
+identity and offer the **Color by → Identity** mode described below. If you'd
+rather use [MUMmer](https://github.com/mummer4/mummer), convert its `.delta`
+output to PAF with `delta2paf` from
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
 convert UCSC chain files with `chain2paf` from the same toolkit. For small files
-you can load `.delta` or `.chain` directly into JBrowse without converting.
+you can even load `.delta` or `.chain` directly into JBrowse without converting.
 
 ## Loading assemblies and alignments
 
@@ -150,13 +150,13 @@ regions fade out.
 
 ### Coloring genes by ortholog
 
-The ribbons connect aligned _sequence_, but the gene tracks on each genome can
-be colored independently. On a gene track, the **Color by attribute** dialog
-(track menu) assigns each unique value of a feature attribute a distinct,
-deterministic color. Coloring every strain's gene track by the gene symbol
-(`gene` attribute, effectively the ortholog id in bacteria, since NCBI uses
-standardized symbols across strains) makes orthologous genes share a color in
-every panel, so a gene's synteny is legible by color alone.
+The ribbons connect aligned _sequence_, but you can color the gene tracks on
+each genome independently. On a gene track, the **Color by attribute** dialog
+(track menu) gives each unique value of a feature attribute its own distinct,
+deterministic color. In bacteria the gene symbol effectively _is_ the ortholog
+id, since NCBI uses standardized symbols across strains, so coloring every
+strain's gene track by the `gene` attribute makes orthologous genes share a
+color in every panel — and a gene's synteny becomes legible by color alone.
 
 ## Troubleshooting
 

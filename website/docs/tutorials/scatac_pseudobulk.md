@@ -1,18 +1,16 @@
 ---
 title: Single-cell ATAC pseudobulk tracks
-description:
-  Aggregate single-cell ATAC into per-cell-type coverage BigWigs and load them
-  as one MultiWiggle track
+description: Aggregate single-cell ATAC into per-cell-type coverage BigWigs
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-JBrowse does not process single-cell data itself. To view single-cell ATAC-seq
-(scATAC-seq) the way the gallery's "Single-cell ATAC by cell type (CATlas)" card
-does (one coverage row per cell type), you first **pseudobulk** the data outside
-JBrowse: group cells by cluster or cell-type label, sum their reads into one
-coverage track per group, and save each as a BigWig. You then load all the
-BigWigs as a single **MultiWiggle** track, which stacks one row per file.
+JBrowse doesn't process single-cell data itself. To get the look of the
+gallery's "Single-cell ATAC by cell type (CATlas)" card — one coverage row per
+cell type — you first pseudobulk the data outside JBrowse: group cells by
+cluster or cell-type label, sum their reads into one coverage track per group,
+and save each as a BigWig. Then you load all the BigWigs as a single MultiWiggle
+track, which stacks one row per file.
 
 <Figure caption="The CATlas single-cell ATAC atlas as pseudobulk rows: one coverage BigWig per cell type, loaded as a single MultiWiggle track (multirowxy) across the INS/IGF2 region on 11p15.5, where the Beta cell row shows accessibility over INS. Source data: CATlas (Zhang et al. 2021), catlas.org." src="/img/gallery/scatac_catlas.png" />
 
@@ -28,12 +26,13 @@ the [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 
 ## The pseudobulk idea
 
-A scATAC experiment is a sparse per-cell signal, too sparse to plot per cell.
-Pseudobulking collapses each group of cells (a cluster or annotated cell type)
-into one aggregated coverage profile, giving a dense, bulk-ATAC-like track per
-group. With one BigWig per group loaded as rows of a single track, open
-chromatin shared across cell types versus specific to one lines up
-column-by-column at any locus.
+A scATAC experiment gives a sparse per-cell signal — far too sparse to plot one
+cell at a time. Pseudobulking collapses each group of cells (a cluster or an
+annotated cell type) into a single aggregated coverage profile, which gives you
+a dense, bulk-ATAC-like track per group. With one BigWig per group loaded as
+rows of a single track, you can see at a glance which open chromatin is shared
+across cell types and which is specific to one, all lined up column-by-column at
+any locus.
 
 Two normalization points matter so rows are comparable to each other:
 
@@ -155,7 +154,7 @@ CPM) before `bedGraphToBigWig` if you need comparable rows.
 
 ## Loading the BigWigs as a MultiWiggle track
 
-In JBrowse, all the per-cell-type BigWigs go into **one** track: a
+In JBrowse, all the per-cell-type BigWigs go into one track: a
 `MultiQuantitativeTrack` whose `MultiWiggleAdapter` holds one `BigWigAdapter`
 per file. Each subadapter carries a `name` (the row label), an optional `color`,
 and an optional `group` (which seeds the sidebar clustering tree).

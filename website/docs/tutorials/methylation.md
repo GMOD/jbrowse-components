@@ -1,18 +1,17 @@
 ---
 title: DNA methylation
 description:
-  Per-read, aggregate, allele-specific, and chromatin-accessibility (6mA)
-  methylation from ONT/PacBio long reads and modkit
+  Per-read, aggregate, and allele-specific methylation from long reads
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-DNA methylation (**5mC** at **CpG** sites, and other base modifications) is read
-straight off long reads: ONT and PacBio basecallers emit per-base modification
-calls in the BAM/CRAM `MM`/`ML` tags, and JBrowse renders them with no extra
-processing. This tutorial demonstrates each view JBrowse offers, using public
-COLO829 melanoma ONT data, an HG002 fiber-seq dataset, and a chr20 nanopore
-methylation dataset:
+You can read DNA methylation (5mC at CpG sites, plus other base modifications)
+straight off long reads. ONT and PacBio basecallers write per-base modification
+calls into the BAM/CRAM `MM`/`ML` tags, and JBrowse renders them with no extra
+processing. This tutorial walks through each of the methylation views JBrowse
+offers, using public COLO829 melanoma ONT data, an HG002 fiber-seq dataset, and
+a chr20 nanopore methylation dataset:
 
 - Per-read modification coloring on BAM/CRAM alignments
 - Aggregate methylation from [modkit](https://github.com/nanoporetech/modkit)
@@ -20,10 +19,10 @@ methylation dataset:
 - Allele-specific methylation by grouping reads on their haplotype tag
 - 6mA chromatin accessibility from fiber-seq
 
-This tutorial is a tour of each methylation view rather than a copy-paste
-pipeline: the configs below use `https://yourhost/...` placeholders, and the
-figures use public datasets (linked where shown) that JBrowse reads by URL. Swap
-in your own modBAM/CRAM or bedMethyl file to reproduce any view.
+Think of it as a tour of the methylation views rather than a copy-paste
+pipeline. The configs below use `https://yourhost/...` placeholders, and the
+figures come from public datasets (linked where shown) that JBrowse reads by
+URL. To reproduce any view, just swap in your own modBAM/CRAM or bedMethyl file.
 
 ## Per-read methylation with BAM/CRAM
 
@@ -51,13 +50,13 @@ match an assembly already configured in JBrowse (see the
 }
 ```
 
-From the track menu, choose **Color by → Modifications**, then pick **One color
-per modification type** to paint the calls listed in the MM tag, or **One color
-per type, plus low-probability & unmodified in blue** (IGV's "2-color") to
-additionally scan the read sequence for CpG dinucleotides and paint any CpG the
-MM tag left uncalled (the difference is exactly what the figure below shows). In
-by-type mode each modification renders in its own color, with intensity
-reflecting the modification probability (ML tag value).
+From the track menu, choose **Color by → Modifications**. You then have two
+options. **One color per modification type** paints just the calls listed in the
+MM tag, each modification in its own color, with the intensity reflecting the
+modification probability (the ML tag value). **One color per type, plus
+low-probability & unmodified in blue** (IGV's "2-color" scheme) also scans the
+read sequence for CpG dinucleotides and paints any CpG the MM tag left uncalled.
+The figure below shows the difference between the two.
 
 <Figure caption="The same nanopore track colored by type (top) and 2-color (bottom) over a hypomethylated CpG island. By-type mode draws only the positive 5mC calls in the MM tag, so the region looks nearly empty; the 2-color mode paints every CpG, filling the region with the blue of the low-probability and unmarked ones." src="/img/alignments/modifications2.png" />
 
@@ -128,20 +127,21 @@ multirow mode by default so their scales are independent.
 
 ## Allele-specific methylation by haplotype
 
-Because each long read is one DNA molecule, reads carrying an `HP` haplotype tag
-(from WhatsHap, HiPhase, or ONT's `wf-somatic-variation` haplotagged `.ht`
-output) can be split by allele. **Group by** the `HP` tag from the track menu,
-leave coloring on modifications (or methylation), and the pileup stacks into one
-per-haplotype profile, computed live in the browser with no external tool.
-Allele-specific methylation then reads off as a difference between the haplotype
-bands, and is clearest at a germline imprinting center.
+Since each long read is a single DNA molecule, you can split reads by allele
+whenever they carry an `HP` haplotype tag (from WhatsHap, HiPhase, or ONT's
+`wf-somatic-variation` haplotagged `.ht` output). **Group by** the `HP` tag from
+the track menu, leave coloring on modifications (or methylation), and the pileup
+stacks into one profile per haplotype, computed live in the browser with no
+external tool. Allele-specific methylation then shows up as a difference between
+the haplotype bands, and it's clearest at a germline imprinting center.
 
-`modkit pileup --partition-tag HP` writes the same split as an aggregate
-bedMethyl per haplotype (`wf-human-variation` emits these as its `.1`/`.2`
-outputs). Loaded as two `MultiQuantitativeTrack`s, they give a phased 0–100% 5mC
-profile per allele that reads cleanest at a germline imprinting center, for
-example the SNRPN / Prader-Willi imprinting center (`chr15:24.95Mb`) in HG002,
-where one parental allele is methylated and the other is not.
+You can also compute that split ahead of time.
+`modkit pileup --partition-tag HP` writes an aggregate bedMethyl per haplotype
+(`wf-human-variation` emits these as its `.1`/`.2` outputs). Load them as two
+`MultiQuantitativeTrack`s and you get a phased 0–100% 5mC profile per allele.
+This is clearest at a germline imprinting center, for example the SNRPN /
+Prader-Willi imprinting center (`chr15:24.95Mb`) in HG002, where one parental
+allele is methylated and the other is not.
 
 <Figure caption="Allele-specific methylation at the SNRPN / Prader-Willi imprinting center in HG002 ONT data. modkit's phased bedMethyl is loaded as one MultiQuantitativeTrack per haplotype (HP1, HP2), each a 0–100% 5mC profile. Over the CpG island one allele is ~89% methylated while the other is ~10%, the canonical imprinted split read off the two stacked profiles." src="/img/methylation/hg002_snrpn_allele_specific.png" />
 
@@ -160,21 +160,21 @@ for producing `HP`-tagged reads.
 ## Plant methylation in non-CpG contexts (CHG/CHH)
 
 Mammalian methylation is overwhelmingly in the CpG context, but plants also
-methylate cytosines in the **CHG** and **CHH** contexts (where H is A, C, or T).
-JBrowse restricts modification (or bisulfite) coloring to a chosen context via
-the `cytosineContext` setting, so CpG, CHG, and CHH can each be read off the
-same reads. The [bisulfite / EM-seq tutorial](/docs/tutorials/bisulfite) works
+methylate cytosines in the CHG and CHH contexts (where H is A, C, or T). JBrowse
+restricts modification (or bisulfite) coloring to a chosen context via the
+`cytosineContext` setting, so CpG, CHG, and CHH can each be read off the same
+reads. The [bisulfite / EM-seq tutorial](/docs/tutorials/bisulfite) works
 through all three contexts on an _Arabidopsis_ WGBS dataset, where methylation
 is inferred from C→T conversion in the alignment rather than from MM/ML tags.
 
 ## 6mA base modifications (fiber-seq)
 
-Modification coloring is not limited to 5mC. Fiber-seq calls **N6-methyladenine
-(6mA)**, tagged `A+a` in the MM/ML tags, and JBrowse draws it like any other
-modification. Set the color mode to **modifications** and the `A+a` calls paint
-on the reads. Because the assay's adenine methyltransferase stencils 6mA onto
-accessible DNA, the density is a **chromatin-accessibility** readout: below,
-Oxford Nanopore's
+Modification coloring isn't limited to 5mC. Fiber-seq calls N6-methyladenine
+(6mA), tagged `A+a` in the MM/ML tags, and JBrowse draws it like any other
+modification: set the color mode to **modifications** and the `A+a` calls paint
+onto the reads. The fiber-seq assay adds 6mA to accessible DNA, so the density
+of these calls also serves as a chromatin-accessibility readout. Below, Oxford
+Nanopore's
 [HG002 chromatin-accessibility dataset](https://epi2me.nanoporetech.com/chromatin-acc-hg002/)
 shows a clear 6mA peak over the GAPDH promoter in the enzyme-treated sample that
 the no-enzyme control lacks.

@@ -24,7 +24,6 @@ const tutorials = (await getCollection('docs'))
   .map(entry => ({
     href: `${baseUrl}/docs/${entrySlug(entry.id)}/`,
     title: entry.data.title,
-    description: entry.data.description,
     category: entry.data.tutorial_category ?? FALLBACK,
   }))
   .sort((a, b) => a.title.localeCompare(b.title))
@@ -58,7 +57,6 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
           {group.items.map(tutorial => (
             <li>
               <a href={tutorial.href}>{tutorial.title}</a>
-              {tutorial.description && <> — {tutorial.description}</>}
             </li>
           ))}
         </ul>

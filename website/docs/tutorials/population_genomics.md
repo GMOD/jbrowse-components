@@ -1,34 +1,35 @@
 ---
 title: Population genomics
 description:
-  Windowed Fst, nucleotide diversity, and Tajima's D scans plus a genotype
-  matrix, a fully reproducible pipeline from a single Drosophila genotype VCF
+  Fst, diversity, and Tajima's D scans plus a genotype matrix from one VCF
 guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-Population-genetic scans, **Fst** (differentiation between groups), **nucleotide
-diversity (π)** within a group, and **dxy** (divergence between groups), are
-per-window statistics along the genome, the same form as a wiggle track. Once
-you compute them from a multi-sample VCF you can load them into JBrowse and read
-the peaks and troughs against genes.
+Population-genetic scans are per-window statistics running along the genome —
+Fst (differentiation between groups), nucleotide diversity (π) within a group,
+dxy (divergence between groups) — which is the same shape as a wiggle track. So
+once you've computed them from a multi-sample VCF, you can load them into
+JBrowse and read the peaks and troughs against genes.
 
-No single statistic is decisive; the tutorial reads Fst, π, and Tajima's D
-together, stacking them on a shared genomic axis so a coordinated signature (a
-selective sweep, an inversion, gene flow) stands out where the signals line up.
+No single statistic is decisive on its own, so this tutorial reads Fst, π, and
+Tajima's D together. Stacking them on a shared genomic axis lets you see where
+the signals line up, which is what points to a selective sweep, an inversion, or
+gene flow.
 
 Working in a notebook? The
 [Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
 compute-then-view loop in Python (a windowed Fst scan loaded straight from a
 DataFrame) and opens in Colab with one click.
 
-JBrowse does no population-genetic inference itself. It draws the windowed
-statistic your tool produced. This tutorial is a reproducible pipeline: every
-command below runs against publicly hosted _Drosophila melanogaster_ data on the
-dm6 assembly and produces bigWig tracks you can load. It reproduces two signals
-from the [Drosophila Genetic Reference Panel](http://dgrp2.gnets.ncsu.edu/)
-(DGRP), a panel of 205 inbred lines from a single Raleigh, North Carolina
-population ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
+JBrowse does no population-genetic inference itself — it just draws the windowed
+statistic your tool produced. Everything below is a reproducible pipeline: each
+command runs against publicly hosted _Drosophila melanogaster_ data on the dm6
+assembly and produces bigWig tracks you can load. Along the way it reproduces
+two signals from the
+[Drosophila Genetic Reference Panel](http://dgrp2.gnets.ncsu.edu/) (DGRP), a
+panel of 205 inbred lines from a single Raleigh, North Carolina population
+([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
 
 - Fst across the `In(2L)t` inversion: lines carrying the cosmopolitan `In(2L)t`
   inversion are strongly differentiated from standard-arrangement lines across
@@ -77,7 +78,7 @@ curl -Lo In2Lt.tsv https://dgrpool.epfl.ch/phenotypes/1520/download
 ```
 
 Derive `chrom.sizes` straight from the VCF header so the contig names are
-**guaranteed** to match (the usual cause of an empty track is a name mismatch):
+guaranteed to match (the usual cause of an empty track is a name mismatch):
 
 ```bash
 bcftools view -h "$VCF" \
@@ -158,18 +159,16 @@ done
 
 Because this VCF holds only variant sites, `--window-pi` sums diversity over the
 genotyped SNPs and omits invariant positions, so the absolute values are not
-calibrated. They are still directly comparable **across windows of the same
-VCF**. For calibrated absolute π and dxy you need an allSites VCF below.
+calibrated. They are still directly comparable across windows of the same VCF.
+For calibrated absolute π and dxy you need an allSites VCF below.
 
 ## Tajima's D → bigWig
 
-π measures how much diversity a window holds; **Tajima's D**
-([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) measures the _shape_
-of that diversity, whether the allele-frequency spectrum is skewed toward rare
-or common variants relative to the neutral expectation. A hard sweep drives it
-**negative** (an excess of rare alleles on the swept background), so seeing π
-and Tajima's D drop in the same window is what separates a sweep from a region
-that is simply low-diversity for other reasons.
+Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) looks at
+the _shape_ of a window's diversity rather than just the amount, so it catches
+sweeps that π alone would miss. It's another per-window statistic, so it loads
+as another bigWig track. Adding it next to π is useful: a window where both drop
+points to a selective sweep, not just a region that happens to be low-diversity.
 
 `vcftools` computes it in fixed windows straight from the VCF, with no group
 split needed since it is a whole-panel statistic:
@@ -318,20 +317,21 @@ arrangements is stronger in the Fst scan than in within-group π.
 
 ## Reading the signals
 
-Zoom out to the **whole genome** (all six arms). The `In(2L)t` Fst track rises
+We zoom out to the whole genome (all six arms). The `In(2L)t` Fst track rises
 into a tall block of differentiation across the entire left arm of chromosome 2
-(roughly `2L:2,200,000–13,200,000`, the inverted region) while every other arm
+(roughly `2L:2,200,000–13,200,000`, the inverted region), while every other arm
 sits at low background Fst. Seeing all the arms at once is what makes the signal
-read as genuinely elevated rather than a baseline with nothing to compare it to.
+read as genuinely elevated, rather than a baseline with nothing to compare it
+to.
 
 <Figure src="/img/popgen/fst_in2lt_2L.png" caption="Genome-wide view of all six dm6 arms, each track auto-scaled to its own data. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t-inverted and standard-arrangement lines, a tall elevated block across the whole left arm of chromosome 2 (the inverted region, ~2.2–13.2 Mb) that stands out against low background Fst on every other arm. Bottom: whole-panel nucleotide diversity (π), near-uniform across arms. Output from this tutorial's pipeline, hosted at jbrowse.org/demos/popgen."/>
 
-Then use the search box to jump to **`Cyp6g1`** (on `2R`) and add the **Tajima's
-D** track from the pipeline alongside π. Both statistics dip together in the
-same window: π drops to under a tenth of the arm-wide average and Tajima's D
-falls sharply negative while sitting near zero genome-wide. Two statistics
-dropping in the same window is the diagnostic hard-sweep signature, not the
-ambiguity of either alone.
+Then we use the search box to jump to `Cyp6g1` (on `2R`) and add the Tajima's D
+track from the pipeline alongside π. Both statistics dip together in the same
+window: π drops to under a tenth of the arm-wide average, and Tajima's D falls
+sharply negative while sitting near zero genome-wide. Seeing both drop in the
+same window is what marks a hard sweep, where either one alone would be
+ambiguous.
 
 <Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π drops to under a tenth of the arm-wide background in the same window. The joint dip is the expected footprint of a hard sweep at this insecticide-resistance gene."/>
 
@@ -453,10 +453,9 @@ The vcftools `--window-pi` scan above is fine for relative comparisons, but
 variant-only VCFs and missing data bias absolute π and dxy estimates.
 [pixy](https://pixy.readthedocs.io/)
 ([Korunes & Samuk 2021](https://doi.org/10.1111/1755-0998.13326)) computes π,
-dxy, and Fst together without that bias, at the cost of needing an **allSites
-VCF** that includes invariant sites (the DGRP2 SNPs-only file above does not
-have these, so you would call your own allSites VCF with `bcftools mpileup` or
-GATK):
+dxy, and Fst together without that bias, at the cost of needing an allSites VCF
+that includes invariant sites (the DGRP2 SNPs-only file above does not have
+these, so you would call your own allSites VCF with `bcftools mpileup` or GATK):
 
 ```bash
 pixy --stats pi fst dxy \

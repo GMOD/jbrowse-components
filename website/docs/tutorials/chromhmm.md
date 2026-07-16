@@ -1,8 +1,6 @@
 ---
 title: ChromHMM chromatin states
-description:
-  Painting many-cell-type ChromHMM segmentations in one track with the multi-row
-  feature display
+description: Paint many-cell-type ChromHMM states in one multi-row track
 guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
@@ -15,22 +13,22 @@ locus, one labeled row per cell type, each painted with the ChromHMM state
 colors.
 
 This tutorial shows how the gallery's ChromHMM figure is built: how to pack many
-per-cell-type segmentation BEDs into a single **multi-row BED**, and how to
-configure the **multi-row feature display** so the file draws as one color-coded
-row per cell type.
+per-cell-type segmentation BEDs into a single multi-row BED, and how to
+configure the multi-row feature display so the file draws as one color-coded row
+per cell type.
 
 <Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type, each feature colored by its chromatin state via the BED itemRgb field. White regions are the Quiescent/Low state, which is white in the standard 15-state palette."/>
 
 ## The idea: one file, one row per cell type
 
 ChromHMM's per-cell-type output is a stack of separate BED files (`Gm12878.bed`,
-`K562.bed`, …), each a BED9 whose `name` column is the state (e.g.
+`K562.bed`, …). Each is a BED9 whose `name` column holds the state (e.g.
 `1_Active_Promoter`) and whose `itemRgb` column carries the ENCODE state color.
 Adding one JBrowse track per cell type is impractical at 9 cell types and worse
-at 127. Instead, we merge them into a single file that carries an extra
-`cellType` column, then let the **multi-row feature display** split that one
-track back into a labeled sub-row per cell type. All rows share one config, one
-adapter, and one fetch.
+at 127. So instead we merge them into a single file with an extra `cellType`
+column, then let the multi-row feature display split that one track back into a
+labeled sub-row per cell type. Every row shares one config, one adapter, and one
+fetch.
 
 ## Combine the per-cell-type BEDs
 
