@@ -5,7 +5,12 @@ import { join, resolve } from 'node:path'
 
 import { assembleRScript } from '@jbrowse/plugin-linear-genome-view'
 
+import { featureFrequencyThreshold } from './constants.ts'
 import { alignmentsFragments } from './exportRCode.ts'
+import {
+  applyDepthDependentThreshold,
+  computeMismatchFrequencies,
+} from '../shared/computeFrequenciesAndThresholds.ts'
 import {
   classifyInsertSize,
   getInsertSizeStats,
@@ -18,6 +23,7 @@ const baseParams = {
   showLowFreqMismatches: false,
   modificationThreshold: 0.1,
   sortPos: -1,
+  bpPerPx: 1,
 }
 
 // Only run when R + the Bioconductor alignment stack are installed (skipped in
@@ -185,6 +191,90 @@ cat(cls, "\\n")
       encoding: 'utf8',
     }).trim()
     expect(out.split(/\s+/)).toEqual(expected)
+  },
+  90000,
+)
+
+// Cross-implementation equivalence: R's mismatch_fade_alpha must reproduce
+// JBrowse's pileup low-frequency fade — the actual computeMismatchFrequencies +
+// applyDepthDependentThreshold(featureFrequencyThreshold), then frequencyFade's
+// base + (freqByte/255)·(1−base) lerp — for every tick over identical data.
+maybe(
+  'R mismatch_fade_alpha matches JS frequencyFade read-for-read',
+  () => {
+    const bpPerPx = 4
+    const regionStart = 1000
+    const depthVal = 20
+    // per-tick (position, base): a high-freq C and low-freq A at 1010; a G above
+    // and a T below the depth-20 threshold (0.55) at 1020
+    const ticks: { pos: number; base: string }[] = []
+    const push = (pos: number, base: string, n: number) => {
+      for (let i = 0; i < n; i++) {
+        ticks.push({ pos, base })
+      }
+    }
+    push(1010, 'A', 3) // 0.15 → below threshold → faint
+    push(1010, 'C', 17) // 0.85 → opaque-ish
+    push(1020, 'G', 12) // 0.60 → above 0.55 → kept
+    push(1020, 'T', 3) // 0.15 → below → faint
+
+    // JS side: the real frequency + threshold pipeline, then frequencyFade's lerp
+    const positions = Uint32Array.from(ticks.map(t => t.pos))
+    const bases = Uint8Array.from(ticks.map(t => t.base.charCodeAt(0)))
+    const depths = new Float32Array(60).fill(depthVal)
+    const freqBytes = computeMismatchFrequencies(
+      positions,
+      bases,
+      depths,
+      regionStart,
+    )
+    applyDepthDependentThreshold(
+      freqBytes,
+      positions,
+      depths,
+      regionStart,
+      featureFrequencyThreshold,
+    )
+    const baseAlpha = 1 / bpPerPx
+    const jsAlpha = ticks.map(
+      (_, i) => baseAlpha + (freqBytes[i]! / 255) * (1 - baseAlpha),
+    )
+
+    // R side: mismatch_fade_alpha over the identical ticks + a flat depth table
+    const [pileup] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'x',
+      uri: '/dev/null',
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      bpPerPx,
+    })
+    const helpers = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 1 },
+      [pileup!],
+    ).split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-fade-'))
+    const probe = `${helpers}
+refpos <- c(${ticks.map(t => t.pos).join(', ')})
+base <- c(${ticks.map(t => `"${t.base}"`).join(', ')})
+depth <- data.frame(pos = 1000:1059, depth = rep(${depthVal}, 60))
+a <- mismatch_fade_alpha(refpos, base, depth, ${bpPerPx})
+cat(sprintf("%.6f", a), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const rAlpha = out.split(/\s+/).map(Number)
+    expect(rAlpha).toHaveLength(jsAlpha.length)
+    rAlpha.forEach((a, i) => { expect(a).toBeCloseTo(jsAlpha[i]!, 5) })
+    // and the test must actually exercise the fade: low-freq A (idx 0) faint at
+    // the noise floor, high-freq C (idx 3) near opaque
+    expect(jsAlpha[0]).toBeCloseTo(baseAlpha, 5) // A → noise floor
+    expect(jsAlpha[3]).toBeGreaterThan(0.8) // C → near opaque
   },
   90000,
 )

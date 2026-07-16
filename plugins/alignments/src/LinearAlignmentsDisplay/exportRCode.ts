@@ -54,9 +54,14 @@ export interface AlignmentsRParams {
   // insertSize/pairOrientation/modifications are reproduced; other schemes fall
   // back to grey
   colorBy: string
-  // when false (JBrowse default), the SNP coverage track hides low-frequency
-  // mismatches via snp_freq_threshold(); when true, every mismatch is drawn
+  // JBrowse's "show low frequency mismatches": when false (the default) the
+  // pileup fades mismatch ticks below snp_freq_threshold(depth) once zoomed out
+  // past 1 bp/px; when true every tick stays opaque. The coverage panel always
+  // shows every mismatch fraction regardless (matching computeSNPCoverage).
   showLowFreqMismatches: boolean
+  // view zoom (bases per pixel) at export; gates the pileup low-frequency fade
+  // (JBrowse only fades past 1 bp/px, the sub-pixel regime). 1 = no fade.
+  bpPerPx: number
   // minimum MM/ML modification-call probability drawn in the modifications
   // scheme (0..1); JBrowse's default is 0.1 (a 10% threshold slider)
   modificationThreshold: number
@@ -173,7 +178,6 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
         'bam_coverage',
         'bam_mismatches',
         'base_colors',
-        'snp_freq_threshold',
         'bam_indels',
         'bam_clips',
         'interbase_indicators',
@@ -185,9 +189,7 @@ export function alignmentsFragments(p: AlignmentsRParams): RTrackFragment[] {
       plotVariable: `p_${pathVar}_coverage`,
       heightWeight: 1,
       plotExpr: `{
-${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JBrowse (FALSE)
-  show_low_freq <- ${p.showLowFreqMismatches ? 'TRUE' : 'FALSE'}
-  cov <- bam_coverage(${bamVar}, chrom, start, end)
+${cramPrelude}  cov <- bam_coverage(${bamVar}, chrom, start, end)
   mm <- bam_mismatches(${bamVar}, chrom, start, end)
   p <- ggplot() +
     geom_area(data = cov, aes(pos, depth), fill = "#888888") +
@@ -196,18 +198,14 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
     coord_cartesian(xlim = c(start, end)) +
     labs(title = ${rStr(`${p.trackName} coverage`)}, x = NULL, y = "Depth") +
     theme_minimal()
-  # stack the per-base mismatch counts (colored) over the grey total = SNP coverage
+  # stack the per-base mismatch counts (colored) over the grey total = SNP
+  # coverage. JBrowse's coverage panel shows every mismatch fraction; the
+  # low-frequency fade applies to the pileup ticks, not here (computeSNPCoverage).
   if (!is.null(mm) && nrow(mm)) {
     snp <- aggregate(read_index ~ refpos + base, data = mm, FUN = length)
     names(snp)[names(snp) == "read_index"] <- "count"
-    snp$depth <- cov$depth[match(snp$refpos, cov$pos)]
-    if (!show_low_freq) {
-      snp <- snp[snp$count / snp$depth >= snp_freq_threshold(snp$depth), ]
-    }
-    if (nrow(snp)) {
-      snp$fill <- base_colors[toupper(snp$base)]
-      p <- p + geom_col(data = snp, aes(refpos + 0.5, count, fill = fill), width = 1)
-    }
+    snp$fill <- base_colors[toupper(snp$base)]
+    p <- p + geom_col(data = snp, aes(refpos + 0.5, count, fill = fill), width = 1)
   }
   # interbase indicators: a marker above the coverage where insertions / soft- or
   # hard-clips pile up past 30% of local depth (JBrowse's breakpoint flags),
@@ -259,11 +257,26 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
         aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
     }
   }`
-    const mismatchOverlay = `  # per-base mismatch ticks, joined to their pileup row and colored by read base
+    const mismatchOverlay = `  # per-base mismatch ticks, joined to their pileup row and colored by read base.
+  # JBrowse fades low-frequency mismatches when zoomed out past 1 bp/px and the
+  # frequency filter is on (the default): each tick's alpha is pxPerBp lifted
+  # toward 1 by its base frequency (count of that base / depth), and a base below
+  # snp_freq_threshold(depth) stays at the faint pxPerBp noise floor. Zoomed in
+  # (<= 1 bp/px) every tick is opaque. Mirrors frequencyFade + the depth-dependent
+  # threshold; the alpha is baked into the fill hex so one scale_fill_identity()
+  # still covers read bodies + ticks. Set filter_low_freq <- FALSE to keep all.
+  filter_low_freq <- ${p.showLowFreqMismatches ? 'FALSE' : 'TRUE'}
+  bp_per_px <- ${p.bpPerPx}
   mm <- bam_mismatches(${bamVar}, chrom, start, end)
   if (!is.null(mm) && nrow(mm)) {
     mm$row <- reads$row[mm$read_index]
-    mm$fill <- base_colors[toupper(mm$base)]
+    fill <- base_colors[toupper(mm$base)]
+    if (filter_low_freq && bp_per_px > 1) {
+      alpha <- mismatch_fade_alpha(mm$refpos, mm$base,
+        bam_coverage(${bamVar}, chrom, start, end), bp_per_px)
+      fill <- paste0(fill, sprintf("%02X", pmin(255L, as.integer(round(alpha * 255)))))
+    }
+    mm$fill <- fill
     p <- p + geom_rect(data = mm,
       aes(xmin = refpos, xmax = refpos + 1, ymin = row, ymax = row + 0.8, fill = fill))
   }`
@@ -384,7 +397,15 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
           ? ['bam_modifications', 'mod_colors']
           : isQual
             ? ['bam_base_quality', 'quality_colors']
-            : ['bam_mismatches', 'base_colors']),
+            : // the mismatch overlay's low-frequency fade needs the coverage
+              // depth + the depth-dependent threshold
+              [
+                'bam_mismatches',
+                'base_colors',
+                'bam_coverage',
+                'snp_freq_threshold',
+                'mismatch_fade_alpha',
+              ]),
         'bam_indels',
         'gap_colors',
         'bam_clips',
@@ -438,6 +459,7 @@ export function exportRCode(
     showPileup: self.showPileup,
     colorBy: self.colorBy.type,
     showLowFreqMismatches: self.showLowFreqMismatches,
+    bpPerPx: (getContainingView(self) as { bpPerPx?: number }).bpPerPx ?? 1,
     linkReads: self.linkedReads !== 'off',
     sortType: resolveSortType(self.sortedBy?.type),
     sortPos: self.sortedBy?.pos ?? -1,
