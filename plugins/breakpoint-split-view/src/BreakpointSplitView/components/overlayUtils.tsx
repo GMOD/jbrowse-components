@@ -46,12 +46,28 @@ export function useMouseoverElt() {
 // Both VariantOverlay and AlignmentConnections read the same four things off
 // the model, so keeping this in one place stops them drifting (e.g. one
 // forgetting to thread domYOffsets through).
+//
+// 'use no memo' is load-bearing. The callers are inline observers, which the
+// react compiler leaves alone, but a `use`-prefixed function is a hook and does
+// get compiled — and getTrackOverlayData's mobx reads are invisible to it, so
+// it memoizes the result on (model, trackId, yOffsetsOverride, domYOffsets).
+// None of those change when a view pans or zooms: `model` is an MST node
+// mutated in place, and domYOffsets only moves on vertical layout changes. The
+// snapshot the call returns (offsetPx/scrollTop/height per level) would then
+// stay frozen at first-render values while the getX closure it hands back keeps
+// reading bpPerPx live — panning froze the overlay in place and zooming threw
+// it millions of px off-screen. See agent-docs/COMPILER_TERNARY_FINDING.md.
 export function useOverlayState({
   model,
   trackId,
   yOffsetsOverride,
   domYOffsets,
 }: OverlayProps) {
+  // eslint-plugin-react-compiler (react-compiler@19.1.0-rc.2) thinks this
+  // directive is unused, but the babel plugin (@1.0.0, the real build) DOES
+  // compile this hook — version skew, same as DisplayChromeInner. Keep it.
+  // eslint-disable-next-line react-compiler/react-compiler
+  'use no memo'
   const session = getSession(model)
   const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
   const match = model.overlayMatches.get(trackId)
