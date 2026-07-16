@@ -77,23 +77,16 @@ export function useGenomesData({
     fetchJson<RawData>(u),
   )
 
-  const rows = data
-    ? applyFilter(normalizeEntries(data), filterOption).sort(byOrderKey)
-    : undefined
-
   const query = searchQuery.toLowerCase().trim()
-  const searchFilteredRows = query
-    ? rows?.filter(row => matchesSearch(row, query))
-    : rows
-
-  const cladeFilteredRows = cladeTaxonIds
-    ? searchFilteredRows?.filter(row => cladeTaxonIds.has(Number(row.taxonId)))
-    : searchFilteredRows
-
   const favSet = new Set(favorites.map(r => r.id))
-  const result = showOnlyFavs
-    ? cladeFilteredRows?.filter(row => favSet.has(row.id))
-    : cladeFilteredRows
+  const result = applyFilter(normalizeEntries(data ?? []), filterOption)
+    .sort(byOrderKey)
+    .filter(
+      row =>
+        (!query || matchesSearch(row, query)) &&
+        (!cladeTaxonIds || cladeTaxonIds.has(Number(row.taxonId))) &&
+        (!showOnlyFavs || favSet.has(row.id)),
+    )
 
-  return { data: result ?? [], error, isLoading }
+  return { data: result, error, isLoading }
 }
