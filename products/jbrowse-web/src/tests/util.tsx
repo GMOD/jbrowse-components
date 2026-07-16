@@ -19,7 +19,7 @@ import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
 
 import type { WebSessionModel } from '../sessionModel/index.ts'
-import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
+import type { AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderResult } from '@testing-library/react'
 
@@ -135,14 +135,14 @@ export async function createView(args?: any, adminMode?: boolean) {
 
 interface Results extends ReturnType<typeof render> {
   view: LGV
-  session: AbstractSessionModel
+  session: WebSessionModel
   rootModel: AppRootModel
 }
 
 export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   const { pluginManager, rootModel } = getPluginManager(args, adminMode)
   const rest = render(<JBrowse pluginManager={pluginManager} />)
-  const session = rootModel.session! as AbstractSessionModel
+  const session = rootModel.session! as WebSessionModel
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
 }

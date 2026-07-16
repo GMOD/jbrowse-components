@@ -21,7 +21,7 @@ test('add temporary assembly and toggle reference sequence track', async () => {
   const refSeqTrackId = `${testAssemblyName}-ReferenceSequenceTrack`
 
   // Add a temporary assembly programmatically
-  session.addTemporaryAssembly?.({
+  session.addTemporaryAssembly({
     name: testAssemblyName,
     sequence: {
       type: 'ReferenceSequenceTrack',
@@ -42,7 +42,7 @@ test('add temporary assembly and toggle reference sequence track', async () => {
   })
 
   // Verify the assembly was added
-  expect(session.temporaryAssemblies?.length).toBeGreaterThan(0)
+  expect(session.temporaryAssemblies.length).toBeGreaterThan(0)
 
   // Clear the current view and navigate to the new assembly
   view.clearView()

@@ -49,7 +49,6 @@ test('Create a bookmark using the click and drag rubberband', async () => {
   fireEvent.mouseUp(rubberband, { clientX: 250, clientY: 0 })
   fireEvent.click(await findByText('Bookmark region'))
 
-  // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
   expect(bookmarks).toMatchSnapshot()
 }, 40000)
@@ -69,7 +68,6 @@ test('Create a bookmark using the hotkey to bookmark the current region', async 
     }),
   )
 
-  // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
   expect(bookmarks).toMatchSnapshot()
 }, 60000)
@@ -84,7 +82,6 @@ test('Create a bookmark using the menu button to bookmark the current region', a
   fireEvent.click(await findByText('Bookmarks/highlights'))
   fireEvent.click(await findByText('Bookmark current region'))
 
-  // @ts-expect-error
   const { bookmarks } = session.widgets.get('GridBookmark')
   expect(bookmarks).toMatchSnapshot()
 }, 40000)
@@ -96,7 +93,6 @@ test('Navigate to a bookmark using the embedded link in the widget data grid', a
   fireEvent.click(await findByText('Bookmarks/highlights'))
   fireEvent.click(await findByText('Open bookmark widget'))
 
-  // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
@@ -120,7 +116,6 @@ test('Navigate to a bookmark using the hotkey to navigate to the most recently c
   fireEvent.click(await findByText('Bookmarks/highlights'))
   fireEvent.click(await findByText('Open bookmark widget'))
 
-  // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
@@ -153,7 +148,6 @@ test('Edit a bookmark label with a single click on the data grid', async () => {
   await user.click(await findByText('Tools'))
   await user.click(await findByText('Bookmarks/highlights'))
 
-  // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
@@ -189,7 +183,6 @@ test('Toggle highlight visibility across all views', async () => {
   await user.click(await findByText('Tools'))
   await user.click(await findByText('Bookmarks/highlights'))
 
-  // @ts-expect-error
   const bookmarkWidget = session.widgets.get('GridBookmark')
   bookmarkWidget.addBookmark({
     start: 200,
@@ -219,15 +212,12 @@ test('Toggle highlight visibility across all views', async () => {
 test('Downloads a BED file correctly', async () => {
   const { session, findByText, findByTestId } = await createView()
 
-  // @ts-expect-error
   const bookmarkWidget = session.addWidget(
     'GridBookmarkWidget',
     'gridBookmarkWidget',
   )
-  // @ts-expect-error
   session.showWidget('gridBookmarkWidget')
 
-  // @ts-expect-error
   bookmarkWidget.addBookmark({
     refName: 'ctgA',
     start: 0,
@@ -253,15 +243,12 @@ test('Downloads a BED file correctly', async () => {
 test('Downloads a TSV file correctly', async () => {
   const { session, findByText, findByTestId, getByRole } = await createView()
 
-  // @ts-expect-error
   const bookmarkWidget = session.addWidget(
     'GridBookmarkWidget',
     'gridBookmarkWidget',
   )
-  // @ts-expect-error
   session.showWidget('gridBookmarkWidget')
 
-  // @ts-expect-error
   bookmarkWidget.addBookmark({
     refName: 'ctgA',
     start: 0,

@@ -74,7 +74,7 @@ test('copy and delete reference sequence track disabled', () => {
     view.setNewView(0.05, 5000)
     const trackConf = getConf(assemblyManager.get('volvox')!, 'sequence')
 
-    const trackMenuItems = session.getTrackActionMenuItems!({
+    const trackMenuItems = session.getTrackActionMenuItems({
       config: trackConf,
     })
     const trackActionsSubMenu = trackMenuItems.find(

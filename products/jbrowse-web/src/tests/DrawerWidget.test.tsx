@@ -63,26 +63,21 @@ test('widget drawer navigation', async () => {
   await findByTestId('hierarchical_track_selector')
 
   // test minimize and maximize widget drawer
-  // @ts-expect-error
   expect(session.minimized).toBeFalsy()
 
   await findByTestId('drawer-minimize')
   fireEvent.click(await findByTestId('drawer-minimize'))
-  // @ts-expect-error
   expect(session.minimized).toBeTruthy()
 
   fireEvent.click(await findByTestId('drawer-maximize'))
-  // @ts-expect-error
   expect(session.minimized).toBeFalsy()
 
   // test deleting widget from select dropdown using trash icon
-  // @ts-expect-error
   expect(session.activeWidgets.size).toEqual(2)
   fireEvent.mouseDown(
     getByRole(await findByTestId('widget-drawer-selects'), 'combobox'),
   )
   fireEvent.click(await findByTestId('ConfigurationEditorWidget-drawer-delete'))
-  // @ts-expect-error
   expect(session.activeWidgets.size).toEqual(1)
 }, 40000)
 
@@ -91,7 +86,6 @@ test('widget pops out into a dialog and returns to the drawer', async () => {
   await findByTestId('drawer-widget', {}, delay)
 
   fireEvent.click(await findByTestId('drawer-popout'))
-  // @ts-expect-error
   expect(session.poppedOut).toBe(true)
   // the drawer releases its column rather than sitting there as dead space
   await waitFor(() => {
@@ -100,7 +94,6 @@ test('widget pops out into a dialog and returns to the drawer', async () => {
   await findByTestId('hierarchical_track_selector', {}, delay)
 
   fireEvent.click(await findByTestId('modal-close'))
-  // @ts-expect-error
   expect(session.poppedOut).toBe(false)
   await findByTestId('drawer-widget', {}, delay)
 }, 40000)
@@ -109,13 +102,10 @@ test('hiding the last widget clears popped-out state', async () => {
   const { session, findByTestId } = await createView()
   await findByTestId('drawer-widget', {}, delay)
   fireEvent.click(await findByTestId('drawer-popout'))
-  // @ts-expect-error
   expect(session.poppedOut).toBe(true)
 
   // a widget that dismisses itself must not leave the session in a mode where
   // the next widget opens in a modal out of nowhere
-  // @ts-expect-error
   session.hideAllWidgets()
-  // @ts-expect-error
   expect(session.poppedOut).toBe(false)
 }, 40000)
