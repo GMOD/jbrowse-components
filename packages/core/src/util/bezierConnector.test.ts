@@ -213,6 +213,20 @@ test('dip depth does not depend on the endpoints rows', () => {
   expect(depthFrom(20)).toBe(depthFrom(500))
 })
 
+// SPAN_FACTOR's contract: no shaping term may exceed 0.3x the distance the
+// curve has to cover, or the cubic overshoots its far endpoint and has to curl
+// back to arrive — the squiggle on tightly-spaced reads. The bow clamps to that
+// budget explicitly; the dip's saturating curve happens to resolve under it at
+// the current tuning, so nothing would catch a retune (MAX_DIP_PX >= ~145, or a
+// smaller DIP_HALF_SPAN_PX) quietly reintroducing the squiggle.
+test('the dip never outgrows its shaping budget', () => {
+  // tightest spans bind: the dip approaches MAX_DIP_PX/DIP_HALF_SPAN_PX of the
+  // span as it shrinks, while the budget stays a flat fraction of it
+  for (const span of [1, 5, 20, 60, 150, 300, 800, 2000, 10_000]) {
+    expect(dipY(span) - 100).toBeLessThanOrEqual(0.3 * span)
+  }
+})
+
 test('an inversion folds back at its leading end', () => {
   // fwd->rev split junction: the second handle flips, so the curve arrives
   // flowing into the next segment rather than cutting straight across

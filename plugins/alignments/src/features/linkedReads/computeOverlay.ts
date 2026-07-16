@@ -11,12 +11,12 @@ import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
-// Cull by endpoint Y. A same-row connection is bowed up by a small fixed apex
-// (see bezierConnector), so a curve whose endpoints sit just off-screen can peek
-// in; the apex is tiny relative to the band, so testing the endpoints is enough.
-// The endpoints alone don't bound the curve — it bows away from them — so pad
-// by the shaping's reach. Without this, a connector whose reads have both
-// scrolled just past an edge takes its visible body with it.
+// Cull by endpoint Y. The endpoints alone don't bound the curve — every curve
+// this overlay draws is discordant, so it dips below them (see bezierConnector)
+// — so pad by the shaping's reach. Without this, a connector whose reads have
+// both scrolled just past an edge takes its visible body with it. The pad is
+// applied to both edges though the curve only reaches downward, which is merely
+// over-inclusive: it keeps a few culled arcs, never drops a visible one.
 function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
   const reach = BEZIER_CONNECTOR_MAX_REACH_PX
   return (

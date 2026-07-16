@@ -92,9 +92,15 @@ function bowHeight(p1: Pt, p2: Pt, budget: number) {
 // Negative = the control points drop below the reads (see MAX_DIP_PX). Keyed on
 // horizontal span alone: two reads a few px apart describe a small event and get
 // a small dip, however tall their track happens to be.
-function dipHeight(p1: Pt, p2: Pt) {
+//
+// Budget-clamped like the bow. At the current tuning the saturating curve
+// already resolves under the budget at every span (worst ratio ~0.73, as span
+// → 0), so this is inert — it's here so retuning MAX_DIP_PX / DIP_HALF_SPAN_PX
+// can't silently reintroduce the fold-back squiggle SPAN_FACTOR exists to
+// prevent. Pinned by 'the dip never outgrows its shaping budget'.
+function dipHeight(p1: Pt, p2: Pt, budget: number) {
   const span = Math.abs(p2.x - p1.x)
-  return -MAX_DIP_PX * (span / (span + DIP_HALF_SPAN_PX))
+  return -Math.min(budget, MAX_DIP_PX * (span / (span + DIP_HALF_SPAN_PX)))
 }
 
 function cubicPath(from: Pt, ctrl1: Pt, ctrl2: Pt, to: Pt) {
@@ -135,7 +141,7 @@ export function bezierConnectorPath({
   const to = { x: x2, y: y2 }
   const budget = shapingBudget(from, to)
   const handle = Math.min(maxHandlePx, budget)
-  const bow = dip ? dipHeight(from, to) : bowHeight(from, to, budget)
+  const bow = dip ? dipHeight(from, to, budget) : bowHeight(from, to, budget)
   return cubicPath(
     from,
     { x: x1 + handle * tangentSign(s1, false, reversed1), y: y1 - bow },
