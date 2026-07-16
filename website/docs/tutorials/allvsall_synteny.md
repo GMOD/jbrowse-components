@@ -65,10 +65,9 @@ minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
 Here `-c` emits the base-level CIGAR the linear synteny view needs, and `-X`
-skips self- and dual-mappings — a sequence against itself, plus the redundant
-reverse of each pair, since the adapter already draws both directions from one
-record. The PanSN prefixes are what let the adapter tell which record belongs to
-which pair.
+skips self- and dual-mappings (a sequence against itself, plus the redundant
+reverse of each pair), since the adapter already draws both directions from one
+record.
 
 ## Set up the four assemblies
 
@@ -88,14 +87,13 @@ classification both use. See the
 [assemblies configuration guide](/docs/config_guides/assemblies) for the
 equivalent JSON and indexing options.
 
-## Loading it with AllVsAllPAFAdapter
+## Loading the PAF with AllVsAllPAFAdapter
 
-Because the file already contains every pairwise comparison,
-`AllVsAllPAFAdapter` lets one track back every band of the stacked view, with no
-per-pair alignment step and no duplicate tracks. List every assembly the file
-covers in `assemblyNames`. The synteny view tells the adapter which pair each
-band draws, and the adapter keeps only those records (classified by PanSN
-prefix):
+Since the file already holds every pairwise comparison, a single track can back
+every band of the stacked view. List every assembly the file covers in
+`assemblyNames`. The synteny view then tells the adapter which pair each band
+draws, and the adapter keeps only the records whose PanSN prefixes match that
+pair:
 
 ```json
 {
@@ -124,7 +122,7 @@ jbrowse add-track all_vs_all.paf --adapterType AllVsAllPAFAdapter \
   -a K12,Sakai,CFT073,NCTC86 --load copy
 ```
 
-Both the track and the adapter get the four `assemblyNames`; edit the adapter
+Both the track and the adapter get the four `assemblyNames`. Edit the adapter
 afterward to add `assemblyNameToPanSN` if your assembly names differ from the
 PanSN prefixes.
 
@@ -156,12 +154,12 @@ jbrowse make-pif all_vs_all.paf
 }
 ```
 
-Everything else (`assemblyNames`, `assemblyNameToPanSN`, stacking the rows) is
-identical to the un-indexed adapter above. Only the `adapter` block differs. The
-`.pif.gz` keeps its PanSN sequence names, and `make-pif` also emits a coarse
-zoomed-out tier so whole-genome views stay responsive.
+Only the `adapter` block differs. `assemblyNames`, `assemblyNameToPanSN`, and
+stacking the rows all work as above. The `.pif.gz` keeps its PanSN sequence
+names, and `make-pif` also emits a coarse zoomed-out tier so whole-genome views
+stay responsive.
 
-The CLI adds this one too, and the `.pif.gz` index is picked up automatically:
+The CLI adds this one too, and picks up the `.pif.gz` index automatically:
 
 ```bash
 jbrowse add-track all_vs_all.pif.gz --adapterType AllVsAllIndexedPAFAdapter \
@@ -170,24 +168,22 @@ jbrowse add-track all_vs_all.pif.gz --adapterType AllVsAllIndexedPAFAdapter \
 
 ## Stacking the genomes
 
-With the track in your config, there are two ways to open the four strains as a
-stacked synteny view: interactively from the UI, or declaratively so it opens on
-load.
+With the track in your config, you can stack the four strains from the UI, or
+declaratively so the view opens on load.
 
 ### From the UI
 
 Open a linear synteny view (**Add → Linear synteny view**) to reach the import
 form. Because `ecoli_ava` lists all four assemblies, you don't have to build the
-rows by hand: open **Quick start from a synteny track** and choose it. Every
-assembly in the track's `assemblyNames` becomes a row (one per strain), and that
-single track is wired to back every adjacent band. Click **Launch** to open the
-stacked view.
+rows by hand: open **Quick start from a synteny track** and choose it. Each
+assembly it lists becomes a row, one per strain, and that one track gets wired
+up to back every band. Click **Launch** and you have the stacked view.
 
-You can still build the stack manually (**Add row** adds a strain, and the
-connector button between each pair picks its synteny track), but for an
-all-vs-all track Quick start does it in one step.
+You can still build the stack by hand, using **Add row** to add a strain and the
+connector button between each pair to pick its synteny track, but for an
+all-vs-all track Quick start saves you the trouble.
 
-<Figure caption="Stacking all four strains from the UI with the all-vs-all quick start. (1) Open 'Quick start from a synteny track' and pick the ecoli_ava track. (2) Every assembly it lists becomes a row, and the one track backs every band. (3) Launch the stacked view." src="/img/multiway_synteny/ecoli_import_form.png" />
+<Figure caption="The all-vs-all quick start in the import form. (1) Pick the ecoli_ava track. (2) Its four assemblies fill in as rows. (3) Launch." src="/img/multiway_synteny/ecoli_import_form.png" />
 
 ### Declaratively with defaultSession
 
@@ -220,30 +216,41 @@ means three bands, so `tracks` has three entries, all served by the same track:
 ```
 
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1, `tracks[1]` rows
-1–2, and `tracks[2]` rows 2–3, all served by the same `ecoli_ava` track, which
-lists every assembly in `assemblyNames` so it can back any pair.
-`minAlignmentLength` hides the short minimap2 alignments so the shared backbone
-reads as clean ribbons instead of a dense noise band. Raise or lower it as
-needed. The one-time load settings (row order, tracks, `drawCurves`,
-`minAlignmentLength`) go under `init`. See the
+1–2, and `tracks[2]` rows 2–3, all served by `ecoli_ava`. `minAlignmentLength`
+hides minimap2's many short alignments, which would otherwise bury the shared
+backbone under a dense noise band. Tune it to taste. The one-time load settings
+(row order, tracks, `drawCurves`, `minAlignmentLength`) go under `init`. See the
 [ortholog-tables tutorial](/docs/tutorials/multiway_synteny) for a fuller
 walk-through of the `defaultSession` structure.
 
-<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all four strains; the gaps are strain-specific islands." src="/img/multiway_synteny/ecoli_pangenome.png" />
+The row order here is a free choice. Unlike a reference-anchored `.blocks`
+table, an all-vs-all file is a complete graph, so every adjacent pair you happen
+to stack is a direct alignment rather than a transitive link.
 
-Unlike a reference-anchored `.blocks` table, an all-vs-all file is a complete
-graph: every adjacent band is a real, direct alignment, so you can stack the
-genomes in any order without worrying about transitive links. This makes it the
-most convenient source when you have it.
+<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all four strains, and the gaps are strain-specific islands." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-## Backbone and islands
-
-The four strains share a ~4 Mb collinear backbone (the continuous ribbons), and
-each carries its own islands in the gaps, such as the Sakai prophage S-loops
-carrying the Shiga-toxin genes
-([Hayashi et al. 2001](https://academic.oup.com/dnaresearch/article/8/1/11/466363))
-and CFT073's pathogenicity islands
+The gaps in those ribbons are where the strains actually differ. Sakai's are the
+prophage S-loops carrying the Shiga-toxin genes
+([Hayashi et al. 2001](https://academic.oup.com/dnaresearch/article/8/1/11/466363)),
+and CFT073 carries its own pathogenicity islands
 ([Welch et al. 2002](https://www.pnas.org/doi/10.1073/pnas.252529799)).
+
+## One strain against all the others
+
+Stacking is not the only thing the file is good for. Put the same track in a
+plain linear genome view, where there is no second row and so no target
+assembly, and it draws the strain you are looking at against every other sample
+in the file at once.
+
+This one-vs-all mode is looser about `assemblyNames` than the stacked view is. A
+mate the track does not list still draws, labelled by its bare PanSN prefix, so
+a plain view of K12 can show all three other strains without loading them as
+assemblies. A strain's own paralogy draws as well, since a same-sample alignment
+between two loci is a real alignment: view one copy and you see the link to the
+other, and a tandem pair on one contig draws at both ends. Clicking a feature
+offers to launch a synteny view against its mate, but only for mates the track
+lists in `assemblyNames`, since the view needs a real assembly to open a row
+for.
 
 ## See also
 
