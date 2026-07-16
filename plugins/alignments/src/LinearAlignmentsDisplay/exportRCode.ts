@@ -70,6 +70,26 @@ export interface AlignmentsRParams {
   // reference FASTA uri for CRAM decoding (from the assembly's sequence adapter);
   // empty falls back to the CRAM's own UR header / REF_PATH inside cram_to_bam
   reference: string
+  // JBrowse's localized "Sort by..." at the center line, reproduced by
+  // sorted_pileup_layout: 'position'/'strand'/'base' order the reads overlapping
+  // sortPos. undefined = plain pileup_layout (no sort, or an unsupported type)
+  sortType?: 'position' | 'strand' | 'base'
+  // genomic column the sort anchors on (the center line at export); -1 (default)
+  // when no center line, which leaves every read in genomic order
+  sortPos?: number
+}
+
+// Map self.sortedBy.type to the sort the R sorted_pileup_layout reproduces.
+// basePair -> base; position/strand pass through; insertion/softclip/hardclip/tag
+// aren't reproduced (they need interbase length or tag values the reference-coord
+// reader doesn't carry) -> undefined, falling back to plain layout.
+function resolveSortType(type: string | undefined) {
+  const map: Record<string, 'position' | 'strand' | 'base'> = {
+    position: 'position',
+    strand: 'strand',
+    basePair: 'base',
+  }
+  return type ? map[type] : undefined
 }
 
 // JBrowse exposes ~a dozen color-by schemes; map each to the closest scheme the
@@ -219,12 +239,26 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
       : isQual
         ? qualOverlay
         : mismatchOverlay
+    // JBrowse's localized "Sort by..." reorders reads overlapping the center-line
+    // column (sort_pos) before packing rows; only in the flat pileup (chain layout
+    // packs whole templates, so sorting doesn't apply). base sort needs the MD-tag
+    // mismatch base at sort_pos, so it feeds bam_mismatches into the layout.
+    const sortType = p.linkReads ? undefined : p.sortType
     // chain layout groups mates + supplementary segments onto one row and draws
     // a connector across each gap (under the read rects, which paint on top)
     const layout = p.linkReads
       ? `  linked <- link_reads(read_bam(${bamVar}, chrom, start, end))
   reads <- linked$reads`
-      : `  reads <- pileup_layout(read_bam(${bamVar}, chrom, start, end))`
+      : sortType === 'base'
+        ? `  # sort reads by their base at the center-line column, then pack rows
+  sort_pos <- ${p.sortPos ?? -1}
+  reads <- sorted_pileup_layout(read_bam(${bamVar}, chrom, start, end), sort_pos, "base",
+    bam_mismatches(${bamVar}, chrom, start, end))`
+        : sortType !== undefined
+          ? `  # sort reads by ${sortType} at the center-line column, then pack rows
+  sort_pos <- ${p.sortPos ?? -1}
+  reads <- sorted_pileup_layout(read_bam(${bamVar}, chrom, start, end), sort_pos, ${rStr(sortType)})`
+          : `  reads <- pileup_layout(read_bam(${bamVar}, chrom, start, end))`
     const connector = p.linkReads
       ? `
     geom_segment(data = linked$links,
@@ -289,7 +323,14 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
         ...cramHelpers,
         'read_bam',
         'pair_orientation',
-        p.linkReads ? 'link_reads' : 'pileup_layout',
+        p.linkReads
+          ? 'link_reads'
+          : sortType !== undefined
+            ? 'sorted_pileup_layout'
+            : 'pileup_layout',
+        // base sort reads the mismatch base at sort_pos even when the color
+        // scheme wouldn't otherwise pull in bam_mismatches
+        ...(sortType === 'base' ? ['bam_mismatches'] : []),
         'read_fill_colors',
         ...(isMods
           ? ['bam_modifications', 'mod_colors']
@@ -350,6 +391,8 @@ export function exportRCode(
     colorBy: self.colorBy.type,
     showLowFreqMismatches: self.showLowFreqMismatches,
     linkReads: self.linkedReads !== 'off',
+    sortType: resolveSortType(self.sortedBy?.type),
+    sortPos: self.sortedBy?.pos ?? -1,
     // JBrowse stores the threshold as a percent (default 10); the R helper wants
     // a 0..1 probability
     modificationThreshold:
