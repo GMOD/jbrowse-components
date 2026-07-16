@@ -42,11 +42,19 @@ import page from '../styles/page.module.css'
                     : 'guide'
                   return (
                     <li>
-                      <a class="demo" href={liveHref || guideHref}>
+                      <a
+                        class="demo"
+                        href={liveHref || guideHref}
+                        title={item.description}
+                      >
                         {item.label}
                       </a>
                       {liveHref && guideHref && (
-                        <a class="guide" href={guideHref}>
+                        <a
+                          class="guide"
+                          href={guideHref}
+                          aria-label={`${item.label} ${guideLabel}`}
+                        >
                           {guideLabel}
                         </a>
                       )}
