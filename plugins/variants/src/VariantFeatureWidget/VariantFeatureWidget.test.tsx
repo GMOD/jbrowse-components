@@ -80,3 +80,41 @@ test('pairs each symbolic ALT with its own SVLEN', () => {
   expect(container.textContent).toContain('<DEL> (100bp)')
   expect(container.textContent).toContain('<DUP> (200bp)')
 })
+
+test('shows the mate breakpoint, not a span, for a translocation', () => {
+  const pluginManager = new PluginManager([])
+  const Session = types.model({
+    rpcManager: types.optional(types.frozen(), {}),
+    configuration: ConfigurationSchema('test', {}),
+    widget: stateModelFactory(pluginManager),
+  })
+  const model = Session.create(
+    {
+      widget: {
+        type: 'VariantFeatureWidget',
+      },
+    },
+    { pluginManager },
+  )
+  model.widget.setFeatureData({
+    uniqueId: 'hello',
+    refName: 'ctgA',
+    start: 176,
+    end: 177,
+    REF: 'A',
+    ALT: ['<TRA>'],
+    INFO: {
+      CHR2: ['ctgB'],
+      END: [790000000],
+      SVLEN: [790000000],
+    },
+  })
+
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <VariantFeatureDetails model={model.widget} />
+    </ThemeProvider>,
+  )
+  expect(container.textContent).toContain('<TRA> (ctgB:790,000,000)')
+  expect(container.textContent).not.toContain('790Mbp')
+})

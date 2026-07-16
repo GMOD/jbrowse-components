@@ -1,5 +1,5 @@
 import { parseBreakend } from '@gmod/vcf'
-import { getBpDisplayStr } from '@jbrowse/core/util'
+import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 
 import { GENOTYPE_SPLITTER as genotypeDelimRegex } from '../shared/constants.ts'
 
@@ -85,6 +85,18 @@ function getSOTerm(alt: string, ref: string, parser: VCF): string {
   return lenRef < lenAlt ? 'insertion' : 'deletion'
 }
 
+// translocations are single-breakpoint, so SVLEN is not a span on this contig
+// (same carve-out as getEnd): name the mate breakpoint instead. Commas are
+// cosmetic — parseLocString strips them, so this stays navigable.
+export function getTraMate(info?: Record<string, unknown>): string | undefined {
+  const end = Array.isArray(info?.END)
+    ? parseFiniteNumber(info.END[0])
+    : undefined
+  return Array.isArray(info?.CHR2) && end !== undefined
+    ? `${info.CHR2[0]}:${toLocale(end)}`
+    : undefined
+}
+
 function formatGroupDescription(
   ref: string,
   alts: string[],
@@ -94,12 +106,9 @@ function formatGroupDescription(
     const svlenArr = Array.isArray(info?.SVLEN) ? info.SVLEN : undefined
     return alts
       .map((a, i) => {
-        if (
-          a === '<TRA>' &&
-          Array.isArray(info?.CHR2) &&
-          Array.isArray(info.END)
-        ) {
-          return `<TRA> ${info.CHR2[0]}:${info.END[0]}`
+        if (a === '<TRA>') {
+          const mate = getTraMate(info)
+          return mate === undefined ? a : `<TRA> ${mate}`
         }
         const svlen = parseFiniteNumber(svlenArr?.[i])
         return svlen !== undefined

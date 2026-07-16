@@ -57,7 +57,7 @@ test('TRA feature with CHR2 and END info', () => {
   )
 
   expect(f.get('start')).toEqual(99)
-  expect(f.get('description')).toEqual('<TRA> chr8:45000')
+  expect(f.get('description')).toEqual('<TRA> chr8:45,000')
   expect(f.get('type')).toEqual('translocation')
 })
 

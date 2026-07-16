@@ -8,6 +8,7 @@ import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AltFormatter from './AltFormatter.tsx'
+import { getTraMate } from '../VcfFeature/util.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
@@ -63,6 +64,7 @@ function LaunchBreakendWidgetArea({
   feat: VCFFeatureSerialized
 }) {
   const { type = '', ALT = [], INFO, mate } = feat
+  const traMate = getTraMate(INFO)
 
   return type === 'breakend' ? (
     <LaunchBreakendPanel
@@ -70,12 +72,8 @@ function LaunchBreakendWidgetArea({
       locStrings={ALT.map(alt => parseBreakend(alt)?.MatePosition || '')}
       model={model}
     />
-  ) : type === 'translocation' && INFO?.CHR2 && INFO.END ? (
-    <LaunchBreakendPanel
-      feature={feat}
-      model={model}
-      locStrings={[`${INFO.CHR2[0]}:${INFO.END[0]}`]}
-    />
+  ) : type === 'translocation' && traMate !== undefined ? (
+    <LaunchBreakendPanel feature={feat} model={model} locStrings={[traMate]} />
   ) : type === 'paired_feature' && mate ? (
     <LaunchBreakendPanel
       feature={feat}
@@ -125,6 +123,7 @@ const FeatDefined = observer(function FeatDefined({
               value={`${value}`}
               refString={REF}
               svlen={index === undefined ? undefined : svlen?.[index]}
+              mate={getTraMate(INFO)}
             />
           ) : (
             <Formatter value={value} />
