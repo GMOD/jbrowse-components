@@ -19,10 +19,10 @@ test('emits pure ggplot2 with a read_bigwig data source and no bespoke package',
   const f = wiggleFragment(base)
   expect(f.plotVariable).toBe('p_coverage')
   expect(f.setup).toBe('coverage <- "https://example.com/cov.bw"')
-  expect(f.helpers).toEqual(['read_bigwig', 'bp_axis'])
+  expect(f.helpers).toEqual(['read_bigwig'])
   expect(f.packages).toEqual(['rtracklayer', 'ggplot2'])
   expect(f.plotExpr).toContain(
-    'ggplot(read_bigwig(coverage, chrom, start, end))',
+    'read_regions(function(chrom, start, end) read_bigwig(coverage, chrom, start, end), regions, c("start", "end"))',
   )
   expect(f.plotExpr).toContain('theme_minimal()')
   // never leaks a ggjbrowse concept into the output
@@ -39,7 +39,7 @@ test('solid coverage uses geom_rect with the track color', () => {
 test('line mode uses geom_step', () => {
   const f = wiggleFragment({ ...base, isLine: true })
   expect(f.plotExpr).toContain(
-    'geom_step(aes(x = start, y = score), color = "#2166ac")',
+    'geom_step(aes(x = start, y = score, group = .region), color = "#2166ac")',
   )
 })
 

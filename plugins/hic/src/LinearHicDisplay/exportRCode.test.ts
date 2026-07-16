@@ -12,10 +12,13 @@ const params = {
 test('emits a strawr-backed rotated triangular contact map fragment', () => {
   const f = hicFragment(params)
   expect(f.packages).toContain('strawr')
-  expect(f.helpers).toEqual(['hic_triangle', 'bp_axis'])
+  expect(f.helpers).toEqual(['hic_triangle'])
   expect(f.plotExpr).toContain('geom_polygon')
   expect(f.plotExpr).toContain('hic_triangle')
-  expect(f.plotExpr).toContain('coord_cartesian(xlim = c(start, end))')
+  // read every region onto the cumulative axis, keeping diamond vertices intact
+  expect(f.plotExpr).toContain('read_regions(function(chrom, start, end)')
+  expect(f.plotExpr).toContain('clip = FALSE')
+  expect(f.plotExpr).toContain('group = interaction(.region, group)')
   // binsize + norm are visible, editable script variables (not inlined literals)
   expect(f.setup).toContain('hic_track_binsize <- 100000')
   expect(f.setup).toContain('hic_track_norm <- "KR"')

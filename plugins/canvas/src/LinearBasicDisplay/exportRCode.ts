@@ -31,21 +31,25 @@ export interface GeneRParams {
  * CDS, keyed off the feature `type` so coding regions read like the browser
  * glyph — and rows come from the visible, swappable `gene_layout()` helper. GFF3
  * and BED both feed the same panel via read_gff / read_bed (identical schema).
- * The panel reads `chrom`, `start`, `end` from the enclosing plot_region().
+ * `read_regions()` reads each region in the view onto one cumulative-bp x-axis
+ * (features are cut at the region edge); the shared axis + dividers come from
+ * plot_regions(). gene_layout runs over the combined regions so rows pack across
+ * the whole figure.
  */
 export function geneFragment(p: GeneRParams): RTrackFragment {
   const pathVar = safeVarName(p.trackId)
   const reader = p.format === 'bed' ? 'read_bed' : 'read_gff'
   const strandColors = 'c(`+` = "#5a9bd4", `-` = "#e8894a", `*` = "grey50")'
+  const data = `gene_layout(read_regions(function(chrom, start, end) ${reader}(${pathVar}, chrom, start, end), regions, c("start", "end")))`
   return {
     trackId: p.trackId,
     trackName: p.trackName,
     packages: ['rtracklayer', 'ggplot2'],
-    helpers: [reader, 'gene_layout', 'bp_axis'],
+    helpers: [reader, 'gene_layout'],
     setup: `${pathVar} <- ${rStr(p.uri)}`,
     plotVariable: `p_${pathVar}`,
     heightWeight: 2,
-    plotExpr: `ggplot(gene_layout(${reader}(${pathVar}, chrom, start, end))) +
+    plotExpr: `ggplot(${data}) +
   geom_segment(data = function(d) d[is.na(d$parent), ],
     aes(x = ifelse(strand == "-", end, start), xend = ifelse(strand == "-", start, end),
       y = row, yend = row, color = strand),
@@ -60,8 +64,6 @@ export function geneFragment(p: GeneRParams): RTrackFragment {
   scale_fill_manual(values = ${strandColors}, guide = "none") +
   scale_color_manual(values = ${strandColors}, guide = "none") +
   scale_y_reverse() +
-  coord_cartesian(xlim = c(start, end)) +
-  bp_axis() +
   labs(title = ${rStr(p.trackName)}, x = NULL, y = NULL) +
   theme_minimal() +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())`,

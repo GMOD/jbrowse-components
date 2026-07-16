@@ -949,3 +949,92 @@ cat(nrow(clips), sum(clips$type == "S"), paste(sort(unique(clips$type)), collaps
   },
   90000,
 )
+
+// Multi-region: three discontiguous regions concatenated on one cumulative-bp
+// axis. Exercises the per-region read + read_index renumbering + combined layout
+// path for both the coverage and pileup panels.
+maybe(
+  'multi-region alignments script runs and produces a figure',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: true,
+      showPileup: true,
+      colorBy: 'normal',
+    })
+    const script = assembleRScript(
+      [
+        { refName: 'ctgA', start: 1000, end: 6000 },
+        { refName: 'ctgA', start: 15000, end: 17000 },
+        { refName: 'ctgA', start: 30000, end: 33000 },
+      ],
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-mr-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+  },
+  90000,
+)
+
+// Cross-region connectors: in chain mode (link_reads), a read pair with one mate
+// in each of two regions must be linked across the divider on the cumulative
+// axis. This is the multi-region feature faceting structurally cannot do. The
+// probe reads two regions bracketing separated mates, combines onto the
+// cumulative axis, and asserts link_reads emits connectors spanning the divider.
+maybe(
+  'chain layout links a mate pair split across two regions',
+  () => {
+    const bam = resolve(
+      process.cwd(),
+      'test_data/volvox/paired_end_stranded_rnaseq.bam',
+    )
+    const [pileup] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'paired',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      linkReads: true,
+      colorBy: 'normal',
+    })
+    const helpers = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 1 },
+      [pileup!],
+    ).split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-xregion-'))
+    const probe = `${helpers}
+regions <- region_layout(data.frame(chrom = c("ctgA", "ctgA"),
+  start = c(1, 2000), end = c(2000, 7600), stringsAsFactors = FALSE))
+divider <- regions$cum_end[1] + regions$gap[1] / 2
+parts <- lapply(seq_len(nrow(regions)), function(ri) {
+  chrom <- regions$chrom[ri]; start <- regions$start[ri]; end <- regions$end[ri]
+  shift <- regions$offset[ri] - regions$start[ri]
+  reads <- read_bam(${JSON.stringify(bam)}, chrom, start, end)
+  reads$start <- pmin(pmax(reads$start, start), end) + shift
+  reads$end <- pmin(pmax(reads$end, start), end) + shift
+  reads
+})
+reads <- do.call(rbind, parts)
+links <- link_reads(reads)$links
+spanning <- sum(links$xstart < divider & links$xend > divider)
+cat(nrow(links), spanning, "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [total, spanning] = out.split(/\s+/)
+    // some links exist, and at least one connects a mate across the divider
+    expect(Number(total)).toBeGreaterThan(0)
+    expect(Number(spanning)).toBeGreaterThan(0)
+  },
+  90000,
+)

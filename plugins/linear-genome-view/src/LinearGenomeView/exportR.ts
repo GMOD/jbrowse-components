@@ -42,6 +42,106 @@ const HELPERS: Record<string, string> = {
 resolve_chrom <- function(chrom, aliases) {
   if (chrom %in% names(aliases)) aliases[[chrom]] else chrom
 }`,
+  region_layout: `# Lay a set of displayed regions out on one continuous "cumulative bp" x-axis,
+# the way JBrowse concatenates several regions in a single linear view: each
+# region occupies a span proportional to its bp width, with a small gap between
+# them. 'regions' is a data.frame(chrom, start, end) (0-based half-open); this
+# adds offset (the region's left edge on the cumulative axis), width, gap, and
+# cum_start/cum_end. The first region is anchored at its own genomic start, so a
+# lone region keeps native genomic coordinates (a single-region figure is
+# unchanged). cum_pos for a position p in region i is offset[i] + (p - start[i]).
+region_layout <- function(regions, gap_frac = 0.012) {
+  w <- regions$end - regions$start
+  gap <- max(1, round(sum(w) * gap_frac))
+  regions$offset <- regions$start[1] + head(cumsum(c(0, w + gap)), length(w))
+  regions$width <- w; regions$gap <- gap
+  regions$cum_start <- regions$offset; regions$cum_end <- regions$offset + w
+  regions
+}`,
+  read_regions: `# Read one data.frame per region with reader(chrom, start, end), clip each
+# feature to its region (JBrowse cuts features at the region edge) and shift the
+# named coordinate columns onto the cumulative-bp axis region_layout() defines,
+# then rbind into one long frame with a '.region' column. This lets a single
+# ggplot panel span several discontiguous regions on one x-axis. 'reader' returns
+# a genomic-coordinate data.frame; 'coords' names its coordinate columns to
+# clip+shift (point columns are already within range, so clipping is a no-op). A
+# NULL/empty read contributes nothing; an all-empty result keeps the columns.
+# clip = FALSE only shifts (for geometry that must keep its shape at the edges,
+# e.g. Hi-C diamond vertices), otherwise coordinates are clipped to the region.
+read_regions <- function(reader, regions, coords, clip = TRUE) {
+  parts <- lapply(seq_len(nrow(regions)), function(i) {
+    df <- reader(regions$chrom[i], regions$start[i], regions$end[i])
+    if (is.null(df) || !nrow(df)) return(NULL)
+    shift <- regions$offset[i] - regions$start[i]
+    for (col in coords) {
+      v <- df[[col]]
+      if (clip) v <- pmin(pmax(v, regions$start[i]), regions$end[i])
+      df[[col]] <- v + shift
+    }
+    df$.region <- i
+    df
+  })
+  out <- do.call(rbind, parts)
+  if (is.null(out)) {
+    out <- reader(regions$chrom[1], regions$start[1], regions$start[1])
+    out$.region <- integer(0)
+  }
+  out
+}`,
+  region_scale: `# x-axis scale for the cumulative-bp axis: a lone region gets an ordinary
+# bp/kb/Mb axis (native genomic coords); several regions get a few pretty genomic
+# breaks per region positioned at their cumulative x, each labeled with its own
+# genomic coordinate (so every region reads in its native coordinates). Interior
+# breaks only (region edges dropped) so labels don't collide with the dividers.
+region_scale <- function(regions) {
+  fmt <- scales::label_number(scale_cut = scales::cut_si("b"))
+  if (nrow(regions) == 1) {
+    return(scale_x_continuous(labels = fmt, expand = expansion(mult = 0.01)))
+  }
+  br <- do.call(rbind, lapply(seq_len(nrow(regions)), function(i) {
+    g <- pretty(c(regions$start[i], regions$end[i]), n = 4)
+    g <- g[g > regions$start[i] & g < regions$end[i]]
+    if (!length(g)) g <- round((regions$start[i] + regions$end[i]) / 2)
+    data.frame(x = regions$offset[i] + (g - regions$start[i]), lab = fmt(g))
+  }))
+  scale_x_continuous(breaks = br$x, labels = br$lab, expand = expansion(mult = 0.005))
+}`,
+  region_dividers: `# Vertical lines marking the boundary between consecutive regions on the
+# cumulative axis (drawn in the middle of each inter-region gap). Nothing for a
+# single region.
+region_dividers <- function(regions) {
+  if (nrow(regions) <= 1) return(geom_blank())
+  geom_vline(xintercept = head(regions$cum_end, -1) + regions$gap[1] / 2,
+             color = "grey70", linewidth = 0.4)
+}`,
+  region_xlim: `# Cumulative-axis x range spanning every region, with a hair of padding.
+region_xlim <- function(regions) {
+  pad <- sum(regions$width) * 0.004
+  c(min(regions$offset) - pad, max(regions$cum_end) + pad)
+}`,
+  region_ruler: `# A thin top panel naming each region over its span on the cumulative axis (a
+# bar + the locus label), shown above the tracks when more than one region is
+# drawn. Shares region_scale/coord so it aligns with the track panels below.
+region_ruler <- function(regions) {
+  lab <- data.frame(x = (regions$cum_start + regions$cum_end) / 2,
+    label = sprintf("%s:%s-%s", regions$chrom, format(regions$start + 1, big.mark = ","),
+                    format(regions$end, big.mark = ",")))
+  ggplot(regions) +
+    geom_segment(aes(x = cum_start, xend = cum_end, y = 0, yend = 0),
+                 color = "grey40", linewidth = 0.8) +
+    geom_text(data = lab, aes(x, 0.35, label = label), size = 3, color = "grey20") +
+    region_scale(regions) + region_dividers(regions) +
+    coord_cartesian(xlim = region_xlim(regions), ylim = c(-0.2, 0.9), clip = "off") +
+    theme_void()
+}`,
+  region_title: `# Figure title: the locus for a single region, else a region count.
+region_title <- function(regions) {
+  if (nrow(regions) == 1)
+    sprintf("%s:%s-%s", regions$chrom[1], format(regions$start[1] + 1, big.mark = ","),
+            format(regions$end[1], big.mark = ","))
+  else sprintf("%d regions \\u00b7 %s bp", nrow(regions),
+               format(sum(regions$end - regions$start), big.mark = ","))
+}`,
   read_bigwig: `# Read a BigWig region into a data.frame(seqnames, start, end, score)
 read_bigwig <- function(uri, chrom, start, end) {
   as.data.frame(rtracklayer::import(uri, which = GRanges(chrom, IRanges(start + 1, end))))
@@ -56,13 +156,6 @@ read_multibigwig <- function(uris, names, chrom, start, end) {
   out <- do.call(rbind, parts)
   out$source <- factor(out$source, levels = unique(names))
   out
-}`,
-  bp_axis: `# Format an x axis of genomic coordinates as bp / kb / Mb
-bp_axis <- function() {
-  scale_x_continuous(
-    labels = scales::label_number(scale_cut = scales::cut_si("b")),
-    expand = expansion(mult = 0.01)
-  )
 }`,
   cram_to_bam: `# Rsamtools/GenomicAlignments is a BAM-only reader and cannot open CRAM, so
 # decode the queried region to a temporary indexed BAM with samtools (the
@@ -867,23 +960,38 @@ dendro_segments <- function(hc) {
 }`,
 }
 
-/** Collapse the view's coarse blocks down to a single span to seed the call. */
-function getViewRegion(model: LinearGenomeViewModel): ViewRegion | undefined {
+/**
+ * The regions currently visible in the view, each collapsed to a single span.
+ * A multi-region (discontiguous) view yields several: coarse blocks are grouped
+ * by their displayed-region index (so consecutive tiles of one region merge, but
+ * two regions on the same refName stay separate). Falls back to displayedRegions
+ * before the coarse blocks have been computed.
+ */
+function getViewRegions(model: LinearGenomeViewModel): ViewRegion[] {
   const blocks = model.coarseDynamicBlocks
-  const source = blocks.length > 0 ? blocks : model.displayedRegions
-  const first = source[0]
-  if (!first) {
-    return undefined
-  }
-  let start = Math.floor(first.start)
-  let end = Math.ceil(first.end)
-  for (const block of source) {
-    if (block.refName === first.refName) {
-      start = Math.min(start, Math.floor(block.start))
-      end = Math.max(end, Math.ceil(block.end))
+  if (blocks.length > 0) {
+    const byRegion = new Map<number, ViewRegion>()
+    for (const block of blocks) {
+      const key = block.displayedRegionIndex ?? -1
+      const existing = byRegion.get(key)
+      if (existing?.refName === block.refName) {
+        existing.start = Math.min(existing.start, Math.floor(block.start))
+        existing.end = Math.max(existing.end, Math.ceil(block.end))
+      } else {
+        byRegion.set(key, {
+          refName: block.refName,
+          start: Math.floor(block.start),
+          end: Math.ceil(block.end),
+        })
+      }
     }
+    return [...byRegion.values()]
   }
-  return { refName: first.refName, start, end }
+  return model.displayedRegions.map(r => ({
+    refName: r.refName,
+    start: Math.floor(r.start),
+    end: Math.ceil(r.end),
+  }))
 }
 
 /**
@@ -944,10 +1052,26 @@ async function collectFragments(
   return fragments
 }
 
+// R infrastructure emitted into every script (not opt-in per fragment): the
+// cumulative-bp region layout that lets one figure span several discontiguous
+// regions, JBrowse's multi-region view.
+const REGION_HELPERS = new Set([
+  'region_layout',
+  'read_regions',
+  'region_scale',
+  'region_dividers',
+  'region_xlim',
+  'region_ruler',
+  'region_title',
+])
+
 export function assembleRScript(
-  region: ViewRegion,
+  regionOrRegions: ViewRegion | ViewRegion[],
   fragments: RTrackFragment[],
 ) {
+  const regions = Array.isArray(regionOrRegions)
+    ? regionOrRegions
+    : [regionOrRegions]
   const packages = [
     ...new Set([
       'rtracklayer',
@@ -957,7 +1081,7 @@ export function assembleRScript(
     ]),
   ]
   // one deduped `<track>_refnames <- c(canonical = "file name", ...)` per track
-  // that needs alias translation; the panel wraps its read in resolve_chrom
+  // that needs alias translation; the panel resolves the regions' chrom column
   const hasRefNames = (f: RTrackFragment) =>
     !!f.refNameMap && Object.keys(f.refNameMap).length > 0
   const refNameVar = (f: RTrackFragment) => `${safeVarName(f.trackId)}_refnames`
@@ -972,13 +1096,15 @@ export function assembleRScript(
     }
   }
 
-  // emit helper defs in a stable order, deduped; resolve_chrom rides on any
-  // fragment carrying refNameMap rather than the usual per-fragment helper list
+  // emit helper defs in a stable order, deduped; the region infrastructure is
+  // always emitted, resolve_chrom rides on any fragment carrying refNameMap
   const needsResolveChrom = fragments.some(hasRefNames)
   const helperNames = Object.keys(HELPERS).filter(name =>
-    name === 'resolve_chrom'
-      ? needsResolveChrom
-      : fragments.some(f => f.helpers.includes(name)),
+    REGION_HELPERS.has(name)
+      ? true
+      : name === 'resolve_chrom'
+        ? needsResolveChrom
+        : fragments.some(f => f.helpers.includes(name)),
   )
   const helpers = helperNames.map(name => HELPERS[name]).join('\n\n')
   const setups = [...new Set(fragments.map(f => f.setup))].join('\n')
@@ -989,31 +1115,48 @@ export function assembleRScript(
 ${[...refNameVecs].map(([name, vec]) => `${name} <- ${vec}`).join('\n')}`
       : ''
 
+  // each panel builds a ggplot referencing `regions`; a refname-aliased track
+  // resolves the regions' chrom column to its file's names first. A cumulative-
+  // axis panel (the default) gets the shared genomic x-scale + inter-region
+  // dividers + coord range appended; a self-axis panel (the matrix) does not.
+  const decorate = (f: RTrackFragment) =>
+    f.cumulativeAxis === false
+      ? ''
+      : ` +
+  region_scale(regions) + region_dividers(regions) +
+  coord_cartesian(xlim = region_xlim(regions))`
   const panelBlocks = fragments
     .map(f =>
       hasRefNames(f)
         ? `  ${f.plotVariable} <- local({
-    chrom <- resolve_chrom(chrom, ${refNameVar(f)})
+    regions$chrom <- vapply(regions$chrom, function(cc) resolve_chrom(cc, ${refNameVar(f)}), character(1))
     ${f.plotExpr.replaceAll('\n', '\n    ')}
-  })`
-        : `  ${f.plotVariable} <- ${f.plotExpr.replaceAll('\n', '\n  ')}`,
+  })${decorate(f).replaceAll('\n', '\n  ')}`
+        : `  ${f.plotVariable} <- ${`${f.plotExpr}${decorate(f)}`.replaceAll('\n', '\n  ')}`,
     )
     .join('\n\n')
 
   const heights = fragments.map(f => f.heightWeight ?? 1).join(', ')
-  const stacked = fragments.map(f => f.plotVariable).join(' /\n    ')
+  const trackList = fragments.map(f => f.plotVariable).join(', ')
   const totalHeight = Math.max(
     3,
     fragments.reduce((a, f) => a + (f.heightWeight ?? 1), 0) * 2,
   )
+  const regionsDf = `data.frame(
+  chrom = c(${regions.map(r => JSON.stringify(r.refName)).join(', ')}),
+  start = c(${regions.map(r => r.start).join(', ')}),
+  end = c(${regions.map(r => r.end).join(', ')}),
+  stringsAsFactors = FALSE)`
 
   return `# ============================================================
 # JBrowse 2 - reproducible R figure (pure ggplot2 + rtracklayer)
 # Generated: ${new Date().toISOString()}
 #
-# plot_region() redraws every track for any locus, so you can call it in a loop
-# over a BED file of regions (see the batch example at the bottom). Everything
-# below is plain ggplot2 - edit the geoms, scales and theme however you like.
+# plot_regions() redraws every track across one or more regions, concatenated on
+# a single cumulative-bp x-axis (JBrowse's multi-region view). plot_region() is
+# the single-region shorthand, so you can loop it over a BED file (see the batch
+# example at the bottom). Everything below is plain ggplot2 - edit the geoms,
+# scales and theme however you like.
 # ============================================================
 
 ${packages.map(p => `library(${p})`).join('\n')}
@@ -1023,18 +1166,32 @@ ${helpers}
 # Data sources (local paths or URLs).
 ${setups}${refNameSetup}
 
-# Draw every track for one region and stack them into a single figure.
-# start/end are 0-based half-open (as in a BED file).
-plot_region <- function(chrom, start, end) {
+# Draw every track across the given regions and stack them into one figure.
+# 'regions' is a data.frame(chrom, start, end); start/end are 0-based half-open
+# (as in a BED file). Regions are laid out left-to-right on a shared axis.
+plot_regions <- function(regions) {
+  regions <- region_layout(regions)
+
 ${panelBlocks}
 
-  ${stacked} +
-    plot_layout(heights = c(${heights})) +
-    plot_annotation(title = sprintf("%s:%s-%s", chrom, format(start + 1, big.mark = ","), format(end, big.mark = ",")))
+  # stack the panels; a region-name ruler goes on top when more than one region
+  # is shown (each panel already carries the shared axis + dividers it needs)
+  panels <- list(${trackList})
+  heights <- c(${heights})
+  if (nrow(regions) > 1) {
+    panels <- c(list(region_ruler(regions)), panels)
+    heights <- c(0.4, heights)
+  }
+  wrap_plots(panels, ncol = 1, heights = heights) +
+    plot_annotation(title = region_title(regions))
 }
 
-# The region currently shown in JBrowse:
-p <- plot_region(${JSON.stringify(region.refName)}, ${region.start}, ${region.end})
+# Single-region shorthand.
+plot_region <- function(chrom, start, end)
+  plot_regions(data.frame(chrom = chrom, start = start, end = end, stringsAsFactors = FALSE))
+
+# The regions currently shown in JBrowse:
+p <- plot_regions(${regionsDf})
 print(p)
 
 ggsave("jbrowse_region.png", p, width = 12, height = ${totalHeight}, dpi = 150)
@@ -1046,6 +1203,8 @@ ggsave("jbrowse_region.pdf", p, width = 12, height = ${totalHeight})
 #   p <- plot_region(loci$chrom[i], loci$start[i], loci$end[i])
 #   ggsave(sprintf("region_%03d.png", i), p, width = 12, height = ${totalHeight}, dpi = 150)
 # }
+# A single multi-region figure: pass all the loci at once.
+# ggsave("multiregion.png", plot_regions(loci), width = 12, height = ${totalHeight}, dpi = 150)
 `
 }
 
@@ -1054,11 +1213,11 @@ export async function exportR(
   model: LinearGenomeViewModel,
   opts: ExportRCodeOptions = {},
 ) {
-  const region = getViewRegion(model)
+  const regions = getViewRegions(model)
   const fragments = await collectFragments(model, opts)
   const script =
-    region && fragments.length > 0
-      ? assembleRScript(region, fragments)
+    regions.length > 0 && fragments.length > 0
+      ? assembleRScript(regions, fragments)
       : '# No exportable tracks are shown. Add a supported track (e.g. a BigWig quantitative track) and try again.'
 
   saveAs(

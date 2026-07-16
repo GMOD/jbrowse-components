@@ -31,39 +31,33 @@ export interface WiggleRParams {
  * plain ggplot2 geoms and a `read_bigwig()` helper (no bespoke package): binned
  * coverage is `geom_rect`, line mode is `geom_step`, bicolor is just a fill
  * mapped to the sign of the score, density is a `geom_rect` strip on a viridis
- * fill. The panel reads `chrom`, `start`, `end` from the enclosing
- * plot_region() so it is redrawn for whatever locus is passed in.
+ * fill. `read_regions()` reads every region in the view onto one cumulative-bp
+ * x-axis (JBrowse's multi-region view); the shared axis and inter-region
+ * dividers are added by plot_regions().
  */
 export function wiggleFragment(p: WiggleRParams): RTrackFragment {
   const pathVar = safeVarName(p.trackId)
-  const data = `read_bigwig(${pathVar}, chrom, start, end)`
+  const data = `read_regions(function(chrom, start, end) read_bigwig(${pathVar}, chrom, start, end), regions, c("start", "end"))`
 
   let body: string
   if (p.isDensity) {
     body = `geom_rect(aes(xmin = start, xmax = end, ymin = 0, ymax = 1, fill = score)) +
   scale_fill_viridis_c() +
-  bp_axis() +
-  coord_cartesian(xlim = c(start, end)) +
   labs(title = ${rStr(p.trackName)}, x = NULL, fill = "Score") +
   theme_minimal() +
   theme(axis.text.y = element_blank(), axis.title.y = element_blank(), axis.ticks.y = element_blank())`
   } else if (p.isLine) {
-    body = `geom_step(aes(x = start, y = score), color = ${rStr(p.color)}) +
-  bp_axis() +
-  coord_cartesian(xlim = c(start, end)) +
+    // group by .region so the step line never connects across a region gap
+    body = `geom_step(aes(x = start, y = score, group = .region), color = ${rStr(p.color)}) +
   labs(title = ${rStr(p.trackName)}, x = NULL, y = "Score") +
   theme_minimal()`
   } else if (p.useBicolor) {
     body = `geom_rect(aes(xmin = start, xmax = end, ymin = 0, ymax = score, fill = score >= ${p.bicolorPivot})) +
   scale_fill_manual(values = c(\`TRUE\` = ${rStr(p.posColor)}, \`FALSE\` = ${rStr(p.negColor)}), guide = "none") +
-  bp_axis() +
-  coord_cartesian(xlim = c(start, end)) +
   labs(title = ${rStr(p.trackName)}, x = NULL, y = "Score") +
   theme_minimal()`
   } else {
     body = `geom_rect(aes(xmin = start, xmax = end, ymin = 0, ymax = score), fill = ${rStr(p.color)}) +
-  bp_axis() +
-  coord_cartesian(xlim = c(start, end)) +
   labs(title = ${rStr(p.trackName)}, x = NULL, y = "Score") +
   theme_minimal()`
   }
@@ -72,7 +66,7 @@ export function wiggleFragment(p: WiggleRParams): RTrackFragment {
     trackId: p.trackId,
     trackName: p.trackName,
     packages: ['rtracklayer', 'ggplot2'],
-    helpers: ['read_bigwig', 'bp_axis'],
+    helpers: ['read_bigwig'],
     setup: `${pathVar} <- ${rStr(p.uri)}`,
     plotVariable: `p_${pathVar}`,
     plotExpr: `ggplot(${data}) +

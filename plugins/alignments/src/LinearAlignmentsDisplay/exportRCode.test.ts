@@ -22,7 +22,7 @@ test('emits a coverage panel and a pileup panel, coverage on top', () => {
   expect(cov!.plotVariable).toBe('p_aln_coverage')
   expect(cov!.heightWeight).toBe(1)
   expect(cov!.helpers).toContain('bam_coverage')
-  expect(cov!.plotExpr).toContain('bam_coverage(aln, chrom, start, end)')
+  expect(cov!.plotExpr).toContain('bam_coverage(bam, chrom, start, end)')
 
   expect(pileup!.plotVariable).toBe('p_aln_pileup')
   expect(pileup!.heightWeight).toBe(3)
@@ -40,7 +40,7 @@ test('both panels draw MD-tag mismatches (reference-free SNP coloring)', () => {
   expect(cov!.helpers).toEqual(
     expect.arrayContaining(['bam_mismatches', 'base_colors']),
   )
-  expect(cov!.plotExpr).toContain('bam_mismatches(aln, chrom, start, end)')
+  expect(cov!.plotExpr).toContain('bam_mismatches(bam, chrom, start, end)')
   expect(cov!.plotExpr).toContain('aggregate(read_index ~ refpos + base')
 
   // pileup: per-base mismatch ticks joined to their row, colored by read base
@@ -68,7 +68,7 @@ test('coverage panel carves deletions and draws interbase indicators', () => {
   )
   // the SV-breakpoint indicators (insertion/soft-/hard-clip pileups) above the bars
   expect(cov!.plotExpr).toContain('interbase_indicators(bam_indels(')
-  expect(cov!.plotExpr).toContain('bam_clips(aln, chrom, start, end), cov)')
+  expect(cov!.plotExpr).toContain('bam_clips(bam, chrom, start, end), cov0)')
   // colored by the dominant event, drawn as a down-triangle above the histogram
   expect(cov!.plotExpr).toContain(
     'c(I = gap_colors[["I"]], S = clip_colors[["S"]], H = clip_colors[["H"]])',
@@ -112,10 +112,10 @@ test('modifications scheme overlays MM/ML mod ticks instead of mismatches', () =
   )
   expect(pileup!.helpers).not.toContain('bam_mismatches')
   expect(pileup!.plotExpr).toContain(
-    'bam_modifications(aln, chrom, start, end, min_prob)',
+    'bam_modifications(bam, chrom, start, end, min_prob)',
   )
-  expect(pileup!.plotExpr).toContain('mod_colors(mm$modtype)')
-  expect(pileup!.plotExpr).toContain('reads$row[mm$read_index]')
+  expect(pileup!.plotExpr).toContain('mod_colors(mods$modtype)')
+  expect(pileup!.plotExpr).toContain('reads$row[mods$read_index]')
   // the probability threshold is emitted as an editable var (JBrowse default 0.1)
   expect(pileup!.plotExpr).toContain('min_prob <- 0.1')
 
@@ -133,7 +133,7 @@ test('perBaseQuality scheme overlays per-base Phred-colored rects', () => {
     expect.arrayContaining(['bam_base_quality', 'quality_colors']),
   )
   expect(pileup!.helpers).not.toContain('bam_mismatches')
-  expect(pileup!.plotExpr).toContain('bam_base_quality(aln, chrom, start, end)')
+  expect(pileup!.plotExpr).toContain('bam_base_quality(bam, chrom, start, end)')
   expect(pileup!.plotExpr).toContain('quality_colors(bq$score)')
   expect(pileup!.plotExpr).toContain('reads$row[bq$read_index]')
   // one rect per base is dense; a visible cap skips the overlay over wide regions
@@ -178,7 +178,7 @@ test('pileup draws soft/hard clip indicator bars at read ends', () => {
   expect(pileup!.helpers).toEqual(
     expect.arrayContaining(['bam_clips', 'clip_colors']),
   )
-  expect(pileup!.plotExpr).toContain('bam_clips(aln, chrom, start, end)')
+  expect(pileup!.plotExpr).toContain('bam_clips(bam, chrom, start, end)')
   // vertical bars joined to the read's row, colored by clip type, via a color
   // (not fill) identity scale so they compose with the read/mismatch fill scale
   expect(pileup!.plotExpr).toContain('clips$row <- reads$row[clips$read_index]')
@@ -187,7 +187,7 @@ test('pileup draws soft/hard clip indicator bars at read ends', () => {
   // clip bars are orthogonal to color scheme — drawn under modifications too
   expect(
     alignmentsFragments({ ...base, colorBy: 'modifications' })[1]!.plotExpr,
-  ).toContain('bam_clips(aln, chrom, start, end)')
+  ).toContain('bam_clips(bam, chrom, start, end)')
 })
 
 test('pileup marks CIGAR deletions/skips/insertions', () => {
@@ -195,7 +195,7 @@ test('pileup marks CIGAR deletions/skips/insertions', () => {
   expect(pileup!.helpers).toEqual(
     expect.arrayContaining(['bam_indels', 'gap_colors']),
   )
-  expect(pileup!.plotExpr).toContain('bam_indels(aln, chrom, start, end)')
+  expect(pileup!.plotExpr).toContain('bam_indels(bam, chrom, start, end)')
   // indels joined to their read row by read_index, like the mismatch/clip overlays
   expect(pileup!.plotExpr).toContain(
     'indels$row <- reads$row[indels$read_index]',
@@ -209,12 +209,12 @@ test('pileup marks CIGAR deletions/skips/insertions', () => {
   expect(pileup!.plotExpr).toContain('gap_colors[["I"]]')
   // gaps paint before the mismatch ticks (which sit on aligned columns)
   expect(pileup!.plotExpr.indexOf('bam_indels')).toBeLessThan(
-    pileup!.plotExpr.indexOf('bam_mismatches(aln'),
+    pileup!.plotExpr.indexOf('bam_mismatches(bam'),
   )
   // orthogonal to color scheme — drawn under modifications too
   expect(
     alignmentsFragments({ ...base, colorBy: 'modifications' })[1]!.plotExpr,
-  ).toContain('bam_indels(aln, chrom, start, end)')
+  ).toContain('bam_indels(bam, chrom, start, end)')
 })
 
 test('sortedBy reorders the pileup with sorted_pileup_layout', () => {
@@ -261,9 +261,11 @@ test('base sort feeds the MD-tag mismatch base at sort_pos into the layout', () 
   )
   // feeds both the mismatch base and the CIGAR deletions at sort_pos: JBrowse
   // sorts a deletion as '*', ahead of the ACGT bases
-  expect(byBase!.plotExpr).toContain('bam_mismatches(aln, chrom, start, end)')
+  expect(byBase!.plotExpr).toContain('bam_mismatches(bam, chrom, start, end)')
+  expect(byBase!.plotExpr).toContain('bam_indels(bam, chrom, start, end)')
+  // base sort feeds the combined mismatch + indel frames into the layout call
   expect(byBase!.plotExpr).toContain(
-    'bam_indels(aln, chrom, start, end))',
+    'sorted_pileup_layout(reads, sort_pos, "base", mm, indels)',
   )
 
   // base sort under the modifications scheme (which greys bodies) still sorts
@@ -298,7 +300,7 @@ test('pileup applies the JBrowse "Filter by" via read_filter', () => {
   expect(def!.plotExpr).toContain('read_name <- NULL')
   expect(def!.plotExpr).toContain('tag_filters <- list()')
   expect(def!.plotExpr).toContain(
-    'reads <- read_filter(read_bam(aln, chrom, start, end), aln, chrom, start, end,',
+    'reads <- read_filter(read_bam(bam, chrom, start, end), bam, chrom, start, end,',
   )
   // the layout runs on the filtered reads, not a fresh read_bam
   expect(def!.plotExpr).toContain('pileup_layout(reads)')

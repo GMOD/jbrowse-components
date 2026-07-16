@@ -129,6 +129,12 @@ export interface RTrackFragment {
   plotExpr: string
   // relative patchwork height for this panel (default 1)
   heightWeight?: number
+  // whether this panel lives on the shared cumulative-bp x-axis (the default):
+  // plot_regions() adds region_scale + inter-region dividers + the coord range to
+  // it. Set false for a panel that manages its own x-axis and is not genomic-bp
+  // indexed (e.g. the site-indexed multi-sample variant matrix), so the cumulative
+  // decoration is not applied.
+  cumulativeAxis?: boolean
   // JBrowse refname aliases for this track's file: canonical refName -> the
   // name the file actually uses (chr1 vs 1 vs NC_000001.11), only entries that
   // differ. Attached by the view (not the per-display builder) from the

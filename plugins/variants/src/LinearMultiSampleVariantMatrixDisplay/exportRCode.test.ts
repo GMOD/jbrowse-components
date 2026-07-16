@@ -23,14 +23,18 @@ test('reads genotypes with read_vcf_gt and emits no bespoke package', () => {
     'patchwork',
   ])
   expect(f.packages).not.toContain('VariantAnnotation')
+  // site-indexed matrix: opts out of the shared cumulative-bp axis
+  expect(f.cumulativeAxis).toBe(false)
   expect(f.plotExpr).toContain(
-    'read_vcf_gt(variants, chrom, start, end, FALSE)',
+    'read_vcf_gt(variants, regions$chrom[ri], regions$start[ri], regions$end[ri], FALSE)',
   )
 })
 
 test('phased mode reads per-haplotype genotypes and uses the phased palette', () => {
   const f = variantMatrixFragment({ ...base, phased: true })
-  expect(f.plotExpr).toContain('read_vcf_gt(variants, chrom, start, end, TRUE)')
+  expect(f.plotExpr).toContain(
+    'read_vcf_gt(variants, regions$chrom[ri], regions$start[ri], regions$end[ri], TRUE)',
+  )
   expect(f.plotExpr).toContain('levels = c("ref", "alt", "other", "nocall")')
   expect(f.plotExpr).toContain('alt = "#377eb8"')
   // collapsed het/hom dosage shades are not used per-haplotype

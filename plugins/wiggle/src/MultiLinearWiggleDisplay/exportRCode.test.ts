@@ -16,10 +16,10 @@ const base: MultiWiggleRParams = {
 test('reads sources with read_multibigwig and emits no bespoke package', () => {
   const f = multiWiggleFragment(base)
   expect(f.plotVariable).toBe('p_multicov')
-  expect(f.helpers).toEqual(['read_bigwig', 'read_multibigwig', 'bp_axis'])
+  expect(f.helpers).toEqual(['read_bigwig', 'read_multibigwig'])
   expect(f.packages).toEqual(['rtracklayer', 'ggplot2'])
   expect(f.plotExpr).toContain(
-    'read_multibigwig(multicov_uris, multicov_names, chrom, start, end)',
+    'read_regions(function(chrom, start, end) read_multibigwig(multicov_uris, multicov_names, chrom, start, end), regions, c("start", "end"))',
   )
   expect(f.plotExpr).not.toMatch(/jb_features|geom_wiggle|scale_x_genomic/)
 })
@@ -36,7 +36,7 @@ test('multi-row XY facets by source and colors rows by the source palette', () =
   const f = multiWiggleFragment(base)
   expect(f.plotExpr).toContain('facet_grid(rows = vars(source))')
   expect(f.plotExpr).toContain(
-    'geom_area(aes(x = start, y = score, fill = source)',
+    'geom_area(aes(x = start, y = score, fill = source, group = interaction(source, .region))',
   )
   expect(f.plotExpr).toContain(
     'scale_fill_manual(values = c(`Alpha` = "#e6194b", `Beta` = "#3cb44b"), guide = "none")',
@@ -65,7 +65,7 @@ test('overlay line uses geom_step + color aesthetic', () => {
     isOverlay: true,
   })
   expect(f.plotExpr).toContain(
-    'geom_step(aes(x = start, y = score, color = source))',
+    'geom_step(aes(x = start, y = score, color = source, group = interaction(source, .region)))',
   )
   expect(f.plotExpr).toContain('scale_color_manual(values = ')
 })
@@ -76,7 +76,7 @@ test('interpolated line uses geom_line (linecenter tested before line)', () => {
     renderingType: 'multirowlinecenter',
   })
   expect(f.plotExpr).toContain(
-    'geom_line(aes(x = start, y = score, color = source))',
+    'geom_line(aes(x = start, y = score, color = source, group = interaction(source, .region)))',
   )
 })
 

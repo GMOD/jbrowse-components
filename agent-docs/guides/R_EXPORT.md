@@ -28,12 +28,18 @@ record* lives elsewhere and is not duplicated here:
 - `plugins/linear-genome-view/src/LinearGenomeView/exportR.ts`
   - `HELPERS`: the inline R helper defs table; only helpers a fragment
     references are emitted (deduped, stable order). Add new readers/layout
-    helpers here.
-  - `assembleRScript(region, fragments)` (re-exported from the plugin index):
-    pure codegen — emits `library()`s, deduped helper defs, per-track setup,
-    `plot_region()`, the current-view call, the batch-BED-loop comment. Also
-    handles refname aliases (`resolve_chrom`) when a fragment carries a
-    `refNameMap`.
+    helpers here. The `REGION_HELPERS` (region_layout / read_regions /
+    region_scale / region_dividers / region_xlim / region_ruler / region_title)
+    are emitted into **every** script — they are core infrastructure, not
+    per-fragment opt-in.
+  - `assembleRScript(regions, fragments)` (re-exported; accepts one region or an
+    array): pure codegen — emits `library()`s, deduped helper defs, per-track
+    setup, `plot_regions()`, the `plot_region()` shorthand, the current-view call
+    (all visible regions), the batch-BED-loop comment. Also handles refname
+    aliases (`resolve_chrom`) when a fragment carries a `refNameMap`.
+  - `getViewRegions(model)`: the visible regions, each collapsed to one span,
+    grouped by `displayedRegionIndex` (a multi-region/discontiguous view yields
+    several; consecutive tiles of one region merge).
   - `collectFragments` iterates every track's `display.exportRCode` and attaches
     each track's canonical→file-name `refNameMap`.
 - `plugins/linear-genome-view/src/LinearGenomeView/rexportShared.ts`: shared
@@ -42,24 +48,72 @@ record* lives elsewhere and is not duplicated here:
   trackId/trackName/adapter).
 - `RTrackFragment` (`types.ts`, re-exported): one stacked panel =
   `{ trackId, trackName, packages, helpers, setup, plotVariable, plotExpr,
-  heightWeight?, refNameMap? }`. `plotExpr` references `chrom`/`start`/`end`
-  from inside `plot_region()`.
+  heightWeight?, cumulativeAxis?, refNameMap? }`. `plotExpr` references
+  `regions` (a data.frame with `chrom`/`start`/`end` + the cumulative-layout
+  columns `offset`/`width`/`cum_start`/`cum_end`/`gap`) from inside
+  `plot_regions()`. Set `cumulativeAxis: false` for a panel not indexed by
+  genomic bp (the site-indexed variant matrix) so it is not decorated with the
+  shared axis.
 - Per-display `plugins/*/src/*Display/exportRCode.ts`: a pure `xFragment(params)`
   builder (what the unit tests hit) + `exportRCode(self)` reading the model. The
   model wires an `exportRCode(): RTrackFragment` method with an **explicit return
   type** (breaks the self-referential MST model-type cycle, same as `renderSvg`).
 
+## Multi-region (cumulative-bp axis)
+
+A multi-region LGV exports as one figure with the regions concatenated
+left-to-right on a single **cumulative-bp** x-axis — how JBrowse lays them out
+internally (continuous `offsetPx` + inter-region padding). This is
+`cumulativeBp`, not `facet_grid`: it was chosen over faceting because facets are
+separate panels and **cannot draw a geom between two of them**, so cross-region
+read connectors (a mate/segment split across regions) are only possible on one
+continuous axis.
+
+- **`region_layout(regions)`** computes each region's `offset` on the cumulative
+  axis (region 1 anchored at its own genomic start, so a lone region keeps
+  native coordinates and the single-region output is essentially unchanged).
+- **`read_regions(reader, regions, coords, clip = TRUE)`** is the seam every
+  simple track uses: it calls `reader(chrom,start,end)` per region, **clips**
+  each feature to its region (JBrowse cuts features at the edge) and **shifts**
+  the named coordinate columns onto the cumulative axis, tagging each row with
+  `.region`. Readers stay genomic; this is the *only* place genomic→cumulative
+  happens. `clip = FALSE` shifts without clipping (Hi-C diamond vertices).
+- The shared x-scale (`region_scale`, per-region genomic tick labels),
+  inter-region `region_dividers`, coord range (`region_xlim`) and the top
+  `region_ruler` are added centrally by `plot_regions()` — each cumulative panel
+  gets the scale/dividers/coord appended in its assignment; the ruler is stacked
+  on top when >1 region.
+- **Line-like geoms must group by `.region`** (`geom_step`/`geom_line`/
+  `geom_area`, and `interaction(source, .region)` for multi-wiggle, coverage
+  `geom_area(group = .region)`) so a line never connects across the gap.
+- **Alignments** can't use `read_regions` directly: its overlays (mismatches,
+  indels, clips, mods, quality) join to a pileup row by `read_index`, so it runs
+  a per-region `for` loop that renumbers each region's `read_index` into its
+  position in the **combined** `reads` frame, then lays out over the combined
+  reads. That gives cross-region-consistent rows and — in chain mode
+  (`link_reads`) — connectors spanning a mate/segment split across regions (the
+  headline multi-region feature). The center-line sort position is mapped onto
+  the cumulative axis before `sorted_pileup_layout`.
+- **Variant matrix** is site-indexed, not bp: it concatenates the passing sites
+  of every region along the column axis and sets `cumulativeAxis: false`.
+
 ## Adding a track type (recipe)
 
-1. Add any reader/layout helper to `HELPERS` in `exportR.ts`.
+1. Add any reader/layout helper to `HELPERS` in `exportR.ts`. A reader takes
+   `(uri, chrom, start, end)` and returns a genomic-coordinate data.frame — never
+   cumulative coords; `read_regions` handles the shift.
 2. In the display plugin add `exportRCode.ts`: a pure `xFragment(params)` builder
    + `exportRCode(self)` reading `getTrackRMeta(self)`'s adapter uri + resolved
-   styling. Return `RTrackFragment` (or `RTrackFragment[]`).
+   styling. Return `RTrackFragment` (or `RTrackFragment[]`). For a genomic-bp
+   track, wrap the reader in `read_regions(function(chrom, start, end) reader(...),
+   regions, c("<coord cols>"))` and let `plot_regions()` add the axis — don't
+   emit `bp_axis()`/`coord_cartesian()` yourself, and group any line/area geom by
+   `.region`.
 3. Wire an `exportRCode(): RTrackFragment` model method (**explicit return type
    required**). Import `RTrackFragment` from `@jbrowse/plugin-linear-genome-view`.
 4. Add `exportRCode.test.ts` (codegen string checks) + `exportRRun.test.ts` (runs
    the real `assembleRScript` output through `Rscript`, `test.skip` when R deps
-   absent).
+   absent). Test a multi-region call (`assembleRScript([r1, r2], ...)`) too.
 
 ## What's shipped (pointers, not detail)
 
@@ -126,7 +180,16 @@ for the sort figure) that builds the script and runs it to
   `reads$row[x$read_index]`. **Do not drop rows from `reads`** — it desyncs the
   join. `read_filter` marks a `keep` column instead; the layout leaves filtered
   reads at an **NA row** and ggplot omits them (bodies and overlays vanish for
-  free). Any new per-read filtering must follow this.
+  free). Any new per-read filtering must follow this. **Multi-region:** each
+  region's `read_index` is 1-based within *that* region's read, so the alignments
+  loop adds a running `racc` (reads seen so far) to every region's overlay
+  `read_index` before concatenation — after combining, `read_index` is the row in
+  the combined `reads` frame and the join is unchanged.
+- **Overlay rows outside a region are dropped, not clipped** (the alignments
+  `reg()` helper filters `col >= start & col < end`). Reads' `start`/`end` are
+  *clipped* (`pmin(pmax(...))`) so a read straddling the edge draws cut at the
+  boundary; a mismatch/indel/clip *position* outside the region just isn't drawn
+  (coord clipping only guards the whole-figure edges, not internal dividers).
 - **GRanges has no `[[`** — read metadata columns via `mcols(g)[[nm]]`.
 - **Model-type cycle** — annotate `exportRCode()`'s return type explicitly.
 - **CRAM** — Rsamtools can't read CRAM (deliberate upstream gap, no dep bump
