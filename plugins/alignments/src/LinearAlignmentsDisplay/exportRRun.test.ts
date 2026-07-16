@@ -6,6 +6,10 @@ import { join, resolve } from 'node:path'
 import { assembleRScript } from '@jbrowse/plugin-linear-genome-view'
 
 import { alignmentsFragments } from './exportRCode.ts'
+import {
+  classifyInsertSize,
+  getInsertSizeStats,
+} from '../shared/insertSizeStats.ts'
 
 const baseParams = {
   isCram: false,
@@ -115,6 +119,72 @@ cat(paste(ind$pos[o], ind$type[o], sep = ":"), "\\n")
       encoding: 'utf8',
     }).trim()
     expect(out).toBe('105:I 106:S 107:S')
+  },
+  90000,
+)
+
+// Cross-implementation equivalence: the R insertSize branch of read_fill_colors
+// must classify every read exactly as the JS getInsertSizeStats/classifyInsertSize
+// does over the same data — the robust median±3·1.4826·MAD spread from primary
+// proper-pair |TLEN| values (not mean±3·sd, which the right-skewed SV tail would
+// inflate so no read is ever flagged "short"). Same reads drive both sides.
+maybe(
+  'R insertSize coloring matches JS getInsertSizeStats read-for-read',
+  () => {
+    // right-skewed |TLEN|: a tight bulk near 300 plus a long SV tail
+    const reads: { isize: number; flag: number }[] = []
+    for (let i = 0; i < 200; i++) {
+      reads.push({ isize: 250 + ((i * 7) % 100), flag: 0x2 })
+    }
+    for (const s of [3000, 3500, 4000, 4500, 5000]) {
+      reads.push({ isize: s, flag: 0x2 })
+    }
+    // discriminating probes + reads excluded from the stat set
+    reads.push({ isize: 320, flag: 0x2 }) // bulk → normal
+    reads.push({ isize: 100, flag: 0x2 }) // short under MAD, normal under mean±sd
+    reads.push({ isize: 6000, flag: 0x2 }) // long
+    reads.push({ isize: 0, flag: 0x2 }) // tlen 0 → always normal
+    reads.push({ isize: 80, flag: 0x0 }) // not proper-pair: excluded from stats
+    reads.push({ isize: 9000, flag: 0x2 | 0x800 }) // supplementary: excluded
+
+    // JS side: stats over exactly the primary proper-pair, |TLEN|>0 reads
+    const statSet = reads
+      .filter(r => !!(r.flag & 0x2) && !(r.flag & 0x100) && !(r.flag & 0x800))
+      .map(r => r.isize)
+      .filter(s => s > 0)
+    const stats = getInsertSizeStats(statSet)
+    const expected = reads.map(r => classifyInsertSize(r.isize, stats))
+    // the two estimators must disagree on the isize=100 read, else the test is toothless
+    expect(expected[reads.findIndex(r => r.isize === 100)]).toBe('short')
+
+    // R side: run read_fill_colors(reads, "insertSize") over the identical reads
+    const [pileup] = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'x',
+      uri: '/dev/null',
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'insertSize',
+    })
+    const helpers = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 1 },
+      [pileup!],
+    ).split('# Data sources')[0]!
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-isize-'))
+    const probe = `${helpers}
+reads <- data.frame(isize = c(${reads.map(r => r.isize).join(', ')}),
+                    flag = c(${reads.map(r => r.flag).join(', ')}))
+col <- read_fill_colors(reads, "insertSize")
+cls <- ifelse(col == "#ff0000", "long", ifelse(col == "#ffc0cb", "short", "normal"))
+cat(cls, "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    expect(out.split(/\s+/)).toEqual(expected)
   },
   90000,
 )
