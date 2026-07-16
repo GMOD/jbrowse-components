@@ -26,9 +26,9 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [heightMode](#slot-heightmode)                                 | `stringEnum`                                          | Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). |
 | [showLabels](#slot-showlabels)                                 | `stringEnum`                                          | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides                                                                   |
 | [showDescriptions](#slot-showdescriptions)                     | `boolean`                                             | Show feature descriptions                                                                                                                                                 |
-| [color](#slot-color)                                           | `color`                                               | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)                                                                          |
+| [color](#slot-color)                                           | `maybeColor`                                          | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring).                                                                         |
 | [connectorColor](#slot-connectorcolor)                         | `color`                                               | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                                          |
-| [utrColor](#slot-utrcolor)                                     | `color`                                               | fill color for UTRs on gene/transcript glyphs                                                                                                                             |
+| [utrColor](#slot-utrcolor)                                     | `maybeColor`                                          | fill color for UTRs on gene/transcript glyphs.                                                                                                                            |
 | [outlineColor](#slot-outlinecolor)                             | `color`                                               | outline color for features (empty string = no outline)                                                                                                                    |
 | [featureHeight](#slot-featureheight)                           | `number`                                              | height in pixels of the main body of each feature                                                                                                                         |
 | [displayMode](#slot-displaymode)                               | `stringEnum` (inherit, normal, compact, superCompact) | Feature height preset.                                                                                                                                                    |
@@ -130,17 +130,17 @@ Show feature descriptions
 #### slot: color
 
 the main fill color of each feature (a CSS color, or a jexl expression for
-per-feature coloring)
+per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has
+one, else goldenrod
 
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'goldenrod'`
+**Type:** `maybeColor` · **Default:** `undefined`
 
 ```js
 {
-  type: 'color',
+  type: 'maybeColor',
+  defaultValue: undefined,
   description:
-    'the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)',
-  defaultValue: 'goldenrod',
+    "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod",
   contextVariable: ['feature'],
 }
 ```
@@ -165,16 +165,18 @@ theme text color)
 
 #### slot: utrColor
 
-fill color for UTRs on gene/transcript glyphs
+fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED
+itemRgb paints them too (matching UCSC's whole-item coloring), else a
+contrasting blue
 
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#357089'`
+**Type:** `maybeColor` · **Default:** `undefined`
 
 ```js
 {
-  type: 'color',
-  description: 'fill color for UTRs on gene/transcript glyphs',
-  defaultValue: '#357089',
+  type: 'maybeColor',
+  defaultValue: undefined,
+  description:
+    "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue",
   contextVariable: ['feature'],
 }
 ```

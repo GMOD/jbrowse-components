@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
-import { evalColorSlot } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import { makeFeatureColorResolver } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { MatrixFeature } from './buildMultiRowMatrix.ts'
 import type { MultiRowClusterFeaturesArgs } from './rpcTypes.ts'
@@ -37,7 +37,9 @@ export async function executeMultiRowClusterFeatures({
     adapterConfig,
   })
 
-  const colorCfg = { color: colorConfig }
+  // must mirror the painting exactly — colorKey IS the on-screen color, so rows
+  // cluster on what the user sees (see makeFeatureColorResolver)
+  const featureColor = makeFeatureColorResolver(colorConfig, pluginManager.jexl)
   const features: MatrixFeature[] = []
   for (const region of regions) {
     const feats = await updateStatus('Fetching features', statusCallback, () =>
@@ -50,7 +52,7 @@ export async function executeMultiRowClusterFeatures({
         row: raw === undefined || raw === null ? '' : String(raw),
         start: f.get('start'),
         end: f.get('end'),
-        colorKey: evalColorSlot(colorCfg, f, pluginManager.jexl),
+        colorKey: featureColor(f).css,
       })
     }
   }

@@ -106,6 +106,14 @@ function inheritedBedColor(feature: Feature) {
   return found
 }
 
+// The two fills a box can take, each with what its slot resolves to when unset
+// and the feature declares no color of its own. UTRs get their own slot so a
+// gene glyph can contrast them against the coding body.
+const BOX_COLOR_SLOTS = {
+  color: FEATURE_DEFAULT_COLOR,
+  utrColor: UTR_DEFAULT_COLOR,
+} as const
+
 export function getBoxColor({
   feature,
   config,
@@ -119,21 +127,19 @@ export function getBoxColor({
   theme: Theme
   jexl: JexlInstance
 }) {
-  // Each slot yields to the color the file declares only while it sits at its
-  // default — an explicit color always wins, so "the config beats the file" is
-  // the single rule. utrColor deferring too is what reproduces UCSC's
-  // whole-item coloring, where a thin block is thinner but not a different
-  // color; setting utrColor restores the contrasting-UTR look.
-  const utr = isUTR(feature)
-  const slot = utr ? 'utrColor' : 'color'
-  const slotIsDefault = utr
-    ? config.utrColor === UTR_DEFAULT_COLOR
-    : config.color === FEATURE_DEFAULT_COLOR
-  const bedColor = slotIsDefault ? inheritedBedColor(feature) : undefined
+  // An unset (`maybeColor` undefined) slot means nothing asked for a color here,
+  // so the file's own gets to speak; any set value wins, making "the config
+  // beats the file" the single rule. Because unset is `undefined` rather than a
+  // concrete default, every real color — goldenrod included — stays expressible.
+  // utrColor deferring too is what reproduces UCSC's whole-item coloring, where
+  // a thin block is thinner but not a different color; setting utrColor restores
+  // the contrasting-UTR look.
+  const slot = isUTR(feature) ? 'utrColor' : 'color'
 
   let fill =
-    bedColor ??
-    readConfigValueSafe<string>(config, slot, feature, jexl, INVALID_COLOR)
+    config[slot] === undefined
+      ? (inheritedBedColor(feature) ?? BOX_COLOR_SLOTS[slot])
+      : readConfigValueSafe<string>(config, slot, feature, jexl, INVALID_COLOR)
 
   const featureStrand = feature.get('strand')
   const featurePhase = feature.get('phase')

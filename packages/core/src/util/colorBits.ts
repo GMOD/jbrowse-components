@@ -79,12 +79,24 @@ export function featureItemRgb(raw: unknown): string | undefined {
     : undefined
 }
 
-// The two names the BED color column goes by. `itemRgb` is the BED spec's name;
-// `reserved` is what UCSC's canonical autoSql calls it ("uint reserved; Used as
-// itemRgb as of 2004-11-22"). bigBed/bigGenePred files embed that autoSql and
-// BigBedAdapter takes its field names from it, so their features come out
-// carrying `reserved` — the very case #1734 asks about.
-const BED_COLOR_FIELDS = ['itemRgb', 'reserved']
+// The names the BED color column goes by, most specific first.
+//
+// - `itemRgb` — the BED spec's name. What the parser emits for a full BED12.
+// - `reserved` — what UCSC's canonical autoSql calls it ("uint reserved; Used
+//   as itemRgb as of 2004-11-22"). bigBed/bigGenePred embed that autoSql and
+//   BigBedAdapter takes its field names from it, so bigBed features carry this.
+// - `field8` — the parser only applies the *named* BED schema at exactly 12
+//   columns; a BED9/10/11 falls back to positional auto-naming, so the color
+//   lands in `field8` (column index 8, which the spec fixes as itemRgb). That
+//   makes plain BED9 — the classic "I just want colored features" file — the
+//   case this whole thing exists for. Reading the positional name is safe
+//   *because* featureItemRgb is strict: a 9th column holding something that
+//   isn't an in-range triple is simply not claimed.
+//
+// Nothing is renamed on the feature, deliberately: a config already reading
+// `jexl:get(feature,'field8')` (the workaround this issue's users were told to
+// write) keeps working, and can now just be deleted.
+const BED_COLOR_FIELDS = ['itemRgb', 'reserved', 'field8']
 
 /**
  * The BED color a feature declares for itself, under either column name, or

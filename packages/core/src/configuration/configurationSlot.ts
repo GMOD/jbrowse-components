@@ -39,14 +39,9 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   // explicitly set" (fall back to a computed/auto value) from an explicit
   // number — e.g. a drag-resized track height. Defaults to `undefined`.
   //
-  // There is deliberately no `maybeColor`/`maybeString`/etc.: nullability is
-  // only warranted when the value space has no natural in-band sentinel (every
-  // number is a legitimate height, so no magic number can mean "unset"). Types
-  // that already carry meaningful specials should use one — a `color` slot uses
-  // `''` for "no color" and a named theme-derived constant for "follow the
-  // theme" (see THEME_DERIVED_COLOR), keeping a concrete string flowing to every
-  // consumer (GPU packing, jexl, the editor) instead of forcing each to defend
-  // against `undefined`.
+  // There is still deliberately no `maybeString`/etc.: nullability is only
+  // warranted when the value space has no spare value to spend on "unset", and
+  // a type carrying a meaningful special should use that instead.
   maybeNumber: { model: types.maybe(types.number) },
   // a boolean that may be unset (`undefined`). Its reason to exist is
   // `promotable` slots (see promotableDefaults.ts): a plain boolean spends its
@@ -58,6 +53,21 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   // resolves to. Read promotable slots with `getConfResolved` (never raw), which
   // always yields a concrete boolean.
   maybeBoolean: { model: types.maybe(types.boolean) },
+  // a color that may be unset (`undefined`), for a slot whose default isn't a
+  // color at all but "decide from the data" — a feature's own BED itemRgb, say.
+  //
+  // This type was once rejected on the grounds that a `color` slot has spare
+  // in-band values to spend on that role (`''` = no color, THEME_DERIVED_COLOR =
+  // follow the theme). Those specials work because they mean genuinely
+  // *non-color* things. "Not explicitly set" is different: it has to stay
+  // distinguishable from every real color, and `stripDefault` erases a slot
+  // value equal to its default — so with a concrete default, writing that exact
+  // color is indistinguishable from writing nothing, and the auto behavior
+  // silently claims it. That made `color: 'goldenrod'` unexpressible, the one
+  // color a user is most likely to write, because it *is* the documented
+  // default. `undefined` is the only value no config can spell, which is
+  // exactly the `maybeNumber` justification above.
+  maybeColor: { model: types.maybe(types.string) },
   string: { model: types.string, fallbackDefault: '' },
   text: { model: types.string, fallbackDefault: '' },
   fileLocation: {
@@ -69,6 +79,16 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   },
   frozen: { model: types.frozen(), fallbackDefault: {} },
 }
+
+// The slot types whose default is `undefined` — the genuine "unset" state,
+// distinguishable from every value a config can spell. Derived from the table
+// above (they're exactly the entries with no `fallbackDefault`, since "unset" is
+// their fixed form) so the two can't drift.
+const MAYBE_TYPES = new Set(
+  Object.entries(slotTypes)
+    .filter(([, spec]) => spec.fallbackDefault === undefined)
+    .map(([name]) => name),
+)
 
 const JexlStringType = types.refinement('JexlString', types.string, isJexl)
 
@@ -151,14 +171,10 @@ export default function ConfigSlot({
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
   }
-  // `maybeNumber`/`maybeBoolean` intentionally default to `undefined` (the
-  // "unset" state); every other slot type must declare a concrete default so a
-  // missing one is caught as an authoring mistake.
-  if (
-    defaultValue === undefined &&
-    type !== 'maybeNumber' &&
-    type !== 'maybeBoolean'
-  ) {
+  // the `maybe*` types intentionally default to `undefined` (the "unset"
+  // state); every other slot type must declare a concrete default so a missing
+  // one is caught as an authoring mistake.
+  if (defaultValue === undefined && !MAYBE_TYPES.has(type)) {
     throw new Error("no 'defaultValue' provided")
   }
 

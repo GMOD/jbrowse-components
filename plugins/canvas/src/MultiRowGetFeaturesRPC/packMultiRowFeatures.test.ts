@@ -2,7 +2,10 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { MULTIROW_DEFAULT_COLOR } from './multiRowColors.ts'
-import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
+import {
+  makeFeatureColorResolver,
+  packMultiRowFeatures,
+} from './packMultiRowFeatures.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -62,11 +65,11 @@ test('a feature with empty itemRgb (-> "rgb()") degrades to magenta, not a crash
   ])
 })
 
-test('default color slot paints from the feature itemRgb, no jexl needed', () => {
+test('an unset color slot paints from the feature itemRgb, no jexl needed', () => {
   const r = packMultiRowFeatures({
     features,
     partitionField: 'sample',
-    colorConfig: MULTIROW_DEFAULT_COLOR,
+    colorConfig: undefined,
     jexl: createJexlInstance(),
   })
   expect([...r.featureColors]).toEqual([
@@ -82,7 +85,7 @@ test('no itemRgb on the features leaves the per-row palette in charge', () => {
   const r = packMultiRowFeatures({
     features: [feat({ start: 0, end: 5, sample: 'mom' })],
     partitionField: 'sample',
-    colorConfig: MULTIROW_DEFAULT_COLOR,
+    colorConfig: undefined,
     jexl: createJexlInstance(),
   })
   expect(r.usedItemRgb).toBe(false)
@@ -98,7 +101,7 @@ test('a placeholder itemRgb does not hijack the per-row palette', () => {
       feat({ start: 5, end: 9, sample: 'dad', itemRgb: '0' }),
     ],
     partitionField: 'sample',
-    colorConfig: MULTIROW_DEFAULT_COLOR,
+    colorConfig: undefined,
     jexl: createJexlInstance(),
   })
   expect(r.usedItemRgb).toBe(false)
@@ -161,4 +164,43 @@ test('captures feature name for tooltips ("" when absent)', () => {
     jexl: createJexlInstance(),
   })
   expect(r.featureNames).toEqual(['mom_maternal', ''])
+})
+
+// `colorKey` in the clustering RPC is *defined* as the color painted on screen —
+// rows cluster by which colors fall where. makeFeatureColorResolver is shared
+// with executeMultiRowClusterFeatures so the two can't disagree; if they did, an
+// itemRgb painting would cluster on a uniform color nobody sees and silently
+// produce a meaningless row order.
+describe('makeFeatureColorResolver (shared with clustering)', () => {
+  const resolve = (colorConfig: string | undefined) =>
+    features.map(makeFeatureColorResolver(colorConfig, createJexlInstance()))
+
+  test('unset slot resolves each feature to its own itemRgb', () => {
+    const colors = resolve(undefined)
+    expect(colors.map(c => c.css)).toEqual([
+      '227,26,28',
+      '31,120,180',
+      '170,170,170',
+    ])
+    expect(colors.every(c => c.fromBed)).toBe(true)
+  })
+
+  test('a set slot resolves every feature the same, and never claims fromBed', () => {
+    const colors = resolve('red')
+    expect(colors.map(c => c.css)).toEqual(['red', 'red', 'red'])
+    expect(colors.some(c => c.fromBed)).toBe(false)
+  })
+
+  test('resolves the same colors the painting bakes', () => {
+    // the invariant clustering depends on: colorKey IS the on-screen color
+    const r = packMultiRowFeatures({
+      features,
+      partitionField: 'sample',
+      colorConfig: undefined,
+      jexl: createJexlInstance(),
+    })
+    expect([...r.featureColors]).toEqual(
+      resolve(undefined).map(c => cssColorToABGR(c.css)),
+    )
+  })
 })

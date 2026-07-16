@@ -14,7 +14,7 @@ export interface MultiRowClusterModel {
   layout: MultiRowSource[]
   adapterConfig: Record<string, unknown>
   partitionField: string
-  colorConfig: string
+  colorConfig: string | undefined
   setLayoutAndClusterTree: (layout: MultiRowSource[], tree?: string) => void
 }
 

@@ -81,7 +81,10 @@ import {
   maxBottom,
   rowGeometrySignature,
 } from './yMorph.ts'
-import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
+import {
+  FEATURE_DEFAULT_COLOR,
+  UTR_DEFAULT_COLOR,
+} from '../RenderFeatureDataRPC/featureColors.ts'
 import {
   HEIGHT_MULTIPLIERS,
   labelFontSize,
@@ -214,10 +217,6 @@ const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 
 const STRAND_COLOR_JEXL =
   "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
-
-// Swatch fallback when the active color is a jexl (per-feature) expression
-// rather than a solid CSS color.
-const FEATURE_COLOR_DEFAULT = FEATURE_DEFAULT_COLOR
 
 // Floor for the auto-fit height so a sparse/empty track doesn't collapse to a
 // sliver. Capped by the maxHeight config in naturalContentHeight.
@@ -601,14 +600,19 @@ export default function baseStateModelFactory(
         // the default swatch same as unset.
         get featureColor() {
           const raw = self.conf.color
-          return raw !== undefined && !isJexl(raw) ? raw : FEATURE_COLOR_DEFAULT
+          return raw !== undefined && !isJexl(raw) ? raw : FEATURE_DEFAULT_COLOR
         },
 
         /**
          * #getter
          */
-        get utrColor() {
-          return getConf(self, 'utrColor')
+        // Swatch for the UTR color picker. The slot is a `maybeColor`, so
+        // resolve its unset state here — a bare getter must never hand back
+        // undefined. Unset means the render falls back to a feature's own BED
+        // color when it has one, which no single swatch can show, so the swatch
+        // shows what an itemRgb-less feature actually gets.
+        get utrColor(): string {
+          return getConf(self, 'utrColor') ?? UTR_DEFAULT_COLOR
         },
 
         /**

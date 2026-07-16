@@ -1,4 +1,3 @@
-import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 import { THEME_DERIVED_COLOR } from './renderConfig.ts'
 
@@ -20,9 +19,10 @@ export function mockDisplayConfig(
     displayDirectionalChevrons: true,
     mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
     jexlFilters: [],
-    color: FEATURE_DEFAULT_COLOR,
+    // the `maybeColor` slots default to unset, as a real config does
+    color: undefined,
     connectorColor: THEME_DERIVED_COLOR,
-    utrColor: UTR_DEFAULT_COLOR,
+    utrColor: undefined,
     outlineColor: '',
     labels: {
       name: '',

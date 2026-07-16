@@ -144,17 +144,17 @@ Show feature descriptions
 #### slot: color
 
 the main fill color of each feature (a CSS color, or a jexl expression for
-per-feature coloring)
+per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has
+one, else goldenrod
 
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'goldenrod'`
+**Type:** `maybeColor` · **Default:** `undefined`
 
 ```js
 {
-  type: 'color',
+  type: 'maybeColor',
+  defaultValue: undefined,
   description:
-    'the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring)',
-  defaultValue: 'goldenrod',
+    "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod",
   contextVariable: ['feature'],
 }
 ```
@@ -179,16 +179,18 @@ theme text color)
 
 #### slot: utrColor
 
-fill color for UTRs on gene/transcript glyphs
+fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED
+itemRgb paints them too (matching UCSC's whole-item coloring), else a
+contrasting blue
 
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`'#357089'`
+**Type:** `maybeColor` · **Default:** `undefined`
 
 ```js
 {
-  type: 'color',
-  description: 'fill color for UTRs on gene/transcript glyphs',
-  defaultValue: '#357089',
+  type: 'maybeColor',
+  defaultValue: undefined,
+  description:
+    "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue",
   contextVariable: ['feature'],
 }
 ```

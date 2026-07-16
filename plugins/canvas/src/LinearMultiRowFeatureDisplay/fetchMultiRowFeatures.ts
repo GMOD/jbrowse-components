@@ -13,7 +13,7 @@ type Needed = { region: Region; displayedRegionIndex: number }[]
 interface FetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
   partitionField: string
-  colorConfig: string
+  colorConfig: string | undefined
   fetchRegions: (
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,

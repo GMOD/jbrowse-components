@@ -8,10 +8,6 @@ import {
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
-import {
-  FEATURE_DEFAULT_COLOR,
-  UTR_DEFAULT_COLOR,
-} from '../RenderFeatureDataRPC/featureColors.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -86,11 +82,16 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       // Main feature fill. Legacy configs used `color1` (auto-migrated).
+      // `maybeColor` so "unset" stays distinct from every real color: unset
+      // means a feature's own BED itemRgb paints it (else goldenrod), and with a
+      // concrete default that behavior would swallow anyone writing that exact
+      // color. The resolved values live in featureColors.ts, which the worker
+      // applies. See maybeColor in configurationSlot.ts.
       color: {
-        type: 'color',
+        type: 'maybeColor',
+        defaultValue: undefined,
         description:
-          "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring); left at its default, a feature's own BED itemRgb is used if it has one",
-        defaultValue: FEATURE_DEFAULT_COLOR,
+          "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod",
         contextVariable: ['feature'],
       },
       /**
@@ -108,11 +109,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       // Fill color for UTRs on gene/transcript glyphs. Legacy: `color3`.
+      // `maybeColor` for the same reason as `color` above.
       utrColor: {
-        type: 'color',
+        type: 'maybeColor',
+        defaultValue: undefined,
         description:
-          "fill color for UTRs on gene/transcript glyphs; left at its default, a feature's own BED itemRgb is used if it has one, matching UCSC's whole-item coloring",
-        defaultValue: UTR_DEFAULT_COLOR,
+          "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue",
         contextVariable: ['feature'],
       },
       /**

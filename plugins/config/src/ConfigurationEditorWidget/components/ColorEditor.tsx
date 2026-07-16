@@ -19,20 +19,26 @@ const useStyles = makeStyles()({
   },
 })
 
+// Also drives `maybeColor`, whose value is `undefined` while unset. An empty
+// string keeps the field controlled and the picker fed, the same way
+// NumberEditor renders an unset `maybeNumber` as an empty field. Clearing the
+// field writes `''` rather than restoring `undefined` — "unset" is reachable
+// through the slot's reset button, which is where every other slot type puts it.
 const ColorEditor = observer(function ColorEditor(props: {
   slot: {
     name: string
-    value: string
+    value: string | undefined
     description: string
     set: (arg: string) => void
   }
 }) {
   const { slot } = props
   const { classes } = useStyles()
+  const value = slot.value ?? ''
   return (
     <div className={classes.root}>
       <ConfigurationTextField
-        value={slot.value}
+        value={value}
         label={slot.name}
         helperText={slot.description}
         className={classes.field}
@@ -42,7 +48,7 @@ const ColorEditor = observer(function ColorEditor(props: {
       />
       <Suspense fallback={null}>
         <PopoverPicker
-          color={slot.value}
+          color={value}
           onChange={color => {
             slot.set(color)
           }}

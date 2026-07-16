@@ -16,7 +16,7 @@ export interface MultiRowGetFeaturesArgs {
   // raw `color` config slot (a CSS color or `jexl:...`), evaluated per feature
   // in the worker against the feature. Per-row color (sampleColorMap / palette /
   // dialog) is applied on the main thread at render time, not here.
-  colorConfig: string
+  colorConfig: string | undefined
   stopToken?: StopToken
   statusCallback?: StatusCallback
 }

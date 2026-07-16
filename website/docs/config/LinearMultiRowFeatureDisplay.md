@@ -46,9 +46,9 @@ Paint one row per `sample`, coloring each row from `sampleColorMap`:
 ```
 
 Omit `sampleColorMap` entirely and each row is auto-assigned a distinct palette
-color. For per-feature (not per-row) colors, set the `color` slot instead:
-`color: "jexl:get(feature,'itemRgb')"` for a standard BED12, or read a custom
-color column.
+color — unless the features carry an `itemRgb`, which is honored as the
+per-feature color with no configuration at all. To color per feature off some
+other attribute, set the `color` slot to a `jexl:` expression reading it.
 
 _See the **Config slots** section below for all available configuration fields._
 
@@ -81,17 +81,17 @@ so configure it with an explicit `displays` entry (rather than the
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                       | Type          | Description                                                                                                         |
-| ------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------- |
-| [partitionField](#slot-partitionfield)     | `string`      | Feature attribute whose value assigns each feature to a row (e.g. a BED column name).                               |
-| [color](#slot-color)                       | `color`       | Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring, e.g. `jexl:get(feature,'itemRgb')`). |
-| [sampleColorMap](#slot-samplecolormap)     | `frozen`      | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.                                     |
-| [rowOrder](#slot-roworder)                 | `stringArray` | Optional explicit row order.                                                                                        |
-| [rowHeight](#slot-rowheight)               | `number`      | Fixed height in pixels of each row.                                                                                 |
-| [showLegend](#slot-showlegend)             | `boolean`     | Show the categorical color key (swatch + label per distinct per-feature color).                                     |
-| [legend](#slot-legend)                     | `frozen`      | Explicit color key: an array of `{ label, color }`.                                                                 |
-| [showTree](#slot-showtree)                 | `boolean`     | show the cluster tree sidebar                                                                                       |
-| [showBranchLength](#slot-showbranchlength) | `boolean`     | Position tree nodes by cluster merge height (dendrogram) vs.                                                        |
+| Slot                                       | Type          | Description                                                                                                                          |
+| ------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| [partitionField](#slot-partitionfield)     | `string`      | Feature attribute whose value assigns each feature to a row (e.g. a BED column name).                                                |
+| [color](#slot-color)                       | `maybeColor`  | Per-block fill: a CSS color, or a `jexl:` expression for per-feature coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``). |
+| [sampleColorMap](#slot-samplecolormap)     | `frozen`      | Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.                                                      |
+| [rowOrder](#slot-roworder)                 | `stringArray` | Optional explicit row order.                                                                                                         |
+| [rowHeight](#slot-rowheight)               | `number`      | Fixed height in pixels of each row.                                                                                                  |
+| [showLegend](#slot-showlegend)             | `boolean`     | Show the categorical color key (swatch + label per distinct per-feature color).                                                      |
+| [legend](#slot-legend)                     | `frozen`      | Explicit color key: an array of `{ label, color }`.                                                                                  |
+| [showTree](#slot-showtree)                 | `boolean`     | show the cluster tree sidebar                                                                                                        |
+| [showBranchLength](#slot-showbranchlength) | `boolean`     | Position tree nodes by cluster merge height (dendrogram) vs.                                                                         |
 
 <details>
 <summary>Advanced slots (1)</summary>
@@ -115,19 +115,19 @@ name). Features sharing a value stack into the same row.
 
 #### slot: color
 
-Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring,
-e.g. `jexl:get(feature,'itemRgb')`). Left at its default, each row instead gets
-a distinct color from a categorical palette.
+Per-block fill: a CSS color, or a `jexl:` expression for per-feature coloring
+(e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``). Unset, a feature's own
+`itemRgb` is used if it has one, and otherwise each row gets a distinct color
+from a categorical palette.
 
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`MULTIROW_DEFAULT_COLOR`
+**Type:** `maybeColor` · **Default:** `undefined`
 
 ```js
 {
-  type: 'color',
-  defaultValue: MULTIROW_DEFAULT_COLOR,
+  type: 'maybeColor',
+  defaultValue: undefined,
   description:
-    'fill color of each block (CSS color or jexl expression for per-feature coloring); the default auto-assigns a per-row palette color',
+    "fill color of each block (CSS color or jexl expression for per-feature coloring). Unset, a feature's own itemRgb paints it if it has one, else each row gets a distinct color from a categorical palette",
   contextVariable: ['feature'],
 }
 ```

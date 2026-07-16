@@ -139,6 +139,7 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   maybeNumber: NumberEditor,
   integer: IntegerEditor,
   color: ColorEditor,
+  maybeColor: ColorEditor,
   stringEnum: StringEnumEditor,
   boolean: BooleanEditor,
   maybeBoolean: BooleanEditor,

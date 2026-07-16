@@ -1,9 +1,6 @@
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import {
-  FEATURE_DEFAULT_COLOR,
-  UTR_DEFAULT_COLOR,
-} from './featureColors.ts'
+import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
 import { layoutBox } from './glyphs/box.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutMatureProteinRegion } from './glyphs/matureProteinRegion.ts'
@@ -13,6 +10,7 @@ import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 import { getBoxColor, isUTR, truncateLabel } from './util.ts'
 
+import type { DisplayConfig } from './renderConfig.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -318,5 +316,48 @@ describe('getBoxColor (BED itemRgb)', () => {
       attrs: { itemRgb: '31,120,180' },
     })
     expect(boxColor(flat)).toBe('31,120,180')
+  })
+})
+
+describe('getBoxColor (an explicit color always beats the file)', () => {
+  const theme = { palette: { framesCDS: [] } } as unknown as Theme
+  const jexl = createJexlInstance()
+  const itemRgbFeature = createMockFeature({
+    type: 'block',
+    attrs: { itemRgb: '227,26,28' },
+  })
+
+  function boxColor(config: DisplayConfig) {
+    return getBoxColor({
+      feature: itemRgbFeature,
+      config,
+      colorByCDS: false,
+      theme,
+      jexl,
+    })
+  }
+
+  // the reason `color` is a maybeColor: with a concrete 'goldenrod' default,
+  // stripDefault erased an explicit goldenrod, making it indistinguishable from
+  // unset — so itemRgb swallowed the one color a user is most likely to write
+  it('honors an explicit color even when it equals the fallback', () => {
+    expect(boxColor(mockDisplayConfig({ color: FEATURE_DEFAULT_COLOR }))).toBe(
+      FEATURE_DEFAULT_COLOR,
+    )
+  })
+
+  it('honors an explicit utrColor even when it equals the fallback', () => {
+    const config = mockDisplayConfig({ utrColor: UTR_DEFAULT_COLOR })
+    const utr = createMockFeature({
+      type: 'five_prime_UTR',
+      attrs: { itemRgb: '227,26,28' },
+    })
+    expect(
+      getBoxColor({ feature: utr, config, colorByCDS: false, theme, jexl }),
+    ).toBe(UTR_DEFAULT_COLOR)
+  })
+
+  it('still yields to the file when unset', () => {
+    expect(boxColor(mockDisplayConfig())).toBe('227,26,28')
   })
 })

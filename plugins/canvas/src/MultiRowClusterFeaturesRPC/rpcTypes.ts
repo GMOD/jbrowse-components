@@ -18,7 +18,7 @@ export interface MultiRowClusterFeaturesArgs {
   partitionField: string
   // raw `color` config slot (CSS or `jexl:...`), evaluated per feature to the
   // categorical signal clustered on
-  colorConfig: string
+  colorConfig: string | undefined
   stopToken?: StopToken
   statusCallback?: StatusCallback
 }

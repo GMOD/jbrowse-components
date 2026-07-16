@@ -1,7 +1,7 @@
-// Default value of the multi-row display `color` slot. When the slot is left at
-// this value (and no sampleColorMap entry applies), each row is assigned a
-// distinct categorical-palette color on the main thread at render time — see
-// resolveRowColors in sourcesLogic. Shared so the config-schema default and the
-// is-default check can't drift. Kept dependency-free so the config schema can
-// import it freely.
+// What the multi-row `color` slot resolves to when unset and the feature
+// carries no BED color of its own. Mostly invisible in that case: an unset slot
+// is also what turns on the per-row categorical palette, which paints over this
+// on the main thread (see resolveRowColors in sourcesLogic). A pure fallback,
+// never compared against a stored value — the slot is a `maybeColor`, so
+// "unset" is `undefined` and every real color stays expressible.
 export const MULTIROW_DEFAULT_COLOR = 'goldenrod'

@@ -1,7 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
-import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
@@ -79,15 +77,19 @@ export default function configSchemaF(pluginManager: PluginManager) {
       /**
        * #slot
        * Per-block fill: a CSS color, or a `jexl:` expression for per-feature
-       * coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``). Left at
-       * its default, a feature's own `itemRgb` is used if it has one, and
-       * otherwise each row gets a distinct color from a categorical palette.
+       * coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``). Unset,
+       * a feature's own `itemRgb` is used if it has one, and otherwise each row
+       * gets a distinct color from a categorical palette.
        */
+      // `maybeColor` so unset stays distinct from every real color: unset is
+      // what lets a feature's own itemRgb, or the per-row palette, paint. With a
+      // concrete default that behavior would swallow anyone writing that exact
+      // color. See maybeColor in configurationSlot.ts.
       color: {
-        type: 'color',
-        defaultValue: MULTIROW_DEFAULT_COLOR,
+        type: 'maybeColor',
+        defaultValue: undefined,
         description:
-          'fill color of each block (CSS color or jexl expression for per-feature coloring); the default uses the feature itemRgb if present, else auto-assigns a per-row palette color',
+          "fill color of each block (CSS color or jexl expression for per-feature coloring). Unset, a feature's own itemRgb paints it if it has one, else each row gets a distinct color from a categorical palette",
         contextVariable: ['feature'],
       },
       /**

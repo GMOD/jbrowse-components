@@ -8,7 +8,8 @@ import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // Resolve the (possibly jexl) `color` slot to a CSS string for one feature,
-// degrading to the default color on a bad expression or non-string result.
+// degrading to the default color on a bad expression or non-string result. Only
+// called for a set slot — an unset one never reaches here.
 export function evalColorSlot(
   colorCfg: { color: string },
   feature: Feature,
@@ -22,12 +23,39 @@ export function evalColorSlot(
   }
 }
 
-// A BED that declares its own color has already said how it wants to be
-// painted, so honor it when the `color` slot is untouched — no jexl needed. An
-// explicit `color` slot still wins. cssColorToABGR understands the bare
-// "255,0,0" triple, so the value goes through as-is. No parent walk here: these
-// painting tracks are flat (disableGeneHeuristic), so the drawn feature is the
-// one carrying the color.
+/**
+ * Build the per-feature color resolver for a `color` slot value. A BED that
+ * declares its own color has already said how it wants to be painted, so an
+ * unset slot yields to it — no jexl needed; any set slot wins. cssColorToABGR
+ * understands the bare "255,0,0" triple, so the value goes through as-is. No
+ * parent walk: these painting tracks are flat (disableGeneHeuristic), so the
+ * drawn feature is the one carrying the color.
+ *
+ * A factory rather than a plain function so the slot is interpreted exactly
+ * once, off the one `colorConfig` — the per-feature work then can't be handed a
+ * mismatched pair — and so the jexl config object is hoisted out of the loop.
+ *
+ * Shared with the clustering RPC on purpose. `colorKey` there is *defined* as
+ * the color painted on screen — rows cluster by which colors fall at which
+ * positions — so if the two resolutions drifted, an itemRgb painting would
+ * cluster on a uniform color nobody sees and silently produce a meaningless
+ * order. `fromBed` additionally tells the main thread to drop the per-row
+ * palette, which would otherwise cover the colors the BED asked for.
+ */
+export function makeFeatureColorResolver(
+  colorConfig: string | undefined,
+  jexl: JexlInstance,
+) {
+  const slotIsUnset = colorConfig === undefined
+  const colorCfg = { color: colorConfig ?? MULTIROW_DEFAULT_COLOR }
+  return (feature: Feature) => {
+    const bedColor = slotIsUnset ? featureBedColor(feature) : undefined
+    return {
+      css: bedColor ?? evalColorSlot(colorCfg, feature, jexl),
+      fromBed: bedColor !== undefined,
+    }
+  }
+}
 
 /**
  * Pack features into the multi-row wire arrays: absolute genomic start/end, a
@@ -53,7 +81,7 @@ export function packMultiRowFeatures({
 }: {
   features: Feature[]
   partitionField: string
-  colorConfig: string
+  colorConfig: string | undefined
   jexl: JexlInstance
   report?: ProgressReporter
 }): MultiRowGetFeaturesResult {
@@ -66,8 +94,9 @@ export function packMultiRowFeatures({
   const featureIds: string[] = new Array(n)
   const partitionValues: string[] = []
   const valueIndex = new Map<string, number>()
-  const colorCfg = { color: colorConfig }
-  const colorSlotIsDefault = colorConfig === MULTIROW_DEFAULT_COLOR
+  // an unset (`maybeColor` undefined) slot is what lets the file's own color, or
+  // the per-row palette, paint — see the `color` slot in configSchema.ts
+  const featureColor = makeFeatureColorResolver(colorConfig, jexl)
   let usedItemRgb = false
 
   for (let i = 0; i < n; i++) {
@@ -88,13 +117,9 @@ export function packMultiRowFeatures({
       valueIndex.set(value, idx)
     }
     featurePartitionIndex[i] = idx
-    const bedColor = colorSlotIsDefault ? featureBedColor(feature) : undefined
-    if (bedColor === undefined) {
-      featureColors[i] = cssColorToABGR(evalColorSlot(colorCfg, feature, jexl))
-    } else {
-      usedItemRgb = true
-      featureColors[i] = cssColorToABGR(bedColor)
-    }
+    const { css, fromBed } = featureColor(feature)
+    usedItemRgb ||= fromBed
+    featureColors[i] = cssColorToABGR(css)
   }
 
   return {

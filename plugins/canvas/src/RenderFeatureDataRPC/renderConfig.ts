@@ -82,9 +82,11 @@ export interface DisplayConfig {
   // "Filter by..." override carries it. buildFeatureAdmission normalizes both.
   jexlFilters: string[]
   featureHeight: number
-  color: string
+  // `maybeColor` slots: undefined = unset, meaning the feature's own BED color
+  // paints it (see getBoxColor). Not the same as any concrete color.
+  color: string | undefined
   connectorColor: string
-  utrColor: string
+  utrColor: string | undefined
   outlineColor: string
   labels: {
     name: string

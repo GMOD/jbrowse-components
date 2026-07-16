@@ -31,7 +31,6 @@ import { observable } from 'mobx'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
-import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
 import {
   buildColorLegend,
   resolveConfiguredLegend,
@@ -206,10 +205,10 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Raw `color` slot (a CSS color or `jexl:` string), forwarded to the
-       * worker which resolves it per feature.
+       * Raw `color` slot (a CSS color or `jexl:` string, or undefined when
+       * unset), forwarded to the worker which resolves it per feature.
        */
-      get colorConfig(): string {
+      get colorConfig(): string | undefined {
         return self.conf.color
       },
       /**
@@ -294,7 +293,7 @@ export default function stateModelFactory(
         return resolveRowColors(
           self.sources,
           self.sampleColorMap,
-          self.colorConfig === MULTIROW_DEFAULT_COLOR && !self.usedItemRgb,
+          self.colorConfig === undefined && !self.usedItemRgb,
         )
       },
       /**
