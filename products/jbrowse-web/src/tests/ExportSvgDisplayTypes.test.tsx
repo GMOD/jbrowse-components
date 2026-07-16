@@ -1,11 +1,10 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { saveAs } from '@jbrowse/core/util'
 import { fireEvent } from '@testing-library/react'
 import { createCanvas as nodeCreateCanvas } from 'canvas'
 
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import { createView, doBeforeEach, getSavedSvg, hts, setup } from './util.tsx'
 
 import './svgExportMocks.ts'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
@@ -23,15 +22,6 @@ const snapshotDir = path.join(
   path.dirname(module.filename),
   '__image_snapshots__',
 )
-
-function getSavedSvg(): string {
-  // saveAs is mocked; Blob is mocked as (content, opts) => ({ content, opts })
-  // so the saved blob is { content: [svgString], ... }
-
-  const mock = saveAs as unknown as { mock: { calls: unknown[][] } }
-  const blob = mock.mock.calls[0]![0] as { content: string[] }
-  return blob.content[0]!
-}
 
 // node-canvas gives real PNG output instead of jsdom's empty "data:,"
 const canvasFactory = nodeCreateCanvas as unknown as (

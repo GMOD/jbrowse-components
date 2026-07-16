@@ -65,7 +65,7 @@ export function setup() {
   expect.extend({ toMatchImageSnapshot })
 }
 
-function canvasToBuffer(canvas: HTMLCanvasElement) {
+export function canvasToBuffer(canvas: HTMLCanvasElement) {
   const { width, height } = canvas
   const src = canvas.getContext('2d')!.getImageData(0, 0, width, height)
   const flat = createCanvas(width, height)
@@ -251,6 +251,17 @@ function assertNoDuplicateSvgIds(svg: string) {
   expect([...duplicates]).toEqual([])
 }
 
+/**
+ * Extract the exported SVG string from the mocked `saveAs`. Relies on the
+ * `svgExportMocks.ts` Blob mock, which stores constructor args as
+ * `{ content: [svgString], options }`.
+ */
+export function getSavedSvg(): string {
+  const mock = saveAs as unknown as { mock: { calls: unknown[][] } }
+  const blob = mock.mock.calls[0]![0] as { content: string[] }
+  return blob.content[0]!
+}
+
 export async function exportAndVerifySvg({
   findByTestId,
   findByText,
@@ -282,9 +293,7 @@ export async function exportAndVerifySvg({
     expect(saveAs).toHaveBeenCalled()
   }, actualDelay)
 
-  // @ts-expect-error
-
-  const svg = saveAs.mock.calls[0][0].content[0]
+  const svg = getSavedSvg()
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
   assertNoDuplicateSvgIds(svg)

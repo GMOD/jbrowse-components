@@ -6,6 +6,7 @@ import {
   createView,
   doBeforeEach,
   exportAndVerifySvg,
+  getSavedSvg,
   hts,
   mockFile404,
   setup,
@@ -74,8 +75,7 @@ test('export svg of circular renders error when track fails to load', async () =
   await waitFor(() => {
     expect(saveAs).toHaveBeenCalled()
   }, delay)
-  // @ts-expect-error
-  const svg = saveAs.mock.calls[0][0].content[0] as string
+  const svg = getSavedSvg()
   expect(svg).toContain('#ef5350')
   expect(svg).not.toContain('structuralVariantChordRenderer')
   jest.restoreAllMocks()

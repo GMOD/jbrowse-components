@@ -2,35 +2,60 @@ import { fireEvent } from '@testing-library/react'
 
 import { createView, expectCanvasMatch, hts } from './util.tsx'
 
-export async function testLinearMultiSampleVariantDisplay({
+type DisplayType = 'matrix' | 'regular'
+
+export const multiSampleVariantDisplayInfo = {
+  matrix: {
+    displayText: 'Multi-sample variant display (matrix)',
+    doneTestId: 'variant-matrix-display-done',
+    canvasTestId: 'variant_matrix_canvas',
+  },
+  regular: {
+    displayText: 'Multi-sample variant display (regular)',
+    doneTestId: 'variant-display-done',
+    canvasTestId: 'variant_canvas',
+  },
+} as const
+
+/**
+ * Open the volvox multi-sample VCF track and switch it to the given display
+ * type (without waiting for render). Returns the render result plus the
+ * display-type ids so callers can wait for completion however they need.
+ */
+export async function openMultiSampleVariantDisplay({
   displayType,
-  phasedMode,
   timeout = 60000,
 }: {
-  displayType: 'matrix' | 'regular'
-  phasedMode?: 'phased'
+  displayType: DisplayType
   timeout?: number
 }) {
-  const delay = { timeout }
-  const opts = [{}, delay] as const
-  const displayText =
-    displayType === 'matrix'
-      ? 'Multi-sample variant display (matrix)'
-      : 'Multi-sample variant display (regular)'
-  const doneTestId =
-    displayType === 'matrix'
-      ? 'variant-matrix-display-done'
-      : 'variant-display-done'
-  const canvasTestId =
-    displayType === 'matrix' ? 'variant_matrix_canvas' : 'variant_canvas'
+  const opts = [{}, { timeout }] as const
+  const info = multiSampleVariantDisplayInfo[displayType]
 
-  const { view, findByTestId, findByText } = await createView()
+  const result = await createView()
+  const { view, findByTestId, findByText } = result
   await view.navToLocString('ctgA')
   fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
 
   fireEvent.click(await findByTestId('track_menu_icon', ...opts))
   fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText(displayText, ...opts))
+  fireEvent.click(await findByText(info.displayText, ...opts))
+
+  return { ...result, info }
+}
+
+export async function testLinearMultiSampleVariantDisplay({
+  displayType,
+  phasedMode,
+  timeout = 60000,
+}: {
+  displayType: DisplayType
+  phasedMode?: 'phased'
+  timeout?: number
+}) {
+  const opts = [{}, { timeout }] as const
+  const { findByTestId, findByText, info } =
+    await openMultiSampleVariantDisplay({ displayType, timeout })
 
   if (phasedMode) {
     fireEvent.click(await findByTestId('track_menu_icon', ...opts))
@@ -38,6 +63,6 @@ export async function testLinearMultiSampleVariantDisplay({
     fireEvent.click(await findByText(/^Phased/, ...opts))
   }
 
-  await findByTestId(doneTestId, ...opts)
-  expectCanvasMatch(await findByTestId(canvasTestId, ...opts))
+  await findByTestId(info.doneTestId, ...opts)
+  expectCanvasMatch(await findByTestId(info.canvasTestId, ...opts))
 }

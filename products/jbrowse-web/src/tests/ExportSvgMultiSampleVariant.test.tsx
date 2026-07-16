@@ -1,7 +1,5 @@
-import { saveAs } from '@jbrowse/core/util'
-import { fireEvent } from '@testing-library/react'
-
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
+import { openMultiSampleVariantDisplay } from './testLinearMultiSampleVariantDisplay.tsx'
+import { doBeforeEach, getSavedSvg, setup } from './util.tsx'
 
 import './svgExportMocks.ts'
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
@@ -12,15 +10,6 @@ beforeEach(() => {
   jest.clearAllMocks()
   doBeforeEach()
 })
-
-const delay = { timeout: 40000 }
-const opts = [{}, delay] as const
-
-function getSavedSvg(): string {
-  const mock = saveAs as unknown as { mock: { calls: unknown[][] } }
-  const blob = mock.mock.calls[0]![0] as { content: string[] }
-  return blob.content[0]!
-}
 
 // The exported cells are per-row `<rect>`s; their `y` distribution tells us
 // whether rows were laid out down the display or collapsed to the top.
@@ -45,23 +34,10 @@ function cellRowYs(svg: string) {
 // display height. Asserted on both multi-sample variant display types since
 // each has its own renderSvg.
 async function exportFitModeAndCheck(displayType: 'matrix' | 'regular') {
-  const displayText =
-    displayType === 'matrix'
-      ? 'Multi-sample variant display (matrix)'
-      : 'Multi-sample variant display (regular)'
-  const doneTestId =
-    displayType === 'matrix'
-      ? 'variant-matrix-display-done'
-      : 'variant-display-done'
-
-  const { view, findByTestId, findByText } = await createView()
-  await view.navToLocString('ctgA')
-  fireEvent.click(await findByTestId(hts('volvox_test_vcf'), ...opts))
-
-  fireEvent.click(await findByTestId('track_menu_icon', ...opts))
-  fireEvent.click(await findByText('Display types', ...opts))
-  fireEvent.click(await findByText(displayText, ...opts))
-  await findByTestId(doneTestId, ...opts)
+  const { view, findByTestId, info } = await openMultiSampleVariantDisplay({
+    displayType,
+  })
+  await findByTestId(info.doneTestId, {}, { timeout: 40000 })
 
   await view.exportSvg({ rasterizeLayers: false })
   const { rectCount, distinctY, yMin, yMax } = cellRowYs(getSavedSvg())
