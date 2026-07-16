@@ -290,24 +290,53 @@ function modificationsMenu(
 // Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
 // MM/ML tags and applies to any alignments display — it sits beside
 // "Modifications" rather than inside it. Picking a cytosine context activates
-// it; the CpG default is omitted from the scheme.
+// it; the CpG (context) and two-color (both defaults) are omitted from the
+// scheme so a default session carries no redundant fields.
 function bisulfiteItem(model: ModificationsModel): MenuItem {
   const isBis = model.colorBy.type === 'bisulfite'
-  const context = model.colorBy.modifications?.cytosineContext ?? 'CG'
+  const mods = isBis ? (model.colorBy.modifications ?? {}) : {}
+  const context = mods.cytosineContext ?? 'CG'
+  const twoColor = mods.twoColor !== false
+
+  const setBisulfite = (nextContext: CytosineContext, nextTwoColor: boolean) => {
+    model.setColorScheme({
+      type: 'bisulfite',
+      modifications: {
+        ...(nextContext === 'CG' ? {} : { cytosineContext: nextContext }),
+        ...(nextTwoColor ? {} : { twoColor: false }),
+      },
+    })
+  }
+
   return {
     label: 'Bisulfite / EM-seq',
     helpText:
-      'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated red, unmethylated blue, by cytosine context.',
-    subMenu: radioItems<CytosineContext>(
-      cytosineContextOptions,
-      isBis ? context : undefined,
-      next => {
-        model.setColorScheme({
-          type: 'bisulfite',
-          modifications: next === 'CG' ? {} : { cytosineContext: next },
-        })
-      },
-    ),
+      'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated red, unmethylated blue, by cytosine context — turn off "Show unmethylated" to draw the methylated sites only.',
+    subMenu: [
+      ...radioItems<CytosineContext>(
+        cytosineContextOptions,
+        isBis ? context : undefined,
+        next => {
+          setBisulfite(next, twoColor)
+        },
+      ),
+      ...(isBis
+        ? [
+            DIVIDER,
+            checkboxItem(
+              'Show unmethylated (blue)',
+              twoColor,
+              () => {
+                setBisulfite(context, !twoColor)
+              },
+              {
+                helpText:
+                  'When off, only methylated sites (red) are drawn; the unmethylated (converted) sites are left blank.',
+              },
+            ),
+          ]
+        : []),
+    ],
   }
 }
 

@@ -32,7 +32,10 @@ function wgbsContextTrack(context: 'CG' | 'CHG' | 'CHH') {
       type: 'LinearAlignmentsDisplay',
       colorBy: {
         type: 'bisulfite',
-        modifications: { cytosineContext: context },
+        // one-color mode: draw only methylated (red) sites, leaving the
+        // unmethylated ones blank so the tri-context contrast reads as
+        // presence/absence of red rather than a red/blue mix per read
+        modifications: { cytosineContext: context, twoColor: false },
       },
       // compact reads, coverage hidden: three stacked pileups stay legible and
       // the row's message is the read colors, not a per-copy histogram
@@ -56,7 +59,8 @@ const WGBS_CONTEXT_COPIES = (['CG', 'CHG', 'CHH'] as const).map(
 // contexts. The contexts figure below shows this at two levels: the aggregate
 // MethylDackel fractions (one row per context) AND the same per-read pileup
 // colored three ways (one copy per context), so the tri-context contrast reads
-// both quantitatively and per-molecule. methylated C = red, unmethylated = blue.
+// both quantitatively and per-molecule. The per-read copies use one-color mode:
+// methylated C = red, unmethylated sites left blank.
 export const methylationSpecs: ScreenshotSpec[] = [
   // The three plant methylation contexts, shown at both levels so the "3 modes"
   // is unmistakable and consistent: the aggregate MethylDackel track (one 0-100%

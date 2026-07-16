@@ -6,7 +6,11 @@ import {
 
 import { isModificationScheme } from './colorSchemes.ts'
 import { getModificationName } from './modificationData.ts'
-import { isModificationTypeVisible, paintsUnmethylatedState } from './types.ts'
+import {
+  isModificationTypeVisible,
+  paintsUnmethylatedState,
+  usesMethylationLegend,
+} from './types.ts'
 import {
   categorySwatchColor,
   rgb255,
@@ -117,6 +121,7 @@ const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
 function fillUnmarkedLegend(
   modifications: ModificationColorBy | undefined,
   visibleModifications: ReadonlyMap<string, ModificationTypeWithColor>,
+  showUnmethylated: boolean,
 ): LegendItem[] {
   const items: LegendItem[] = []
   if (
@@ -131,7 +136,11 @@ function fillUnmarkedLegend(
   ) {
     items.push({ color: methylated5hmC, label: '5hmC methylated' })
   }
-  items.push({ color: unmethylated5mC, label: 'Unmethylated' })
+  // Bisulfite's methylated-only view paints no unmethylated marks, so it omits
+  // the swatch; every other methylation legend keys it.
+  if (showUnmethylated) {
+    items.push({ color: unmethylated5mC, label: 'Unmethylated' })
+  }
   return items
 }
 
@@ -226,12 +235,16 @@ export function getReadDisplayLegendItems(
     ]
   }
   if (colorType && isModificationScheme(colorType) && visibleModifications) {
-    // The methylation views that paint an explicit unmethylated state
-    // (fill-unmarked and bisulfite) key those states, not the per-type MM
-    // palette; every other modification view keys each detected type in the
-    // color the reads use.
-    const items = paintsUnmethylatedState(colorBy)
-      ? fillUnmarkedLegend(colorBy.modifications, visibleModifications)
+    // The methylation views (fill-unmarked and bisulfite) key the 5mC/5hmC
+    // states — plus the "Unmethylated" swatch when they paint it — not the
+    // per-type MM palette; every other modification view keys each detected type
+    // in the color the reads use.
+    const items = usesMethylationLegend(colorBy)
+      ? fillUnmarkedLegend(
+          colorBy.modifications,
+          visibleModifications,
+          paintsUnmethylatedState(colorBy),
+        )
       : [...visibleModifications]
           .filter(([type]) =>
             isModificationTypeVisible(colorBy.modifications, type),

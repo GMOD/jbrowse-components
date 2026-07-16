@@ -200,6 +200,11 @@ cytosines). Methylated cytosines paint red and unmethylated ones paint blue. It
 lives under **Advanced** because it's reference-based and only makes sense for
 bisulfite/EM-seq libraries — no MM/ML tags are involved.
 
+That same submenu has a **Show unmethylated (blue)** toggle; turning it off draws
+a methylated-only view (red marks only, unmethylated sites left blank). The
+figures below use that view, so methylation reads directly as the presence of
+red and the three contexts contrast cleanly without the blue.
+
 Type `NC_003070.9:4,398,000–4,412,000` into the location box to reach the window
 below (chromosome 1). It places two methylation regimes side by side. On the
 left, the expressed ARM-repeat gene AT1G12930 carries gene-body methylation,
@@ -213,15 +218,15 @@ previous section), and then the same per-read pileup colored three separate
 ways, one copy per context. Over the gene body (left) only the CpG copy lights
 up red; over the silenced element (right) all three copies do.
 
-<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn. Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Blue = unmethylated." />
+<Figure src="/img/methylation/arabidopsis_wgbs_contexts.png" caption="Arabidopsis WGBS over NC_003070.9:4,398,000–4,412,000. Top: gene annotation, then the aggregate MethylDackel track (one row per context), then the same per-read pileup colored by CpG, CHG, and CHH in turn (methylated-only view). Gene body (left): only CpG is methylated (red). Silenced element (right): all three contexts are. Red marks methylation; unmethylated sites are left blank." />
 
 Each per-read copy is just the same alignment track re-colored: switch a
 pileup's context with **Color by → Advanced → Bisulfite / EM-seq**, then CpG /
 CHG / CHH / all (the last one marks every cytosine at once). Because the call is
 made per read, zooming in to the gene→element boundary lets you follow the
-methylation on individual molecules — each read runs blue (unmethylated) over
-the gene body and turns red (methylated) as it crosses into the silenced
-element.
+methylation on individual molecules — in the CHG/CHH copies each read stays blank
+over the gene body and picks up red (methylated) marks as it crosses into the
+silenced element.
 
 ## See also
 

@@ -22,6 +22,7 @@ const isMeth = (e: ModificationEntry) => e.color === METH_COLOR
 function run(
   opts: { strand: number; flags: number; seq: string },
   context: CytosineContext,
+  twoColor = true,
 ) {
   const out: ModificationEntry[] = []
   const feature = new SimpleFeature({
@@ -43,6 +44,7 @@ function run(
     REF,
     0,
     context,
+    twoColor,
     out,
   )
   return out
@@ -110,4 +112,19 @@ test('non-C/T read base at a reference C is not called', () => {
   // reference C at pos1, but the read shows G (a SNP) -> not informative
   const out = run({ strand: 1, flags: 0, seq: 'AGGATAGACATT' }, 'CG')
   expect(out).toHaveLength(0)
+})
+
+describe('single-color mode (twoColor false) draws methylated only', () => {
+  // pos1 C(meth), pos4 T(unmeth), pos8 C(meth) across all contexts
+  const fwd = { strand: 1, flags: 0, seq: 'ACGATAGACATT' }
+
+  test('drops the unmethylated call, keeps the methylated ones', () => {
+    const out = run(fwd, 'all', false)
+    expect(out.map(e => e.position)).toEqual([1, 8])
+    expect(out.every(isMeth)).toBe(true)
+  })
+
+  test('two-color keeps the unmethylated call for comparison', () => {
+    expect(run(fwd, 'all', true).map(e => e.position)).toEqual([1, 4, 8])
+  })
 })

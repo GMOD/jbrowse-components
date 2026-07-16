@@ -163,6 +163,7 @@ export function extractFeatureArrays<T extends FeatureData>(
         regionSequence,
         regionSequenceStart ?? region.start,
         colorBy.modifications?.cytosineContext ?? 'CG',
+        colorBy.modifications?.twoColor ?? true,
         modifications,
       )
     }

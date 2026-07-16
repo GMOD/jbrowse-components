@@ -214,6 +214,7 @@ export function extractBisulfite(
   regionSequence: string,
   regionSequenceStart: number,
   context: CytosineContext,
+  twoColor: boolean,
   modificationsData: ModificationEntry[],
 ) {
   const cigarString = feature.get('CIGAR') as string | undefined
@@ -262,7 +263,11 @@ export function extractBisulfite(
         ) {
           const readBase = seq[readPos + j]?.toUpperCase()
           const methylated = readBase === methRead
-          if (methylated || readBase === unmethRead) {
+          const unmethylated = readBase === unmethRead
+          // Single-color mode (twoColor false) draws only the methylated
+          // (protected) sites and leaves the unmethylated ones blank, like
+          // IGV's non-2-color bisulfite view.
+          if (methylated || (unmethylated && twoColor)) {
             // Bisulfite is a binary call (converted vs protected), not a
             // likelihood — full confidence either way. Methylated paints the
             // 5mC color, unmethylated the no-mod color.
