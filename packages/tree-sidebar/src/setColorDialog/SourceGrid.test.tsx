@@ -15,13 +15,16 @@ interface Src {
 // upgrade changes that shape, `onRowSelectionModelChange`/`onSortModelChange`
 // wiring in SourceGrid breaks silently in the app but loudly here.
 
+const RESERVED = new Set(['name', 'source', 'baseUri', 'color'])
+
 function renderGrid(rows: Src[]) {
   const onChange = jest.fn()
   render(
     <SourceGrid
       rows={rows}
       onChange={onChange}
-      colorColumns={[{ field: 'color', headerName: 'Color' }]}
+      colorColumn={{ field: 'color', headerName: 'Color' }}
+      reserved={RESERVED}
     />,
   )
   return { onChange }
@@ -52,37 +55,23 @@ test('checkbox selection feeds the move-to-bottom action (arg.ids wiring)', () =
   ])
 })
 
-test('two color columns: header toggle switches the active swatch column', () => {
-  const onChange = jest.fn()
-  const rows: Src[] = [{ name: 'a' }, { name: 'b' }]
+// An inactive color column must not fall through to the auto-derived extras and
+// render as a raw hex text column (the bug overlay mode hit with `labelColor`).
+test('a reserved non-active color field is not rendered as an extras column', () => {
+  const rows: Src[] = [{ name: 'a', labelColor: '#f00' }]
   render(
     <SourceGrid
       rows={rows}
-      onChange={onChange}
-      colorColumns={[
-        { field: 'color', headerName: 'Track color' },
-        { field: 'labelColor', headerName: 'Label color' },
-      ]}
-      defaultColorField="labelColor"
+      onChange={jest.fn()}
+      colorColumn={{ field: 'color', headerName: 'Color' }}
+      reserved={new Set([...RESERVED, 'labelColor'])}
     />,
   )
 
-  // defaultColorField makes label color the active (visible) swatch column
   expect(
-    screen.getByRole('columnheader', { name: 'Label color' }),
-  ).toBeInTheDocument()
-  expect(
-    screen.queryByRole('columnheader', { name: 'Track color' }),
+    screen.queryByRole('columnheader', { name: 'labelColor' }),
   ).not.toBeInTheDocument()
-
-  fireEvent.click(screen.getByRole('button', { name: 'Track color' }))
-
-  expect(
-    screen.getByRole('columnheader', { name: 'Track color' }),
-  ).toBeInTheDocument()
-  expect(
-    screen.queryByRole('columnheader', { name: 'Label color' }),
-  ).not.toBeInTheDocument()
+  expect(screen.queryByText('#f00')).not.toBeInTheDocument()
 })
 
 test('clicking the Name header sorts rows through onSortModelChange', () => {

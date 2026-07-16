@@ -1,9 +1,10 @@
 import { ConfirmDialog } from '@jbrowse/core/ui'
 import { DialogContentText } from '@mui/material'
+import { observer } from 'mobx-react'
 
 // Shown before Submit when the user reordered rows while a cluster tree is
 // loaded — the tree was built on the old ordering and will be invalidated.
-export default function ClearTreeWarningDialog({
+export default observer(function ClearTreeWarningDialog({
   handleClose,
   onConfirm,
 }: {
@@ -27,4 +28,4 @@ export default function ClearTreeWarningDialog({
       </DialogContentText>
     </ConfirmDialog>
   )
-}
+})

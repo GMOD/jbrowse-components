@@ -2,14 +2,14 @@ import { useState } from 'react'
 
 import { resolveSelectedIds } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import { observer } from 'mobx-react'
 
 import BulkColorControls from './BulkColorControls.tsx'
 import SelectionMoveButtons from './SelectionMoveButtons.tsx'
 import { buildSourceColumns } from './buildSourceColumns.tsx'
 import { useSourceSort } from './useSourceSort.ts'
-import { IDENTITY_FIELDS, extraColumns } from '../sourcesGridUtils.ts'
+import { extraColumns } from '../sourcesGridUtils.ts'
 
 import type { GridRowId, GridSortModel } from '@mui/x-data-grid'
 
@@ -35,67 +35,35 @@ export interface ColorColumn<S> {
 // onSortModelChange (see useSourceSort), so MUI's own model stays unset.
 const EMPTY_SORT_MODEL: GridSortModel = []
 
-export default function SourceGrid<S extends { name: string; color?: string }>({
+export default observer(function SourceGrid<
+  S extends { name: string; color?: string },
+>({
   rows,
   onChange,
-  colorColumns,
-  defaultColorField,
-  reservedExtra,
+  colorColumn,
+  reserved,
 }: {
   rows: S[]
   onChange: (arg: S[]) => void
-  // PopoverPicker columns. Always includes at least `{ field: 'color' }`. When
-  // more than one is given, a header toggle picks the single active column that
-  // the swatches and bulk button edit (only one color field shown at a time).
-  colorColumns: ColorColumn<S>[]
-  // Which color column starts active; defaults to the first.
-  defaultColorField?: keyof S & string
-  // Additional column names the caller wants hidden from the extras list
-  // (e.g. variants' `sampleName`, `HP`).
-  reservedExtra?: ReadonlySet<string>
+  // The single color column shown as editable swatches. The dialog owns which
+  // one is active (see SetColorDialog's toggle) so the palettizer paints the
+  // same field the grid edits.
+  colorColumn: ColorColumn<S> | undefined
+  // Fields that drive their own dedicated column or are plumbing, so they must
+  // not appear in the auto-derived extras. Includes every color field, not just
+  // the active one — an inactive color column would otherwise render as a raw
+  // hex text column.
+  reserved: ReadonlySet<string>
 }) {
   const { classes } = useStyles()
   const [selected, setSelected] = useState<GridRowId[]>([])
-  const [activeField, setActiveField] = useState(
-    defaultColorField ?? colorColumns[0]?.field,
-  )
   const onSortModelChange = useSourceSort(rows, onChange)
-
-  // Every color field is reserved from `extras`, but only the active one shows
-  // as an editable swatch column.
-  const reserved = new Set<string>([
-    ...IDENTITY_FIELDS,
-    ...colorColumns.map(c => c.field),
-    ...(reservedExtra ?? []),
-  ])
   const extras = extraColumns(rows, reserved)
-
-  const activeColumn =
-    colorColumns.find(c => c.field === activeField) ?? colorColumns[0]
-  const activeColumns = activeColumn ? [activeColumn] : []
 
   return (
     <div>
-      {colorColumns.length > 1 ? (
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={activeColumn?.field}
-          onChange={(_event, value) => {
-            if (value) {
-              setActiveField(value)
-            }
-          }}
-        >
-          {colorColumns.map(c => (
-            <ToggleButton key={c.field} value={c.field}>
-              {c.headerName}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-      ) : null}
       <BulkColorControls
-        colorColumns={activeColumns}
+        colorColumn={colorColumn}
         rows={rows}
         selected={selected}
         onChange={onChange}
@@ -122,7 +90,7 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
           rowHeight={25}
           columnHeaderHeight={33}
           columns={buildSourceColumns({
-            colorColumns: activeColumns,
+            colorColumn,
             extras,
             rows,
             onChange,
@@ -134,4 +102,4 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
       </div>
     </div>
   )
-}
+})

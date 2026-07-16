@@ -58,18 +58,24 @@ export function updateRows<T extends { name: string }>(
   return rows.map(r => (sel.has(r.name) ? { ...r, ...patch } : r))
 }
 
-// Field names present on any row, minus a caller-provided reserved set (the
-// fields that drive their own dedicated columns). Heterogeneous rows can
-// contribute different keys, so union across all rows rather than peeking at
-// just the first.
+// Field names carrying a value on at least one row, minus a caller-provided
+// reserved set (the fields that drive their own dedicated columns).
+// Heterogeneous rows can contribute different keys, so union across all rows
+// rather than peeking at just the first.
+//
+// A key explicitly assigned `undefined` still shows up in Object.keys, and rows
+// are commonly built by mapping a fixed field list (multi-wiggle's setRpcData
+// does exactly that), so a field no row has ever set would otherwise render as
+// a permanently blank column and offer itself as a palette key that buckets
+// every row under ''. Value-presence, not key-presence, is what makes a column.
 export function extraColumns<T extends object>(
   rows: T[],
   reserved: ReadonlySet<string>,
 ): string[] {
   const out = new Set<string>()
   for (const row of rows) {
-    for (const key of Object.keys(row)) {
-      if (!reserved.has(key)) {
+    for (const [key, value] of Object.entries(row)) {
+      if (!reserved.has(key) && value !== undefined) {
         out.add(key)
       }
     }

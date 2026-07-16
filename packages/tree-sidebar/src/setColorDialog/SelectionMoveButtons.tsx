@@ -3,12 +3,13 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
 import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import { IconButton, Tooltip } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { moveDown, moveUp } from '../sourcesGridUtils.ts'
 
 import type { GridRowId } from '@mui/x-data-grid'
 
-export default function SelectionMoveButtons<T extends { name: string }>({
+export default observer(function SelectionMoveButtons<T extends { name: string }>({
   rows,
   selected,
   onChange,
@@ -74,4 +75,4 @@ export default function SelectionMoveButtons<T extends { name: string }>({
       </Tooltip>
     </>
   )
-}
+})

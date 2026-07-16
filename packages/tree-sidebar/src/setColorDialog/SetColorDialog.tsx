@@ -2,12 +2,20 @@ import { useState } from 'react'
 
 import DraggableDialog from '@jbrowse/core/ui/DraggableDialog'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, DialogActions, DialogContent } from '@mui/material'
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
+import { observer } from 'mobx-react'
 
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
 import RowPalettizer from './RowPalettizer.tsx'
 import SourceGrid from './SourceGrid.tsx'
+import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 
 import type { ColorColumn } from './SourceGrid.tsx'
 
@@ -25,8 +33,9 @@ const useStyles = makeStyles()({
 // The slice of a TreeSidebarMixin display the dialog drives. Consumers pass the
 // model itself (not four separate callbacks) so every plugin shares one
 // contract. `editableSources` is the dialog-editable list (no palette
-// synthesis, no subtree filter), read live so it reflects a mid-dialog
-// "Clear custom settings".
+// synthesis, no subtree filter). The dialog snapshots it into local state on
+// open and re-reads it after "Clear custom settings", so edits stay uncommitted
+// until Submit.
 export interface TreeLayoutModel<S extends { name: string }> {
   editableSources?: S[]
   setLayout: (s: S[]) => void
@@ -55,7 +64,7 @@ export interface SetColorDialogProps<
   reservedFields?: ReadonlySet<string>
 }
 
-export default function SetColorDialog<
+export default observer(function SetColorDialog<
   S extends { name: string; color?: string },
 >({
   model,
@@ -72,6 +81,22 @@ export default function SetColorDialog<
   const [showBulkEditor, setShowBulkEditor] = useState(false)
   const [currLayout, setCurrLayout] = useState(getSources)
   const [pendingReorderConfirm, setPendingReorderConfirm] = useState(false)
+  const [activeField, setActiveField] = useState(
+    defaultColorField ?? colorColumns[0]?.field,
+  )
+
+  // The grid edits one color column at a time; the palettizer and bulk button
+  // paint that same one.
+  const activeColumn =
+    colorColumns.find(c => c.field === activeField) ?? colorColumns[0]
+
+  // Every color column is reserved from the auto-derived extras, not just the
+  // active one, so an inactive swatch field never leaks as a raw hex column.
+  const reserved = new Set<string>([
+    ...IDENTITY_FIELDS,
+    ...colorColumns.map(c => c.field),
+    ...(reservedFields ?? []),
+  ])
 
   const submit = () => {
     model.setLayout(currLayout)
@@ -112,6 +137,7 @@ export default function SetColorDialog<
                 <RowPalettizer
                   currLayout={currLayout}
                   setCurrLayout={setCurrLayout}
+                  colorColumn={activeColumn}
                   excludedFields={reservedFields}
                 />
               ) : null}
@@ -128,40 +154,40 @@ export default function SetColorDialog<
               ) : null}
             </div>
 
+            {colorColumns.length > 1 ? (
+              <ToggleButtonGroup
+                exclusive
+                size="small"
+                value={activeColumn?.field}
+                onChange={(_event, value) => {
+                  if (value) {
+                    setActiveField(value)
+                  }
+                }}
+              >
+                {colorColumns.map(c => (
+                  <ToggleButton key={c.field} value={c.field}>
+                    {c.headerName}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            ) : null}
+
             <SourceGrid
               rows={currLayout}
               onChange={setCurrLayout}
-              colorColumns={colorColumns}
-              defaultColorField={defaultColorField}
-              reservedExtra={reservedFields}
+              colorColumn={activeColumn}
+              reserved={reserved}
             />
           </DialogContent>
           <DialogActions>
-            <Button
-              variant="contained"
-              color="inherit"
-              onClick={() => {
-                resetToModel()
-              }}
-            >
+            <Button variant="contained" color="inherit" onClick={resetToModel}>
               Clear custom settings
             </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => {
-                handleClose()
-              }}
-            >
+            <Button variant="contained" color="secondary" onClick={handleClose}>
               Cancel
             </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                onSubmit()
-              }}
-            >
+            <Button variant="contained" color="primary" onClick={onSubmit}>
               Submit
             </Button>
           </DialogActions>
@@ -179,4 +205,4 @@ export default function SetColorDialog<
       ) : null}
     </DraggableDialog>
   )
-}
+})

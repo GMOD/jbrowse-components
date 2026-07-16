@@ -12,18 +12,18 @@ const PALETTE = [
   ...new Set([...tableau10, ...set1, ...dark2, ...set2, ...category10]),
 ]
 
-// Pick a color per row by some metadata attribute. Most-common values get the
-// first (most visually distinct) palette entries; when the palette runs out
-// (>~40 distinct values) fall back to a deterministic random color seeded by
-// the value so repeated palette-bys produce stable results.
-export function applyColorPalette<S extends { name: string; color?: string }>(
+// Pick a color per row by some metadata attribute, index-aligned with
+// `sources`. Most-common values get the first (most visually distinct) palette
+// entries; when the palette runs out (>~40 distinct values) fall back to a
+// deterministic random color seeded by the value so repeated palette-bys
+// produce stable results.
+//
+// Returns the colors rather than applying them so callers can target a field
+// other than `color` (the dialog paints whichever color column is active).
+export function paletteColorsByRow<S extends { name: string }>(
   sources: S[],
   attribute: string,
-): Colored<S>[] {
-  if (sources.length === 0) {
-    return []
-  }
-
+): string[] {
   // Use 'name' as fallback attribute if attribute is empty or doesn't exist in any source
   const finalAttr =
     attribute && sources.some(s => attribute in s) ? attribute : 'name'
@@ -43,8 +43,17 @@ export function applyColorPalette<S extends { name: string; color?: string }>(
       .map(([key], idx) => [key, PALETTE[idx] ?? randomColor(key)]),
   )
 
+  return keys.map(key => colorByValue[key]!)
+}
+
+// Assign a categorical palette to each row's `color`.
+export function applyColorPalette<S extends { name: string; color?: string }>(
+  sources: S[],
+  attribute: string,
+): Colored<S>[] {
+  const colors = paletteColorsByRow(sources, attribute)
   return sources.map((s, i) => ({
     ...s,
-    color: colorByValue[keys[i]!]!,
+    color: colors[i]!,
   }))
 }

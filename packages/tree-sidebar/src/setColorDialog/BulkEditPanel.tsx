@@ -10,6 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import {
   mergeParsedRows,
@@ -24,7 +25,7 @@ const useStyles = makeStyles()({
   },
 })
 
-export default function BulkEditPanel<S extends { name: string }>({
+export default observer(function BulkEditPanel<S extends { name: string }>({
   onClose,
   currLayout,
 }: {
@@ -142,4 +143,4 @@ export default function BulkEditPanel<S extends { name: string }>({
       </DialogActions>
     </>
   )
-}
+})

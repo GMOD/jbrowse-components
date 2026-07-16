@@ -75,6 +75,31 @@ describe('mergeParsedRows', () => {
     ])
   })
 
+  // A blank cell must unset the field rather than set it to '': consumers fill
+  // unset fields with `??` synthesis (the overlay color palette), which '' would
+  // satisfy and silently defeat.
+  it('unsets fields whose pasted cell is blank', () => {
+    const merged = mergeParsedRows(
+      layout,
+      { HG1: { name: 'HG1', color: '' } },
+      false,
+    )
+    expect(merged[0]!.color).toBeUndefined()
+  })
+
+  // Regression: "Copy current as CSV" round-tripped through Update rows used to
+  // turn every unset color into '', collapsing overlay mode's per-track palette
+  // to a single default color.
+  it('round-trips toCSV through Update rows without setting blank colors', () => {
+    const rows = [
+      { name: 'HG1', source: 'HG1', color: undefined, group: 'GBR' },
+      { name: 'HG2', source: 'HG2', color: '#ff0000', group: 'CHS' },
+    ]
+    const merged = mergeParsedRows(rows, parseRowsByName(toCSV(rows)), false)
+    expect(merged[0]!.color).toBeUndefined()
+    expect(merged[1]!.color).toBe('#ff0000')
+  })
+
   it('drops existing fields for matched rows when replace=true', () => {
     expect(mergeParsedRows(layout, byName, true)).toEqual([
       { name: 'HG1', pop: 'GBR' },

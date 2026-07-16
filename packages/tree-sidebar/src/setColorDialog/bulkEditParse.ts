@@ -89,13 +89,25 @@ export function parseRowsByName(
   )
 }
 
+// An empty cell means "unset this field", not "set it to the empty string".
+// Consumers synthesize defaults with `??` (e.g. multi-wiggle's overlay color
+// palette in sourcesLogic.ts), which a '' would satisfy and thereby defeat —
+// round-tripping "Copy current as CSV" through Update rows would otherwise turn
+// every unset color into a set-but-blank one and collapse the palette.
+function unsetBlanks(patch: Record<string, string>) {
+  return Object.fromEntries(
+    Object.entries(patch).map(([k, v]) => [k, v === '' ? undefined : v]),
+  )
+}
+
 // Join parsed rows (by name) onto the current layout.
 // - Rows whose name is not in the paste are always kept unchanged.
 // - replace=false: patch pasted fields over existing fields.
 // - replace=true: for matched rows, start from {} so only pasted fields
-//   survive. Identity fields not included in the paste (e.g. `source`) are
-//   lost; callers should include all required fields in the paste when using
-//   replace mode.
+//   survive. Identity fields omitted from the paste (e.g. `source`, `baseUri`)
+//   drop out here but are restored by `reconcileLayout`, which merges each
+//   layout entry onto its discovered row — the layout is a partial override,
+//   never the whole record.
 export function mergeParsedRows<S extends { name: string }>(
   currLayout: S[],
   byName: Record<string, Record<string, string>>,
@@ -108,7 +120,7 @@ export function mergeParsedRows<S extends { name: string }>(
     }
     return {
       ...(replace ? {} : record),
-      ...patch,
+      ...unsetBlanks(patch),
       name: record.name,
     } as S
   })

@@ -161,4 +161,23 @@ describe('extraColumns', () => {
   it('returns empty for empty input', () => {
     expect(extraColumns([], reserved)).toEqual([])
   })
+
+  // Rows built by mapping a fixed field list (multi-wiggle's setRpcData) carry
+  // explicitly-undefined keys, which Object.keys still reports. Such a field has
+  // no values to show or group by, so it must not become a column.
+  it('ignores keys that are undefined on every row', () => {
+    const rows = [
+      { name: 'a', labelColor: undefined, group: undefined },
+      { name: 'b', labelColor: undefined, group: undefined },
+    ]
+    expect(extraColumns(rows, reserved)).toEqual([])
+  })
+
+  it('keeps a field that is set on at least one row', () => {
+    const rows = [
+      { name: 'a', labelColor: undefined },
+      { name: 'b', labelColor: '#f00' },
+    ]
+    expect(extraColumns(rows, reserved)).toEqual(['labelColor'])
+  })
 })
