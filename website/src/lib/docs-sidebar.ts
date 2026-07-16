@@ -1,4 +1,3 @@
-import { gallerySections } from './gallery.ts'
 import { GUIDE_CATEGORY_ORDER } from './guide-categories.ts'
 import sidebarsJson from '../../sidebars.json'
 
@@ -202,26 +201,10 @@ export function buildSidebar(
 }
 
 // The "showcase" pages (Features / Plugins / Gallery / Demos) hang off the same
-// sidebar as the docs, so navigation is identical everywhere on the site. Gallery
-// and Demos become collapsible groups whose summary links to the page and whose
-// children jump to the page's own section anchors (single-sourced from
-// gallerySections); Features and Plugins have no enumerable sections, so they stay
-// plain top-level links.
+// sidebar as the docs, so navigation is identical everywhere on the site. All
+// four are plain top-level links to their respective pages.
 export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
   const pageUrl = (path: string) => `${baseUrl}/${path}/`
-  const sectionLinks = (
-    path: string,
-    sections: typeof gallerySections,
-  ): SidebarLink[] =>
-    sections.map(s => ({
-      type: 'link',
-      label: s.title,
-      href: `${pageUrl(path)}#${s.id}`,
-      slug: `${path}#${s.id}`,
-    }))
-  const galleryVisible = gallerySections.filter(s =>
-    s.items.some(i => !i.demoOnly),
-  )
   return [
     {
       type: 'link',
@@ -236,26 +219,16 @@ export function buildShowcaseGroups(baseUrl: string): SidebarEntry[] {
       slug: 'plugin_store',
     },
     {
-      type: 'group',
+      type: 'link',
       label: 'Gallery',
       href: pageUrl('gallery'),
       slug: 'gallery',
-      items: sectionLinks('gallery', galleryVisible),
     },
     {
-      type: 'group',
+      type: 'link',
       label: 'Demos',
       href: pageUrl('demos'),
       slug: 'demos',
-      items: [
-        ...sectionLinks('demos', gallerySections),
-        {
-          type: 'link',
-          label: 'Conference and other guided demos',
-          href: `${pageUrl('demos')}#guided`,
-          slug: 'demos#guided',
-        },
-      ],
     },
   ]
 }
