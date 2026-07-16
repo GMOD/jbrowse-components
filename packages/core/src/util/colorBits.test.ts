@@ -3,6 +3,7 @@ import {
   cssColorToNormalizedRgb,
   cssColorToNormalizedRgba,
   cssColorToRgba,
+  featureBedColor,
   featureItemRgb,
   getAlpha,
   getBlue,
@@ -10,6 +11,8 @@ import {
   getRed,
   parseCssColor,
 } from './colorBits.ts'
+
+import type { Feature } from './simpleFeature.ts'
 
 describe('colorBits helpers', () => {
   describe('parseCssColor', () => {
@@ -99,27 +102,6 @@ describe('colorBits helpers', () => {
       expect(getGreen(parseCssColor('1,2,3,4'))).toBe(0)
       expect(getGreen(parseCssColor('a,b,c'))).toBe(0)
     })
-  })
-
-  describe('featureItemRgb', () => {
-    test('a real triple passes through', () => {
-      expect(featureItemRgb('227,26,28')).toBe('227,26,28')
-      expect(featureItemRgb(' 227,26,28 ')).toBe('227,26,28')
-    })
-
-    test('the "no color specified" placeholder reads as absent', () => {
-      // plain BED12 files fill itemRgb with this rather than omitting it (every
-      // itemRgb in the volvox-bed12 fixture is "0,0,0"); honoring it literally
-      // would paint an ordinary BED12 track solid black
-      expect(featureItemRgb('0')).toBeUndefined()
-      expect(featureItemRgb('0,0,0')).toBeUndefined()
-    })
-
-    test('missing / non-string / empty reads as absent', () => {
-      expect(featureItemRgb(undefined)).toBeUndefined()
-      expect(featureItemRgb('')).toBeUndefined()
-      expect(featureItemRgb(0)).toBeUndefined()
-    })
 
     test('case insensitive named colors', () => {
       expect(getRed(parseCssColor('RED'))).toBe(255)
@@ -145,6 +127,78 @@ describe('colorBits helpers', () => {
         const c = parseCssColor(bad)
         expect([getRed(c), getGreen(c), getBlue(c)]).toEqual([255, 0, 255])
       }
+    })
+  })
+
+  describe('featureItemRgb', () => {
+    test('a real triple passes through', () => {
+      expect(featureItemRgb('227,26,28')).toBe('227,26,28')
+      expect(featureItemRgb(' 227,26,28 ')).toBe('227,26,28')
+    })
+
+    test('the "no color specified" placeholder reads as absent', () => {
+      // plain BED12 files fill itemRgb with this rather than omitting it (every
+      // itemRgb in the volvox-bed12 fixture is "0,0,0"); honoring it literally
+      // would paint an ordinary BED12 track solid black
+      expect(featureItemRgb('0')).toBeUndefined()
+      expect(featureItemRgb('0,0,0')).toBeUndefined()
+    })
+
+    test('missing / non-string / empty reads as absent', () => {
+      expect(featureItemRgb(undefined)).toBeUndefined()
+      expect(featureItemRgb('')).toBeUndefined()
+      expect(featureItemRgb(0)).toBeUndefined()
+    })
+
+    test('anything not unambiguously a BED triple reads as absent', () => {
+      // this feeds an automatic path, so a non-triple must leave the configured
+      // default alone rather than resolve to the magenta invalid sentinel — a
+      // `reserved` column need not hold a color at all
+      expect(featureItemRgb('#ff0000')).toBeUndefined()
+      expect(featureItemRgb('red')).toBeUndefined()
+      expect(featureItemRgb('some_label')).toBeUndefined()
+      expect(featureItemRgb('1,2')).toBeUndefined()
+    })
+  })
+
+  describe('featureBedColor', () => {
+    function mockFeature(attrs: Record<string, unknown>) {
+      return { get: (k: string) => attrs[k] } as unknown as Feature
+    }
+
+    test('reads the itemRgb column', () => {
+      expect(featureBedColor(mockFeature({ itemRgb: '227,26,28' }))).toBe(
+        '227,26,28',
+      )
+    })
+
+    test('reads the reserved column, which is what bigBed autoSql names it', () => {
+      // BigBedAdapter takes its field names from the file's embedded autoSql,
+      // and UCSC's canonical BED autoSql calls the color column `reserved` —
+      // our own volvox.bb features come out with it
+      expect(featureBedColor(mockFeature({ reserved: '31,120,180' }))).toBe(
+        '31,120,180',
+      )
+    })
+
+    test('itemRgb wins when a file somehow carries both', () => {
+      expect(
+        featureBedColor(mockFeature({ itemRgb: '1,1,1', reserved: '2,2,2' })),
+      ).toBe('1,1,1')
+    })
+
+    test('falls through a placeholder in one column to a real color in the other', () => {
+      expect(
+        featureBedColor(mockFeature({ itemRgb: '0,0,0', reserved: '2,2,2' })),
+      ).toBe('2,2,2')
+    })
+
+    test('a reserved column holding a non-color reads as absent', () => {
+      expect(featureBedColor(mockFeature({ reserved: 'foo' }))).toBeUndefined()
+    })
+
+    test('no color columns at all', () => {
+      expect(featureBedColor(mockFeature({ name: 'x' }))).toBeUndefined()
     })
   })
 

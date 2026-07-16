@@ -9,6 +9,7 @@ import {
 } from './color-bits/index.ts'
 
 import type { Color } from './color-bits/index.ts'
+import type { Feature } from './simpleFeature.ts'
 
 export {
   alpha,
@@ -50,13 +51,38 @@ const BED_ITEM_RGB = /^\d{1,3},\d{1,3},\d{1,3}$/
 const BED_ITEM_RGB_UNSET = /^0(,0,0)?$/
 
 /**
- * A feature's BED `itemRgb` as a usable color string, or undefined when the
- * feature has none or carries the "no color specified" placeholder. Takes the
- * raw attribute value so it stays dependency-free and directly testable.
+ * One raw attribute value as a usable BED color, or undefined when it isn't
+ * one. Deliberately strict: this feeds an *automatic* coloring path, so a value
+ * is only claimed when it is unambiguously a BED triple. Anything else — a hex
+ * string, a `reserved` column holding something that isn't a color at all —
+ * reads as absent and leaves the configured default alone, rather than
+ * rendering as the magenta invalid-color sentinel. Takes the raw value so it
+ * stays dependency-free and directly testable.
  */
 export function featureItemRgb(raw: unknown): string | undefined {
   const str = typeof raw === 'string' ? raw.trim() : ''
-  return str.length > 0 && !BED_ITEM_RGB_UNSET.test(str) ? str : undefined
+  return BED_ITEM_RGB.test(str) && !BED_ITEM_RGB_UNSET.test(str)
+    ? str
+    : undefined
+}
+
+// The two names the BED color column goes by. `itemRgb` is the BED spec's name;
+// `reserved` is what UCSC's canonical autoSql calls it ("uint reserved; Used as
+// itemRgb as of 2004-11-22"). bigBed/bigGenePred files embed that autoSql and
+// BigBedAdapter takes its field names from it, so their features come out
+// carrying `reserved` — the very case #1734 asks about.
+const BED_COLOR_FIELDS = ['itemRgb', 'reserved']
+
+/**
+ * The BED color a feature declares for itself, under either column name, or
+ * undefined if it declares none.
+ */
+export function featureBedColor(feature: Feature): string | undefined {
+  let found: string | undefined
+  for (const field of BED_COLOR_FIELDS) {
+    found ??= featureItemRgb(feature.get(field))
+  }
+  return found
 }
 
 // Resolve a CSS color string to a Color: honors named colors, `transparent`,

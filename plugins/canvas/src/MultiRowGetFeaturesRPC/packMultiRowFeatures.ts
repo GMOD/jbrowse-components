@@ -1,5 +1,5 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
-import { cssColorToABGR, featureItemRgb } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
 
 import { MULTIROW_DEFAULT_COLOR } from './multiRowColors.ts'
 
@@ -22,13 +22,12 @@ export function evalColorSlot(
   }
 }
 
-// A BED that carries `itemRgb` has already said how it wants to be colored, so
-// honor it when the `color` slot is untouched — no jexl needed to paint an
-// itemRgb BED. An explicit `color` slot still wins. cssColorToABGR understands
-// the bare "255,0,0" triple, so the value goes through as-is.
-function itemRgbOf(feature: Feature) {
-  return featureItemRgb(feature.get('itemRgb'))
-}
+// A BED that declares its own color has already said how it wants to be
+// painted, so honor it when the `color` slot is untouched — no jexl needed. An
+// explicit `color` slot still wins. cssColorToABGR understands the bare
+// "255,0,0" triple, so the value goes through as-is. No parent walk here: these
+// painting tracks are flat (disableGeneHeuristic), so the drawn feature is the
+// one carrying the color.
 
 /**
  * Pack features into the multi-row wire arrays: absolute genomic start/end, a
@@ -89,12 +88,12 @@ export function packMultiRowFeatures({
       valueIndex.set(value, idx)
     }
     featurePartitionIndex[i] = idx
-    const itemRgb = colorSlotIsDefault ? itemRgbOf(feature) : undefined
-    if (itemRgb === undefined) {
+    const bedColor = colorSlotIsDefault ? featureBedColor(feature) : undefined
+    if (bedColor === undefined) {
       featureColors[i] = cssColorToABGR(evalColorSlot(colorCfg, feature, jexl))
     } else {
       usedItemRgb = true
-      featureColors[i] = cssColorToABGR(itemRgb)
+      featureColors[i] = cssColorToABGR(bedColor)
     }
   }
 
