@@ -76,9 +76,12 @@ export interface AlignmentsRParams {
   // empty falls back to the CRAM's own UR header / REF_PATH inside cram_to_bam
   reference: string
   // JBrowse's localized "Sort by..." at the center line, reproduced by
-  // sorted_pileup_layout: 'position'/'strand'/'base' order the reads overlapping
-  // sortPos. undefined = plain pileup_layout (no sort, or an unsupported type)
-  sortType?: 'position' | 'strand' | 'base'
+  // sorted_pileup_layout: orders the reads overlapping sortPos by read start /
+  // strand / base call / interbase length / sort-tag value. undefined = plain
+  // pileup_layout (no sort, or an unrecognized type)
+  sortType?: RSortType
+  // the BAM tag the 'tag' sort reads (self.sortedBy.tag), e.g. HP for haplotype
+  sortTag?: string
   // genomic column the sort anchors on (the center line at export); -1 (default)
   // when no center line, which leaves every read in genomic order
   sortPos?: number
@@ -103,16 +106,54 @@ function emitTagFilters(filters: { tag: string; value?: string }[]) {
 }
 
 // Map self.sortedBy.type to the sort the R sorted_pileup_layout reproduces.
-// basePair -> base; position/strand pass through; insertion/softclip/hardclip/tag
-// aren't reproduced (they need interbase length or tag values the reference-coord
-// reader doesn't carry) -> undefined, falling back to plain layout.
-function resolveSortType(type: string | undefined) {
-  const map: Record<string, 'position' | 'strand' | 'base'> = {
-    position: 'position',
-    strand: 'strand',
-    basePair: 'base',
-  }
-  return type ? map[type] : undefined
+// basePair -> base; every other JBrowse sort type passes through under its own
+// name. An unknown type -> undefined, falling back to plain layout rather than
+// silently sorting by something else.
+type RSortType = (typeof SORT_TYPES)[number]
+const SORT_TYPES = [
+  'position',
+  'strand',
+  'base',
+  'insertion',
+  'softclip',
+  'hardclip',
+  'tag',
+] as const
+
+function resolveSortType(type: string | undefined): RSortType | undefined {
+  const name = type === 'basePair' ? 'base' : type
+  return SORT_TYPES.find(t => t === name)
+}
+
+// The overlay frames each sort keys off, appended to the sorted_pileup_layout
+// call (signature: reads, sort_pos, sort_type, mm, indels, clips). position /
+// strand read the reads frame itself; tag reads the reads$sort_tag column the
+// loop attaches.
+const SORT_ARGS: Record<RSortType, string> = {
+  position: '',
+  strand: '',
+  base: ', mm, indels',
+  insertion: ', NULL, indels',
+  softclip: ', NULL, NULL, clips',
+  hardclip: ', NULL, NULL, clips',
+  tag: '',
+}
+
+// The comment above each sort's call in the emitted script — the reader is meant
+// to understand the ordering without opening the helper.
+const SORT_NOTES: Record<RSortType, string> = {
+  position: 'sort reads by start at the center-line column',
+  strand: 'sort reads by strand at the center-line column (forward first)',
+  base: `sort reads by their base at the center-line column (a deletion sorts as '*',
+  # ahead of the ACGT bases, like JBrowse)`,
+  insertion: `sort reads by the length of their insertion at the center-line column,
+  # longest first (reads without one keep genomic order below)`,
+  softclip: `sort reads by the length of their soft clip at the center-line column,
+  # longest first (reads without one keep genomic order below)`,
+  hardclip: `sort reads by the length of their hard clip at the center-line column,
+  # longest first (reads without one keep genomic order below)`,
+  tag: `sort reads by their sort-tag value at the center-line column, descending
+  # (numerically when every value is a number, else by string collation)`,
 }
 
 // JBrowse exposes ~a dozen color-by schemes; map each to the closest scheme the
@@ -350,16 +391,11 @@ ${filterConsts}
     const layout = p.linkReads
       ? `  linked <- link_reads(reads)
   reads <- linked$reads`
-      : sortType === 'base'
+      : sortType !== undefined
         ? `${sortPosMap}
-  # sort reads by their base at the center-line column (a deletion sorts as '*',
-  # ahead of the ACGT bases, like JBrowse), then pack rows
-  reads <- sorted_pileup_layout(reads, sort_pos, "base", mm, indels)`
-        : sortType !== undefined
-          ? `${sortPosMap}
-  # sort reads by ${sortType} at the center-line column, then pack rows
-  reads <- sorted_pileup_layout(reads, sort_pos, ${rStr(sortType)})`
-          : `  reads <- pileup_layout(reads)`
+  # ${SORT_NOTES[sortType]}, then pack rows
+  reads <- sorted_pileup_layout(reads, sort_pos, ${rStr(sortType)}${SORT_ARGS[sortType]})`
+        : `  reads <- pileup_layout(reads)`
     const connector = p.linkReads
       ? `
     geom_segment(data = linked$links,
@@ -486,6 +522,9 @@ ${filterConsts}
         ...(sortType === 'base' && (isMods || isQual)
           ? ['bam_mismatches']
           : []),
+        // the tag sort needs each read's tag value (the other sorts key off
+        // frames the panel already reads: reads / mm / indels / clips)
+        ...(sortType === 'tag' && p.sortTag ? ['bam_tag_values'] : []),
         'bam_indels',
         'gap_colors',
         'bam_clips',
@@ -513,7 +552,13 @@ ${[pathAlias, filterConsts, consts].filter(Boolean).join('\n')}
       df
     }
     ${readFilteredReads}
-    n <- nrow(reads)
+${
+  sortType === 'tag' && p.sortTag
+    ? `    # the tag sort's key, per read, in the same order — so it rides the
+    # reads frame through the multi-region rbind and stays joined to its read
+    reads$sort_tag <- bam_tag_values(bam, chrom, start, end, ${rStr(p.sortTag)})\n`
+    : ''
+}    n <- nrow(reads)
     reads$start <- pmin(pmax(reads$start, start), end) + shift
     reads$end   <- pmin(pmax(reads$end, start), end) + shift
     reads$.region <- ri
@@ -570,6 +615,7 @@ export function exportRCode(
     linkReads: self.linkedReads !== 'off',
     sortType: resolveSortType(self.sortedBy?.type),
     sortPos: self.sortedBy?.pos ?? -1,
+    sortTag: self.sortedBy?.tag,
     filterFlagInclude: self.filterBy.flagInclude,
     filterFlagExclude: self.filterBy.flagExclude,
     filterReadName: self.filterBy.readName,

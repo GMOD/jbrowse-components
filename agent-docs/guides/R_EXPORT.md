@@ -146,8 +146,8 @@ proper-pairs, not mean±sd), MD-tag mismatches with the depth-dependent
 low-frequency fade (`mismatch_fade_alpha`, zoom-gated on `bpPerPx>1` like
 `frequencyFade` — the coverage panel shows every fraction, the fade is on the
 pileup ticks), MM/ML modifications, per-base quality, soft/hard clips, CIGAR
-indels, linked reads, center-line **sort** (position/strand/base — base sorts a
-deletion over `sort_pos` as `*`, ahead of the ACGT bases, matching JBrowse), and
+indels, linked reads, center-line **sort** (**every** JBrowse sort type:
+position/strand/base/insertion/softclip/hardclip/tag), and
 **Filter by** (flags/read-name/tags) — applied to the **coverage panel as well as
 the pileup**, because JBrowse filters in the *adapter*
 (`BamAdapter.getFeatures`), so one filtered read stream feeds every consumer.
@@ -158,19 +158,32 @@ same filtered depth. `keep_rows` is **only** for the coverage panel — dropping
 rows from a pileup overlay would desync the `read_index` join (see Gotchas).
 See the gallery README section per type.
 
-Cross-implementation equivalence tests (`exportRRun.test.ts`) run the *actual*
-JS (`getInsertSizeStats`/`classifyInsertSize`,
-`computeMismatchFrequencies`/`applyDepthDependentThreshold`) and the R helpers
-over identical synthetic data and assert read-for-read agreement — the strongest
-guard that the two implementations stay semantically aligned.
+Cross-implementation equivalence tests run the *actual* JS and the R helpers over
+identical synthetic data and assert read-for-read agreement — the strongest guard
+that the two implementations stay semantically aligned. `exportRRun.test.ts`
+covers `getInsertSizeStats`/`classifyInsertSize` and
+`computeMismatchFrequencies`/`applyDepthDependentThreshold`;
+`exportRSortEquivalence.test.ts` drives JBrowse's real `computeSortedLayout`
+(via the shared `sortLayout.fixture.ts`) against the emitted
+`sorted_pileup_layout` for base/insertion/softclip/tag. Reads there all span the
+sort column so each takes its own row and the row assignment *is* the sort
+order — which also sidesteps the one intended layout difference (JBrowse's
+`placeRect` leaves a 2bp gap between reads sharing a row; the R helper packs on
+strict overlap).
+
+**The sort rules are subtle — mirror `sortLayout.ts`, don't reinvent:**
+`sortByMapWithUnknownsLast` puts reads *carrying* the sorted-on feature first and
+reads without it last **for base/interbase but not for `tag`** (a missing tag is
+0/`""` and sorts among the rest). Interbase sorts key on an **exact column
+match** (`== sort_pos`, longest first, longest event per read), unlike the base
+sort's deletion **span** test. The tag sort goes numeric only when **every**
+value parses (one numeric-looking value must not put a column of string tags into
+NaN comparisons). Every R branch returns an ascending numeric key with `Inf` =
+"no key", so a descending criterion is keyed negative rather than sorted
+separately.
 
 ## Next steps (prioritized)
 
-- **Interbase/tag sorts.** `sorted_pileup_layout` falls back to plain layout for
-  `insertion`/`softclip`/`hardclip`/`tag` (`resolveSortType` returns undefined).
-  `softclip`/`hardclip` reproducible from `bam_clips` (clip length at `sort_pos`,
-  longest first — JBrowse `desc=true`); `insertion` from `bam_indels`
-  (`type=="I"`); `tag` needs a per-read tag read (like `read_filter`'s tag path).
 - **Bisulfite / 5mC-5hmC methylation.** `bam_modifications` handles MM/ML modBAM
   but not reference-dependent bisulfite C→T (no MM tag), the 5mC/5hmC
   winner-take-all collapse, or `shownModifications`/`hiddenModifications` per-type
