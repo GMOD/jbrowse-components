@@ -212,11 +212,35 @@ export function featurizeSA(
   readName: string | undefined,
   normalize?: boolean,
 ) {
+  return SA === undefined
+    ? []
+    : featurizeSAEntries(splitSA(SA), id, strand, readName, normalize)
+}
+
+/**
+ * #api
+ * The `;`-separated alignment records of an SA tag, empties dropped — the input
+ * `featurizeSAEntries` expects.
+ */
+export function splitSA(SA: string) {
+  return SA.split(';').filter(aln => !!aln)
+}
+
+/**
+ * #api
+ * featurizeSA over pre-split entries (see splitSA). Lets a caller filter the
+ * entries first — e.g. deduplicating the records repeated across a split read's
+ * segments — without paying to split and rejoin the tag around the filter.
+ */
+export function featurizeSAEntries(
+  entries: string[],
+  id: string,
+  strand: number | undefined,
+  readName: string | undefined,
+  normalize?: boolean,
+) {
   const strandNum = strand ?? 1
-  return (
-    SA?.split(';')
-      .filter(aln => !!aln)
-      .map((aln, index) => {
+  return entries.map((aln, index) => {
         const ret = aln.split(',')
         const saRef = ret[0]!
         const saStart = ret[1]!
@@ -251,6 +275,5 @@ export function featurizeSA(
             refName: readName,
           },
         }
-      }) ?? []
-  )
+  })
 }

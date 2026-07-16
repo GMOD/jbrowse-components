@@ -46,6 +46,7 @@ export {
 export {
   clipLengthAtStartOfReadNumeric,
   featurizeSA,
+  featurizeSAEntries,
   getClip,
   getLength,
   getLengthOnRef,
@@ -54,6 +55,7 @@ export {
   parseCigar2,
   parseCigar2Typed,
   parseCigar,
+  splitSA,
 } from './mismatchParser.ts'
 export type {
   ClipMismatch,

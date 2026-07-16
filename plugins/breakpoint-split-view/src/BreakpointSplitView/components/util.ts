@@ -3,7 +3,11 @@ import {
   isAbnormalPairDirection,
   pairDirection,
 } from '@jbrowse/alignments-core'
-import { featurizeSA, getClip } from '@jbrowse/cigar-utils'
+import {
+  featurizeSAEntries,
+  getClip,
+  splitSA,
+} from '@jbrowse/cigar-utils'
 import { assembleLocStringFast, notEmpty } from '@jbrowse/core/util'
 
 import type { ChainSegment, LayoutMatch } from '../types.ts'
@@ -95,15 +99,15 @@ export function readChainSegments(features: Feature[]) {
   for (const feature of features) {
     const SA = (feature.get('tags') as Record<string, unknown> | undefined)
       ?.SA as string | undefined
-    const novel = SA?.split(';').filter(aln => !!aln && !seen.has(aln))
-    if (!novel?.length) {
+    const novel = SA === undefined ? [] : splitSA(SA).filter(a => !seen.has(a))
+    if (!novel.length) {
       continue
     }
     for (const aln of novel) {
       seen.add(aln)
     }
-    for (const sa of featurizeSA(
-      novel.join(';'),
+    for (const sa of featurizeSAEntries(
+      novel,
       feature.id(),
       feature.get('strand'),
       feature.get('name'),
