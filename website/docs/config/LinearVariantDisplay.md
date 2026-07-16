@@ -164,15 +164,14 @@ one, else goldenrod
 color of the connecting/intron lines between feature segments (defaults to the
 theme text color)
 
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`THEME_DERIVED_COLOR`
+**Type:** `maybeColor` · **Default:** `undefined`
 
 ```js
 {
-  type: 'color',
+  type: 'maybeColor',
   description:
     'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
-  defaultValue: THEME_DERIVED_COLOR,
+  defaultValue: undefined,
   contextVariable: ['feature'],
 }
 ```

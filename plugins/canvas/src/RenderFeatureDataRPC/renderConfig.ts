@@ -43,8 +43,11 @@ export function readConfigValueSafe<T>(
   }
 }
 
-// Sentinel config color (connectorColor stroke, outlineColor) meaning "derive
-// from the theme". The worker swaps it for `fallback` via resolveThemeColor.
+// Sentinel config color meaning "derive from the theme". The worker swaps it for
+// `fallback` via resolveThemeColor. Only outlineColor still needs it: that slot
+// has three states (no outline / theme-derived / explicit color) and just one
+// spare non-color value (`''` = off), so the third has to be in-band. Slots with
+// only a theme-derived default use `maybeColor` instead — see configurationSlot.ts.
 export const THEME_DERIVED_COLOR = '#f0f'
 
 export function resolveThemeColor(value: string, fallback: string) {
@@ -85,7 +88,7 @@ export interface DisplayConfig {
   // `maybeColor` slots: undefined = unset, meaning the feature's own BED color
   // paints it (see getBoxColor). Not the same as any concrete color.
   color: string | undefined
-  connectorColor: string
+  connectorColor: string | undefined
   utrColor: string | undefined
   outlineColor: string
   labels: {

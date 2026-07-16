@@ -1,5 +1,4 @@
 import { packRenderArrays } from './packRenderArrays.ts'
-import { THEME_DERIVED_COLOR } from './renderConfig.ts'
 
 import type { RectData } from './packRenderArrays.ts'
 import type { DisplayConfig } from './renderConfig.ts'
@@ -21,7 +20,7 @@ export function mockDisplayConfig(
     jexlFilters: [],
     // the `maybeColor` slots default to unset, as a real config does
     color: undefined,
-    connectorColor: THEME_DERIVED_COLOR,
+    connectorColor: undefined,
     utrColor: undefined,
     outlineColor: '',
     labels: {

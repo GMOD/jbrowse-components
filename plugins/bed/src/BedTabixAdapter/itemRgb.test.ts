@@ -1,3 +1,4 @@
+import { featureBedColor } from '@jbrowse/core/util/colorBits'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -42,7 +43,7 @@ test('a colored BED12 exposes itemRgb to its subfeatures via parent()', async ()
   const parent = feats[0]!
   expect(parent.get('itemRgb')).toBe('227,26,28')
 
-  const subfeatures = (parent.get('subfeatures') ?? [])
+  const subfeatures = parent.get('subfeatures') ?? []
   expect(subfeatures.length).toBeGreaterThan(0)
   for (const sub of subfeatures) {
     // the box carries no color of its own — it must inherit
@@ -57,4 +58,16 @@ test('the plain BED12 fixture carries only the placeholder', async () => {
   // would paint this track black
   const feats = await getFeats('./test_data/volvox-bed12.bed.gz')
   expect(feats[0]!.get('itemRgb')).toBe('0,0,0')
+})
+
+// A BED9 is the classic "I just want colored features" file, and it's the one
+// that sent users of #1734 hunting: the parser only applies the *named* BED
+// schema at exactly 12 columns, so a BED9's color lands in the positional
+// `field8` and no amount of looking for `itemRgb` finds it.
+test('a BED9 carries its color as field8, which still resolves', async () => {
+  const feats = await getFeats('./test_data/volvox-bed9-itemrgb.bed.gz')
+  const feature = feats[0]!
+  expect(feature.get('itemRgb')).toBeUndefined()
+  expect(feature.get('field8')).toBe('227,26,28')
+  expect(featureBedColor(feature)).toBe('227,26,28')
 })

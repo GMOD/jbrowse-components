@@ -221,6 +221,30 @@ describe('colorBits helpers', () => {
       expect(featureBedColor(mockFeature({ reserved: 'foo' }))).toBeUndefined()
     })
 
+    test('reads the positional field8, which is where a BED9 puts it', () => {
+      // the parser only applies the *named* BED schema at exactly 12 columns; a
+      // BED9/10/11 falls back to auto-naming by column index, so the color lands
+      // in field8 — making plain BED9, the classic "just give me colors" file,
+      // the case this exists for. Nothing is renamed on the feature, so a config
+      // already reading jexl:get(feature,'field8') keeps working.
+      expect(featureBedColor(mockFeature({ field8: '51,160,44' }))).toBe(
+        '51,160,44',
+      )
+    })
+
+    test('a field8 holding something that is not a color is not claimed', () => {
+      // positional names carry no promise of meaning; strictness is what makes
+      // reading one safe
+      expect(featureBedColor(mockFeature({ field8: 'gene_x' }))).toBeUndefined()
+      expect(featureBedColor(mockFeature({ field8: '1000' }))).toBeUndefined()
+    })
+
+    test('a named column wins over the positional one', () => {
+      expect(
+        featureBedColor(mockFeature({ itemRgb: '1,1,1', field8: '2,2,2' })),
+      ).toBe('1,1,1')
+    })
+
     test('no color columns at all', () => {
       expect(featureBedColor(mockFeature({ name: 'x' }))).toBeUndefined()
     })

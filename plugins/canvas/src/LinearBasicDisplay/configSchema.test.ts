@@ -2,7 +2,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { isCallbackValue, readConfObject } from '@jbrowse/core/configuration'
 
 import configSchemaFactory from './configSchema.ts'
-import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 
 function createPluginManager() {
   const pm = new PluginManager([])
@@ -20,12 +19,13 @@ describe('LinearBasicDisplay configSchema', () => {
       { displayId: 'test', type: 'LinearBasicDisplay' },
       { pluginManager: pm },
     )
-    // color/utrColor are `maybeColor`: unset by default, which is what lets a
-    // feature's own BED color paint. The concrete fallbacks live in
-    // featureColors.ts and are applied by getBoxColor, not by the slot.
+    // color/utrColor/connectorColor are `maybeColor`: unset by default, which is
+    // what lets a feature's own BED color paint (and the theme drive the
+    // connector). The concrete fallbacks live in featureColors.ts and
+    // getStrokeColor, not in the slot.
     expect(readConfObject(config, 'color')).toBeUndefined()
     expect(readConfObject(config, 'utrColor')).toBeUndefined()
-    expect(readConfObject(config, 'connectorColor')).toBe(THEME_DERIVED_COLOR)
+    expect(readConfObject(config, 'connectorColor')).toBeUndefined()
     expect(readConfObject(config, 'featureHeight')).toBe(10)
     // raw slot default is the promotable `inherit` sentinel; the resolved
     // display getter turns it into `normal` (see promotableDefaults.ts)

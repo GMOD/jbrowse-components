@@ -8,7 +8,6 @@ import {
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
-import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -98,11 +97,15 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       // Connecting/intron lines between feature segments. Legacy: `color2`.
+      // `maybeColor` for the same reason as `color` above: the default isn't a
+      // color but "derive from the theme", and spending a real color (this once
+      // defaulted to a `#f0f` sentinel) on that role made magenta connectors
+      // unexpressible.
       connectorColor: {
-        type: 'color',
+        type: 'maybeColor',
         description:
           'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
-        defaultValue: THEME_DERIVED_COLOR,
+        defaultValue: undefined,
         contextVariable: ['feature'],
       },
       /**

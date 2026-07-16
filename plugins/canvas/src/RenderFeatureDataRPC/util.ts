@@ -2,11 +2,7 @@ import { getFrame, measureText } from '@jbrowse/core/util'
 import { featureBedColor } from '@jbrowse/core/util/colorBits'
 
 import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from './featureColors.ts'
-import {
-  THEME_DERIVED_COLOR,
-  readConfigValueSafe,
-  resolveThemeColor,
-} from './renderConfig.ts'
+import { readConfigValueSafe } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
@@ -178,17 +174,19 @@ export function getStrokeColor({
   theme: Theme
   jexl: JexlInstance
 }) {
-  // A throwing connectorColor jexl degrades to the theme-derived stroke (its
-  // own default), keeping the line subtle rather than crashing the render.
-  const c = readConfigValueSafe<string>(
-    config,
-    'connectorColor',
-    feature,
-    jexl,
-    THEME_DERIVED_COLOR,
-  )
   // text.secondary is translucent; keep its alpha so connector lines and strand
   // arrows blend into the track as a subtle grey rather than glaring full-white
-  // (dark mode) or full-black (light mode) at forced opacity.
-  return resolveThemeColor(c, theme.palette.text.secondary)
+  // (dark mode) or full-black (light mode) at forced opacity. An unset slot
+  // takes it, and so does a throwing jexl — degrading to the subtle line rather
+  // than crashing the render.
+  const themed = theme.palette.text.secondary
+  return config.connectorColor === undefined
+    ? themed
+    : readConfigValueSafe<string>(
+        config,
+        'connectorColor',
+        feature,
+        jexl,
+        themed,
+      )
 }

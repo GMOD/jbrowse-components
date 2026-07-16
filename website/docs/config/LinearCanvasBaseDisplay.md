@@ -27,7 +27,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [showLabels](#slot-showlabels)                                 | `stringEnum`                                          | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides                                                                   |
 | [showDescriptions](#slot-showdescriptions)                     | `boolean`                                             | Show feature descriptions                                                                                                                                                 |
 | [color](#slot-color)                                           | `maybeColor`                                          | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring).                                                                         |
-| [connectorColor](#slot-connectorcolor)                         | `color`                                               | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                                          |
+| [connectorColor](#slot-connectorcolor)                         | `maybeColor`                                          | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                                          |
 | [utrColor](#slot-utrcolor)                                     | `maybeColor`                                          | fill color for UTRs on gene/transcript glyphs.                                                                                                                            |
 | [outlineColor](#slot-outlinecolor)                             | `color`                                               | outline color for features (empty string = no outline)                                                                                                                    |
 | [featureHeight](#slot-featureheight)                           | `number`                                              | height in pixels of the main body of each feature                                                                                                                         |
@@ -150,15 +150,14 @@ one, else goldenrod
 color of the connecting/intron lines between feature segments (defaults to the
 theme text color)
 
-**Type:** [`color`](/docs/config_guides/slot_types#color) · **Default:**
-`THEME_DERIVED_COLOR`
+**Type:** `maybeColor` · **Default:** `undefined`
 
 ```js
 {
-  type: 'color',
+  type: 'maybeColor',
   description:
     'color of the connecting/intron lines between feature segments (defaults to the theme text color)',
-  defaultValue: THEME_DERIVED_COLOR,
+  defaultValue: undefined,
   contextVariable: ['feature'],
 }
 ```
