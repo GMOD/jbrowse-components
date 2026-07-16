@@ -43,3 +43,4 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [033](adr-033-synteny-lod-prune-at-data-draw-crisp-at-shader.md) | Accepted | Synteny/dotplot LOD — prune at the data layer, draw survivors crisp at the shader |
 | [034](adr-034-dotplot-diagonalize-stays-single-axis.md) | Accepted | Dotplot/synteny auto-diagonalize stays single-axis; both-axis seriation rejected |
 | [035](adr-035-pileup-maxheight-bounds-pixels-not-gpu-memory.md) | Closed | `maxHeight` bounds pixels, not GPU instance count — no action |
+| [036](adr-036-delete-stranded-pluggable-glyph-registry.md) | Accepted | Delete the stranded pluggable glyph registry; glyph extensibility reopens worker-side or not at all |
