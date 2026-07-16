@@ -31,6 +31,23 @@ const MAX_HANDLE_PX = 200
 // apexes at 0.75 * bow.
 const MAX_BOW_PX = 30
 
+// A discordant connection bows *down* instead of up, so the two classes read
+// apart at a glance. Depth comes from the connection's own horizontal span
+// rather than reaching for some fixed row: with "view as pairs" / "link
+// supplementary alignments" every qname lands on one row, so dipping to a
+// shared row bottoms every curve out at the same depth and they collapse into
+// spaghetti. Keying on span makes the depth mean something — wide events dive
+// deeper than narrow ones — and lets the curves nest.
+//
+// Depth saturates toward MAX_DIP_PX rather than clamping at it. A hard cap
+// reintroduces exactly the problem being fixed: every connection wider than the
+// cap point bottoms out at an identical depth, and at any plausible cap a
+// typical view is mostly wider. This form stays strictly increasing in span at
+// every width while staying bounded. DIP_HALF_SPAN_PX is the span at which the
+// dip reaches half its maximum.
+const MAX_DIP_PX = 110
+const DIP_HALF_SPAN_PX = 500
+
 interface Pt {
   x: number
   y: number
@@ -46,13 +63,9 @@ function tangentSign(strand: number, leading: boolean, reversed: boolean) {
 }
 
 // How much shaping (handle length, bow height) this curve may spend: a fraction
-// of the distance it has to cover. Vertical reach counts the control rows too,
-// so the abnormal dip's deliberate stretch down to the track edge still earns a
-// full-length handle even though its endpoints sit on one row.
-function shapingBudget(p1: Pt, p2: Pt, cy1: number, cy2: number) {
-  const ys = [p1.y, p2.y, cy1, cy2]
-  const spanY = Math.max(...ys) - Math.min(...ys)
-  return Math.hypot(p2.x - p1.x, spanY) * SPAN_FACTOR
+// of the distance it has to cover.
+function shapingBudget(p1: Pt, p2: Pt) {
+  return Math.hypot(p2.x - p1.x, p2.y - p1.y) * SPAN_FACTOR
 }
 
 // Fades to zero as the endpoints' rows separate, since a cross-row curve
@@ -60,6 +73,14 @@ function shapingBudget(p1: Pt, p2: Pt, cy1: number, cy2: number) {
 // horizontally, since a short connector is legible without a hump.
 function bowHeight(p1: Pt, p2: Pt, budget: number) {
   return Math.min(budget, Math.max(0, MAX_BOW_PX - Math.abs(p2.y - p1.y)))
+}
+
+// Negative = the control points drop below the reads (see MAX_DIP_PX). Keyed on
+// horizontal span alone: two reads a few px apart describe a small event and get
+// a small dip, however tall their track happens to be.
+function dipHeight(p1: Pt, p2: Pt) {
+  const span = Math.abs(p2.x - p1.x)
+  return -MAX_DIP_PX * (span / (span + DIP_HALF_SPAN_PX))
 }
 
 function cubicPath(from: Pt, ctrl1: Pt, ctrl2: Pt, to: Pt) {
@@ -79,10 +100,10 @@ export function bezierConnectorPath({
   reversed1 = false,
   reversed2 = false,
   maxHandlePx = MAX_HANDLE_PX,
-  // Pull both control points down to this row instead of each endpoint's own Y
-  // — the abnormal same-level breakpoint connection's deliberate dip to the
-  // track's bottom edge. Such a caller owns its own shape, so the bow is off.
-  dipToY,
+  // This connection is discordant (aberrant pair orientation, or a split
+  // junction's strand flip): it dips below the reads instead of arcing over
+  // them, so the two classes are tellable apart by shape alone.
+  dip = false,
 }: {
   x1: number
   y1: number
@@ -94,19 +115,17 @@ export function bezierConnectorPath({
   reversed1?: boolean
   reversed2?: boolean
   maxHandlePx?: number
-  dipToY?: number
+  dip?: boolean
 }) {
   const from = { x: x1, y: y1 }
   const to = { x: x2, y: y2 }
-  const cy1 = dipToY ?? y1
-  const cy2 = dipToY ?? y2
-  const budget = shapingBudget(from, to, cy1, cy2)
+  const budget = shapingBudget(from, to)
   const handle = Math.min(maxHandlePx, budget)
-  const bow = dipToY === undefined ? bowHeight(from, to, budget) : 0
+  const bow = dip ? dipHeight(from, to) : bowHeight(from, to, budget)
   return cubicPath(
     from,
-    { x: x1 + handle * tangentSign(s1, false, reversed1), y: cy1 - bow },
-    { x: x2 + handle * tangentSign(s2, leadingEnd2, reversed2), y: cy2 - bow },
+    { x: x1 + handle * tangentSign(s1, false, reversed1), y: y1 - bow },
+    { x: x2 + handle * tangentSign(s2, leadingEnd2, reversed2), y: y2 - bow },
     to,
   )
 }

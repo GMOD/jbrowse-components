@@ -24,7 +24,9 @@ function cubicYAt(path: string, t: number) {
     number,
   ]
   const u = 1 - t
-  return u * u * u * y0 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y3
+  return (
+    u * u * u * y0 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y3
+  )
 }
 
 test('same-row connection bows the control points up so it is not a flat line', () => {
@@ -144,57 +146,71 @@ test('MAX_HANDLE_PX bounds the fold-back hook on a full-width inversion', () => 
   expect(cx1).toBe(200)
 })
 
-test('the abnormal dip keeps its handle: the dip Y counts toward the span', () => {
-  // endpoints share a row, but the dip reaches 300px down to the track edge
-  const [cx1] = controlXs(
-    bezierConnectorPath({
-      x1: 0,
-      y1: 100,
-      x2: 20,
-      y2: 100,
-      s1: 1,
-      s2: 1,
-      dipToY: 400,
-    }),
-  )
-  expect(cx1).toBeGreaterThan(50)
-})
-
-test('the abnormal dip owns its shape, so it suppresses the bow', () => {
-  const path = bezierConnectorPath({
-    x1: 0,
-    y1: 100,
-    x2: 50,
-    y2: 100,
-    s1: 1,
-    s2: 1,
-    dipToY: 200,
-  })
-  const [cy1, cy2] = controlYs(path)
-  expect(cy1).toBe(200)
-  expect(cy2).toBe(200)
-})
-
-// Regression: the dip used to be inferred by comparing the control Ys against
-// the endpoint Ys, so an abnormal pair whose reads had both already been
-// clamped to the track's bottom edge (computeOverlayY returns exactly
-// yOffset+height for an off-display or clipped read) compared equal, read as
-// "caller didn't override", and bowed *up* instead of dipping.
-test('a dip to the row the endpoints already sit on still suppresses the bow', () => {
-  const trackBottom = 200
+test('a discordant connection dips below the reads, not above them', () => {
   const [cy1, cy2] = controlYs(
     bezierConnectorPath({
       x1: 0,
-      y1: trackBottom,
-      x2: 50,
-      y2: trackBottom,
+      y1: 100,
+      x2: 200,
+      y2: 100,
       s1: 1,
       s2: 1,
-      dipToY: trackBottom,
+      dip: true,
     }),
   )
-  expect(cy1).toBe(trackBottom)
-  expect(cy2).toBe(trackBottom)
+  // larger y = down on screen; a concordant connection here would bow up
+  expect(cy1).toBeGreaterThan(100)
+  expect(cy2).toBeGreaterThan(100)
+  expect(cy1).toBe(cy2)
+})
+
+// Control-point Y of a discordant same-row connection spanning `x2` px.
+const dipY = (x2: number) =>
+  controlYs(
+    bezierConnectorPath({
+      x1: 0,
+      y1: 100,
+      x2,
+      y2: 100,
+      s1: 1,
+      s2: 1,
+      dip: true,
+    }),
+  )[0]
+
+// "view as pairs" / "link supplementary alignments" puts every qname on one
+// row, so dipping to a shared row (previously the track's bottom edge) bottomed
+// every discordant curve out at the same depth and they collapsed into
+// spaghetti. Depth has to come from the connection's own span instead.
+test('dip depth scales with span, so same-row connections do not all bottom out together', () => {
+  expect(dipY(60)).toBeLessThan(dipY(300))
+  expect(dipY(300)).toBeLessThan(dipY(1200))
+})
+
+test('dip depth keeps separating even the widest connections, and stays bounded', () => {
+  // a hard cap would bottom every wide connection out at the same depth, which
+  // is the spaghetti this is meant to avoid
+  expect(dipY(300)).toBeLessThan(dipY(1200))
+  expect(dipY(1200)).toBeLessThan(dipY(5000))
+  expect(dipY(1e6)).toBeLessThan(100 + 110)
+})
+
+test('dip depth does not depend on the endpoints rows', () => {
+  // the old dip reached for the track's bottom edge, so its depth changed with
+  // track height and scroll position rather than with the event
+  const depthFrom = (y: number) =>
+    controlYs(
+      bezierConnectorPath({
+        x1: 0,
+        y1: y,
+        x2: 300,
+        y2: y,
+        s1: 1,
+        s2: 1,
+        dip: true,
+      }),
+    )[0] - y
+  expect(depthFrom(20)).toBe(depthFrom(500))
 })
 
 test('an inversion folds back at its leading end', () => {
