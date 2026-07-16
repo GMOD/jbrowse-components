@@ -2,6 +2,7 @@ import {
   assertContextMenuContains,
   delay,
   findByTestId,
+  findByText,
   navigateToApp,
   navigateWithSessionSpec,
   openTrack,
@@ -113,7 +114,12 @@ const suite: TestSuite = {
         )
         await delay(500)
 
-        await assertContextMenuContains(page, 'Linear read vs ref')
+        // pushLaunchViewMenuItem nests view-launching entries under a
+        // "Launch view" submenu, so open that before looking for the item
+        await assertContextMenuContains(page, 'Launch view')
+        await (await findByText(page, 'Launch view'))?.hover()
+        await delay(500)
+        await findByText(page, 'Linear read vs ref')
       },
     },
     lgvSnapshotTest({
