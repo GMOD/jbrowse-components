@@ -1,4 +1,8 @@
-import { clipBlock } from './blockClipUtils.ts'
+import {
+  bpRangeXTuple,
+  clipBlock,
+  writeBpRangeUniforms,
+} from './blockClipUtils.ts'
 
 import type { BpRegionBounds } from './renderBlock.ts'
 
@@ -45,4 +49,43 @@ test('adjacent blocks abut exactly at their shared edge', () => {
 
 test('returns null for a fully off-screen block', () => {
   expect(clipBlock(block(1200, 1400), 1000, 20, 1)).toBeNull()
+})
+
+// bpRangeXTuple + writeBpRangeUniforms are the single chokepoint for the one
+// uniform write every genome-mapped shader shares; the reversed-block pivot
+// (start->end, +len->-len) is the part that's easy to get subtly wrong.
+test('bpRangeXTuple pivots on bpEnd with a negated length for reversed blocks', () => {
+  const clip = clipBlock(block(100, 900), 1000, 20, 1)!
+  expect(bpRangeXTuple(clip, false)).toEqual([
+    clip.bpStartHi,
+    clip.bpStartLo,
+    clip.clippedLengthBp,
+  ])
+  expect(bpRangeXTuple(clip, true)).toEqual([
+    clip.bpEndHi,
+    clip.bpEndLo,
+    -clip.clippedLengthBp,
+  ])
+})
+
+test('writeBpRangeUniforms writes the tuple at offsetF32, leaving other slots untouched', () => {
+  const clip = clipBlock(block(100, 900), 1000, 20, 1)!
+  const f32 = new Float32Array(8)
+  const offset = 3
+  writeBpRangeUniforms(f32, offset, clip, false)
+  const expected = Float32Array.from(bpRangeXTuple(clip, false))
+  expect(f32[offset]).toBe(expected[0])
+  expect(f32[offset + 1]).toBe(expected[1])
+  expect(f32[offset + 2]).toBe(expected[2])
+  // slots outside [offset, offset+2] stay at their initial 0
+  expect(f32[0]).toBe(0)
+  expect(f32[offset + 3]).toBe(0)
+})
+
+test('writeBpRangeUniforms honors the reversed pivot', () => {
+  const clip = clipBlock(block(100, 900), 1000, 20, 1)!
+  const f32 = new Float32Array(3)
+  writeBpRangeUniforms(f32, 0, clip, true)
+  const expected = Float32Array.from(bpRangeXTuple(clip, true))
+  expect(Array.from(f32)).toEqual(Array.from(expected))
 })
