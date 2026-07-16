@@ -17,7 +17,6 @@ import {
 } from '../constants.ts'
 import {
   bandScreenTop,
-  contentScreenY,
   makeBpToPx,
   makeScroll,
   sectionBandBottom,
@@ -98,19 +97,37 @@ export function computeVisibleLabels(
     [INTERBASE_HARDCLIP]: 'H',
   }
 
-  // Each stacked section places its labels at its own pileup top; ungrouped is
-  // one section, so this reduces to the prior single-offset loop. See
-  // sectionScreen.ts for the band-top-vs-content scroll tiers used below.
+  // Deletion length labels are measured per gap, and a pileup repeats the same
+  // few lengths thousands of times, so memoize the measure (fontSize is fixed
+  // for the whole pass). Keyed by the number to skip building the string too.
+  const textWidthCache = new Map<number, number>()
+  const gapTextWidth = (len: number) => {
+    const hit = textWidthCache.get(len)
+    if (hit !== undefined) {
+      return hit
+    }
+    const w = measureText(String(len), fontSize)
+    textWidthCache.set(len, w)
+    return w
+  }
+
   const scroll = makeScroll(sections.length, scrollTop, height)
   for (const { laidOutPileupMap, topOffset, pileupHeight } of sections) {
-    const rowYPx = (y: number) =>
-      contentScreenY(y * rowHeight + featureHeight / 2 + topOffset, scroll)
+    // Each stacked section places its labels at its own pileup top; ungrouped is
+    // one section, so this reduces to the prior single-offset loop. See
+    // sectionScreen.ts for the band-top-vs-content scroll tiers used here.
+    //
+    // contentScreenY is affine in the row index, so its projection is inlined at
+    // each use below as `row * rowHeight + rowNudge - scrollTop` — same operand
+    // order, so it stays bit-identical. It runs per candidate label (tens of
+    // thousands on a deep pileup), where the call overhead alone was a top
+    // frame in a pan/zoom profile.
+    const rowNudge = featureHeight / 2 + topOffset
     // Clip to this section's pileup band bottom, not the whole canvas, so a
     // collapsed group (pileupHeight 0) draws nothing and a group's labels never
     // bleed into the section below it.
     const bottom = sectionBandBottom(topOffset, pileupHeight, scroll)
     const sectionTop = bandScreenTop(topOffset, scroll)
-    const rowYInRange = (yPx: number) => yPx >= sectionTop && yPx <= bottom
     for (const vr of view.visibleRegions) {
       const rpcData = laidOutPileupMap.get(vr.displayedRegionIndex)
       if (!rpcData) {
@@ -143,33 +160,33 @@ export function computeVisibleLabels(
             continue
           }
 
-          const rawStartPx = bpToPx(gapStart)
-          const rawEndPx = bpToPx(gapEnd)
-          const startPx = Math.min(rawStartPx, rawEndPx)
-          const endPx = Math.max(rawStartPx, rawEndPx)
-          const widthPx = endPx - startPx
+          // Cull off-band rows before measuring: the row test is two compares,
+          // the fade needs a text measure, and on a tall pileup most rows are
+          // off-band. Both tests are independent, so the surviving set is the
+          // same either way.
+          const yPx = gapYs[i]! * rowHeight + rowNudge - scrollTop
+          if (yPx < sectionTop || yPx > bottom) {
+            continue
+          }
 
-          const lengthStr = String(length)
-          const textWidth = measureText(lengthStr, fontSize)
+          // bpToPx is affine, so the rect's width is its bp span scaled and its
+          // midpoint is the midpoint bp projected — no need to project both
+          // edges and min/max them.
+          const widthPx = Math.abs(gapEnd - gapStart) / bpPerPx
 
           // Fade the length out as the deletion rect narrows toward its own text
           // width, so back-to-back deletions dissolve smoothly when zooming out
           // instead of all vanishing at once.
-          const opacity = labelFadeOpacity(widthPx, textWidth)
+          const opacity = labelFadeOpacity(widthPx, gapTextWidth(length))
           if (opacity < MIN_LABEL_OPACITY) {
-            continue
-          }
-
-          const yPx = rowYPx(gapYs[i]!)
-          if (!rowYInRange(yPx)) {
             continue
           }
 
           labels.push({
             type: 'deletion',
-            x: (startPx + endPx) / 2,
+            x: bpToPx((gapStart + gapEnd) / 2),
             y: yPx,
-            text: lengthStr,
+            text: String(length),
             fontSize,
             opacity,
           })
@@ -200,8 +217,8 @@ export function computeVisibleLabels(
           continue
         }
 
-        const yPx = rowYPx(interbaseYs[i]!)
-        if (!rowYInRange(yPx)) {
+        const yPx = interbaseYs[i]! * rowHeight + rowNudge - scrollTop
+        if (yPx < sectionTop || yPx > bottom) {
           continue
         }
         const xPx = bpToPx(pos)
@@ -271,13 +288,15 @@ export function computeVisibleLabels(
           }
 
           const row = mismatchYs[i]!
-          const yPx = rowYPx(row)
-          if (!rowYInRange(yPx)) {
+          const yPx = row * rowHeight + rowNudge - scrollTop
+          if (yPx < sectionTop || yPx > bottom) {
             continue
           }
 
           // Midpoint of the 1bp SNP rect; the average is orientation-independent.
-          const centerPx = (bpToPx(pos) + bpToPx(pos + 1)) / 2
+          // bpToPx is affine, so projecting the midpoint bp is the same as
+          // averaging the two projected edges, at one call instead of two.
+          const centerPx = bpToPx(pos + 0.5)
 
           // Insertion wins: drop the letter when a large insertion box on this
           // row covers its center, otherwise it sits on purple and looks like a
@@ -311,11 +330,11 @@ export function computeVisibleLabels(
           if (pos < blockStart || pos + 1 > blockEnd) {
             continue
           }
-          const yPx = rowYPx(softclipBaseYs[i]!)
-          if (!rowYInRange(yPx)) {
+          const yPx = softclipBaseYs[i]! * rowHeight + rowNudge - scrollTop
+          if (yPx < sectionTop || yPx > bottom) {
             continue
           }
-          const centerPx = (bpToPx(pos) + bpToPx(pos + 1)) / 2
+          const centerPx = bpToPx(pos + 0.5)
           labels.push({
             type: 'mismatch',
             x: centerPx,
