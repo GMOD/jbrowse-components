@@ -56,12 +56,26 @@ export default function stateModelF(
     .views(self => ({
       /**
        * #getter
-       * the parent GCContentTrack's adapter is already a GCContentAdapter, so
-       * use it directly and apply the current display parameter overrides
+       * applies the current display parameter overrides to the parent
+       * GCContentTrack's adapter.
+       *
+       * The canonical config gives the track a GCContentAdapter (see the
+       * #example above), which is used as-is. But a GCContentTrack may also
+       * name a bare sequence adapter: that was the only shape that worked
+       * before the display stopped wrapping unconditionally, and it shipped in
+       * our own volvox configs long enough to be out in the wild. Wrapping it
+       * here keeps those configs rendering — left unwrapped, the sequence
+       * adapter's featureless output reaches the wiggle as an empty domain and
+       * the track draws an axis with no data, silently and with no error.
        */
       get adapterConfig() {
+        const adapter = getConf(self.parentTrack, 'adapter')
+        const gcContentAdapter =
+          adapter.type === 'GCContentAdapter'
+            ? adapter
+            : { type: 'GCContentAdapter', sequenceAdapter: adapter }
         return {
-          ...getConf(self.parentTrack, 'adapter'),
+          ...gcContentAdapter,
           windowSize: self.windowSize,
           windowDelta: self.windowDelta,
           gcMode: self.gcMode,

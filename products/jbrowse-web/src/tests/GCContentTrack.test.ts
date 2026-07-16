@@ -1,4 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
+import { waitFor } from '@testing-library/react'
 
 import { createTestSession } from '../rootModel/index.ts'
 
@@ -167,6 +168,76 @@ test('standalone GCContentTrack display does not double-wrap its adapter', () =>
   // the LinearGCContentTrackDisplay's adapterConfig must apply display params
   // to the track's existing GCContentAdapter, not wrap it in another one
   const { adapterConfig } = shown.displays[0]
+  expect(adapterConfig.type).toBe('GCContentAdapter')
+  expect(adapterConfig.sequenceAdapter.type).toBe('FromConfigSequenceAdapter')
+})
+
+// The companion of the double-wrap case: a config-authored GCContentTrack may
+// name a bare sequence adapter instead of a GCContentAdapter. That shape shipped
+// in our own volvox configs, so it has to keep working — unwrapped, the sequence
+// adapter reaches the wiggle with no scores and the track silently draws an
+// empty axis rather than erroring.
+test('GCContentTrack display wraps a bare sequence adapter', async () => {
+  const session = createTestSession({
+    jbrowseConfig: {
+      assemblies: [
+        {
+          name: 'volvox',
+          sequence: {
+            type: 'ReferenceSequenceTrack',
+            trackId: 'volvox_refseq',
+            adapter: {
+              type: 'FromConfigSequenceAdapter',
+              features: [
+                {
+                  refName: 'ctgA',
+                  uniqueId: 'firstId',
+                  start: 0,
+                  end: 100,
+                  seq: 'A'.repeat(100),
+                },
+              ],
+            },
+          },
+        },
+      ],
+      tracks: [
+        {
+          type: 'GCContentTrack',
+          trackId: 'gc_legacy',
+          assemblyNames: ['volvox'],
+          // the legacy shape: a bare sequence adapter, not a GCContentAdapter
+          adapter: {
+            type: 'FromConfigSequenceAdapter',
+            features: [
+              {
+                refName: 'ctgA',
+                uniqueId: 'firstId',
+                start: 0,
+                end: 100,
+                seq: 'A'.repeat(100),
+              },
+            ],
+          },
+        },
+      ],
+    },
+    sessionSnapshot: {
+      views: [
+        {
+          id: 'view1',
+          type: 'LinearGenomeView',
+          init: { assembly: 'volvox', loc: 'ctgA', tracks: ['gc_legacy'] },
+        },
+      ],
+    },
+  })
+
+  const view = session.views[0]
+  await waitFor(() => {
+    expect(view.tracks.length).toBe(1)
+  })
+  const { adapterConfig } = view.tracks[0].displays[0]
   expect(adapterConfig.type).toBe('GCContentAdapter')
   expect(adapterConfig.sequenceAdapter.type).toBe('FromConfigSequenceAdapter')
 })

@@ -261,10 +261,13 @@
         "source": "<b>Simulated</b> genome data"
       },
       "adapter": {
-        "type": "TwoBitAdapter",
-        "twoBitLocation": {
-          "uri": "volvox.2bit",
-          "locationType": "UriLocation"
+        "type": "GCContentAdapter",
+        "sequenceAdapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
         }
       }
     },
