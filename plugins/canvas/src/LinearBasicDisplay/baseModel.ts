@@ -793,18 +793,29 @@ export default function baseStateModelFactory(
         //           its PARENT feature, since the packer keys on top-level ids and
         //           pinning the subfeature id would be a no-op that leaves the
         //           searched transcript buried/clipped in a dense track.
+        //   `boxedBy` = index-aligned with self.featureHighlights: which ids each
+        //           individual highlight boxes. Attribution is the only honest
+        //           answer to "which highlights box THIS?" — the matchers are
+        //           heuristic (trix records no uniqueId, and its label may be a
+        //           custom/indexed string), so re-running one outside this
+        //           resolution loop loses the topLevelMatched gate and reports
+        //           matches for things a highlight never boxed. Fine for
+        //           best-effort boxing, not for deciding what to DELETE; see
+        //           removeFeatureHighlightsForId.
         get resolvedHighlights(): {
           box: ReadonlySet<string>
           pin: ReadonlySet<string>
+          boxedBy: ReadonlySet<string>[]
         } {
           const box = new Set<string>()
           const pin = new Set<string>()
-          for (const h of self.featureHighlights) {
+          const boxedBy = self.featureHighlights.map(h => {
+            const boxed = new Set<string>()
             for (const data of self.rpcDataMap.values()) {
               let topLevelMatched = false
               for (const item of data.flatbushItems) {
                 if (featureMatchesHighlight(item, data.refName, h)) {
-                  box.add(item.featureId)
+                  boxed.add(item.featureId)
                   pin.add(item.featureId)
                   topLevelMatched = true
                 }
@@ -826,14 +837,18 @@ export default function baseStateModelFactory(
                       h,
                     )
                   ) {
-                    box.add(s.featureId)
+                    boxed.add(s.featureId)
                     pin.add(s.parentFeatureId)
                   }
                 }
               }
             }
-          }
-          return { box, pin }
+            for (const id of boxed) {
+              box.add(id)
+            }
+            return boxed
+          })
+          return { box, pin, boxedBy }
         },
 
         /**
@@ -1815,7 +1830,7 @@ export default function baseStateModelFactory(
         // gene's while boxing the gene, not the transcript — counting that as a
         // duplicate would make the menu's "Highlight this transcript" a dead
         // click, since the entry is offered precisely because the transcript
-        // ISN'T boxed. Removal stays cross-scope on purpose (see below).
+        // ISN'T boxed.
         addFeatureHighlightForItem(target: HighlightTarget, refName: string) {
           const already = self.featureHighlights.some(
             h =>
@@ -1836,18 +1851,24 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        // Drop every stored highlight that this rendered feature resolves to,
-        // using the same predicate the overlay boxes with. Matching by
-        // resolution (not exact signature) lets the menu's "Remove highlight"
-        // also clear a search-originated highlight, whose stored span/name is
-        // trix's — not the rendered item's exact span.
-        removeFeatureHighlightsForItem(
-          target: HighlightTarget,
-          refName: string,
-        ) {
+        // Drop the highlights that actually box this rendered id, asking the same
+        // resolution the overlay draws from — so "Remove highlight" removes
+        // exactly the boxes the user is looking at, and the menu's label can't
+        // disagree with what its click does.
+        //
+        // Deliberately NOT a re-match against the stored signature. The matchers
+        // are heuristic by necessity (trix records no uniqueId, so a highlight is
+        // pinned by span + a label that may be a custom/indexed string), and a
+        // heuristic match is a fine basis for best-effort boxing but a bad one
+        // for deleting: a gene-wide highlight fuzzily matches an isoform sharing
+        // its span, so removing that isoform's highlight used to silently take
+        // the gene's with it. Attribution still clears a search-drifted
+        // highlight — resolution matched it by span in the first place.
+        removeFeatureHighlightsForId(featureId: string) {
+          const { boxedBy } = self.resolvedHighlights
           self.featureHighlights = cast(
             self.featureHighlights.filter(
-              h => !targetMatchesHighlight(target, refName, h),
+              (_h, i) => !boxedBy[i]?.has(featureId),
             ),
           )
         },
@@ -2653,23 +2674,19 @@ export default function baseStateModelFactory(
                         : `Highlight this ${subfeatureNoun}`,
                     icon: Highlighter,
                     onClick: () => {
-                      const region =
-                        self.loadedRegions.get(displayedRegionIndex)
-                      if (region) {
-                        const target = {
-                          startBp: subfeature.startBp,
-                          endBp: subfeature.endBp,
-                          name: subfeature.displayLabel,
-                          subfeature: true,
-                        }
-                        if (subfeatureHighlighted) {
-                          self.removeFeatureHighlightsForItem(
-                            target,
-                            region.refName,
-                          )
-                        } else {
+                      if (subfeatureHighlighted) {
+                        self.removeFeatureHighlightsForId(subfeature.featureId)
+                      } else {
+                        const region =
+                          self.loadedRegions.get(displayedRegionIndex)
+                        if (region) {
                           self.addFeatureHighlightForItem(
-                            target,
+                            {
+                              startBp: subfeature.startBp,
+                              endBp: subfeature.endBp,
+                              name: subfeature.displayLabel,
+                              subfeature: true,
+                            },
                             region.refName,
                           )
                         }
@@ -2688,13 +2705,15 @@ export default function baseStateModelFactory(
                   : 'Highlight feature',
               icon: Highlighter,
               onClick: () => {
-                const region = self.loadedRegions.get(displayedRegionIndex)
-                if (region) {
-                  const item = { startBp, endBp, name }
-                  if (highlighted) {
-                    self.removeFeatureHighlightsForItem(item, region.refName)
-                  } else {
-                    self.addFeatureHighlightForItem(item, region.refName)
+                if (highlighted) {
+                  self.removeFeatureHighlightsForId(featureId)
+                } else {
+                  const region = self.loadedRegions.get(displayedRegionIndex)
+                  if (region) {
+                    self.addFeatureHighlightForItem(
+                      { startBp, endBp, name },
+                      region.refName,
+                    )
                   }
                 }
               },

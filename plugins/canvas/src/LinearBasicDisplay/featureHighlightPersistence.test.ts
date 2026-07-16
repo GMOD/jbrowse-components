@@ -244,21 +244,25 @@ describe('feature highlight declarative persistence', () => {
     expect(getSnapshot(display.featureHighlights)).toEqual([brca1])
   })
 
-  it('removeFeatureHighlightsForItem drops an exact manual highlight', () => {
+  it('removeFeatureHighlightsForId drops an exact manual highlight', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({ featureHighlights: [brca1] })
+    loadFeature(display, {
+      featureId: 'feat-1',
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+    })
 
-    display.removeFeatureHighlightsForItem(
-      { startBp: 1000, endBp: 2000, name: 'BRCA1' },
-      'ctgA',
-    )
+    display.removeFeatureHighlightsForId('feat-1')
     expect(display.featureHighlights.length).toBe(0)
   })
 
-  it('removeFeatureHighlightsForItem clears a search-drifted highlight by span', () => {
+  it('removeFeatureHighlightsForId clears a search-drifted highlight by span', () => {
     const { createDisplay } = createTestEnvironment()
     // a search highlight whose stored name is trix's indexed description, not
-    // the rendered feature's Name — removal must still match on span overlap
+    // the rendered feature's Name — it still resolves to the feature by span, so
+    // removing that feature's box must still clear it
     const searchDrift: FeatureHighlight = {
       refName: 'ctgA',
       start: 1000,
@@ -266,22 +270,28 @@ describe('feature highlight declarative persistence', () => {
       name: 'protein kinase',
     }
     const { display } = createDisplay({ featureHighlights: [searchDrift] })
+    loadFeature(display, {
+      featureId: 'feat-1',
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+    })
 
-    display.removeFeatureHighlightsForItem(
-      { startBp: 1000, endBp: 2000, name: 'BRCA1' },
-      'ctgA',
-    )
+    display.removeFeatureHighlightsForId('feat-1')
     expect(display.featureHighlights.length).toBe(0)
   })
 
-  it('removeFeatureHighlightsForItem leaves an unrelated highlight in place', () => {
+  it('removeFeatureHighlightsForId leaves a highlight that boxes something else', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({ featureHighlights: [brca1] })
+    loadFeature(display, {
+      featureId: 'feat-1',
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+    })
 
-    display.removeFeatureHighlightsForItem(
-      { startBp: 5000, endBp: 6000, name: 'TP53' },
-      'ctgA',
-    )
+    display.removeFeatureHighlightsForId('unrelated-feat')
     expect(getSnapshot(display.featureHighlights)).toEqual([brca1])
   })
 

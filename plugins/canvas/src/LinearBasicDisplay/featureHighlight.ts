@@ -97,9 +97,15 @@ export function subfeatureMatchesHighlight(
   )
 }
 
-// Does a stored highlight resolve to this rendered target? Dispatches on the
-// target's own scope so the menu's toggle/remove agrees with what the overlay
-// actually boxed.
+// Would a stored highlight resolve to this target? Dispatches on the target's
+// own scope, since the two resolve under different rules.
+//
+// Only addFeatureHighlightForItem's dedupe asks this — it's comparing a
+// would-be signature against stored ones, before anything is rendered. Anything
+// asking which highlights ALREADY box a rendered id must read the resolver's
+// attribution (resolvedHighlights.boxedBy) instead: these matchers are
+// heuristic, and outside the resolution loop they lose its topLevelMatched gate
+// and answer for boxes that were never drawn.
 export function targetMatchesHighlight(
   target: HighlightTarget,
   refName: string,

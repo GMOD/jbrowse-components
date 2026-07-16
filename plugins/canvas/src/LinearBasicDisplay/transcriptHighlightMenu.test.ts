@@ -265,4 +265,24 @@ describe('transcript highlight context menu', () => {
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN', 'EDEN.1'])
     expect(menuLabels(display)).toContain('Remove mRNA highlight')
   })
+
+  it('removing an isoform highlight spares the gene highlight boxing its parent', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({
+      featureHighlights: [
+        { refName: 'ctgA', start: 1050, end: 9000, name: 'EDEN' },
+      ],
+    })
+    loadGene(display, [eden1, eden2, eden3])
+
+    display.openContextMenu(gene, 0, 0, 0, eden1)
+    clickLabel(display, 'Highlight mRNA EDEN.1')
+    clickLabel(display, 'Remove mRNA highlight')
+
+    // the gene highlight fuzzily MATCHES EDEN.1's span (identical to the gene's)
+    // but boxes the gene, not the isoform — so it must survive. Removal asks what
+    // is actually boxed, never re-runs the heuristic matcher.
+    expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN'])
+    expect(display.featureHighlights.length).toBe(1)
+  })
 })
