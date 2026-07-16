@@ -128,8 +128,9 @@ const { toc } = Astro.props
     align-self: flex-start;
     max-height: calc(100vh - var(--nav-height));
     overflow-y: auto;
-    /* top padding clears the fixed toggle that sits at the rail's top */
-    padding: 3.25rem 1rem 2.5rem;
+    /* top padding clears both fixed buttons stacked at the rail's top (TOC
+       toggle, then the copy-markdown button below it — see CopyMarkdown.astro) */
+    padding: 6rem 1rem 2.5rem;
     font-size: 0.85rem;
   }
   .toc ul {
