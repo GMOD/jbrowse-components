@@ -1,15 +1,22 @@
-import { colord } from './colord.ts'
+import { formatHEX, getAlpha, newColor, parseCssColorOr } from './colorBits.ts'
 
+// Matches colord()'s fallback for unparseable input.
+const FALLBACK = newColor(0, 0, 0, 255)
+
+// Works on the packed Color directly rather than via colord(): these run per
+// path per render on overlay tracks, and each colord() allocates an object
+// carrying nine closures — two of them, since .alpha(1) builds another. formatHEX
+// ignores the alpha byte, so stripping alpha before formatting was a no-op.
 export function stripAlpha(str: string) {
-  return colord(str).alpha(1).toHex()
+  return formatHEX(parseCssColorOr(str, FALLBACK))
 }
 
 function svgColorProps(str: string, colorKey: string, opacityKey: string) {
   if (str) {
-    const c = colord(str)
+    const c = parseCssColorOr(str, FALLBACK)
     return {
-      [opacityKey]: c.alpha(),
-      [colorKey]: c.alpha(1).toHex(),
+      [opacityKey]: getAlpha(c) / 255,
+      [colorKey]: formatHEX(c),
     }
   } else {
     return {}

@@ -22,7 +22,7 @@ export default function Translocations(props: OverlayProps) {
   return (
     <VariantOverlay
       {...props}
-      render={({ match, views, tracks, getX, getY }) => {
+      render={({ match, views, tracks, layouts, getX, getY }) => {
         if (views.length < 2) {
           return []
         }
@@ -76,8 +76,8 @@ export default function Translocations(props: OverlayProps) {
                     y1,
                     x2,
                     y2,
-                    tickAtPx(views, level1, x1, strandToSign(mate.myDir)),
-                    tickAtPx(views, level2, x2, strandToSign(mate.mateDir)),
+                    tickAtPx(layouts, level1, x1, strandToSign(mate.myDir)),
+                    tickAtPx(layouts, level2, x2, strandToSign(mate.mateDir)),
                   ),
                   tooltip: buildPairTooltip(f1, mateLoc),
                 },

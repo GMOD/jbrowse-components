@@ -5,6 +5,7 @@ import {
   getSession,
   truncateMiddle,
 } from '@jbrowse/core/util'
+import { pxToBp } from '@jbrowse/core/util/Base1DUtils'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -14,6 +15,7 @@ import type { BreakpointViewModel } from '../model.ts'
 import type { LayoutRecord, OverlayMatch } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 
 export const LEFT = 0
 export const RIGHT = 2
@@ -93,18 +95,21 @@ function hoverHandlers(
   }
 }
 
+// `getFeatureData` is resolved at click time, not per render: it serializes a
+// feature to JSON, and every overlay path in the view would otherwise pay for
+// that on every pan/zoom frame to fill in a widget nobody has opened.
 export function createVariantMouseHandlers(
   id: string,
   setMouseoverElt: (id: string | undefined) => void,
   session: ReturnType<typeof getSession>,
-  featureData: unknown,
+  getFeatureData: () => unknown,
 ) {
   return {
     onClick: () => {
       const featureWidget = session.addWidget?.(
         'VariantFeatureWidget',
         'variantFeature',
-        { featureData },
+        { featureData: getFeatureData() },
       )
       session.showWidget?.(featureWidget)
     },
@@ -116,15 +121,14 @@ export function createAlignmentMouseHandlers(
   id: string,
   setMouseoverElt: (id: string | undefined) => void,
   session: ReturnType<typeof getSession>,
-  feature1: unknown,
-  feature2: unknown,
+  getFeatureData: () => { feature1: unknown; feature2: unknown },
 ) {
   return {
     onClick: () => {
       const featureWidget = session.addWidget?.(
         'BreakpointAlignmentsWidget',
         'breakpointAlignments',
-        { featureData: { feature1, feature2 } },
+        { featureData: getFeatureData() },
       )
       session.showWidget?.(featureWidget)
     },
@@ -159,23 +163,22 @@ function tickX(x: number, sign: number, reversed: boolean | undefined) {
 
 // A view level is horizontally flipped when its px→bp maps to a reversed
 // coordinate; an overlay endpoint's tick/handle direction flips with it.
-export function isReversed(
-  views: BreakpointViewModel['views'],
-  level: number,
-  x: number,
-) {
-  return views[level]!.pxToBp(x).reversed
+// Takes the per-render plain layouts (getTrackOverlayData) rather than the MST
+// views: this resolves once per connection endpoint, and going through the view
+// re-reads displayedRegions/bpPerPx/offsetPx through MobX getters every call.
+export function isReversed(layouts: ViewLayout[], level: number, x: number) {
+  return pxToBp(layouts[level]!, x).reversed
 }
 
 // Screen-x of a breakpoint tick mark at endpoint `x` pointing in `sign`
 // direction, accounting for a horizontally-flipped view.
 export function tickAtPx(
-  views: BreakpointViewModel['views'],
+  layouts: ViewLayout[],
   level: number,
   x: number,
   sign: number,
 ) {
-  return tickX(x, sign, isReversed(views, level, x))
+  return tickX(x, sign, isReversed(layouts, level, x))
 }
 
 // Flat (y1===y2) connections render as a quadratic arc bowed upward, keeping
@@ -240,6 +243,7 @@ export interface VariantOverlayContext {
   assembly: Assembly
   views: BreakpointViewModel['views']
   tracks: ReturnType<BreakpointViewModel['getTrackOverlayData']>['tracks']
+  layouts: ReturnType<BreakpointViewModel['getTrackOverlayData']>['layouts']
   getX: ReturnType<BreakpointViewModel['getTrackOverlayData']>['getX']
   getY: ReturnType<BreakpointViewModel['getTrackOverlayData']>['getY']
 }
@@ -280,10 +284,7 @@ export const VariantOverlay = observer(function VariantOverlay({
           key={id}
           pointerEvents={interactiveOverlay ? 'auto' : undefined}
           strokeWidth={id === mouseoverElt ? 10 : 5}
-          {...createVariantMouseHandlers(
-            id,
-            setMouseoverElt,
-            session,
+          {...createVariantMouseHandlers(id, setMouseoverElt, session, () =>
             match.allFeatures.get(id)?.toJSON(),
           )}
         />

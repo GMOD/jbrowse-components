@@ -14,7 +14,7 @@ export default function Breakends(props: OverlayProps) {
       {...props}
       pathTestId="r2"
       render={ctx => {
-        const { views } = ctx
+        const { layouts } = ctx
         return [...canonicalPairs(ctx)].flatMap<PathSpec>(
           ({ f1, f2, level1, level2, x1, y1, x2, y2, tooltip }) => {
             const relevantAlt = findMatchingAlt(f1, f2)
@@ -22,13 +22,13 @@ export default function Breakends(props: OverlayProps) {
               return []
             }
             const x1Tick = tickAtPx(
-              views,
+              layouts,
               level1,
               x1,
               relevantAlt.Join === 'left' ? -1 : 1,
             )
             const x2Tick = tickAtPx(
-              views,
+              layouts,
               level2,
               x2,
               relevantAlt.MateDirection === 'left' ? 1 : -1,

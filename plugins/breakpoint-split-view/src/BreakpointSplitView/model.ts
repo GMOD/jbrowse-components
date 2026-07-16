@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { avg, getSession, notEmpty } from '@jbrowse/core/util'
+import { layoutBpToPx } from '@jbrowse/core/util/Base1DUtils'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
@@ -41,6 +42,7 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
+import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewStateModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -234,6 +236,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         const { views } = self
         const tracks = this.getMatchedTracks(trackId)
         const levels: OverlayLevel[] = []
+        // Plain-object projection of each view, snapshotted once per render.
+        // getX resolves a bpToPx per connection endpoint and isReversed a
+        // pxToBp; routing those through the MST view re-reads
+        // displayedRegions/bpPerPx/offsetPx through MobX observable getters on
+        // every single call, which dominated the overlay's render profile on
+        // alignments tracks. Reading them once here is equivalent — this whole
+        // function already re-runs per render inside the caller's observer (see
+        // the 'use no memo' note in overlayUtils), which is exactly what makes
+        // the offsetPx snapshot below correct too.
+        const layouts: ViewLayout[] = []
 
         let viewTop = 0
         for (const [level, view] of views.entries()) {
@@ -254,6 +266,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             scrollTop: yOffsetsOverride ? 0 : (d.scrollTop ?? 0),
             offsetPx: view.offsetPx,
           })
+          layouts.push({
+            displayedRegions: view.displayedRegions,
+            bpPerPx: view.bpPerPx,
+            offsetPx: view.offsetPx,
+            width: view.width,
+            minimumBlockWidth: view.minimumBlockWidth,
+          })
           viewTop += view.height + VIEW_DIVIDER_HEIGHT
         }
 
@@ -262,13 +281,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         function getX(level: number, refName: string, coord: number) {
-          const offsetPx = views[level]!.bpToPx({ refName, coord })?.offsetPx
+          const offsetPx = layoutBpToPx(layouts[level]!, { refName, coord })
           return offsetPx === undefined
             ? undefined
             : offsetPx - levels[level]!.offsetPx
         }
 
-        return { tracks, levels, getX, getY }
+        return { tracks, levels, layouts, getX, getY }
       },
 
       getMatchedFeaturesInLayout(trackConfigId: string, features: Feature[][]) {

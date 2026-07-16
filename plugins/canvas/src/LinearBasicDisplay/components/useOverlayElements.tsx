@@ -169,6 +169,21 @@ export function useFloatingLabels(
   }
   const cullBand = labelCullBand(labelScrollBucket, height)
 
+  // cx() is emotion's merge(): for emotion-registered classes it re-serializes
+  // and re-hashes the combined style on every call. Only these four
+  // combinations exist, so resolve them once per render rather than once per
+  // label on a path that rebuilds every label each frame during zoom/pan.
+  const labelClass = (clickable: boolean, isOverlay: boolean) =>
+    cx(
+      classes.floatingLabel,
+      clickable ? classes.floatingLabelClickable : classes.floatingLabelStatic,
+      isOverlay ? classes.floatingLabelOverlay : undefined,
+    )
+  const labelClasses = {
+    clickable: { overlay: labelClass(true, true), plain: labelClass(true, false) },
+    static: { overlay: labelClass(false, true), plain: labelClass(false, false) },
+  }
+
   forEachDisplayLabel(
     visibleRegions,
     renderDataMap,
@@ -191,13 +206,11 @@ export function useFloatingLabels(
             }
             data-feature-id={clickable ? featureId : undefined}
             data-region-index={clickable ? displayedRegionIndex : undefined}
-            className={cx(
-              classes.floatingLabel,
-              clickable
-                ? classes.floatingLabelClickable
-                : classes.floatingLabelStatic,
-              label.isOverlay && classes.floatingLabelOverlay,
-            )}
+            className={
+              labelClasses[clickable ? 'clickable' : 'static'][
+                label.isOverlay ? 'overlay' : 'plain'
+              ]
+            }
             style={{
               color: label.color,
               fontSize: labelFontSize,

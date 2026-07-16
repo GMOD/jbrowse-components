@@ -17,6 +17,22 @@ import {
 } from './overlayUtils.tsx'
 
 import type { OverlayProps } from './overlayUtils.tsx'
+import type { Feature } from '@jbrowse/core/util'
+
+function connectionTooltip({
+  f1,
+  f2,
+  colorReason,
+  hiddenNote,
+}: {
+  f1: Feature
+  f2: Feature
+  colorReason: string
+  hiddenNote: string | undefined
+}) {
+  const base = buildPairTooltip(f1, f2, colorReason)
+  return hiddenNote ? `${base}<br/>${hiddenNote}` : base
+}
 
 const AlignmentConnections = observer(function AlignmentConnections({
   model,
@@ -24,7 +40,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
   yOffsetsOverride,
   domYOffsets,
 }: OverlayProps) {
-  const { interactiveOverlay, views, showIntraviewLinks, assembly } = model
+  const { interactiveOverlay, showIntraviewLinks, assembly } = model
   const theme = useTheme()
   const { getPairedOrientation, getLongReadOrientation } = useOrientationColor()
   const { session, mouseoverElt, setMouseoverElt, match, overlayData } =
@@ -32,7 +48,7 @@ const AlignmentConnections = observer(function AlignmentConnections({
   if (!assembly || !match) {
     return null
   }
-  const { tracks, getX, getY } = overlayData
+  const { tracks, layouts, getX, getY } = overlayData
   const { layoutMatches, hasPairedReads: hasPaired, allFeatures } = match
 
   const connections = [...resolvedPairs({ match, assembly, tracks })].flatMap(
@@ -82,8 +98,8 @@ const AlignmentConnections = observer(function AlignmentConnections({
       if (x1 == null || x2 == null) {
         return []
       }
-      const reversed1 = isReversed(views, level1, x1)
-      const reversed2 = isReversed(views, level2, x2)
+      const reversed1 = isReversed(layouts, level1, x1)
+      const reversed2 = isReversed(layouts, level2, x2)
       const y1 = getY(level1, c1)
       const y2 = getY(level2, c2)
       // Endpoint 1 is read1's 3' edge; endpoint 2 is the next segment's 5'
@@ -111,43 +127,40 @@ const AlignmentConnections = observer(function AlignmentConnections({
           id: `${f1.id()}-${f2.id()}`,
           path,
           orientationColor: orientation?.color,
-          f1id: f1.id(),
-          f2id: f2.id(),
+          f1,
+          f2,
+          colorReason,
+          hiddenNote,
           hiddenSegment: !!hiddenNote,
-          tooltip: hiddenNote
-            ? `${buildPairTooltip(f1, f2, colorReason)}<br/>${hiddenNote}`
-            : buildPairTooltip(f1, f2, colorReason),
         },
       ]
     },
   )
   const hoveredConnection = connections.find(c => c.id === mouseoverElt)
+  // Only the hovered connection's tooltip is ever shown, and building one walks
+  // both features' fields — so it's resolved here rather than for all N.
+  const hoveredTooltip = hoveredConnection
+    ? connectionTooltip(hoveredConnection)
+    : undefined
 
   return (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
-      {connections.map(
-        ({ id, path, orientationColor, f1id, f2id, hiddenSegment }) => (
-          <path
-            d={path}
-            key={id}
-            data-testid="r1"
-            pointerEvents={interactiveOverlay ? 'auto' : undefined}
-            strokeWidth={mouseoverElt === id ? 5 : 1}
-            strokeDasharray={hiddenSegment ? '4 3' : undefined}
-            {...getStrokeProps(orientationColor ?? theme.palette.text.disabled)}
-            {...createAlignmentMouseHandlers(
-              id,
-              setMouseoverElt,
-              session,
-              allFeatures.get(f1id)?.toJSON(),
-              allFeatures.get(f2id)?.toJSON(),
-            )}
-          />
-        ),
-      )}
-      {hoveredConnection ? (
-        <BreakpointTooltip contents={hoveredConnection.tooltip} />
-      ) : null}
+      {connections.map(({ id, path, orientationColor, f1, f2, hiddenSegment }) => (
+        <path
+          d={path}
+          key={id}
+          data-testid="r1"
+          pointerEvents={interactiveOverlay ? 'auto' : undefined}
+          strokeWidth={mouseoverElt === id ? 5 : 1}
+          strokeDasharray={hiddenSegment ? '4 3' : undefined}
+          {...getStrokeProps(orientationColor ?? theme.palette.text.disabled)}
+          {...createAlignmentMouseHandlers(id, setMouseoverElt, session, () => ({
+            feature1: allFeatures.get(f1.id())?.toJSON(),
+            feature2: allFeatures.get(f2.id())?.toJSON(),
+          }))}
+        />
+      ))}
+      {hoveredTooltip ? <BreakpointTooltip contents={hoveredTooltip} /> : null}
     </g>
   )
 })
