@@ -56,7 +56,7 @@ function layout(
   showLabels = true,
   showDescriptions = true,
   reversedRegions = new Set<number>(),
-  displayMode: 'normal' | 'compact' | 'superCompact' = 'normal',
+  displayMode: 'normal' | 'compact' | 'superCompact' | 'collapsed' = 'normal',
 ) {
   return computeLaidOutData(raw, {
     bpPerPx,
@@ -358,6 +358,31 @@ test('overlapping features on same chromosome get different rows', () => {
   const r = out.get(0)!
   expect(r.flatbushItems[0]!.topPx).toBe(0)
   expect(r.flatbushItems[1]!.topPx).toBeGreaterThan(0)
+})
+
+test('collapsed mode stacks overlapping features onto a single row', () => {
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+  // Same overlapping features as the test above, but collapsed pins both to
+  // row 0 instead of stacking f2 below f1. Labels are forced off upstream in
+  // collapsed mode, so pass showLabels/showDescriptions false.
+  const out = layout(
+    new Map([[0, data]]),
+    new Map([[0, 'volvox:ctgA']]),
+    1,
+    false,
+    false,
+    new Set<number>(),
+    'collapsed',
+  )
+
+  const r = out.get(0)!
+  expect(r.flatbushItems[0]!.topPx).toBe(0)
+  expect(r.flatbushItems[1]!.topPx).toBe(0)
 })
 
 test('different chromosomes get independent layouts', () => {

@@ -54,13 +54,20 @@ export function resolveThemeColor(value: string, fallback: string) {
   return value === THEME_DERIVED_COLOR ? fallback : value
 }
 
-// The three height presets. `normal` is the slot default: when left unchanged it
-// inherits the session-wide type default (see getConfResolved / promotable
-// slots); compact/superCompact pin an explicit height.
-export type DisplayMode = 'normal' | 'compact' | 'superCompact'
+// The height presets plus `collapsed`. `normal` is the slot default: when left
+// unchanged it inherits the session-wide type default (see getConfResolved /
+// promotable slots); compact/superCompact pin an explicit height. `collapsed`
+// packs every feature onto a single row and suppresses all labels (name,
+// description, and subfeature) for a dense one-line overview.
+export type DisplayMode = 'normal' | 'compact' | 'superCompact' | 'collapsed'
 
 export function isDisplayMode(value: unknown): value is DisplayMode {
-  return value === 'normal' || value === 'compact' || value === 'superCompact'
+  return (
+    value === 'normal' ||
+    value === 'compact' ||
+    value === 'superCompact' ||
+    value === 'collapsed'
+  )
 }
 
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on

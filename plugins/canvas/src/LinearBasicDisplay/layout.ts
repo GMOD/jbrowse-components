@@ -189,6 +189,10 @@ export function computeLaidOutData(
   const heightMultiplier = HEIGHT_MULTIPLIERS[displayMode]
   const labelFontPx = labelFontSize(displayMode)
   const rowPadding = ROW_PADDING[displayMode]
+  // Collapsed packs every feature onto row 0 (see packRef). Labels are already
+  // forced off upstream (model showLabels/showDescriptions), so no row height is
+  // reserved for them.
+  const singleRow = displayMode === 'collapsed'
 
   const out = new Map<number, FeatureDataResult>()
   const refGroups = new Map<string, [number, FeatureDataResult][]>()
@@ -226,6 +230,7 @@ export function computeLaidOutData(
         heightMultiplier,
         labelFontPx,
         rowPadding,
+        singleRow,
         prevYByFeatureId,
       )
     for (const [, data] of regions) {
@@ -601,6 +606,9 @@ function packRef(
   // Vertical gap between stacked rows for the current display mode (compact
   // modes tighten it more than the body shrink; see ROW_PADDING).
   rowPadding: number,
+  // Collapsed mode: pin every feature to row 0 for a single-row overview,
+  // bypassing the greedy stacker (and the sub-pixel density-collapse path).
+  singleRow: boolean,
   // Each feature's y (px) in the previous layout, if any. Used only to order
   // insertion, not to force a row — see the sort below.
   prevYByFeatureId?: ReadonlyMap<string, number>,
@@ -836,6 +844,13 @@ function packRef(
   )
 
   for (const [id, ext] of sorted) {
+    // Collapsed mode: every feature shares row 0. No greedy stacking, no
+    // sub-pixel density collapse — just one overlapping row.
+    if (singleRow) {
+      layoutMap.set(id, 0)
+      layoutHeights.set(id, ext.height)
+      continue
+    }
     // A sub-pixel density-fade box collapses into the shared density texture
     // (rect.slang densityAlpha), so pin it to row 0 and skip the greedy stacker:
     // it reserves no vertical space and never overflows maxHeight. This keeps a

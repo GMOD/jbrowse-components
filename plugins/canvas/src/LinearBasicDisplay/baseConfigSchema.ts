@@ -148,9 +148,10 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'normal',
           'compact',
           'superCompact',
+          'collapsed',
         ]),
         description:
-          'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default)',
+          'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default); `collapsed` packs every feature onto a single row with all labels hidden',
         // Sentinel promotable slot (see promotableDefaults.ts / subfeatureLabels):
         // `inherit` is the inherit state, `promotedBase` ('normal') is what it
         // resolves to when nothing is promoted — so every real preset, `normal`

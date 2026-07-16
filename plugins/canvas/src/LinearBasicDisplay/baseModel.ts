@@ -574,10 +574,11 @@ export default function baseStateModelFactory(
         // space, the rendered DOM elements, and the hit-test geometry all
         // agree — otherwise rows reserve label height that never gets used.
         get showLabels() {
-          // Collapsed mode is a single-row overview — every label (name,
-          // description, subfeature) is suppressed so nothing paints on top of
-          // the piled-up boxes. Forcing this here cascades to layout row
-          // reservation, the DOM overlay, hit testing, and SVG export.
+          // Collapsed mode is a single-row overview — suppress feature names so
+          // nothing paints on top of the piled-up boxes. Gated here (not just at
+          // renderedShowLabels) so layout row reservation, the DOM overlay, hit
+          // testing, and SVG export all agree. Descriptions and subfeature labels
+          // are suppressed separately (effectiveShowDescriptions / rpcProps).
           if (this.displayMode === 'collapsed') {
             return false
           }
@@ -598,12 +599,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get showDescriptions() {
-          // Suppressed in collapsed mode alongside names (see showLabels) —
-          // effectiveShowDescriptions doesn't fold names in outside auto mode, so
-          // gate here too rather than relying on the showLabels cascade.
-          return (
-            this.displayMode !== 'collapsed' && getConf(self, 'showDescriptions')
-          )
+          return getConf(self, 'showDescriptions')
         },
 
         /**
@@ -678,8 +674,14 @@ export default function baseStateModelFactory(
         get effectiveShowDescriptions() {
           // In auto mode the density gate hides both labels and descriptions
           // together. Manual 'off' only hides labels — descriptions remain
-          // independently controllable.
+          // independently controllable. Collapsed suppresses them outright (like
+          // names) — gated at this render-layer getter, not the raw
+          // `showDescriptions` one, so the "Show descriptions" menu checkbox still
+          // reflects the persisted setting rather than reading false while
+          // collapsed (mirrors how subfeatureLabels is forced off in rpcProps,
+          // not in its menu-facing getter).
           return (
+            this.displayMode !== 'collapsed' &&
             this.showDescriptions &&
             (this.showLabelsMode !== 'auto' || this.showLabels)
           )
@@ -929,7 +931,7 @@ export default function baseStateModelFactory(
           // no rpcProps change here. The excluded slots are display-only (never
           // sent to the worker): showLabels/showDescriptions gate label
           // visibility on the main thread, displayMode drives compact/
-          // superCompact height scaling + collapse-mode label decimation there,
+          // superCompact height scaling and collapsed single-row packing there,
           // and heightMode is a pure main-thread track-height/layout strategy, so
           // excluding them keeps toggling those off the RPC cache key.
           const {
@@ -946,6 +948,13 @@ export default function baseStateModelFactory(
             // refetches. buildFeatureAdmission normalizes the prefix either way.
             displayConfig: {
               ...rest,
+              // Subfeature labels are worker-baked, so unlike name/description
+              // labels they can't be gated on the main thread — force them off
+              // here so collapsed mode suppresses every label.
+              subfeatureLabels:
+                self.displayMode === 'collapsed'
+                  ? 'none'
+                  : rest.subfeatureLabels,
               jexlFilters: self.activeFilters(),
             } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,

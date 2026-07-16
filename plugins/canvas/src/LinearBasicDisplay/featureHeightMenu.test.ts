@@ -47,6 +47,7 @@ describe('Feature height submenu', () => {
       'Normal',
       'Compact',
       'Super-compact',
+      'Collapsed',
       'Fixed feature height',
       'Fixed feature height + autogrow track height',
       'Fit feature height to display',
@@ -90,6 +91,27 @@ describe('Feature height submenu', () => {
     const subMenu = featureHeightSubMenu(display)
     expect(radio(subMenu, 'Normal').checked).toBe(false)
     expect(radio(subMenu, 'Compact').checked).toBe(true)
+  })
+
+  it('collapsed suppresses names + descriptions without clobbering the settings', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setShowLabels('on')
+    display.setShowDescriptions(true)
+    expect(display.showLabels).toBe(true)
+    expect(display.effectiveShowDescriptions).toBe(true)
+
+    display.setDisplayMode('collapsed')
+    // both label kinds are forced off for the single-row overview
+    expect(display.showLabels).toBe(false)
+    expect(display.effectiveShowDescriptions).toBe(false)
+    // ...but the persisted settings are untouched, so the "Show descriptions"
+    // menu checkbox still reflects the user's choice (gated at the render layer,
+    // not the raw getter) and returns on leaving collapsed
+    expect(display.showDescriptions).toBe(true)
+    display.setDisplayMode('normal')
+    expect(display.showLabels).toBe(true)
+    expect(display.effectiveShowDescriptions).toBe(true)
   })
 
   it('the track-sizing radios track heightMode, orthogonal to the size presets', () => {

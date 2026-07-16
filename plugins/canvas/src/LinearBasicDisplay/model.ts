@@ -50,7 +50,7 @@ const SUBFEATURE_LABEL_OPTIONS = [
  * #example
  * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
  * `tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,
- * or `superCompact`):
+ * or `superCompact`), or `collapsed` for a single-row overview:
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -80,6 +80,14 @@ export default function stateModelFactory(
       type: types.literal('LinearBasicDisplay'),
       showOnlyGenes: types.stripDefault(types.boolean, false),
     })
+    .volatile(() => ({
+      // Session-only acknowledgement of the "showing longest isoform" chip.
+      // Dismissing collapses the loud text chip down to the quiet icon button
+      // for the session (the button stays, so re-opening the menu is always one
+      // click away); it never changes the collapse itself. Volatile, so a
+      // reload is the natural reset boundary.
+      geneGlyphNoticeDismissed: false,
+    }))
     .views(self => ({
       // Promotable sentinel enum (see baseConfigSchema.ts): getConfResolved walks
       // the cascade (pinned track value -> session default -> base 'none') and
@@ -109,14 +117,24 @@ export default function stateModelFactory(
         return this.geneGlyphMode
       },
 
-      // Persistent gene-glyph control gate: shown whenever the loaded data has a
-      // gene with >1 isoform, so there's an actual auto/all/longestCoding choice
-      // to make. Independent of the current mode (unlike the old collapse-only
-      // notice) since the control stays available to switch back and forth.
-      get showGeneGlyphControl() {
+      // Gate for the bottom-right isoform-collapse control: the loaded data has
+      // a multi-isoform gene, so switching modes is meaningful. Shown in every
+      // mode (not just when collapsed) so picking "All transcripts" from the
+      // control's menu doesn't make the control itself disappear — the user can
+      // always switch back. Independent of dismissal — dismissing only shrinks
+      // the loud text chip down to the quiet icon button
+      // (geneGlyphNoticeDismissed), it never removes the control.
+      get showGeneGlyphNotice() {
         return [...self.rpcDataMap.values()].some(
           data => data.hasMultiIsoformGenes,
         )
+      },
+
+      // Isoforms are currently collapsed to a single transcript, so the control
+      // shows its loud "Longest isoform" chip; otherwise it renders as the quiet
+      // icon button.
+      get geneGlyphCollapsed() {
+        return this.effectiveGeneGlyphMode === 'longestCoding'
       },
 
       get isGeneLike() {
@@ -157,6 +175,10 @@ export default function stateModelFactory(
         self.configuration.setSlot('geneGlyphMode', value)
       },
 
+      dismissGeneGlyphNotice() {
+        self.geneGlyphNoticeDismissed = true
+      },
+
       setShowOnlyGenes(value: boolean) {
         self.showOnlyGenes = value
       },
@@ -166,35 +188,21 @@ export default function stateModelFactory(
       },
     }))
     .views(self => {
-      const superShowSubmenuMenuItems = self.showSubmenuMenuItems
+      const superShowSubmenuCheckboxItems = self.showSubmenuCheckboxItems
+      const superShowSubmenuRadioGroups = self.showSubmenuRadioGroups
       const superTrackMenuItems = self.trackMenuItems
       const superContextMenuItems = self.contextMenuItems
       return {
-        // Append gene-specific toggles to the base "Show..." submenu.
-        showSubmenuMenuItems() {
+        // Append gene-specific checkbox toggles after the base display toggles,
+        // so the "Show..." submenu reads generic-then-gene-specific.
+        showSubmenuCheckboxItems() {
           return [
-            ...superShowSubmenuMenuItems(),
-            {
-              label: 'Subfeature labels',
-              subMenu: SUBFEATURE_LABEL_OPTIONS.map(option =>
-                promotableRadioItem({
-                  label: option.label,
-                  checked: self.subfeatureLabels === option.value,
-                  onClick: () => {
-                    self.setSubfeatureLabels(option.value)
-                  },
-                  displayTypeDefault: makeDisplayTypeDefaultControl(
-                    self,
-                    'subfeatureLabels',
-                    option.value,
-                  ),
-                }),
-              ),
-            },
+            ...superShowSubmenuCheckboxItems(),
             {
               label: 'Show only genes',
               type: 'checkbox' as const,
               checked: self.showOnlyGenes,
+              keepMenuOpen: true,
               onClick: () => {
                 self.setShowOnlyGenes(!self.showOnlyGenes)
               },
@@ -202,6 +210,7 @@ export default function stateModelFactory(
             promotableToggleItem({
               label: 'Show chevrons',
               checked: self.displayDirectionalChevrons,
+              keepMenuOpen: true,
               onToggle: () => {
                 self.setDisplayDirectionalChevrons(
                   !self.displayDirectionalChevrons,
@@ -212,6 +221,29 @@ export default function stateModelFactory(
                 ['displayDirectionalChevrons'],
               ),
             }),
+          ]
+        },
+        // Append the promotable "Subfeature labels" radio group after the base
+        // "Labels" group; each option carries a "make default" pin.
+        showSubmenuRadioGroups() {
+          return [
+            ...superShowSubmenuRadioGroups(),
+            { type: 'subHeader' as const, label: 'Subfeature labels' },
+            ...SUBFEATURE_LABEL_OPTIONS.map(option =>
+              promotableRadioItem({
+                label: option.label,
+                checked: self.subfeatureLabels === option.value,
+                keepMenuOpen: true,
+                onClick: () => {
+                  self.setSubfeatureLabels(option.value)
+                },
+                displayTypeDefault: makeDisplayTypeDefaultControl(
+                  self,
+                  'subfeatureLabels',
+                  option.value,
+                ),
+              }),
+            ),
           ]
         },
 

@@ -13,6 +13,9 @@ export const HEIGHT_MULTIPLIERS: Record<DisplayMode, number> = {
   normal: 1,
   compact: 0.6,
   superCompact: 0.3,
+  // collapsed draws every feature at full height but on a single row — the
+  // density comes from stacking, not from shrinking the body.
+  collapsed: 1,
 }
 
 // Compact modes shrink label text alongside the feature body so the labels
@@ -23,6 +26,9 @@ export const LABEL_FONT_MULTIPLIERS: Record<DisplayMode, number> = {
   normal: 1,
   compact: 0.85,
   superCompact: 0.7,
+  // collapsed never draws labels, so the value is unused; keep it defined so the
+  // Record stays exhaustive over DisplayMode.
+  collapsed: 1,
 }
 
 // Vertical gap reserved between stacked feature rows (before any label lines).
@@ -32,6 +38,8 @@ export const ROW_PADDING: Record<DisplayMode, number> = {
   normal: 5,
   compact: 2,
   superCompact: 1,
+  // collapsed is a single row; this is just the trailing gap under it.
+  collapsed: 5,
 }
 
 // Resolved label font size (px) for a display mode. Single source used by the

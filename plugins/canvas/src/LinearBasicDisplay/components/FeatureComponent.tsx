@@ -87,9 +87,12 @@ export interface LinearBasicDisplayModel {
   labelScrollBucket: number
   regionTooLarge: boolean
   regionTooLargeReason: string
-  showGeneGlyphControl: boolean
+  showGeneGlyphNotice: boolean
+  geneGlyphCollapsed: boolean
+  geneGlyphNoticeDismissed: boolean
   geneGlyphMode: GeneGlyphMode
   setGeneGlyphMode: (value: GeneGlyphMode) => void
+  dismissGeneGlyphNotice: () => void
   featureDensityStats?: { bytes?: number }
   statusMessage: string | undefined
   setScrollTop: (n: number) => void
@@ -584,10 +587,15 @@ const FeatureBody = observer(function FeatureBody({
           }}
         />
         <GeneGlyphControl
-          visible={model.showGeneGlyphControl}
+          visible={model.showGeneGlyphNotice}
+          collapsed={model.geneGlyphCollapsed}
+          dismissed={model.geneGlyphNoticeDismissed}
           geneGlyphMode={model.geneGlyphMode}
           onSetGeneGlyphMode={value => {
             model.setGeneGlyphMode(value)
+          }}
+          onDismiss={() => {
+            model.dismissGeneGlyphNotice()
           }}
         />
         <TrackHeightIndicator
