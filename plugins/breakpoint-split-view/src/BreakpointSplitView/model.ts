@@ -560,6 +560,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           autorun(
             async () => {
               const generation = ++fetchGeneration
+              // superseded by a later run, or the view closed mid-fetch
+              const isStale = () =>
+                generation !== fetchGeneration || !isAlive(self)
               try {
                 if (!self.views.every(view => view.initialized)) {
                   return
@@ -582,14 +585,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                     ]),
                   ),
                 )
-                if (generation === fetchGeneration && isAlive(self)) {
+                if (!isStale()) {
                   self.setMatchedTrackFeatures(fetched)
                 }
               } catch (e) {
                 console.error(e)
-                // getSession throws on a dead node, turning a handled error
-                // into an unhandled one
-                if (isAlive(self)) {
+                // a superseded run's result is discarded either way, so its
+                // failure isn't the user's problem — an aborted RPC for a
+                // viewport already left would otherwise raise a toast for a
+                // fetch nobody is waiting on. getSession also throws on a dead
+                // node, turning a handled error into an unhandled one.
+                if (!isStale()) {
                   getSession(self).notifyError(`${e}`, e)
                 }
               }
