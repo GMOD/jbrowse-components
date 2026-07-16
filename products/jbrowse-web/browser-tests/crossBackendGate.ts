@@ -92,10 +92,19 @@ function thresholdFor(name: string) {
 // for the deterministic view types (synteny/wiggle/dotplot/bigwig/variants/gwas/
 // hic/genes), which held 0 false positives across all runs. Listed views are the
 // ones observed; treat as representative, not exhaustive — the class is "pileup".
-// Emptied after the morph-idle capture wait (snapshot.ts waitForMorphIdle)
-// addressed the root cause — the pileup flakiness was a capture-vs-animation
-// race, not layout nondeterminism. Kept as a mechanism in case a genuinely
-// nondeterministic view surfaces later.
+// Emptied after the morph-idle capture wait (snapshot.ts waitForMorphIdle) was
+// believed to address the root cause. It does not, for the views in this class:
+// waitForMorphIdle only waits on `morphFromTops`, which lives on
+// LinearBasicDisplay (canvas feature tracks). LinearAlignmentsDisplay has no
+// such property, so the wait is vacuous for exactly the pileups that drift.
+//
+// Still reproducible on 2026-07-16 against committed goldens: the same build
+// re-run back to back failed a *different* subset each time (3 pileups at
+// 10.29/21.55/11.04%, then 2 at 20.76/11.04%). Different subset + different
+// percentages + identical inputs is the arrival-order race described above, so
+// regenerating these goldens does not help — the next run re-drifts a different
+// pileup. Anyone reviving a blocking gate (or trusting a pileup golden) has to
+// isolate that race first, or re-populate this list with 'pileup'-class names.
 const EXCLUDED_SUBSTRINGS: string[] = []
 
 function isExcluded(name: string) {

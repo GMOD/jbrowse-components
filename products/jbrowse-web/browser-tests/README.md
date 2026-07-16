@@ -100,6 +100,21 @@ Because a golden encodes one machine's rendering, treat a fresh one as evidence
 about _this_ machine, not a cross-platform contract — that is exactly why the
 cross-backend gate exists instead.
 
+### Pileup goldens re-drift on every run — don't chase them
+
+Alignment **pileup** captures are not reproducible run to run. The same build
+re-run back to back against the same goldens fails a _different_ subset each
+time (measured 2026-07-16: three pileups at 10.29/21.55/11.04%, then two at
+20.76/11.04%). Pileup row assignment is arrival-order sensitive, so whatever
+perturbs read order between runs reshuffles the stack into a large pixel diff.
+
+`waitForMorphIdle` does not cover this: it waits on `morphFromTops`, which only
+exists on `LinearBasicDisplay`, not `LinearAlignmentsDisplay`. So a `-u` on a
+pileup golden buys nothing — it goes red again on the next run with a different
+number. Regenerate them if you like, but expect ~10 of them red at any time, and
+don't read those failures as a regression until the race is isolated. See
+`crossBackendGate.ts`.
+
 ## Reviewing Snapshots
 
 After a run, review the committed snapshots in a browser UI (mirrors the
