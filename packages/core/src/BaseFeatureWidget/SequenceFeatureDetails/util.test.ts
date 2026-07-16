@@ -73,6 +73,30 @@ describe('splitString', () => {
     expect(segments[0]).toContain(' ')
   })
 
+  test('spaces a segment continuing a row mid-spacing-group', () => {
+    // 15 chars already on the row, so this segment's first char is column 15
+    // and the next separator belongs 5 chars in, at column 20
+    const { segments } = splitString({
+      str: 'BBBBBBBBBB',
+      charactersPerRow: 100,
+      showCoordinates: true,
+      currRemainder: 15,
+    })
+    expect(segments).toStrictEqual(['BBBBB BBBBB'])
+  })
+
+  test('spaces a segment starting exactly on a spacing boundary', () => {
+    // 20 chars already on the row: column 20 is a separator position, so the
+    // segment leads with a space rather than gluing onto the previous segment
+    const { segments } = splitString({
+      str: 'BBBBBBBBBB',
+      charactersPerRow: 100,
+      showCoordinates: true,
+      currRemainder: 20,
+    })
+    expect(segments).toStrictEqual([' BBBBBBBBBB'])
+  })
+
   test('empty string returns empty segments and zero remainder', () => {
     const { segments, remainder } = splitString({
       str: '',

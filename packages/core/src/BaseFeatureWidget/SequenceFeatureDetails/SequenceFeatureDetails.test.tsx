@@ -456,6 +456,98 @@ test('hovering does not report positions when coordinates are not genomic', () =
   rectSpy.mockRestore()
 })
 
+test('coordinate labels stay column-aligned when a row gains a digit', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq: 'A'.repeat(300) }}
+      feature={{
+        start: 9949,
+        end: 10249,
+        refName: 'chr1',
+        strand: 1,
+        type: 'region',
+        uniqueId: 'straddle',
+        name: 'straddle',
+      }}
+    />,
+  )
+  // the panel straddles 10,000, so the labels are not all the same length
+  const rows = getByTestId('sequence_panel').textContent.split('\n').slice(1, 4)
+  expect(rows.map(r => r.slice(0, 8))).toStrictEqual([
+    ' 9950   ',
+    '10050   ',
+    '10150   ',
+  ])
+})
+
+test('hovering publishes the assembly so the refName can be canonicalized', () => {
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="genomic"
+      sequence={{ seq: 'A'.repeat(100) }}
+      assemblyName="hg38"
+      feature={{
+        start: 1200,
+        end: 1300,
+        // a non-canonical refName: the LGV can only match this to the displayed
+        // region by resolving it through the assembly's aliases
+        refName: '1',
+        strand: 1,
+        type: 'region',
+        uniqueId: 'alias',
+        name: 'alias',
+      }}
+    />,
+  )
+  const span = getByTestId('sequence_panel').querySelector('span')!
+  const rectSpy = mockRowRect(span)
+  fireEvent.mouseMove(span, { clientX: 0 })
+  expect(model.hoverPosition).toEqual({
+    refName: '1',
+    start: 1200,
+    end: 1201,
+    assemblyName: 'hg38',
+  })
+  rectSpy.mockRestore()
+})
+
+test('coordinate spacing continues across exon/intron boundaries', () => {
+  // exons of 20bp and 30bp around a 10bp intron: every segment boundary lands
+  // on a column that is a multiple of the 10bp spacing interval
+  const model = SequenceFeatureDetailsF().create()
+  model.setShowCoordinates('genomic')
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="gene"
+      sequence={{ seq: `${'A'.repeat(20)}${'c'.repeat(10)}${'G'.repeat(30)}` }}
+      feature={{
+        start: 1000,
+        end: 1060,
+        refName: 'chr1',
+        strand: 1,
+        type: 'mRNA',
+        uniqueId: 'multi',
+        name: 'multi',
+        subfeatures: [
+          { refName: 'chr1', start: 1000, end: 1020, type: 'exon' },
+          { refName: 'chr1', start: 1030, end: 1060, type: 'exon' },
+        ],
+      }}
+    />,
+  )
+  expect(getByTestId('sequence_panel').textContent.split('\n')[1]).toBe(
+    '1001   AAAAAAAAAA AAAAAAAAAA cccccccccc GGGGGGGGGG GGGGGGGGGG GGGGGGGGGG',
+  )
+})
+
 test('single exon cDNA display relative coords', () => {
   const seq = readFasta('./test_data/volvox.fa')
   const model = SequenceFeatureDetailsF().create()

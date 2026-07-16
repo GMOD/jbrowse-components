@@ -6,7 +6,7 @@ import {
 } from '../../../util/convertCodingSequenceToPeptides.ts'
 import SequenceLegend from '../SequenceLegend.tsx'
 import { proteinColor, translExceptColor } from '../consts.ts'
-import { splitString } from '../util.ts'
+import { coordLabelWidth, splitString } from '../util.ts'
 import SequenceDisplay from './SequenceDisplay.tsx'
 
 import type { TranslExcept } from '../../../util/geneticCodes.ts'
@@ -71,6 +71,12 @@ const ProteinSequence = observer(function ProteinSequence({
         color={proteinColor}
         chunks={segments}
         coordStart={0}
+        labelWidth={coordLabelWidth({
+          firstCoord: 0,
+          totalLength: str.length,
+          charactersPerRow,
+          strand: 1,
+        })}
         highlight={
           highlightPositions?.size
             ? index =>

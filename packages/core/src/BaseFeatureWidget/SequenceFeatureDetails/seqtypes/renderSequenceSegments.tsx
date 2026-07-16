@@ -1,4 +1,4 @@
-import { splitString } from '../util.ts'
+import { coordLabelWidth, splitString } from '../util.ts'
 import SequenceDisplay from './SequenceDisplay.tsx'
 
 import type { SequenceFeatureDetailsModel } from '../model.ts'
@@ -42,6 +42,14 @@ export function renderSequenceSegments({
   onHoverBase?: (base0: number) => void
 }) {
   const { charactersPerRow, showCoordinates } = model
+  // computed across every segment up front: the segments share rows, so each
+  // one has to pad its labels to the whole panel's width, not its own
+  const labelWidth = coordLabelWidth({
+    firstCoord: coordStart,
+    totalLength: segments.reduce((a, b) => a + b.str.length, 0),
+    charactersPerRow,
+    strand: mult,
+  })
   let currCoord = coordStart
   let currRemainder = 0
   const nodes: React.ReactNode[] = []
@@ -60,6 +68,7 @@ export function renderSequenceSegments({
           color={color}
           strand={mult}
           coordStart={currCoord}
+          labelWidth={labelWidth}
           remainder={currRemainder}
           chunks={chunks}
           onHoverBase={onHoverBase}

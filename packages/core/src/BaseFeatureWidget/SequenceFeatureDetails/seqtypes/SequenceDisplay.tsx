@@ -20,6 +20,7 @@ function chunkSequenceOffsets(chunks: string[]) {
 const SequenceDisplay = observer(function SequenceDisplay({
   chunks,
   coordStart,
+  labelWidth,
   remainder = 0,
   color,
   strand = 1,
@@ -30,6 +31,10 @@ const SequenceDisplay = observer(function SequenceDisplay({
   chunks: string[]
   // coordinate label for the first character of `chunks`
   coordStart: number
+  // width every coordinate label is padded to. Panel-wide (see
+  // coordLabelWidth), not per-segment, so rows stay column-aligned even where
+  // the labels either side of a row gain a digit
+  labelWidth: number
   // characters a prior segment already placed on the row this one continues, so
   // the first chunk knows it is mid-row
   remainder?: number
@@ -56,7 +61,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
     const f = coordStart - remainder * strand
     const prefix =
       idx > 0 || remainder === 0
-        ? `${`${f + idx * strand * charactersPerRow}`.padStart(4)}   `
+        ? `${`${f + idx * strand * charactersPerRow}`.padStart(labelWidth)}   `
         : ''
     const isLastChunk = idx === chunks.length - 1
     // a partial final row (not filled to charactersPerRow) gets no trailing

@@ -38,6 +38,7 @@ export function useSequenceFetch({
   return {
     sequence,
     error,
+    assemblyName,
     assemblyGeneticCodeId: assembly?.getGeneticCodeId(feature.refName),
     onForceLoad: () => {
       setForceLoad(true)

@@ -19,7 +19,10 @@ export function splitString({
   spacingInterval?: number
 }) {
   const segments: string[] = []
-  let positionCounter = currRemainder % spacingInterval
+  // the column the first chunk starts at, not an offset within a spacing group:
+  // a segment continuing a row at a multiple of spacingInterval still needs the
+  // separator space before its first character
+  let positionCounter = currRemainder
   let stringOffset = 0
   let isFirstChunk = true
 
@@ -48,6 +51,28 @@ export function splitString({
     segments,
     remainder: (lastSegmentLength + carryRemainder) % charactersPerRow,
   }
+}
+
+/**
+ * Width to pad every coordinate label in a panel to, so all rows start their
+ * sequence at the same column. Row labels step by charactersPerRow from
+ * firstCoord, so the longest is at one end of the panel or the other. Floors at
+ * 4 to keep the historical look of short (feature-relative) labels.
+ */
+export function coordLabelWidth({
+  firstCoord,
+  totalLength,
+  charactersPerRow,
+  strand,
+}: {
+  firstCoord: number
+  totalLength: number
+  charactersPerRow: number
+  strand: number
+}) {
+  const rows = Math.max(1, Math.ceil(totalLength / charactersPerRow))
+  const lastCoord = firstCoord + (rows - 1) * charactersPerRow * strand
+  return Math.max(4, `${firstCoord}`.length, `${lastCoord}`.length)
 }
 
 /**

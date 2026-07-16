@@ -46,7 +46,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
   // type
   const [mode, setMode] = useState(() => getDefaultMode(effectiveFeature))
   const [openInDialog, setOpenInDialog] = useState(false)
-  const { sequence, error, assemblyGeneticCodeId, onForceLoad } =
+  const { sequence, error, assemblyGeneticCodeId, assemblyName, onForceLoad } =
     useSequenceFetch({
       model,
       feature: effectiveFeature,
@@ -96,6 +96,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
             sequence={sequence}
             error={error}
             assemblyGeneticCodeId={assemblyGeneticCodeId}
+            assemblyName={assemblyName}
             onForceLoad={onForceLoad}
             handleClose={() => {
               setOpenInDialog(false)
@@ -112,6 +113,7 @@ const SequenceFeatureDetails = observer(function SequenceFeatureDetails({
             model={sequenceFeatureDetails}
             mode={mode}
             assemblyGeneticCodeId={assemblyGeneticCodeId}
+            assemblyName={assemblyName}
             onForceLoad={onForceLoad}
           />
         </Suspense>

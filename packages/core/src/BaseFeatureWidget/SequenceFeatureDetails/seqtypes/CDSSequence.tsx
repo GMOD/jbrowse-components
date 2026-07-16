@@ -2,7 +2,7 @@ import { observer } from 'mobx-react'
 
 import { stitch } from '../../../util/seqUtils.ts'
 import { cdsColor } from '../consts.ts'
-import { splitString } from '../util.ts'
+import { coordLabelWidth, splitString } from '../util.ts'
 import SequenceDisplay from './SequenceDisplay.tsx'
 
 import type { Feat } from '../../util.tsx'
@@ -18,17 +18,20 @@ const CDSSequence = observer(function CDSSequence({
   model: SequenceFeatureDetailsModel
 }) {
   const { charactersPerRow, showCoordinates } = model
-  const { segments } = splitString({
-    str: stitch(cds, sequence),
-    charactersPerRow,
-    showCoordinates,
-  })
+  const str = stitch(cds, sequence)
+  const { segments } = splitString({ str, charactersPerRow, showCoordinates })
   return (
     <SequenceDisplay
       model={model}
       color={cdsColor}
       chunks={segments}
       coordStart={0}
+      labelWidth={coordLabelWidth({
+        firstCoord: 0,
+        totalLength: str.length,
+        charactersPerRow,
+        strand: 1,
+      })}
     />
   )
 })
