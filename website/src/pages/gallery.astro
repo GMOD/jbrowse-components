@@ -54,10 +54,11 @@ const sections = gallerySections
                         <img src={src} alt={item.label} loading="lazy" />
                       </button>
                       <figcaption>
-                        <a href={href} class="card-title">
-                          {item.label}
-                        </a>
+                        <span class="card-title">{item.label}</span>
                         {item.description && <p>{item.description}</p>}
+                        <a href={href} class="card-open">
+                          {openLabel}
+                        </a>
                       </figcaption>
                     </figure>
                   )
@@ -164,8 +165,8 @@ const sections = gallerySections
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
   }
   .card {
     margin: 0;
@@ -255,14 +256,15 @@ const sections = gallerySections
     padding: 0.75rem 1rem 1rem;
   }
   .card-title {
+    display: block;
     font-weight: 600;
-    font-size: 0.95rem;
   }
   figcaption p {
-    margin: 0.4rem 0 0;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    margin: 0.4rem 0;
     color: var(--color-text-muted);
+  }
+  .card-open {
+    display: inline-block;
   }
 
   .more {

@@ -112,17 +112,6 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Four E. coli strains as a stacked pangenome, with one all-vs-all PAF track backing every band.',
       },
-      {
-        label: 'Yeast dotplot',
-        spec: 'gallery/yeast_dotplot',
-        description:
-          'Whole-genome dotplot of two yeast strains (R64 vs YJM1447): the diagonal traces collinear sequence, off-diagonal dots mark rearrangements.',
-      },
-      {
-        label: 'hg19 vs hg38 liftover',
-        spec: 'gallery/hg19_vs_hg38',
-        description: 'A whole-genome dotplot of the hg19→hg38 liftOver chains.',
-      },
     ],
   },
   {
@@ -227,12 +216,6 @@ export const gallerySections: readonly GallerySection[] = [
           'A phased trio genotype matrix: child, mother, and father each as two haplotype rows, so matching blocks reveal which parental haplotype the child inherited.',
       },
       {
-        label: 'HG002 diploid assembly (dipcall hap1 + hap2 vs GRCh38)',
-        spec: 'gallery/hg002_dipcall',
-        description:
-          'HG002 dipcall diploid assembly: hap1 and hap2 aligned to GRCh38 under the combined variant calls.',
-      },
-      {
         label: 'GWAS LocusZoom-style LD coloring (GIANT BMI, FTO locus)',
         spec: 'gallery/gwas_bmi_fto',
         description:
@@ -301,12 +284,6 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'gallery/sarscov2_polyprotein',
         description:
           'The SARS-CoV-2 ORF1ab polyprotein colored by CDS frame and cleaved into its mature peptides.',
-      },
-      {
-        label: 'Enterovirus D polyprotein (mature peptides)',
-        spec: 'gene_track_mature_peptides',
-        description:
-          'The enterovirus D polyprotein cleaved into its mature peptides (VP1, 2A, 3C, …), each a stacked row labeled with its product name.',
       },
       {
         label: 'GPX1 selenoprotein (UGA→Sec readthrough)',
