@@ -13,7 +13,7 @@ on `init`, not in a track config:
 ```
 
 Like every view type, this is declared as a `defaultSession.views` entry — see
-[Linear synteny view](../synteny-example/) for the general pattern. To pair a
+[Linear synteny view](../synteny-views/#synteny-example) for the general pattern. To pair a
 spreadsheet with a circular view that highlights breakends, see the
 [SV inspector](../sv-inspector-example/). The view's properties and actions are
 listed in the

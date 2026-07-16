@@ -1,0 +1,28 @@
+---
+import SyntenyExample from "../examples/SyntenyExample.tsx"
+import syntenyCode from "../examples/SyntenyExample.tsx?raw"
+import EmbeddedAppSynteny from "../examples/EmbeddedAppSynteny.tsx"
+import embeddedAppSyntenyCode from "../examples/EmbeddedAppSynteny.tsx?raw"
+import MultiwaySyntenyExample from "../examples/MultiwaySyntenyExample.tsx"
+import multiwaySyntenyCode from "../examples/MultiwaySyntenyExample.tsx?raw"
+import { pages, section } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "synteny-views")!
+const synteny = section(page, "synteny-example")
+const embeddedApp = section(page, "embedded-app-synteny")
+const multiway = section(page, "multiway-synteny-example")
+---
+
+<Layout page={page}>
+  <Section {...synteny} code={syntenyCode}>
+    <SyntenyExample client:only="react" />
+  </Section>
+  <Section {...embeddedApp} code={embeddedAppSyntenyCode}>
+    <EmbeddedAppSynteny client:only="react" />
+  </Section>
+  <Section {...multiway} code={multiwaySyntenyCode}>
+    <MultiwaySyntenyExample client:only="react" />
+  </Section>
+</Layout>

@@ -27,6 +27,11 @@ const docsHref = 'https://jbrowse.org/jb2/docs/embedded_components/'
 const trimSlash = (s: string) => s.replace(/\/+$/, '')
 const here = trimSlash(Astro.url.pathname)
 const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
+
+// collapse every sidebar group by default and open only the one holding the
+// current example, so long lists don't overwhelm. On the index (no active
+// example) all groups stay collapsed — the gallery grid shows everything.
+const activeGroup = examples.find(e => isActive(e.slug))?.group
 ---
 
 <html lang="en">
@@ -105,15 +110,13 @@ const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
         padding: 16px 12px 48px;
       }
       aside.sidebar .group-title {
+        cursor: pointer;
         font-size: 0.72em;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.04em;
         color: var(--muted);
-        margin: 18px 8px 6px;
-      }
-      aside.sidebar .group-title:first-child {
-        margin-top: 0;
+        margin: 12px 8px 6px;
       }
       aside.sidebar ul {
         list-style: none;
@@ -276,8 +279,8 @@ const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
       <aside class="sidebar">
         {
           groups.map(group => (
-            <>
-              <div class="group-title">{group}</div>
+            <details open={group === activeGroup}>
+              <summary class="group-title">{group}</summary>
               <ul>
                 {examples
                   .filter(e => e.group === group)
@@ -292,7 +295,7 @@ const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
                     </li>
                   ))}
               </ul>
-            </>
+            </details>
           ))
         }
       </aside>

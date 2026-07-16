@@ -33,18 +33,18 @@ The props are **initial values** — read once on mount. `assemblies` and `track
 use the same format as a JBrowse Web `config.json`, so configs round-trip
 between the two. Unlike JBrowse Web, the embedded component does **not**
 auto-fetch a `config.json` from a URL parameter — you control how and when the
-config is loaded (see [Import a config.json](../with-import-config-json/)).
+config is loaded (see [Import a config.json](../loading-config/#with-import-config-json)).
 
 `<JBrowse>` also accepts:
 
-- `plugins` — inline or imported [plugin](../embedded-plugin/) classes
+- `plugins` — inline or imported [plugin](../plugins/#embedded-plugin) classes
 - `makeWorkerInstance` — a [web worker](../with-web-worker/) factory for the
   WebWorker RPC
-- `onChange` — an [observer](../with-on-change/) called on every MST patch
+- `onChange` — an [observer](../customizing-the-app/#with-on-change) called on every MST patch
 - `ref` — to reach the underlying model imperatively after launch. For that, or
   when you need to read/drive the model from outside, use the unmanaged
   `createViewState` + `<JBrowseApp>` flow instead — see
-  [Add tracks programmatically](../add-tracks-programmatically/)
+  [Add tracks programmatically](../loading-config/#add-tracks-programmatically)
 
 ## Configuration reference
 

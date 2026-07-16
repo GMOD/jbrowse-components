@@ -1,12 +1,15 @@
 ---
 import Example from "../examples/SpreadsheetExample.tsx"
 import code from "../examples/SpreadsheetExample.tsx?raw"
-import { examples } from "../examples.ts"
+import { pages } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
 
-const meta = examples.find(e => e.slug === "spreadsheet-example")!
+const page = pages.find(p => p.slug === "spreadsheet-example")!
 ---
 
-<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
-  <Example client:only="react" />
+<Layout page={page}>
+  <Section slug="spreadsheet-example" code={code}>
+    <Example client:only="react" />
+  </Section>
 </Layout>

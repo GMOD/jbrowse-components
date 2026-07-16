@@ -8,7 +8,7 @@ anywidgets, R htmlwidgets, plain `<script>` pages) wrap.
 
 Because it drives the full app, one declarative `views` list reaches every view
 type — here a `LinearSyntenyView`, the exact same `{ type, init }` shape the
-[`<JBrowse>` synteny example](../synteny-example/) uses:
+[`<JBrowse>` synteny example](../synteny-views/#synteny-example) uses:
 
 ```js
 import { createApp } from '@jbrowse/embedded-app'

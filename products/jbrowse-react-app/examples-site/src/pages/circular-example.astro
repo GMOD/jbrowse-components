@@ -1,12 +1,15 @@
 ---
 import Example from "../examples/CircularExample.tsx"
 import code from "../examples/CircularExample.tsx?raw"
-import { examples } from "../examples.ts"
+import { pages } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
 
-const meta = examples.find(e => e.slug === "circular-example")!
+const page = pages.find(p => p.slug === "circular-example")!
 ---
 
-<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
-  <Example client:only="react" />
+<Layout page={page}>
+  <Section slug="circular-example" code={code}>
+    <Example client:only="react" />
+  </Section>
 </Layout>

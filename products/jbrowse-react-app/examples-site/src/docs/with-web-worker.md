@@ -28,7 +28,7 @@ import RpcWorker from '@jbrowse/react-app2/esm/rpcWorker?worker'
 
 The worker is off by default precisely because of these bundler requirements,
 but we recommend enabling it whenever your toolchain supports it. If you also
-load [plugins](../embedded-plugin/), they must be registered in **both** the
+load [plugins](../plugins/#embedded-plugin), they must be registered in **both** the
 main thread and the worker. The `rpc` config block (driver, worker count,
 timeouts) is documented in
 [RpcOptions](https://jbrowse.org/jb2/docs/config/rpcoptions/).

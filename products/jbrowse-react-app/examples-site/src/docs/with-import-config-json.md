@@ -17,7 +17,7 @@ One gotcha: URIs inside a `config.json` are resolved relative to wherever the
 file was downloaded from. When you bundle a config authored for another host,
 tag each location with a `baseUri` (as this example does) so JBrowse resolves
 them correctly. To load the config from a server at runtime instead, see
-[Fetch a config.json](../with-fetch-config-json/).
+[Fetch a config.json](../loading-config/#with-fetch-config-json).
 
 The top-level shape (`assemblies`, `tracks`, `configuration`, `defaultSession`)
 is documented in

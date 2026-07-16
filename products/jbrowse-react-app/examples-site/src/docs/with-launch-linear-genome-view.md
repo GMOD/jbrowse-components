@@ -1,4 +1,4 @@
-Most [view types](../synteny-example/) are declared up front in
+Most [view types](../synteny-views/#synteny-example) are declared up front in
 `defaultSession.views`. For views that should appear in response to runtime
 conditions instead — a button click, a search hit, a backend event — use the
 `LaunchView-*` extension points. This example boots an empty session and then

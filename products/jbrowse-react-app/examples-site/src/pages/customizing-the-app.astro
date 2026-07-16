@@ -1,0 +1,28 @@
+---
+import DarkTheme from "../examples/DarkTheme.tsx"
+import darkThemeCode from "../examples/DarkTheme.tsx?raw"
+import WithOnChange from "../examples/WithOnChange.tsx"
+import withOnChangeCode from "../examples/WithOnChange.tsx?raw"
+import FitToContainer from "../examples/FitToContainer.tsx"
+import fitToContainerCode from "../examples/FitToContainer.tsx?raw"
+import { pages, section } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "customizing-the-app")!
+const darkTheme = section(page, "dark-theme")
+const withOnChange = section(page, "with-on-change")
+const fitToContainer = section(page, "fit-to-container")
+---
+
+<Layout page={page}>
+  <Section {...darkTheme} code={darkThemeCode}>
+    <DarkTheme client:only="react" />
+  </Section>
+  <Section {...withOnChange} code={withOnChangeCode}>
+    <WithOnChange client:only="react" />
+  </Section>
+  <Section {...fitToContainer} code={fitToContainerCode}>
+    <FitToContainer client:only="react" />
+  </Section>
+</Layout>

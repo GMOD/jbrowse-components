@@ -21,4 +21,4 @@ The slots available on a track config come from its
 `adapter` type has its own page too (e.g.
 [Gff3TabixAdapter](https://jbrowse.org/jb2/docs/config/gff3tabixadapter/)). To
 extend the app with new track types, adapters, or renderers rather than just
-adding tracks, see [plugins](../embedded-plugin/).
+adding tracks, see [plugins](../plugins/#embedded-plugin).

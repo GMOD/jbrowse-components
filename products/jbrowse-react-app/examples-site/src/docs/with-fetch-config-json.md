@@ -15,7 +15,7 @@ function App() {
 }
 ```
 
-As with a [bundled config](../with-import-config-json/), URIs in the file are
+As with a [bundled config](../loading-config/#with-import-config-json), URIs in the file are
 resolved relative to where it was downloaded from, so tag each location with a
 `baseUri` after fetching. The config shape is documented in
 [JBrowseRootConfig](https://jbrowse.org/jb2/docs/config/jbrowserootconfig/).
