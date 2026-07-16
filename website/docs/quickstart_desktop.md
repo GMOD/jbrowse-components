@@ -163,22 +163,24 @@ JBrowse desktop autosaves your work continuously, and autosaves show up in
 
 To save a named session to a file, use **File → Session → Save session as...**
 This writes a `.jbrowse` file you can reopen later (or share). Reopen one with
-**File → Session → Open session...**, or with the **Open saved session
-(.jbrowse) file** button on the start screen.
+**File → Session → Open session...**, or from the start screen's **Open .jbrowse
+or config.json or link** menu.
 
 To hand a session off to someone running JBrowse web, use **File → Session →
 Export session to web...**, which produces a shareable URL.
 
 ### Opening a JBrowse web link
 
-The reverse direction works too, in JBrowse Desktop 5.0 and newer: **File →
-Session → Open JBrowse Web link...** takes a JBrowse web URL containing a
+The reverse direction works too, in JBrowse Desktop 5.0 and newer: **Open
+.jbrowse or config.json or link → Open JBrowse Web link...** on the start
+screen, or **File → Session → Open JBrowse Web link...** once a session is open.
+Either takes a JBrowse web URL containing a
 [session spec](/docs/urlparams/#session-spec) — such as the "Open this view in
 JBrowse" link under any figure in these docs — and rebuilds it here as a new
 session. The config the link names is downloaded and saved alongside the
-session, so it reopens later like any other. Share links
-(`&session=share-...`) can't be opened this way: only the JBrowse web instance
-that created one can resolve it.
+session, so it reopens later like any other. Share links (`&session=share-...`)
+can't be opened this way: only the JBrowse web instance that created one can
+resolve it.
 
 Figures in these docs also offer an "Open this view in JBrowse Desktop" button,
 which hands the view straight to Desktop through a `jbrowse://` link that the

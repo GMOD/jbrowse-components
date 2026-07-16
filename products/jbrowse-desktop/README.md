@@ -23,7 +23,7 @@ The pieces, and where each platform registers the scheme:
 | Delivery: argv, `second-instance`, macOS `open-url`   | `electron/electron.ts`                                                        |
 | Handed to the renderer as `?specLink=`                | `electron/window.ts` (`buildAppUrl`)                                          |
 | Renderer builds the session                           | `src/components/useSpecLinkLoad.ts` → `openSpecLink` (`StartScreen/util.tsx`) |
-| Same session, pasted instead of linked                | File → Session → "Open JBrowse Web link..." (`src/rootModel/rootModel.ts`)    |
+| Same session, pasted instead of linked                | Start screen "Open" menu (`StartScreen/recentSessions/RecentSessionsPanel.tsx`) or File → Session → "Open JBrowse Web link..." (`src/rootModel/rootModel.ts`) |
 | macOS registration (`CFBundleURLTypes` in Info.plist) | `scripts/packaging/packager.ts` (`protocols`)                                 |
 | Windows registration (`HKLM\Software\Classes`)        | `scripts/packaging/windows.ts` (NSIS install/uninstall)                       |
 | Linux — see the caveat below                          | `scripts/packaging/linux.ts` (`.desktop` `MimeType`, `Exec=AppRun %U`)        |
@@ -34,9 +34,11 @@ un-integrated AppImage. The `x-scheme-handler/jbrowse` MimeType we embed is a
 _prerequisite_, not a registration: it only takes effect if the user integrates
 the AppImage with their desktop (AppImageLauncher, `appimaged`), which copies
 that `.desktop` into `~/.local/share/applications`. So on Linux the link usually
-does nothing, and **File → Session → "Open JBrowse Web link..." is the real
+does nothing, and **pasting it into "Open JBrowse Web link..." is the real
 path** — it needs no OS registration and works everywhere, as does passing the
-`jbrowse://` url as a command-line argument. Don't claim otherwise in the docs.
+`jbrowse://` url as a command-line argument. That entry sits both on the start
+screen's "Open" menu (where a user whose link did nothing actually lands) and
+under File → Session once a session is open. Don't claim otherwise in the docs.
 
 **A jbrowse:// url is untrusted input** — any web page can make the OS open one.
 `parseProtocolUrl` therefore only ever yields an `http`/`https` link, so
