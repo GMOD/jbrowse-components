@@ -147,7 +147,7 @@ The following file formats are supported in core JBrowse 2:
 - 2bit
 
 Additional data formats can be supported via plugins; check out the
-[plugin store](/plugin_store).
+[plugin store](/docs/user_guides/plugin_store).
 
 If you are an administrator, you can add tracks with the
 [command line](/docs/quickstart_web/#adding-tracks) (CLI) or with the

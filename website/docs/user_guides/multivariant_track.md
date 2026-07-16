@@ -149,7 +149,7 @@ HG01880	ACB
 NA20525	TSI
 ```
 
-<Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code (the colored strip down the left edge resolves into contiguous population blocks), while each genotype cell is shaded by allele dosage (which for diploid humans is just heterozygous: light blue, homozougous: dark blue." src="/img/variants/population_1000genomes.png" />
+<Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code (the colored strip down the left edge resolves into contiguous population blocks), while each genotype cell is shaded by allele dosage (which for diploid humans is just heterozygous: light blue, homozygous: dark blue)." src="/img/variants/population_1000genomes.png" />
 
 You can also change the grouping attribute and colors interactively after the
 track is open.

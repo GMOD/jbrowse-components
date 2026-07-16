@@ -10,7 +10,7 @@ as continuous tracks with several visual styles.
 
 ## Rendering types
 
-The **Rendering type** option (the display's
+The track menu's **Plot type** submenu (backed by the display's
 [`defaultRendering`](/docs/config/linearwiggledisplay/#slot-defaultrendering)
 slot) offers these styles:
 
@@ -24,8 +24,6 @@ slot) offers these styles:
   wrong
 - Scatter - draws individual points without filling; useful for sparse data and
   seeing single values
-
-Switch between them from the track menu's **Plot type** submenu.
 
 <Figure caption="The same BigWig rendered in every plot type at once — XY plot, Density, Line (step), Line (interpolated), and Scatter — so the styles can be compared directly. Switch a track between them from its Plot type menu." src="/img/bigwig_line.png" />
 
