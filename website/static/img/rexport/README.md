@@ -75,10 +75,29 @@ shared intron, the coverage histogram dropping to zero over the gap:
 
 ![spliced](./spliced.png)
 
+### Sort by base / position / strand
+
+JBrowse's localized "Sort by..." (at the center line) is reproduced by
+`sorted_pileup_layout()`, which mirrors `computeSortedLayout`: the reads covering
+the sort column are ordered by the criterion — base call (from the MD-tag
+mismatches), read start, or strand — and placed first (each on its own row, since
+they all overlap the column), then the remaining reads fill the gaps around them.
+The sort column is emitted as an editable `sort_pos` script variable.
+
+Volvox reads sorted **by base** at the known C-SNP `ctgA:1,693` (`ctgA:1,621-1,780`):
+the alternate-allele reads (blue mismatch ticks at the sort column) group at the
+top, reference-matching reads below — JBrowse's haplotype-revealing sort.
+
+![sort by base](./alignments_sort.png)
+
 ## Genes — `LinearBasicDisplay`
 
-GFF3 gene models: `geom_segment` bodies + `geom_rect` exon/CDS boxes, rows from
-`gene_layout()`.
+Gene models: directional `geom_segment` bodies (arrowheads point in the
+transcription direction) + `geom_rect` boxes drawn thin for exons/UTRs and thick
+for CDS, keyed off the feature `type` so coding regions read like the browser
+glyph; rows from `gene_layout()`. GFF3 (`read_gff()`) and BED (`read_bed()`,
+expanding BED12 blocks into exons and the thickStart/thickEnd range into CDS)
+feed the same panel.
 
 ![genes](./genes.png)
 
