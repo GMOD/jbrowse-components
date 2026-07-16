@@ -731,6 +731,13 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => {
+      // recentlyUsed/collapsed/folderCategories keys are scoped to the current
+      // assembly (+ view type), so the load autorun re-reads them whenever that
+      // scope changes. `loaded` gates persist so it can't write the model's empty
+      // defaults before the first load runs — this removes any dependence on the
+      // load/persist setup order.
+      let loaded = false
+
       // apply saved collapse state, or seed it from the hierarchical config
       // defaults when nothing is persisted yet
       function loadCollapsed(assemblyNames: string[], viewType: string) {
@@ -782,6 +789,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           loadCollapsed(assemblyNames, view.type)
           loadFolderCategories(assemblyNames, view.type)
         }
+        loaded = true
       }
 
       function persistToLocalStorage() {
@@ -795,33 +803,33 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           folderCategories,
           view,
         } = self
-        localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
-        localStorageSetJSON(favoritesK(), favorites)
-        localStorageSetJSON(sortTrackNamesK, sortTrackNames)
-        localStorageSetJSON(sortCategoriesK, sortCategories)
-        if (view) {
-          localStorageSetJSON(collapsedK(assemblyNames, view.type), collapsed)
-          localStorageSetJSON(folderCategoriesK(assemblyNames, view.type), [
-            ...folderCategories,
-          ])
+        if (loaded) {
+          localStorageSetJSON(recentlyUsedK(assemblyNames), recentlyUsed)
+          localStorageSetJSON(favoritesK(), favorites)
+          localStorageSetJSON(sortTrackNamesK, sortTrackNames)
+          localStorageSetJSON(sortCategoriesK, sortCategories)
+          if (view) {
+            localStorageSetJSON(collapsedK(assemblyNames, view.type), collapsed)
+            localStorageSetJSON(folderCategoriesK(assemblyNames, view.type), [
+              ...folderCategories,
+            ])
+          }
         }
       }
 
       return {
         afterAttach() {
-          // Ordering matters: the load autorun must register before persist.
-          // Both run once immediately on registration; if persist ran first it
-          // would write the model's empty defaults to localStorage, clobbering
-          // saved settings before the load autorun could read them.
+          // load re-reads localStorage when its assembly/view scope changes;
+          // persist is gated by `loaded` so it can't clobber saved settings with
+          // the model's empty defaults before the first load — the two no longer
+          // depend on registration order
           addDisposer(
             self,
             autorun(loadFromLocalStorage, { name: 'TrackSelectorInit' }),
           )
           addDisposer(
             self,
-            autorun(persistToLocalStorage, {
-              name: 'TrackSelectorLocalStorage',
-            }),
+            autorun(persistToLocalStorage, { name: 'TrackSelectorPersist' }),
           )
         },
       }
