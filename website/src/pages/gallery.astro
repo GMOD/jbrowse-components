@@ -54,7 +54,7 @@ const sections = gallerySections
                         <img src={src} alt={item.label} loading="lazy" />
                       </button>
                       <figcaption>
-                        <span class="card-title">{item.label}</span>
+                        <h3 class="card-title">{item.label}</h3>
                         {item.description && <p>{item.description}</p>}
                         <a href={href} class="card-open">
                           {openLabel}
@@ -150,16 +150,14 @@ const sections = gallerySections
   }
 
   h1 {
-    font-size: 2rem;
-    font-weight: 400;
     margin: 0 0 1rem;
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.75rem;
   }
   h2 {
-    font-size: 1.4rem;
-    font-weight: 500;
     margin: 2.5rem 0 1rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--color-border);
     scroll-margin-top: 5rem;
   }
 
@@ -170,22 +168,19 @@ const sections = gallerySections
   }
   .card {
     margin: 0;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-    transition: box-shadow 0.15s;
   }
-  .card:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  .card + .card {
+    border-top: 1px solid var(--color-border);
+    padding-top: 2rem;
   }
   .card-img-btn {
     display: block;
     width: 100%;
     padding: 0;
     margin: 0;
-    border: none;
+    border: 1px solid var(--color-border);
     background: none;
     cursor: zoom-in;
   }
@@ -193,7 +188,6 @@ const sections = gallerySections
     width: 100%;
     height: auto;
     display: block;
-    border-bottom: 1px solid var(--color-border);
   }
 
   .lightbox {
@@ -253,15 +247,13 @@ const sections = gallerySections
     cursor: pointer;
   }
   figcaption {
-    padding: 0.75rem 1rem 1rem;
+    padding: 0.5rem 0 0;
   }
   .card-title {
-    display: block;
-    font-weight: 600;
+    margin: 0 0 0.25rem;
   }
   figcaption p {
-    margin: 0.4rem 0;
-    color: var(--color-text-muted);
+    margin: 0.25rem 0;
   }
   .card-open {
     display: inline-block;
@@ -269,17 +261,10 @@ const sections = gallerySections
 
   .more {
     margin: 1.25rem 0 0.25rem;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
   }
   .links {
     margin: 0.25rem 0;
     padding-left: 1.25rem;
     line-height: 1.7;
-  }
-  .links span {
-    font-size: 0.88rem;
-    color: var(--color-text-muted);
   }
 </style>
