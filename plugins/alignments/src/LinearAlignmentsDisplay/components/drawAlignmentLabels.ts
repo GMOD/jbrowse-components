@@ -7,6 +7,12 @@ import type { VisibleLabel } from './computeVisibleLabels.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { Theme } from '@mui/material'
 
+const INTERBASE_TYPES = new Set<VisibleLabel['type']>([
+  'insertion',
+  'softclip',
+  'hardclip',
+])
+
 /**
  * Pure draw function shared by the on-screen `VisibleLabelsOverlay` and the
  * SVG export path. Caller is responsible for sizing/clearing `ctx` and (for
@@ -21,10 +27,14 @@ export function drawAlignmentLabels(
   const { palette } = theme
   const white = palette.common.white
   ctx.textBaseline = 'middle'
+  // Canvas2D re-parses the font shorthand on every assignment, and in practice
+  // every label shares one font size, so only write the state that changed.
+  let curFont = ''
+  let curAlign: CanvasTextAlign | '' = ''
+  let curFill = ''
   for (const label of labels) {
     const isSmallInterbase =
-      ['insertion', 'softclip', 'hardclip'].includes(label.type) &&
-      label.text.startsWith('(')
+      INTERBASE_TYPES.has(label.type) && label.text.startsWith('(')
 
     let fillColor: string
     if (isSmallInterbase) {
@@ -46,20 +56,32 @@ export function drawAlignmentLabels(
       fillColor = white
     }
 
-    ctx.font = `bold ${label.fontSize}px sans-serif`
-    ctx.textAlign = isSmallInterbase ? 'left' : 'center'
+    const font = `bold ${label.fontSize}px sans-serif`
+    if (font !== curFont) {
+      ctx.font = font
+      curFont = font
+    }
+    const align: CanvasTextAlign = isSmallInterbase ? 'left' : 'center'
+    if (align !== curAlign) {
+      ctx.textAlign = align
+      curAlign = align
+    }
     // Bake the fade opacity into an rgba() fill rather than using globalAlpha,
     // which SvgCanvas (the export path) doesn't support; the comma form is the
     // one SvgCanvas splits into fill + fill-opacity. Full-opacity labels (all
     // per-base ones) keep their original color string, so export output for them
     // is unchanged.
-    ctx.fillStyle =
+    const fill =
       label.opacity < 1
         ? normalizedRgbToCssRgba(
             cssColorToNormalizedRgb(fillColor),
             label.opacity,
           )
         : fillColor
+    if (fill !== curFill) {
+      ctx.fillStyle = fill
+      curFill = fill
+    }
     ctx.fillText(label.text, label.x, label.y)
   }
 }
