@@ -33,7 +33,6 @@ look at wakhan, pycnv
 ## review release process
 
 
-## sort by mismatch subitem of sort by menu
 
 
 ## reversed-region Canvas2D drawMismatches
@@ -43,7 +42,6 @@ reversed regions render correctly. Canvas2D `drawMismatches` instead draws a rec
 rightward from a single `bpToScreenX(bp)` — check whether reversed blocks need
 the same two-edge treatment. Niche.
 
-## rowseparators not very visible
 
 
 
