@@ -47,7 +47,7 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
     _region: ManhattanRpcResult,
     state: ManhattanRenderState,
   ) {
-    writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
+    writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
     this.uniformF32[U.canvasHeight] = state.canvasHeight
     this.uniformF32[U.domainYMin] = state.domainY[0]
     this.uniformF32[U.domainYMax] = state.domainY[1]

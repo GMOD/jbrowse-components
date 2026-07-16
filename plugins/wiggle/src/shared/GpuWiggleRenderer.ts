@@ -1,4 +1,4 @@
-import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -98,10 +98,7 @@ export class GpuWiggleRenderer
           ? PASS_LINE_CENTER
           : PASS_FILL
 
-    const [bpHi, bpLo, bpLen] = bpRangeXTuple(clip, block.reversed)
-    this.uniformF32[U.bpRangeX] = bpHi
-    this.uniformF32[U.bpRangeX + 1] = bpLo
-    this.uniformF32[U.bpRangeX + 2] = bpLen
+    writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
     this.uniformF32[U.canvasHeight] = state.canvasHeight
     this.uniformI32[U.scaleType] = state.scaleType
     this.uniformI32[U.renderingType] = state.renderingType

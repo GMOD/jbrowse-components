@@ -50,15 +50,22 @@ export function bpRangeXTuple(
     : [clip.bpStartHi, clip.bpStartLo, clip.clippedLengthBp]
 }
 
+// Write the hp-math bpRangeX tuple (hi, lo, ±clippedLengthBp) into the uniform
+// buffer at `offsetF32` — pass the shader's `UNIFORM_OFFSET_F32.bpRangeX`. This
+// is the one uniform write every genome-mapped shader shares; routing all of
+// them through here keeps the reversed-block pivot and hi/lo split in one place
+// (a hand-rolled `uniformF32[U.bpRangeX + n] = …` triple is easy to get subtly
+// wrong for reversed blocks).
 export function writeBpRangeUniforms(
   uniformF32: Float32Array,
+  offsetF32: number,
   clip: BlockClipResult,
   reversed: boolean,
 ) {
   const [hi, lo, len] = bpRangeXTuple(clip, reversed)
-  uniformF32[0] = hi
-  uniformF32[1] = lo
-  uniformF32[2] = len
+  uniformF32[offsetF32] = hi
+  uniformF32[offsetF32 + 1] = lo
+  uniformF32[offsetF32 + 2] = len
 }
 
 export function clipBlock(

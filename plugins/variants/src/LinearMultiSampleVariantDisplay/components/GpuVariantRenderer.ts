@@ -53,7 +53,7 @@ export class GpuVariantRenderer extends GpuPerRegionRenderingBackend<
     _region: VariantUploadData,
     state: VariantRenderState,
   ) {
-    writeBpRangeUniforms(this.uniformF32, clip, block.reversed)
+    writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
     this.uniformF32[U.canvasHeight] = state.canvasHeight
     this.uniformF32[U.canvasWidth] = clip.scissorW
     this.uniformF32[U.rowHeight] = state.rowHeight

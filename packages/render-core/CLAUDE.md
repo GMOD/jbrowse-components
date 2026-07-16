@@ -69,6 +69,16 @@ package_.
 - **WebGPU uniform ring buffer.** `writeUniforms` post-increments the slot;
   `drawPass` reads slot `n-1`. Always pair one `writeUniforms` with the
   `drawPass`(es) that consume it; the per-frame cap is `MAX_UNIFORM_SLOTS`.
+- **Two uniform-write patterns, pick by write shape — don't invent a third.**
+  A renderer fills its uniform buffer one of two ways: the generated
+  **object-packer** `shader.writeUniforms(buf, { …every field… })` when it sets
+  all fields each frame (rect/`GpuCanvasFeatureRenderer`), or **offset-pokes**
+  `const U = shader.UNIFORM_OFFSET_F32; f32[U.field] = …` when writes are
+  incremental/conditional (hic, dotplot, wiggle, most others). The one write
+  every genome-mapped shader shares — the hp-math `bpRangeX` triple — goes
+  through `writeBpRangeUniforms(f32, U.bpRangeX, clip, reversed)` in either
+  pattern; don't hand-roll the `f32[U.bpRangeX + n] = …` triple (the
+  reversed-block pivot is easy to get subtly wrong per copy).
 - **`gpuDevice` is a shared singleton.** `getGpuDevice` serves both the HAL and
   the LD-matrix WebGPU compute path (`plugins/variants/.../getLDMatrixGPU.ts`),
   so its `?renderer=` override checks are load-bearing in both. The `.lost`

@@ -95,6 +95,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get -y install libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev glslang-tools
+      - name: Install naga (WGSL validator)
+        # glslang-tools validates the GLSL-ES fallback; naga validates the
+        # primary WebGPU (WGSL) output. build-shaders.ts probes for `naga` and
+        # runs it when present, so installing it here turns WGSL validation on
+        # in CI. cargo is preinstalled on the ubuntu runner. If a new naga
+        # release ever churns CI, pin a version here (`naga-cli@<ver>`).
+        run: cargo install naga-cli --locked
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
@@ -147,9 +154,10 @@ jobs:
           fi
       - name: Check generated shaders are up to date
         # slangc is auto-fetched + version-pinned by the build script, so the
-        # generated output is deterministic; glslang-tools (installed above)
-        # validates the GLSL-ES fallback. A stale *.generated.ts (hand-edited,
-        # or a .slang changed without running gen:shaders) fails the diff.
+        # generated output is deterministic; naga validates the WGSL (WebGPU)
+        # and glslang-tools the GLSL-ES fallback (both installed above). A stale
+        # *.generated.ts (hand-edited, or a .slang changed without running
+        # gen:shaders) fails the diff.
         run: |
           pnpm gen:shaders
           if ! git diff --quiet -- '**/*.generated.ts'; then

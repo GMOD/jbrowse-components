@@ -1,4 +1,4 @@
-import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
+import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -58,10 +58,7 @@ export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
     _region: MultiRowRegionData,
     state: MultiRowRenderState,
   ) {
-    const [bpHi, bpLo, bpLen] = bpRangeXTuple(clip, block.reversed)
-    this.uniformF32[U.bpRangeX + 0] = bpHi
-    this.uniformF32[U.bpRangeX + 1] = bpLo
-    this.uniformF32[U.bpRangeX + 2] = bpLen
+    writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
     this.uniformF32[U.canvasHeight] = state.canvasHeight
     // CSS px, not physical: the shader's minClipW = 2/viewportWidth is a
     // 1-CSS-pixel minimum feature width, matching the Canvas2D Math.max(1,...)
