@@ -68,21 +68,21 @@ reuses indices, so a stale entry would apply to the wrong chromosome (canvas's
 ### The three readiness axes — don't collapse them
 
 `isReady` (`canvasDrawn && !isLoading`) is the **render-lifecycle** axis.
-`viewportWithinLoadedData` is the **spatial-staleness** axis.
-`layoutReady` is the **does-a-layout-exist** axis. They're independent, and a
-consumer can't derive the third from the other two — `clearAllRpcData` empties
-the data while deliberately leaving the too-large gate alone, and a zoom-out into
-the banner leaves the previous region's data sitting in `rpcDataMap`.
+`viewportWithinLoadedData` is the **spatial-staleness** axis. `layoutReady` is
+the **does-a-layout-exist** axis. They're independent, and a consumer can't
+derive the third from the other two — `clearAllRpcData` empties the data while
+deliberately leaving the too-large gate alone, and a zoom-out into the banner
+leaves the previous region's data sitting in `rpcDataMap`.
 
 `layoutReady` exists because a failed feature lookup is ambiguous from outside
 the display: "laid out, but off-display" (filtered, past `maxHeight`) is a real
-answer; "there is no layout to be off-display *of*" is no answer at all. Only the
-display can tell them apart. BreakpointSplitView's overlays are the caller — they
-draw a connection to the track's bottom edge on the first and must draw nothing
-on the second, and conflating the two pinned every curve in the view to one line
-for the width of a load (and permanently under the too-large banner). Default is
-`false` so a missing override drops overlays rather than pinning them — fail-safe
-over fail-wrong.
+answer; "there is no layout to be off-display _of_" is no answer at all. Only
+the display can tell them apart. BreakpointSplitView's overlays are the caller —
+they draw a connection to the track's bottom edge on the first and must draw
+nothing on the second, and conflating the two pinned every curve in the view to
+one line for the width of a load (and permanently under the too-large banner).
+Default is `false` so a missing override drops overlays rather than pinning them
+— fail-safe over fail-wrong.
 
 The region-too-large gate itself lives in `RegionTooLargeMixin`: a derived byte
 estimate (the old imperative `setRegionTooLarge` flag path was removed). A

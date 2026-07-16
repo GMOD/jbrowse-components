@@ -140,7 +140,9 @@ function createTestEnvironment() {
 // Mark every buffered region loaded and the canvas painted — the state the
 // display reaches after a successful fetch.
 function simulateLoaded(
-  view: ReturnType<ReturnType<typeof createTestEnvironment>['createDisplay']>['view'],
+  view: ReturnType<
+    ReturnType<typeof createTestEnvironment>['createDisplay']
+  >['view'],
   display: ReturnType<
     ReturnType<typeof createTestEnvironment>['createDisplay']
   >['display'],

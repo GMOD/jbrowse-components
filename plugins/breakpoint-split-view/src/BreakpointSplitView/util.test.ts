@@ -31,7 +31,11 @@ describe('layoutUnknown', () => {
   test('a display with a populated layout knows off-display from missing', () => {
     expect(
       layoutUnknown(
-        trackWith({ height: 100, searchFeatureByID: () => undefined, layoutReady: true }),
+        trackWith({
+          height: 100,
+          searchFeatureByID: () => undefined,
+          layoutReady: true,
+        }),
       ),
     ).toBe(false)
   })
@@ -39,7 +43,11 @@ describe('layoutUnknown', () => {
   test('a display whose data is cleared cannot place anything', () => {
     expect(
       layoutUnknown(
-        trackWith({ height: 100, searchFeatureByID: () => undefined, layoutReady: false }),
+        trackWith({
+          height: 100,
+          searchFeatureByID: () => undefined,
+          layoutReady: false,
+        }),
       ),
     ).toBe(true)
   })
