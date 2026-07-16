@@ -20,6 +20,7 @@ import {
   computeYTicks,
   makeCrossHatchItem,
   makeScoreSubMenu,
+  makeShowSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
@@ -42,7 +43,6 @@ import {
   makeLineWidthMenuItems,
   makePointSizeMenuItems,
   makeResolutionSubMenu,
-  makeShowSubMenu,
   makeSummaryScoreModeSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'

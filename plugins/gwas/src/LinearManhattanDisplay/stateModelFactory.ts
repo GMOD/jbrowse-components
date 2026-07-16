@@ -28,6 +28,7 @@ import {
   makeCrossHatchItem,
   makeScatterPointSizeMenuItem,
   makeScoreSubMenu,
+  makeShowSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -428,7 +429,19 @@ export function stateModelFactory(
               makeScatterPointSizeMenuItem(self, { label: 'Point size' }),
             ],
           },
-          makeCrossHatchItem(self),
+          ...makeShowSubMenu([
+            makeCrossHatchItem(self),
+            {
+              label: 'Show legend',
+              type: 'checkbox' as const,
+              checked: self.showLdLegend,
+              disabled: !self.ldColoringActive,
+              disabledHelpText: 'Requires LD coloring to be active',
+              onClick: () => {
+                self.setShowLdLegend(!self.showLdLegend)
+              },
+            },
+          ]),
           {
             // whole submenu greys out without a configured .ld adapter
             label: 'LD options',
@@ -441,15 +454,6 @@ export function stateModelFactory(
                 checked: self.colorBy === 'ld',
                 onClick: () => {
                   self.setColorBy(self.colorBy === 'ld' ? 'normal' : 'ld')
-                },
-              },
-              {
-                label: 'Show LD legend',
-                type: 'checkbox' as const,
-                checked: self.showLdLegend,
-                disabled: self.colorBy !== 'ld',
-                onClick: () => {
-                  self.setShowLdLegend(!self.showLdLegend)
                 },
               },
               {

@@ -14,6 +14,7 @@ import {
   computeYTicks,
   makeCrossHatchItem,
   makeScoreSubMenu,
+  makeShowSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -26,7 +27,6 @@ import {
   makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionSubMenu,
-  makeShowSubMenu,
   makeSummaryScoreModeSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import {

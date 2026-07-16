@@ -11,21 +11,9 @@ import {
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import type { PromotableDisplay } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-
-// Shared "Show" submenu: single and multi wiggle both group their visibility
-// toggles and rendering-specific size sliders (point size / line width) here,
-// and both drop the whole submenu when nothing applies (e.g. density mode with
-// no cross hatches or size slider). Kept as one helper so the two displays can't
-// drift on the label/icon or the empty-omit behavior.
-export function makeShowSubMenu(items: MenuItem[]): MenuItem[] {
-  return items.length
-    ? [{ label: 'Show', icon: VisibilityIcon, subMenu: items }]
-    : []
-}
 
 export function makeRenderingTypeSubMenu(
   self: { renderingType: string; setRenderingType: (t: string) => void },

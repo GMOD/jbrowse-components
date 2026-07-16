@@ -31,6 +31,7 @@ export interface YScaleTicks {
 
 export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
 export { makeRadioSubMenu } from './radioSubMenu.ts'
+export { makeShowSubMenu } from './showSubMenu.ts'
 export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
 export { makeScatterPointSizeMenuItem, makeSizeMenu } from './pointSizeMenu.tsx'
 export {
