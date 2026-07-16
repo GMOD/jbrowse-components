@@ -122,7 +122,8 @@ export function getSyntenyShowMenuItem(model: ShowModel) {
         checked: model.showInterbaseIndicators,
         helpText:
           'Mark insertions in the other assembly, which occupy no reference ' +
-          'base, with a between-base tick.',
+          'base, with a between-base tick. Drawn in the coverage band, so it ' +
+          'needs "Show coverage" on.',
         onClick: () => {
           model.setShowInterbaseIndicators(!model.showInterbaseIndicators)
         },

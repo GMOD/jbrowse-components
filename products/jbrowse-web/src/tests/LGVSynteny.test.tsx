@@ -171,3 +171,37 @@ test('sort by longest features first from the Sort by submenu', async () => {
     }, delay)
   })
 }, 60000)
+
+// SyntenyFeature implements forEachMismatch off the cs tag / CIGAR so per-base
+// differences render, which is what makes this checkbox worth carrying on a
+// synteny track. Toggling it must actually repaint; a dead layer would leave
+// the canvas byte-identical.
+test('Show mismatches is a live layer on a synteny track', async () => {
+  await mockConsoleWarn(async () => {
+    const user = userEvent.setup()
+    const { view } = await createView()
+
+    await view.navToLocString('ctgA:30,222..33,669')
+    await user.click(await screen.findByTestId(hts('volvox_ins.paf'), ...opts))
+    await screen.findByTestId('pileup-display-done', ...opts)
+    const display = view.tracks[0]!.displays[0]!
+
+    const pixels = async () =>
+      findCanvasIn(
+        await screen.findByTestId('pileup-display-done', ...opts),
+      ).toDataURL()
+
+    const before = await pixels()
+    expect(display.showMismatches).toBe(true)
+
+    await user.click(await screen.findByTestId('track_menu_icon', ...opts))
+    await user.click(await screen.findByText('Show...'))
+    await user.click(await screen.findByText('Show mismatches'))
+    await waitFor(() => {
+      expect(display.showMismatches).toBe(false)
+    }, delay)
+    await waitFor(async () => {
+      expect(await pixels()).not.toBe(before)
+    }, delay)
+  })
+}, 60000)
