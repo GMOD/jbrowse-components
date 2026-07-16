@@ -41,6 +41,24 @@ const INVALID_COLOR = newColor(255, 0, 255, 255)
 // BED-family adapters put on the feature verbatim.
 const BED_ITEM_RGB = /^\d{1,3},\d{1,3},\d{1,3}$/
 
+// UCSC's convention is that an `itemRgb` of "0" means "no color specified", and
+// plain BED12 files fill the column with that placeholder (often spelled as the
+// all-zero triple) rather than omitting it — every itemRgb in our own
+// volvox-bed12 fixture is "0,0,0". Honoring those literally would paint an
+// ordinary BED12 track solid black, so read them as absent. A file that really
+// wants black can say so with an explicit `color` slot.
+const BED_ITEM_RGB_UNSET = /^0(,0,0)?$/
+
+/**
+ * A feature's BED `itemRgb` as a usable color string, or undefined when the
+ * feature has none or carries the "no color specified" placeholder. Takes the
+ * raw attribute value so it stays dependency-free and directly testable.
+ */
+export function featureItemRgb(raw: unknown): string | undefined {
+  const str = typeof raw === 'string' ? raw.trim() : ''
+  return str.length > 0 && !BED_ITEM_RGB_UNSET.test(str) ? str : undefined
+}
+
 // Resolve a CSS color string to a Color: honors named colors, `transparent`,
 // and bare BED `itemRgb` triples, and returns `fallback` on
 // malformed-but-nonempty input. `parse` throws on e.g. an empty "rgb()";

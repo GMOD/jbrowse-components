@@ -89,6 +89,21 @@ test('no itemRgb on the features leaves the per-row palette in charge', () => {
   expect([...r.featureColors]).toEqual([cssColorToABGR(MULTIROW_DEFAULT_COLOR)])
 })
 
+test('a placeholder itemRgb does not hijack the per-row palette', () => {
+  // a plain BED12 fills itemRgb with the "no color specified" placeholder, which
+  // must not read as black and knock out the palette
+  const r = packMultiRowFeatures({
+    features: [
+      feat({ start: 0, end: 5, sample: 'mom', itemRgb: '0,0,0' }),
+      feat({ start: 5, end: 9, sample: 'dad', itemRgb: '0' }),
+    ],
+    partitionField: 'sample',
+    colorConfig: MULTIROW_DEFAULT_COLOR,
+    jexl: createJexlInstance(),
+  })
+  expect(r.usedItemRgb).toBe(false)
+})
+
 test('the jexl template-string form reads a non-itemRgb color column', () => {
   const r = packMultiRowFeatures({
     features: [feat({ start: 0, end: 5, sample: 'mom', ancestryRgb: '1,2,3' })],

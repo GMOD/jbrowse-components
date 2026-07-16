@@ -3,6 +3,7 @@ import {
   cssColorToNormalizedRgb,
   cssColorToNormalizedRgba,
   cssColorToRgba,
+  featureItemRgb,
   getAlpha,
   getBlue,
   getGreen,
@@ -97,6 +98,27 @@ describe('colorBits helpers', () => {
       expect(getGreen(parseCssColor('1,2'))).toBe(0)
       expect(getGreen(parseCssColor('1,2,3,4'))).toBe(0)
       expect(getGreen(parseCssColor('a,b,c'))).toBe(0)
+    })
+  })
+
+  describe('featureItemRgb', () => {
+    test('a real triple passes through', () => {
+      expect(featureItemRgb('227,26,28')).toBe('227,26,28')
+      expect(featureItemRgb(' 227,26,28 ')).toBe('227,26,28')
+    })
+
+    test('the "no color specified" placeholder reads as absent', () => {
+      // plain BED12 files fill itemRgb with this rather than omitting it (every
+      // itemRgb in the volvox-bed12 fixture is "0,0,0"); honoring it literally
+      // would paint an ordinary BED12 track solid black
+      expect(featureItemRgb('0')).toBeUndefined()
+      expect(featureItemRgb('0,0,0')).toBeUndefined()
+    })
+
+    test('missing / non-string / empty reads as absent', () => {
+      expect(featureItemRgb(undefined)).toBeUndefined()
+      expect(featureItemRgb('')).toBeUndefined()
+      expect(featureItemRgb(0)).toBeUndefined()
     })
 
     test('case insensitive named colors', () => {

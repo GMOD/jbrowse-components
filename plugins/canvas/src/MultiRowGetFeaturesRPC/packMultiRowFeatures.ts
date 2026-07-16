@@ -1,5 +1,5 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+import { cssColorToABGR, featureItemRgb } from '@jbrowse/core/util/colorBits'
 
 import { MULTIROW_DEFAULT_COLOR } from './multiRowColors.ts'
 
@@ -24,11 +24,10 @@ export function evalColorSlot(
 
 // A BED that carries `itemRgb` has already said how it wants to be colored, so
 // honor it when the `color` slot is untouched — no jexl needed to paint an
-// itemRgb BED. An explicit `color` slot still wins. parseCssColorOr understands
+// itemRgb BED. An explicit `color` slot still wins. cssColorToABGR understands
 // the bare "255,0,0" triple, so the value goes through as-is.
 function itemRgbOf(feature: Feature) {
-  const raw = feature.get('itemRgb')
-  return typeof raw === 'string' && raw.length > 0 ? raw : undefined
+  return featureItemRgb(feature.get('itemRgb'))
 }
 
 /**
