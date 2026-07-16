@@ -5,43 +5,15 @@ description:
   labels, tooltips, tracks, themes, and more'
 ---
 
-A collection of short, copy-paste recipes for the things people configure most
-often. Each recipe is a self-contained snippet you can drop into your
-`config.json` and adapt. The examples use the `volvox` sample data (in
-[`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox))
-so you can try them against a real dataset. For the full reference behind these
-recipes, see the [Config guide](/docs/config_guide).
+Short, copy-paste recipes for the `config.json` settings people reach for
+most. Examples use the `volvox` sample data
+([`test_data/volvox`](https://github.com/GMOD/jbrowse-components/tree/main/test_data/volvox))
+so you can try them directly. For the full reference, see the
+[Config guide](/docs/config_guide).
 
 **New here?** Read the [TL;DR](#tldr-a-complete-config-on-one-screen) and
-[How config shorthand works](#how-config-shorthand-works) first. They explain
-the terse syntax used by every recipe below. Then jump to the recipe you need:
-
-- Colors - [what you can color by](#what-you-can-color-by) ·
-  [solid](#solid-color) · [by strand](#color-by-strand) ·
-  [by type](#color-by-feature-type-lookup-table-with-default) ·
-  [by score](#color-by-a-numeric-threshold) ·
-  [gradient](#continuous-gradient-from-a-number) ·
-  [by BAM/CRAM tag](#color-reads-by-a-bamcram-tag) ·
-  [SNP vs indel](#different-colors-for-snps-vs-indels-variants) ·
-  [BED itemRgb](#use-the-colors-already-in-a-bed-file-itemrgb) ·
-  [plugin function](#color-with-a-plugin-function-when-the-logic-is-large) ·
-  [debugging](#debugging-a-color-callback)
-- Labels, tooltips & details - [labels](#labels) ·
-  [tooltips](#tooltips-mouseover) ·
-  [feature details panel](#customizing-the-feature-details-panel)
-- Tracks - [features](#feature-tracks) · [alignments](#alignments-tracks) ·
-  [wiggle](#quantitative-wiggle-tracks) · [variants](#variant-tracks) ·
-  [synteny/dotplot](#synteny-and-dotplot-tracks) ·
-  [filter features](#showing-only-some-features-filtering) ·
-  [inline data](#inline-data-no-files)
-- The instance - [assemblies](#assemblies) ·
-  [organizing tracks](#organizing-tracks) ·
-  [search](#text-searching-gene-name-search) · [theme](#theming) ·
-  [load a plugin](#loading-a-plugin) ·
-  [open to a region](#opening-to-a-specific-view-on-load)
-- Launching - [config → URL](#from-config-to-a-url) ·
-  [color a track in the link](#setting-a-tracks-color-or-height-in-the-link) ·
-  [reuse a view everywhere](#the-same-view-definition-works-everywhere)
+[shorthand](#how-config-shorthand-works) sections first, then use the **"On
+this page"** panel (top right) to jump to a recipe.
 
 ---
 
@@ -104,21 +76,21 @@ is a variation on one of these blocks.
 }
 ```
 
-That's it: no index paths, no display IDs, no renderer names. The next section
-explains why it can be this short.
+No index paths, no display IDs, no renderer names: the next section explains
+why. The floor is even smaller than this: one assembly plus one track (no
+`defaultSession`) is already a complete config.
 
 ---
 
 ## How config shorthand works {#how-config-shorthand-works}
 
-JBrowse configs used to be verbose. Modern JBrowse expands two kinds of
-**shorthand** for you at load time (via a config `preProcessSnapshot` step), so
-you only write the parts that matter.
+JBrowse expands two kinds of **shorthand** at load time (a config
+`preProcessSnapshot` step), so you only write the parts that matter.
 
 ### Adapter `uri` shorthand
 
 Write the data file once as `uri` and JBrowse fills in the companion index and
-the correctly-named location slot:
+location slot:
 
 ```json
 { "type": "BamAdapter", "uri": "sample.bam" }
@@ -137,8 +109,8 @@ expands to the full form:
 The index name is inferred from the adapter: `.bam` → `.bam.bai`, `.cram` →
 `.cram.crai`, and bgzip+tabix files (`.vcf.gz`, `.gff3.gz`, `.bed.gz`) → `.tbi`.
 
-Use the **full form** only when the shorthand's assumption is wrong, e.g. a
-`.csi` index, or an index whose name doesn't follow `file + .bai/.crai/.tbi`:
+Use the **full form** only when the shorthand guesses wrong, e.g. a `.csi`
+index, or an index whose name doesn't follow `file + .bai/.crai/.tbi`:
 
 ```json
 {
@@ -151,17 +123,17 @@ Use the **full form** only when the shorthand's assumption is wrong, e.g. a
 }
 ```
 
-A location is really a `{ "uri": "..." }` object.
-`"locationType": "UriLocation"` is optional for URLs and only needed for local
-desktop paths. See [supported file types](/docs/config_guides/file_types) for
-the `uri` shorthand of every format.
+A location is a `{ "uri": "..." }` object. `"locationType": "UriLocation"` is
+only needed for local desktop paths. See
+[supported file types](/docs/config_guides/file_types) for every format's
+`uri` shorthand.
 
 ### `displayDefaults` shorthand
 
-Appearance lives on a track's **displays** (the ways a track can be drawn). Put
-color, height, labels, and scale in a `displayDefaults` object and JBrowse
-routes each setting to the display that uses it, so you never have to name the
-display or write a `displays` array:
+Appearance lives on a track's **displays** (the ways it can be drawn). Put
+color, height, labels, and scale in `displayDefaults` and JBrowse routes each
+setting to the right display, so you never have to name the display or write a
+`displays` array:
 
 ```json
 "displayDefaults": { "color": "green", "height": 200 }
@@ -180,10 +152,10 @@ expands to:
 ]
 ```
 
-If a track can be drawn more than one way, each setting lands where it fits. For
-example, a `VariantTrack` uses `color` for its linear display and `strokeColor`
-for its circular one, both in the same object. A setting nothing uses is ignored
-with a console warning, so typos surface.
+If a track can be drawn more than one way, each setting lands where it fits.
+For example, a `VariantTrack` uses `color` for its linear display and
+`strokeColor` for its circular one, both in the same object. A setting nothing
+uses is ignored with a console warning, so typos surface.
 
 Reach for the **full `displays` array** only when you need precise control:
 selecting a non-default display type (like the
@@ -207,7 +179,7 @@ catalog.
 
 ## Getting data in fast (CLI)
 
-The quickest path to a working instance is the CLI, which writes the config for
+The CLI is the quickest path to a working instance: it writes the config for
 you. See the [web quickstart](/docs/quickstart_web).
 
 ```bash
@@ -224,9 +196,9 @@ hand-edit.
 
 ### Applying a recipe from the CLI
 
-You don't have to hand-edit the config. `add-track` has `--color` and `--height`
-flags that drop straight into `displayDefaults`, so the "color by strand" recipe
-is just:
+`add-track` has `--color` and `--height` flags that drop straight into
+`displayDefaults`, so you don't have to hand-edit the config. The "color by
+strand" recipe is just:
 
 ```bash
 jbrowse add-track genes.gff3.gz --load copy --name Genes \
@@ -246,48 +218,13 @@ jbrowse add-track genes.gff3.gz --load copy \
 
 See the [CLI reference](/docs/cli) for every flag.
 
-## A minimal config.json
-
-One assembly plus one track is a complete config:
-
-```json
-{
-  "assemblies": [
-    {
-      "name": "volvox",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "volvox_refseq",
-        "adapter": {
-          "type": "TwoBitAdapter",
-          "uri": "volvox.2bit"
-        }
-      }
-    }
-  ],
-  "tracks": [
-    {
-      "type": "FeatureTrack",
-      "trackId": "genes",
-      "name": "Genes",
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "Gff3TabixAdapter",
-        "uri": "volvox.sort.gff3.gz"
-      }
-    }
-  ]
-}
-```
-
 ---
 
 ## Assemblies
 
 ### Reference sequence adapters
 
-Pick the adapter that matches your file. All three are equivalent input for the
-same job:
+Pick the adapter that matches your file. All three do the same job:
 
 ```json
 { "type": "TwoBitAdapter", "uri": "genome.2bit" }
@@ -331,17 +268,14 @@ See [assemblies](/docs/config_guides/assemblies) for the file-based form.
 
 ## Colors
 
-**The one thing to know:** a track's color is a single setting named `color` in
-`displayDefaults`. Its value is _either_ a plain CSS color _or_ a `jexl:`
-expression that JBrowse runs once per feature and whose returned string is that
-feature's color. Every recipe below is a complete, copy-paste track, and the
-only line that changes between them is `displayDefaults`, always written last so
-it's easy to spot.
+**The one thing to know:** a track's color is the `color` setting in
+`displayDefaults`, either a plain CSS color or a `jexl:` expression JBrowse
+runs per feature, returning that feature's color.
 
 ### What you can color by
 
-A `jexl:` color expression sees the feature as `feature`. Read any attribute as
-a plain property. These are the ones you'll reach for most:
+A `jexl:` color expression sees the feature as `feature`, with any attribute
+readable as a plain property. Most-used:
 
 | Read this               | What it is                                       |
 | ----------------------- | ------------------------------------------------ |
@@ -360,24 +294,11 @@ a plain property. These are the ones you'll reach for most:
 The full property and function list is in
 [using jexl callbacks](/docs/config_guides/jexl).
 
-### Solid color {#solid-color}
+### A complete example: color by strand {#color-by-strand}
 
-Any CSS color (a hex value, an `rgb()`/`hsl()`, or a named color):
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_solid_color",
-  "name": "Genes (solid color)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": { "color": "#6a3d9a" }
-}
-```
-
-### Color by strand {#color-by-strand}
-
-A ternary on `feature.strand`:
+Every recipe below is the same track with a different `displayDefaults.color`
+(or, for alignments/variants, `colorBy`). Here's the full track for **color by
+strand**; the table after it shows just the line to swap for everything else:
 
 ```json
 {
@@ -392,157 +313,46 @@ A ternary on `feature.strand`:
 
 <Figure caption="The volvox genes track with this recipe applied: + strand genes blue, - strand genes red." src="/img/cookbook_color_by_strand.png"/>
 
-### Color by feature type (lookup table with default) {#color-by-feature-type-lookup-table-with-default}
+### More ways to set `color`
 
-Look up the color in a small table keyed by the feature's type. The `|| 'gray'`
-catches anything that isn't listed:
+Drop any of these into the same `displayDefaults` in place of the line above.
+The first six are `FeatureTrack` recipes; the last two are for
+`AlignmentsTrack` and `VariantTrack`, whose color slot works the same way.
 
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_by_type",
-  "name": "Genes (colored by type)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": {
-    "color": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4'}[feature.type] || 'gray'"
-  }
-}
-```
+| Recipe                            | `displayDefaults`                                                                          | Notes                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Solid color                        | `{ "color": "#6a3d9a" }`                                                                     | any CSS color: hex, `rgb()`/`hsl()`, or a name |
+| By feature type (lookup table)     | `{ "color": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4'}[feature.type] \|\| 'gray'" }` | `\|\| 'gray'` catches anything not listed        |
+| By a numeric threshold             | `{ "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'" }`                                | a hard cutoff, not a gradient                   |
+| Continuous gradient from a number  | ``{ "color": "jexl:`hsl(${feature.score*3},50%,50%)`" }``                                    | maps `feature.score` onto an HSL hue            |
+| Auto color per category            | `{ "color": "jexl:randomColor(feature.type)" }`                                              | same string always gets the same color         |
+| BED file's own colors (`itemRgb`)  | `{ "color": "jexl:feature.itemRgb \|\| 'gray'" }`                                             | only guaranteed for BED12/bigBed (see note)     |
+| BAM/CRAM tag (`AlignmentsTrack`)   | `{ "colorBy": { "type": "tag", "tag": "HP" } }`                                               | built-in, reads the tag and picks colors        |
+| SNPs vs indels (`VariantTrack`)    | `{ "color": "jexl:feature.type=='SNV'?'green':'purple'" }`                                    | branch on `feature.type` or any VCF `INFO` field |
 
-### Color by a numeric threshold {#color-by-a-numeric-threshold}
+A few of these need more than the one line above:
 
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_by_threshold",
-  "name": "Genes (colored by score)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": { "color": "jexl:feature.score > 7.3 ? 'red' : '#0068d1'" }
-}
-```
-
-### Continuous gradient from a number
-
-Want a smooth gradient instead of a hard cutoff? Turn the number straight into a
-color. This maps `feature.score` onto an HSL hue, so the color slides as the
-score climbs (a [template string](/docs/config_guides/jexl) reads clearest
-here):
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_gradient",
-  "name": "Genes (score gradient)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": { "color": "jexl:`hsl(${feature.score*3},50%,50%)`" }
-}
-```
-
-### A distinct color per category, automatically
-
-`randomColor` turns any string into a color, and always the same color for the
-same string, so every feature type gets its own consistent color and you never
-have to pick them:
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_random_by_type",
-  "name": "Genes (auto color per type)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": { "color": "jexl:randomColor(feature.type)" }
-}
-```
-
-`randomColor`, `alpha`, `hsl`, `colorString`, and `interpolate` are the built-in
-[color helpers](/docs/config_guides/jexl) in the jexl catalog, e.g.
-`alpha('#1f77b4', 0.4)` for a semi-transparent fill where features overlap.
-
-### Color reads by a BAM/CRAM tag {#color-reads-by-a-bamcram-tag}
-
-On an **`AlignmentsTrack`**, let the built-in `colorBy` handle it, since it
-reads the tag and picks the colors for you, no callback needed:
-
-```json
-{
-  "type": "AlignmentsTrack",
-  "trackId": "reads_by_haplotype",
-  "name": "Reads (colored by HP tag)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
-  "displayDefaults": { "colorBy": { "type": "tag", "tag": "HP" } }
-}
-```
-
-Other `colorBy` schemes (`mappingQuality`, `strand`, `pairOrientation`,
-`insertSize`, `modifications`) are in [alignments tracks](#alignments-tracks).
-To color by a tag on a **`FeatureTrack`** instead, read it in jexl with
-`getTag`, which smooths over BAM/CRAM tag differences:
-`"color": "jexl:getTag(feature, 'HP')==1?'crimson':'steelblue'"`.
-
-### Different colors for SNPs vs indels (variants) {#different-colors-for-snps-vs-indels-variants}
-
-A `VariantTrack` colors its linear display with `color`, and you can branch on
-`feature.type` or any VCF `INFO` field (e.g. `feature.INFO.SVTYPE`):
-
-```json
-{
-  "type": "VariantTrack",
-  "trackId": "variant_colors",
-  "name": "SNPs green, indels purple",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "VcfTabixAdapter", "uri": "volvox.filtered.vcf.gz" },
-  "displayDefaults": {
-    "color": "jexl:feature.type=='SNV'?'green':'purple'"
-  }
-}
-```
-
-### Use the colors already in a BED file (`itemRgb`) {#use-the-colors-already-in-a-bed-file-itemrgb}
-
-BED12 and bigBed carry a per-feature `itemRgb` column, so honor it directly:
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_itemrgb",
-  "name": "Genes (BED itemRgb colors)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "BigBedAdapter", "uri": "volvox.bb" },
-  "displayDefaults": { "color": "jexl:feature.itemRgb || 'gray'" }
-}
-```
-
-Named BED columns like `itemRgb` are only guaranteed for **BED12**, **bigBed**,
-or a track given an `autoSql`/`columnNames`. On a plaintext BED with fewer
-columns the extra columns surface generically as `field6`, `field7`, and so on.
-See the BED column-names note in
-[customizing feature colors](/docs/config_guides/customizing_feature_colors).
-
-### Color with a plugin function (when the logic is large) {#color-with-a-plugin-function-when-the-logic-is-large}
-
-If the callback outgrows a one-liner, move it into a small plugin that registers
-a jexl function (e.g. `colorFeature`) and call it by name. The callback stays
-readable and the logic lives in real JavaScript you can test:
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_plugin_color",
-  "name": "Genes (plugin color function)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": { "color": "jexl:colorFeature(feature)" }
-}
-```
-
-This track needs a companion `plugins` array registering `colorFeature`; see
-[customizing feature colors](/docs/config_guides/customizing_feature_colors) for
-the full plugin file.
+- **BED `itemRgb`** is only guaranteed for **BED12**, **bigBed**, or a track
+  given an `autoSql`/`columnNames`. On a plaintext BED with fewer columns the
+  extra columns surface generically as `field6`, `field7`, and so on. See the
+  BED column-names note in
+  [customizing feature colors](/docs/config_guides/customizing_feature_colors).
+- **Auto color per category**: `randomColor`, `alpha`, `hsl`, `colorString`,
+  and `interpolate` are the built-in
+  [color helpers](/docs/config_guides/jexl) in the jexl catalog, e.g.
+  `alpha('#1f77b4', 0.4)` for a semi-transparent fill where features overlap.
+- **BAM/CRAM tag**: other `colorBy` schemes (`mappingQuality`, `strand`,
+  `pairOrientation`, `insertSize`, `modifications`) are in
+  [alignments tracks](#alignments-tracks). To color by a tag on a
+  `FeatureTrack` instead, read it in jexl with `getTag`, which smooths over
+  BAM/CRAM tag differences:
+  `"color": "jexl:getTag(feature, 'HP')==1?'crimson':'steelblue'"`.
+- If the callback outgrows a one-liner (**plugin function**), move it into a
+  small plugin that registers a jexl function (e.g. `colorFeature`) and call it
+  by name: `{ "color": "jexl:colorFeature(feature)" }`. This needs a companion
+  `plugins` array registering `colorFeature`; see
+  [customizing feature colors](/docs/config_guides/customizing_feature_colors)
+  for the full plugin file.
 
 ### Debugging a color callback
 
@@ -559,33 +369,23 @@ Two things catch most mistakes:
 
 ---
 
-## Labels
+## Labels, tooltips & details
 
-Labels are display settings too, so they route through `displayDefaults` exactly
-like `color`. Each recipe is a complete track.
+These all build on the [canonical track above](#color-by-strand): same
+`assemblyNames`/`adapter`, only `displayDefaults` (or `formatDetails`)
+changes.
 
-### Label with a fallback (first non-empty wins)
+### Labels
 
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_label_fallback",
-  "name": "Genes (name with fallback)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": { "labels": { "name": "jexl:feature.name || feature.id" } }
-}
-```
+Labels route through `displayDefaults` exactly like `color`:
 
-### Show a description under the name
+- Fallback name (first non-empty wins):
+  `"labels": { "name": "jexl:feature.name || feature.id" }`
+- Composite label:
+  `"labels": { "name": "jexl:feature.name+' ['+feature.type+']'" }`
+- Description shown under the name:
 
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_with_description",
-  "name": "Genes (name + description)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
+  ```json
   "displayDefaults": {
     "labels": {
       "name": "jexl:feature.name || feature.id",
@@ -594,44 +394,16 @@ like `color`. Each recipe is a complete track.
     "showLabels": true,
     "showDescriptions": true
   }
-}
-```
+  ```
 
-### Build a composite label
+### Tooltips (mouseover)
 
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_composite_label",
-  "name": "Genes (composite label)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": {
-    "labels": { "name": "jexl:feature.name+' ['+feature.type+']'" }
-  }
-}
-```
-
----
-
-## Tooltips (mouseover)
-
-### Custom tooltip template
-
-`mouseover` is a per-feature callback; its returned string shows on hover. Like
-color and labels, it's a display setting, so it goes straight in
-`displayDefaults`:
+`mouseover` is a per-feature callback whose returned string shows on hover,
+same as color and labels:
 
 ```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_custom_tooltip",
-  "name": "Genes (custom tooltip)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": {
-    "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
-  }
+"displayDefaults": {
+  "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
 }
 ```
 
@@ -639,26 +411,17 @@ Reach subfeature attributes through `feature.parent` (e.g.
 `feature.parent.name`). Tooltips render the returned string as HTML, so you can
 include `<b>`, `<br/>`, and links.
 
----
+### Customizing the feature details panel {#customizing-the-feature-details-panel}
 
-## Customizing the feature details panel {#customizing-the-feature-details-panel}
-
-When you click a feature, the details panel is shaped by the track's
-`formatDetails` slot. Note this one sits at the top level of the track, not in
-`displayDefaults`. Its `feature` callback returns an object that gets merged
-into what's shown: name a field to rewrite it (say, turn `name` into a link),
-add a new field to slip in an extra row, or set one to `undefined` to hide it.
+Clicking a feature opens a details panel shaped by the track's `formatDetails`
+slot, which sits at the top level of the track, not in `displayDefaults`. Its
+`feature` callback returns an object that gets merged into what's shown: name a
+field to rewrite it (say, turn `name` into a link), add a new field to slip in
+an extra row, or set one to `undefined` to hide it.
 
 ```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_linked_details",
-  "name": "Genes (linked details)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "formatDetails": {
-    "feature": "jexl:{name:'<a href=https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name+'>'+feature.name+'</a>', type:undefined}"
-  }
+"formatDetails": {
+  "feature": "jexl:{name:'<a href=https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name+'>'+feature.name+'</a>', type:undefined}"
 }
 ```
 
@@ -693,6 +456,10 @@ file into memory:
 { "type": "Gff3Adapter", "uri": "volvox.sort.gff3" }
 ```
 
+Or skip files entirely and embed a handful of features straight in the config
+with `FromConfigAdapter`, handy for demos, tests, or annotations you maintain
+by hand. See [inline data](#inline-data-no-files) below.
+
 ### Set the drawing height
 
 ```json
@@ -702,9 +469,9 @@ file into memory:
 ### Draw features as arcs, with a jexl-computed height
 
 Useful for interactions, breakpoints, or paired features. The arc display isn't
-a `FeatureTrack`'s default, so select it with a `displays` array. Its appearance
-slots (`color`, `arcHeight`, `thickness`, `label`) sit directly on the display
-and each accepts a `jexl:` expression:
+a `FeatureTrack`'s default, so select it with a `displays` array. Its
+appearance slots (`color`, `arcHeight`, `thickness`, `label`) sit directly on
+the display, each accepting a `jexl:` expression:
 
 ```json
 "displays": [
@@ -716,33 +483,59 @@ and each accepts a `jexl:` expression:
 ]
 ```
 
----
+### Showing only some features (filtering) {#showing-only-some-features-filtering}
 
-## Showing only some features (filtering) {#showing-only-some-features-filtering}
-
-`jexlFilters` shows only the features that pass every expression you list. One
-gotcha to remember: unlike `color`, the filter expressions **leave off the
-`jexl:` prefix**.
+`jexlFilters` shows only features that pass every expression listed. One
+gotcha: unlike `color`, filter expressions **leave off the `jexl:` prefix**.
 
 ```json
-{
-  "type": "FeatureTrack",
-  "trackId": "genes_filtered",
-  "name": "Only long genes",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "Gff3TabixAdapter", "uri": "volvox.sort.gff3.gz" },
-  "displayDefaults": {
-    "jexlFilters": [
-      "feature.end - feature.start > 1000",
-      "feature.type == 'gene'"
-    ]
-  }
+"displayDefaults": {
+  "jexlFilters": [
+    "feature.end - feature.start > 1000",
+    "feature.type == 'gene'"
+  ]
 }
 ```
 
 The same `jexlFilters` works on variant and alignments tracks. To hide reads by
 their SAM flags instead, reach for the alignments `filterBy` slot
 ([below](#alignments-tracks)).
+
+### Inline data (no files)
+
+`FromConfigAdapter` embeds features directly in the config:
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "inline_features",
+  "name": "Inline features",
+  "assemblyNames": ["volvox"],
+  "adapter": {
+    "type": "FromConfigAdapter",
+    "features": [
+      {
+        "uniqueId": "f1",
+        "refName": "ctgA",
+        "start": 190,
+        "end": 400,
+        "name": "SE_001",
+        "type": "gene"
+      },
+      {
+        "uniqueId": "f2",
+        "refName": "ctgA",
+        "start": 191,
+        "end": 300,
+        "name": "SE_002",
+        "type": "gene"
+      }
+    ]
+  }
+}
+```
+
+See [FromConfig adapters](/docs/config_guides/from_config).
 
 ---
 
@@ -769,20 +562,14 @@ Other `colorBy` types include `strand`, `pairOrientation`, `insertSize`, and
 
 ### Show soft-clipping and group the pileup
 
-`showSoftClipping` and `groupBy` are both display settings. This track draws the
-soft-clipped bases and stacks the reads into haplotype groups by their `HP` tag:
+`showSoftClipping` and `groupBy` are both display settings on the same track
+above. This draws soft-clipped bases and stacks reads into haplotype groups by
+their `HP` tag:
 
 ```json
-{
-  "type": "AlignmentsTrack",
-  "trackId": "reads_grouped",
-  "name": "Reads (grouped by haplotype)",
-  "assemblyNames": ["volvox"],
-  "adapter": { "type": "BamAdapter", "uri": "volvox-sorted.bam" },
-  "displayDefaults": {
-    "showSoftClipping": true,
-    "groupBy": { "type": "tag", "tag": "HP" }
-  }
+"displayDefaults": {
+  "showSoftClipping": true,
+  "groupBy": { "type": "tag", "tag": "HP" }
 }
 ```
 
@@ -876,9 +663,9 @@ while `color` keeps it:
 }
 ```
 
-Multi-sample VCFs open in the standard variant display; to see genotypes as a
-grid, switch to the genotype-matrix display from the track menu, or select it in
-the config:
+Multi-sample VCFs open in the standard variant display. To see genotypes as a
+grid, switch to the genotype-matrix display from the track menu, or select it
+in the config:
 
 ```json
 "displays": [{ "type": "LinearMultiSampleVariantMatrixDisplay" }]
@@ -902,9 +689,9 @@ inputs **target first**:
 minimap2 grape.fa peach.fa > out.paf   # minimap2 target.fa query.fa
 ```
 
-so here the **target is grape** and the **query is peach**. Rather than keep the
-ordering straight in your head, name them outright with `queryAssembly` and
-`targetAssembly` on the adapter, and there's nothing to swap:
+so here the **target is grape** and the **query is peach**. Name them outright
+with `queryAssembly` and `targetAssembly` on the adapter instead of tracking
+the order yourself:
 
 ```json
 {
@@ -928,9 +715,9 @@ already exist in `assemblies`.
 **Track loads blank?** That's almost always swapped assemblies: the alignment's
 coordinates don't line up with the assemblies on screen, so nothing draws. Flip
 `queryAssembly` and `targetAssembly` (or, if you used the positional
-`assemblyNames: [query, target]` array instead, reverse it). Watch out that
-minimap2's `target query` argument order is the _reverse_ of the array's
-`[query, target]`. That mismatch is the usual culprit.
+`assemblyNames: [query, target]` array instead, reverse it). minimap2's
+`target query` argument order is the _reverse_ of the array's
+`[query, target]`, the usual culprit.
 
 To open a dotplot or linear synteny view pointed at this track, see the
 [synteny track guide](/docs/config_guides/synteny_track) and the
@@ -938,46 +725,9 @@ To open a dotplot or linear synteny view pointed at this track, see the
 
 ---
 
-## Inline data (no files)
+## The instance
 
-Embed a handful of features directly in the config with `FromConfigAdapter`,
-handy for demos, tests, or annotations you maintain by hand:
-
-```json
-{
-  "type": "FeatureTrack",
-  "trackId": "inline_features",
-  "name": "Inline features",
-  "assemblyNames": ["volvox"],
-  "adapter": {
-    "type": "FromConfigAdapter",
-    "features": [
-      {
-        "uniqueId": "f1",
-        "refName": "ctgA",
-        "start": 190,
-        "end": 400,
-        "name": "SE_001",
-        "type": "gene"
-      },
-      {
-        "uniqueId": "f2",
-        "refName": "ctgA",
-        "start": 191,
-        "end": 300,
-        "name": "SE_002",
-        "type": "gene"
-      }
-    ]
-  }
-}
-```
-
-See [FromConfig adapters](/docs/config_guides/from_config).
-
----
-
-## Organizing tracks
+Settings for the whole JBrowse instance, rather than one track.
 
 ### Group tracks in the selector with categories
 
@@ -997,9 +747,7 @@ Nested arrays create nested folders in the
 }
 ```
 
----
-
-## Text searching (gene name search)
+### Text searching (gene name search)
 
 Build an index with `jbrowse text-index`, then reference it so the search box
 can jump to genes by name:
@@ -1019,14 +767,10 @@ can jump to genes by name:
 
 See [text searching](/docs/config_guides/text_searching).
 
----
+### Theming
 
-## Theming
-
-### Customize the app colors
-
-Set `configuration.theme.palette`. `primary` and `secondary` drive the toolbars
-and highlights; `tertiary`/`quaternary` are used for accents:
+Set `configuration.theme.palette`. `primary` and `secondary` drive the
+toolbars and highlights, and `tertiary`/`quaternary` handle accents:
 
 ```json
 "configuration": {
@@ -1044,9 +788,7 @@ and highlights; `tertiary`/`quaternary` are used for accents:
 See [coloring/theming](/docs/config_guides/theme) for logos, fonts, and dark
 mode.
 
----
-
-## Loading a plugin {#loading-a-plugin}
+### Loading a plugin {#loading-a-plugin}
 
 Extra plugins (new track types, adapters, or the jexl color/detail functions
 from the recipes above) load from a top-level `plugins` array. Use `esmLoc` for
@@ -1061,11 +803,11 @@ a file next to your config, or `esmUrl` for one hosted elsewhere:
 See [plugins](/docs/config_guides/plugins) for the UMD form and the published
 plugin store.
 
----
+### Opening to a specific view on load
 
-## Opening to a specific view on load
-
-Use `defaultSession` to open JBrowse at a region with tracks already showing:
+`defaultSession` opens JBrowse at a region with tracks already showing, the
+same slot used in the [TL;DR config](#tldr-a-complete-config-on-one-screen)
+above:
 
 ```json
 "defaultSession": {
@@ -1090,15 +832,14 @@ See [default session](/docs/config_guides/default_session), and
 
 ## From config to a URL
 
-Say you've got JBrowse deployed and a colleague asks "can you show me that gene
-on the coverage track?" You don't want to email them a screenshot, or a list of
-click-here-then-here steps. You want to send a link that opens JBrowse already
-pointed at the right place, with the right tracks turned on.
+Say a colleague asks "can you show me that gene on the coverage track?" Rather
+than a screenshot or a list of click-here-then-here steps, send a link that
+opens JBrowse already pointed at the right place, with the right tracks turned
+on.
 
-That's what the URL parameters are for. The important thing to understand is
-that a link doesn't set up anything new. It just refers to things your
-`config.json` already defines, by name. So it helps to look at the two together.
-Here's a stripped-down config:
+That's what URL parameters are for. A link doesn't set up anything new. It
+just refers to things your `config.json` already defines, by name. Here's a
+stripped-down config:
 
 ```json
 {
@@ -1126,23 +867,21 @@ Reading it left to right, every piece is just a value copied out of the config:
 - `&tracks=genes,coverage` - a comma-separated list of `trackId`s to turn on,
   taken straight from the `tracks` array.
 
-So building a link is mostly a matter of reading `trackId`s and the assembly
-`name` out of your config and stringing them together. Nothing in the URL exists
-that isn't already in the config.
+Building a link is mostly reading `trackId`s and the assembly `name` out of
+your config and stringing them together. Nothing in the URL exists that isn't
+already in the config.
 
-One thing to know: a link like the one above starts a **fresh** view and ignores
-any `defaultSession` you configured. If you've carefully curated a default
-session and just want to jump to a different region within it, add
-`&extendSession=true`, and JBrowse keeps your session's tracks and settings and
-only changes the location (and you can drop `&assembly=`, since it comes from
-the session).
+One thing to know: a link like this starts a **fresh** view and ignores any
+`defaultSession` you configured. To jump to a different region within a
+curated default session instead, add `&extendSession=true`. JBrowse keeps the
+session's tracks and settings and only changes the location (and you can drop
+`&assembly=`, since it comes from the session).
 
 ### Setting a track's color (or height) in the link
 
-Everything above turns tracks _on_. You can also control how a track _looks_
-right from the link, the same appearance settings you'd normally put in
-`displayDefaults` in the config. Instead of listing a track as a plain
-`"genes"`, list it as an object and add a `displaySnapshot`:
+Everything above turns tracks _on_. To control how a track _looks_ from the
+link too, the same settings you'd put in `displayDefaults`, list it as an
+object with a `displaySnapshot` instead of a plain `"genes"`:
 
 ```
 &session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-50000","tracks":[{"trackId":"genes","displaySnapshot":{"color":"green"}}]}]}
@@ -1154,11 +893,11 @@ works here too.
 
 ### Adding a whole track that isn't in the config
 
-You can even add a track that the config has never heard of, using
-`&sessionTracks=`. It takes exactly the same track config objects you'd put in
-the config's `tracks` array, so you can, for example, drop in a few features
-inline with a [`FromConfigAdapter`](#inline-data-no-files) (handy for sharing a
-BLAST hit or a region of interest) straight from the URL bar:
+Add a track the config has never heard of with `&sessionTracks=`, which takes
+the same track config objects as the config's `tracks` array. For example,
+drop in a few features inline with a
+[`FromConfigAdapter`](#inline-data-no-files) (handy for sharing a BLAST hit or
+a region of interest) straight from the URL bar:
 
 ```
 &sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"1","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}]
@@ -1170,14 +909,13 @@ the shareable encoded links the "Share" button produces, see the
 
 ### The same view definition works everywhere
 
-Once you've described a view (an assembly, a location, some tracks, maybe a few
-display settings) you've written something you can reuse in three places without
-rewriting it:
+Once you've described a view (an assembly, a location, some tracks, maybe a
+few display settings), you can reuse it in three places without rewriting it:
 
-- in the config, as `defaultSession.views[].init`, so it loads for everyone;
-- in a URL, as a session spec, so you can hand it to one person; and
+- in the config, as `defaultSession.views[].init`, so it loads for everyone
+- in a URL, as a session spec, so you can hand it to one person
 - in an embedded component, passed to `createViewState`, so it renders inside
-  your own web page.
+  your own web page
 
 They all accept the same shape, so a view you work out in one place drops into
 the others. [Automating JBrowse](/docs/automating) covers this shared launch
