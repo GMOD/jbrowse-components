@@ -7,12 +7,13 @@ import {
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
-import { alpha, useTheme } from '@mui/material'
+import { useTheme } from '@mui/material'
 
 import {
   drawFeatureBlocks,
   drawHighlightBoxes,
 } from './components/Canvas2DFeatureRenderer.ts'
+import { highlightBoxColors } from './components/highlightUtils.ts'
 import { forEachDisplayLabel } from './components/labelPositioning.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './components/sharedRendererConstants.ts'
@@ -147,10 +148,7 @@ function CanvasFeaturesSvgBody({
             renderBlocks,
             model.highlightedFeatureIdSet,
             { scrollY, canvasWidth, canvasHeight: height },
-            {
-              border: alpha(highlightColor, 0.7),
-              fill: alpha(highlightColor, 0.12),
-            },
+            highlightBoxColors(highlightColor),
             {
               showLabels: model.renderedShowLabels,
               showDescriptions: model.renderedShowDescriptions,

@@ -1,6 +1,23 @@
+import { alpha } from '@mui/material'
+
 import { maxLabelTextWidth } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 
 import type { FeatureLabelData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+
+// The one definition of the highlight box's border/tint, shared by the
+// on-screen DOM overlay (searchHighlightBox) and the SVG export's vector
+// post-pass, which paints the same boxes with a different backend. Both used to
+// carry their own alpha literals kept in step by a comment, so an export could
+// silently stop matching what the user saw.
+//
+// The tint stays translucent because it lies over the feature glyph: it has to
+// read as a highlight without washing out the exon/UTR colors underneath.
+export function highlightBoxColors(highlightMain: string) {
+  return {
+    border: alpha(highlightMain, 0.9),
+    fill: alpha(highlightMain, 0.25),
+  }
+}
 
 export function computeLabelExtraWidth(
   labelData: FeatureLabelData,

@@ -197,11 +197,11 @@ describe('renderSvg', () => {
     )
     const html = renderResult(result)
     // highlight.main is #FFB11D; SvgCanvas splits the spaced rgba into rgb() +
-    // *-opacity attrs (see paintAttr), so the box fill (0.12) and border (0.7)
+    // *-opacity attrs (see paintAttr), so the box fill (0.25) and border (0.9)
     // land as separate opacity attributes
-    expect(html).toContain('fill="rgb(255,177,29)" fill-opacity="0.12"')
+    expect(html).toContain('fill="rgb(255,177,29)" fill-opacity="0.25"')
     expect(html).toContain('stroke="rgb(255,177,29)"')
-    expect(html).toContain('stroke-opacity="0.7"')
+    expect(html).toContain('stroke-opacity="0.9"')
     // boxed around f1 (1400..1600 → 0.8px/bp → x 320..480), outset 2px: x=318
     expect(html).toContain('x="318"')
   })

@@ -65,7 +65,11 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
-import { featureMatchesHighlight } from './featureHighlight.ts'
+import {
+  featureMatchesHighlight,
+  subfeatureMatchesHighlight,
+  targetMatchesHighlight,
+} from './featureHighlight.ts'
 import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
 import {
   computeLaidOutData,
@@ -104,7 +108,10 @@ import type {
   VisibleRegion,
 } from './components/hitTesting.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
-import type { FeatureHighlight } from './featureHighlight.ts'
+import type {
+  FeatureHighlight,
+  HighlightTarget,
+} from './featureHighlight.ts'
 import type { FitStage } from './fitLadder.ts'
 import type { IncrementalLayout, LabelDecimation } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
@@ -150,6 +157,7 @@ const FeatureHighlightModel = types.model('FeatureHighlight', {
   start: types.number,
   end: types.number,
   name: types.maybe(types.string),
+  subfeature: types.maybe(types.boolean),
 })
 
 // Compile-time proof the persisted model's snapshot and the plain
@@ -396,6 +404,11 @@ export default function baseStateModelFactory(
         contextMenuInfo: undefined as
           | {
               item: FlatbushItem
+              // The transcript under the cursor, when the right-click landed on
+              // one. Lets the menu act on the specific isoform the user aimed
+              // at rather than its whole gene. Absent for gene-level entry
+              // points (the label layer) and for featureless glyphs.
+              subfeature?: SubfeatureInfo
               displayedRegionIndex: number
               clientX: number
               clientY: number
@@ -771,9 +784,13 @@ export default function baseStateModelFactory(
         // rather than the laid-out data — deliberately pre-layout, so it can feed
         // both boxing and pinning without a layout→layout cycle (coords/name live
         // on the raw items, no row/topPx needed). A highlight boxes the top-level
-        // feature when it matches, and only falls back to boxing a subfeature when
-        // no top-level feature matched (e.g. a searched transcript whose span is a
-        // subspan of its gene, so it never matches the gene's full span):
+        // feature when it matches, and falls back to boxing a subfeature when no
+        // top-level feature matched (e.g. a searched transcript whose span is a
+        // subspan of its gene, so it never matches the gene's full span). A
+        // subfeature-scoped highlight (right-click "highlight this transcript")
+        // matches no top-level feature by construction, so it always takes the
+        // subfeature path — that's how it addresses an isoform whose span equals
+        // its gene's:
         //   `box` = the render-item ids the overlay draws a box around.
         //   `pin` = the ids the packer pins to a top row. For a subfeature that's
         //           its PARENT feature, since the packer keys on top-level ids and
@@ -802,7 +819,7 @@ export default function baseStateModelFactory(
               if (!topLevelMatched) {
                 for (const s of data.subfeatureInfos) {
                   if (
-                    featureMatchesHighlight(
+                    subfeatureMatchesHighlight(
                       {
                         startBp: s.startBp,
                         endBp: s.endBp,
@@ -1795,19 +1812,17 @@ export default function baseStateModelFactory(
         // search supersedes the old one, manual highlights accumulate so a user
         // can mark several features at once; skip the add if this feature already
         // resolves to a stored highlight (idempotent re-highlight).
-        addFeatureHighlightForItem(
-          item: Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>,
-          refName: string,
-        ) {
+        addFeatureHighlightForItem(target: HighlightTarget, refName: string) {
           const already = self.featureHighlights.some(h =>
-            featureMatchesHighlight(item, refName, h),
+            targetMatchesHighlight(target, refName, h),
           )
           if (!already) {
             self.featureHighlights.push({
               refName,
-              start: item.startBp,
-              end: item.endBp,
-              name: item.name,
+              start: target.startBp,
+              end: target.endBp,
+              name: target.name,
+              subfeature: target.subfeature,
             })
           }
         },
@@ -1820,13 +1835,10 @@ export default function baseStateModelFactory(
         // resolution (not exact signature) lets the menu's "Remove highlight"
         // also clear a search-originated highlight, whose stored span/name is
         // trix's — not the rendered item's exact span.
-        removeFeatureHighlightsForItem(
-          item: Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>,
-          refName: string,
-        ) {
+        removeFeatureHighlightsForItem(target: HighlightTarget, refName: string) {
           self.featureHighlights = cast(
             self.featureHighlights.filter(
-              h => !featureMatchesHighlight(item, refName, h),
+              h => !targetMatchesHighlight(target, refName, h),
             ),
           )
         },
@@ -1986,21 +1998,24 @@ export default function baseStateModelFactory(
             displayedRegionIndex: number,
             clientX: number,
             clientY: number,
+            subfeature?: SubfeatureInfo,
           ) {
             self.contextMenuInfo = {
               item: featureInfo,
+              subfeature,
               displayedRegionIndex,
               clientX,
               clientY,
             }
             // Pin the hover to the menu's target so its highlight box always
-            // matches the feature the menu acts on — for every entry point
-            // (canvas or label right-click), and even when no mousemove
-            // preceded this open. The menu is feature-level, so box the whole
-            // feature (subfeature cleared) and drop the tooltip so it doesn't
-            // overlap the menu. closeContextMenu clears all of this again.
+            // matches what the menu acts on — for every entry point (canvas or
+            // label right-click), and even when no mousemove preceded this
+            // open. When the click landed on a transcript, keep the box on that
+            // transcript: the menu names it, so the box must agree. Drop the
+            // tooltip so it doesn't overlap the menu. closeContextMenu clears
+            // all of this again.
             self.featureIdUnderMouse = featureInfo.featureId
-            self.subfeatureIdUnderMouse = null
+            self.subfeatureIdUnderMouse = subfeature?.featureId ?? null
             self.mouseoverExtraInformation = undefined
           },
         }
@@ -2567,13 +2582,22 @@ export default function baseStateModelFactory(
             return []
           }
           const {
-            item: { featureId, startBp, endBp, name },
+            item: { featureId, startBp, endBp, name, type },
+            subfeature,
             displayedRegionIndex,
           } = info
           const pinned = self.pinnedFeatureIdSet.has(featureId)
           const highlighted = self.highlightedFeatureIdSet.has(featureId)
           const inSoloSet = self.soloFeatureIdSet.has(featureId)
           const soloCount = self.soloFeatureIds.length
+          const subfeatureHighlighted =
+            !!subfeature && self.highlightedFeatureIdSet.has(subfeature.featureId)
+          // Name each scope by its own type rather than hardcoding
+          // "transcript"/"gene": subfeatureInfos carries more than transcripts
+          // (a transposon's LTR parts, mature-protein regions), so fixed
+          // wording would mislabel those.
+          const subfeatureNoun = subfeature?.type ?? 'subfeature'
+          const featureNoun = type ?? 'feature'
           return [
             {
               label: 'Open feature details',
@@ -2606,8 +2630,48 @@ export default function baseStateModelFactory(
                 }
               },
             },
+            // Highlight the exact transcript the user right-clicked, scoped to
+            // subfeatures so it resolves to this isoform rather than its gene
+            // even when the two share a span (the common GFF3 case).
+            ...(subfeature
+              ? [
+                  {
+                    label: subfeatureHighlighted
+                      ? `Remove ${subfeatureNoun} highlight`
+                      : subfeature.displayLabel
+                        ? `Highlight ${subfeatureNoun} ${subfeature.displayLabel}`
+                        : `Highlight this ${subfeatureNoun}`,
+                    icon: Highlighter,
+                    onClick: () => {
+                      const region = self.loadedRegions.get(displayedRegionIndex)
+                      if (region) {
+                        const target = {
+                          startBp: subfeature.startBp,
+                          endBp: subfeature.endBp,
+                          name: subfeature.displayLabel,
+                          subfeature: true,
+                        }
+                        if (subfeatureHighlighted) {
+                          self.removeFeatureHighlightsForItem(
+                            target,
+                            region.refName,
+                          )
+                        } else {
+                          self.addFeatureHighlightForItem(target, region.refName)
+                        }
+                      }
+                    },
+                  },
+                ]
+              : []),
             {
-              label: highlighted ? 'Remove highlight' : 'Highlight feature',
+              label: highlighted
+                ? subfeature
+                  ? `Remove whole ${featureNoun} highlight`
+                  : 'Remove highlight'
+                : subfeature
+                  ? `Highlight whole ${featureNoun}`
+                  : 'Highlight feature',
               icon: Highlighter,
               onClick: () => {
                 const region = self.loadedRegions.get(displayedRegionIndex)

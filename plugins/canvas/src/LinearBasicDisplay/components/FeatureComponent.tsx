@@ -121,10 +121,12 @@ export interface LinearBasicDisplayModel {
     displayedRegionIndex: number,
     clientX: number,
     clientY: number,
+    subfeature?: SubfeatureInfo,
   ) => void
   contextMenuInfo:
     | {
         item: FlatbushItem
+        subfeature?: SubfeatureInfo
         displayedRegionIndex: number
         clientX: number
         clientY: number
@@ -496,13 +498,16 @@ const FeatureBody = observer(function FeatureBody({
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const result = hitTestAtEvent(e)
     if (isHitFeature(result)) {
-      // openContextMenu pins the hover box to this feature itself.
+      // openContextMenu pins the hover box to what the menu acts on. The
+      // subfeature rides along so the menu can target the exact transcript
+      // under the cursor, not just its gene.
       e.preventDefault()
       model.openContextMenu(
         result.feature,
         result.displayedRegionIndex,
         e.clientX,
         e.clientY,
+        result.subfeature ?? undefined,
       )
     }
   }

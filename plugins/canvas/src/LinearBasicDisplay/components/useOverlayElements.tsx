@@ -2,7 +2,11 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { alpha } from '@mui/material'
 
-import { computeLabelExtraWidth, computeOverlayRect } from './highlightUtils.ts'
+import {
+  computeLabelExtraWidth,
+  computeOverlayRect,
+  highlightBoxColors,
+} from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
@@ -116,9 +120,9 @@ const useStyles = makeStyles()(theme => ({
     backgroundColor: alpha(theme.palette.primary.main, 0.15),
   },
   searchHighlightBox: {
-    border: `1px solid ${alpha(theme.palette.highlight.main, 0.7)}`,
+    border: `1px solid ${highlightBoxColors(theme.palette.highlight.main).border}`,
     borderRadius: 3,
-    backgroundColor: alpha(theme.palette.highlight.main, 0.12),
+    backgroundColor: highlightBoxColors(theme.palette.highlight.main).fill,
   },
   selectedBox: {
     border: `2px solid ${theme.palette.featureSelected}`,
@@ -180,8 +184,14 @@ export function useFloatingLabels(
       isOverlay ? classes.floatingLabelOverlay : undefined,
     )
   const labelClasses = {
-    clickable: { overlay: labelClass(true, true), plain: labelClass(true, false) },
-    static: { overlay: labelClass(false, true), plain: labelClass(false, false) },
+    clickable: {
+      overlay: labelClass(true, true),
+      plain: labelClass(true, false),
+    },
+    static: {
+      overlay: labelClass(false, true),
+      plain: labelClass(false, false),
+    },
   }
 
   forEachDisplayLabel(
