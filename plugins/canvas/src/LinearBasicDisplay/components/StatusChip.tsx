@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import type { MouseEvent, ReactElement } from 'react'
 
 import { Chip, Tooltip } from '@mui/material'
 
@@ -16,7 +16,7 @@ export default function StatusChip({
   icon: ReactElement
   label: string
   tooltip: string
-  onClick?: () => void
+  onClick?: (event: MouseEvent<HTMLElement>) => void
   onDelete?: () => void
 }) {
   return (
@@ -28,8 +28,8 @@ export default function StatusChip({
         label={label}
         onClick={
           onClick
-            ? () => {
-                onClick()
+            ? event => {
+                onClick(event)
               }
             : undefined
         }
