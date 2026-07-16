@@ -279,9 +279,11 @@ ${cramPrelude}  # keep every mismatch (TRUE) or hide low-frequency noise like JB
   reads <- linked$reads`
       : sortType === 'base'
         ? `${readsSetup}
-  # sort reads by their base at the center-line column, then pack rows
+  # sort reads by their base at the center-line column (a deletion sorts as '*',
+  # ahead of the ACGT bases, like JBrowse), then pack rows
   sort_pos <- ${p.sortPos ?? -1}
-  reads <- sorted_pileup_layout(reads, sort_pos, "base", bam_mismatches(${bamVar}, chrom, start, end))`
+  reads <- sorted_pileup_layout(reads, sort_pos, "base",
+    bam_mismatches(${bamVar}, chrom, start, end), bam_indels(${bamVar}, chrom, start, end))`
         : sortType !== undefined
           ? `${readsSetup}
   # sort reads by ${sortType} at the center-line column, then pack rows
