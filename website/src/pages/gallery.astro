@@ -1,9 +1,25 @@
 ---
+import { Buffer } from 'node:buffer'
+import { closeSync, openSync, readSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+
 import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import SidebarLayout from '../layouts/SidebarLayout.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import { gallerySections, itemHref, itemImg } from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
+
+// Intrinsic dimensions from the PNG IHDR header (width @ byte 16, height @ 20),
+// stamped on each <img> so the browser reserves the right box and the page
+// doesn't jump as the lazy-loaded screenshots arrive.
+function pngSize(file: string) {
+  const path = fileURLToPath(new URL(`../../static/img/${file}`, import.meta.url))
+  const fd = openSync(path, 'r')
+  const buf = Buffer.alloc(24)
+  readSync(fd, buf, 0, 24, 0)
+  closeSync(fd)
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) }
+}
 
 // Sections shown as screenshot cards vs. compact link lists: an item appears in
 // the card grid when it has a figure, otherwise in the "more examples" list.
@@ -11,7 +27,10 @@ import page from '../styles/page.module.css'
 const sections = gallerySections
   .map(s => ({
     ...s,
-    cards: s.items.filter(i => itemImg(i) && !i.demoOnly),
+    cards: s.items.flatMap(i => {
+      const file = itemImg(i)
+      return file && !i.demoOnly ? [{ item: i, size: pngSize(file) }] : []
+    }),
     links: s.items.filter(i => !itemImg(i) && !i.demoOnly),
   }))
   .filter(s => s.cards.length > 0 || s.links.length > 0)
@@ -34,7 +53,7 @@ const sections = gallerySections
             <h2 id={s.id}>{s.title}</h2>
             {s.cards.length > 0 && (
               <div class="grid">
-                {s.cards.map(item => {
+                {s.cards.map(({ item, size }) => {
                   const href = itemHref(item, baseUrl)
                   const src = `${baseUrl}/img/${itemImg(item)}`
                   const openLabel = item.guide
@@ -51,7 +70,13 @@ const sections = gallerySections
                         data-open-label={openLabel}
                         aria-label={`Enlarge: ${item.label}`}
                       >
-                        <img src={src} alt={item.label} loading="lazy" />
+                        <img
+                          src={src}
+                          alt={item.label}
+                          loading="lazy"
+                          width={size.width}
+                          height={size.height}
+                        />
                       </button>
                       <figcaption>
                         <h3 class="card-title">{item.label}</h3>
@@ -124,11 +149,11 @@ const sections = gallerySections
     })
   }
 
-  // Backdrop or close-button click closes; a click on the image or its
-  // "open" link passes through (the link navigates).
+  // Backdrop, image, or close-button click closes; only the "open" link passes
+  // through (it navigates).
   lb.addEventListener('click', e => {
     const target = e.target as HTMLElement
-    if (target === lb || target.classList.contains('lightbox-close')) {
+    if (target !== lbLink) {
       closeLightbox()
     }
   })
@@ -217,6 +242,7 @@ const sections = gallerySections
     object-fit: contain;
     border-radius: 6px;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    cursor: zoom-out;
   }
   .lightbox-fig figcaption {
     display: flex;
