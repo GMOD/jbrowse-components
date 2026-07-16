@@ -62,10 +62,17 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
   ) {
     writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
     this.uniformF32[U.canvasHeight] = state.canvasHeight
-    // Device px (not CSS) on purpose: viewportWidth feeds only the shader's
-    // `minClipW = 2/viewportWidth` X-axis floor, giving a crisp 1-device-px
-    // minimum cell width, matching GpuMultiRowRenderer. (Wiggle uses CSS px for
-    // a chunkier 3-CSS-px bar floor.) It never interacts with canvasHeight.
+    // viewportWidth feeds only the shader's `extendToMinWidthX` X-axis floor;
+    // it never interacts with canvasHeight. Device px here gives a 1-device-px
+    // minimum cell width (0.5 CSS px at dpr 2).
+    //
+    // NOTE: GpuMultiRowRenderer runs the identical shader but feeds CSS px
+    // (scissorW) for a 1-CSS-px floor — it moved off pxW in e1c2585e4d to match
+    // its Canvas2D `Math.max(1, ...)`. maf has no such Canvas2D floor
+    // (drawMafBlocks draws cells at natural sub-pixel width), so the two are not
+    // interchangeable and neither is obviously wrong. Unresolved: whether maf
+    // should follow. Don't "unify" these without deciding what MAF's floor is
+    // meant to be.
     this.uniformF32[U.viewportWidth] = clip.pxW
     this.uniformF32[U.zero] = 0
     this.uniformF32[U.rowHeight] = state.rowHeight

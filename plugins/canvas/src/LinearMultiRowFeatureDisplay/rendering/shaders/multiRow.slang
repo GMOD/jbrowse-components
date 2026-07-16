@@ -49,14 +49,7 @@ VsOut vs_main(RowInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startBp, u);
   float sx2 = bpToClipX(inst.endBp, u);
 
-  // Enforce minimum 1-pixel width at any zoom so a sub-pixel feature still
-  // paints. Reversal is baked into bpRangeX (negated length), so extend in the
-  // sign direction of dx to preserve orientation (see maf.slang).
-  float minClipW = 1.0 / u.viewportWidth * 2.0;
-  float dx = sx2 - sx1;
-  if (abs(dx) < minClipW) {
-    sx2 = sx1 + (dx < 0.0 ? -minClipW : minClipW);
-  }
+  sx2 = extendToMinWidthX(sx1, sx2, 1.0, u.viewportWidth);
 
   float clipX = lerp(sx1, sx2, local.x);
 

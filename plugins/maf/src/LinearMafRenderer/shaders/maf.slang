@@ -9,6 +9,14 @@
 // same-colored cells — keeping the per-region quad count proportional to
 // the number of color transitions, not the number of bases. Theme /
 // setting changes re-encode on the main thread; no RPC roundtrip.
+//
+// NOTE: multiRow.slang (canvas plugin) is currently an exact copy of this
+// shader — same instance layout, same uniforms, same vertex body — because both
+// draw the same primitive (a colored rect spanning [startBp,endBp) on a row).
+// They are NOT linked by anything, so a change here probably belongs there too;
+// check before assuming otherwise. The two renderers already diverge on the
+// viewportWidth *unit* they feed (see GpuMafRenderer), which is deliberate and
+// not a reason to unify the shaders.
 //! targets: wgsl, glsl
 
 import hpmath;
@@ -54,14 +62,7 @@ VsOut vs_main(MafInstance inst, uint vid : SV_VertexID) {
   float sx1 = bpToClipX(inst.startBp, u);
   float sx2 = bpToClipX(inst.endBp, u);
 
-  // Enforce minimum 1-pixel width at any zoom level. Reversal is baked into
-  // bpRangeX (negated length), so sx2 < sx1 for reversed blocks — extend in the
-  // sign direction of dx to preserve orientation (see rect.slang).
-  float minClipW = 1.0 / u.viewportWidth * 2.0;
-  float dx = sx2 - sx1;
-  if (abs(dx) < minClipW) {
-    sx2 = sx1 + (dx < 0.0 ? -minClipW : minClipW);
-  }
+  sx2 = extendToMinWidthX(sx1, sx2, 1.0, u.viewportWidth);
 
   float clipX = lerp(sx1, sx2, local.x);
 

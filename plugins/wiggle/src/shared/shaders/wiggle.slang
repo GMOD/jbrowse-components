@@ -216,15 +216,8 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       localPos = local * expand;
     }
   } else {
-    // 3px (1.5 CSS px) minimum width keeps sub-pixel features visible, matching
-    // WIGGLE_MIN_PX in the Canvas2D path. Reversal is baked into bpRangeX
-    // (negated length), so sx2 < sx1 for reversed blocks — extend in the sign
-    // direction of dx to preserve orientation (see rect.slang).
-    float minClipW = 3.0 / u.viewportWidth;
-    float dx = sx2 - sx1;
-    if (abs(dx) < minClipW) {
-      sx2 = sx1 + (dx < 0.0 ? -minClipW : minClipW);
-    }
+    // 1.5 CSS px minimum width matches WIGGLE_MIN_PX in the Canvas2D path.
+    sx2 = extendToMinWidthX(sx1, sx2, 1.5, u.viewportWidth);
     float2 q = quadLocal(vid);
     sx = lerp(sx1, sx2, q.x);
 

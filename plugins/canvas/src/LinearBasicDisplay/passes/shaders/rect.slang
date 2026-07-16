@@ -63,11 +63,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float sx1 = snapToPixelX(cx1, u.canvasWidth);
   float sx2 = snapToPixelX(cx2, u.canvasWidth);
 
-  float minWidth = MIN_RECT_WIDTH_PX * 2.0 / u.canvasWidth;
-  float dx = sx2 - sx1;
-  if (abs(dx) < minWidth) {
-    sx2 = sx1 + (dx < 0.0 ? -minWidth : minWidth);
-  }
+  sx2 = extendToMinWidthX(sx1, sx2, MIN_RECT_WIDTH_PX, u.canvasWidth);
   float sx = lerp(sx1, sx2, localX);
 
   float yTopPx = floor(inst.y - u.scrollY + 0.5);
