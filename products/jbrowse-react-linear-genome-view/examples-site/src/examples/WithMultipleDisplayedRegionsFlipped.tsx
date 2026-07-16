@@ -6,37 +6,6 @@ import { observer } from 'mobx-react'
 
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
-const assembly = {
-  name: 'GRCh38',
-  sequence: {
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-    },
-  },
-  aliases: ['hg38'],
-  refNameAliases: {
-    adapter: {
-      type: 'RefNameAliasAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-    },
-  },
-}
-
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'ncbi-refseq-genes',
-    name: 'NCBI RefSeq Genes',
-    category: ['Genes'],
-    assemblyNames: ['GRCh38'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-    },
-  },
-]
-
 const FlipView = observer(function FlipView({ state }: { state: ViewModel }) {
   const view = state.session.view
   const isFlipped = view.displayedRegions[0]?.reversed ?? false
@@ -56,8 +25,35 @@ const FlipView = observer(function FlipView({ state }: { state: ViewModel }) {
 
 export default function WithMultipleDisplayedRegionsFlipped() {
   const state = useCreateViewState({
-    assembly,
-    tracks,
+    assembly: {
+      name: 'GRCh38',
+      sequence: {
+        adapter: {
+          type: 'BgzipFastaAdapter',
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+        },
+      },
+      aliases: ['hg38'],
+      refNameAliases: {
+        adapter: {
+          type: 'RefNameAliasAdapter',
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+        },
+      },
+    },
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'ncbi-refseq-genes',
+        name: 'NCBI RefSeq Genes',
+        category: ['Genes'],
+        assemblyNames: ['GRCh38'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+        },
+      },
+    ],
     defaultSession: {
       name: 'Multi-region flipped example',
       view: {

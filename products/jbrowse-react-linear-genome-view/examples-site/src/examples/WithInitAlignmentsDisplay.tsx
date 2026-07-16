@@ -1,22 +1,5 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-const assembly = {
-  name: 'GRCh38',
-  aliases: ['hg38'],
-  sequence: {
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-    },
-  },
-  refNameAliases: {
-    adapter: {
-      type: 'RefNameAliasAdapter',
-      uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-    },
-  },
-}
-
 const cramTrackId = 'NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome'
 
 const tracks = [
@@ -36,7 +19,22 @@ const tracks = [
 export default function WithInitAlignmentsDisplay() {
   return (
     <LinearGenomeView
-      assembly={assembly}
+      assembly={{
+        name: 'GRCh38',
+        aliases: ['hg38'],
+        sequence: {
+          adapter: {
+            type: 'BgzipFastaAdapter',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'RefNameAliasAdapter',
+            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+          },
+        },
+      }}
       tracks={tracks}
       init={{
         loc: '1:100,987,200..100,987,450',

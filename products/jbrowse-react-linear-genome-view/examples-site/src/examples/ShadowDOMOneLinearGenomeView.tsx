@@ -11,29 +11,6 @@ import { createPortal } from 'react-dom'
 
 import type { EmotionCache } from '@emotion/cache'
 
-const assembly = {
-  name: 'volvox',
-  sequence: {
-    adapter: {
-      type: 'TwoBitAdapter',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-  },
-}
-
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'volvox_gff3',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-    },
-  },
-]
-
 type ViewState = ReturnType<typeof createViewState>
 
 const ShadowComponent = () => {
@@ -54,8 +31,27 @@ const ShadowComponent = () => {
     // eslint-disable-next-line @eslint-react/set-state-in-effect -- shadow DOM setup requires setState in effect
     setConfig(
       createViewState({
-        assembly,
-        tracks,
+        assembly: {
+          name: 'volvox',
+          sequence: {
+            adapter: {
+              type: 'TwoBitAdapter',
+              uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+            },
+          },
+        },
+        tracks: [
+          {
+            type: 'FeatureTrack',
+            trackId: 'volvox_gff3',
+            name: 'Volvox genes',
+            assemblyNames: ['volvox'],
+            adapter: {
+              type: 'Gff3TabixAdapter',
+              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+            },
+          },
+        ],
         location: 'ctgA:1105..1221',
         configuration: {
           theme: {

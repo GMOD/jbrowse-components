@@ -3,19 +3,17 @@ import {
   useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
-const assembly = {
-  name: 'volvox',
-  sequence: {
-    adapter: {
-      type: 'TwoBitAdapter',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-  },
-}
-
 export default function WithPerTrackTextSearching() {
   const state = useCreateViewState({
-    assembly,
+    assembly: {
+      name: 'volvox',
+      sequence: {
+        adapter: {
+          type: 'TwoBitAdapter',
+          uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+        },
+      },
+    },
     tracks: [
       {
         type: 'FeatureTrack',

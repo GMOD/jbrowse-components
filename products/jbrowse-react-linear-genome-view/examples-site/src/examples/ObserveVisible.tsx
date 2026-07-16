@@ -14,29 +14,6 @@ import type { Feature } from '@jbrowse/core/util'
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const assembly = {
-  name: 'volvox',
-  sequence: {
-    adapter: {
-      type: 'TwoBitAdapter',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-  },
-}
-
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'volvox_gff3',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-    },
-  },
-]
-
 function loc(r: BaseBlock) {
   return r.type === 'ContentBlock'
     ? `${r.refName}:${Math.floor(r.start)}-${Math.floor(r.end)}`
@@ -122,8 +99,27 @@ const VisibleFeatures = observer(function VisibleFeatures({
 
 export default function ObserveVisible() {
   const state = useCreateViewState({
-    assembly,
-    tracks,
+    assembly: {
+      name: 'volvox',
+      sequence: {
+        adapter: {
+          type: 'TwoBitAdapter',
+          uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+        },
+      },
+    },
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'volvox_gff3',
+        name: 'Volvox genes',
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+        },
+      },
+    ],
     location: 'ctgA:1105..1221',
   })
   return (

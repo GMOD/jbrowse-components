@@ -5,32 +5,32 @@ import {
   createViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
-const assembly = {
-  name: 'volvox',
-  sequence: {
-    adapter: {
-      type: 'TwoBitAdapter',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-  },
-}
-
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'volvox_gff3',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-    },
-  },
-]
-
 export default function WithShowTrack() {
   const [state] = useState(() => {
-    const s = createViewState({ assembly, tracks, location: 'ctgA:1105..1221' })
+    const s = createViewState({
+      assembly: {
+        name: 'volvox',
+        sequence: {
+          adapter: {
+            type: 'TwoBitAdapter',
+            uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+          },
+        },
+      },
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'volvox_gff3',
+          name: 'Volvox genes',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+          },
+        },
+      ],
+      location: 'ctgA:1105..1221',
+    })
     // showTrack API: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-showtrack
     s.session.view.showTrack('volvox_gff3')
     return s

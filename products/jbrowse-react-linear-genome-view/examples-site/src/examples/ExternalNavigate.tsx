@@ -15,19 +15,6 @@ const assembly = {
   },
 }
 
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'volvox_gff3',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-    },
-  },
-]
-
 // navigate with a JBrowse locstring
 const bookmarks = [
   { label: 'ctgA — region A', loc: 'ctgA:1,000..5,000' },
@@ -92,7 +79,18 @@ export default function ExternalNavigate() {
       <LinearGenomeView
         ref={ref}
         assembly={assembly}
-        tracks={tracks}
+        tracks={[
+          {
+            type: 'FeatureTrack',
+            trackId: 'volvox_gff3',
+            name: 'Volvox genes',
+            assemblyNames: ['volvox'],
+            adapter: {
+              type: 'Gff3TabixAdapter',
+              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+            },
+          },
+        ]}
         init={{ loc: 'ctgA:1,000..5,000' }}
       />
     </div>

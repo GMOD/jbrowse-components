@@ -4,13 +4,15 @@ import { Code } from 'astro:components'
 import { examples } from '../examples.ts'
 import Example from '../examples/HumanDemo.tsx'
 import code from '../examples/HumanDemo.tsx?raw'
+import quickstart from '../examples/BasicExample.tsx?raw'
 import Shell from '../layouts/Shell.astro'
-import Gallery from '../layouts/Gallery.astro'
 import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
+
+const base = import.meta.env.BASE_URL
 ---
 
 <Shell
-  title="Examples"
+  title="Getting started"
   componentLabel={componentLabel}
   examples={examples}
   mainMaxWidth={mainMaxWidth}
@@ -18,23 +20,69 @@ import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
   <h1>JBrowse React App</h1>
   <p class="intro">
     <code>@jbrowse/react-app2</code> embeds the full multi-view JBrowse 2 app —
-    menu bar, view manager, drawer widgets, and every view type — in a React
-    component. The live demo below is a real-world hg38 session at the <em>SHH</em>
-    locus; browse the pattern-by-pattern examples in the sidebar for specific
-    features. If you only need a single track view, the lighter{' '}
+    menu bar, view manager, drawer widgets, and every view type — in a single
+    React component. If you only need a single track view, the lighter{' '}
     <a href="https://jbrowse.org/storybook/lgv/"
       ><code>@jbrowse/react-linear-genome-view2</code></a
     > component is a better fit.
   </p>
 
-  <h2>Live demo</h2>
-  <div class:list={['demo', { fill: demoFillHeight }]}>
-    <Example client:only="react" />
-  </div>
-  <details class="source">
-    <summary>View source</summary>
-    <Code code={code} lang="tsx" />
-  </details>
+  <div class="doc">
+    <h2>Live demo</h2>
+    <p>
+      A real-world hg38 session at the <em>SHH</em> locus — genes, repeats, exome
+      alignments, variants, and conservation.
+    </p>
+    <div class:list={['demo', { fill: demoFillHeight }]}>
+      <Example client:only="react" />
+    </div>
+    <details class="source">
+      <summary>View source</summary>
+      <Code code={code} lang="tsx" />
+    </details>
 
-  <Gallery examples={examples} />
+    <h2>Install</h2>
+    <p>Add the component and its React peer dependencies:</p>
+    <Code code="npm install @jbrowse/react-app2 react react-dom" lang="bash" />
+
+    <h2>Quick start</h2>
+    <p>
+      Render the <code>JBrowse</code> component with your assemblies, tracks, and
+      the views to open on load. This minimal example shows one assembly and one
+      alignments track in a linear genome view:
+    </p>
+    <Code code={quickstart} lang="tsx" />
+    <p>
+      For production, offload data parsing and rendering to a web worker so the
+      main thread stays responsive — see{' '}
+      <a href={`${base}with-web-worker/`}>Web worker RPC</a> in the sidebar.
+    </p>
+
+    <h2>Next steps</h2>
+    <p>Browse the examples in the sidebar for specific patterns:</p>
+    <ul>
+      <li>
+        <strong>Getting started</strong> — the basic example above, plus theming,
+        observing state, and fitting the app to a container.
+      </li>
+      <li>
+        <strong>Loading config</strong> — bundle a <code>config.json</code>, fetch
+        one at runtime, or add tracks programmatically.
+      </li>
+      <li>
+        <strong>View types</strong> — linear, circular, dotplot, synteny,
+        breakpoint-split, spreadsheet, and SV-inspector views.
+      </li>
+      <li>
+        <strong>Plugins</strong> — extend the app with inline or runtime-loaded
+        plugins.
+      </li>
+    </ul>
+    <p>
+      Full API and configuration reference lives in the{' '}
+      <a href="https://jbrowse.org/jb2/docs/embedded_components/"
+        >embedding docs</a
+      >.
+    </p>
+  </div>
 </Shell>

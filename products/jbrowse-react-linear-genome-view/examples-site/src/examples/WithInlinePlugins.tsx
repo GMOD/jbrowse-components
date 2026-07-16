@@ -8,29 +8,6 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
 
-const assembly = {
-  name: 'volvox',
-  sequence: {
-    adapter: {
-      type: 'TwoBitAdapter',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-  },
-}
-
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'volvox_gff3',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-    },
-  },
-]
-
 class HighlightRegionPlugin extends Plugin {
   name = 'HighlightRegionPlugin'
 
@@ -73,9 +50,28 @@ class HighlightRegionPlugin extends Plugin {
 
 export default function WithInlinePlugins() {
   const state = useCreateViewState({
-    assembly,
+    assembly: {
+      name: 'volvox',
+      sequence: {
+        adapter: {
+          type: 'TwoBitAdapter',
+          uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+        },
+      },
+    },
     plugins: [HighlightRegionPlugin],
-    tracks,
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'volvox_gff3',
+        name: 'Volvox genes',
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+        },
+      },
+    ],
     location: 'ctgA:1105..1221',
   })
   return <JBrowseLinearGenomeView viewState={state} />

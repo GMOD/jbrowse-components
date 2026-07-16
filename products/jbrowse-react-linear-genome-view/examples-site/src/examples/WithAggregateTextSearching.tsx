@@ -3,32 +3,17 @@ import {
   useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
-const assembly = {
-  name: 'volvox',
-  sequence: {
-    adapter: {
-      type: 'TwoBitAdapter',
-      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-    },
-  },
-}
-
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'volvox_gff3',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
-    },
-  },
-]
-
 export default function WithAggregateTextSearching() {
   const state = useCreateViewState({
-    assembly,
+    assembly: {
+      name: 'volvox',
+      sequence: {
+        adapter: {
+          type: 'TwoBitAdapter',
+          uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
+        },
+      },
+    },
     aggregateTextSearchAdapters: [
       {
         type: 'TrixTextSearchAdapter',
@@ -39,7 +24,18 @@ export default function WithAggregateTextSearching() {
         assemblyNames: ['volvox'],
       },
     ],
-    tracks,
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'volvox_gff3',
+        name: 'Volvox genes',
+        assemblyNames: ['volvox'],
+        adapter: {
+          type: 'Gff3TabixAdapter',
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+        },
+      },
+    ],
     location: 'ctgA:1..800',
   })
   return <JBrowseLinearGenomeView viewState={state} />
