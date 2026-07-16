@@ -6,14 +6,15 @@ import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()(theme => ({
   bp: {
     display: 'flex',
     alignItems: 'center',
-    marginLeft: 10,
   },
   searchBox: {
     display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
   },
 }))
 
@@ -26,7 +27,13 @@ const HeaderSearchBoxes = observer(function HeaderSearchBoxes({
   const { assemblyDisplayNames, coarseTotalBp } = view
   return (
     <span className={classes.searchBox}>
-      <SearchBox model={view} showHelp={false} style={{ margin: 0 }} />
+      <SearchBox
+        model={view}
+        showHelp={false}
+        maxWidth={250}
+        minWidth={100}
+        style={{ margin: 0 }}
+      />
       <Typography variant="body2" color="text.secondary" className={classes.bp}>
         {assemblyDisplayNames.join(',')} {getBpDisplayStr(coarseTotalBp)}
       </Typography>

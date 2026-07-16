@@ -83,10 +83,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        trackSelectorType: types.stripDefault(types.string, 'hierarchical'),
-        /**
-         * #property
-         */
         showIntraviewLinks: types.stripDefault(types.boolean, true),
         /**
          * #property
@@ -131,6 +127,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       matchedTrackFeatures: {},
     }))
     .views(self => ({
+      /**
+       * #getter
+       * scroll-to-zoom is a global, personal preference resolved from the
+       * session; toggling it in any view applies everywhere
+       */
+      get scrollZoom() {
+        return getSession(self).scrollZoom
+      },
+
       /**
        * #getter
        */
@@ -409,6 +414,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setLinkViews(arg: boolean) {
         self.linkViews = arg
+      },
+
+      /**
+       * #action
+       */
+      setScrollZoom(arg: boolean) {
+        getSession(self).setScrollZoom?.(arg)
       },
 
       /**
