@@ -18,24 +18,49 @@ import type { FileLocation } from '@jbrowse/core/util/types'
 
 export type InputMode = 'remote' | 'local'
 
+export interface NamedRow {
+  row: TrackConfRow
+  name: string
+}
+
 /**
- * The name a row is added under. An explicit user edit always wins; otherwise
- * the strip-extensions toggle decides. Shared by the preview table and submit
- * so what the table shows is what gets added.
+ * Pairs every row with the name it will be added under. An explicit user edit
+ * always wins. Stripping is skipped for rows whose stripped name would collide
+ * with another row's (`a.bam` and `a.vcf.gz` both stripping to `a` would leave
+ * two indistinguishable tracks in the selector) — those keep their extension,
+ * which is the thing that tells them apart.
+ *
+ * Collisions are counted over stripped names only, ignoring user renames, so
+ * the toggle stays a pure function of the file list: typing a name in one row
+ * never changes how a different row is displayed.
+ *
+ * Resolve once over ALL rows and filter afterwards, never per-subset — counting
+ * collisions over just the ok rows would strip a name on submit that the
+ * preview table showed un-stripped.
  */
-export function resolveTrackName({
-  row,
+export function resolveTrackNames({
+  rows,
   customNames,
   stripExtensions,
 }: {
-  row: TrackConfRow
+  rows: TrackConfRow[]
   customNames: Record<string, string>
   stripExtensions: boolean
-}) {
-  return (
-    customNames[row.id] ??
-    (stripExtensions ? stripFileExtension(row.name) : row.name)
-  )
+}): NamedRow[] {
+  const entries = rows.map(row => ({
+    row,
+    stripped: stripFileExtension(row.name),
+  }))
+  const counts = new Map<string, number>()
+  for (const { stripped } of entries) {
+    counts.set(stripped, (counts.get(stripped) ?? 0) + 1)
+  }
+  return entries.map(({ row, stripped }) => ({
+    row,
+    name:
+      customNames[row.id] ??
+      (stripExtensions && counts.get(stripped) === 1 ? stripped : row.name),
+  }))
 }
 
 /** Pick the singular or plural wording for a count (1 is singular). */
@@ -90,25 +115,18 @@ export function locationWarnings(locations: FileLocation[]): string[] {
  */
 export function submitBulkTracks({
   model,
-  rows,
-  customNames,
-  stripExtensions,
+  named,
   assembly,
 }: {
   model: AddTrackModel
-  rows: TrackConfRow[]
-  customNames: Record<string, string>
-  stripExtensions: boolean
+  named: NamedRow[]
   assembly: string
 }) {
   const session = getSession(model)
   if (isSessionWithAddTracks(session)) {
     const showInView = model.view?.assemblyNames?.includes(assembly)
-    for (const row of rows) {
-      const conf = {
-        ...row.conf,
-        name: resolveTrackName({ row, customNames, stripExtensions }),
-      }
+    for (const { row, name } of named) {
+      const conf = { ...row.conf, name }
       session.addTrackConf(conf)
       if (showInView) {
         model.view?.showTrack(conf.trackId)

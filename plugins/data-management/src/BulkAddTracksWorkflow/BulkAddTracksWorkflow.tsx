@@ -19,6 +19,7 @@ import TrackPreviewTable from './TrackPreviewTable.tsx'
 import { locationId } from './pairLocations.ts'
 import { summarizeBulkInput } from './preview.ts'
 import { useBulkLocations } from './useBulkLocations.ts'
+import { resolveTrackNames } from './util.ts'
 import { DEFAULT_WORKFLOW } from '../AddTrackWidget/workflowNames.ts'
 
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
@@ -52,8 +53,13 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   const [stripExtensions, setStripExtensions] = useState(false)
   const [timestamp] = useState(() => Date.now())
 
-  const { pairs, rows, okRows, skippedCount, orphanIndexCount, warnings } =
+  const { pairs, rows, skippedCount, orphanIndexCount, warnings } =
     summarizeBulkInput({ locations, model, assembly, timestamp })
+
+  // Resolved once over every row, then filtered: collisions must be counted
+  // across the whole list or the preview and the added names could disagree.
+  const named = resolveTrackNames({ rows, customNames, stripExtensions })
+  const okNamed = named.filter(({ row }) => row.status === 'ok')
 
   function removeRow(rowId: string) {
     const pair = pairs.find(p => locationId(p.file) === rowId)
@@ -117,10 +123,8 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
             label="Strip file extensions from track names"
           />
           <TrackPreviewTable
-            rows={rows}
-            customNames={customNames}
+            named={named}
             setCustomNames={setCustomNames}
-            stripExtensions={stripExtensions}
             onRemove={removeRow}
           />
         </>
@@ -134,9 +138,7 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
 
       <SubmitTracksButton
         model={model}
-        okRows={okRows}
-        customNames={customNames}
-        stripExtensions={stripExtensions}
+        okNamed={okNamed}
         assembly={assembly}
       />
     </Paper>

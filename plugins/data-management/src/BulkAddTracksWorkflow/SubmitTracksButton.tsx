@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import { plural, submitBulkTracks } from './util.ts'
 
-import type { TrackConfRow } from './buildConfigs.ts'
+import type { NamedRow } from './util.ts'
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -17,15 +17,11 @@ const useStyles = makeStyles()(theme => ({
 
 const SubmitTracksButton = observer(function SubmitTracksButton({
   model,
-  okRows,
-  customNames,
-  stripExtensions,
+  okNamed,
   assembly,
 }: {
   model: AddTrackModel
-  okRows: TrackConfRow[]
-  customNames: Record<string, string>
-  stripExtensions: boolean
+  okNamed: NamedRow[]
   assembly: string
 }) {
   const { classes } = useStyles()
@@ -34,22 +30,16 @@ const SubmitTracksButton = observer(function SubmitTracksButton({
       variant="contained"
       color="primary"
       className={classes.submit}
-      disabled={okRows.length === 0 || !assembly}
+      disabled={okNamed.length === 0 || !assembly}
       onClick={() => {
         try {
-          submitBulkTracks({
-            model,
-            rows: okRows,
-            customNames,
-            stripExtensions,
-            assembly,
-          })
+          submitBulkTracks({ model, named: okNamed, assembly })
         } catch (e) {
           getSession(model).notifyError(`${e}`, e)
         }
       }}
     >
-      Add {okRows.length} {plural(okRows.length, 'track', 'tracks')}
+      Add {okNamed.length} {plural(okNamed.length, 'track', 'tracks')}
     </Button>
   )
 })

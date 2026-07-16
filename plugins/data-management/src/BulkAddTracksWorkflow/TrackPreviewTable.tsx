@@ -6,9 +6,8 @@ import { IconButton, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
-import { resolveTrackName } from './util.ts'
-
 import type { TrackConfRow, TrackStatus } from './buildConfigs.ts'
+import type { NamedRow } from './util.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()(theme => ({
@@ -35,22 +34,18 @@ function detectedTypeLabel(row: TrackConfRow) {
 }
 
 const TrackPreviewTable = observer(function TrackPreviewTable({
-  rows,
-  customNames,
+  named,
   setCustomNames,
-  stripExtensions,
   onRemove,
 }: {
-  rows: TrackConfRow[]
-  customNames: Record<string, string>
+  named: NamedRow[]
   setCustomNames: Dispatch<SetStateAction<Record<string, string>>>
-  stripExtensions: boolean
   onRemove: (id: string) => void
 }) {
   const { classes } = useStyles()
-  const gridRows: PreviewGridRow[] = rows.map(row => ({
+  const gridRows: PreviewGridRow[] = named.map(({ row, name }) => ({
     id: row.id,
-    name: resolveTrackName({ row, customNames, stripExtensions }),
+    name,
     type: detectedTypeLabel(row),
     index: row.indexName ?? 'auto',
     status: row.status,

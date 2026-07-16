@@ -31,6 +31,9 @@ export function locationId(loc: FileLocation) {
   }
 }
 
+// Deliberately last-dot-only, unlike core's compression-aware
+// stripFileExtension: pairing needs `foo.bam.bai` -> `foo.bam` to match its
+// data file, and peeling the `.gz` off `foo.vcf.gz.tbi` would break that.
 function stripLastExt(name: string) {
   const dot = name.lastIndexOf('.')
   return dot === -1 ? name : name.slice(0, dot)

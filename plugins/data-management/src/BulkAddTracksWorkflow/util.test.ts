@@ -1,4 +1,4 @@
-import { locationWarnings, parseUrlList, resolveTrackName } from './util.ts'
+import { locationWarnings, parseUrlList, resolveTrackNames } from './util.ts'
 
 import type { TrackConfRow } from './buildConfigs.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -46,28 +46,73 @@ test('warns about relative urls but not absolute or ftp ones', () => {
   expect(warnings).toContainEqual(expect.stringContaining('1 URL is relative'))
 })
 
-describe('resolveTrackName', () => {
-  const row = { id: 'r1', name: 'volvox.vcf.gz' } as TrackConfRow
+describe('resolveTrackNames', () => {
+  function rowOf(id: string, name: string) {
+    return { id, name, status: 'ok' } as TrackConfRow
+  }
+  function namesOf(args: {
+    rows: TrackConfRow[]
+    customNames?: Record<string, string>
+    stripExtensions: boolean
+  }) {
+    return resolveTrackNames({
+      customNames: {},
+      ...args,
+    }).map(({ name }) => name)
+  }
 
-  test('keeps the full filename when not stripping', () => {
+  test('keeps full filenames when not stripping', () => {
     expect(
-      resolveTrackName({ row, customNames: {}, stripExtensions: false }),
-    ).toBe('volvox.vcf.gz')
+      namesOf({
+        rows: [rowOf('r1', 'volvox.vcf.gz')],
+        stripExtensions: false,
+      }),
+    ).toEqual(['volvox.vcf.gz'])
   })
 
-  test('strips the extension when toggled on', () => {
+  test('strips extensions when toggled on', () => {
     expect(
-      resolveTrackName({ row, customNames: {}, stripExtensions: true }),
-    ).toBe('volvox')
+      namesOf({
+        rows: [rowOf('r1', 'volvox.vcf.gz'), rowOf('r2', 'other.bam')],
+        stripExtensions: true,
+      }),
+    ).toEqual(['volvox', 'other'])
   })
 
   test('an explicit rename wins over the strip toggle', () => {
     expect(
-      resolveTrackName({
-        row,
+      namesOf({
+        rows: [rowOf('r1', 'volvox.vcf.gz')],
         customNames: { r1: 'My variants' },
         stripExtensions: true,
       }),
-    ).toBe('My variants')
+    ).toEqual(['My variants'])
+  })
+
+  test('colliding rows keep their extensions so they stay distinguishable', () => {
+    expect(
+      namesOf({
+        rows: [rowOf('r1', 'a.bam'), rowOf('r2', 'a.vcf.gz')],
+        stripExtensions: true,
+      }),
+    ).toEqual(['a.bam', 'a.vcf.gz'])
+  })
+
+  test('a collision only un-strips the rows involved', () => {
+    expect(
+      namesOf({
+        rows: [rowOf('r1', 'a.bam'), rowOf('r2', 'a.vcf.gz'), rowOf('r3', 'b.bam')],
+        stripExtensions: true,
+      }),
+    ).toEqual(['a.bam', 'a.vcf.gz', 'b'])
+  })
+
+  test('collisions are ignored when the toggle is off', () => {
+    expect(
+      namesOf({
+        rows: [rowOf('r1', 'a.bam'), rowOf('r2', 'a.vcf.gz')],
+        stripExtensions: false,
+      }),
+    ).toEqual(['a.bam', 'a.vcf.gz'])
   })
 })

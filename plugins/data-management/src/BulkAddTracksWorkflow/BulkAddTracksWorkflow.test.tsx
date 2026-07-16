@@ -181,3 +181,30 @@ test('stripped names are what actually get added', () => {
 
   expect(readConfObject(session.sessionTracks.at(-1), 'name')).toBe('a')
 })
+
+test('stripping backs off for rows whose names would collide', () => {
+  const { model } = getSession()
+  const { getByLabelText, getByRole, getByText } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  pasteUrls(getByLabelText, 'https://x.com/a.bam\nhttps://x.com/a.vcf.gz')
+  fireEvent.click(getByRole('checkbox', { name: /Strip file extensions/ }))
+
+  // both would strip to "a", so both keep the extension that tells them apart
+  expect(getByText('a.bam')).toBeTruthy()
+  expect(getByText('a.vcf.gz')).toBeTruthy()
+})
+
+test('a collision against an unaddable row still un-strips what gets added', () => {
+  const { session, model } = getSession()
+  const { getByLabelText, getByRole } = render(
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
+  )
+  // a.qqq is an unrecognized type and is not added, but it still collides with
+  // a.bam on the stripped name "a", so the preview and the added name agree
+  pasteUrls(getByLabelText, 'https://x.com/a.bam\nhttps://x.com/a.qqq')
+  fireEvent.click(getByRole('checkbox', { name: /Strip file extensions/ }))
+  fireEvent.click(getByRole('button', { name: 'Add 1 track' }))
+
+  expect(readConfObject(session.sessionTracks.at(-1), 'name')).toBe('a.bam')
+})
