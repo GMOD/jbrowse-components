@@ -11,6 +11,7 @@ import {
   buildPairTooltip,
   createAlignmentMouseHandlers,
   getTestId,
+  isDrawnByPileup,
   isReversed,
   resolvedPairs,
   useOverlayState,
@@ -63,14 +64,13 @@ const AlignmentConnections = observer(function AlignmentConnections({
       f2ref,
       hiddenSegmentsBetween,
     }) => {
-      // A connection that stays inside one view is redundant when that level's
-      // track links its own reads (view-as-pairs / link supplementary
-      // alignments) — the pileup already draws it.
-      if (
-        level1 === level2 &&
-        (!showIntraviewLinks || levels[level1]!.linksReads)
-      ) {
-        return []
+      if (level1 === level2) {
+        if (
+          !showIntraviewLinks ||
+          isDrawnByPileup({ level: level1, levels, c1, c2 })
+        ) {
+          return []
+        }
       }
       const s1 = f1.get('strand')!
       const s2 = f2.get('strand')!
@@ -151,21 +151,28 @@ const AlignmentConnections = observer(function AlignmentConnections({
 
   return (
     <g fill="none" data-testid={getTestId(trackId, layoutMatches.length > 0)}>
-      {connections.map(({ id, path, orientationColor, f1, f2, hiddenSegment }) => (
-        <path
-          d={path}
-          key={id}
-          data-testid="r1"
-          pointerEvents={interactiveOverlay ? 'auto' : undefined}
-          strokeWidth={mouseoverElt === id ? 5 : 1}
-          strokeDasharray={hiddenSegment ? '4 3' : undefined}
-          {...getStrokeProps(orientationColor ?? theme.palette.text.disabled)}
-          {...createAlignmentMouseHandlers(id, setMouseoverElt, session, () => ({
-            feature1: allFeatures.get(f1.id())?.toJSON(),
-            feature2: allFeatures.get(f2.id())?.toJSON(),
-          }))}
-        />
-      ))}
+      {connections.map(
+        ({ id, path, orientationColor, f1, f2, hiddenSegment }) => (
+          <path
+            d={path}
+            key={id}
+            data-testid="r1"
+            pointerEvents={interactiveOverlay ? 'auto' : undefined}
+            strokeWidth={mouseoverElt === id ? 5 : 1}
+            strokeDasharray={hiddenSegment ? '4 3' : undefined}
+            {...getStrokeProps(orientationColor ?? theme.palette.text.disabled)}
+            {...createAlignmentMouseHandlers(
+              id,
+              setMouseoverElt,
+              session,
+              () => ({
+                feature1: allFeatures.get(f1.id())?.toJSON(),
+                feature2: allFeatures.get(f2.id())?.toJSON(),
+              }),
+            )}
+          />
+        ),
+      )}
       {hoveredTooltip ? <BreakpointTooltip contents={hoveredTooltip} /> : null}
     </g>
   )

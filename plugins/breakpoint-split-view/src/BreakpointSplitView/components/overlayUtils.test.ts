@@ -1,11 +1,13 @@
 import {
   buildBreakpointPath,
   buildSimplePath,
+  isDrawnByPileup,
   resolvedPairs,
   strandToSign,
 } from './overlayUtils.tsx'
+import { makeOffscreenLayout } from '../util.ts'
 
-import type { LayoutMatch } from '../types.ts'
+import type { LayoutMatch, LayoutRecord, OverlayLevel } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -73,6 +75,71 @@ describe('resolvedPairs', () => {
     const match = { layoutMatches: [[entry('chr1'), entry('chr2')]] }
     const [pair] = [...resolvedPairs({ match, assembly, tracks })]
     expect(pair?.hiddenSegmentsBetween).toBeUndefined()
+  })
+})
+
+describe('isDrawnByPileup', () => {
+  const level = (linksReads: boolean): OverlayLevel => ({
+    yOffset: 0,
+    height: 100,
+    coverageOffset: 0,
+    scrollTop: 0,
+    offsetPx: 0,
+    linksReads,
+  })
+  const laidOut: LayoutRecord = [10, 20, 30, 25]
+
+  test('a linked-reads level draws its own laid-out junctions', () => {
+    expect(
+      isDrawnByPileup({
+        level: 0,
+        levels: [level(true)],
+        c1: laidOut,
+        c2: laidOut,
+      }),
+    ).toBe(true)
+  })
+
+  test('an unlinked level draws nothing itself', () => {
+    expect(
+      isDrawnByPileup({
+        level: 0,
+        levels: [level(false)],
+        c1: laidOut,
+        c2: laidOut,
+      }),
+    ).toBe(false)
+  })
+
+  test('an off-display segment gets no connecting line, so the overlay keeps it', () => {
+    const off = makeOffscreenLayout(10, 30)
+    expect(
+      isDrawnByPileup({
+        level: 0,
+        levels: [level(true)],
+        c1: laidOut,
+        c2: off,
+      }),
+    ).toBe(false)
+    expect(
+      isDrawnByPileup({
+        level: 0,
+        levels: [level(true)],
+        c1: off,
+        c2: laidOut,
+      }),
+    ).toBe(false)
+  })
+
+  test("reads the junction level's own flag, not another level's", () => {
+    expect(
+      isDrawnByPileup({
+        level: 1,
+        levels: [level(true), level(false)],
+        c1: laidOut,
+        c2: laidOut,
+      }),
+    ).toBe(false)
   })
 })
 

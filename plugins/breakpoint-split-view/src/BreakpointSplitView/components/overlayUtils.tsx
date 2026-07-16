@@ -10,9 +10,10 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import BreakpointTooltip from './BreakpointTooltip.tsx'
+import { isOffscreenLayout } from '../util.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { LayoutRecord, OverlayMatch } from '../types.ts'
+import type { LayoutRecord, OverlayLevel, OverlayMatch } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -134,6 +135,34 @@ export function createAlignmentMouseHandlers(
     },
     ...hoverHandlers(id, setMouseoverElt),
   }
+}
+
+// A junction whose endpoints share one view level is already drawn by that
+// level's pileup when the track links its own reads (view-as-pairs / link
+// supplementary alignments): chain layout has its own connecting-line pass (see
+// LinearAlignmentsDisplay's showLinkedReadLines). Redrawing it as an overlay
+// curve just doubles it up.
+//
+// It only holds for segments the pileup actually laid out. An off-display one
+// (filtered, past maxHeight, not yet loaded — see makeOffscreenLayout) gets no
+// connecting line, so the overlay keeps its curve to the track's bottom edge as
+// the only sign the segment exists.
+export function isDrawnByPileup({
+  level,
+  levels,
+  c1,
+  c2,
+}: {
+  level: number
+  levels: OverlayLevel[]
+  c1: LayoutRecord
+  c2: LayoutRecord
+}) {
+  return (
+    !!levels[level]?.linksReads &&
+    !isOffscreenLayout(c1) &&
+    !isOffscreenLayout(c2)
+  )
 }
 
 export function getTestId(trackId: string, hasMatches: boolean) {
