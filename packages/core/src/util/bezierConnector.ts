@@ -32,7 +32,13 @@ const MAX_HANDLE_PX = 200
 const MAX_BOW_PX = 30
 
 // A discordant connection bows *down* instead of up, so the two classes read
-// apart at a glance. Depth comes from the connection's own horizontal span
+// apart at a glance. Both renderers follow this: BreakpointSplitView dips its
+// same-level discordant links, and the pileup overlay dips every curve it draws
+// (its normal-orientation pairs are plain lines, so a curve there is always
+// discordant). Keep it that way — a renderer that opts out makes "below the
+// reads" mean two different things in two views of the same data.
+//
+// Depth comes from the connection's own horizontal span
 // rather than reaching for some fixed row: with "view as pairs" / "link
 // supplementary alignments" every qname lands on one row, so dipping to a
 // shared row bottoms every curve out at the same depth and they collapse into

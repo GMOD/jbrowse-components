@@ -136,9 +136,12 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       continue
     }
 
-    // Normal within-region pairs are drawn upstream; aberrant/cross-region pairs
-    // get the shared connector curve. Endpoint 2 is a split junction's 5' leading
-    // edge (folds back) for a split read, or the mate's 3' edge for a pair.
+    // Normal-orientation pairs draw as a plain line (the within-region ones
+    // never reach here — the GPU / Canvas2D pipeline owns those). Everything
+    // curving here is therefore discordant, so it dips, matching
+    // BreakpointSplitView: a line is normal, a curve below the reads is not.
+    // Endpoint 2 is a split junction's 5' leading edge (folds back) for a split
+    // read, or the mate's 3' edge for a pair.
     const d = c.isNormal
       ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
       : bezierConnectorPath({
@@ -151,6 +154,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
           leadingEnd2: c.isSplit,
           reversed1: !!r1.reversed,
           reversed2: !!r2.reversed,
+          dip: true,
         })
     const stroke = rgb255(linkedReadColorPalette[c.colorType % paletteLen]!)
 

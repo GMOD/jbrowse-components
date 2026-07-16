@@ -64,12 +64,14 @@ function controlPoints(d: string) {
     `M (${n}) (${n}) C (${n}) (${n}) (${n}) (${n}) (${n}) (${n})`,
   )
   const m = re.exec(d)!
-  const [, sx1, sy1, cp1x, , cp2x, , sx2, sy2] = m.map(Number)
+  const [, sx1, sy1, cp1x, cp1y, cp2x, cp2y, sx2, sy2] = m.map(Number)
   return {
     sx1: sx1!,
     sy1: sy1!,
     cp1x: cp1x!,
+    cp1y: cp1y!,
     cp2x: cp2x!,
+    cp2y: cp2y!,
     sx2: sx2!,
     sy2: sy2!,
   }
@@ -248,6 +250,58 @@ describe('computePileupBezierArcs — paired tangent direction', () => {
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
     expect(cp1x).toBeGreaterThan(sx1) // s1 = +1 → right
     expect(cp2x).toBeGreaterThan(sx2) // s2 = +1, paired (no flip) → right
+  })
+})
+
+describe('computePileupBezierArcs — discordant curves dip', () => {
+  // The shape language is shared with BreakpointSplitView: a plain line is a
+  // normal-orientation pair, a curve below the reads is a discordant one. Every
+  // pair that gets a curve here is discordant (normal ones take the line
+  // branch), so every curve dips — larger y is down the screen.
+  it('a split inversion bows below both of its endpoints', () => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, -1],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      ys: [0, 0],
+    })
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
+    })
+    expect(arcs).toHaveLength(1)
+    const { sy1, cp1y, cp2y, sy2 } = controlPoints(arcs[0]!.d)
+    expect(cp1y).toBeGreaterThan(sy1)
+    expect(cp2y).toBeGreaterThan(sy2)
+  })
+
+  it('an aberrant RR pair dips too, not just split reads', () => {
+    const data = makeData({
+      names: ['p', 'p'],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
+      strands: [1, 1],
+      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      ys: [0, 0],
+    })
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
+    })
+    expect(arcs).toHaveLength(1)
+    const { sy1, cp1y, cp2y, sy2 } = controlPoints(arcs[0]!.d)
+    expect(cp1y).toBeGreaterThan(sy1)
+    expect(cp2y).toBeGreaterThan(sy2)
   })
 })
 
