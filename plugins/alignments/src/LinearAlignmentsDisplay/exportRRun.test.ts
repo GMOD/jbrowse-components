@@ -416,6 +416,103 @@ cat(length(ov), as.integer(!is.unsorted(laid$start[o])), "\\n")
   90000,
 )
 
+// filterBy: the generated pileup runs read_filter, which must drop reads by SAM
+// flag exactly like JBrowse (a filtered read gets an NA row and goes undrawn) —
+// here excluding the reverse-strand bit (0x10) keeps only the forward reads
+maybe(
+  'filter-by-flag pileup runs and read_filter drops reads by SAM flag',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-sorted.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox reads',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'strand',
+      filterFlagExclude: 16,
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 5000 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-filterflag-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+reads <- read_bam(${JSON.stringify(bam)}, "ctgA", 0, 5000)
+kept <- read_filter(reads, ${JSON.stringify(bam)}, "ctgA", 0, 5000, 0, 16)
+# excluding 0x10 keeps exactly the forward-strand reads, none dropped otherwise
+cat(nrow(reads), sum(kept$keep), sum(reads$strand == "+"), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [total, kept, forward] = out.split(/\s+/).map(Number)
+    expect(total!).toBeGreaterThan(0)
+    // some reads are filtered (there are reverse reads to drop)
+    expect(kept!).toBeLessThan(total!)
+    // and the kept set is exactly the forward-strand reads
+    expect(kept).toBe(forward)
+  },
+  90000,
+)
+
+// filterBy tag filter: volvox-rg.bam carries RG:Z:4 / RG:Z:5 read groups (200
+// each). read_filter must keep only the reads whose tag matches, honor "*"
+// (has-the-tag), and drop everything for an absent value — JBrowse's tag filter.
+maybe(
+  'filter-by-tag pileup runs and read_filter matches the RG tag',
+  () => {
+    const bam = resolve(process.cwd(), 'test_data/volvox/volvox-rg.bam')
+    const fragments = alignmentsFragments({
+      ...baseParams,
+      trackId: 'aln',
+      trackName: 'Volvox RG',
+      uri: bam,
+      showCoverage: false,
+      showPileup: true,
+      colorBy: 'normal',
+      filterTagFilters: [{ tag: 'RG', value: '4' }],
+    })
+    const script = assembleRScript(
+      { refName: 'ctgA', start: 0, end: 5000 },
+      fragments,
+    )
+    const dir = mkdtempSync(join(tmpdir(), 'jb-rexport-filtertag-'))
+    writeFileSync(join(dir, 'view.R'), script)
+    execFileSync('Rscript', [join(dir, 'view.R')], { cwd: dir, stdio: 'pipe' })
+    expect(existsSync(join(dir, 'jbrowse_region.png'))).toBe(true)
+
+    const helpers = script.split('# Data sources')[0]!
+    const probe = `${helpers}
+b <- ${JSON.stringify(bam)}
+reads <- read_bam(b, "ctgA", 0, 5000)
+f4 <- read_filter(reads, b, "ctgA", 0, 5000, 0, 0, NULL, list(list(tag = "RG", value = "4")))
+fhas <- read_filter(reads, b, "ctgA", 0, 5000, 0, 0, NULL, list(list(tag = "RG", value = "*")))
+fnone <- read_filter(reads, b, "ctgA", 0, 5000, 0, 0, NULL, list(list(tag = "RG", value = "nope")))
+cat(nrow(reads), sum(f4$keep), sum(fhas$keep), sum(fnone$keep), "\\n")
+`
+    writeFileSync(join(dir, 'probe.R'), probe)
+    const out = execFileSync('Rscript', [join(dir, 'probe.R')], {
+      cwd: dir,
+      encoding: 'utf8',
+    }).trim()
+    const [total, rg4, hasRg, none] = out.split(/\s+/).map(Number)
+    expect(total).toBe(400)
+    expect(rg4).toBe(200) // exactly the RG:Z:4 reads
+    expect(hasRg).toBe(400) // every read has an RG tag
+    expect(none).toBe(0) // no read matches a bogus value
+  },
+  90000,
+)
+
 // CRAM: Rsamtools can't read CRAM, so each panel's cram_to_bam() decodes the
 // region to a temp BAM with samtools first. Run the real generated script end to
 // end, then prove the reference-free MD-tag mismatch walk still finds the known
