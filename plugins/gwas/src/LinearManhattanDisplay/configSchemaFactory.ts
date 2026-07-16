@@ -5,9 +5,9 @@ import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
 import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
 
-// Reuses LinearWiggleDisplay's schema, but overrides `color` so we don't
-// inherit wiggle's bicolor sentinel (`#f0f`). Manhattan is single-color and
-// supports per-feature jexl callbacks.
+// Reuses LinearWiggleDisplay's schema, but overrides `color`: wiggle's is the
+// single-color fallback for when `useBicolor` is off. Manhattan is always
+// single-color and supports per-feature jexl callbacks.
 /**
  * #config LinearManhattanDisplay
  * #category display
