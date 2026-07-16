@@ -246,13 +246,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * True if any currently-loaded synteny display has at least one
        * feature with a CIGAR. Used to gate CIGAR-related menu items —
        * coarse-tier PIF files and CIGAR-less PAFs have nothing to show.
-       * Returns true while no data has loaded yet so the menu doesn't
-       * flicker between renders.
+       * Optimistic while no display has finished a fetch yet, so the menu is
+       * there from the first render rather than popping in once data lands (the
+       * common case: most synteny files carry CIGARs). A view with no synteny
+       * tracks at all has nothing to gate, so it reports false.
        */
       get hasCigarData() {
+        // "has CIGAR, or hasn't reported yet" — an unloaded display reads
+        // undefined and counts as a maybe. No displays at all -> no maybes ->
+        // false.
         return self.levels
           .flatMap(l => l.linearSyntenyDisplays)
-          .some(d => d.featureData?.hasCigar)
+          .some(d => d.featureData?.hasCigar ?? true)
       },
       /**
        * #getter

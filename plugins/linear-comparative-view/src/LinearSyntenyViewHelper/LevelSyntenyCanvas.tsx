@@ -15,9 +15,9 @@ import { observer } from 'mobx-react'
 import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
 
+import type { ParentViewDuck } from './parentViewDuck.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
   root: {
@@ -44,12 +44,6 @@ const useStyles = makeStyles()({
     contain: 'strict',
   },
 })
-
-interface ParentViewDuck {
-  width: number
-  views: LinearGenomeViewModel[]
-  scrollZoom: boolean
-}
 
 // Distance (px) below which a mousedown/mouseup pair counts as a click, not
 // a drag. Tuned to be tolerant of jittery trackpads.

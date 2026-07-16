@@ -251,12 +251,15 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       * No-op for a level that doesn't exist, matching hideTrack/toggleTrack.
+       * reconcileLevels already materializes exactly one level per adjacent view
+       * pair, so a missing level means the caller named a gap that has no views
+       * (e.g. an `init.tracks` with more levels than `init.views` has gaps);
+       * creating one here would append a level whose views[level+1] is absent,
+       * which renders nothing and silently breaks the views/levels invariant.
        */
       showTrack(trackId: string, level = 0, initialSnapshot = {}) {
-        if (!self.levels[level]) {
-          self.levels[level] = cast({ level })
-        }
-        self.levels[level].showTrack(trackId, initialSnapshot)
+        self.levels[level]?.showTrack(trackId, initialSnapshot)
       },
 
       /**

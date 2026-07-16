@@ -178,6 +178,13 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        * Set both feature and instance data in one MST action so downstream
        * autoruns (upload, render) fire once per RPC completion, not twice.
+       *
+       * The hover/click indices address the OUTGOING instanceData, so they are
+       * meaningless against the incoming arrays and must be dropped here — a
+       * surviving index either highlights an unrelated ribbon (still in range)
+       * or writes NaN into the clickedFeatureId uniform (out of range). A
+       * refetch is a zoom/pan/mode change, after which the pointer is no longer
+       * over whatever it was hovering anyway.
        */
       setRpcData(
         featureData: SyntenyFeatureData | undefined,
@@ -187,6 +194,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.featureData = featureData
         self.instanceData = instanceData
         self.loadedFetchKey = fetchKey
+        self.hoveredFeatureIdx = -1
+        self.clickedFeatureIdx = -1
       },
       setFetching(arg: boolean) {
         self.fetching = arg
@@ -382,13 +391,28 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       get view() {
         return getContainingView(self) as LinearSyntenyViewModel
       },
+      /**
+       * #method
+       * The parent feature under an INSTANCE index (what the pick engine and
+       * the hover/click state carry). Without instanceData the two spaces
+       * coincide. Deliberately not `instanceFeatureIdx[index] ?? index`: an
+       * out-of-range instance index reads `undefined` there, and falling back to
+       * the raw index would silently return a different feature rather than
+       * nothing.
+       */
       getFeature(index: number) {
         const { featureData, instanceData } = self
         if (!featureData) {
           return undefined
         }
-        const featureIdx = instanceData?.instanceFeatureIdx[index] ?? index
-        if (featureIdx < 0 || featureIdx >= featureData.featureIds.length) {
+        const featureIdx = instanceData
+          ? instanceData.instanceFeatureIdx[index]
+          : index
+        if (
+          featureIdx === undefined ||
+          featureIdx < 0 ||
+          featureIdx >= featureData.featureIds.length
+        ) {
           return undefined
         }
         return getFeatureAtIndex(featureData, featureIdx)

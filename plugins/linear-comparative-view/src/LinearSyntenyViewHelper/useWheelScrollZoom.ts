@@ -9,12 +9,7 @@ import {
 } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-interface ParentViewDuck {
-  views: LinearGenomeViewModel[]
-  scrollZoom: boolean
-}
+import type { ParentViewDuck } from './parentViewDuck.ts'
 
 interface UseWheelScrollZoomResult {
   // True while wheel events are firing (cleared 150ms after the last event).

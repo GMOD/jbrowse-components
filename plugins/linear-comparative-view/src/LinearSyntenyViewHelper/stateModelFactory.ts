@@ -7,6 +7,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
+import type { ParentViewDuck } from './parentViewDuck.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
   SyntenyRenderState,
@@ -16,16 +17,6 @@ import type {
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-// Parent-view shape we read from. Duck-typed to avoid circular imports with
-// the synteny view model.
-interface ParentViewDuck {
-  views: LinearGenomeViewModel[]
-  overdrawPx: number
-  autoDiagonalizeRequested: boolean
-  autoDiagonalizeComplete: boolean
-}
 
 /**
  * #stateModel LinearSyntenyViewHelper
@@ -257,7 +248,10 @@ export function linearSyntenyViewHelperModelFactory(
             if (!state) {
               return false
             }
-            b.resize(self.parentView.views[0]!.width, self.height)
+            // the parent's own width, not views[0]'s: the same number one hop
+            // closer (the view pushes it down to every row) and no assertion on
+            // a row that may not exist yet
+            b.resize(self.parentView.width, self.height)
             return b.render(state)
           },
         })
