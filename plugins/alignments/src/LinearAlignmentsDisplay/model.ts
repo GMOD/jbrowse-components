@@ -831,6 +831,18 @@ export default function stateModelFactory(
         /**
          * #getter
          */
+        // The per-row pitch: the read body plus its derived gap. The single
+        // source for every "row N sits at N*pitch" computation (layout caps,
+        // section stacking, hit-test row math). When fitting this equals
+        // `fittedHeightPx` by construction (body = pitch - spacing); the getter
+        // keeps callers from re-deriving it and conflating pitch with body.
+        get rowHeight(): number {
+          return this.featureHeight + this.featureSpacing
+        },
+
+        /**
+         * #getter
+         */
         // The configured fixed-mode read size, independent of the fit squeeze.
         // Consumers that EDIT the size (the "Set feature height" dialog) must
         // start from the configured value, not the fractional fit pitch that
@@ -1171,7 +1183,7 @@ export default function stateModelFactory(
          */
         get laidOutByGroup() {
           return layoutGroupsToViewport(this.groupLayoutContext, {
-            rowHeight: this.featureHeight + this.featureSpacing,
+            rowHeight: this.rowHeight,
             // Grow fits rows to the grow ceiling (content grows the track up to
             // it, then scrolls); fixed/fit fit to the drag-resizable slot. Reads
             // the slot (fitTargetHeight), never the reactive `height` getter, so
@@ -1506,7 +1518,7 @@ export default function stateModelFactory(
                 }))
           return computeStackedSections(groups, {
             coverageHeight: self.coverageHeight,
-            rowHeight: self.featureHeight + self.featureSpacing,
+            rowHeight: self.rowHeight,
             showCoverage: self.showCoverage,
             coverageYOffset: YSCALEBAR_LABEL_OFFSET,
             readConnections: self.readConnections,
@@ -1844,8 +1856,7 @@ export default function stateModelFactory(
           if (yRow === undefined) {
             return undefined
           }
-          const rowHeight = self.featureHeight + self.featureSpacing
-          const top = yRow * rowHeight
+          const top = yRow * self.rowHeight
           return [start, top, end, top + self.featureHeight]
         },
 
@@ -2452,7 +2463,7 @@ export default function stateModelFactory(
           resizeGroupHeight(key: string, dy: number) {
             const next = nextGroupHeightOverride({
               dy,
-              rowHeight: self.featureHeight + self.featureSpacing,
+              rowHeight: self.rowHeight,
               displayedPx:
                 self.sections.sections.find(s => s.groupKey === key)
                   ?.pileupHeight ?? 0,
