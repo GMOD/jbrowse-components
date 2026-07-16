@@ -129,9 +129,9 @@ Don't want to run any of this? The finished track is already loaded in the
 
 Load the result as a `FeatureTrack` using a `LinearMultiRowFeatureDisplay`. That
 display draws one row per distinct value of `partitionField`, so pointing it at
-`parenthap` gives you the four parental-haplotype rows. `rowOrder` sets their
-top-to-bottom order, and the `color` jexl callback pulls each block's RGB from
-the BED `itemRgb` column. Drop this into the `tracks` array of your
+`parenthap` gives you the four parental-haplotype rows, and `rowOrder` sets
+their top-to-bottom order. There's no color config: a BED carrying `itemRgb` is
+painted with it automatically. Drop this into the `tracks` array of your
 `config.json`, or paste it into the add-track JSON editor in the app:
 
 ```json
@@ -163,7 +163,6 @@ the BED `itemRgb` column. Drop this into the `tracks` array of your
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "khv_trio_hapibd-LinearMultiRowFeatureDisplay",
       "partitionField": "parenthap",
-      "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
       "rowOrder": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
     }
   ]
@@ -241,7 +240,6 @@ haplotype gets a row:
       "type": "LinearMultiRowFeatureDisplay",
       "displayId": "asw_trio_ancestry-LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
-      "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
       "rowOrder": [
         "Child hap1",
         "Child hap2",

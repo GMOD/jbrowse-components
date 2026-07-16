@@ -22,12 +22,25 @@ export function evalColorSlot(
   }
 }
 
+// A BED that carries `itemRgb` has already said how it wants to be colored, so
+// honor it when the `color` slot is untouched — no jexl needed to paint an
+// itemRgb BED. An explicit `color` slot still wins. parseCssColorOr understands
+// the bare "255,0,0" triple, so the value goes through as-is.
+function itemRgbOf(feature: Feature) {
+  const raw = feature.get('itemRgb')
+  return typeof raw === 'string' && raw.length > 0 ? raw : undefined
+}
+
 /**
  * Pack features into the multi-row wire arrays: absolute genomic start/end, a
  * per-feature ABGR color (the `color` slot evaluated per feature — this is the
  * per-feature axis, e.g. per-segment `itemRgb` painting), and a row reference
  * indirected through a deduplicated `partitionValues` list (so row strings ship
  * once, not per feature). Pure — the worker supplies the features.
+ *
+ * With the `color` slot at its default, a feature's own `itemRgb` is used when
+ * present, and `usedItemRgb` reports that back so the main thread can drop the
+ * per-row palette that would otherwise cover it.
  *
  * Per-ROW color (sampleColorMap / palette / the arrangement dialog) is resolved
  * on the main thread at render time (see resolveRowColors), so it never refetches
@@ -56,6 +69,8 @@ export function packMultiRowFeatures({
   const partitionValues: string[] = []
   const valueIndex = new Map<string, number>()
   const colorCfg = { color: colorConfig }
+  const colorSlotIsDefault = colorConfig === MULTIROW_DEFAULT_COLOR
+  let usedItemRgb = false
 
   for (let i = 0; i < n; i++) {
     report?.(i)
@@ -75,7 +90,13 @@ export function packMultiRowFeatures({
       valueIndex.set(value, idx)
     }
     featurePartitionIndex[i] = idx
-    featureColors[i] = cssColorToABGR(evalColorSlot(colorCfg, feature, jexl))
+    const itemRgb = colorSlotIsDefault ? itemRgbOf(feature) : undefined
+    if (itemRgb === undefined) {
+      featureColors[i] = cssColorToABGR(evalColorSlot(colorCfg, feature, jexl))
+    } else {
+      usedItemRgb = true
+      featureColors[i] = cssColorToABGR(itemRgb)
+    }
   }
 
   return {
@@ -86,5 +107,6 @@ export function packMultiRowFeatures({
     featurePartitionIndex,
     featureNames,
     featureIds,
+    usedItemRgb,
   }
 }

@@ -1,6 +1,7 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
+import { MULTIROW_DEFAULT_COLOR } from './multiRowColors.ts'
 import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -61,7 +62,44 @@ test('a feature with empty itemRgb (-> "rgb()") degrades to magenta, not a crash
   ])
 })
 
-test('plain (non-jexl) color applies to every feature', () => {
+test('default color slot paints from the feature itemRgb, no jexl needed', () => {
+  const r = packMultiRowFeatures({
+    features,
+    partitionField: 'sample',
+    colorConfig: MULTIROW_DEFAULT_COLOR,
+    jexl: createJexlInstance(),
+  })
+  expect([...r.featureColors]).toEqual([
+    cssColorToABGR('rgb(227,26,28)'),
+    cssColorToABGR('rgb(31,120,180)'),
+    cssColorToABGR('rgb(170,170,170)'),
+  ])
+  // tells the main thread to drop the per-row palette that would cover these
+  expect(r.usedItemRgb).toBe(true)
+})
+
+test('no itemRgb on the features leaves the per-row palette in charge', () => {
+  const r = packMultiRowFeatures({
+    features: [feat({ start: 0, end: 5, sample: 'mom' })],
+    partitionField: 'sample',
+    colorConfig: MULTIROW_DEFAULT_COLOR,
+    jexl: createJexlInstance(),
+  })
+  expect(r.usedItemRgb).toBe(false)
+  expect([...r.featureColors]).toEqual([cssColorToABGR(MULTIROW_DEFAULT_COLOR)])
+})
+
+test('the jexl template-string form reads a non-itemRgb color column', () => {
+  const r = packMultiRowFeatures({
+    features: [feat({ start: 0, end: 5, sample: 'mom', ancestryRgb: '1,2,3' })],
+    partitionField: 'sample',
+    colorConfig: 'jexl:`rgb(${get(feature,"ancestryRgb")})`',
+    jexl: createJexlInstance(),
+  })
+  expect([...r.featureColors]).toEqual([cssColorToABGR('rgb(1,2,3)')])
+})
+
+test('plain (non-jexl) color applies to every feature, beating itemRgb', () => {
   const r = packMultiRowFeatures({
     features,
     partitionField: 'sample',
@@ -70,6 +108,7 @@ test('plain (non-jexl) color applies to every feature', () => {
   })
   const red = cssColorToABGR('red')
   expect([...r.featureColors]).toEqual([red, red, red])
+  expect(r.usedItemRgb).toBe(false)
 })
 
 test('missing partition value collapses to a single empty-string row', () => {

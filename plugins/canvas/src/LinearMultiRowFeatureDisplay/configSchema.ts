@@ -54,9 +54,9 @@ import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
  * }
  * ```
  * Omit `sampleColorMap` entirely and each row is auto-assigned a distinct
- * palette color. For per-feature (not per-row) colors, set the `color` slot
- * instead: `color: "jexl:get(feature,'itemRgb')"` for a standard BED12, or read
- * a custom color column.
+ * palette color — unless the features carry an `itemRgb`, which is honored as
+ * the per-feature color with no configuration at all. To color per feature off
+ * some other attribute, set the `color` slot to a `jexl:` expression reading it.
  */
 export default function configSchemaF(pluginManager: PluginManager) {
   const LinearGenomePlugin = pluginManager.getPlugin(
@@ -78,15 +78,16 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
-       * Per-block fill (a CSS color, or a `jexl:` expression for per-feature
-       * coloring, e.g. `jexl:get(feature,'itemRgb')`). Left at its default, each
-       * row instead gets a distinct color from a categorical palette.
+       * Per-block fill: a CSS color, or a `jexl:` expression for per-feature
+       * coloring (e.g. ``jexl:`rgb(${get(feature,'ancestryRgb')})` ``). Left at
+       * its default, a feature's own `itemRgb` is used if it has one, and
+       * otherwise each row gets a distinct color from a categorical palette.
        */
       color: {
         type: 'color',
         defaultValue: MULTIROW_DEFAULT_COLOR,
         description:
-          'fill color of each block (CSS color or jexl expression for per-feature coloring); the default auto-assigns a per-row palette color',
+          'fill color of each block (CSS color or jexl expression for per-feature coloring); the default uses the feature itemRgb if present, else auto-assigns a per-row palette color',
         contextVariable: ['feature'],
       },
       /**

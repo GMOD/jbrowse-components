@@ -13,6 +13,7 @@ const region: MultiRowRegionData = {
   featurePartitionIndex: Uint32Array.from([0, 0, 1, 1]),
   featureNames: ['TssA', 'Quies', 'TssA', 'Quies'],
   featureIds: ['f1', 'f2', 'f3', 'f4'],
+  usedItemRgb: false,
 }
 
 const rowIndexByValue = new Map([
@@ -115,6 +116,7 @@ test('too many distinct labels is treated as non-categorical', () => {
     featurePartitionIndex: new Uint32Array(n),
     featureNames: Array.from({ length: n }, (_, i) => `gene${i}`),
     featureIds: Array.from({ length: n }, (_, i) => `f${i}`),
+    usedItemRgb: false,
   }
   expect(buildColorLegend([many], new Map([['E001', 0]]), [undefined])).toEqual(
     [],

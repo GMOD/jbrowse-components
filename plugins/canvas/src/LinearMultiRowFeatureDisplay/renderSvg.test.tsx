@@ -41,6 +41,7 @@ function makeRegionData(): MultiRowGetFeaturesResult {
     featurePartitionIndex: Uint32Array.from([0]),
     featureNames: ['feat'],
     featureIds: ['f0'],
+    usedItemRgb: false,
   }
 }
 

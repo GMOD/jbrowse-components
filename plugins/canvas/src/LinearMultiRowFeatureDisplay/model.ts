@@ -245,6 +245,15 @@ export default function stateModelFactory(
           name,
         }))
       },
+      /**
+       * #getter
+       * Whether the loaded data colored itself via `itemRgb` (only possible with
+       * the `color` slot at its default). Suppresses the per-row palette, which
+       * would otherwise paint over those colors.
+       */
+      get usedItemRgb(): boolean {
+        return [...self.rpcDataMap.values()].some(data => data.usedItemRgb)
+      },
     }))
     .views(self => ({
       /**
@@ -285,7 +294,7 @@ export default function stateModelFactory(
         return resolveRowColors(
           self.sources,
           self.sampleColorMap,
-          self.colorConfig === MULTIROW_DEFAULT_COLOR,
+          self.colorConfig === MULTIROW_DEFAULT_COLOR && !self.usedItemRgb,
         )
       },
       /**

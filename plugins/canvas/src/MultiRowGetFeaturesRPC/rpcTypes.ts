@@ -32,6 +32,11 @@ export interface MultiRowGetFeaturesResult {
   // per-feature adapter id, used to re-fetch the full feature on click (feature
   // details widget) via GetCanvasFeatureDetails
   featureIds: string[]
+  // true when the `color` slot was left at its default and the features carried
+  // an `itemRgb`, so featureColors came from the data rather than the default.
+  // The main thread reads this to suppress the per-row palette, which would
+  // otherwise paint over the colors the BED explicitly asked for.
+  usedItemRgb: boolean
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

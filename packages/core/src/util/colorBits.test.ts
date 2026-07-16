@@ -82,6 +82,23 @@ describe('colorBits helpers', () => {
       expect(getBlue(c)).toBe(0)
     })
 
+    test('bare BED itemRgb triple', () => {
+      // BED-family adapters put itemRgb on the feature verbatim as "r,g,b",
+      // which is not a CSS color; parsing it directly means a feature attribute
+      // can be used as a color with no rgb() wrapping in the config
+      const c = parseCssColor('227,26,28')
+      expect(getRed(c)).toBe(227)
+      expect(getGreen(c)).toBe(26)
+      expect(getBlue(c)).toBe(28)
+      expect(getAlpha(c)).toBe(255)
+    })
+
+    test('itemRgb-shaped garbage still returns the magenta sentinel', () => {
+      expect(getGreen(parseCssColor('1,2'))).toBe(0)
+      expect(getGreen(parseCssColor('1,2,3,4'))).toBe(0)
+      expect(getGreen(parseCssColor('a,b,c'))).toBe(0)
+    })
+
     test('case insensitive named colors', () => {
       expect(getRed(parseCssColor('RED'))).toBe(255)
       expect(getRed(parseCssColor('Red'))).toBe(255)
@@ -99,9 +116,10 @@ describe('colorBits helpers', () => {
     })
 
     test('malformed-but-nonempty strings return magenta sentinel without throwing', () => {
-      // a bare BED itemRgb triple is not valid CSS; an empty itemRgb yields
-      // "rgb()". Both must degrade to magenta, not throw and crash the render.
-      for (const bad of ['255,0,0', 'rgb()', 'not-a-color', 'rgb(1,2)']) {
+      // an empty itemRgb yields "rgb()", which must degrade to magenta rather
+      // than throw and crash the render. (A *populated* itemRgb triple like
+      // "255,0,0" is understood — see the bare BED itemRgb test above.)
+      for (const bad of ['rgb()', 'not-a-color', 'rgb(1,2)']) {
         const c = parseCssColor(bad)
         expect([getRed(c), getGreen(c), getBlue(c)]).toEqual([255, 0, 255])
       }

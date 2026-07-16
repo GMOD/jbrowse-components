@@ -37,10 +37,15 @@ export type { Color } from './color-bits/index.ts'
 // rest of the render.
 const INVALID_COLOR = newColor(255, 0, 255, 255)
 
-// Resolve a CSS color string to a Color: honors named colors and `transparent`,
-// and returns `fallback` on malformed-but-nonempty input. `parse` throws on
-// e.g. a bare BED `itemRgb` "255,0,0" or an empty "rgb()"; callers pass a
-// fallback so one bad per-feature color can't crash a whole render/RPC.
+// A bare BED `itemRgb` triple ("255,0,0"), which is not a CSS color but is what
+// BED-family adapters put on the feature verbatim.
+const BED_ITEM_RGB = /^\d{1,3},\d{1,3},\d{1,3}$/
+
+// Resolve a CSS color string to a Color: honors named colors, `transparent`,
+// and bare BED `itemRgb` triples, and returns `fallback` on
+// malformed-but-nonempty input. `parse` throws on e.g. an empty "rgb()";
+// callers pass a fallback so one bad per-feature color can't crash a whole
+// render/RPC.
 export function parseCssColorOr(color: string, fallback: Color): Color {
   const str = color.trim().toLowerCase()
   if (str === 'transparent') {
@@ -48,7 +53,7 @@ export function parseCssColorOr(color: string, fallback: Color): Color {
   }
   try {
     const hex = namedColorToHex(str)
-    return parse(hex ? hex : str)
+    return parse(hex ? hex : BED_ITEM_RGB.test(str) ? `rgb(${str})` : str)
   } catch {
     return fallback
   }
