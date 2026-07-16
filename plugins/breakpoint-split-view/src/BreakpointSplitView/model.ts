@@ -19,6 +19,7 @@ import {
   getMatchedTranslocationFeatures,
   hasPairedReads,
   markHiddenSegments,
+  readChainSegments,
 } from './components/util.ts'
 import {
   VIEW_DIVIDER_HEIGHT,
@@ -34,6 +35,7 @@ import type {
   BreakpointSplitViewInitView,
   ExportSvgOptions,
   LayoutRecord,
+  MatchedChunks,
   OverlayLevel,
   OverlayMatch,
 } from './types.ts'
@@ -316,14 +318,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Zero-arg cached getter: classifies each matched track, pairs its
-       * features, looks up layout rectangles, and returns a Map keyed by
-       * trackId. Mobx caches this across renders and only invalidates when
-       * the underlying feature or layout reads change — so horizontal/vertical
-       * scrolling and track resizing do NOT trigger re-pairing or re-lookup.
+       * Classifies each matched track and pairs its features, keyed by trackId.
+       * Everything here is a function of the fetched features alone, so it is
+       * deliberately kept out of `overlayMatches`, which additionally reads each
+       * track's layout: the layout reads invalidate on a track resize or a
+       * compactness change, and fusing the two would re-run this whole pass —
+       * including the SA-chain parse, the expensive part — on every drag frame.
        */
-      get overlayMatches(): Map<string, OverlayMatch> {
-        const result = new Map<string, OverlayMatch>()
+      get matchedTrackChunks(): Map<string, MatchedChunks> {
+        const result = new Map<string, MatchedChunks>()
         for (const track of this.matchedTracks) {
           const trackId = track.configuration.trackId
           const featureArrays = self.matchedTrackFeatures[trackId]
@@ -347,39 +350,57 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             const matched = paired
               ? getBadlyPairedAlignments(allFeatures)
               : getMatchedAlignmentFeatures(allFeatures)
-            const layoutMatches = this.getMatchedFeaturesInLayout(
-              trackId,
-              matched,
-            )
-            if (!paired) {
-              for (const m of layoutMatches) {
-                m.sort(
-                  (a, b) =>
-                    a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
-                )
-                markHiddenSegments(m)
-              }
-            }
             result.set(trackId, {
               kind: 'alignment',
               allFeatures,
-              layoutMatches,
+              matched,
               hasPairedReads: paired,
+              chains: paired ? undefined : matched.map(readChainSegments),
             })
           } else if (type === 'VariantTrack') {
             const kind = classifyVariantFeatures(allFeatures)
-            const matched =
-              kind === 'translocation'
-                ? getMatchedTranslocationFeatures(allFeatures)
-                : kind === 'paired'
-                  ? getMatchedPairedFeatures(allFeatures)
-                  : getMatchedBreakendFeatures(allFeatures)
             result.set(trackId, {
               kind,
               allFeatures,
-              layoutMatches: this.getMatchedFeaturesInLayout(trackId, matched),
+              matched:
+                kind === 'translocation'
+                  ? getMatchedTranslocationFeatures(allFeatures)
+                  : kind === 'paired'
+                    ? getMatchedPairedFeatures(allFeatures)
+                    : getMatchedBreakendFeatures(allFeatures),
             })
           }
+        }
+        return result
+      },
+
+      /**
+       * #getter
+       * Zero-arg cached getter: resolves each matched chunk's features to layout
+       * rectangles, returning a Map keyed by trackId. Mobx caches this across
+       * renders and only invalidates when the underlying feature or layout reads
+       * change — so scrolling within already-loaded data does NOT trigger a
+       * re-lookup.
+       */
+      get overlayMatches(): Map<string, OverlayMatch> {
+        const result = new Map<string, OverlayMatch>()
+        for (const [trackId, chunk] of this.matchedTrackChunks) {
+          const { kind, allFeatures, matched, hasPairedReads, chains } = chunk
+          const layoutMatches = this.getMatchedFeaturesInLayout(trackId, matched)
+          if (chains) {
+            for (const [i, m] of layoutMatches.entries()) {
+              m.sort(
+                (a, b) => a.clipLengthAtStartOfRead - b.clipLengthAtStartOfRead,
+              )
+              markHiddenSegments(m, chains[i]!)
+            }
+          }
+          result.set(trackId, {
+            kind,
+            allFeatures,
+            layoutMatches,
+            hasPairedReads,
+          })
         }
         return result
       },

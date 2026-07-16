@@ -9,6 +9,7 @@ import {
   getMatchedTranslocationFeatures,
   hasPairedReads,
   markHiddenSegments,
+  readChainSegments,
 } from './util.ts'
 
 import type { LayoutMatch } from '../types.ts'
@@ -766,6 +767,14 @@ describe('markHiddenSegments', () => {
     }
   }
 
+  // mirrors the model: the chain comes from the chunk's features' SA tags
+  function mark(chunk: LayoutMatch[]) {
+    markHiddenSegments(
+      chunk,
+      readChainSegments(chunk.map(c => c.feature)),
+    )
+  }
+
   // read maps to three loci at read-clip 0, 100, 200; each SA names the others
   const seg0 = 'chrX,1,+,50M150S,0,0;'
   const seg100 = 'chrX,500,+,100S50M,0,0;'
@@ -777,7 +786,7 @@ describe('markHiddenSegments', () => {
       seg('s1', 100, seg0 + seg200),
       seg('s2', 200, seg0 + seg100),
     ]
-    markHiddenSegments(chunk)
+    mark(chunk)
     expect(chunk[1]!.hiddenSegmentsBefore).toBeUndefined()
     expect(chunk[2]!.hiddenSegmentsBefore).toBeUndefined()
   })
@@ -786,13 +795,13 @@ describe('markHiddenSegments', () => {
     // only the clip-0 and clip-200 segments are visible; the SA tag reveals a
     // clip-100 segment (chrX 1-based 500..549) mapping to a region no view shows
     const chunk = [seg('s0', 0, seg100 + seg200), seg('s2', 200, seg0 + seg100)]
-    markHiddenSegments(chunk)
+    mark(chunk)
     expect(chunk[1]!.hiddenSegmentsBefore).toEqual(['chrX:500..549'])
   })
 
   test('no loci when two adjacent visible segments are truly consecutive', () => {
     const chunk = [seg('s0', 0, seg100), seg('s1', 100, seg0)]
-    markHiddenSegments(chunk)
+    mark(chunk)
     expect(chunk[1]!.hiddenSegmentsBefore).toBeUndefined()
   })
 })

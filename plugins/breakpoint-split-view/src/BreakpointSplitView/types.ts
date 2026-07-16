@@ -63,4 +63,23 @@ export interface OverlayMatch {
   hasPairedReads?: boolean
 }
 
+// One alignment of a split read, on the read's 5' axis (see readChainSegments).
+export interface ChainSegment {
+  clip: number
+  refName: string
+  start: number
+  end: number
+}
+
+// A track's features paired into chunks, plus each split-read chunk's SA-derived
+// chain — everything overlayMatches needs that depends on features alone and not
+// on any track's layout.
+export interface MatchedChunks {
+  kind: 'alignment' | 'translocation' | 'paired' | 'breakend'
+  allFeatures: Map<string, Feature>
+  matched: Feature[][]
+  hasPairedReads?: boolean
+  chains?: ChainSegment[][]
+}
+
 export { type TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'

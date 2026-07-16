@@ -6,7 +6,7 @@ import {
 import { featurizeSA, getClip } from '@jbrowse/cigar-utils'
 import { assembleLocStringFast, notEmpty } from '@jbrowse/core/util'
 
-import type { LayoutMatch } from '../types.ts'
+import type { ChainSegment, LayoutMatch } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 function bucket<K, V>(map: Map<K, V[]>, key: K, value: V) {
@@ -77,26 +77,33 @@ export function getClipLengthAtStartOfRead(feature: Feature) {
   )
 }
 
-interface ChainSegment {
-  clip: number
-  refName: string
-  start: number
-  end: number
-}
-
-// The read's full alignment chain, derived from the SA tags of the visible
-// segments (each SA lists the read's other alignments). featurizeSA
-// (normalize=false) yields clip positions on the same original-read 5' axis as
+// The read's full alignment chain, derived from the SA tags of its segments
+// (each SA lists the read's other alignments). featurizeSA (normalize=false)
+// yields clip positions on the same original-read 5' axis as
 // feature.clipLengthAtStartOfRead, so they're directly comparable — a chain clip
 // strictly between two adjacent visible segments belongs to an alignment that
 // maps to a region no view currently shows. Deduped by clip.
-function readChainSegments(chunk: LayoutMatch[]) {
+export function readChainSegments(features: Feature[]) {
   const byClip = new Map<number, ChainSegment>()
-  for (const { feature } of chunk) {
+  // A chunk's segments all belong to one read, so each names the same chain and
+  // their SA tags overwhelmingly repeat the same alignment records — an n-segment
+  // read describes each alignment n-1 times. The entries are identical text and
+  // (with normalize=false) featurize independently of the feature they came from,
+  // so parsing each distinct one once is the same chain at O(n) CIGAR parses
+  // instead of O(n^2).
+  const seen = new Set<string>()
+  for (const feature of features) {
     const SA = (feature.get('tags') as Record<string, unknown> | undefined)
       ?.SA as string | undefined
+    const novel = SA?.split(';').filter(aln => !!aln && !seen.has(aln))
+    if (!novel?.length) {
+      continue
+    }
+    for (const aln of novel) {
+      seen.add(aln)
+    }
     for (const sa of featurizeSA(
-      SA,
+      novel.join(';'),
       feature.id(),
       feature.get('strand'),
       feature.get('name'),
@@ -114,11 +121,10 @@ function readChainSegments(chunk: LayoutMatch[]) {
 
 // Records, for each clip-sorted split-read segment, the loc strings of any read
 // segments that fall between it and its predecessor but aren't shown in any
-// view. Comparing against real alignment records (the SA-derived chain) rather
-// than raw read-coordinate gaps avoids false positives from unaligned or
-// soft-clipped stretches. Mutates the chunk in place.
-export function markHiddenSegments(chunk: LayoutMatch[]) {
-  const chain = readChainSegments(chunk)
+// view. Comparing against real alignment records (the SA-derived `chain`, from
+// readChainSegments) rather than raw read-coordinate gaps avoids false positives
+// from unaligned or soft-clipped stretches. Mutates the chunk in place.
+export function markHiddenSegments(chunk: LayoutMatch[], chain: ChainSegment[]) {
   for (let i = 1; i < chunk.length; i++) {
     const prev = chunk[i - 1]!.clipLengthAtStartOfRead
     const cur = chunk[i]!.clipLengthAtStartOfRead

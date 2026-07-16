@@ -110,20 +110,38 @@ export function getMismatches(
   return mismatches
 }
 
+// All three lengths in one pass over already-parsed ops: callers that want more
+// than one (featurizeSA wants all three) would otherwise re-scan and re-allocate
+// the op array per length.
+function cigarLengths(ops: ArrayLike<number>) {
+  let lengthOnRef = 0
+  let length = 0
+  let lengthSansClipping = 0
+  for (let i = 0, l = ops.length; i < l; i++) {
+    const op = ops[i]!
+    const opIdx = op & 0xf
+    const len = op >>> 4
+    const clipping = opIdx === CIGAR_H || opIdx === CIGAR_S
+    const refOnly = opIdx === CIGAR_D || opIdx === CIGAR_N
+    if (!clipping && opIdx !== CIGAR_I) {
+      lengthOnRef += len
+    }
+    if (!refOnly) {
+      length += len
+    }
+    if (!clipping && !refOnly) {
+      lengthSansClipping += len
+    }
+  }
+  return { lengthOnRef, length, lengthSansClipping }
+}
+
 /**
  * #api
  * Length the read spans on the reference (sum of M/=/X/D/N ops).
  */
 export function getLengthOnRef(cigar: string) {
-  const cigarOps = parseCigar2(cigar)
-  let lengthOnRef = 0
-  for (const op of cigarOps) {
-    const opIdx = op & 0xf
-    if (opIdx !== CIGAR_H && opIdx !== CIGAR_S && opIdx !== CIGAR_I) {
-      lengthOnRef += op >>> 4
-    }
-  }
-  return lengthOnRef
+  return cigarLengths(parseCigar2(cigar)).lengthOnRef
 }
 
 /**
@@ -131,32 +149,11 @@ export function getLengthOnRef(cigar: string) {
  * Length of the read sequence (sum of all ops except D/N).
  */
 export function getLength(cigar: string) {
-  const cigarOps = parseCigar2(cigar)
-  let length = 0
-  for (const op of cigarOps) {
-    const opIdx = op & 0xf
-    if (opIdx !== CIGAR_D && opIdx !== CIGAR_N) {
-      length += op >>> 4
-    }
-  }
-  return length
+  return cigarLengths(parseCigar2(cigar)).length
 }
 
 export function getLengthSansClipping(cigar: string) {
-  const cigarOps = parseCigar2(cigar)
-  let length = 0
-  for (const op of cigarOps) {
-    const opIdx = op & 0xf
-    if (
-      opIdx !== CIGAR_H &&
-      opIdx !== CIGAR_S &&
-      opIdx !== CIGAR_D &&
-      opIdx !== CIGAR_N
-    ) {
-      length += op >>> 4
-    }
-  }
-  return length
+  return cigarLengths(parseCigar2(cigar)).lengthSansClipping
 }
 
 // clip at the end of the CIGAR string = start of a reverse-strand read,
@@ -225,16 +222,19 @@ export function featurizeSA(
         const saStart = ret[1]!
         const saStrand = ret[2]!
         const saCigar = ret[3]!
-        const saLengthOnRef = getLengthOnRef(saCigar)
-        const saLength = getLength(saCigar)
-        const saLengthSansClipping = getLengthSansClipping(saCigar)
+        const saOps = parseCigar2(saCigar)
+        const {
+          lengthOnRef: saLengthOnRef,
+          length: saLength,
+          lengthSansClipping: saLengthSansClipping,
+        } = cigarLengths(saOps)
         const saStrandNormalized: -1 | 1 = saStrand === '-' ? -1 : 1
         const effectiveStrand: -1 | 1 = normalize
           ? strandNum === saStrandNormalized
             ? 1
             : -1
           : saStrandNormalized
-        const saClipPos = getClip(saCigar, effectiveStrand)
+        const saClipPos = clipLengthAtStartOfReadNumeric(saOps, effectiveStrand)
         const saRealStart = +saStart - 1
         return {
           refName: saRef,
