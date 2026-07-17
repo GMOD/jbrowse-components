@@ -1,3 +1,5 @@
+import { colorSchemes } from '@jbrowse/synteny-core'
+
 import { createDotplotColorFunction } from './dotplotColors.ts'
 
 import type { DotplotRpcData } from './types.ts'
@@ -33,6 +35,15 @@ function unpack(packed: number) {
   }
 }
 
+function rgbOfHex(hex: string) {
+  const h = hex.length === 4 ? hex.replaceAll(/([\da-f])/gi, '$1$1') : hex
+  return {
+    r: Number.parseInt(h.slice(1, 3), 16),
+    g: Number.parseInt(h.slice(3, 5), 16),
+    b: Number.parseInt(h.slice(5, 7), 16),
+  }
+}
+
 describe('createDotplotColorFunction', () => {
   test('strand picks two colors for +/-', () => {
     const data = fakeRpcData({ strands: new Int8Array([1, -1]) })
@@ -40,10 +51,27 @@ describe('createDotplotColorFunction', () => {
     expect(fn(data, 0)).not.toBe(fn(data, 1))
   })
 
-  test('default returns black', () => {
+  // The dotplot and synteny renderers must paint strand from the same shared
+  // constants — these used to be independently hardcoded here and could drift
+  // off colorSchemes without any test noticing.
+  test('strand colors come from the shared colorSchemes', () => {
+    const data = fakeRpcData({ strands: new Int8Array([1, -1]) })
+    const fn = createDotplotColorFunction('strand', 1, data)
+    expect(unpack(fn(data, 0))).toMatchObject(
+      rgbOfHex(colorSchemes.strand.posColor),
+    )
+    expect(unpack(fn(data, 1))).toMatchObject(
+      rgbOfHex(colorSchemes.strand.negColor),
+    )
+  })
+
+  test('default returns the shared point color (black)', () => {
     const data = fakeRpcData()
     const fn = createDotplotColorFunction('default', 1, data)
     expect(unpack(fn(data, 0))).toEqual({ r: 0, g: 0, b: 0, a: 255 })
+    expect(unpack(fn(data, 0))).toMatchObject(
+      rgbOfHex(colorSchemes.default.pointColor),
+    )
   })
 
   // Identity uses the perceptually-uniform viridis ramp: dark purple at low

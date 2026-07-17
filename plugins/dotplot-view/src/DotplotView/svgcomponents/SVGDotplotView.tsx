@@ -64,7 +64,11 @@ export async function renderToSvg(
             ))}
           </SvgClipRect>
           {legendColorBy ? (
-            <SVGColorByLegend colorBy={legendColorBy} viewWidth={viewWidth} />
+            <SVGColorByLegend
+              colorBy={legendColorBy}
+              viewWidth={viewWidth}
+              alpha={display?.alpha ?? 1}
+            />
           ) : null}
         </g>
         <g transform={`translate(${borderX} ${viewHeight})`}>

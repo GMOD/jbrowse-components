@@ -1,9 +1,4 @@
-import {
-  alpha as setAlpha,
-  cssColorToRgb,
-  formatHEXA,
-  parseCssColor,
-} from '@jbrowse/core/util/colorBits'
+import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
 
 /**
  * #api
@@ -15,11 +10,10 @@ import {
  */
 export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 
-// CIGAR operation colors. Kept opaque — every consumer either runs them
-// through applyAlpha() or packs them via cssColorToABGR() and applies an
-// alpha uniform in the shader / `a * alpha` in Canvas2D. A non-opaque
-// literal here would multiply with that uniform and render fainter than
-// intended.
+// CIGAR operation colors. Kept opaque — consumers pack them (cssColorToABGR /
+// parseCssColor) and apply alpha separately: an alpha uniform in the shader,
+// `a * alpha` in Canvas2D, or blendOverWhite() for a legend chip. A non-opaque
+// literal here would multiply with that alpha and render fainter than intended.
 export const defaultCigarColors = {
   I: '#ff0',
   N: '#0a0',
@@ -40,6 +34,10 @@ export const strandCigarColors = {
 export const colorSchemes = {
   default: {
     cigarColors: defaultCigarColors,
+    // The dotplot draws each alignment as one flat black point rather than the
+    // ribbon's red match block. Lives here so its renderer and its legend chip
+    // read the same constant.
+    pointColor: '#000',
   },
   strand: {
     posColor: '#f00',
@@ -55,17 +53,12 @@ export type ColorScheme = keyof typeof colorSchemes
 // `types.string` for snapshot-compat but every API surface — the menu
 // builder, the setter, the color-function dispatch — uses this literal so
 // the compiler covers every case.
-export type SyntenyColorBy =
-  | 'default'
-  | 'strand'
-  | 'query'
-  | 'target'
-  | 'reference'
-  | 'identity'
-  | 'meanQueryIdentity'
-  | 'mappingQuality'
-
-const syntenyColorByValues = new Set<string>([
+//
+// The type is derived from the value list rather than declared alongside it:
+// coerceColorBy needs a runtime membership test, and two hand-maintained copies
+// would let a newly added mode typecheck everywhere while coerceColorBy
+// silently rejected it back to 'default'.
+const syntenyColorByValues = [
   'default',
   'strand',
   'query',
@@ -74,7 +67,15 @@ const syntenyColorByValues = new Set<string>([
   'identity',
   'meanQueryIdentity',
   'mappingQuality',
-])
+] as const
+
+export type SyntenyColorBy = (typeof syntenyColorByValues)[number]
+
+const syntenyColorBySet: ReadonlySet<string> = new Set(syntenyColorByValues)
+
+function isSyntenyColorBy(value: string): value is SyntenyColorBy {
+  return syntenyColorBySet.has(value)
+}
 
 /**
  * #api
@@ -87,20 +88,7 @@ export function coerceColorBy(value: string | undefined): SyntenyColorBy {
   if (value === 'identityDiverging') {
     return 'identity'
   }
-  return value !== undefined && syntenyColorByValues.has(value)
-    ? (value as SyntenyColorBy)
-    : 'default'
-}
-
-/**
- * #api
- * Applies an alpha to a CSS color, returning the original when `a === 1`.
- */
-export function applyAlpha(color: string, a: number) {
-  if (a === 1) {
-    return color
-  }
-  return formatHEXA(setAlpha(parseCssColor(color), a))
+  return value !== undefined && isSyntenyColorBy(value) ? value : 'default'
 }
 
 /**

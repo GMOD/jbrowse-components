@@ -77,7 +77,7 @@ export type ColorBySwatchSpec =
     }
   | { kind: 'chips'; chips: ColorChip[] }
 
-const { cigarColors: defaultCigar } = colorSchemes.default
+const { cigarColors: defaultCigar, pointColor } = colorSchemes.default
 const { posColor, negColor, cigarColors: strandCigar } = colorSchemes.strand
 
 // default/strand draw block colors plus the CIGAR indel ops present on screen.
@@ -145,10 +145,10 @@ export function getColorBySwatch(
     case 'default':
       return {
         kind: 'chips',
-        // dotplot draws each alignment as one flat black point, not the
-        // ribbon's red match block
+        // dotplot draws each alignment as one flat point, not the ribbon's red
+        // match block
         chips: pointBased
-          ? [{ color: '#000', label: 'alignment' }]
+          ? [{ color: pointColor, label: 'alignment' }]
           : [
               { color: defaultCigar.M, label: 'match' },
               ...indelChips(defaultCigar, ops),

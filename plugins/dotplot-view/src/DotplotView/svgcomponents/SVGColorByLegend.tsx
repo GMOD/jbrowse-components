@@ -4,7 +4,11 @@ import {
   measureText,
   stripAlpha,
 } from '@jbrowse/core/util'
-import { colorByShortLabel, getColorBySwatch } from '@jbrowse/synteny-core'
+import {
+  blendOverWhite,
+  colorByShortLabel,
+  getColorBySwatch,
+} from '@jbrowse/synteny-core'
 import { useTheme } from '@mui/material'
 
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
@@ -24,9 +28,13 @@ const perSequenceNote = 'Distinct color per sequence'
 export function SVGColorByLegend({
   colorBy,
   viewWidth,
+  alpha = 1,
 }: {
   colorBy: SyntenyColorBy
   viewWidth: number
+  // the display's point alpha — chips are blended over white by it, matching
+  // what the HTML legend does, so the exported key reads like the exported plot
+  alpha?: number
 }) {
   const theme = useTheme()
   const swatch = getColorBySwatch(colorBy, { pointBased: true })
@@ -135,7 +143,7 @@ export function SVGColorByLegend({
                 width={swatchBox}
                 height={swatchBox}
                 rx={2}
-                {...getFillProps(chip.color)}
+                {...getFillProps(blendOverWhite(chip.color, alpha))}
                 {...getStrokeProps(theme.palette.divider)}
               />
               <text

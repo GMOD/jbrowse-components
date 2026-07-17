@@ -22,15 +22,20 @@ export function getSyntenyTracks(
   tracks: AnyConfigurationModel[],
   assemblies: string[],
 ) {
-  const needed = countByName(assemblies)
+  const needed = [...countByName(assemblies)]
   return tracks.filter(track => {
-    const available = countByName(
-      readConfObject(track, 'assemblyNames') as string[],
-    )
-    return (
-      track.type.includes('Synteny') &&
-      [...needed].every(([name, count]) => (available.get(name) ?? 0) >= count)
-    )
+    // cheap type test gates the readConfObject — resolving assemblyNames on
+    // every track in the session is wasted work for the non-synteny majority
+    let matches = false
+    if (track.type.includes('Synteny')) {
+      const available = countByName(
+        readConfObject(track, 'assemblyNames') as string[],
+      )
+      matches = needed.every(
+        ([name, count]) => (available.get(name) ?? 0) >= count,
+      )
+    }
+    return matches
   })
 }
 

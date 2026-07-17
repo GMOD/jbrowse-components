@@ -84,7 +84,8 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
 }) {
   const { classes } = useStyles()
   const interaction = useDotplotInteraction(model)
-  const colorBy = coerceColorBy(model.dotplotDisplays[0]?.colorBy)
+  const display = model.dotplotDisplays[0]
+  const colorBy = coerceColorBy(display?.colorBy)
   return (
     <div>
       <Header model={model} selection={interaction.selection} />
@@ -101,6 +102,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
           <ColorByLegend
             colorBy={colorBy}
             pointBased
+            alpha={display?.alpha ?? 1}
             onClose={() => {
               model.setShowColorLegend(false)
             }}

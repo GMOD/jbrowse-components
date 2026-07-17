@@ -6,7 +6,11 @@ import {
   packAbgr,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
-import { continuousRampConfig, hashString } from '@jbrowse/synteny-core'
+import {
+  colorSchemes,
+  continuousRampConfig,
+  hashString,
+} from '@jbrowse/synteny-core'
 
 import type { DotplotRpcData } from './types.ts'
 import type { Rgb, SyntenyColorBy } from '@jbrowse/synteny-core'
@@ -17,16 +21,27 @@ function packColor(r: number, g: number, b: number, alpha: number) {
   return packAbgr(r, g, b, Math.round(alpha * 255))
 }
 
+function rgbOf(css: string): Rgb {
+  const c = parseCssColor(css)
+  return [getRed(c), getGreen(c), getBlue(c)]
+}
+
+// Pack a CSS color from the shared colorSchemes at the view's alpha. Going
+// through colorSchemes rather than a local literal is what keeps the dotplot's
+// strand/default colors from drifting off the synteny renderer's (which packs
+// the same constants via cssColorToABGR).
+function packCss(css: string, alpha: number) {
+  const [r, g, b] = rgbOf(css)
+  return packColor(r, g, b, alpha)
+}
+
 // Query/target chromosome-painting palette. Drop category10's grey (#7f7f7f):
 // a grey point reads as uncolored, and a genome whose (hashed) chromosome lands
 // on that slot paints muddy grey — matches the synteny nameColorPalette so the
 // two views can't drift.
 const nameColorRgb = category10
   .filter(hex => hex.toLowerCase() !== '#7f7f7f')
-  .map(hex => {
-    const c = parseCssColor(hex)
-    return [getRed(c), getGreen(c), getBlue(c)] as const
-  })
+  .map(rgbOf)
 
 export function unpackColorToCSS(packed: number) {
   const r = packed & 0xff
@@ -47,7 +62,7 @@ function rampColorFn(
   max: number,
   alpha: number,
 ): DotplotColorFn {
-  const missing = packColor(255, 0, 0, alpha)
+  const missing = packCss(colorSchemes.default.cigarColors.M, alpha)
   const lut = new Uint32Array(256)
   for (let i = 0; i < 256; i++) {
     const [r, g, b] = toRgb(i / 255)
@@ -63,8 +78,8 @@ function rampColorFn(
 }
 
 function strandColorFn(alpha: number): DotplotColorFn {
-  const neg = packColor(0, 0, 255, alpha)
-  const pos = packColor(255, 0, 0, alpha)
+  const neg = packCss(colorSchemes.strand.negColor, alpha)
+  const pos = packCss(colorSchemes.strand.posColor, alpha)
   return (d, i) => (d.strands[i] === -1 ? neg : pos)
 }
 
@@ -123,6 +138,6 @@ export function createDotplotColorFunction(
     // Dotplot keeps a plain black default (its conventional line color) rather
     // than the synteny ribbon's red.
     case 'default':
-      return constantColorFn(packColor(0, 0, 0, alpha))
+      return constantColorFn(packCss(colorSchemes.default.pointColor, alpha))
   }
 }
