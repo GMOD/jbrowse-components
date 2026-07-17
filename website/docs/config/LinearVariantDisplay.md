@@ -220,11 +220,12 @@ height in pixels of the main body of each feature
 Feature height preset. `inherit` (the default) follows the session-wide default
 for this display type, falling back to `normal`;
 `normal`/`compact`/`superCompact` customize the track explicitly (including
-customizing `normal` back over a `compact` session default)
+customizing `normal` back over a `compact` session default); `collapsed` packs
+every feature onto a single row with all labels hidden
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `normal`, `compact`, `superCompact`) · **Default:** `'inherit'` ·
-_promotable_
+`inherit`, `normal`, `compact`, `superCompact`, `collapsed`) · **Default:**
+`'inherit'` · _promotable_
 
 ```js
 {
@@ -234,9 +235,10 @@ _promotable_
     'normal',
     'compact',
     'superCompact',
+    'collapsed',
   ]),
   description:
-    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default)',
+    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default); `collapsed` packs every feature onto a single row with all labels hidden',
 
 
 
@@ -482,6 +484,6 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray` · **Default:** `[]`
+**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
 
 </details>

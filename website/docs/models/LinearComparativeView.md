@@ -41,7 +41,7 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 | [setScrollZoom](#action-setscrollzoom)                 | Actions    | LinearComparativeView             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [activateTrackSelector](#action-activatetrackselector) | Actions    | LinearComparativeView             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [toggleTrack](#action-toggletrack)                     | Actions    | LinearComparativeView             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [showTrack](#action-showtrack)                         | Actions    | LinearComparativeView             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [showTrack](#action-showtrack)                         | Actions    | LinearComparativeView             | No-op for a level that doesn't exist, matching hideTrack/toggleTrack. reconcileLevels already materializes exactly one level per adjacent view pair, so a missing level means the caller named a gap that has no views (e.g. an `init.tracks` with more levels than `init.views` has gaps); creating one here would append a level whose views[level+1] is absent, which renders nothing and silently breaks the views/levels invariant.                                     |
 | [hideTrack](#action-hidetrack)                         | Actions    | LinearComparativeView             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [squareView](#action-squareview)                       | Actions    | LinearComparativeView             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [clearView](#action-clearview)                         | Actions    | LinearComparativeView             |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -278,6 +278,19 @@ both happen at the end of the chain.
 type removeLastRow = () => void
 ```
 
+#### action: showTrack
+
+No-op for a level that doesn't exist, matching hideTrack/toggleTrack.
+reconcileLevels already materializes exactly one level per adjacent view pair,
+so a missing level means the caller named a gap that has no views (e.g. an
+`init.tracks` with more levels than `init.views` has gaps); creating one here
+would append a level whose views[level+1] is absent, which renders nothing and
+silently breaks the views/levels invariant.
+
+```ts
+type showTrack = (trackId: string, level?: any, initialSnapshot?: any) => void
+```
+
 #### action: appendRow
 
 Append an assembly to the bottom of the stack and optionally show a synteny
@@ -340,12 +353,6 @@ type activateTrackSelector = (level: number) => Widget
 
 ```ts
 type toggleTrack = (trackId: string, level?: any) => any
-```
-
-#### action: showTrack
-
-```ts
-type showTrack = (trackId: string, level?: any, initialSnapshot?: any) => void
 ```
 
 #### action: hideTrack

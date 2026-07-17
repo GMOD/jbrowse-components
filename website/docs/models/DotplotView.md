@@ -116,6 +116,7 @@ Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
 | [setAssemblyNames](#action-setassemblynames)                                   | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [getCoords](#action-getcoords)                                                 | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [zoomInToMouseCoords](#action-zoomintomousecoords)                             | Actions    | DotplotView                                     | zooms into clicked and dragged region                                                                                                                                                                                                                                                                                                                                                                                       |
+| [addHighlightFromMouseCoords](#action-addhighlightfrommousecoords)             | Actions    | DotplotView                                     | highlights the clicked and dragged region: the x-span becomes a band on the horizontal axis and the y-span a band on the vertical axis, so the drag rect is their intersection                                                                                                                                                                                                                                              |
 | [showAllRegions](#action-showallregions)                                       | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [initializeDisplayedRegions](#action-initializedisplayedregions)               | Actions    | DotplotView                                     |                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [onDotplotView](#action-ondotplotview)                                         | Actions    | DotplotView                                     | creates a linear synteny view from the clicked and dragged region                                                                                                                                                                                                                                                                                                                                                           |
@@ -725,6 +726,16 @@ zooms into clicked and dragged region
 
 ```ts
 type zoomInToMouseCoords = (mousedown: Coord, mouseup: Coord) => void
+```
+
+#### action: addHighlightFromMouseCoords
+
+highlights the clicked and dragged region: the x-span becomes a band on the
+horizontal axis and the y-span a band on the vertical axis, so the drag rect is
+their intersection
+
+```ts
+type addHighlightFromMouseCoords = (mousedown: Coord, mouseup: Coord) => void
 ```
 
 #### action: onDotplotView

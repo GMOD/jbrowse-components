@@ -71,7 +71,7 @@ Show the sample clustering tree in the sidebar
 Draw the clustering tree with branch lengths
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
+`true`
 
 #### slot: renderingMode
 
@@ -87,9 +87,9 @@ Optional per-feature color for the genotype cells: a jexl expression (or plain
 CSS color) evaluated once per variant in the worker, painting every alt-carrying
 cell with that color while ref/no-call cells keep their normal coloring so "who
 carries it" still reads. Empty means the default genotype-based coloring (allele
-dosage / phasing). The "Color cells by" menu offers presets like consequence
-impact (`jexl:impactColor(feature)`), but any feature jexl works, same as the
-standard `color` slot.
+dosage / phasing). The "Color by..." menu offers presets like consequence impact
+(`jexl:impactColor(feature)`), but any feature jexl works, same as the standard
+`color` slot.
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
@@ -186,6 +186,6 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray` · **Default:** `[]`
+**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
 
 </details>

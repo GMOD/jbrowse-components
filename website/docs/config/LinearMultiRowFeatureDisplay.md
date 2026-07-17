@@ -161,8 +161,8 @@ growing the track — a dense, fully-visible painting.
 Fraction of the row height each block fills (1 = full, leaving no gap between
 rows).
 
-**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `0.9`
-· _advanced_
+**Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:** `1` ·
+_advanced_
 
 #### slot: showLegend
 
@@ -209,6 +209,6 @@ Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology
 (cladogram).
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
+`true`
 
 </details>

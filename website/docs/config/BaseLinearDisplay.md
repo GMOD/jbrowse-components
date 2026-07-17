@@ -91,6 +91,6 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray` · **Default:** `[]`
+**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
 
 </details>

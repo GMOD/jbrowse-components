@@ -65,7 +65,7 @@ session: sessionModelType
 
 ```ts
 // type signature
-type assemblyManager = IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotC...
+type assemblyManager = IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, ...
 // code
 assemblyManager: types.optional(
           assemblyManagerFactory(assemblyConfigSchema, pluginManager),

@@ -161,7 +161,7 @@ Show the subtrack clustering tree in the sidebar
 Draw the clustering tree with branch lengths
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
+`true`
 
 #### slot: showRowSeparators
 

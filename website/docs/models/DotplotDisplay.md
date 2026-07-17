@@ -329,7 +329,17 @@ type setMinAlignmentLength = (value: number) => void
 #### action: setColorBy
 
 ```ts
-type setColorBy = (value: SyntenyColorBy) => void
+type setColorBy = (
+  value:
+    | 'default'
+    | 'strand'
+    | 'query'
+    | 'target'
+    | 'reference'
+    | 'identity'
+    | 'meanQueryIdentity'
+    | 'mappingQuality',
+) => void
 ```
 
 </details>

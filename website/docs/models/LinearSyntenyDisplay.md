@@ -80,8 +80,8 @@ and the `renderParams` the view reads out.
 | [bpPerPxBucketKey](#getter-bpperpxbucketkey)                   | Getters    | LinearSyntenyDisplay          | Stable key over the log2 zoom bucket of both connected views. The fetch autorun tracks this (a computed compares its string output) instead of raw bpPerPx, so it only refetches when zoom crosses a half-decade rather than on every settled zoom within a bucket.                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [fetchRegionsKey](#getter-fetchregionskey)                     | Getters    | LinearSyntenyDisplay          | Stable key over the _snapped_ fetch window of both connected views. The fetch autorun tracks this so a scroll/zoom that moves the snapped window refetches, while a sub-buffer pan (identical snapped window) does not — a MobX computed only notifies when its string output changes. Mirrors the window syntenyFetchRegions hands the worker.                                                                                                                                                                                                                                                                                                                                                          |
 | [renderParams](#getter-renderparams)                           | Getters    | LinearSyntenyDisplay          | Per-track render params consumed by the view's aggregator. The view substitutes yTop before handing this to the backend.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| [getFeature](#method-getfeature)                               | Methods    | LinearSyntenyDisplay          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| [setRpcData](#action-setrpcdata)                               | Actions    | LinearSyntenyDisplay          | Set both feature and instance data in one MST action so downstream autoruns (upload, render) fire once per RPC completion, not twice.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| [getFeature](#method-getfeature)                               | Methods    | LinearSyntenyDisplay          | The parent feature under an INSTANCE index (what the pick engine and the hover/click state carry). Without instanceData the two spaces coincide. Deliberately not `instanceFeatureIdx[index] ?? index`: an out-of-range instance index reads `undefined` there, and falling back to the raw index would silently return a different feature rather than nothing.                                                                                                                                                                                                                                                                                                                                         |
+| [setRpcData](#action-setrpcdata)                               | Actions    | LinearSyntenyDisplay          | Set both feature and instance data in one MST action so downstream autoruns (upload, render) fire once per RPC completion, not twice. The hover/click indices address the OUTGOING instanceData, so they are meaningless against the incoming arrays and must be dropped here — a surviving index either highlights an unrelated ribbon (still in range) or writes NaN into the clickedFeatureId uniform (out of range). A refetch is a zoom/pan/mode change, after which the pointer is no longer over whatever it was hovering anyway.                                                                                                                                                                 |
 | [setFetching](#action-setfetching)                             | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [setAssembliesSwapped](#action-setassembliesswapped)           | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [setHoveredFeatureIdx](#action-sethoveredfeatureidx)           | Actions    | LinearSyntenyDisplay          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -352,7 +352,15 @@ of its two assemblies is the anchor, so the coloring stays consistent across
 levels. Every other mode passes through.
 
 ```ts
-type effectiveColorBy = SyntenyColorBy
+type effectiveColorBy =
+  | 'default'
+  | 'strand'
+  | 'query'
+  | 'target'
+  | 'reference'
+  | 'identity'
+  | 'meanQueryIdentity'
+  | 'mappingQuality'
 ```
 
 #### getter: renderInstanceData
@@ -477,6 +485,12 @@ type tooltipText = string
 
 #### method: getFeature
 
+The parent feature under an INSTANCE index (what the pick engine and the
+hover/click state carry). Without instanceData the two spaces coincide.
+Deliberately not `instanceFeatureIdx[index] ?? index`: an out-of-range instance
+index reads `undefined` there, and falling back to the raw index would silently
+return a different feature rather than nothing.
+
 ```ts
 type getFeature = (index: number) => FeatPos | undefined
 ```
@@ -490,6 +504,13 @@ type getFeature = (index: number) => FeatPos | undefined
 
 Set both feature and instance data in one MST action so downstream autoruns
 (upload, render) fire once per RPC completion, not twice.
+
+The hover/click indices address the OUTGOING instanceData, so they are
+meaningless against the incoming arrays and must be dropped here — a surviving
+index either highlights an unrelated ribbon (still in range) or writes NaN into
+the clickedFeatureId uniform (out of range). A refetch is a zoom/pan/mode
+change, after which the pointer is no longer over whatever it was hovering
+anyway.
 
 ```ts
 type setRpcData = (

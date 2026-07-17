@@ -263,7 +263,7 @@ type showImportForm = boolean
 #### getter: assembly
 
 ```ts
-type assembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 7 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
+type assembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; lowerCaseRefNameAliases: RefNameAliases | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
 ```
 
 </details>

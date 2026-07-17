@@ -59,7 +59,7 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [drawCIGAR](#getter-drawcigar)                                                 | Getters    | LinearSyntenyView                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [drawCIGARMatchesOnly](#getter-drawcigarmatchesonly)                           | Getters    | LinearSyntenyView                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [hasLodCapableAdapter](#getter-haslodcapableadapter)                           | Getters    | LinearSyntenyView                                 | True if any track on any level has an adapter that declares the 'lod' capability. Used to gate the LOD menu — adapters without tiered storage (e.g. PAFAdapter, BlastTabularAdapter) have nothing to switch between.                                                                                                                                                                                                                                                         |
-| [hasCigarData](#getter-hascigardata)                                           | Getters    | LinearSyntenyView                                 | True if any currently-loaded synteny display has at least one feature with a CIGAR. Used to gate CIGAR-related menu items — coarse-tier PIF files and CIGAR-less PAFs have nothing to show. Returns true while no data has loaded yet so the menu doesn't flicker between renders.                                                                                                                                                                                           |
+| [hasCigarData](#getter-hascigardata)                                           | Getters    | LinearSyntenyView                                 | True if any currently-loaded synteny display has at least one feature with a CIGAR. Used to gate CIGAR-related menu items — coarse-tier PIF files and CIGAR-less PAFs have nothing to show. Optimistic while no display has finished a fetch yet, so the menu is there from the first render rather than popping in once data lands (the common case: most synteny files carry CIGARs). A view with no synteny tracks at all has nothing to gate, so it reports false.       |
 | [presentCigarKinds](#getter-presentcigarkinds)                                 | Getters    | LinearSyntenyView                                 | Union across every loaded synteny display of which CIGAR indel ops are actually drawn on screen. The floating legend lists an indel chip only when a visible-width op of that kind is painted somewhere in the view.                                                                                                                                                                                                                                                         |
 | [anchorAssemblyName](#getter-anchorassemblyname)                               | Getters    | LinearSyntenyView                                 | The "anchor" assembly for colorBy:'reference': the assembly bordering the most synteny levels. In a stacked ref-vs-A / ref-vs-B layout each interior assembly touches two levels and the ends touch one, so the max-adjacency assembly is the shared reference. Ties resolve to the topmost. Every level then colors by this assembly's chromosome names, so a region keeps its color as it's traced across levels.                                                          |
 | [showLoading](#getter-showloading)                                             | Getters    | LinearSyntenyView                                 | Whether to show a loading indicator instead of the import form or view                                                                                                                                                                                                                                                                                                                                                                                                       |
@@ -113,7 +113,7 @@ Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
 | [setScrollZoom](#action-setscrollzoom)                                         | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [activateTrackSelector](#action-activatetrackselector)                         | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [toggleTrack](#action-toggletrack)                                             | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| [showTrack](#action-showtrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [showTrack](#action-showtrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview) | No-op for a level that doesn't exist, matching hideTrack/toggleTrack. reconcileLevels already materializes exactly one level per adjacent view pair, so a missing level means the caller named a gap that has no views (e.g. an `init.tracks` with more levels than `init.views` has gaps); creating one here would append a level whose views[level+1] is absent, which renders nothing and silently breaks the views/levels invariant.                                     |
 | [hideTrack](#action-hidetrack)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [squareView](#action-squareview)                                               | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [clearView](#action-clearview)                                                 | Actions    | [LinearComparativeView](../linearcomparativeview) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -419,8 +419,10 @@ type hasLodCapableAdapter = boolean
 
 True if any currently-loaded synteny display has at least one feature with a
 CIGAR. Used to gate CIGAR-related menu items — coarse-tier PIF files and
-CIGAR-less PAFs have nothing to show. Returns true while no data has loaded yet
-so the menu doesn't flicker between renders.
+CIGAR-less PAFs have nothing to show. Optimistic while no display has finished a
+fetch yet, so the menu is there from the first render rather than popping in
+once data lands (the common case: most synteny files carry CIGARs). A view with
+no synteny tracks at all has nothing to gate, so it reports false.
 
 ```ts
 type hasCigarData = boolean
@@ -614,7 +616,17 @@ type setLodMode = (arg: 'auto' | 'fine' | 'coarse') => void
 #### action: setColorBy
 
 ```ts
-type setColorBy = (arg: SyntenyColorBy) => void
+type setColorBy = (
+  arg:
+    | 'default'
+    | 'strand'
+    | 'query'
+    | 'target'
+    | 'reference'
+    | 'identity'
+    | 'meanQueryIdentity'
+    | 'mappingQuality',
+) => void
 ```
 
 #### action: setShowColorLegend
@@ -890,6 +902,13 @@ type toggleTrack = (trackId: string, level?: any) => any
 ```
 
 #### action: showTrack
+
+No-op for a level that doesn't exist, matching hideTrack/toggleTrack.
+reconcileLevels already materializes exactly one level per adjacent view pair,
+so a missing level means the caller named a gap that has no views (e.g. an
+`init.tracks` with more levels than `init.views` has gaps); creating one here
+would append a level whose views[level+1] is absent, which renders nothing and
+silently breaks the views/levels invariant.
 
 ```ts
 type showTrack = (trackId: string, level?: any, initialSnapshot?: any) => void

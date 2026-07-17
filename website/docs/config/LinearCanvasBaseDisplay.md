@@ -21,27 +21,27 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                                           | Type                                                  | Description                                                                                                                                                               |
-| -------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [heightMode](#slot-heightmode)                                 | `stringEnum`                                          | Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). |
-| [showLabels](#slot-showlabels)                                 | `stringEnum`                                          | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides                                                                   |
-| [showDescriptions](#slot-showdescriptions)                     | `boolean`                                             | Show feature descriptions                                                                                                                                                 |
-| [color](#slot-color)                                           | `maybeColor`                                          | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring).                                                                         |
-| [connectorColor](#slot-connectorcolor)                         | `maybeColor`                                          | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                                          |
-| [utrColor](#slot-utrcolor)                                     | `maybeColor`                                          | fill color for UTRs on gene/transcript glyphs.                                                                                                                            |
-| [outlineColor](#slot-outlinecolor)                             | `color`                                               | outline color for features (empty string = no outline)                                                                                                                    |
-| [featureHeight](#slot-featureheight)                           | `number`                                              | height in pixels of the main body of each feature                                                                                                                         |
-| [displayMode](#slot-displaymode)                               | `stringEnum` (inherit, normal, compact, superCompact) | Feature height preset.                                                                                                                                                    |
-| [geneGlyphMode](#slot-geneglyphmode)                           | `stringEnum`                                          | Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript                       |
-| [subfeatureLabels](#slot-subfeaturelabels)                     | `stringEnum` (inherit, none, below, overlay)          | subfeature label display mode.                                                                                                                                            |
-| [displayDirectionalChevrons](#slot-displaydirectionalchevrons) | `maybeBoolean`                                        | Display directional chevrons on intron lines to indicate strand direction.                                                                                                |
-| [transcriptTypes](#slot-transcripttypes)                       | `stringArray`                                         |                                                                                                                                                                           |
-| [containerTypes](#slot-containertypes)                         | `stringArray`                                         |                                                                                                                                                                           |
-| [subParts](#slot-subparts)                                     | `string`                                              | subparts for a glyph                                                                                                                                                      |
-| [impliedUTRs](#slot-impliedutrs)                               | `boolean`                                             | imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures                                                                          |
-| [labels](#slot-labels)                                         |                                                       |                                                                                                                                                                           |
-| [labels.name](#slot-labelsname)                                | `string`                                              | the primary name of the feature to show                                                                                                                                   |
-| [labels.description](#slot-labelsdescription)                  | `string`                                              | the text description to show                                                                                                                                              |
+| Slot                                                           | Type                                                             | Description                                                                                                                                                               |
+| -------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [heightMode](#slot-heightmode)                                 | `stringEnum`                                                     | Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). |
+| [showLabels](#slot-showlabels)                                 | `stringEnum`                                                     | Show feature labels: "auto" hides labels at high feature density, "on" always shows, "off" always hides                                                                   |
+| [showDescriptions](#slot-showdescriptions)                     | `boolean`                                                        | Show feature descriptions                                                                                                                                                 |
+| [color](#slot-color)                                           | `maybeColor`                                                     | the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring).                                                                         |
+| [connectorColor](#slot-connectorcolor)                         | `maybeColor`                                                     | color of the connecting/intron lines between feature segments (defaults to the theme text color)                                                                          |
+| [utrColor](#slot-utrcolor)                                     | `maybeColor`                                                     | fill color for UTRs on gene/transcript glyphs.                                                                                                                            |
+| [outlineColor](#slot-outlinecolor)                             | `color`                                                          | outline color for features (empty string = no outline)                                                                                                                    |
+| [featureHeight](#slot-featureheight)                           | `number`                                                         | height in pixels of the main body of each feature                                                                                                                         |
+| [displayMode](#slot-displaymode)                               | `stringEnum` (inherit, normal, compact, superCompact, collapsed) | Feature height preset.                                                                                                                                                    |
+| [geneGlyphMode](#slot-geneglyphmode)                           | `stringEnum`                                                     | Gene glyph display mode: "auto" switches based on zoom level, "all" shows all transcripts, "longestCoding" shows only the longest coding transcript                       |
+| [subfeatureLabels](#slot-subfeaturelabels)                     | `stringEnum` (inherit, none, below, overlay)                     | subfeature label display mode.                                                                                                                                            |
+| [displayDirectionalChevrons](#slot-displaydirectionalchevrons) | `maybeBoolean`                                                   | Display directional chevrons on intron lines to indicate strand direction.                                                                                                |
+| [transcriptTypes](#slot-transcripttypes)                       | `stringArray`                                                    |                                                                                                                                                                           |
+| [containerTypes](#slot-containertypes)                         | `stringArray`                                                    |                                                                                                                                                                           |
+| [subParts](#slot-subparts)                                     | `string`                                                         | subparts for a glyph                                                                                                                                                      |
+| [impliedUTRs](#slot-impliedutrs)                               | `boolean`                                                        | imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures                                                                          |
+| [labels](#slot-labels)                                         |                                                                  |                                                                                                                                                                           |
+| [labels.name](#slot-labelsname)                                | `string`                                                         | the primary name of the feature to show                                                                                                                                   |
+| [labels.description](#slot-labelsdescription)                  | `string`                                                         | the text description to show                                                                                                                                              |
 
 <details>
 <summary>Advanced slots (2)</summary>
@@ -206,11 +206,12 @@ height in pixels of the main body of each feature
 Feature height preset. `inherit` (the default) follows the session-wide default
 for this display type, falling back to `normal`;
 `normal`/`compact`/`superCompact` customize the track explicitly (including
-customizing `normal` back over a `compact` session default)
+customizing `normal` back over a `compact` session default); `collapsed` packs
+every feature onto a single row with all labels hidden
 
 **Type:** [`stringEnum`](/docs/config_guides/slot_types#stringenum) (one of
-`inherit`, `normal`, `compact`, `superCompact`) · **Default:** `'inherit'` ·
-_promotable_
+`inherit`, `normal`, `compact`, `superCompact`, `collapsed`) · **Default:**
+`'inherit'` · _promotable_
 
 ```js
 {
@@ -220,9 +221,10 @@ _promotable_
     'normal',
     'compact',
     'superCompact',
+    'collapsed',
   ]),
   description:
-    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default)',
+    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default); `collapsed` packs every feature onto a single row with all labels hidden',
 
 
 
@@ -474,6 +476,6 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray` · **Default:** `[]`
+**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
 
 </details>

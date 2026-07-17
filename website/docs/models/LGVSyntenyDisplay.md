@@ -1147,9 +1147,8 @@ type belowCoverageBandsInput = {
   readConnectionsDown: boolean
   readConnectionsHeight: number
   showSashimiArcs: boolean
-  sashimiArcsMode: SashimiArcsMode
   sashimiArcsHeight: number
-  hasSashimiArcs: boolean
+  hasSashimiDownArcs: boolean
 }
 ```
 

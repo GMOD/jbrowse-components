@@ -61,7 +61,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [resolutionBias](#slot-resolutionbias)                 | `number`                               | Signed integer offset from the zoom-derived auto-picked binsize.                                                               |
 | [useLogScale](#slot-uselogscale)                       | `boolean`                              | map contact counts to color on a log2 scale                                                                                    |
 | [useColorPercentile](#slot-usecolorpercentile)         | `boolean`                              | false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of counts, so off-diagonal contacts read more strongly. |
-| [showResolutionControls](#slot-showresolutioncontrols) | `boolean`                              | show the on-figure resolution stepper in the overlay                                                                           |
+| [showResolutionControls](#slot-showresolutioncontrols) | `boolean`                              | show the on-figure resolution dropdown in the overlay                                                                          |
 | [selectedNormalization](#slot-selectednormalization)   | `string`                               | The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE).                                                      |
 | [fitToHeight](#slot-fittoheight)                       | `boolean`                              | squash the triangle vertically to fit the display height instead of drawing square bins                                        |
 
@@ -113,7 +113,7 @@ counts, so off-diagonal contacts read more strongly.
 
 #### slot: showResolutionControls
 
-show the on-figure resolution stepper in the overlay
+show the on-figure resolution dropdown in the overlay
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
 `false`
@@ -188,6 +188,6 @@ text to display when the cursor hovers over a feature
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
 
-**Type:** `stringArray` · **Default:** `[]`
+**Type:** `stringArray` · **Default:** `[`get(feature,'gbkey')!='Src'`]`
 
 </details>
