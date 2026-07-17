@@ -62,7 +62,8 @@ export async function* indexVcf({
 
     const encodedInfoAttrs = infoAttrs.map(a => `"${encodeURIComponent(a)}"`)
 
-    for (const variantId of id.split(',')) {
+    // VCF separates multiple IDs with ';' (matching @gmod/vcf), not ','
+    for (const variantId of id.split(';')) {
       const encodedId = encodeURIComponent(variantId)
       const record = `["${encodedLocStr}"|"${encodedTrackId}"|"${encodedId}"${encodedInfoAttrs.length > 0 ? `|${encodedInfoAttrs.join('|')}` : ''}]`
       yield `${record} ${variantId}\n`

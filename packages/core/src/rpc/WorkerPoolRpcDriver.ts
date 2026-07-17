@@ -54,13 +54,12 @@ class LazyWorker {
           this.workerP = undefined
         }
       }
-      p.catch(invalidate)
       p.then(worker => {
         worker.onError?.(() => {
           invalidate()
           worker.destroy()
         })
-      }).catch(() => {})
+      }).catch(invalidate)
     }
     return this.workerP
   }

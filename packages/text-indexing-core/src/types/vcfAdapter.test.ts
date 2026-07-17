@@ -73,10 +73,10 @@ describe('indexVcf', () => {
     expect(results[0]).toContain(encodeURIComponent('ctgA:100..101'))
   })
 
-  test('a comma-separated ID emits one record per variant id', async () => {
+  test('a semicolon-separated ID emits one record per variant id', async () => {
     const file = writeVcf([
       '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
-      'ctgA\t400\tvarA,varB\tA\tT\t.\t.\t.',
+      'ctgA\t400\tvarA;varB\tA\tT\t.\t.\t.',
     ])
     const results = await indexToArray(file, tmpDir)
     expect(results).toHaveLength(2)
