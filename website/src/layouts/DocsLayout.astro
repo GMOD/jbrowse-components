@@ -57,31 +57,49 @@ const mdHref = isRealDoc
     so they are wired here rather than mounted as an island. */
 }
 <script>
+  function outsideBox(dialog: HTMLDialogElement, x: number, y: number) {
+    const box = dialog.getBoundingClientRect()
+    return x < box.left || x > box.right || y < box.top || y > box.bottom
+  }
+
+  // open the recipe dialog for a clicked "?" trigger
   document.addEventListener('click', event => {
     const target = event.target
     if (target instanceof HTMLElement) {
       const button = target.closest('[data-spec-dialog]')
-      const id = button?.dataset.specDialog
-      const dialog = id ? document.getElementById(id) : null
-      if (dialog instanceof HTMLDialogElement) {
-        dialog.showModal()
+      if (button instanceof HTMLElement) {
+        const id = button.dataset.specDialog
+        const dialog = id ? document.getElementById(id) : null
+        if (dialog instanceof HTMLDialogElement && !dialog.open) {
+          dialog.showModal()
+        }
       }
     }
   })
 
-  // clicking the backdrop (outside the dialog's own box) closes it
+  // Light-dismiss: close when a click both starts and ends on the backdrop
+  // (outside the dialog's own box); the ::backdrop reports the dialog element
+  // itself as the target. Requiring the press to *start* on the backdrop stops
+  // a text selection dragged out of the dialog from closing it.
+  let pressStartedOnBackdrop = false
+
+  document.addEventListener('pointerdown', event => {
+    const target = event.target
+    pressStartedOnBackdrop =
+      target instanceof HTMLDialogElement &&
+      target.open &&
+      outsideBox(target, event.clientX, event.clientY)
+  })
+
   document.addEventListener('click', event => {
     const target = event.target
-    if (target instanceof HTMLDialogElement && target.open) {
-      const box = target.getBoundingClientRect()
-      const outside =
-        event.clientX < box.left ||
-        event.clientX > box.right ||
-        event.clientY < box.top ||
-        event.clientY > box.bottom
-      if (outside) {
-        target.close()
-      }
+    if (
+      pressStartedOnBackdrop &&
+      target instanceof HTMLDialogElement &&
+      target.open &&
+      outsideBox(target, event.clientX, event.clientY)
+    ) {
+      target.close()
     }
   })
 </script>
