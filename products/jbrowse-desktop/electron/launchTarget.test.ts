@@ -74,7 +74,13 @@ test('a link wins over a file, and a malformed link never falls back to one', ()
 test('recognizes the jbrowse:// scheme case-insensitively', () => {
   // URL schemes are case-insensitive and Windows preserves the caller's casing
   expect(
-    findLaunchTarget(['jbrowse-desktop', toProtocolUrl(webUrl).replace('jbrowse://', 'JBrowse://')], '/home/me'),
+    findLaunchTarget(
+      [
+        'jbrowse-desktop',
+        toProtocolUrl(webUrl).replace('jbrowse://', 'JBrowse://'),
+      ],
+      '/home/me',
+    ),
   ).toEqual({ type: 'link', url: webUrl })
 })
 

@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { getAboutDialogConfig, readConfSlot, removeAttr } from './util.ts'
+import { getAboutDialogConfig, readConfSlot } from './util.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -39,26 +39,6 @@ function makeSession(formatAboutConfig: Record<string, unknown> = {}) {
     { pluginManager: corePluginManager },
   ) as unknown as AbstractSessionModel
 }
-
-describe('removeAttr', () => {
-  it('deletes the attribute at every nesting level', () => {
-    const obj = {
-      a: 1,
-      baseUri: 'top',
-      b: { baseUri: 'nested', c: 2, d: { baseUri: 'deep', e: 3 } },
-    }
-    expect(removeAttr(obj, 'baseUri')).toEqual({
-      a: 1,
-      b: { c: 2, d: { e: 3 } },
-    })
-  })
-
-  it('leaves null values intact', () => {
-    expect(removeAttr({ a: null, baseUri: 'x' }, 'baseUri')).toEqual({
-      a: null,
-    })
-  })
-})
 
 describe('readConfSlot', () => {
   it('walks a path on a plain object', () => {

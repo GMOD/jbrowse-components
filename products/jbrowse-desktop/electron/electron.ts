@@ -209,7 +209,10 @@ function runApp() {
   // window — the start screen if none exists yet — rather than opening the
   // linked session.
   async function openTarget(target: LaunchTarget | undefined) {
-    if (target?.type === 'link' && !(await confirmOpenLink(target.url, wm.current))) {
+    if (
+      target?.type === 'link' &&
+      !(await confirmOpenLink(target.url, wm.current))
+    ) {
       await wm.ensureWindow()
     } else {
       await wm.ensureWindow(target)

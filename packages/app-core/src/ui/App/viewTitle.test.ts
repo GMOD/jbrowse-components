@@ -23,13 +23,15 @@ describe('viewTitle', () => {
 
   it('falls back to Untitled view when assemblyNames is empty', () => {
     // an LGV with no displayedRegions has assemblyNames === [], not undefined
-    expect(viewTitle({ assemblyNames: [], minimized: false }, getDisplayName)).toBe(
-      'Untitled view',
-    )
+    expect(
+      viewTitle({ assemblyNames: [], minimized: false }, getDisplayName),
+    ).toBe('Untitled view')
   })
 
   it('falls back to Untitled view when assemblyNames is absent', () => {
-    expect(viewTitle({ minimized: false }, getDisplayName)).toBe('Untitled view')
+    expect(viewTitle({ minimized: false }, getDisplayName)).toBe(
+      'Untitled view',
+    )
   })
 
   it('annotates a minimized view', () => {

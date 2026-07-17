@@ -135,11 +135,19 @@ test('buildClusteredLayout throws on out-of-bounds index', () => {
 })
 
 test('validateClusterOrder accepts a full permutation', () => {
-  expect(() => { validateClusterOrder([2, 0, 1], 3) }).not.toThrow()
+  expect(() => {
+    validateClusterOrder([2, 0, 1], 3)
+  }).not.toThrow()
 })
 
 test('validateClusterOrder rejects out-of-range, duplicate, and wrong-length', () => {
-  expect(() => { validateClusterOrder([0, 3], 3) }).toThrow(/out of range/)
-  expect(() => { validateClusterOrder([0, 1, 1], 3) }).toThrow(/duplicated/)
-  expect(() => { validateClusterOrder([0, 1], 3) }).toThrow(/expected 3 entries/)
+  expect(() => {
+    validateClusterOrder([0, 3], 3)
+  }).toThrow(/out of range/)
+  expect(() => {
+    validateClusterOrder([0, 1, 1], 3)
+  }).toThrow(/duplicated/)
+  expect(() => {
+    validateClusterOrder([0, 1], 3)
+  }).toThrow(/expected 3 entries/)
 })

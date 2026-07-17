@@ -40,7 +40,9 @@ test('bins split across regions proportional to width', () => {
       { start: 100, end: 110 },
     ],
     maxBins: 4, // 2 bins per equal-width region
-    features: [{ regionIndex: 1, row: 's1', start: 100, end: 110, colorKey: 'x' }],
+    features: [
+      { regionIndex: 1, row: 's1', start: 100, end: 110, colorKey: 'x' },
+    ],
   })
   // first region uncovered (-1,-1), second region covered (0,0)
   expect(matrix[0]).toEqual([-1, -1, 0, 0])

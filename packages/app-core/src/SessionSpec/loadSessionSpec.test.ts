@@ -6,7 +6,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // the layout mapping only cares about which view id each spec entry created, so
 // stub the launch handlers to push view ids and record what setInit receives.
 function setup(
-  handlers: Record<string, (session: { views: { id: string }[] }) => Promise<void>>,
+  handlers: Record<
+    string,
+    (session: { views: { id: string }[] }) => Promise<void>
+  >,
 ) {
   const session = {
     views: [] as { id: string }[],

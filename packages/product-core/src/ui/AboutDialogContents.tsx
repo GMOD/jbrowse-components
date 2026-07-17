@@ -33,7 +33,7 @@ const AboutDialogContents = observer(function AboutDialogContents({
 
   const hideUris = Boolean(
     getConf(session, ['formatAbout', 'hideUris']) ||
-      readConfSlot<boolean>(config, ['formatAbout', 'hideUris']),
+    readConfSlot<boolean>(config, ['formatAbout', 'hideUris']),
   )
 
   const { pluginManager } = getEnv(session)

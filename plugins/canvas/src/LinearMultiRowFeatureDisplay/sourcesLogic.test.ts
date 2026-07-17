@@ -64,9 +64,10 @@ test('rowOrder entries not present in data are skipped', () => {
 })
 
 test('duplicate rowOrder entries are de-duplicated (no blank row)', () => {
-  expect(
-    orderPartitionValues(new Set(['a', 'b']), ['a', 'a', 'b']),
-  ).toEqual(['a', 'b'])
+  expect(orderPartitionValues(new Set(['a', 'b']), ['a', 'a', 'b'])).toEqual([
+    'a',
+    'b',
+  ])
 })
 
 const discovered = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]

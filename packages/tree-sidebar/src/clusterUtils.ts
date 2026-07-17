@@ -157,7 +157,9 @@ export function validateClusterOrder(order: number[], length: number) {
       )
     }
     if (seen.has(idx)) {
-      throw new Error(`Invalid clustering order: entry ${idx + 1} is duplicated`)
+      throw new Error(
+        `Invalid clustering order: entry ${idx + 1} is duplicated`,
+      )
     }
     seen.add(idx)
   }

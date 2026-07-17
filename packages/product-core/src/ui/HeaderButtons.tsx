@@ -15,7 +15,11 @@ interface HeaderButtonsProps {
   setShowRefNames: (show: boolean) => void
 }
 
-function HeaderButtons({ conf, hideUris, setShowRefNames }: HeaderButtonsProps) {
+function HeaderButtons({
+  conf,
+  hideUris,
+  setShowRefNames,
+}: HeaderButtonsProps) {
   const { classes } = useStyles()
 
   return (
@@ -35,7 +39,9 @@ function HeaderButtons({ conf, hideUris, setShowRefNames }: HeaderButtonsProps) 
       {hideUris ? null : (
         <CopyToClipboardButton
           variant="contained"
-          value={() => JSON.stringify(stripBaseUris(structuredClone(conf)), null, 2)}
+          value={() =>
+            JSON.stringify(stripBaseUris(structuredClone(conf)), null, 2)
+          }
         >
           Copy config
         </CopyToClipboardButton>
