@@ -41,13 +41,15 @@ test('rasterization is on by default and --noRasterize turns it off', async () =
   )
 })
 
-// --showGridlines draws genomic coordinate gridlines (vertical <line>s).
+// --showGridlines draws genomic coordinate gridlines. The ticks are collapsed
+// into a clipped <path> pair (minor/major) rather than a <line> each, so assert
+// on the gridline clip group the export wraps them in.
 test('--showGridlines adds coordinate gridlines', async () => {
   const without = await render({ noRasterize: true })
   const withGrid = await render({ noRasterize: true, showGridlines: true })
-  const lineCount = svg => (svg.match(/<line/g) || []).length
   assert.ok(
-    lineCount(withGrid) > lineCount(without),
-    'gridlines should add <line> elements',
+    !/gridline-clip/.test(without),
+    'no gridlines without the flag',
   )
+  assert.match(withGrid, /gridline-clip/, 'gridlines should add a clip group')
 })
