@@ -32,6 +32,19 @@ test('metadata attributes follow, capitalized, internal keys hidden', () => {
   ])
 })
 
+test('raw feature id is not shown', () => {
+  const rows = getTooltipRows({
+    name: 'HG001',
+    genotype: '0|1',
+    featureId: 'ctgA-1234-5678-abcd',
+    population: 'EUR',
+  })
+  expect(rows).toEqual([
+    { key: 'genotype', label: 'Genotype', value: '0|1' },
+    { key: 'population', label: 'Population', value: 'EUR' },
+  ])
+})
+
 test('empty and undefined values are skipped', () => {
   const rows = getTooltipRows({
     genotype: '0|1',

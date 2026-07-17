@@ -13,6 +13,7 @@ import {
   ConnectorResizeHandle,
 } from '../../shared/ConnectorLines.tsx'
 
+import type { LDSnp } from '../../VariantRPC/getLDMatrix.ts'
 import type { ConnectorCoord } from '../../shared/ConnectorLines.tsx'
 import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -36,7 +37,7 @@ function getMatrixX(
 }
 
 interface HoveredLine extends ConnectorCoord {
-  snp: { id: string; refName: string; start: number; end: number }
+  snp: LDSnp
 }
 
 const AllLines = observer(function AllLines({

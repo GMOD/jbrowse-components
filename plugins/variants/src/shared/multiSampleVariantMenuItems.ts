@@ -335,10 +335,12 @@ export function variantContextMenuItems(
           onClick: async () => {
             try {
               const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`
-              const id = feat.get('name') || feat.id()
+              // Only the VCF ID column; a feature with no ID ('.') copies as
+              // bare location rather than feat.id(), an internal adapter string.
+              const name = feat.get('name')
               const { default: copy } =
                 await import('@jbrowse/core/util/copyToClipboard')
-              copy(`${id} ${loc}`)
+              copy(name ? `${name} ${loc}` : loc)
               getSession(self).notify('Copied to clipboard', 'info')
             } catch (e) {
               console.error(e)

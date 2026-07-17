@@ -12,6 +12,10 @@ const VARIANT_FIELD_LABELS: Record<string, string> = {
   description: 'Description',
 }
 
+// VariantTooltipFields entries that exist only to carry hit-test/click identity
+// (raw feature id) — never user-facing.
+const INTERNAL_VARIANT_KEYS = ['featureId']
+
 export interface TooltipRow {
   key: string
   label: string
@@ -24,7 +28,7 @@ export interface TooltipRow {
 // empty/undefined values so the table stays free of blank rows.
 export function getTooltipRows(source: Record<string, unknown>): TooltipRow[] {
   const rows: TooltipRow[] = []
-  const shown = new Set<string>()
+  const shown = new Set<string>(INTERNAL_VARIANT_KEYS)
   for (const key in VARIANT_FIELD_LABELS) {
     shown.add(key)
     const value = source[key]

@@ -25,7 +25,8 @@ type LGV = LinearGenomeViewModel
 function SnpRow({ snp }: { snp: LDFlatbushItem['snp1'] }) {
   return (
     <div>
-      <b>{snp.id}</b> {snp.refName}:{(snp.start + 1).toLocaleString()}
+      {snp.id ? <b>{snp.id} </b> : null}
+      {snp.refName}:{(snp.start + 1).toLocaleString()}
       {snp.maf === undefined ? null : ` · MAF ${snp.maf.toFixed(3)}`}
     </div>
   )

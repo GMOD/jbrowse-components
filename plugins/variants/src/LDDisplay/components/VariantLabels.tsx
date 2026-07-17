@@ -23,13 +23,15 @@ const VariantLabels = observer(function VariantLabels({
     return null
   }
 
+  // A SNP with no VCF ID is left unlabeled — its position on the axis already
+  // locates it, and there is no user-facing name to show.
   return (
     <>
       {snps.map((snp, i) => {
         const genomicX = getSnpViewportX(view, assembly, snp)
-        return (
+        return snp.id ? (
           <text
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- snp.id may be missing or duplicated (multi-allelic sites share a position); idx only breaks ties
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- snp.id may be duplicated (multi-allelic sites share a position); idx only breaks ties
             key={`${snp.id}-${i}`}
             x={genomicX}
             y={0}
@@ -40,9 +42,9 @@ const VariantLabels = observer(function VariantLabels({
             fill={theme.palette.text.primary}
             style={{ pointerEvents: 'none' }}
           >
-            {snp.id || 'NOLABEL'}
+            {snp.id}
           </text>
-        )
+        ) : null
       })}
     </>
   )

@@ -215,7 +215,10 @@ export interface RecombinationData {
 }
 
 export interface LDSnp {
-  id: string
+  // The VCF ID column (e.g. an rsID), absent when the file has none ('.').
+  // Never falls back to feature.id(), which is a synthetic adapter-internal
+  // string, not an identifier a user would recognize.
+  id?: string
   refName: string
   start: number
   end: number
@@ -528,7 +531,7 @@ export async function getLDMatrix({
     }
 
     snps.push({
-      id: feature.get('name') || feature.id(),
+      id: feature.get('name'),
       refName: feature.get('refName'),
       start: feature.get('start'),
       end: feature.get('end'),
