@@ -197,9 +197,8 @@ no web server. See the [desktop quickstart](/docs/quickstart_desktop).
 Open the alignments track and, from the track menu, choose **Color by →
 Bisulfite / EM-seq**, then pick a cytosine context (CpG, CHG, CHH, or all
 cytosines). Methylated cytosines paint red; tick **Show unmethylated (blue)** in
-the same menu to paint the converted sites too.
-It's reference-based and only makes sense for bisulfite/EM-seq libraries — no
-MM/ML tags are involved.
+the same menu to paint the converted sites too. It's reference-based and only
+makes sense for bisulfite/EM-seq libraries — no MM/ML tags are involved.
 
 That same submenu has a **Show unmethylated (blue)** toggle; turning it off
 draws a methylated-only view (red marks only, unmethylated sites left blank).

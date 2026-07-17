@@ -380,7 +380,9 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                     <div style={{ width: 10, height: 10, background: color }} />
                   </td>
                   <td>
-                    {modType ? getModificationCallName(modType, noMod) : 'Unknown'}
+                    {modType
+                      ? getModificationCallName(modType, noMod)
+                      : 'Unknown'}
                   </td>
                 </tr>
                 <tr>

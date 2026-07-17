@@ -141,9 +141,7 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('modifications view surfaces chain-mode split reads after the mod-type key', () => {
-    const mods = new Map([
-      ['m', 'red'],
-    ])
+    const mods = new Map([['m', 'red']])
     expect(labels('modifications', ['fwdStrand', 'revStrand'], mods)).toEqual([
       '5mC',
       'Split read (forward)',
@@ -301,9 +299,7 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('fill-unmarked view omits the 5hmC swatch when only 5mC was detected', () => {
-    const mods = new Map([
-      ['m', 'red'],
-    ])
+    const mods = new Map([['m', 'red']])
     expect(
       getReadDisplayLegendItems(
         { type: 'modifications', modifications: { fillUnmarked: true } },
