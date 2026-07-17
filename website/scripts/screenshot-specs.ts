@@ -4,6 +4,7 @@ export type * from './screenshot-spec-types.ts'
 import { jbrowseImgSpecs } from './screenshot-spec-helpers.ts'
 import { alignmentsSpecs } from './specs/alignments.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
+import { conservationSpecs } from './specs/conservation.ts'
 import { cookbookSpecs } from './specs/cookbook.ts'
 import { embeddedSpecs } from './specs/embedded.ts'
 import { featuresSpecs } from './specs/features.ts'
@@ -28,6 +29,7 @@ export const specs: ScreenshotSpec[] = [
   ...alignmentsSpecs,
   ...variantsSpecs,
   ...bigwigSpecs,
+  ...conservationSpecs,
   ...featuresSpecs,
   ...uiSpecs,
   ...methylationSpecs,
