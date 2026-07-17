@@ -2719,63 +2719,93 @@ export default function baseStateModelFactory(
                 }
               },
             },
-            // Highlight the exact transcript the user right-clicked, scoped to
-            // subfeatures so it resolves to this isoform rather than its gene
-            // even when the two share a span (the common GFF3 case).
+            // Two highlight scopes. When the click resolved to a subfeature (an
+            // isoform, an LTR part) both the whole feature and that subfeature
+            // can be boxed, so the scopes are grouped under a "Highlight"
+            // submenu. With no subfeature there is a single scope, kept as a
+            // top-level entry so the common case stays one click away.
             ...(subfeature
               ? [
                   {
-                    label: subfeatureHighlighted
-                      ? `Remove ${subfeatureNoun} highlight`
-                      : subfeature.displayLabel
-                        ? `Highlight ${subfeatureNoun} ${subfeature.displayLabel}`
-                        : `Highlight this ${subfeatureNoun}`,
+                    label: 'Highlight',
+                    icon: Highlighter,
+                    subMenu: [
+                      // The exact subfeature the user right-clicked, scoped to
+                      // subfeatures so it resolves to this isoform rather than
+                      // its gene even when the two share a span (the common
+                      // GFF3 case).
+                      {
+                        label: subfeatureHighlighted
+                          ? `Remove ${subfeatureNoun} highlight`
+                          : subfeature.displayLabel
+                            ? `${subfeatureNoun} ${subfeature.displayLabel}`
+                            : `This ${subfeatureNoun}`,
+                        icon: Highlighter,
+                        onClick: () => {
+                          if (subfeatureHighlighted) {
+                            self.removeFeatureHighlightsForId(
+                              subfeature.featureId,
+                            )
+                          } else {
+                            const region =
+                              self.loadedRegions.get(displayedRegionIndex)
+                            if (region) {
+                              self.addFeatureHighlightForItem(
+                                {
+                                  startBp: subfeature.startBp,
+                                  endBp: subfeature.endBp,
+                                  name: subfeature.displayLabel,
+                                  subfeature: true,
+                                },
+                                region.refName,
+                              )
+                            }
+                          }
+                        },
+                      },
+                      {
+                        label: highlighted
+                          ? `Remove whole ${featureNoun} highlight`
+                          : `Whole ${featureNoun}`,
+                        icon: Highlighter,
+                        onClick: () => {
+                          if (highlighted) {
+                            self.removeFeatureHighlightsForId(featureId)
+                          } else {
+                            const region =
+                              self.loadedRegions.get(displayedRegionIndex)
+                            if (region) {
+                              self.addFeatureHighlightForItem(
+                                { startBp, endBp, name },
+                                region.refName,
+                              )
+                            }
+                          }
+                        },
+                      },
+                    ],
+                  },
+                ]
+              : [
+                  {
+                    label: highlighted ? 'Remove highlight' : 'Highlight feature',
                     icon: Highlighter,
                     onClick: () => {
-                      if (subfeatureHighlighted) {
-                        self.removeFeatureHighlightsForId(subfeature.featureId)
+                      if (highlighted) {
+                        self.removeFeatureHighlightsForId(featureId)
                       } else {
                         const region =
                           self.loadedRegions.get(displayedRegionIndex)
                         if (region) {
                           self.addFeatureHighlightForItem(
-                            {
-                              startBp: subfeature.startBp,
-                              endBp: subfeature.endBp,
-                              name: subfeature.displayLabel,
-                              subfeature: true,
-                            },
+                            { startBp, endBp, name },
                             region.refName,
                           )
                         }
                       }
                     },
                   },
-                ]
-              : []),
-            {
-              label: highlighted
-                ? subfeature
-                  ? `Remove whole ${featureNoun} highlight`
-                  : 'Remove highlight'
-                : subfeature
-                  ? `Highlight whole ${featureNoun}`
-                  : 'Highlight feature',
-              icon: Highlighter,
-              onClick: () => {
-                if (highlighted) {
-                  self.removeFeatureHighlightsForId(featureId)
-                } else {
-                  const region = self.loadedRegions.get(displayedRegionIndex)
-                  if (region) {
-                    self.addFeatureHighlightForItem(
-                      { startBp, endBp, name },
-                      region.refName,
-                    )
-                  }
-                }
-              },
-            },
+                ]),
             // The show/hide family (pin, solo, hide) groups the growing set of
             // visibility toggles behind one submenu so the common actions above
             // stay one click away.

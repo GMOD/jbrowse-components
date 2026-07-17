@@ -66,14 +66,22 @@ function loadGene(display: Display, subfeatureInfos: SubfeatureInfo[]) {
   display.setLoadedRegion(0, ctgA)
 }
 
+// the highlight scopes now live in a "Highlight" submenu, so flatten one level
+// of subMenu before matching labels
+function flatten(items: MenuItem[]): MenuItem[] {
+  return items.flatMap(m => ('subMenu' in m ? flatten(m.subMenu) : [m]))
+}
+
 function menuLabels(display: Display) {
-  const items: MenuItem[] = display.contextMenuItems()
-  return items.map(m => ('label' in m ? m.label : ''))
+  return flatten(display.contextMenuItems()).map(m =>
+    'label' in m ? m.label : '',
+  )
 }
 
 function clickLabel(display: Display, label: string) {
-  const items: MenuItem[] = display.contextMenuItems()
-  const item = items.find(m => 'label' in m && m.label === label)
+  const item = flatten(display.contextMenuItems()).find(
+    m => 'label' in m && m.label === label,
+  )
   if (item && 'onClick' in item) {
     item.onClick()
   } else {
@@ -90,8 +98,8 @@ describe('transcript highlight context menu', () => {
     display.openContextMenu(gene, 0, 0, 0, eden1)
 
     // the entry must survive EDEN.1's span being identical to EDEN's
-    expect(menuLabels(display)).toContain('Highlight mRNA EDEN.1')
-    expect(menuLabels(display)).toContain('Highlight whole gene')
+    expect(menuLabels(display)).toContain('mRNA EDEN.1')
+    expect(menuLabels(display)).toContain('Whole gene')
   })
 
   it('boxes EDEN.1 alone, not its gene, despite the identical span', () => {
@@ -100,7 +108,7 @@ describe('transcript highlight context menu', () => {
     loadGene(display, [eden1, eden2, eden3])
 
     display.openContextMenu(gene, 0, 0, 0, eden1)
-    clickLabel(display, 'Highlight mRNA EDEN.1')
+    clickLabel(display, 'mRNA EDEN.1')
 
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1'])
     // the packer keys on top-level ids, so the parent gene is what gets pinned
@@ -113,7 +121,7 @@ describe('transcript highlight context menu', () => {
     loadGene(display, [eden1, eden2, eden3])
 
     display.openContextMenu(gene, 0, 0, 0, eden2)
-    clickLabel(display, 'Highlight mRNA EDEN.2')
+    clickLabel(display, 'mRNA EDEN.2')
 
     // only the name separates these two; a span-keyed highlight boxes both
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.2'])
@@ -125,7 +133,7 @@ describe('transcript highlight context menu', () => {
     loadGene(display, [eden1, eden2, eden3])
 
     display.openContextMenu(gene, 0, 0, 0, eden3)
-    clickLabel(display, 'Highlight mRNA EDEN.3')
+    clickLabel(display, 'mRNA EDEN.3')
 
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.3'])
   })
@@ -136,7 +144,7 @@ describe('transcript highlight context menu', () => {
     loadGene(display, [eden1, eden2, eden3])
 
     display.openContextMenu(gene, 0, 0, 0, eden1)
-    clickLabel(display, 'Highlight whole gene')
+    clickLabel(display, 'Whole gene')
 
     // the gene, and none of its three isoforms
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN'])
@@ -148,7 +156,7 @@ describe('transcript highlight context menu', () => {
     loadGene(display, [eden1, eden2, eden3])
 
     display.openContextMenu(gene, 0, 0, 0, eden1)
-    clickLabel(display, 'Highlight mRNA EDEN.1')
+    clickLabel(display, 'mRNA EDEN.1')
     clickLabel(display, 'Remove mRNA highlight')
 
     expect(display.highlightedFeatureIdSet.size).toBe(0)
@@ -163,7 +171,7 @@ describe('transcript highlight context menu', () => {
     display.openContextMenu(gene, 0, 0, 0)
 
     expect(menuLabels(display)).toContain('Highlight feature')
-    expect(menuLabels(display)).not.toContain('Highlight whole gene')
+    expect(menuLabels(display)).not.toContain('Whole gene')
   })
 
   it('names each scope by its own type, not a hardcoded transcript/gene', () => {
@@ -192,8 +200,8 @@ describe('transcript highlight context menu', () => {
 
     display.openContextMenu(repeat, 0, 0, 0, ltr)
 
-    expect(menuLabels(display)).toContain('Highlight LTR LTR_5')
-    expect(menuLabels(display)).toContain('Highlight whole repeat_region')
+    expect(menuLabels(display)).toContain('LTR LTR_5')
+    expect(menuLabels(display)).toContain('Whole repeat_region')
   })
 
   it('falls back to a generic label for an unnamed subfeature', () => {
@@ -204,7 +212,7 @@ describe('transcript highlight context menu', () => {
 
     display.openContextMenu(gene, 0, 0, 0, unnamed)
 
-    expect(menuLabels(display)).toContain('Highlight this mRNA')
+    expect(menuLabels(display)).toContain('This mRNA')
   })
 
   it('falls back to span alone for an unnamed subfeature, boxing its twins', () => {
@@ -214,7 +222,7 @@ describe('transcript highlight context menu', () => {
     loadGene(display, [unnamed, eden2])
 
     display.openContextMenu(gene, 0, 0, 0, unnamed)
-    clickLabel(display, 'Highlight this mRNA')
+    clickLabel(display, 'This mRNA')
 
     // no name to tell it from its same-span sibling, so both get boxed. Deliberate:
     // requiring a name here would resolve to nothing and make the click dead.
@@ -260,7 +268,7 @@ describe('transcript highlight context menu', () => {
     // the search highlight boxes the gene, so EDEN.1 is NOT highlighted and the
     // menu offers to add it — the click must not be swallowed as a duplicate
     // just because the search highlight's span happens to equal EDEN.1's
-    clickLabel(display, 'Highlight mRNA EDEN.1')
+    clickLabel(display, 'mRNA EDEN.1')
 
     expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN', 'EDEN.1'])
     expect(menuLabels(display)).toContain('Remove mRNA highlight')
@@ -276,7 +284,7 @@ describe('transcript highlight context menu', () => {
     loadGene(display, [eden1, eden2, eden3])
 
     display.openContextMenu(gene, 0, 0, 0, eden1)
-    clickLabel(display, 'Highlight mRNA EDEN.1')
+    clickLabel(display, 'mRNA EDEN.1')
     clickLabel(display, 'Remove mRNA highlight')
 
     // the gene highlight fuzzily MATCHES EDEN.1's span (identical to the gene's)
