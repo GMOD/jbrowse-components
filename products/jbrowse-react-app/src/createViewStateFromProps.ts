@@ -1,11 +1,6 @@
-import { createElement } from 'react'
+import createViewState from './createViewState.ts'
 
-import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
-import { createRoot } from 'react-dom/client'
-
-import type { JBrowseProps, ManagedView, ViewModel } from '@jbrowse/react-app2'
-
-export type { ManagedView }
+import type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
 
 /**
  * A declarative description of the app to mount. This is the framework-agnostic
@@ -32,14 +27,6 @@ export type { ManagedView }
  */
 export type CreateAppOptions = Omit<JBrowseProps, 'ref'>
 
-export interface JBrowseAppController {
-  /** the underlying MST app model */
-  readonly viewState: ViewModel
-  /** open another view after launch, same `{ type, init }` shape as `views` */
-  addView(view: ManagedView): void
-  destroy(): void
-}
-
 export interface AppSessionSnapshot {
   name: string
   views?: { id: string; type: string; init?: ManagedView['init'] }[]
@@ -49,8 +36,7 @@ export interface AppSessionSnapshot {
 }
 
 // Turn the declarative `views` list into a session snapshot, defaulting each
-// view's id. Pure (no engine/DOM) so the mapping is unit-testable and shared
-// with the `<JBrowse>` component's identical inline version.
+// view's id. Pure (no engine/DOM) so the mapping is unit-testable.
 export function viewsToSession(
   sessionName: string,
   views: ManagedView[] | undefined,
@@ -69,18 +55,10 @@ export function viewsToSession(
   }
 }
 
-/**
- * Mount the full JBrowse 2 app imperatively into a DOM element and drive it
- * through a small controller. This is the multi-view counterpart to
- * `createLinearGenomeView`: the same framework-agnostic primitive every non-React
- * host (anywidget, htmlwidgets, vanilla JS, ...) wraps, but backed by the full
- * app engine so synteny, dotplot, circular, and breakpoint-split views are all
- * reachable from one declarative `views` list.
- */
-export function createApp(
-  el: HTMLElement,
-  opts: CreateAppOptions,
-): JBrowseAppController {
+// Build the engine from the declarative props. Shared by the two entry points
+// that accept them — <JBrowse> and createApp — which otherwise construct this
+// identically and drift apart.
+export function createViewStateFromProps(opts: CreateAppOptions) {
   const {
     assemblies,
     tracks,
@@ -93,33 +71,19 @@ export function createApp(
     views,
     sessionName = 'session',
   } = opts
-
-  const viewState = createViewState({
+  return createViewState({
     config: {
       assemblies,
       tracks,
       internetAccounts,
       aggregateTextSearchAdapters,
       configuration,
+      // `views` is the single initial-state mechanism; with none given, the
+      // session opens empty but still honors `sessionName`
       defaultSession: viewsToSession(sessionName, views),
     },
     plugins,
     onChange,
     makeWorkerInstance,
   })
-
-  const root = createRoot(el)
-  root.render(createElement(JBrowseApp, { viewState }))
-
-  return {
-    get viewState() {
-      return viewState
-    },
-    addView(view) {
-      viewState.session.addView(view.type, { id: view.id, init: view.init })
-    },
-    destroy() {
-      root.unmount()
-    },
-  }
 }

@@ -1,4 +1,4 @@
-import { viewsToSession } from './createApp.ts'
+import { viewsToSession } from './createViewStateFromProps.ts'
 
 describe('viewsToSession', () => {
   it('opens an empty named session when no views are given', () => {

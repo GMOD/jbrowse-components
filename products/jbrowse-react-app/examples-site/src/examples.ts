@@ -132,7 +132,7 @@ export const pages: ExamplePage[] = [
         description: 'Compare two assemblies with a PAF synteny track.',
       },
       {
-        slug: 'embedded-app-synteny',
+        slug: 'create-app-synteny',
         title: 'Synteny via the imperative mount',
         description:
           'Mount the full app with createApp() — the framework-agnostic primitive non-React hosts (anywidget, htmlwidgets) use — and open a synteny view declaratively.',

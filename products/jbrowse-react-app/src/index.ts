@@ -7,6 +7,11 @@
 export { default as JBrowseApp } from './JBrowseApp/index.ts'
 export { default as JBrowse } from './JBrowse/index.ts'
 export type { JBrowseProps, ManagedView } from './JBrowse/index.ts'
+// the imperative twin of <JBrowse>, for hosts that don't write JSX (Jupyter
+// anywidgets, R htmlwidgets, plain <script> pages). viewsToSession stays
+// internal — it exists to keep this and <JBrowse> from drifting, not as API.
+export { createApp } from './createApp.ts'
+export type { CreateAppOptions, JBrowseAppController } from './createApp.ts'
 export { default as createModel } from './createModel.ts'
 export { default as createViewState } from './createViewState.ts'
 export { default as loadPlugins } from './loadPlugins.ts'

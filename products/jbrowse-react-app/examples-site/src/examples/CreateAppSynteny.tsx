@@ -1,4 +1,4 @@
-import { createApp } from '@jbrowse/embedded-app'
+import { createApp } from '@jbrowse/react-app2'
 
 import { volvoxConfig } from '../volvoxConfig.ts'
 
@@ -8,7 +8,7 @@ import { volvoxConfig } from '../volvoxConfig.ts'
 // declarative `views` list, so a synteny view is one `{ type, init }` entry. A
 // cleanup-returning ref bridges the imperative mount into React: it builds the
 // app when the div attaches and disposes it when the div unmounts.
-export default function EmbeddedAppSynteny() {
+export default function CreateAppSynteny() {
   return (
     <div
       ref={el => {

@@ -2028,24 +2028,6 @@ importers:
         specifier: ^4.46.0
         version: 4.46.0
 
-  products/jbrowse-embedded-app:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/react-app2':
-        specifier: workspace:^
-        version: link:../jbrowse-react-app
-      mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
-      react:
-        specifier: '>=18.0.0'
-        version: 19.2.7
-      react-dom:
-        specifier: '>=18.0.0'
-        version: 19.2.7(react@19.2.7)
-
   products/jbrowse-embedded-linear-genome-view:
     dependencies:
       '@jbrowse/core':
@@ -2277,9 +2259,6 @@ importers:
       '@jbrowse/core':
         specifier: workspace:*
         version: link:../../../packages/core
-      '@jbrowse/embedded-app':
-        specifier: workspace:*
-        version: link:../../jbrowse-embedded-app
       '@jbrowse/mobx-state-tree':
         specifier: ^5.12.0
         version: 5.12.0(mobx@6.16.1)
