@@ -20,7 +20,7 @@ import { fetchCJS } from '../../util.tsx'
 import type { JBrowseConfig } from './types.ts'
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
 
-export { addRelativeUris } from '@jbrowse/product-core'
+export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site
 export { fetchConfig } from './fetchConfig.ts'
 

@@ -438,9 +438,3 @@ export function buildWebExportUrl(
   }
   return url.href
 }
-
-// Stamps a `baseUri` next to every `uri` in a JSON config so relative URIs
-// resolve against the config's own location. Moved to core, which is what reads
-// `baseUri` back out (the assembly config schema); re-exported here to keep this
-// package's published API intact.
-export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'

@@ -1,6 +1,6 @@
 import { checkPlugins } from '@jbrowse/core/checkPlugins'
 import { fetchJson } from '@jbrowse/core/util'
-import { addRelativeUris } from '@jbrowse/product-core'
+import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 
 import { assertPluginsTrusted } from './assertPluginsTrusted.ts'
 
