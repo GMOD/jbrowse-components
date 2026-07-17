@@ -164,9 +164,9 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
     if (pendingViewExists) {
       const { type, viewId: pendingViewId } = pendingAction
-      const otherViewIds = session.views
-        .map(v => v.id)
-        .filter(id => id !== pendingViewId)
+      const otherViewIds = session.views.flatMap(v =>
+        v.id === pendingViewId ? [] : [v.id],
+      )
 
       let firstGroup: DockviewGroupPanel | undefined
       if (otherViewIds.length > 0) {

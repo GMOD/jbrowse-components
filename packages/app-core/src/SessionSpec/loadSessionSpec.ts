@@ -79,11 +79,11 @@ export async function loadSessionSpec(
     // a silent no-op, leaving an empty session with no diagnostic
     const unknownViewTypes = [
       ...new Set(
-        views
-          .map(view => view.type)
-          .filter(
-            type => !pluginManager.extensionPoints.has(`LaunchView-${type}`),
-          ),
+        views.flatMap(view =>
+          pluginManager.extensionPoints.has(`LaunchView-${view.type}`)
+            ? []
+            : [view.type],
+        ),
       ),
     ]
     if (unknownViewTypes.length) {
