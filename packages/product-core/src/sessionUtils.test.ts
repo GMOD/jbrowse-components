@@ -209,7 +209,6 @@ test('filterSessionInPlace drops a config-bearing element whose config is dangli
   errorSpy.mockRestore()
 })
 
-
 test('analyzeWebPortability reports an all-remote session as portable', () => {
   const snap = {
     assemblies: [

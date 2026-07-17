@@ -47,9 +47,6 @@ test('rasterization is on by default and --noRasterize turns it off', async () =
 test('--showGridlines adds coordinate gridlines', async () => {
   const without = await render({ noRasterize: true })
   const withGrid = await render({ noRasterize: true, showGridlines: true })
-  assert.ok(
-    !/gridline-clip/.test(without),
-    'no gridlines without the flag',
-  )
+  assert.ok(!/gridline-clip/.test(without), 'no gridlines without the flag')
   assert.match(withGrid, /gridline-clip/, 'gridlines should add a clip group')
 })
