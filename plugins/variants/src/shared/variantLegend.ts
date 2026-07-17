@@ -55,10 +55,12 @@ export function getGenotypeLegendItems({
   renderingMode,
   hasSecondaryAlt,
   hasUnphased,
+  hasNoCall,
 }: {
   renderingMode: string
   hasSecondaryAlt: boolean
   hasUnphased: boolean
+  hasNoCall: boolean
 }): LegendItem[] {
   if (renderingMode === 'phased') {
     return [
@@ -68,6 +70,7 @@ export function getGenotypeLegendItems({
         ? [{ color: set1[1], label: 'Other alt allele' }]
         : []),
       ...(hasUnphased ? [{ color: UNPHASED_COLOR, label: 'Unphased' }] : []),
+      ...(hasNoCall ? [{ color: NO_CALL_COLOR, label: 'No call' }] : []),
     ]
   }
   return [
@@ -124,6 +127,7 @@ export function getVariantLegendSections({
   renderingMode,
   hasSecondaryAlt,
   hasUnphased,
+  hasNoCall,
   featureColor,
   colorBy,
   sources,
@@ -131,6 +135,7 @@ export function getVariantLegendSections({
   renderingMode: string
   hasSecondaryAlt: boolean
   hasUnphased: boolean
+  hasNoCall: boolean
   // Per-variant cell color override; '' = default genotype coloring. When set,
   // cells aren't genotype-colored, so the genotype legend is replaced — by the
   // impact-tier key for the known consequence preset, or dropped for an
@@ -155,6 +160,7 @@ export function getVariantLegendSections({
           renderingMode,
           hasSecondaryAlt,
           hasUnphased,
+          hasNoCall,
         }),
       }
   return [

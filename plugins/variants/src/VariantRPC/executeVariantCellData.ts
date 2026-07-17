@@ -66,11 +66,13 @@ interface CellDataBase {
   sampleInfo: Record<string, SampleInfo>
   hasPhased: boolean
   // Whether any variant site is multiallelic (drives the "Other alt allele"
-  // legend entry) and whether any genotype call is unphased (drives the
-  // "Unphased" legend entry in phased mode). Computed here because the
+  // legend entry), whether any genotype call is unphased (drives the "Unphased"
+  // legend entry in phased mode), and whether any genotype is a no-call (drives
+  // the "No call" legend entry in phased mode). Computed here because the
   // simplified features sent to the client no longer carry ALT/genotypes.
   hasSecondaryAlt: boolean
   hasUnphased: boolean
+  hasNoCall: boolean
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
   // "Color by...→Consequence impact" menu option.
   hasConsequence: boolean
@@ -159,6 +161,7 @@ function computeSampleInfo(
   let hasPhased = false
   let hasSecondaryAlt = false
   let hasUnphased = false
+  let hasNoCall = false
   let hasConsequence = false
 
   // Single pass: accumulate sampleInfo/legend flags and build the simplified
@@ -183,17 +186,34 @@ function computeSampleInfo(
     }
     for (const key in samp) {
       const val = samp[key]!
-      const isPhased = val.includes('|')
-      hasPhased ||= isPhased
-      hasUnphased ||= val.includes('/')
       let ploidy = 1
+      let called = false
+      let missing = false
+      let phased = false
+      let unphased = false
       for (let i = 0, l = val.length; i < l; i++) {
         const char = val[i]
-        if (char === '|' || char === '/') {
+        if (char === '|') {
           ploidy++
+          phased = true
+        } else if (char === '/') {
+          ploidy++
+          unphased = true
+        } else if (char === '.') {
+          missing = true
+        } else {
+          called = true
         }
       }
-      accumulateSampleInfo(sampleInfo, key, ploidy, isPhased)
+      hasPhased ||= phased
+      // A no-call carries a `/` separator but isn't unphased data, so only a
+      // genotype with an actual called allele counts toward "Unphased".
+      hasUnphased ||= unphased && called
+      // Mirror where the renderer actually draws a no-call cell: a phased
+      // genotype draws one per missing haplotype allele; an unphased genotype
+      // only when it's entirely missing (a partial `0/.` stays black/unphased).
+      hasNoCall ||= phased ? missing : !called
+      accumulateSampleInfo(sampleInfo, key, ploidy, phased)
     }
 
     simplifiedFeatures[featureIdx] = {
@@ -212,6 +232,7 @@ function computeSampleInfo(
     hasPhased,
     hasSecondaryAlt,
     hasUnphased,
+    hasNoCall,
     hasConsequence,
     simplifiedFeatures,
   }
@@ -372,6 +393,7 @@ export async function executeVariantCellData({
     hasPhased,
     hasSecondaryAlt,
     hasUnphased,
+    hasNoCall,
     hasConsequence,
     simplifiedFeatures,
   } = await withProgress(
@@ -469,6 +491,7 @@ export async function executeVariantCellData({
         hasPhased,
         hasSecondaryAlt,
         hasUnphased,
+        hasNoCall,
         hasConsequence,
         simplifiedFeatures,
         genotypeDict,
@@ -520,6 +543,7 @@ export async function executeVariantCellData({
         hasPhased,
         hasSecondaryAlt,
         hasUnphased,
+        hasNoCall,
         hasConsequence,
         simplifiedFeatures,
         genotypeDict,

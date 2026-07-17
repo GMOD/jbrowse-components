@@ -51,6 +51,49 @@ describe('computeVariantCells phased genotypes', () => {
   })
 })
 
+describe('computeVariantCells phased no-call vs unphased', () => {
+  // Missing calls (`./.`, `.|.`) are no-calls, not unphased data — they must
+  // render as NO_CALL_COLOR, distinct from the black "Unphased" fill a genuine
+  // unphased call (`0/1`) gets.
+  const feature = makeFeature({
+    genotypes: { S1: './.', S2: '0/1', S3: '.|.', S4: '0|1' },
+    FORMAT: [],
+    ALT: ['A'],
+    REF: 'G',
+    name: 'v1',
+    description: '',
+    type: 'SNV',
+    start: 100,
+    end: 101,
+  })
+  const sources: ProcessedSource[] = ['S1', 'S2', 'S3', 'S4'].flatMap(s => [
+    { name: `${s} HP0`, sampleName: s, HP: 0 },
+    { name: `${s} HP1`, sampleName: s, HP: 1 },
+  ])
+
+  test('missing genotypes render no-call, real unphased renders black', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { BLACK_ABGR, NO_CALL_COLOR } = await import(
+      '../../shared/constants.ts'
+    )
+    const result = computeVariantCells({
+      mafs: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      referenceDrawingMode: 'skip',
+      genotypesCache: new Map(),
+    })
+    const colors = [...result.cellColors]
+    const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
+    expect(noCallAbgr).not.toBe(BLACK_ABGR)
+    // S1 (./.) and S3 (.|.) → 4 no-call cells; S2 (0/1) → 2 black cells; S4
+    // (0|1) → 1 alt cell (ref haplotype skipped since referenceDrawingMode).
+    expect(colors.filter(c => c === noCallAbgr)).toHaveLength(4)
+    expect(colors.filter(c => c === BLACK_ABGR)).toHaveLength(2)
+    expect(result.numCells).toBe(7)
+  })
+})
+
 describe('computeVariantCells insertion bounds', () => {
   const sources: ProcessedSource[] = [{ name: 'S1', sampleName: 'S1', HP: 0 }]
 

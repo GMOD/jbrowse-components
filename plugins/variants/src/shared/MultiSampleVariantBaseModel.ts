@@ -412,6 +412,14 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Whether any genotype is a no-call (drives the "No call" legend entry
+         * in phased mode; allele-count mode always shows it).
+         */
+        get hasNoCall() {
+          return self.cellData?.hasNoCall ?? false
+        },
+        /**
+         * #getter
          * Whether any visible variant carries a SnpEff/VEP annotation, gating
          * the "Color by...→Consequence impact" menu option.
          */
@@ -1094,6 +1102,7 @@ export default function MultiSampleVariantBaseModelF(
             renderingMode: self.renderingMode,
             hasSecondaryAlt: self.hasSecondaryAlt,
             hasUnphased: self.hasUnphased,
+            hasNoCall: self.hasNoCall,
             featureColor: self.featureColor,
             colorBy: self.colorBy,
             sources: self.sources,

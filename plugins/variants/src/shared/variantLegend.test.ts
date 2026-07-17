@@ -13,6 +13,7 @@ describe('getGenotypeLegendItems', () => {
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
+      hasNoCall: false,
     })
     expect(items.map(i => i.label)).toEqual([
       'Homozygous reference',
@@ -27,6 +28,7 @@ describe('getGenotypeLegendItems', () => {
       renderingMode: 'alleleCount',
       hasSecondaryAlt: true,
       hasUnphased: false,
+      hasNoCall: false,
     })
     expect(items.map(i => i.label)).toContain('Other alt allele')
   })
@@ -36,11 +38,26 @@ describe('getGenotypeLegendItems', () => {
       renderingMode: 'phased',
       hasSecondaryAlt: false,
       hasUnphased: true,
+      hasNoCall: false,
     })
     expect(items.map(i => i.label)).toEqual([
       'Reference',
       'Alt allele',
       'Unphased',
+    ])
+  })
+
+  it('phased mode: adds no-call when present, distinct from unphased', () => {
+    const items = getGenotypeLegendItems({
+      renderingMode: 'phased',
+      hasSecondaryAlt: false,
+      hasUnphased: false,
+      hasNoCall: true,
+    })
+    expect(items.map(i => i.label)).toEqual([
+      'Reference',
+      'Alt allele',
+      'No call',
     ])
   })
 })
@@ -100,6 +117,7 @@ describe('getVariantLegendSections', () => {
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
+      hasNoCall: false,
       featureColor: '',
       colorBy: '',
       sources,
@@ -112,6 +130,7 @@ describe('getVariantLegendSections', () => {
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
+      hasNoCall: false,
       featureColor: '',
       colorBy: 'population',
       sources,
@@ -126,6 +145,7 @@ describe('getVariantLegendSections', () => {
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
+      hasNoCall: false,
       featureColor: 'jexl:impactColor(feature)',
       colorBy: '',
       sources,
@@ -144,6 +164,7 @@ describe('getVariantLegendSections', () => {
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
+      hasNoCall: false,
       featureColor: 'jexl:get(feature,"foo")',
       colorBy: 'population',
       sources,

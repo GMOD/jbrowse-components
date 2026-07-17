@@ -1,3 +1,5 @@
+import { isNoCall } from './getPhasedColor.ts'
+
 /**
  * Decide whether a single variant's genotype map indicates phased data.
  *
@@ -16,7 +18,7 @@ export function phaseSignal(
     if (gt.includes('|')) {
       return 'phased'
     }
-    if (gt.includes('/') && gt !== './.' && gt !== '.') {
+    if (gt.includes('/') && !isNoCall(gt)) {
       return 'unphased'
     }
   }

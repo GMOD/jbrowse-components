@@ -1,7 +1,12 @@
-import { BLACK_ABGR, REFERENCE_COLOR } from '../../shared/constants.ts'
+import {
+  BLACK_ABGR,
+  NO_CALL_COLOR,
+  REFERENCE_COLOR,
+} from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
   getPhasedColor,
+  isNoCall,
   splitPhasedAlleles,
 } from '../../shared/getPhasedColor.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
@@ -58,6 +63,8 @@ export function computeVariantMatrixCells({
   report?: ProgressReporter
 }): MatrixCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
+  // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
+  const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
 
   const numFeatures = mafs.length
   const numSources = sources.length
@@ -145,10 +152,19 @@ export function computeVariantMatrixCells({
           )
           if (c) {
             const isRefCell = c === REFERENCE_COLOR
+            // Only alt-carrying cells take the per-variant override; ref and
+            // no-call keep their own color so a missing call is never painted
+            // as though it carried the variant.
             const cellColor =
-              overrideColor !== undefined && !isRefCell ? overrideColor : c
+              overrideColor !== undefined && !isRefCell && c !== NO_CALL_COLOR
+                ? overrideColor
+                : c
             addCell(idx, j, getCachedABGR(cellColor), isRefCell)
           }
+        } else if (isNoCall(genotype)) {
+          // A missing unphased call (`./.`, `.`) is a no-call, not unphased
+          // data — draw it as no-call rather than the black "Unphased" fill.
+          addCell(idx, j, noCallAbgr, false)
         } else {
           addCell(idx, j, BLACK_ABGR, false)
         }

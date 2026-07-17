@@ -1,10 +1,15 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
-import { BLACK_ABGR, REFERENCE_COLOR } from '../../shared/constants.ts'
+import {
+  BLACK_ABGR,
+  NO_CALL_COLOR,
+  REFERENCE_COLOR,
+} from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
   getPhasedColor,
+  isNoCall,
   splitPhasedAlleles,
 } from '../../shared/getPhasedColor.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
@@ -71,6 +76,8 @@ export function computeVariantCells({
 }): VariantCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
   const drawRef = referenceDrawingMode === 'draw'
+  // Packed once — every no-call cell reuses it instead of a per-cell cache hit.
+  const noCallAbgr = getCachedABGR(NO_CALL_COLOR)
 
   const numSources = sources.length
   const maxCells = mafs.length * numSources
@@ -177,8 +184,13 @@ export function computeVariantCells({
           )
           if (c) {
             const isRefCell = c === REFERENCE_COLOR
+            // Only alt-carrying cells take the per-variant override; ref and
+            // no-call keep their own color so a missing call is never painted
+            // as though it carried the variant.
             const cellColor =
-              overrideColor !== undefined && !isRefCell ? overrideColor : c
+              overrideColor !== undefined && !isRefCell && c !== NO_CALL_COLOR
+                ? overrideColor
+                : c
             addCell(
               start,
               end,
@@ -190,6 +202,11 @@ export function computeVariantCells({
             )
             renderedGenotypes[sampleName] = genotype
           }
+        } else if (isNoCall(genotype)) {
+          // A missing unphased call (`./.`, `.`) is a no-call, not unphased
+          // data — draw it as no-call rather than the black "Unphased" fill.
+          addCell(start, end, j, noCallAbgr, shape, false, featureIdx)
+          renderedGenotypes[sampleName] = genotype
         } else {
           addCell(start, end, j, BLACK_ABGR, shape, false, featureIdx)
           renderedGenotypes[sampleName] = genotype
