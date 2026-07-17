@@ -47,6 +47,8 @@ const BLOCK_WIDTH = 1000
 // 20 px/bp — a one-base error is 20px.
 const PX_PER_BP = BLOCK_WIDTH / BP_LENGTH
 
+const COV_H = 100
+
 // The seam fudge (+0.5) and the coverage bar fudge (+0.8) always overdraw to the
 // RIGHT in local space, so they don't mirror. That's intentional (they close
 // Canvas2D AA seams, they aren't feature geometry), and it bounds mirror error
@@ -203,9 +205,13 @@ function pileupData(): PileupDataResult {
     interbasePackedBuffer: new ArrayBuffer(0),
     interbaseMaxCount: 0,
     indicatorPackedBuffer: new ArrayBuffer(0),
-    coverageDepths: new Float32Array(),
-    coverageMaxDepth: 0,
-    coverageStartPos: START,
+    // Five covered bases, asymmetric depths so the band can't mirror by
+    // accident. The coverage layers had their own reversed bug (bars clamped to
+    // 1px slivers, anchored a bin off); an earlier version of this fixture left
+    // coverage off "to avoid fudge-factor noise" and sailed straight past it.
+    coverageDepths: new Float32Array([3, 9, 5, 8, 2]),
+    coverageMaxDepth: 9,
+    coverageStartPos: 1006,
     coverageBinSize: 1,
     coverageGpuBinCount: 0,
     coveragePackedBuffer: new ArrayBuffer(0),
@@ -227,26 +233,27 @@ const triple: [number, number, number] = [0.5, 0.5, 0.5]
 
 function state(overrides: Partial<RenderState> = {}): RenderState {
   const section = {
-    pileupTopOffset: 0,
+    pileupTopOffset: COV_H,
     coverageTopOffset: 0,
     covClipTop: 0,
-    covClipHeight: 0,
-    pileupClipTop: 0,
+    covClipHeight: COV_H,
+    pileupClipTop: COV_H,
     pileupClipHeight: 200,
   }
   return {
     canvasWidth: BLOCK_WIDTH,
-    canvasHeight: 200,
+    canvasHeight: 200 + COV_H,
     scrollTop: 0,
     colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 1,
-    // Coverage off: this is a pileup-geometry test, and the coverage band's
-    // own fudge factor would only add noise.
-    showCoverage: false,
-    coverageHeight: 0,
+    // Coverage ON. The band's 0.8px fudge is what FUDGE_TOLERANCE_PX absorbs;
+    // leaving the band out to dodge that noise is precisely what let its own
+    // reversed bug through.
+    showCoverage: true,
+    coverageHeight: COV_H,
     coverageYOffset: 0,
-    coverageMaxDepth: undefined,
+    coverageMaxDepth: 9,
     coverageIsLog: false,
     showMismatches: true,
     filterMismatchesByFrequency: false,
