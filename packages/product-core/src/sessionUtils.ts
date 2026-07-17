@@ -439,20 +439,8 @@ export function buildWebExportUrl(
   return url.href
 }
 
-// Walks a JSON config object and stamps a `baseUri` next to every object
-// containing a `uri` key, so relative URIs can later be resolved against the
-// config's own location.
-export function addRelativeUris(
-  config: Record<string, unknown> | null,
-  base: URL,
-) {
-  if (typeof config === 'object' && config !== null) {
-    for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object' && config[key] !== null) {
-        addRelativeUris(config[key] as Record<string, unknown>, base)
-      } else if (key === 'uri') {
-        config.baseUri = config.baseUri ?? base.href
-      }
-    }
-  }
-}
+// Stamps a `baseUri` next to every `uri` in a JSON config so relative URIs
+// resolve against the config's own location. Moved to core, which is what reads
+// `baseUri` back out (the assembly config schema); re-exported here to keep this
+// package's published API intact.
+export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'

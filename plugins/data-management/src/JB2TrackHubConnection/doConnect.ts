@@ -1,7 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
-import { addRelativeUris } from '@jbrowse/product-core'
+import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 
 import { resolve } from './util.ts'
 

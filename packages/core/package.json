@@ -109,12 +109,12 @@
     "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
     "./util/aborting": "./src/util/aborting.ts",
+    "./util/addRelativeUris": "./src/util/addRelativeUris.ts",
     "./util/analytics": "./src/util/analytics.ts",
     "./util/assemblyConfigUtils": "./src/util/assemblyConfigUtils.ts",
     "./util/blockTypes": "./src/util/blockTypes.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
-    "./util/fetchHub": "./src/util/fetchHub.ts",
     "./util/chooseGridPitch": "./src/util/chooseGridPitch.ts",
     "./util/color": "./src/util/color/index.ts",
     "./util/colorBits": "./src/util/colorBits.ts",
@@ -122,6 +122,7 @@
     "./util/convertCodingSequenceToPeptides": "./src/util/convertCodingSequenceToPeptides.ts",
     "./util/copyToClipboard": "./src/util/copyToClipboard.ts",
     "./util/diagonalizeRegions": "./src/util/diagonalizeRegions.ts",
+    "./util/fetchHub": "./src/util/fetchHub.ts",
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
@@ -566,6 +567,10 @@
         "types": "./esm/util/aborting.d.ts",
         "import": "./esm/util/aborting.js"
       },
+      "./util/addRelativeUris": {
+        "types": "./esm/util/addRelativeUris.d.ts",
+        "import": "./esm/util/addRelativeUris.js"
+      },
       "./util/analytics": {
         "types": "./esm/util/analytics.d.ts",
         "import": "./esm/util/analytics.js"
@@ -585,10 +590,6 @@
       "./util/calculateStaticBlocks": {
         "types": "./esm/util/calculateStaticBlocks.d.ts",
         "import": "./esm/util/calculateStaticBlocks.js"
-      },
-      "./util/fetchHub": {
-        "types": "./esm/util/fetchHub.d.ts",
-        "import": "./esm/util/fetchHub.js"
       },
       "./util/chooseGridPitch": {
         "types": "./esm/util/chooseGridPitch.d.ts",
@@ -617,6 +618,10 @@
       "./util/diagonalizeRegions": {
         "types": "./esm/util/diagonalizeRegions.d.ts",
         "import": "./esm/util/diagonalizeRegions.js"
+      },
+      "./util/fetchHub": {
+        "types": "./esm/util/fetchHub.d.ts",
+        "import": "./esm/util/fetchHub.js"
       },
       "./util/fileHandleStore": {
         "types": "./esm/util/fileHandleStore.d.ts",
@@ -1036,6 +1041,9 @@
         "util/aborting": [
           "esm/util/aborting.d.ts"
         ],
+        "util/addRelativeUris": [
+          "esm/util/addRelativeUris.d.ts"
+        ],
         "util/analytics": [
           "esm/util/analytics.d.ts"
         ],
@@ -1071,6 +1079,9 @@
         ],
         "util/diagonalizeRegions": [
           "esm/util/diagonalizeRegions.d.ts"
+        ],
+        "util/fetchHub": [
+          "esm/util/fetchHub.d.ts"
         ],
         "util/fileHandleStore": [
           "esm/util/fileHandleStore.d.ts"
@@ -1113,6 +1124,9 @@
         ],
         "util/librpc": [
           "esm/util/librpc.d.ts"
+        ],
+        "util/makeAssembly": [
+          "esm/util/makeAssembly.d.ts"
         ],
         "util/nanoid": [
           "esm/util/nanoid.d.ts"

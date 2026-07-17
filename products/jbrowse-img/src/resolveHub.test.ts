@@ -1,12 +1,8 @@
 import { hubUrl } from '@jbrowse/core/util/fetchHub'
 
 test('UCSC db name maps to the /ucsc config', () => {
-  expect(hubUrl('hg19')).toBe(
-    'https://jbrowse.org/ucsc/hg19/config.json',
-  )
-  expect(hubUrl('mm10')).toBe(
-    'https://jbrowse.org/ucsc/mm10/config.json',
-  )
+  expect(hubUrl('hg19')).toBe('https://jbrowse.org/ucsc/hg19/config.json')
+  expect(hubUrl('mm10')).toBe('https://jbrowse.org/ucsc/mm10/config.json')
 })
 
 test('GenArk accession splits into triplets under /hubs/genark', () => {

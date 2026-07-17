@@ -1,3 +1,5 @@
+import { addRelativeUris } from './addRelativeUris.ts'
+
 const HUB_HOST = 'https://jbrowse.org'
 
 export interface HubConfig {
@@ -16,28 +18,6 @@ export function hubUrl(hub: string) {
     : `${HUB_HOST}/ucsc/${hub}/config.json`
 }
 
-// Hosted configs reference their data with URIs relative to the config's own
-// location; stamp each data node with baseUri so they resolve — the same pass
-// jbrowse-web runs when it loads a config from a URL.
-function stampBaseUri(node: unknown, base: string) {
-  if (Array.isArray(node)) {
-    for (const value of node) {
-      stampBaseUri(value, base)
-    }
-  } else if (node !== null && typeof node === 'object') {
-    const record = node as Record<string, unknown>
-    // fill baseUri when absent — mirror jbrowse-web's `baseUri ?? base` so a node
-    // carrying an explicit null/undefined baseUri still resolves (an `in` check
-    // would wrongly treat that as already-stamped)
-    if ('uri' in record && record.baseUri == null) {
-      record.baseUri = base
-    }
-    for (const value of Object.values(record)) {
-      stampBaseUri(value, base)
-    }
-  }
-}
-
 /**
  * Fetch a hosted assembly config from jbrowse.org by UCSC database name (`hg38`,
  * `mm10`, ...) or GenArk accession (`GCA_...`/`GCF_...`). Returns the full config
@@ -50,7 +30,8 @@ export async function fetchHub(hub: string): Promise<HubConfig> {
   const response = await fetch(url)
   if (response.ok) {
     const config = (await response.json()) as HubConfig
-    stampBaseUri(config, url)
+    // hosted configs reference their data relative to the config's own location
+    addRelativeUris(config, new URL(url))
     return config
   } else {
     throw new Error(

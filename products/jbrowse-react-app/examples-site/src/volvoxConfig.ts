@@ -1,22 +1,12 @@
-import volvoxConfigJson from './volvox-config.json' with { type: 'json' }
+import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 
-// The volvox test config uses relative URIs (e.g. `volvox.2bit`). Tag every
-// object that has a `uri` with a `baseUri` so JBrowse resolves them against the
-// jbrowse.org test_data directory the config was downloaded from.
-export function addRelativeUris(config: unknown, baseUri: string) {
-  if (config !== null && typeof config === 'object') {
-    const obj = config as Record<string, unknown>
-    if (typeof obj.uri === 'string' && obj.baseUri === undefined) {
-      obj.baseUri = baseUri
-    }
-    for (const value of Object.values(obj)) {
-      addRelativeUris(value, baseUri)
-    }
-  }
-}
+import volvoxConfigJson from './volvox-config.json' with { type: 'json' }
 
 const VOLVOX_CONFIG_URL =
   'https://jbrowse.org/code/jb2/main/test_data/volvox/config.json'
 
+// The volvox test config uses relative URIs (e.g. `volvox.2bit`). addRelativeUris
+// tags every object that has a `uri` with a `baseUri` so JBrowse resolves them
+// against the jbrowse.org test_data directory the config was downloaded from.
 export const volvoxConfig = structuredClone(volvoxConfigJson)
-addRelativeUris(volvoxConfig, VOLVOX_CONFIG_URL)
+addRelativeUris(volvoxConfig, new URL(VOLVOX_CONFIG_URL))

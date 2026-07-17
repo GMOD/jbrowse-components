@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
-
-import { addRelativeUris } from '../volvoxConfig.ts'
 
 type ViewState = ReturnType<typeof createViewState>
 
@@ -21,7 +20,7 @@ export default function WithFetchConfigJson() {
         throw new Error(`HTTP ${response.status} fetching config ${configUrl}`)
       }
       const config = await response.json()
-      addRelativeUris(config, configUrl)
+      addRelativeUris(config, new URL(configUrl))
       setState(createViewState({ config }))
     })()
   }, [])
