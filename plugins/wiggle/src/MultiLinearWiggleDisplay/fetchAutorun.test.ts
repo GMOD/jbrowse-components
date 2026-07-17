@@ -180,7 +180,7 @@ function createTestEnvironment() {
     ])
 
     const track = view.tracks[0]!
-    const display = track.displays[0]! as MultiLinearWiggleDisplayModel
+    const display: MultiLinearWiggleDisplayModel = track.displays[0]
     return { session, view, track, display, mockRpcCall }
   }
 
