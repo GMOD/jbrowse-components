@@ -1,3 +1,5 @@
+import { mirrorUInRegion } from '../regionOffsets.ts'
+
 import type {
   HicContactItem,
   HicDataResult,
@@ -73,19 +75,44 @@ export function findContactAt(
   ux: number,
   uy: number,
 ): HicContactItem | undefined {
-  const { binWidth, regionDataXStarts, regionCombinedOffsets, counts } = data
-  const r1 = findRegion(regionDataXStarts, ux)
-  const r2 = findRegion(regionDataXStarts, uy)
-  const bin1 = Math.floor(ux / binWidth - regionCombinedOffsets[r1]!)
-  const bin2 = Math.floor(uy / binWidth - regionCombinedOffsets[r2]!)
-  const idx = getContactLookup(data).get(contactLookupKey(r1, r2, bin1, bin2))
+  const {
+    binWidth,
+    regionDataXStarts,
+    regionCombinedOffsets,
+    regionReversed,
+    counts,
+  } = data
+  // Bucketing needs no un-mirroring first: a reversed region reflects onto its
+  // own span, so the cursor already sits in the right region either way.
+  const regionX = findRegion(regionDataXStarts, ux)
+  const regionY = findRegion(regionDataXStarts, uy)
+  // Undo the reflection the worker baked into positions[] (it is its own
+  // inverse) to land back in the forward space the bin math assumes.
+  const fx = regionReversed[regionX]
+    ? mirrorUInRegion(regionDataXStarts, regionX, ux)
+    : ux
+  const fy = regionReversed[regionY]
+    ? mirrorUInRegion(regionDataXStarts, regionY, uy)
+    : uy
+  const binX = Math.floor(fx / binWidth - regionCombinedOffsets[regionX]!)
+  const binY = Math.floor(fy / binWidth - regionCombinedOffsets[regionY]!)
+  // The index stores contacts as the adapter emitted them (region1Idx ≤
+  // region2Idx, and bin1 ≤ bin2 within a region), but reflecting a region
+  // reverses which endpoint the worker put on the x axis. Restore that order
+  // before keying. Regions can't invert (each endpoint stays in its own, and
+  // ux ≤ uy below the apex), so only a same-region pair can need the swap.
+  const swap = regionX === regionY && binX > binY
+  const [bin1, bin2] = swap ? [binY, binX] : [binX, binY]
+  const idx = getContactLookup(data).get(
+    contactLookupKey(regionX, regionY, bin1, bin2),
+  )
   return idx === undefined
     ? undefined
     : {
         bin1,
         bin2,
-        region1Idx: r1,
-        region2Idx: r2,
+        region1Idx: regionX,
+        region2Idx: regionY,
         counts: counts[idx]!,
       }
 }

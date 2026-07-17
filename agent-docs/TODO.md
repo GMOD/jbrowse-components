@@ -35,29 +35,23 @@ look at wakhan, pycnv
 
 
 
-## Hi-C / LD reversed regions
+## LD reversed regions
 
-Both the Hi-C and LD triangle displays render **unflipped** on a reversed
-displayed region — the matrix lays out by forward genomic position while the
-ruler runs right-to-left, so it's mirrored relative to the axis. Not the
-1bp-cell pixel class: it's architectural. Both share `computeRenderTransform`
-(`BaseLinearDisplay/models/renderTransform.ts`), a single positive-scale affine
-over the whole view that never consults `reversed` (a `FORWARD-ONLY` note is on
-the helper). One linear map can't express a reversed — let alone
-mixed-orientation — axis. A fix needs a per-region flip in both the transform
-and the worker position computation (`hic/regionOffsets.ts` +
-`executeRenderHicData.ts`, and the LD equivalent), and the hit-test must invert
-whatever the render does. Niche (needs a flipped region over one of these
-tracks); hover stays correct because it inverts the same forward transform.
+The LD triangle renders **unflipped** on a reversed displayed region — it lays
+out by forward genomic position while the ruler runs right-to-left. Architectural,
+not the 1bp-cell class. Purely visual (hover inverts the same forward transform)
+and niche: needs a flipped region over an LD track.
 
-Diagnosis confirmed against the source, and the rotation geometry worked out, in
-`guides/HIC_LD_REVERSED_HANDOFF.md` — read it first. Two corrections it makes to
-the framing above: SVG export comes free (it reuses `drawHicBlocks` +
-`renderState`), and the per-region flip is only the *general* fix. For a single
-visible reversed block — the realistic case — the mirror reduces to negating the
-post-rotation `rx`, which is one shader line. What actually blocks the general
-case isn't the affine so much as the `bin1 ≤ bin2` invariant the triangle
-depends on, which per-block mirroring inverts.
+Copy hic: it mirrors each contact within its own region's span when the worker
+builds `positions[]` (`hic/regionOffsets.ts` `mirrorUInRegion`), so every
+renderer stays orientation-agnostic and `computeRenderTransform` stays
+forward-only. Don't mirror via a negative ctx scale — `SvgCanvas` gets that wrong
+under rotation, and the SVG export shares the draw.
+
+LD differs in blast radius (call sites enumerated at
+`LDDisplay/components/LinesConnectingMatrixToGenomicPosition.tsx:20`): it's
+all-or-nothing, and its index positioning mode mirrors over indices rather than
+genomic px.
 
 ## Canvas2D vs GPU `canvasDrawn` contract drift
 

@@ -45,3 +45,31 @@ export function calcRegionDataXStarts(regions: Region[], bpPerPx: number) {
   }
   return out
 }
+
+/**
+ * Reflect a pre-rotation u coordinate within region `r`'s own span, which is
+ * how a reversed displayed region is drawn: bp runs leftward inside that
+ * region, but the region keeps its place on the axis.
+ *
+ * The reflection maps `[starts[r], starts[r+1]]` **onto itself**, and that
+ * single property is what makes mixed orientations work:
+ *
+ * - Block layout is untouched. `horizontallyFlip()` already reverses the
+ *   `displayedRegions` array, and the worker lays regions out at cumulative
+ *   offsets in that screen order. A whole-view mirror would re-reverse them;
+ *   this never moves a region.
+ * - Cross-region contacts keep `u1 ≤ u2` for free. Endpoints stay inside
+ *   their own regions, so with `region1Idx ≤ region2Idx` the order can't
+ *   invert — only a contact whose endpoints share one reversed region needs
+ *   the pair swapped (see `executeRenderHicData`).
+ *
+ * It is its own inverse, so hover un-mirrors with the same call
+ * (`contactLookup.ts`).
+ */
+export function mirrorUInRegion(
+  regionDataXStarts: number[],
+  r: number,
+  u: number,
+) {
+  return regionDataXStarts[r]! + regionDataXStarts[r + 1]! - u
+}

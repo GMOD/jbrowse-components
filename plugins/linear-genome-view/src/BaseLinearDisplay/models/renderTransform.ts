@@ -16,14 +16,17 @@
  *
  * `undefined` inputs are treated as fresh (no stale info yet).
  *
- * FORWARD-ONLY. Inputs are `offsetPx`/`bpPerPx` (orientation-agnostic pan/zoom
- * scalars) and `scale` is always positive, so this maps forward genomic order
- * to increasing screen-x. It does NOT consult displayed-region `reversed` — a
- * flipped region renders the matrix mirrored relative to the ruler (hover still
- * matches the drawn pixels, since hit-test inverts the same transform). A single
- * linear map can't express a reversed or mixed-orientation axis; handling it
- * needs a per-region flip in both this transform and the worker's position
- * computation. Affects hic + LD (both consumers).
+ * FORWARD-ONLY, and deliberately stays that way. Inputs are `offsetPx`/`bpPerPx`
+ * (orientation-agnostic pan/zoom scalars) and `scale` is always positive, so this
+ * maps forward genomic order to increasing screen-x. It does NOT consult
+ * displayed-region `reversed`: one linear map can't express a reversed — let
+ * alone mixed-orientation — axis, so orientation belongs upstream, mirrored into
+ * the data before it ever reaches here (hic does this per region in its worker,
+ * see `hic/regionOffsets.ts` `mirrorUInRegion`).
+ *
+ * LD, the other consumer, hasn't done that yet, so it still draws its matrix
+ * mirrored relative to the ruler on a flipped region — hover stays right, since
+ * hit-test inverts this same transform.
  */
 export interface RenderTransformInputs {
   lastDrawnOffsetPx: number | undefined

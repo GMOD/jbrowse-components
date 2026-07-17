@@ -94,6 +94,14 @@ export class SvgCanvas {
   // negative. A no-op for positive scales (every caller today), which is why
   // this was never noticed.
   //
+  // Only correct while `rotation === 0`. A negative scale also negates the
+  // rotation angle, and `fillRect` still emits `rotate(+this.rotation)`, so a
+  // mirrored *and* rotated rect lands somewhere else entirely (measured: a 10px
+  // square under `translate(200,0); scale(-1,1); rotate(-45°)` emits at
+  // (200, 28.3) where it belongs at x≈165..179). No caller combines the two
+  // today. Fix this before adding one — mirroring the data instead, and keeping
+  // the scale positive, avoids the question (see hic's reversed regions).
+  //
   // A negative *size* argument (`fillRect(x, y, -w, h)`, which a real canvas
   // treats as the same rect anchored at `x-w`) is NOT normalized here — SVG
   // would emit `width="-w"` and silently not render. Callers must pass a

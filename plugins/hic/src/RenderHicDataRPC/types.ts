@@ -61,4 +61,16 @@ export interface HicDataResult {
    * Hover subtracts this back out to recover bin1/bin2 from a mouse coord.
    */
   regionCombinedOffsets: number[]
+  /**
+   * `reversed` per region index, parallel to `regionRefNames`. The mirror it
+   * describes is already baked into `positions[]` (see `executeRenderHicData`),
+   * so renderers draw the array as-is and stay orientation-agnostic; hover
+   * needs it to un-mirror a cursor back to a bin (`contactLookup.ts`).
+   *
+   * Baking it at fetch time — rather than mirroring live off the view — is
+   * deliberate: `renderTransform` rescales *stale* pixels mid-fetch, and a live
+   * read would mirror against a viewport the positions weren't built for.
+   * Mixed orientations are fine; each region mirrors only within its own span.
+   */
+  regionReversed: boolean[]
 }

@@ -5,6 +5,7 @@ import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import {
   calcRegionCombinedOffsets,
   calcRegionDataXStarts,
+  mirrorUInRegion,
 } from '../regionOffsets.ts'
 
 import type { HicDataResult, RenderHicDataArgs } from './types.ts'
@@ -52,6 +53,7 @@ export async function executeRenderHicData({
   const regionCombinedOffsets = calcRegionCombinedOffsets(regions, bpPerPx, res)
   const regionDataXStarts = calcRegionDataXStarts(regions, bpPerPx)
   const numContacts = features.length
+  const regionReversed = regions.map(r => !!r.reversed)
 
   const positions = new Float32Array(numContacts * 2)
   const counts = new Float32Array(numContacts)
@@ -62,8 +64,24 @@ export async function executeRenderHicData({
 
   for (let i = 0; i < numContacts; i++) {
     const { bin1, bin2, counts: c, region1Idx, region2Idx } = features[i]!
-    positions[i * 2] = (bin1 + regionCombinedOffsets[region1Idx]!) * w
-    positions[i * 2 + 1] = (bin2 + regionCombinedOffsets[region2Idx]!) * w
+    const u1 = (bin1 + regionCombinedOffsets[region1Idx]!) * w
+    const u2 = (bin2 + regionCombinedOffsets[region2Idx]!) * w
+    // Reflect each endpoint inside its own reversed region. A cell spans
+    // `[u, u+w]`, so its reflected *min* corner is `mirror(u) - w`.
+    const m1 = regionReversed[region1Idx]
+      ? mirrorUInRegion(regionDataXStarts, region1Idx, u1) - w
+      : u1
+    const m2 = regionReversed[region2Idx]
+      ? mirrorUInRegion(regionDataXStarts, region2Idx, u2) - w
+      : u2
+    // Renderers draw the triangle above the axis only for `u1 ≤ u2` (a lower
+    // pair rotates to a negative y). Reflecting a region flips the order of
+    // contacts *within* it, so re-canonicalize — legal because the matrix is
+    // symmetric, `contact(a,b) === contact(b,a)`. Cross-region pairs can't
+    // invert (each stays in its own region), so this only fires when both
+    // endpoints share one reversed region.
+    positions[i * 2] = Math.min(m1, m2)
+    positions[i * 2 + 1] = Math.max(m1, m2)
     counts[i] = c
     contactBin1[i] = bin1
     contactBin2[i] = bin2
@@ -98,6 +116,7 @@ export async function executeRenderHicData({
     contactRegion2,
     regionDataXStarts,
     regionCombinedOffsets,
+    regionReversed,
   }
   // Move the per-contact buffers zero-copy instead of structured-cloning them.
   return rpcResult(result, [
