@@ -1,3 +1,4 @@
+import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
 import { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { destroy, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
@@ -473,9 +474,8 @@ const SessionLoader = types
      * #action
      */
     async fetchSharedSession() {
-      const defaultURL = 'https://share.jbrowse.org/api/v1/'
       const decrypted = await readSessionFromDynamo(
-        `${readConf(self.configSnapshot, 'shareURL', defaultURL)}load`,
+        `${readConf(self.configSnapshot, 'shareURL', DEFAULT_SHARE_URL)}load`,
         self.sessionQuery ?? '',
         self.password ?? '',
       )

@@ -10,6 +10,12 @@ import {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 
+// The JBrowse-hosted session-sharing backend. Single source of truth for both
+// the write path (this slot's default, read via getConf) and the SessionLoader
+// read path (which reads the raw config snapshot before config is initialized),
+// so the two can't drift onto different endpoints.
+export const DEFAULT_SHARE_URL = 'https://share.jbrowse.org/api/v1/'
+
 /**
  * #config JBrowseConfiguration
  * #category root
@@ -62,7 +68,7 @@ export default function RootConfiguration({
      */
     shareURL: {
       type: 'string',
-      defaultValue: 'https://share.jbrowse.org/api/v1/',
+      defaultValue: DEFAULT_SHARE_URL,
       advanced: true,
     },
     /**

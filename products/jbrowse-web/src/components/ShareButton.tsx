@@ -5,7 +5,7 @@ import ShareIcon from '@mui/icons-material/Share'
 import { Button, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { SessionWithShareURL } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   shareDiv: {
@@ -28,7 +28,7 @@ const useStyles = makeStyles()(theme => ({
 const ShareDialog = lazy(() => import('./ShareDialog.tsx'))
 
 const ShareButton = observer(function ShareButton(props: {
-  session: AbstractSessionModel & { shareURL: string }
+  session: SessionWithShareURL
 }) {
   const [open, setOpen] = useState(false)
   const { session } = props

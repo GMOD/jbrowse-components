@@ -4,7 +4,8 @@ import { readAllQueryParams } from '../useQueryParam.ts'
 
 import type { SessionShareMode } from '@jbrowse/core/util'
 
-export const SHARE_URL_LOCALSTORAGE_KEY = 'jbrowse-shareURL'
+// remembers the user's chosen share *mode* (short/long/json), not a URL
+export const SHARE_MODE_LOCALSTORAGE_KEY = 'jbrowse-shareMode'
 
 export interface ShareUrlResult {
   url: string

@@ -20,7 +20,7 @@ function getErrorMsg(err: string) {
   try {
     const obj = JSON.parse(err)
     return obj.message ?? err
-  } catch (e) {
+  } catch {
     return err
   }
 }

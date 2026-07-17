@@ -4,8 +4,8 @@ import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import {
-  type AbstractSessionModel,
   type SessionShareMode,
+  type SessionWithShareURL,
   localStorageGetItem,
   useFetch,
 } from '@jbrowse/core/util'
@@ -28,7 +28,7 @@ import {
 import { observer } from 'mobx-react'
 
 import ShareInfoDialog from './ShareInfoDialog.tsx'
-import { SHARE_URL_LOCALSTORAGE_KEY, buildShareUrl } from './buildShareUrl.ts'
+import { SHARE_MODE_LOCALSTORAGE_KEY, buildShareUrl } from './buildShareUrl.ts'
 
 const SHARE_MODES = [
   { value: 'short', label: 'Short URL' },
@@ -41,7 +41,7 @@ const ShareDialog = observer(function ShareDialog({
   session,
 }: {
   handleClose: () => void
-  session: AbstractSessionModel & { shareURL: string }
+  session: SessionWithShareURL
 }) {
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
   const [showReadableJson, setShowReadableJson] = useState(false)
@@ -49,7 +49,7 @@ const ShareDialog = observer(function ShareDialog({
   const shareURL = session.shareURL
   const [currentSetting, setCurrentSetting] = useState<SessionShareMode>(
     () =>
-      (localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) ??
+      (localStorageGetItem(SHARE_MODE_LOCALSTORAGE_KEY) ??
         'short') as SessionShareMode,
   )
   // Capture snapshot once when dialog opens — we don't want to re-upload every
@@ -91,7 +91,7 @@ const ShareDialog = observer(function ShareDialog({
                   type: 'radio' as const,
                   checked: currentSetting === value,
                   onClick: () => {
-                    localStorage.setItem(SHARE_URL_LOCALSTORAGE_KEY, value)
+                    localStorage.setItem(SHARE_MODE_LOCALSTORAGE_KEY, value)
                     setCurrentSetting(value)
                   },
                 })),
