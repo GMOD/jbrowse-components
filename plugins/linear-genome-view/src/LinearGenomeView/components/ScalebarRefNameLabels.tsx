@@ -182,13 +182,6 @@ const RefNameMenu = observer(function RefNameMenu({
               },
             },
             {
-              show: true,
-              label: 'Horizontally flip view',
-              onClick: () => {
-                model.horizontallyFlip()
-              },
-            },
-            {
               show: canMoveLeft,
               label: 'Move left',
               onClick: () => {
