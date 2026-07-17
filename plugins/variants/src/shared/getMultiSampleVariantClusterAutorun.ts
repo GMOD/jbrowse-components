@@ -14,6 +14,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 export function getMultiSampleVariantClusterAutorun(
   self: IAnyStateTreeNode &
     ReducedModel & {
+      clusteringReady: boolean
       runClustering?: boolean
       setRunClustering: (arg?: boolean) => void
       setStatusMessage: (status?: RpcStatus) => void
@@ -21,7 +22,7 @@ export function getMultiSampleVariantClusterAutorun(
 ) {
   setupRunClusteringAutorun(self, {
     name: 'AutoRunMultiSampleVariantClustering',
-    ready: () => !!self.sourcesVolatile,
+    ready: () => self.clusteringReady,
     run: (view, stopToken) =>
       runGenotypeClustering({
         model: self,

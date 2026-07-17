@@ -97,7 +97,9 @@ const QuickStartPanel = observer(function QuickStartPanel({
         style={{ marginTop: 10 }}
         disabled={submitting}
         startIcon={
-          submitting ? <CircularProgress size={16} color="inherit" /> : undefined
+          submitting ? (
+            <CircularProgress size={16} color="inherit" />
+          ) : undefined
         }
         onClick={() => {
           onLaunch()

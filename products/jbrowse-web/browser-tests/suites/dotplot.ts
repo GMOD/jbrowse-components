@@ -28,7 +28,9 @@ const suite: TestSuite = {
         await swap!.click()
         const after = await page.waitForFunction(
           (prev: string) => {
-            const el = document.querySelector('[data-testid="quick-start-axes"]')
+            const el = document.querySelector(
+              '[data-testid="quick-start-axes"]',
+            )
             const text = el?.textContent
             return text && text !== prev ? text : undefined
           },

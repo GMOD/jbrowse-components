@@ -246,7 +246,12 @@ test('clusterLayout falls back to cladogram when no merge heights exist', () => 
     100,
     true,
   )
-  const clado = clusterLayout(hierarchy(cladogram(), childrenOf), 30, 100, false)
+  const clado = clusterLayout(
+    hierarchy(cladogram(), childrenOf),
+    30,
+    100,
+    false,
+  )
   expect(descendants(withLen).map(n => n.y)).toEqual(
     descendants(clado).map(n => n.y),
   )

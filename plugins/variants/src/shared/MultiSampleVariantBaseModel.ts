@@ -855,6 +855,22 @@ export default function MultiSampleVariantBaseModelF(
             sampleInfo: self.sampleInfo,
           })
         },
+        /**
+         * #getter
+         * Whether the fetched inputs clustering needs are present yet. Phased
+         * clustering clusters haplotypes, which needs per-sample ploidy from
+         * `sampleInfo`; that arrives with `cellData`, later than the header-only
+         * `sourcesVolatile`. Gating the auto-cluster run on this (not just
+         * `sourcesVolatile`) stops it racing ahead and building a sample-level
+         * tree whose leaves ("HG001") never match the expanded haplotype rows
+         * ("HG001 HP0").
+         */
+        get clusteringReady() {
+          return (
+            !!self.sourcesVolatile &&
+            (self.renderingMode !== 'phased' || !!self.sampleInfo)
+          )
+        },
       }))
       .views(self => ({
         // Payload for MultiSampleVariantGetCellData. SettingsInvalidate watches

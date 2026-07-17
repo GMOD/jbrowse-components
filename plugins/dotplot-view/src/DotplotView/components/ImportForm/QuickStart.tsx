@@ -47,8 +47,8 @@ const QuickStart = observer(function QuickStart({
         {rows.length > 2 ? (
           <Typography variant="body2" color="text.secondary">
             This track spans {rows.length} assemblies; a dotplot shows one pair,
-            so the other {rows.length - 2} are not used. Switch to Manual to plot
-            a different pair.
+            so the other {rows.length - 2} are not used. Switch to Manual to
+            plot a different pair.
           </Typography>
         ) : null}
       </div>

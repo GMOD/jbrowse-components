@@ -99,7 +99,10 @@ const LinearSyntenyViewImportForm = observer(
     }
 
     return (
-      <Container className={classes.importFormContainer} data-testid="import-form">
+      <Container
+        className={classes.importFormContainer}
+        data-testid="import-form"
+      >
         {error ? <ErrorBanner error={error} /> : null}
         <div className={classes.toggle}>
           <ImportFormModeToggle

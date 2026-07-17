@@ -43,7 +43,9 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const [mode, setMode] = useState<ImportFormMode>(
     quickTracks.length ? 'quick' : 'manual',
   )
-  const [quickTrackId, setQuickTrackId] = useState(quickTracks[0]?.trackId ?? '')
+  const [quickTrackId, setQuickTrackId] = useState(
+    quickTracks[0]?.trackId ?? '',
+  )
   // a synteny track answers in either direction, so the axes it implies are a
   // starting point the user can flip, not a property of the track
   const [quickSwapped, setQuickSwapped] = useState(false)
@@ -77,7 +79,10 @@ const DotplotImportForm = observer(function DotplotImportForm({
   }
 
   return (
-    <Container className={classes.importFormContainer} data-testid="import-form">
+    <Container
+      className={classes.importFormContainer}
+      data-testid="import-form"
+    >
       {displayError ? <ErrorBanner error={displayError} /> : null}
 
       <Paper style={{ padding: 12 }}>
