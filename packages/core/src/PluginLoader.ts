@@ -37,9 +37,11 @@ export interface ESMLocPluginDefinition {
     uri: string
     baseUri?: string
   }
+  name?: string
 }
 export interface ESMUrlPluginDefinition {
   esmUrl: string
+  name?: string
 }
 
 export type ESMPluginDefinition =
@@ -53,6 +55,7 @@ export function isESMPluginDefinition(
 
 export interface CJSPluginDefinition {
   cjsUrl: string
+  name?: string
 }
 
 function promisifiedLoadScript(src: string, integrity?: string) {

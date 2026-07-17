@@ -3,7 +3,6 @@ import {
   AssembliesMixin,
   DockviewLayoutMixin,
 } from '@jbrowse/app-core'
-import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { getConf } from '@jbrowse/core/configuration'
 import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import {
@@ -177,9 +176,12 @@ export function BaseWebSessionModel({
        * #action
        */
       removeSessionPlugin(pluginDefinition: PluginDefinition) {
-        const targetUrl = pluginUrl(pluginDefinition)
+        // session plugins are unique by name (enforced in addSessionPlugin), so
+        // identity is the name — not the resolved url, whose field priority
+        // (cjs > esm > umd) makes a full stored def and a url-only removal
+        // descriptor for the same plugin resolve to different urls
         self.sessionPlugins = cast(
-          self.sessionPlugins.filter(p => pluginUrl(p) !== targetUrl),
+          self.sessionPlugins.filter(p => p.name !== pluginDefinition.name),
         )
         self.root.setPluginsUpdated()
       },
