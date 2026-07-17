@@ -1069,6 +1069,45 @@ describe('computeArcsFromPileupData', () => {
     expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([1200, 5000])
   })
 
+  test('mate-unmapped paired split read still draws its split junction', () => {
+    // read1 is paired but its mate is unmapped (so absent from the fetch), and it
+    // is itself SA-split into a primary + supplementary — both flagged
+    // mate-unmapped. Both segments are on screen, so the fwd→rev inversion
+    // junction must draw even with drawLongRange off, and no mate link is emitted
+    // (no second mate present). Regression guard: partitionReadGroup used to drop
+    // mate-unmapped reads, deleting this junction while the read fill still
+    // colored it a split.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1200, 3000, 3200]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_MATE_UNMAPPED,
+        SAM_FLAG_PAIRED |
+          SAM_FLAG_FIRST_IN_PAIR |
+          SAM_FLAG_SUPPLEMENTARY |
+          SAM_FLAG_MATE_UNMAPPED,
+      ]),
+      readStrands: new Int8Array([1, -1]),
+      readInsertSizes: new Float32Array([0, 0]),
+      readPairOrientations: new Uint8Array([0, 0]),
+      readNames: ['readA', 'readA'],
+      readClipAtStart: new Uint32Array([0, 100]),
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 6000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: false,
+    })
+    // Just the fwd→rev split-inversion junction (a.end 1200 → b.end 3200,
+    // slot 7), no mate link.
+    expect(arcs).toHaveLength(1)
+    expect([arcs[0]!.p1.bp, arcs[0]!.p2.bp]).toEqual([1200, 3200])
+    expect(arcs[0]!.colorType).toBe(7)
+  })
+
   test('paired multi-segment read steps through an off-screen 3rd split segment', () => {
     // First-in-pair read has two on-screen segments A (clip 0, chr1:1000) and C
     // (clip 200, chr1:5000) plus a middle segment B (clip 100) mapped off-screen
