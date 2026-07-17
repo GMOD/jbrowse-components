@@ -107,9 +107,12 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
 
       /**
        * #getter
+       * read via readConfObject, matching how the afterAttach autorun names the
+       * assemblies it creates: get() treats a name found here as "a config
+       * exists, its model is just not built yet", so the two must agree
        */
-      get assemblyNamesList() {
-        return this.assemblyList.map(asm => asm.name)
+      get assemblyNamesList(): string[] {
+        return this.assemblyList.map(asm => readConfObject(asm, 'name'))
       },
 
       /**

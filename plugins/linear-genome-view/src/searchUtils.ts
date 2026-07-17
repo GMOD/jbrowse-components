@@ -121,7 +121,14 @@ export async function handleSelectedRegion({
 }) {
   const { assemblyManager, textSearchManager } = getSession(model)
   const assembly = assemblyManager.get(assemblyName)
-  const allRefs = assembly?.allRefNamesWithLowerCase
+  // aliases must be loaded before isValidRefName can resolve them (it throws
+  // otherwise); load() is idempotent and resolves once refNameAliases is set
+  // (or setError ran), leaving initialized false on failure
+  await assembly?.load()
+  // the same predicate navToLocstrings hands parseLocStrings, so a locstring
+  // that passes here is one the parse below will accept
+  const isRef = (ref: string) =>
+    !!assembly?.initialized && assemblyManager.isValidRefName(ref, assemblyName)
 
   // navigate treating input as one or more whitespace-separated locstrings
   const navToLocstrings = () =>
@@ -133,7 +140,7 @@ export async function handleSelectedRegion({
       grow,
     )
 
-  if (allRefs && input.split(' ').every(entry => checkRef(entry, allRefs))) {
+  if (input.split(' ').every(entry => checkRef(entry, isRef))) {
     await navToLocstrings()
   } else {
     const searchScope = model.searchScope(assemblyName)
@@ -179,9 +186,9 @@ export async function handleSelectedRegion({
   }
 }
 
-export function checkRef(str: string, allRefs: Set<string>) {
+export function checkRef(str: string, isRef: (name: string) => boolean) {
   const [ref, rest] = splitLast(str, ':')
-  return allRefs.has(str) || (allRefs.has(ref) && /^\d/.test(rest))
+  return isRef(str) || (isRef(ref) && /^\d/.test(rest))
 }
 
 export async function fetchResults({

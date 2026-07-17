@@ -3,7 +3,10 @@ import { checkRef, fetchResults, splitLast } from './searchUtils.ts'
 import type { SearchScope } from '@jbrowse/core/TextSearch/TextSearchManager'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 
-const volvoxRefs = new Set(['ctgA', 'ctgB', 'ctga', 'ctgb'])
+// mirrors Assembly.getCanonicalRefName: a name resolves regardless of casing
+const volvoxRefs = new Set(['ctgA', 'ctgB'])
+const isRef = (name: string) =>
+  [...volvoxRefs].some(r => r.toLowerCase() === name.toLowerCase())
 
 // minimal stand-in exposing only the surface fetchResults reads
 function fakeAssembly(
@@ -95,35 +98,35 @@ describe('fetchResults refname matching', () => {
 
 describe('checkRef', () => {
   it('accepts a plain refName present in the set', () => {
-    expect(checkRef('ctgA', volvoxRefs)).toBe(true)
+    expect(checkRef('ctgA', isRef)).toBe(true)
   })
 
   it('accepts a lowercase variant present in the set', () => {
-    expect(checkRef('ctga', volvoxRefs)).toBe(true)
+    expect(checkRef('ctga', isRef)).toBe(true)
   })
 
   it('accepts a locstring whose refName is in the set', () => {
-    expect(checkRef('ctgA:1000', volvoxRefs)).toBe(true)
+    expect(checkRef('ctgA:1000', isRef)).toBe(true)
   })
 
   it('accepts a locstring with a range whose refName is in the set', () => {
-    expect(checkRef('ctgA:1000-2000', volvoxRefs)).toBe(true)
+    expect(checkRef('ctgA:1000-2000', isRef)).toBe(true)
   })
 
   it('rejects a gene label not in the ref set', () => {
-    expect(checkRef('Apple3', volvoxRefs)).toBe(false)
+    expect(checkRef('Apple3', isRef)).toBe(false)
   })
 
   it('rejects a locstring with a non-numeric suffix', () => {
-    expect(checkRef('ctgA:notanumber', volvoxRefs)).toBe(false)
+    expect(checkRef('ctgA:notanumber', isRef)).toBe(false)
   })
 
   it('rejects an unknown refName even with a numeric suffix', () => {
-    expect(checkRef('unknown:1000', volvoxRefs)).toBe(false)
+    expect(checkRef('unknown:1000', isRef)).toBe(false)
   })
 
   it('rejects an empty string', () => {
-    expect(checkRef('', volvoxRefs)).toBe(false)
+    expect(checkRef('', isRef)).toBe(false)
   })
 })
 

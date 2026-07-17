@@ -1,4 +1,4 @@
-import { buildRefNameMaps } from './assembly.ts'
+import { buildRefNameMaps } from './refNameMaps.ts'
 
 // chromAlias-style: refName column matches the FASTA, no override flag
 test('chromAlias-style aliases map every alias to the refName column', () => {

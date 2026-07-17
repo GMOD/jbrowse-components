@@ -88,7 +88,6 @@ function initialize() {
     .volatile(() => ({
       regions: volvoxDisplayedRegions,
       initialized: true,
-      allRefNamesWithLowerCase: new Set(['ctgA', 'ctgB', 'ctga', 'ctgb']),
     }))
     .views(() => ({
       getCanonicalRefName(refName: string) {
