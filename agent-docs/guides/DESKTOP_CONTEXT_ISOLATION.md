@@ -14,10 +14,11 @@ to — has Node, and with it the user's machine.
 Two specific paths to that privilege are now gated, but the privilege itself
 remains, and gating paths one at a time is a losing game:
 
-- Link-supplied plugins (`f573bcad11`): a `jbrowse://` link → remote config →
-  its `plugins` → `fetchCJS` → `require()`. Now vetted by
-  `src/components/StartScreen/assertPluginsTrusted.ts` using
-  `@jbrowse/core/checkPlugins`, shared with web.
+- Remote-config plugins (`f573bcad11`): a `jbrowse://` link, or a start-screen
+  favorite, → remote config → its `plugins` → `fetchCJS` → `require()`. Now
+  vetted in `fetchConfig` — the one door such a config comes through — using
+  `@jbrowse/core/checkPlugins`, shared with web. See
+  [ADR-038](../architecture-decision-records/adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md).
 - Navigation (`c7a2ef063c`): the window had no `will-navigate` guard, so a
   navigated-to page inherited nodeIntegration. Now `electron/navigationGuard.ts`.
 
