@@ -179,16 +179,19 @@ declaratively so the view opens on load.
 ### From the UI
 
 Open a linear synteny view (**Add → Linear synteny view**) to reach the import
-form. Because `ecoli_ava` lists all four assemblies, you don't have to build the
-rows by hand: open **Quick start from a synteny track** and choose it. Each
-assembly it lists becomes a row, one per strain, and that one track gets wired
-up to back every band. Click **Launch** and you have the stacked view.
+form. It opens in **Quick start**, which launches straight from a pre-configured
+synteny track: because `ecoli_ava` lists all four assemblies, you don't have to
+build the rows by hand. Choose it and each assembly it lists becomes a row, one
+per strain, with that one track wired up to back every band. Click **Launch** and
+you have the stacked view.
 
-You can still build the stack by hand, using **Add row** to add a strain and the
-connector button between each pair to pick its synteny track, but for an
-all-vs-all track Quick start saves you the trouble.
+Switch to **Manual** to build the stack yourself, using **Add row** to add a
+strain and the connector button between each pair to pick its synteny track — but
+for an all-vs-all track Quick start saves you the trouble. Switching over carries
+across whatever Quick start had selected, so Manual is also the way to start from
+a track and then adjust it.
 
-<Figure caption="The all-vs-all quick start in the import form. (1) Pick the ecoli_ava track. (2) Its four assemblies fill in as rows. (3) Launch." src="/img/multiway_synteny/ecoli_import_form.png" />
+<Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its four assemblies in as rows; Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 
 ### Declaratively with defaultSession
 

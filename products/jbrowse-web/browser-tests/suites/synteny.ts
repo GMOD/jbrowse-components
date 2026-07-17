@@ -9,40 +9,48 @@ import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestCase, TestSuite } from '../types.ts'
 
-// The config's default session has a blank LinearSyntenyView (import form).
-// Picking a synteny track in the quick-start selector should auto-fill both row
-// assemblies (volvox_snp / volvox) and enable Launch, which then renders.
+// The config's default session has a blank LinearSyntenyView (import form). The
+// session's one synteny track makes Quick start the opening mode with that track
+// already selected, so the rows it implies (volvox_snp / volvox) are shown up
+// front and Launch alone renders the view.
 const quickStartTest: TestCase = {
-  name: 'import form quick-start auto-fills assemblies from synteny track',
+  name: 'import form quick start launches from a synteny track',
   fn: async page => {
     await navigateToUrl(
       page,
       'config=test_data%2Fvolvox%2Fconfig_synteny_snp.json',
     )
-    const combo = await page.waitForSelector(
-      '::-p-text(Select a synteny track to auto-fill)',
-      { timeout: 30000 },
-    )
-    await combo!.click()
-    await page.waitForSelector('li[role="option"]', { timeout: 10000 })
-    for (const opt of await page.$$('li[role="option"]')) {
-      const text = await opt.evaluate(e => e.textContent)
-      if (text.includes('cs mismatches')) {
-        await opt.click()
-        break
-      }
-    }
-    // both rows now read the track's assemblyNames
-    const values = await page.$$eval('.MuiSelect-select', els =>
-      els.map(e => e.textContent),
-    )
-    if (!values.includes('volvox_snp') || !values.includes('volvox')) {
-      throw new Error(`assemblies not auto-filled: ${JSON.stringify(values)}`)
+    const rows = await findByTestId(page, 'quick-start-rows', 30000)
+    const text = await rows!.evaluate(e => e.textContent)
+    if (!text.includes('volvox_snp') || !text.includes('volvox')) {
+      throw new Error(`quick start rows not derived from track: ${text}`)
     }
     const launch = await page.waitForSelector('::-p-text(Launch)')
     await launch!.click()
     await findByTestId(page, 'synteny_canvas_done', 60000)
     await waitForDataLoaded(page, 60000)
+  },
+}
+
+// Switching Quick start -> Manual hands over the track's assemblies rather than
+// resetting to the default, so the manual rows open on what Quick start set up.
+const quickStartHandoffTest: TestCase = {
+  name: 'import form Manual inherits the Quick start track assemblies',
+  fn: async page => {
+    await navigateToUrl(
+      page,
+      'config=test_data%2Fvolvox%2Fconfig_synteny_snp.json',
+    )
+    await findByTestId(page, 'quick-start-rows', 30000)
+    const manual = await page.waitForSelector('::-p-text(Manual)')
+    await manual!.click()
+    const rows = await findByTestId(page, 'synteny-assembly-rows', 10000)
+    const values = await rows!.$$eval('.MuiSelect-select', els =>
+      els.map(e => e.textContent),
+    )
+    if (!values.includes('volvox_snp') || !values.includes('volvox')) {
+      throw new Error(`manual rows did not inherit: ${JSON.stringify(values)}`)
+    }
   },
 }
 
@@ -127,6 +135,7 @@ const suite: TestSuite = {
   name: 'Synteny Views',
   tests: [
     quickStartTest,
+    quickStartHandoffTest,
     identityLegendTest,
     syntenyTest(
       'horizontally flipped inverted alignment',

@@ -163,11 +163,11 @@ data files, so put `grape.blocks.gz` and the BED files where their `uri`s point
 
 With the track in your config, open the stack either from the UI or
 declaratively. In the UI, add a linear synteny view (**Add → Linear synteny
-view**), open **Quick start from a synteny track**, and pick
-`grape_peach_cacao_blocks`: because it lists all three assemblies, each becomes
-a row and the one track is wired to back every adjacent band. The
+view**), which opens in **Quick start**, and pick `grape_peach_cacao_blocks`:
+because it lists all three assemblies, each becomes a row and the one track is
+wired to back every adjacent band. The
 [all-vs-all tutorial](/docs/tutorials/allvsall_synteny#from-the-ui) walks
-through this same quick start step by step.
+through this same Quick start step by step.
 
 To open the stack automatically on load, add a top-level `defaultSession` key to
 your `config.json` holding the view snapshot, the declarative way JBrowse opens

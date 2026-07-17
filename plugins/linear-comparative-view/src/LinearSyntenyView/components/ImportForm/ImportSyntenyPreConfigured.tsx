@@ -54,8 +54,8 @@ const ImportSyntenyTrackSelector = observer(
         ) : (
           <Typography color="text.secondary">
             {assembly1 === assembly2
-              ? 'Choose two different assemblies, or use "Quick start" above to auto-fill from a synteny track.'
-              : `No pre-configured synteny track connects ${assembly1} and ${assembly2}. Choose "New track" to add one, or use "Quick start" above.`}
+              ? 'Choose two different assemblies, or switch to "Quick start" to launch from a synteny track.'
+              : `No pre-configured synteny track connects ${assembly1} and ${assembly2}. Choose "New track" to add one, or switch to "Quick start" to launch from an existing track.`}
           </Typography>
         )}
       </Paper>

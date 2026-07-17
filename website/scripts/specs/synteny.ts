@@ -339,13 +339,14 @@ export const syntenySpecs: ScreenshotSpec[] = [
   },
 
   // The Linear synteny view import form for the allvsall_synteny.md "From the
-  // UI" section, using the all-vs-all quick-start path. A bare LinearSyntenyView
+  // UI" section, using the all-vs-all Quick start path. A bare LinearSyntenyView
   // session spec is rejected (needs >=2 views), so open it the way a user does:
   // load the ecoli_pangenome demo config with no views, then Add -> Linear
-  // synteny view -> an empty view that lands on the import form. Two-stage
-  // teaching figure: (1) open "Quick start" and pick the all-vs-all track, (2)
-  // every assembly in that track's assemblyNames becomes a row (the single track
-  // backs every band), then Launch.
+  // synteny view -> an empty view that lands on the import form. The form opens
+  // in Quick start with the config's synteny track already selected, so the rows
+  // it implies are on screen immediately: one single-stage figure, no
+  // menu-driving, annotating the three things the tutorial names (the mode
+  // toggle, the track, the rows it fills) plus Launch.
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_import_form',
@@ -358,69 +359,50 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readyText: 'Select a view to launch',
     readyTimeout: 60000,
     settleMs: 1000,
-    viewportHeight: 470,
+    // Quick start is a short form (a select, the rows it implies, Launch), so
+    // this is sized to the form rather than the taller manual row stack
+    viewportHeight: 340,
     actions: [
       { type: 'click', text: 'Add' },
       { type: 'waitForText', text: 'Linear synteny view' },
       { type: 'click', text: 'Linear synteny view' },
+      // the rows summary only renders once a track is selected, so waiting on it
+      // is a real readiness signal rather than a duration guess
       {
-        type: 'waitForText',
-        text: 'Select assemblies for linear synteny view',
+        type: 'waitForSelector',
+        selector: '[data-testid="quick-start-rows"]',
       },
       { type: 'delay', ms: 1000 },
     ],
-    stages: [
-      // Stage 1: the freshly-opened import form, dropdown closed. One plain
-      // callout points at the "Quick start" track picker.
+    annotations: [
       {
-        annotations: [
-          {
-            type: 'text',
-            text: 'Start here: pick your all-vs-all synteny track',
-            x: 760,
-            y: 150,
-            maxWidth: 320,
-          },
-          {
-            type: 'arrow',
-            from: { x: 750, y: 165 },
-            anchor: { text: 'Select a synteny track to auto-fill assemblies' },
-          },
-        ],
+        type: 'text',
+        text: 'Quick start launches straight from a synteny track',
+        x: 780,
+        y: 95,
+        maxWidth: 320,
       },
-      // Stage 2: after the track is picked, every assembly it spans auto-fills
-      // as a row; the arrow points at Launch.
       {
-        actions: [
-          {
-            type: 'click',
-            text: 'Select a synteny track to auto-fill assemblies',
-          },
-          { type: 'waitForSelector', selector: 'li[data-value="ecoli_ava"]' },
-          { type: 'delay', ms: 500 },
-          { type: 'click', selector: 'li[data-value="ecoli_ava"]' },
-          { type: 'waitForText', text: 'Row 4 assembly' },
-          { type: 'delay', ms: 1000 },
-        ],
-        annotations: [
-          // box the whole auto-filled assembly-rows stack (reviewer)
-          {
-            type: 'box',
-            anchor: { selector: '[data-testid="synteny-assembly-rows"]' },
-          },
-          {
-            type: 'text',
-            text: 'Every assembly in the track becomes a row, then Launch',
-            x: 760,
-            y: 250,
-            maxWidth: 340,
-          },
-          {
-            type: 'arrow',
-            from: { x: 760, y: 300 },
-            anchor: { text: 'Launch' },
-          },
-        ],
+        type: 'arrow',
+        from: { x: 770, y: 110 },
+        anchor: { text: 'Quick start' },
+      },
+      // box the rows the chosen track fills in (reviewer)
+      {
+        type: 'box',
+        anchor: { selector: '[data-testid="quick-start-rows"]' },
+      },
+      {
+        type: 'text',
+        text: 'Every assembly in the track becomes a row, then Launch',
+        x: 780,
+        y: 205,
+        maxWidth: 340,
+      },
+      {
+        type: 'arrow',
+        from: { x: 770, y: 235 },
+        anchor: { text: 'Launch' },
       },
     ],
   },
