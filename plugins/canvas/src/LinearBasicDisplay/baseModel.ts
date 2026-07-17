@@ -66,8 +66,7 @@ import {
 } from './components/hitTesting.ts'
 import { LABEL_CULL_BUCKET_PX } from './components/labelPositioning.ts'
 import {
-  featureMatchesHighlight,
-  subfeatureMatchesHighlight,
+  resolveFeatureHighlights,
   targetMatchesHighlight,
 } from './featureHighlight.ts'
 import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
@@ -108,7 +107,11 @@ import type {
   VisibleRegion,
 } from './components/hitTesting.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
-import type { FeatureHighlight, HighlightTarget } from './featureHighlight.ts'
+import type {
+  FeatureHighlight,
+  HighlightTarget,
+  ResolvedHighlights,
+} from './featureHighlight.ts'
 import type { FitStage } from './fitLadder.ts'
 import type { IncrementalLayout } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
@@ -795,75 +798,13 @@ export default function baseStateModelFactory(
         // Resolve declarative highlights against the RAW fetched data (rpcDataMap)
         // rather than the laid-out data — deliberately pre-layout, so it can feed
         // both boxing and pinning without a layout→layout cycle (coords/name live
-        // on the raw items, no row/topPx needed). A highlight boxes the top-level
-        // feature when it matches, and falls back to boxing a subfeature when no
-        // top-level feature matched (e.g. a searched transcript whose span is a
-        // subspan of its gene, so it never matches the gene's full span). A
-        // subfeature-scoped highlight (right-click "highlight this transcript")
-        // matches no top-level feature by construction, so it always takes the
-        // subfeature path — that's how it addresses an isoform whose span equals
-        // its gene's:
-        //   `box` = the render-item ids the overlay draws a box around.
-        //   `pin` = the ids the packer pins to a top row. For a subfeature that's
-        //           its PARENT feature, since the packer keys on top-level ids and
-        //           pinning the subfeature id would be a no-op that leaves the
-        //           searched transcript buried/clipped in a dense track.
-        //   `boxedBy` = index-aligned with self.featureHighlights: which ids each
-        //           individual highlight boxes. Attribution is the only honest
-        //           answer to "which highlights box THIS?" — the matchers are
-        //           heuristic (trix records no uniqueId, and its label may be a
-        //           custom/indexed string), so re-running one outside this
-        //           resolution loop loses the topLevelMatched gate and reports
-        //           matches for things a highlight never boxed. Fine for
-        //           best-effort boxing, not for deciding what to DELETE; see
-        //           removeFeatureHighlightsForId.
-        get resolvedHighlights(): {
-          box: ReadonlySet<string>
-          pin: ReadonlySet<string>
-          boxedBy: ReadonlySet<string>[]
-        } {
-          const box = new Set<string>()
-          const pin = new Set<string>()
-          const boxedBy = self.featureHighlights.map(h => {
-            const boxed = new Set<string>()
-            for (const data of self.rpcDataMap.values()) {
-              let topLevelMatched = false
-              for (const item of data.flatbushItems) {
-                if (featureMatchesHighlight(item, data.refName, h)) {
-                  boxed.add(item.featureId)
-                  pin.add(item.featureId)
-                  topLevelMatched = true
-                }
-              }
-              // Only fall back to boxing subfeatures when the top-level feature
-              // never matched (e.g. a searched transcript whose span is a
-              // subspan of its gene). If the gene itself matched, boxing its
-              // subfeatures too would draw redundant sub-boxes inside the glyph.
-              if (!topLevelMatched) {
-                for (const s of data.subfeatureInfos) {
-                  if (
-                    subfeatureMatchesHighlight(
-                      {
-                        startBp: s.startBp,
-                        endBp: s.endBp,
-                        name: s.displayLabel,
-                      },
-                      data.refName,
-                      h,
-                    )
-                  ) {
-                    boxed.add(s.featureId)
-                    pin.add(s.parentFeatureId)
-                  }
-                }
-              }
-            }
-            for (const id of boxed) {
-              box.add(id)
-            }
-            return boxed
-          })
-          return { box, pin, boxedBy }
+        // on the raw items, no row/topPx needed). See resolveFeatureHighlights for
+        // the box/pin/boxedBy resolution rules.
+        get resolvedHighlights(): ResolvedHighlights {
+          return resolveFeatureHighlights(
+            self.rpcDataMap.values(),
+            self.featureHighlights,
+          )
         },
 
         /**

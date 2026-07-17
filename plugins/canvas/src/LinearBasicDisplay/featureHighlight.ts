@@ -115,3 +115,94 @@ export function targetMatchesHighlight(
     ? subfeatureMatchesHighlight(target, refName, h)
     : featureMatchesHighlight(target, refName, h)
 }
+
+// The fields resolveFeatureHighlights needs from each fetched region — a
+// structural subset of the model's LoadedFeatureData, kept local so this stays
+// a pure function decoupled from the RPC-result shape.
+interface HighlightableRegion {
+  refName: string
+  flatbushItems: readonly (HighlightItem & { featureId: string })[]
+  subfeatureInfos: readonly {
+    featureId: string
+    parentFeatureId: string
+    startBp: number
+    endBp: number
+    displayLabel?: string
+  }[]
+}
+
+export interface ResolvedHighlights {
+  box: ReadonlySet<string>
+  pin: ReadonlySet<string>
+  boxedBy: ReadonlySet<string>[]
+}
+
+// Resolve declarative highlights against the RAW fetched data (pre-layout, so
+// it needs no row/topPx) rather than laid-out data. A highlight boxes the
+// top-level feature when it matches, and falls back to boxing a subfeature
+// when no top-level feature matched (e.g. a searched transcript whose span is
+// a subspan of its gene, so it never matches the gene's full span). A
+// subfeature-scoped highlight (right-click "highlight this transcript")
+// matches no top-level feature by construction, so it always takes the
+// subfeature path — that's how it addresses an isoform whose span equals its
+// gene's:
+//   `box` = the render-item ids the overlay draws a box around.
+//   `pin` = the ids the packer pins to a top row. For a subfeature that's its
+//           PARENT feature, since the packer keys on top-level ids and pinning
+//           the subfeature id would be a no-op that leaves the searched
+//           transcript buried/clipped in a dense track.
+//   `boxedBy` = index-aligned with `highlights`: which ids each individual
+//           highlight boxes. Attribution is the only honest answer to "which
+//           highlights box THIS?" — the matchers are heuristic (trix records
+//           no uniqueId, and its label may be a custom/indexed string), so
+//           re-running one outside this resolution loop loses the
+//           topLevelMatched gate and reports matches for things a highlight
+//           never boxed. Fine for best-effort boxing, not for deciding what to
+//           DELETE; see removeFeatureHighlightsForId.
+export function resolveFeatureHighlights(
+  regions: Iterable<HighlightableRegion>,
+  highlights: readonly FeatureHighlight[],
+): ResolvedHighlights {
+  // Materialized once: `regions` is walked once per highlight below, and a
+  // single-use iterator (e.g. a Map's .values()) would be exhausted after the
+  // first highlight, silently starving every highlight after it.
+  const regionList = [...regions]
+  const box = new Set<string>()
+  const pin = new Set<string>()
+  const boxedBy = highlights.map(h => {
+    const boxed = new Set<string>()
+    for (const data of regionList) {
+      let topLevelMatched = false
+      for (const item of data.flatbushItems) {
+        if (featureMatchesHighlight(item, data.refName, h)) {
+          boxed.add(item.featureId)
+          pin.add(item.featureId)
+          topLevelMatched = true
+        }
+      }
+      // Only fall back to boxing subfeatures when the top-level feature never
+      // matched (e.g. a searched transcript whose span is a subspan of its
+      // gene). If the gene itself matched, boxing its subfeatures too would
+      // draw redundant sub-boxes inside the glyph.
+      if (!topLevelMatched) {
+        for (const s of data.subfeatureInfos) {
+          if (
+            subfeatureMatchesHighlight(
+              { startBp: s.startBp, endBp: s.endBp, name: s.displayLabel },
+              data.refName,
+              h,
+            )
+          ) {
+            boxed.add(s.featureId)
+            pin.add(s.parentFeatureId)
+          }
+        }
+      }
+    }
+    for (const id of boxed) {
+      box.add(id)
+    }
+    return boxed
+  })
+  return { box, pin, boxedBy }
+}
