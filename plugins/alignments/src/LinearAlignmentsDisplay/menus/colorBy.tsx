@@ -12,7 +12,10 @@ import {
   cytosineContextOptions,
   getModificationName,
 } from '../../shared/modificationData.ts'
-import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
+import {
+  DEFAULT_MODIFICATION_THRESHOLD,
+  isModificationTypeVisible,
+} from '../../shared/types.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type {
@@ -168,7 +171,10 @@ function patchMods(
     modifications: {
       ...(m.twoColor ? { twoColor: true } : {}),
       ...(m.fillUnmarked ? { fillUnmarked: true } : {}),
-      ...(m.shownModifications?.length
+      // Persisted whenever present, empty list included — `[]` is a real state
+      // (every type unticked, no marks drawn), distinct from absent (= show
+      // every detected type), which is the default and stays omitted.
+      ...(m.shownModifications !== undefined
         ? { shownModifications: m.shownModifications }
         : {}),
       ...(m.hiddenModifications?.length
@@ -179,6 +185,30 @@ function patchMods(
         ? { cytosineContext: m.cytosineContext }
         : {}),
     },
+  })
+}
+
+// Tick/untick one modification type. The current selection is read back through
+// isModificationTypeVisible — the same predicate the worker filter and the
+// legend use — so the boxes always reflect what is actually drawn, including
+// when a hand-written config expressed the filter as a hiddenModifications
+// deny-list. The write is always an allow-list, and clears that deny-list, so
+// the two mechanisms can't stack into a confusing state.
+function setModTypeShown(
+  model: ModificationsModel,
+  type: string,
+  shown: boolean,
+) {
+  const types = model.detectedModificationTypes
+  const mods = currentMods(model)
+  const visible = types.filter(t => isModificationTypeVisible(mods, t))
+  const next = shown ? [...visible, type] : visible.filter(t => t !== type)
+  // Everything ticked = follow the data: store nothing, so a type first seen as
+  // more reads stream in shows up rather than being silently excluded by a list
+  // that was written before it was detected.
+  patchMods(model, {
+    shownModifications: types.every(t => next.includes(t)) ? undefined : next,
+    hiddenModifications: undefined,
   })
 }
 
@@ -200,8 +230,6 @@ function modificationsMenu(
     ? { fillUnmarked: true }
     : { twoColor: true }
   const types = model.detectedModificationTypes
-  const shownType =
-    mods.shownModifications?.length === 1 ? mods.shownModifications[0] : 'all'
   const clearView = { twoColor: undefined, fillUnmarked: undefined }
 
   return {
@@ -237,21 +265,19 @@ function modificationsMenu(
             {
               label: 'Modification types',
               helpText:
-                'Limit which modification types are drawn in the by-type and 2-color views.',
-              subMenu: radioItems(
-                [
-                  { value: 'all', label: 'All detected types' },
-                  ...types.map(t => ({
-                    value: t,
-                    label: getModificationName(t),
-                  })),
-                ],
-                shownType,
-                value => {
-                  patchMods(model, {
-                    shownModifications: value === 'all' ? undefined : [value],
-                  })
-                },
+                'Which modification types are drawn, in the by-type and 2-color views. Every type is drawn until you untick one. Basecallers increasingly emit several types on the same read (5mC, 5hmC, 6mA), so these are independent — untick 5hmC to read gene-body 5mC on a 5mCG_5hmCG model, and keep any combination you like.',
+              subMenu: types.map(t =>
+                checkboxItem(
+                  getModificationName(t),
+                  isModificationTypeVisible(mods, t),
+                  () => {
+                    setModTypeShown(
+                      model,
+                      t,
+                      !isModificationTypeVisible(mods, t),
+                    )
+                  },
+                ),
               ),
             },
           ]

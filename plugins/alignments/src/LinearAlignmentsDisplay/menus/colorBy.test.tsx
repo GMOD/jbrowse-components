@@ -233,20 +233,87 @@ describe('color by modifications menu', () => {
     ).toBe(true)
   })
 
-  test('the per-type filter is surfaced inline and limits to one type', () => {
-    const model = makeModModel(['m', 'h'])
-    model.colorBy = { type: 'modifications' }
+  function tickModType(model: ReturnType<typeof makeModModel>, label: string) {
     const item = subMenuOf(byLabel(model, 'Modification types')).find(
-      i => 'label' in i && i.label === '5hmC',
+      i => 'label' in i && i.label === label,
     )
     if (!item || !('onClick' in item)) {
-      throw new Error('no 5hmC filter radio')
+      throw new Error(`no ${label} checkbox`)
     }
     item.onClick({})
+  }
+
+  test('every detected type starts ticked', () => {
+    const model = makeModModel(['m', 'h'])
+    model.colorBy = { type: 'modifications' }
+    expect(
+      subMenuOf(byLabel(model, 'Modification types')).map(i => [
+        'label' in i ? i.label : '',
+        'checked' in i ? i.checked : undefined,
+      ]),
+    ).toEqual([
+      ['5mC', true],
+      ['5hmC', true],
+    ])
+  })
+
+  test('unticking one type leaves the rest drawn', () => {
+    const model = makeModModel(['m', 'h', 'a'])
+    model.colorBy = { type: 'modifications' }
+    tickModType(model, '5hmC')
     expect(model.colorBy).toEqual({
       type: 'modifications',
-      modifications: { shownModifications: ['h'] },
+      modifications: { shownModifications: ['m', 'a'] },
     })
+  })
+
+  test('types are independent — two can be unticked, unlike the old radio', () => {
+    const model = makeModModel(['m', 'h', 'a'])
+    model.colorBy = { type: 'modifications' }
+    tickModType(model, '5hmC')
+    tickModType(model, '6mA')
+    expect(model.colorBy).toEqual({
+      type: 'modifications',
+      modifications: { shownModifications: ['m'] },
+    })
+  })
+
+  test('re-ticking every type stores nothing, so types found later stay visible', () => {
+    const model = makeModModel(['m', 'h'])
+    model.colorBy = {
+      type: 'modifications',
+      modifications: { shownModifications: ['m'] },
+    }
+    tickModType(model, '5hmC')
+    expect(model.colorBy).toEqual({ type: 'modifications', modifications: {} })
+  })
+
+  test('unticking the last type draws no marks rather than silently drawing all', () => {
+    const model = makeModModel(['m', 'h'])
+    model.colorBy = {
+      type: 'modifications',
+      modifications: { shownModifications: ['m'] },
+    }
+    tickModType(model, '5mC')
+    expect(model.colorBy).toEqual({
+      type: 'modifications',
+      modifications: { shownModifications: [] },
+    })
+  })
+
+  test('a hiddenModifications config reads back as unticked, and ticking clears it', () => {
+    const model = makeModModel(['m', 'h'])
+    model.colorBy = {
+      type: 'modifications',
+      modifications: { hiddenModifications: ['h'] },
+    }
+    expect(
+      subMenuOf(byLabel(model, 'Modification types')).map(i =>
+        'checked' in i ? i.checked : undefined,
+      ),
+    ).toEqual([true, false])
+    tickModType(model, '5hmC')
+    expect(model.colorBy).toEqual({ type: 'modifications', modifications: {} })
   })
 
   test('the per-type filter is hidden when only one type is detected', () => {
