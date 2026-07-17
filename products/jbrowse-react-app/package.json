@@ -19,6 +19,7 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./styles.css": "./src/styles.css",
     "./esm/makeWorkerInstance": "./src/makeWorkerInstance.ts",
     "./esm/makeWorkerInstance.js": "./src/makeWorkerInstance.ts",
     "./esm/rpcWorker": "./src/rpcWorker.ts",
@@ -31,6 +32,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
+    "build:css": "node --experimental-strip-types ../../scripts/flattenCss.ts src/styles.css dist/styles.css",
     "build:esm": "tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",
@@ -93,6 +95,7 @@
         "types": "./esm/index.d.ts",
         "import": "./esm/index.js"
       },
+      "./styles.css": "./dist/styles.css",
       "./esm/makeWorkerInstance": {
         "types": "./esm/makeWorkerInstance.d.ts",
         "import": "./esm/makeWorkerInstance.js"

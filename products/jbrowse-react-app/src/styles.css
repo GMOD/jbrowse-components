@@ -1,0 +1,7 @@
+/* Public stylesheet: consumers `import '@jbrowse/react-app2/styles.css'`.
+ *
+ * Owning this entry point keeps dockview an implementation detail — swapping it
+ * out, or adding styles of our own, lands here instead of breaking every
+ * consumer's import. Flattened into a self-contained dist/styles.css for
+ * publish (build:css), so it also works as a plain <link href>. */
+@import 'dockview-react/dist/styles/dockview.css';

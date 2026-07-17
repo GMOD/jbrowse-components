@@ -44,20 +44,11 @@ function fp(f) {
 
 // Add node_modules/.bin to PATH so we can call jb2export directly
 const binPath = resolve('./node_modules/.bin')
-// jb2export runs as its own `node` process (not this script), so the
-// --import hook registered above via `node --import ./register.mjs run.mjs`
-// doesn't carry over to it - NODE_OPTIONS re-applies it for the child.
-const nodeOptions = [
-  process.env.NODE_OPTIONS,
-  `--import ${resolve('./register.mjs')}`,
-]
-  .filter(Boolean)
-  .join(' ')
-const env = {
-  ...process.env,
-  PATH: `${binPath}:${process.env.PATH}`,
-  NODE_OPTIONS: nodeOptions,
-}
+// Deliberately no hook plumbing for the child: jb2export runs as its own `node`
+// process and installs its own ESM hooks in bin.ts, exactly as it does for a
+// real `npx jb2export` user. Injecting hooks here (via NODE_OPTIONS) would give
+// the binary a loader no real user has, and hide a broken published CLI.
+const env = { ...process.env, PATH: `${binPath}:${process.env.PATH}` }
 
 const [jb2exportFile, jb2exportBaseArgs] = existsSync(
   join(binPath, 'jb2export'),

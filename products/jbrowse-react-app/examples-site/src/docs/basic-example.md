@@ -11,6 +11,8 @@ Pass `assemblies`, `tracks`, and a `views` list straight to `<JBrowse>` as props
 entry in `views` carries its own view-type `init` blob:
 
 ```jsx
+import '@jbrowse/react-app2/styles.css'
+
 import { JBrowse } from '@jbrowse/react-app2'
 ;<JBrowse
   assemblies={assemblies}
@@ -28,6 +30,11 @@ import { JBrowse } from '@jbrowse/react-app2'
   ]}
 />
 ```
+
+The stylesheet import is required — without it the view manager's tabs render
+unstyled. Import it once, anywhere in your app. It ships as a plain CSS file, so
+a build without a CSS loader can instead link
+`node_modules/@jbrowse/react-app2/dist/styles.css` directly.
 
 The props are **initial values** — read once on mount. `assemblies` and `tracks`
 use the same format as a JBrowse Web `config.json`, so configs round-trip

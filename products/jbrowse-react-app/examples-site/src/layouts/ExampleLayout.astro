@@ -1,4 +1,10 @@
 ---
+// The stylesheet every consumer of the published package imports — the demos
+// below render unstyled dockview tabs without it. Not in the shared
+// Shell.astro: that file is symlinked into the lgv/cgv sites, which don't
+// depend on react-app2.
+import '@jbrowse/react-app2/styles.css'
+
 import Shell from './Shell.astro'
 import { examples, type ExamplePage } from '../examples.ts'
 import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
