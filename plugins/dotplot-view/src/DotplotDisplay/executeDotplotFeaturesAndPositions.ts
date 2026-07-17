@@ -72,6 +72,16 @@ export async function executeDotplotFeaturesAndPositions({
       bpPerPx: hViewSnap.bpPerPx,
       lodMode,
       statusCallback,
+      // The assembly on the vertical axis. A multi-genome adapter
+      // (MCScanBlocksAdapter, AllVsAllPAFAdapter) draws N-1 pairs from one
+      // track, so the fetch must name which pair this dotplot is — otherwise
+      // the adapter defaults the mate to the first *other* assembly in
+      // assemblyNames and returns another pair's alignments, whose refNames
+      // match no vViewSnap region, leaving an empty plot behind the
+      // "could not be mapped" warning. Mirrors the synteny render path's
+      // `targetAssemblyName: v2.displayedRegions[0]?.assemblyName`; renaming
+      // rewrites refName but not assemblyName, so this stays canonical.
+      targetAssemblyName: vViewSnap.displayedRegions[0]?.assemblyName,
     },
   )
   const features = dedupe(rawFeatures, f => f.id())

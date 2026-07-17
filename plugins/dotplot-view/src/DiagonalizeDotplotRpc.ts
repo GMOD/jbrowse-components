@@ -68,6 +68,11 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
         sessionId,
         stopToken,
         statusCallback,
+        // which pair this dotplot is, for a multi-genome adapter — see the
+        // render path in executeDotplotFeaturesAndPositions. currentRegions is
+        // the vertical axis and stays canonical, so its assemblyName is the
+        // target.
+        targetAssemblyName: currentRegions[0]?.assemblyName,
       }),
       f => f.id(),
     )
