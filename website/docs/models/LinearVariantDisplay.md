@@ -856,11 +856,7 @@ type pinnedFeatureIdSet = ReadonlySet<string>
 #### getter: resolvedHighlights
 
 ```ts
-type resolvedHighlights = {
-  box: ReadonlySet<string>
-  pin: ReadonlySet<string>
-  boxedBy: ReadonlySet<string>[]
-}
+type resolvedHighlights = ResolvedHighlights
 ```
 
 #### getter: highlightedFeatureIdSet

@@ -182,14 +182,14 @@ Open a linear synteny view (**Add → Linear synteny view**) to reach the import
 form. It opens in **Quick start**, which launches straight from a pre-configured
 synteny track: because `ecoli_ava` lists all four assemblies, you don't have to
 build the rows by hand. Choose it and each assembly it lists becomes a row, one
-per strain, with that one track wired up to back every band. Click **Launch** and
-you have the stacked view.
+per strain, with that one track wired up to back every band. Click **Launch**
+and you have the stacked view.
 
 Switch to **Manual** to build the stack yourself, using **Add row** to add a
-strain and the connector button between each pair to pick its synteny track — but
-for an all-vs-all track Quick start saves you the trouble. Switching over carries
-across whatever Quick start had selected, so Manual is also the way to start from
-a track and then adjust it.
+strain and the connector button between each pair to pick its synteny track —
+but for an all-vs-all track Quick start saves you the trouble. Switching over
+carries across whatever Quick start had selected, so Manual is also the way to
+start from a track and then adjust it.
 
 <Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its four assemblies in as rows; Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 

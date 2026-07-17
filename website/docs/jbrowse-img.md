@@ -353,11 +353,12 @@ jb2export --loc all \
 `--multiwig` aggregates many BigWig files into a single multi-row
 `MultiQuantitativeTrack`, where each subtrack shares one autoscale so the rows
 are directly comparable. Its argument is either a comma-separated list of BigWig
-URLs, or a `.json` file holding an array — of plain BigWig URLs, or of
-_subadapter_ objects that give each row its own `name`, `color`, and `group`:
+files (local paths or URLs), or a `.json` file holding an array — of plain
+BigWig paths/URLs, or of _subadapter_ objects that give each row its own `name`,
+`color`, and `group`:
 
 ```bash
-## quick shorthand: a comma-separated URL list, one row per file
+## quick shorthand: a comma-separated file list, one row per file
 jb2export --hub hg38 --multiwig a.bw,b.bw,c.bw height:300 --loc GAPDH --out multi.png
 
 ## curated rows: a JSON sources file (name/color/group per subtrack)
@@ -860,9 +861,9 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 - `--cram`
 - `--bigwig`
 - `--multiwig` — many BigWigs as one multi-row `MultiQuantitativeTrack`; its
-  argument is a comma-separated BigWig URL list or a `.json` sources file (an
-  array of BigWig URLs, or of subadapter objects carrying per-row
-  `name`/`color`/`group`) — see
+  argument is a comma-separated BigWig file list (local paths or URLs) or a
+  `.json` sources file (an array of BigWig paths/URLs, or of subadapter objects
+  carrying per-row `name`/`color`/`group`) — see
   [MultiWiggle](#multiwiggle-many-bigwigs-in-one-track)
 - `--vcfgz`
 - `--gffgz`
