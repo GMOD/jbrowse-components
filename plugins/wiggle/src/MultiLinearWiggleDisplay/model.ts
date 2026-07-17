@@ -285,17 +285,25 @@ export default function stateModelFactory(
         },
         setRpcData(displayedRegionIndex: number, data: WiggleDataResult) {
           self.rpcDataMap.set(displayedRegionIndex, data)
-          if (self.sourcesVolatile.length === 0 && data.sources.length > 0) {
-            self.sourcesVolatile = data.sources.map(
-              ({ name, color, labelColor, label, group, baseUri }) => ({
-                name,
-                color,
-                labelColor,
-                label,
-                group,
-                baseUri,
-              }),
-            )
+          // Merge (not replace-once): a multi-source adapter reports its full
+          // static list in the first region, but a plain fallback adapter
+          // discovers sources per region, so a source absent from the first
+          // fetched region must still be appended when a later region reveals
+          // it (otherwise it stays invisible forever). Appending keeps existing
+          // order/layout stable.
+          const seen = new Set(self.sourcesVolatile.map(s => s.name))
+          const added = data.sources
+            .filter(s => !seen.has(s.name))
+            .map(({ name, color, labelColor, label, group, baseUri }) => ({
+              name,
+              color,
+              labelColor,
+              label,
+              group,
+              baseUri,
+            }))
+          if (added.length > 0) {
+            self.sourcesVolatile = [...self.sourcesVolatile, ...added]
           }
         },
 

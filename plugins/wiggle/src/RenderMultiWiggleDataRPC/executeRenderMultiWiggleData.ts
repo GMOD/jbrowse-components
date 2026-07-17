@@ -38,6 +38,16 @@ function isMultiSource(
   return 'getMultiSourceFeatureArrays' in adapter
 }
 
+// `primary` order first (the caller's stable list), then any sources present in
+// this region that the caller didn't know about, appended in adapter order.
+function unionSourcesByName(
+  primary: SourceInfo[],
+  extra: SourceInfo[],
+): SourceInfo[] {
+  const seen = new Set(primary.map(s => s.name))
+  return [...primary, ...extra.filter(s => !seen.has(s.name))]
+}
+
 // Plain feature adapter (e.g. BedTabixAdapter/BedGraphAdapter) used directly
 // inside a MultiQuantitativeTrack — the modkit bedMethyl use-case. Synthesize
 // per-source arrays by grouping features on their `source` field, mirroring the
@@ -124,16 +134,21 @@ export async function executeRenderMultiWiggleData({
   checkStopToken2(stopTokenCheck)
 
   const rawBySource = new Map(perSource.map(p => [p.source, p.raw]))
-  // Prefer the caller-provided source list (the normal display path). Without
-  // one, a multi-source adapter's getSources is cheap and carries per-source
-  // metadata (color/group/label), but a plain fallback adapter's getSources
-  // would re-scan every feature — so derive those names from perSource, which
-  // was already computed above.
-  const orderedSources: SourceInfo[] = sourcesArg?.length
-    ? sourcesArg
-    : isMulti
-      ? await dataAdapter.getSources([region])
-      : perSource.map(({ source }) => ({ name: source }))
+  // A multi-source adapter's getSources is authoritative and static, so the
+  // caller's list (or getSources) is the whole story. A plain fallback adapter
+  // has no source list — its sources are discovered per region — so union the
+  // caller's list with whatever sources this region actually contains.
+  // Otherwise a source with zero features in the first-fetched region would be
+  // absent from that region's list, get echoed back on every later fetch, and
+  // stay invisible even after navigating to where it has data.
+  const presentSources: SourceInfo[] = perSource.map(({ source }) => ({
+    name: source,
+  }))
+  const orderedSources: SourceInfo[] = isMulti
+    ? sourcesArg?.length
+      ? sourcesArg
+      : await dataAdapter.getSources([region])
+    : unionSourcesByName(sourcesArg ?? [], presentSources)
 
   const result: WiggleDataResult = {
     sources: orderedSources.map(source => ({

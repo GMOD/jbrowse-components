@@ -51,12 +51,24 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const shouldFetch = view.initialized && !!model.sourcesWithoutLayout.length
+  // The matrix is computed over the visible region at the current resolution
+  // (clusterScoreMatrixArgs reads view.dynamicBlocks + view.bpPerPx), so the
+  // fetch key must track both — otherwise panning/zooming leaves the displayed
+  // matrix/TSV/Rscript stale against what's on screen.
+  const regionKey = JSON.stringify({
+    blocks: view.dynamicBlocks.contentBlocks.map(b => [
+      b.refName,
+      b.start,
+      b.end,
+    ]),
+    bpPerPx: view.bpPerPx,
+  })
   const {
     data: ret,
     error,
     isLoading: loading,
   } = useFetch(
-    shouldFetch ? ['scoreMatrix', model, samplesPerPixel] : null,
+    shouldFetch ? ['scoreMatrix', model, samplesPerPixel, regionKey] : null,
     async () => {
       const { rpcManager } = getSession(model)
       const sessionId = getRpcSessionId(model)

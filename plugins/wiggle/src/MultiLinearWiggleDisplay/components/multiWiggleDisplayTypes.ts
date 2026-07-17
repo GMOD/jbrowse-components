@@ -10,6 +10,7 @@ export interface MultiWiggleDisplayModel
   extends WiggleGpuDisplayModel, WiggleGpuProps {
   rpcDataMap: Map<number, WiggleDataResult>
   sources: { name: string; color?: string; labelColor?: string }[]
+  sourcesWithoutLayout: { name: string }[]
   domain: [number, number] | undefined
   scaleType: string
   isOverlay: boolean

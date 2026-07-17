@@ -5,6 +5,7 @@ import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
+import MultiWiggleHint from './MultiWiggleHint.tsx'
 import MultiWiggleLegendOverlay from './MultiWiggleLegendOverlay.tsx'
 import { findMultiWiggleHit } from './findHit.ts'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
@@ -139,6 +140,9 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       </svg>
 
       <TreeSidebar model={model} />
+
+      {/* inline hint when the plot would otherwise be a silent blank */}
+      <MultiWiggleHint model={model} />
 
       {/* portals the overlay color legend above the inter-region masks */}
       <MultiWiggleLegendOverlay model={model} />

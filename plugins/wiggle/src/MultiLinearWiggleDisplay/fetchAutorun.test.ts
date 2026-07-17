@@ -17,6 +17,7 @@ import { waitFor } from '@testing-library/react'
 
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
+import { processFeaturesFromArrays } from '../util.ts'
 
 import type { WiggleDataResult } from '../util.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -28,6 +29,23 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // chromosome it doesn't cover.
 function makeEmptyMultiWiggleData(): WiggleDataResult {
   return { sources: [] }
+}
+
+// A RenderMultiWiggleData RPC result naming the given sources (feature arrays
+// are irrelevant to source-list accumulation, so they stay empty).
+function makeMultiWiggleData(names: string[]): WiggleDataResult {
+  const empty = processFeaturesFromArrays(
+    {
+      starts: new Int32Array(0),
+      ends: new Int32Array(0),
+      scores: new Float32Array(0),
+      minScores: undefined,
+      maxScores: undefined,
+      count: 0,
+    },
+    0,
+  )
+  return { sources: names.map(name => ({ name, ...empty })) }
 }
 
 function createTestEnvironment() {
@@ -206,5 +224,33 @@ describe('MultiLinearWiggleDisplay zero-feature loading', () => {
     expect(display.numSources).toBe(0)
     expect(display.domain).toBeUndefined()
     expect(display.renderState).toBeDefined()
+  })
+})
+
+describe('MultiLinearWiggleDisplay source accumulation across regions', () => {
+  // #3 regression: a plain feature adapter (the bedMethyl use-case) discovers
+  // sources per region rather than from a static getSources. A source with zero
+  // features in the first fetched region must still appear once a later region
+  // reveals it — setRpcData merges into sourcesVolatile instead of populating it
+  // only once, otherwise the source stays invisible forever.
+  it('merges sources first seen in a later region', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    display.setRpcData(0, makeMultiWiggleData(['a', 'b']))
+    expect(display.sourcesVolatile.map(s => s.name)).toEqual(['a', 'b'])
+
+    display.setRpcData(1, makeMultiWiggleData(['a', 'b', 'c']))
+    expect(display.sourcesVolatile.map(s => s.name)).toEqual(['a', 'b', 'c'])
+    expect(display.numSources).toBe(3)
+  })
+
+  it('preserves existing order and appends only genuinely-new sources', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+
+    display.setRpcData(0, makeMultiWiggleData(['b', 'a']))
+    display.setRpcData(1, makeMultiWiggleData(['a', 'c', 'b']))
+    expect(display.sourcesVolatile.map(s => s.name)).toEqual(['b', 'a', 'c'])
   })
 })
