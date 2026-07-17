@@ -4,6 +4,7 @@ import debug from 'electron-debug'
 import pkg from 'electron-updater'
 
 import { setupAutoUpdater } from './autoUpdater.ts'
+import { registerDownloadHandler } from './downloads.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
 import { registerBlatHandlers } from './ipc/blatHandlers.ts'
@@ -199,6 +200,7 @@ function runApp() {
       registerFileHandlers(paths)
       registerAuthHandlers()
       registerBlatHandlers()
+      registerDownloadHandler()
       setupAutoUpdater(autoUpdater, () => wm.current)
 
       // Register app-level event handlers before any await so a second-instance
