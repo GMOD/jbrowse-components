@@ -1,4 +1,8 @@
-import { quickStartSyntenyTracks, syntenyTrackRows } from './syntenyTrackRows.ts'
+import {
+  dotplotAxesFromRows,
+  quickStartSyntenyTracks,
+  syntenyTrackRows,
+} from './syntenyTrackRows.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -42,4 +46,22 @@ test('quick start offers every launchable synteny track', () => {
 
 test('quick start omits a track naming fewer than two assemblies', () => {
   expect(quickStartSyntenyTracks([cross, lone])).toEqual([cross])
+})
+
+// This mapping has been written backwards more than once. assemblyNames is
+// [query, target] and the dotplot's assembly1/assembly2 are (y, x), so the query
+// goes on y. If this test fails, the mapping was flipped — check
+// dotplotAxesFromRows' comment before "fixing" the expectation.
+test('the query (first assembly) goes on the y-axis, the target on x', () => {
+  expect(dotplotAxesFromRows(syntenyTrackRows(cross))).toEqual({
+    y: 'a',
+    x: 'b',
+  })
+})
+
+test('reversed rows put each assembly on the other axis (Swap)', () => {
+  expect(dotplotAxesFromRows([...syntenyTrackRows(cross)].reverse())).toEqual({
+    y: 'b',
+    x: 'a',
+  })
 })

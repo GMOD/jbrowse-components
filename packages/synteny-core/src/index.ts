@@ -68,6 +68,7 @@ export {
   pickSyntenyTrackId,
 } from './getSyntenyTracks.ts'
 export {
+  dotplotAxesFromRows,
   quickStartSyntenyTracks,
   syntenyTrackRows,
 } from './syntenyTrackRows.ts'

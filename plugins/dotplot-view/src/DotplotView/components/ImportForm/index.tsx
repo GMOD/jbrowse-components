@@ -5,6 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   ImportFormModeToggle,
+  dotplotAxesFromRows,
   getSyntenyTracks,
   quickStartSyntenyTracks,
   syntenyTrackRows,
@@ -52,10 +53,10 @@ const DotplotImportForm = observer(function DotplotImportForm({
 
   const quickTrack = quickTracks.find(t => t.trackId === quickTrackId)
   const trackRows = quickTrack ? syntenyTrackRows(quickTrack) : []
-  // the extension-point/core convention is assembly1 = Y, assembly2 = X
   const quickRows = quickSwapped ? [...trackRows].reverse() : trackRows
-  const quickY = quickRows[0] ?? firstAssembly
-  const quickX = quickRows[1] ?? firstAssembly
+  const quickAxes = dotplotAxesFromRows(quickRows)
+  const quickY = quickAxes.y ?? firstAssembly
+  const quickX = quickAxes.x ?? firstAssembly
 
   const syntenyTracks = getSyntenyTracks(session.tracks, [assemblyX, assemblyY])
   const displayError = error ?? model.error

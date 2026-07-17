@@ -1,4 +1,4 @@
-import { QuickStartPanel } from '@jbrowse/synteny-core'
+import { QuickStartPanel, dotplotAxesFromRows } from '@jbrowse/synteny-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -29,6 +29,7 @@ const QuickStart = observer(function QuickStart({
   onLaunch: () => void
   onSwap: () => void
 }) {
+  const axes = dotplotAxesFromRows(rows)
   return (
     <QuickStartPanel
       model={model}
@@ -41,8 +42,8 @@ const QuickStart = observer(function QuickStart({
       swapTitle="Put each assembly on the other axis (transposes the plot)"
     >
       <div data-testid="quick-start-axes">
-        <Typography variant="body2">X-axis: {rows[1]}</Typography>
-        <Typography variant="body2">Y-axis: {rows[0]}</Typography>
+        <Typography variant="body2">X-axis: {axes.x}</Typography>
+        <Typography variant="body2">Y-axis: {axes.y}</Typography>
         {rows.length > 2 ? (
           <Typography variant="body2" color="text.secondary">
             This track spans {rows.length} assemblies; a dotplot shows one pair,
