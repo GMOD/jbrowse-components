@@ -35,20 +35,24 @@ look at wakhan, pycnv
 
 
 
-## reversed-region integration coverage beyond gene labels
+## reversed-region coverage: app wiring + a human look
 
-Exactly one test flips a region: `products/jbrowse-web/src/tests/ReversedRegionLabels.test.tsx`
-(`navToLocString('ctgA:1..7,720[rev]')` → SVG export of gff3tabix_genes labels).
-Nothing exercises a reversed region for **alignments**, and nothing anywhere
-checks reversed per-base cells — which is how the 1bp-cell bug (all five
-alignments cell painters painting the neighboring base, now fixed via
-`makeCellLeftMapper`) went unnoticed. It's unit-tested now, but nobody has
-looked at a reversed pileup on the Canvas2D fallback in a real app.
+The alignments **draw path** is now covered both orientations by
+`renderers/reversedMirror.test.ts` (drive `drawAlignmentBlocks` forward and
+reversed over identical data; every mark must have a mirrored twin). What that
+does NOT cover, and what's left:
 
-Cheap because the harness exists: copy `ReversedRegionLabels.test.tsx` and swap
-the track for volvox alignments (per-base letters / mismatches at high zoom, so
-cells are wider than a pixel and a one-base slip is visible). That covers the
-whole orientation class rather than the one bug.
+- **The wiring above the renderer.** The mirror test hands `reversed: true`
+  straight to `renderBlocks`. Nothing asserts the model actually delivers it —
+  displayedRegion → `renderBlocks` → `renderState`. A jsdom test would:
+  `ReversedRegionLabels.test.tsx` is the working pattern
+  (`navToLocString('ctgA:1..7,720[rev]')` + SVG export, which runs the Canvas2D
+  path through `SvgCanvas` with no real canvas); swap the track for
+  `volvox_alignments_pileup_coverage`. Assert a property, not a snapshot — a
+  snapshot would have happily recorded the off-by-one-base bug.
+- **Nobody has looked at a reversed pileup.** Every check so far is programmatic.
+- **The overlap layer has no reversed coverage** in any test: `shouldDrawOverlaps`
+  needs a linked-reads layout, so the mirror fixture skips it.
 
 ## Canvas2D vs GPU `canvasDrawn` contract drift
 
