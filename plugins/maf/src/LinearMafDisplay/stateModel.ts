@@ -24,7 +24,7 @@ import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegion
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
-  clusterLayout,
+  computeClusterHierarchy,
 } from '@jbrowse/tree-sidebar'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
@@ -791,12 +791,9 @@ export default function stateModelFactory(
          * coverage band is offset separately by the React layer.
          */
         get hierarchy() {
-          const r = self.root
-          if (!r || !self.sources?.length) {
-            return undefined
-          }
-          return clusterLayout(
-            r,
+          return computeClusterHierarchy(
+            self.root,
+            self.sources?.length ?? 0,
             self.rowsHeight,
             self.treeAreaWidth,
             self.showBranchLength,
@@ -870,7 +867,7 @@ export default function stateModelFactory(
       }))
       .views(self => ({
         get spatialIndex() {
-          return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
+          return buildSpatialIndex(self.hierarchy)
         },
       }))
       .views(self => ({

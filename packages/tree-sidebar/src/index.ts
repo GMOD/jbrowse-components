@@ -12,9 +12,9 @@ export {
   applySubtreeFilter,
   buildClusteredLayout,
   buildTree,
+  computeClusterHierarchy,
   parseClusterOrder,
   parseClusterTree,
-  pruneNewickToLeaves,
   reconcileLayout,
 } from './clusterUtils.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
@@ -37,9 +37,10 @@ export type {
   TreeLayoutModel,
 } from './setColorDialog/SetColorDialog.tsx'
 export type { ColorColumn } from './setColorDialog/SourceGrid.tsx'
-// Only clusterLayout is part of the public surface; hierarchy/leaves/links/sum
-// and the y-assignment/traversal helpers are internal to the layout and draw
-// code (kept in hierarchy.ts, not re-exported).
+// Displays reach the layout through `computeClusterHierarchy` (clusterUtils);
+// the raw `clusterLayout` primitive stays public only for SVG-export tests.
+// hierarchy/leaves/links/sum and the y-assignment/traversal helpers remain
+// internal to the layout and draw code (kept in hierarchy.ts, not re-exported).
 export { clusterLayout } from './hierarchy.ts'
 export type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 export type {

@@ -26,7 +26,7 @@ import {
   TreeSidebarMixin,
   applyColorPalette,
   buildSpatialIndex,
-  clusterLayout,
+  computeClusterHierarchy,
 } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
 import { autorun } from 'mobx'
@@ -967,12 +967,9 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          */
         get hierarchy() {
-          const r = self.root
-          if (!r || !self.sources?.length) {
-            return undefined
-          }
-          return clusterLayout(
-            r,
+          return computeClusterHierarchy(
+            self.root,
+            self.sources?.length ?? 0,
             this.effectiveRowHeight * this.nrow,
             self.treeAreaWidth,
             self.showBranchLength,
@@ -981,7 +978,7 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .views(self => ({
         get spatialIndex() {
-          return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
+          return buildSpatialIndex(self.hierarchy)
         },
         /**
          * #getter

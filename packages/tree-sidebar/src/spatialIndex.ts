@@ -6,7 +6,13 @@ import type { ClusterHierarchyNode } from './types.ts'
 
 const HIT_RADIUS = 8
 
-export function buildSpatialIndex(hierarchy: ClusterHierarchyNode) {
+// Accepts an undefined hierarchy (returning undefined) so every consumer's
+// `spatialIndex` getter is a single `buildSpatialIndex(self.hierarchy)` call
+// rather than repeating the same `hierarchy ? … : undefined` guard.
+export function buildSpatialIndex(hierarchy: ClusterHierarchyNode | undefined) {
+  if (!hierarchy) {
+    return undefined
+  }
   const nodes = descendants(hierarchy).filter(n => n.children?.length)
   if (!nodes.length) {
     return undefined

@@ -13,7 +13,7 @@ import {
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
-  clusterLayout,
+  computeClusterHierarchy,
   treeBranchLengthMenuItem,
 } from '@jbrowse/tree-sidebar'
 import {
@@ -258,12 +258,9 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get hierarchy() {
-        const r = self.root
-        if (!r || !self.sources.length) {
-          return undefined
-        }
-        return clusterLayout(
-          r,
+        return computeClusterHierarchy(
+          self.root,
+          self.sources.length,
           self.height,
           self.treeAreaWidth,
           self.showBranchLength,
@@ -272,7 +269,7 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get spatialIndex() {
-        return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
+        return buildSpatialIndex(self.hierarchy)
       },
     }))
     .actions(self => {

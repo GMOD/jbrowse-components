@@ -22,7 +22,7 @@ import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegion
 import {
   TreeSidebarMixin,
   buildSpatialIndex,
-  clusterLayout,
+  computeClusterHierarchy,
 } from '@jbrowse/tree-sidebar'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -412,15 +412,13 @@ export default function stateModelFactory(
        * Leaves spaced over `height`, branches over `treeAreaWidth`.
        */
       get hierarchy() {
-        const r = self.root
-        return r && self.sources.length
-          ? clusterLayout(
-              r,
-              self.height,
-              self.treeAreaWidth,
-              self.showBranchLength,
-            )
-          : undefined
+        return computeClusterHierarchy(
+          self.root,
+          self.sources.length,
+          self.height,
+          self.treeAreaWidth,
+          self.showBranchLength,
+        )
       },
       /**
        * #getter
@@ -435,7 +433,7 @@ export default function stateModelFactory(
        * #getter
        */
       get spatialIndex() {
-        return self.hierarchy ? buildSpatialIndex(self.hierarchy) : undefined
+        return buildSpatialIndex(self.hierarchy)
       },
     }))
     .views(self => ({

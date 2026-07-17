@@ -1,8 +1,8 @@
-import { hierarchy, leaves, sum } from './hierarchy.ts'
+import { clusterLayout, hierarchy, leaves, sum } from './hierarchy.ts'
 import parseNewick from './newick.ts'
 
 import type { HierarchyNode } from './hierarchy.ts'
-import type { ClusterNodeData } from './types.ts'
+import type { ClusterHierarchyNode, ClusterNodeData } from './types.ts'
 
 export function getLeafNames<T extends ClusterNodeData>(
   node: HierarchyNode<T>,
@@ -114,6 +114,23 @@ export function applySubtreeFilter(
 
 export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
   return applySubtreeFilter(buildTree(newick), subtreeFilter)
+}
+
+// Position the (filtered) cluster tree for drawing: leaves spaced over
+// `leafExtent` px along the row axis, branches over `treeAreaWidth` along the
+// depth axis. Undefined when there's no tree or no rows to align it against.
+// Every tree-sidebar consumer routes through this so the clusterLayout argument
+// order and the empty-state guard can't drift between display types.
+export function computeClusterHierarchy(
+  root: HierarchyNode<ClusterNodeData> | undefined,
+  rowCount: number,
+  leafExtent: number,
+  treeAreaWidth: number,
+  showBranchLength: boolean,
+): ClusterHierarchyNode | undefined {
+  return root && rowCount
+    ? clusterLayout(root, leafExtent, treeAreaWidth, showBranchLength)
+    : undefined
 }
 
 // Parse pasted R hclust output (a sequence of 1-based row indices, one per
