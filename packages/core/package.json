@@ -141,6 +141,7 @@
     "./util/pointerPresence": "./src/util/pointerPresence.ts",
     "./util/range": "./src/util/range.ts",
     "./util/rxjs": "./src/util/rxjs.ts",
+    "./util/setStackTraceLimit": "./src/util/setStackTraceLimit.ts",
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
@@ -690,6 +691,10 @@
         "types": "./esm/util/rxjs.d.ts",
         "import": "./esm/util/rxjs.js"
       },
+      "./util/setStackTraceLimit": {
+        "types": "./esm/util/setStackTraceLimit.d.ts",
+        "import": "./esm/util/setStackTraceLimit.js"
+      },
       "./util/simpleFeature": {
         "types": "./esm/util/simpleFeature.d.ts",
         "import": "./esm/util/simpleFeature.js"
@@ -1111,6 +1116,9 @@
         ],
         "util/rxjs": [
           "esm/util/rxjs.d.ts"
+        ],
+        "util/setStackTraceLimit": [
+          "esm/util/setStackTraceLimit.d.ts"
         ],
         "util/simpleFeature": [
           "esm/util/simpleFeature.d.ts"

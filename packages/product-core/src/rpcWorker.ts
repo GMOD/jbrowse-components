@@ -1,6 +1,7 @@
 import PluginLoader from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
+import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { LoadedPlugin, PluginDefinition } from '@jbrowse/core/PluginLoader'
@@ -86,6 +87,10 @@ export async function initializeWorker(
     fetchCJS?: (url: string) => Promise<LoadedPlugin>
   },
 ) {
+  // a worker error's stack is captured here, not on the main thread, so the
+  // frame limit has to be raised in this scope to deepen it
+  setStackTraceLimit()
+
   // Add global error handler to catch uncaught errors in the worker
   self.addEventListener('error', event => {
     console.error('[Worker uncaught error]', event.error || event.message)
