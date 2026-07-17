@@ -35,23 +35,6 @@ look at wakhan, pycnv
 
 
 
-## Hi-C matrix is res-floor shifted against the ruler
-
-`calcRegionCombinedOffsets` subtracts `Math.floor(region.start / res)`, so
-`positions[]` puts `u = 0` at the block's **resolution-floored** start while
-`renderTransform` draws `u = 0` at the block's actual left edge. The matrix
-therefore sits `(start % res) / bpPerPx` px right of truth — up to one full bin.
-
-Measured, not derived: with `res = 100`, a `region.start` of 0 / 50 / 99 all draw
-their first cell at `rx = 0`, where truth is 0 / -50 / -99 px. Zero only when the
-viewport happens to be res-aligned. Since `contentBlocks.start` moves as you pan,
-this predicts the matrix jittering against the ruler by up to a bin while
-scrolling — worth confirming that's what a user sees before fixing.
-
-Orientation-independent, and reversed inherits it symmetrically (the mirror is
-taken about the block's own width, so reversed is the exact mirror of forward)
-rather than compounding it. LD may well have the same shape.
-
 ## LD reversed regions
 
 The LD triangle renders **unflipped** on a reversed displayed region — it lays

@@ -3,9 +3,18 @@ import type { Region } from '@jbrowse/core/util/types'
 /**
  * Per-region bin-axis offset baked into stored positions:
  * `positionX = (bin1 + regionCombinedOffsets[r1]) * binWidth`.
- * Combines cumulative pixel-width of prior regions with the within-chr bin
- * index of this region's start, so contacts read out as a continuous panel
- * along the bin axis regardless of region boundaries.
+ * Combines cumulative pixel-width of prior regions with this region's start
+ * expressed in bins (`start / res`), so contacts read out as a continuous
+ * panel along the bin axis regardless of region boundaries.
+ *
+ * The start term is the exact `start / res`, NOT `Math.floor(start / res)`.
+ * Flooring snaps data-x=0 to the bin *containing* the block's left edge, but
+ * `renderTransform` draws data-x=0 at the block's actual (fractional) start —
+ * so a floor shifts the whole matrix `(start % res) / bpPerPx` px right of the
+ * ruler (up to one bin), and the shift jitters as `contentBlocks.start` moves
+ * while panning. `bin` is an absolute chromosome bin index, so `bin * res` is
+ * true genomic bp; subtracting the exact fractional start lands each cell at
+ * its real genomic position.
  */
 export function calcRegionCombinedOffsets(
   regions: Region[],
@@ -16,9 +25,7 @@ export function calcRegionCombinedOffsets(
   const out: number[] = []
   let cumulativePixelOffset = 0
   for (const region of regions) {
-    out.push(
-      cumulativePixelOffset * pxToBinFactor - Math.floor(region.start / res),
-    )
+    out.push(cumulativePixelOffset * pxToBinFactor - region.start / res)
     cumulativePixelOffset += (region.end - region.start) / bpPerPx
   }
   return out
