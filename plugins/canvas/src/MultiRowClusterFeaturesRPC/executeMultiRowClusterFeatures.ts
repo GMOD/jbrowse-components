@@ -42,7 +42,7 @@ export async function executeMultiRowClusterFeatures({
   // cluster on what the user sees (see makeFeatureColorResolver)
   const featureColor = makeFeatureColorResolver(colorConfig, pluginManager.jexl)
   const features: MatrixFeature[] = []
-  for (const region of regions) {
+  for (const [regionIndex, region] of regions.entries()) {
     const feats = await updateStatus('Fetching features', statusCallback, () =>
       dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
     )
@@ -50,6 +50,7 @@ export async function executeMultiRowClusterFeatures({
     for (const f of feats) {
       const raw = f.get(partitionField)
       features.push({
+        regionIndex,
         row: raw === undefined || raw === null ? '' : String(raw),
         start: f.get('start'),
         end: f.get('end'),
