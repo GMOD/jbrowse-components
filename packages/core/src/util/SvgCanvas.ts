@@ -85,6 +85,23 @@ export class SvgCanvas {
     return [w * Math.abs(this.sx), h * Math.abs(this.sy)]
   }
 
+  // Rects arrive as origin + size, but a negative scale flips which corner the
+  // origin lands on: under scale(-1, 1) the local left edge `x` becomes the
+  // right edge, so anchoring at transformPoint(x, y) and extending right by
+  // `w` covers the neighboring `w` of the canvas — the rect is drawn a full
+  // width off. Anchor on whichever corner ends up top-left instead.
+  // `transformSize` stays magnitude-only because an SVG width/height can't be
+  // negative. A no-op for positive scales (every caller today), which is why
+  // this was never noticed.
+  private transformRect(x: number, y: number, w: number, h: number) {
+    const [tx, ty] = this.transformPoint(
+      this.sx < 0 ? x + w : x,
+      this.sy < 0 ? y + h : y,
+    )
+    const [tw, th] = this.transformSize(w, h)
+    return [tx, ty, tw, th] as const
+  }
+
   private textAnchor() {
     return this.textAlign === 'center'
       ? 'middle'
@@ -238,8 +255,7 @@ export class SvgCanvas {
   }
 
   fillRect(x: number, y: number, w: number, h: number) {
-    const [tx, ty] = this.transformPoint(x, y)
-    const [tw, th] = this.transformSize(w, h)
+    const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
     if (this.rotation !== 0 && this.rotation % (Math.PI / 2) !== 0) {
       const deg = (this.rotation * 180) / Math.PI
       this.parts.push(
@@ -257,8 +273,7 @@ export class SvgCanvas {
   }
 
   strokeRect(x: number, y: number, w: number, h: number) {
-    const [tx, ty] = this.transformPoint(x, y)
-    const [tw, th] = this.transformSize(w, h)
+    const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
     this.parts.push(
       `<rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none"${this.strokeAttrs()}/>`,
     )
@@ -331,8 +346,7 @@ export class SvgCanvas {
   }
 
   rect(x: number, y: number, w: number, h: number) {
-    const [tx, ty] = this.transformPoint(x, y)
-    const [tw, th] = this.transformSize(w, h)
+    const [tx, ty, tw, th] = this.transformRect(x, y, w, h)
     this.pathData += `M${tx},${ty}h${tw}v${th}h${-tw}Z`
   }
 

@@ -103,3 +103,70 @@ test('spaced rgba (MUI alpha / colord) is split too, not emitted raw', () => {
   expect(svg).toContain('stroke="rgb(255,177,29)"')
   expect(svg).toContain('stroke-opacity="0.7"')
 })
+
+// A rect is given as origin + size, so a negative scale flips which corner the
+// origin lands on. Getting this wrong emits the rect one full width away —
+// silently, and only for the caller that mirrors. Nothing in-tree scales
+// negatively today, which is exactly why this needs pinning: the trap is set
+// for the first caller that tries (e.g. mirroring a reversed genomic region
+// instead of baking the flip into every bp→px call).
+describe('negative scale', () => {
+  test('fillRect mirrors onto the same pixels a real canvas would cover', () => {
+    const ctx = new SvgCanvas()
+    // Mirror about x=100: local [10,15] must land on screen [85,90].
+    ctx.translate(100, 0)
+    ctx.scale(-1, 1)
+    ctx.fillStyle = 'red'
+    ctx.fillRect(10, 0, 5, 20)
+
+    expect(ctx.getSerializedSvg()).toContain(
+      'x="85" y="0" width="5" height="20"',
+    )
+  })
+
+  test('strokeRect mirrors the same way', () => {
+    const ctx = new SvgCanvas()
+    ctx.translate(100, 0)
+    ctx.scale(-1, 1)
+    ctx.strokeRect(10, 0, 5, 20)
+
+    expect(ctx.getSerializedSvg()).toContain(
+      'x="85" y="0" width="5" height="20"',
+    )
+  })
+
+  test('a mirrored rect abuts its neighbor with no gap or overlap', () => {
+    // Two abutting cells, [10,15] and [15,20], must stay abutting once
+    // mirrored — the property that breaks when the origin corner is wrong.
+    const ctx = new SvgCanvas()
+    ctx.translate(100, 0)
+    ctx.scale(-1, 1)
+    ctx.fillRect(10, 0, 5, 1)
+    ctx.fillRect(15, 0, 5, 1)
+
+    const svg = ctx.getSerializedSvg()
+    expect(svg).toContain('x="85"')
+    expect(svg).toContain('x="80"')
+  })
+
+  test('scale(1,-1) flips the vertical origin corner too', () => {
+    const ctx = new SvgCanvas()
+    ctx.translate(0, 100)
+    ctx.scale(1, -1)
+    ctx.fillRect(0, 10, 20, 5)
+
+    expect(ctx.getSerializedSvg()).toContain(
+      'x="0" y="85" width="20" height="5"',
+    )
+  })
+
+  test('positive scales are untouched', () => {
+    const ctx = new SvgCanvas()
+    ctx.scale(2, 2)
+    ctx.fillRect(10, 5, 3, 4)
+
+    expect(ctx.getSerializedSvg()).toContain(
+      'x="20" y="10" width="6" height="8"',
+    )
+  })
+})
