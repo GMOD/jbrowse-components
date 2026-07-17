@@ -2,7 +2,14 @@ import { useState } from 'react'
 
 import { pluginDescriptionString, pluginUrl } from '@jbrowse/core/PluginLoader'
 import { Dialog } from '@jbrowse/core/ui'
-import { Alert, Button, DialogActions, DialogContent } from '@mui/material'
+import {
+  Alert,
+  Button,
+  Checkbox,
+  DialogActions,
+  DialogContent,
+  FormControlLabel,
+} from '@mui/material'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 
@@ -30,11 +37,12 @@ export default function PluginWarningDialog({
   reason,
 }: {
   kind: 'config' | 'session'
-  onConfirm: () => void
+  onConfirm: (remember: boolean) => void
   onCancel: () => void
   reason: PluginDefinition[]
 }) {
   const [show, setShow] = useState(false)
+  const [remember, setRemember] = useState(true)
   const { intro, trust, details } = text[kind]
   return (
     <Dialog
@@ -70,11 +78,22 @@ export default function PluginWarningDialog({
         </Alert>
       </DialogContent>
       <DialogActions>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={remember}
+              onChange={event => {
+                setRemember(event.target.checked)
+              }}
+            />
+          }
+          label="Remember on this site"
+        />
         <Button
           color="primary"
           variant="contained"
           onClick={() => {
-            onConfirm()
+            onConfirm(remember)
           }}
         >
           Yes, I trust it

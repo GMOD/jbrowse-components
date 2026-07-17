@@ -15,6 +15,7 @@ import {
   stripPrefix,
 } from './sessionLoaderHelpers.ts'
 import { readSessionFromDynamo } from './sessionSharing.ts'
+import { arePluginsRemembered } from './trustedPlugins.ts'
 import { checkPlugins, fromUrlSafeB64, readConf } from './util.ts'
 
 import type { SessionSource, SessionTriagedInfo, Snap } from './types.ts'
@@ -358,7 +359,11 @@ const SessionLoader = types
     ) {
       try {
         const sessionPlugins = dropVendoredPlugins(snap.sessionPlugins ?? [])
-        if ((await checkPlugins(sessionPlugins)) || userAcceptedConfirmation) {
+        if (
+          (await checkPlugins(sessionPlugins)) ||
+          arePluginsRemembered(sessionPlugins) ||
+          userAcceptedConfirmation
+        ) {
           self.setSessionPlugins(await loadPluginRecords(sessionPlugins))
           self.setSessionSource({
             type: 'snapshot',
@@ -398,7 +403,11 @@ const SessionLoader = types
         // one (jbrowse.org demos do) needs a needless "trust this plugin" click.
         const configPlugins = dropVendoredPlugins(config.plugins ?? [])
         const isCrossOrigin = configUri.origin !== window.location.origin
-        if (isCrossOrigin && !(await checkPlugins(configPlugins))) {
+        if (
+          isCrossOrigin &&
+          !(await checkPlugins(configPlugins)) &&
+          !arePluginsRemembered(configPlugins)
+        ) {
           self.setSessionTriaged({
             snap: config,
             origin: 'config',

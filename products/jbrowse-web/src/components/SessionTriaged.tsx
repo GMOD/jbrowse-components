@@ -2,6 +2,7 @@ import { observer } from 'mobx-react'
 
 import PluginWarningDialog from './PluginWarningDialog.tsx'
 import factoryReset from '../factoryReset.ts'
+import { rememberPlugins } from '../trustedPlugins.ts'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'
 import type { SessionTriagedInfo } from '../types.ts'
@@ -18,7 +19,10 @@ const SessionTriaged = observer(function SessionTriaged({
     <PluginWarningDialog
       kind={origin}
       reason={reason}
-      onConfirm={async () => {
+      onConfirm={async remember => {
+        if (remember) {
+          rememberPlugins(reason)
+        }
         if (origin === 'session') {
           await loader.loadImportedSession(snap, true)
           loader.setSessionTriaged(undefined)
