@@ -28,12 +28,14 @@ const testDataDir = path.join(
   'data',
 )
 
+// mirrors isSupportedIndexingAdapter in @jbrowse/core/util (not imported here:
+// text-indexing-core is deliberately dependency-free). GTF is intentionally
+// absent — it is not indexable, only GFF3 and VCF are
 const supportedIndexingAdapters = new Set([
   'Gff3TabixAdapter',
   'Gff3Adapter',
   'VcfTabixAdapter',
   'VcfAdapter',
-  'GtfAdapter',
 ])
 
 function isSupportedIndexingAdapter(type?: string) {
