@@ -18,6 +18,26 @@ test('parses simple newick with branch lengths', () => {
   })
 })
 
+// Variants' phased haplotype rows are named "<sample> HP<n>"; the label's space
+// is load-bearing, since the hover highlight and subtree filter match leaf
+// names against row names.
+test('keeps spaces inside leaf labels', () => {
+  expect(parseNewick('(NA18536 HP0,NA18748 HP1)1.5;')).toEqual({
+    length: 1.5,
+    children: [{ name: 'NA18536 HP0' }, { name: 'NA18748 HP1' }],
+  })
+})
+
+test('ignores whitespace around delimiters and newlines between tokens', () => {
+  expect(parseNewick('(\n  A:0.1,\n  B:0.2\n)F;')).toEqual({
+    name: 'F',
+    children: [
+      { name: 'A', length: 0.1 },
+      { name: 'B', length: 0.2 },
+    ],
+  })
+})
+
 test('parses unlabelled tree', () => {
   expect(parseNewick('((,),,(,));')).toEqual({
     children: [{ children: [{}, {}] }, {}, { children: [{}, {}] }],

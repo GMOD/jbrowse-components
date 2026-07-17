@@ -26,7 +26,10 @@ export default function parseNewick(s: string): NewickNode {
   const ancestors: NewickNode[] = []
 
   let tree: NewickNode = {}
-  const tokens = s.replaceAll(/\s+/g, '').split(/(;|\(|\)|,|:)/)
+  // Consume whitespace around the delimiters rather than everywhere: leaf
+  // labels carry meaningful spaces (variants' phased `"NA18536 HP0"`), and
+  // stripping globally silently welded them shut, so no label matched a row.
+  const tokens = s.split(/\s*(;|\(|\)|,|:)\s*/)
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]!
     const subtree: NewickNode = {}
