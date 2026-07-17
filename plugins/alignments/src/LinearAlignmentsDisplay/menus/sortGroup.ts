@@ -2,8 +2,9 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
+import { groupByRadioMenuItem } from './groupByMenu.ts'
+import { GROUP_BY_DIMENSIONS } from '../../shared/groupFeatures.ts'
 import { isInterbaseType } from '../../shared/types.ts'
 
 import type { SortedBy } from '../../shared/types.ts'
@@ -140,14 +141,31 @@ export function getSortByMenuItem(
   }
 }
 
+// Non-hidden dimensions in registry order; chain mode keeps only the
+// chain-consistent ones (every read of a chain shares one key), matching the
+// worker guard. Every dimension selects directly except `tag`, which needs a tag
+// name (+ optional color-by-tag), so it goes last as a dialog-opener — mirroring
+// the sort menu's "Tag...". A stored dimension no longer offered (an old per-read
+// grouping now in chain mode, degraded to ungrouped in the worker) checks "None"
+// rather than leaving the group blank.
 export function getGroupByMenuItem(model: GroupByModel) {
-  return {
-    label: 'Group by...',
-    type: 'subMenu' as const,
-    icon: WorkspacesIcon,
-    subMenu: [
+  const dims = Object.values(GROUP_BY_DIMENSIONS).filter(
+    d => !d.hidden && (!model.isChainMode || d.chainConsistent),
+  )
+  const stored = model.groupBy?.type
+  return groupByRadioMenuItem({
+    current: stored && dims.some(d => d.type === stored) ? stored : undefined,
+    options: dims.filter(d => d.type !== 'tag'),
+    onSelect: type => {
+      model.setGroupBy({ type })
+    },
+    onNone: () => {
+      model.setGroupBy(undefined)
+    },
+    extra: [
       {
-        label: 'Group by...',
+        type: 'tag',
+        label: 'Tag...',
         onClick: () => {
           getSession(model).queueDialog(handleClose => [
             GroupByDialog,
@@ -155,13 +173,6 @@ export function getGroupByMenuItem(model: GroupByModel) {
           ])
         },
       },
-      {
-        label: 'Ungroup (this track)',
-        disabled: !model.groupBy,
-        onClick: () => {
-          model.setGroupBy(undefined)
-        },
-      },
     ],
-  }
+  })
 }

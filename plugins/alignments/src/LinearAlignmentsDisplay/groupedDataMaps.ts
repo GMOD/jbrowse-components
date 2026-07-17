@@ -1,22 +1,12 @@
 import { hasCrossingSpans } from '../features/sashimi/computeOverlay.ts'
 import { compareGroupKeys } from '../shared/groupFeatures.ts'
+import { getOrCreate } from '../shared/util.ts'
 
 import type { LinkedReadsMode, SashimiArcsMode } from './constants.ts'
 import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types.ts'
-
-// Get the entry for `key`, lazily creating + inserting it on first miss — the
-// shared shape of every accumulation below (a Map of arrays or of nested Maps).
-function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V): V {
-  let value = map.get(key)
-  if (value === undefined) {
-    value = make()
-    map.set(key, value)
-  }
-  return value
-}
 
 // The one place the `rpcDataMap` → groups nested walk is spelled. Every scan
 // below (and the model's `.some`/max getters) iterates this generator instead of

@@ -42,6 +42,7 @@ import {
 } from '../shared/groupFeatures.ts'
 import { buildReadInterchrom } from '../shared/readInterchrom.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
+import { getFlags } from '../shared/util.ts'
 
 import type {
   AlignmentGroup,
@@ -75,7 +76,7 @@ function isConcordantOrientation(f: Feature) {
 // proper pair (mirrors PRIMARY_PROPER_PAIR_MASK in computePairedInsertSizeStats).
 function isProperPairChain(chain: Feature[]) {
   return chain.every((f: Feature) => {
-    const flags = (f.get('flags') as number | undefined) ?? 0
+    const flags = getFlags(f)
     return (
       !!(flags & SAM_FLAG_PROPER_PAIR) &&
       !(flags & SAM_FLAG_SUPPLEMENTARY) &&
@@ -125,7 +126,7 @@ function dedupeById(features: Feature[]) {
 // junction); without it, such a read would be dropped as if it weren't split.
 function isSplitChain(chain: Feature[]) {
   return chain.some((f: Feature) => {
-    const flags = (f.get('flags') as number | undefined) ?? 0
+    const flags = getFlags(f)
     return !!(flags & SAM_FLAG_SUPPLEMENTARY) || getTag(f, 'SA') !== undefined
   })
 }
@@ -143,11 +144,7 @@ export function filterChainFeatures(
     return deduped
   }
   const byChain = groupBy(deduped, (f: Feature) =>
-    chainGroupingKey(
-      f.get('name') ?? '',
-      f.id(),
-      (f.get('flags') as number | undefined) ?? 0,
-    ),
+    chainGroupingKey(f.get('name') ?? '', f.id(), getFlags(f)),
   )
   let rawChains = Object.values(byChain)
   if (!drawSingletons) {

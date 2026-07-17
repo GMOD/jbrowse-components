@@ -10,6 +10,8 @@ import {
   parseCigar2,
 } from '@jbrowse/cigar-utils'
 
+import { getFlags } from '../../shared/util.ts'
+
 import type { StrandBaseCounts } from '../../shared/calculateModificationCounts.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -34,8 +36,7 @@ export function computeReadBaseCounts(
     const cigar = f.get('CIGAR') as string | undefined
     if (seq && cigar) {
       const start = f.get('start')
-      const fwd =
-        (((f.get('flags') as number | undefined) ?? 0) & SAM_FLAG_REVERSE) === 0
+      const fwd = (getFlags(f) & SAM_FLAG_REVERSE) === 0
       const ops = parseCigar2(cigar)
       let readPos = 0
       let refPos = 0

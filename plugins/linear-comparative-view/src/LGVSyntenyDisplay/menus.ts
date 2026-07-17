@@ -1,9 +1,9 @@
 import {
   getMaxHeightMenuItem,
+  groupByRadioMenuItem,
   pickGroupByOptions,
 } from '@jbrowse/plugin-alignments'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { GroupByType } from '@jbrowse/plugin-alignments'
@@ -22,30 +22,16 @@ interface GroupByModel {
 const GROUP_OPTIONS = pickGroupByOptions('mateAssembly', 'strand', 'mapq')
 
 export function getSyntenyGroupByMenuItem(model: GroupByModel) {
-  const current = model.groupBy?.type
-  return {
-    label: 'Group by...',
-    icon: WorkspacesIcon,
-    type: 'subMenu' as const,
-    subMenu: [
-      {
-        label: 'None',
-        type: 'radio' as const,
-        checked: current === undefined,
-        onClick: () => {
-          model.setGroupBy(undefined)
-        },
-      },
-      ...GROUP_OPTIONS.map(({ type, label }) => ({
-        label,
-        type: 'radio' as const,
-        checked: current === type,
-        onClick: () => {
-          model.setGroupBy({ type })
-        },
-      })),
-    ] satisfies MenuItem[],
-  }
+  return groupByRadioMenuItem({
+    current: model.groupBy?.type,
+    options: GROUP_OPTIONS,
+    onSelect: type => {
+      model.setGroupBy({ type })
+    },
+    onNone: () => {
+      model.setGroupBy(undefined)
+    },
+  })
 }
 
 interface ShowModel {

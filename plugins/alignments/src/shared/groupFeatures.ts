@@ -8,6 +8,7 @@ import {
 
 import { chainGroupingKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
+import { getFlags, getOrCreate } from './util.ts'
 
 import type { GroupBy, GroupByType } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -19,10 +20,6 @@ export interface FeatureGroup {
   // Human-readable label shown on the section divider.
   label: string
   features: Feature[]
-}
-
-function getFlags(feature: Feature) {
-  return (feature.get('flags') as number | undefined) ?? 0
 }
 
 // QNAME used as the chain key. A missing name falls back to '', so any reads
@@ -165,19 +162,16 @@ function orderGroups(groups: FeatureGroup[]) {
 }
 
 // Append a single feature into its group, creating the group on first sight.
-// Single-feature push (no array spread) keeps the per-read pileup path
-// allocation-free over thousands of reads.
+// The per-group array is allocated once (getOrCreate skips make() on a hit), so
+// the per-read pileup path stays allocation-free over thousands of reads.
 function appendFeature(
   groups: Map<string, FeatureGroup>,
   feature: Feature,
   { key, label }: GroupKey,
 ) {
-  const group = groups.get(key)
-  if (group) {
-    group.features.push(feature)
-  } else {
-    groups.set(key, { key, label, features: [feature] })
-  }
+  getOrCreate(groups, key, () => ({ key, label, features: [] })).features.push(
+    feature,
+  )
 }
 
 // The ungrouped result: one section keyed '' holding every feature. Both
@@ -330,12 +324,7 @@ export function partitionChains(
       feature.id(),
       getFlags(feature),
     )
-    const chain = chains.get(key)
-    if (chain) {
-      chain.push(feature)
-    } else {
-      chains.set(key, [feature])
-    }
+    getOrCreate(chains, key, () => []).push(feature)
   }
   const groups = new Map<string, FeatureGroup>()
   for (const chain of chains.values()) {

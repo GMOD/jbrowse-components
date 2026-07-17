@@ -9,6 +9,8 @@ export {
   getFeatureHeightMenuItem,
 } from './featureSize.ts'
 export { getFiltersMenuItem } from './filters.ts'
+export { groupByRadioMenuItem } from './groupByMenu.ts'
+export type { GroupByRadioItem } from './groupByMenu.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getMaxHeightMenuItem, getReadsMenuItem } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'

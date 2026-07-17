@@ -6,6 +6,7 @@ import {
 import { toLocale } from '@jbrowse/core/util'
 
 import { interbaseTypeName } from '../../shared/types.ts'
+import { getOrCreate } from '../../shared/util.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type {
@@ -231,11 +232,11 @@ export function getTooltipBin(
         }
         const seq = interbaseSequences[i]
         if (seq) {
-          let typeSeqs = seqCountsByType.get(typeName)
-          if (!typeSeqs) {
-            typeSeqs = new Map()
-            seqCountsByType.set(typeName, typeSeqs)
-          }
+          const typeSeqs = getOrCreate(
+            seqCountsByType,
+            typeName,
+            () => new Map<string, number>(),
+          )
           typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
         }
       }

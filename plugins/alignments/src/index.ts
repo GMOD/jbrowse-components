@@ -41,6 +41,7 @@ export {
   getFiltersMenuItem,
   getMaxHeightMenuItem,
   getSortByMenuItem,
+  groupByRadioMenuItem,
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export { pickColorOptions } from './shared/colorSchemes.ts'
 export { pickGroupByOptions } from './shared/groupFeatures.ts'

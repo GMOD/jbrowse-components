@@ -79,6 +79,62 @@ function readExtent(
   }
 }
 
+// Per-read effective [start,end) (softclip-expanded when `expansions` present) as
+// two parallel arrays, computed once. The order-building sort comparators compare
+// extents O(n log n) times; reading these arrays avoids the `{start,end}` object
+// `readExtent` would allocate on every one of those comparisons.
+interface ReadExtents {
+  starts: Float64Array
+  ends: Float64Array
+}
+function buildReadExtents(
+  data: PileupDataResult,
+  expansions: Map<number, { start: number; end: number }> | undefined,
+  numReads: number,
+): ReadExtents {
+  const starts = new Float64Array(numReads)
+  const ends = new Float64Array(numReads)
+  for (let i = 0; i < numReads; i++) {
+    const s = data.readPositions[i * 2]!
+    const e = data.readPositions[i * 2 + 1]!
+    const exp = expansions?.get(i)
+    starts[i] = exp ? Math.min(s, exp.start) : s
+    ends[i] = exp ? Math.max(e, exp.end) : e
+  }
+  return { starts, ends }
+}
+
+// [0..n) sorted by `cmp`. The shared scaffold of the placement-order builders,
+// which differ only in the comparator.
+function indicesSortedBy(n: number, cmp: (a: number, b: number) => number) {
+  return Array.from({ length: n }, (_, i) => i).sort(cmp)
+}
+
+// Widest [start,end) first (by span), genomic start as a deterministic tiebreak
+// — so the largest alignments take the lowest rows. Shared by the single-region
+// and multi-region largest-first orderings so the rule can't drift.
+function compareByExtentDesc(
+  aStart: number,
+  aEnd: number,
+  bStart: number,
+  bEnd: number,
+) {
+  const byExtent = bEnd - bStart - (aEnd - aStart)
+  return byExtent !== 0 ? byExtent : aStart - bStart
+}
+
+// Project a per-read Y layout onto a per-record `*Ys` array via each record's
+// parent-read index. Every row-instanced feature (gap, mismatch, interbase, …)
+// derives its row this way, so `cloneWithLayout` calls this once per feature kind
+// instead of spelling the same loop seven times.
+function remapYs(readIndices: Uint32Array, readYs: Uint16Array) {
+  const out = new Uint16Array(readIndices.length)
+  for (let i = 0; i < readIndices.length; i++) {
+    out[i] = readYs[readIndices[i]!]!
+  }
+  return out
+}
+
 // Build the per-read sort key for the two data-driven sort types: the base
 // call at `sortPos` (basePair) or the longest interbase length at `sortPos`
 // (insertion/softclip/hardclip). `desc` is true for interbases (longest first)
@@ -280,21 +336,14 @@ class MinHeap {
 // (and the fast path below) need left-to-right ordering.
 function buildSoftclipOrder(
   data: PileupDataResult,
-  expansions: Map<number, { start: number; end: number }> | undefined,
+  ext: ReadExtents,
   numReads: number,
 ) {
-  const order: number[] = []
-  for (let i = 0; i < numReads; i++) {
-    order.push(i)
-  }
-  order.sort((a, b) => {
-    const aStart = readExtent(data, a, expansions).start
-    const bStart = readExtent(data, b, expansions).start
-    return aStart !== bStart
-      ? aStart - bStart
-      : (data.readPositions[a * 2] ?? 0) - (data.readPositions[b * 2] ?? 0)
-  })
-  return order
+  return indicesSortedBy(numReads, (a, b) =>
+    ext.starts[a] !== ext.starts[b]
+      ? ext.starts[a]! - ext.starts[b]!
+      : (data.readPositions[a * 2] ?? 0) - (data.readPositions[b * 2] ?? 0),
+  )
 }
 
 // Placement order that puts the widest features first — by on-screen extent
@@ -303,22 +352,10 @@ function buildSoftclipOrder(
 // alignments cluster at the top instead of interleaving with small ones (the
 // LGVSyntenyDisplay default). Not start-monotone, so the placement loop uses the
 // row-scan rather than the interval-partitioning fast path.
-function buildLargeFirstOrder(
-  data: PileupDataResult,
-  expansions: Map<number, { start: number; end: number }> | undefined,
-  numReads: number,
-) {
-  const order: number[] = []
-  for (let i = 0; i < numReads; i++) {
-    order.push(i)
-  }
-  order.sort((a, b) => {
-    const ea = readExtent(data, a, expansions)
-    const eb = readExtent(data, b, expansions)
-    const byExtent = eb.end - eb.start - (ea.end - ea.start)
-    return byExtent !== 0 ? byExtent : ea.start - eb.start
-  })
-  return order
+function buildLargeFirstOrder(ext: ReadExtents, numReads: number) {
+  return indicesSortedBy(numReads, (a, b) =>
+    compareByExtentDesc(ext.starts[a]!, ext.ends[a]!, ext.starts[b]!, ext.ends[b]!),
+  )
 }
 
 /**
@@ -401,11 +438,17 @@ export function computeLayout(
   // Largest-first sorts by extent (not start); soft-clip sorts by expanded left
   // edge; plain pileup is already in genomic (start) order from the worker. The
   // start-monotone cases can use the interval-partitioning fast path below;
-  // largest-first can't (its order isn't start-sorted).
+  // largest-first can't (its order isn't start-sorted). Extents are precomputed
+  // only when an ordering (or the row-scan below) will read them — the plain
+  // start-monotone fast path reads readPositions directly and needs none.
+  const needsExtents = largeFeaturesFirst || showSoftClipping
+  const ext = needsExtents
+    ? buildReadExtents(data, expansions, numReads)
+    : undefined
   const order = largeFeaturesFirst
-    ? buildLargeFirstOrder(data, expansions, numReads)
+    ? buildLargeFirstOrder(ext!, numReads)
     : showSoftClipping
-      ? buildSoftclipOrder(data, expansions, numReads)
+      ? buildSoftclipOrder(data, ext!, numReads)
       : undefined
 
   if (!largeFeaturesFirst && numReads >= LAYOUT_HEAP_MIN_READS) {
@@ -421,7 +464,10 @@ export function computeLayout(
   let truncated = false
   for (let k = 0; k < numReads; k++) {
     const i = order ? order[k]! : k
-    const { start, end } = readExtent(data, i, expansions)
+    // ext holds soft-clip-expanded extents; without it (plain pileup) the read's
+    // raw genomic span is its extent.
+    const start = ext ? ext.starts[i]! : data.readPositions[i * 2]!
+    const end = ext ? ext.ends[i]! : data.readPositions[i * 2 + 1]!
     const y = placeRectCapped(rows, start, end, maxRows)
     readYs[i] = y
     truncated = truncated || y === maxRows
@@ -463,21 +509,21 @@ export function computeSortedLayout(
 
   sortOverlappingByIndex(overlapping, data, sortedBy, data.sortTagValues)
 
+  const ext = buildReadExtents(data, expansions, numReads)
   const readYs = new Uint16Array(numReads)
   const rows: number[][] = []
   let truncated = false
-  for (const i of overlapping) {
-    const { start, end } = readExtent(data, i, expansions)
-    const y = placeRectCapped(rows, start, end, maxRows)
-    readYs[i] = y
-    truncated = truncated || y === maxRows
+  // Sorted overlapping reads first (each gets its own row — they collide at
+  // sortPos), then the rest fills gaps around them.
+  const place = (ids: number[]) => {
+    for (const i of ids) {
+      const y = placeRectCapped(rows, ext.starts[i]!, ext.ends[i]!, maxRows)
+      readYs[i] = y
+      truncated = truncated || y === maxRows
+    }
   }
-  for (const i of nonOverlapping) {
-    const { start, end } = readExtent(data, i, expansions)
-    const y = placeRectCapped(rows, start, end, maxRows)
-    readYs[i] = y
-    truncated = truncated || y === maxRows
-  }
+  place(overlapping)
+  place(nonOverlapping)
   return { readYs, maxY: rows.length, truncated }
 }
 
@@ -640,8 +686,7 @@ export function computeMultiRegionLayout({
     placementOrder = [...orderedIds].sort((a, b) => {
       const ea = extents.get(a)!
       const eb = extents.get(b)!
-      const byExtent = eb.end - eb.start - (ea.end - ea.start)
-      return byExtent !== 0 ? byExtent : ea.start - eb.start
+      return compareByExtentDesc(ea.start, ea.end, eb.start, eb.end)
     })
   }
 
@@ -669,41 +714,8 @@ export function cloneWithLayout(
   maxY: number,
   truncated = false,
 ): PileupDataResult {
-  const numGaps = data.gapPositions.length / 2
-  const numMismatches = data.mismatchPositions.length
-  const numInterbases = data.interbasePositions.length
-  const numModifications = data.modificationPositions.length
-  const numSoftclipBases = data.softclipBasePositions.length
-  const numPerBaseQual = data.perBaseQualPositions.length
-  const numPerBaseLetter = data.perBaseLetterPositions.length
-  const gapYs = new Uint16Array(numGaps)
-  const mismatchYs = new Uint16Array(numMismatches)
-  const interbaseYs = new Uint16Array(numInterbases)
-  const modificationYs = new Uint16Array(numModifications)
-  const softclipBaseYs = new Uint16Array(numSoftclipBases)
-  const perBaseQualYs = new Uint16Array(numPerBaseQual)
-  const perBaseLetterYs = new Uint16Array(numPerBaseLetter)
-  for (let i = 0; i < numGaps; i++) {
-    gapYs[i] = readYs[data.gapReadIndices[i]!]!
-  }
-  for (let i = 0; i < numMismatches; i++) {
-    mismatchYs[i] = readYs[data.mismatchReadIndices[i]!]!
-  }
-  for (let i = 0; i < numInterbases; i++) {
-    interbaseYs[i] = readYs[data.interbaseReadIndices[i]!]!
-  }
-  for (let i = 0; i < numModifications; i++) {
-    modificationYs[i] = readYs[data.modificationReadIndices[i]!]!
-  }
-  for (let i = 0; i < numSoftclipBases; i++) {
-    softclipBaseYs[i] = readYs[data.softclipBaseReadIndices[i]!]!
-  }
-  for (let i = 0; i < numPerBaseQual; i++) {
-    perBaseQualYs[i] = readYs[data.perBaseQualReadIndices[i]!]!
-  }
-  for (let i = 0; i < numPerBaseLetter; i++) {
-    perBaseLetterYs[i] = readYs[data.perBaseLetterReadIndices[i]!]!
-  }
+  const modificationYs = remapYs(data.modificationReadIndices, readYs)
+  const numModifications = modificationYs.length
   let modFlatbush: Flatbush | undefined
   if (numModifications > 0) {
     modFlatbush = new Flatbush(numModifications)
@@ -718,13 +730,13 @@ export function cloneWithLayout(
   return {
     ...data,
     readYs,
-    gapYs,
-    mismatchYs,
-    interbaseYs,
+    gapYs: remapYs(data.gapReadIndices, readYs),
+    mismatchYs: remapYs(data.mismatchReadIndices, readYs),
+    interbaseYs: remapYs(data.interbaseReadIndices, readYs),
     modificationYs,
-    softclipBaseYs,
-    perBaseQualYs,
-    perBaseLetterYs,
+    softclipBaseYs: remapYs(data.softclipBaseReadIndices, readYs),
+    perBaseQualYs: remapYs(data.perBaseQualReadIndices, readYs),
+    perBaseLetterYs: remapYs(data.perBaseLetterReadIndices, readYs),
     maxY,
     truncated,
     modFlatbush,

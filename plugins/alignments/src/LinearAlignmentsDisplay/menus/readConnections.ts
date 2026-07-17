@@ -7,15 +7,6 @@ import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-export const PAIR_OVERLAY_OPTIONS: {
-  value: ReadConnectionsMode
-  label: string
-}[] = [
-  { value: 'off', label: 'Off' },
-  { value: 'arc', label: 'Arcs' },
-  { value: 'cloud', label: 'Read cloud' },
-]
-
 interface ReadConnectionsModel {
   linkedReads: LinkedReadsMode
   setLinkedReads: (mode: LinkedReadsMode) => void

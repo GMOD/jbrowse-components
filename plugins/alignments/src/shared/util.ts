@@ -1,12 +1,30 @@
-import { tagRegex } from '@jbrowse/core/util'
-
+import type { Feature } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
-
-export const TAG_REGEX = tagRegex
 
 export const defaultFilterFlags = {
   flagInclude: 0,
   flagExclude: 1540,
+}
+
+// A feature's SAM bitwise flags, defaulting to 0 for features that carry none
+// (e.g. PAF/synteny). The cast is centralized here so the ~half-dozen flag reads
+// across the worker and feature extractors don't each re-spell it.
+export function getFlags(feature: Feature) {
+  return (feature.get('flags') as number | undefined) ?? 0
+}
+
+// Get `key`'s entry, lazily creating + inserting it on first miss. The shared
+// shape of every "accumulate into a Map of arrays / nested Maps" pass. (The TC39
+// `Map.prototype.getOrInsertComputed` upsert proposal would fold this into one
+// lookup, but it isn't in shipping runtimes yet and the second lookup is noise
+// next to the per-read work — swap it in here once it lands, if ever.)
+export function getOrCreate<K, V>(map: Map<K, V>, key: K, make: () => V): V {
+  let value = map.get(key)
+  if (value === undefined) {
+    value = make()
+    map.set(key, value)
+  }
+  return value
 }
 
 export function cacheGetter<T>(ctor: { prototype: T }, prop: keyof T): void {

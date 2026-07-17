@@ -1,5 +1,7 @@
 import { pairDirection } from '@jbrowse/alignments-core'
 
+import { getFlags } from './util.ts'
+
 import type { ChainFeatureData, FeatureData } from './webglRpcTypes.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
@@ -24,7 +26,7 @@ export function buildBaseFeatureData(feature: Feature): FeatureData {
     name: feature.get('name') ?? '',
     start: feature.get('start'),
     end: feature.get('end'),
-    flags: (feature.get('flags') as number | undefined) ?? 0,
+    flags: getFlags(feature),
     // SAM spec: MAPQ 255 indicates mapping quality is unavailable
     mapq: feature.get('score') ?? 255,
     // SAM spec: TLEN 0 means insert size is unset (e.g. unpaired reads)

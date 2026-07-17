@@ -1,6 +1,7 @@
 import { withAbgrAlpha } from '@jbrowse/core/util/colorBits'
 
 import { calculateModificationCounts } from '../../shared/calculateModificationCounts.ts'
+import { getOrCreate } from '../../shared/util.ts'
 
 import type { StrandBaseCounts } from '../../shared/calculateModificationCounts.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
@@ -92,34 +93,25 @@ function groupByPosition(
   // (a given modType resolves to one color).
   const modTypeIds = new Map<string, number>()
   const modKey = (mod: ModificationEntry) => {
-    let id = modTypeIds.get(mod.modType)
-    if (id === undefined) {
-      id = modTypeIds.size
-      modTypeIds.set(mod.modType, id)
-    }
+    const id = getOrCreate(modTypeIds, mod.modType, () => modTypeIds.size)
     return id * 2 + (mod.noMod ? 1 : 0)
   }
 
   for (const mod of modifications) {
     if (mod.position >= regionStart) {
-      let colorMap = byPosition.get(mod.position)
-      if (!colorMap) {
-        colorMap = new Map()
-        byPosition.set(mod.position, colorMap)
-      }
-      const key = modKey(mod)
-      let entry = colorMap.get(key)
-      if (!entry) {
-        entry = {
-          color: mod.color,
-          probabilityTotal: 0,
-          probabilityCount: 0,
-          base: mod.base,
-          modType: mod.modType,
-          noMod: mod.noMod ?? false,
-        }
-        colorMap.set(key, entry)
-      }
+      const colorMap = getOrCreate(
+        byPosition,
+        mod.position,
+        () => new Map<number, ModificationColorEntry>(),
+      )
+      const entry = getOrCreate(colorMap, modKey(mod), () => ({
+        color: mod.color,
+        probabilityTotal: 0,
+        probabilityCount: 0,
+        base: mod.base,
+        modType: mod.modType,
+        noMod: mod.noMod ?? false,
+      }))
       entry.probabilityTotal += mod.prob
       entry.probabilityCount++
     }

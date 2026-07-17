@@ -23,6 +23,7 @@ import {
 
 import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
 import { isModificationTypeVisible } from '../../shared/types.ts'
+import { getFlags } from '../../shared/util.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
@@ -223,7 +224,7 @@ export function extractBisulfite(
     return
   }
   const cigarOps = parseCigar2(cigarString)
-  const flags = (feature.get('flags') as number | undefined) ?? 0
+  const flags = getFlags(feature)
   const isReverse = strand === -1
   const isSecondOfPair = (flags & 128) !== 0
 

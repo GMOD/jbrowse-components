@@ -7,6 +7,7 @@ import {
 import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
+import { getOrCreate } from '../shared/util.ts'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types'
 
@@ -176,13 +177,7 @@ export function mergeSpans(spans: Span[]): Span[] {
 function groupReadsByChain(readChainIndices: Uint32Array) {
   const byChain = new Map<number, number[]>()
   for (let i = 0; i < readChainIndices.length; i++) {
-    const c = readChainIndices[i]!
-    const list = byChain.get(c)
-    if (list) {
-      list.push(i)
-    } else {
-      byChain.set(c, [i])
-    }
+    getOrCreate(byChain, readChainIndices[i]!, () => []).push(i)
   }
   return byChain
 }
