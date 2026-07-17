@@ -33,10 +33,10 @@ the matching entry in `tracks` / its `displays` array:
 }
 ```
 
-For most use cases the declarative [`init`](../setting-up-the-view/#with-init) field is easier to
-author by hand. Reach for the full `defaultSession` when you need finer control
-over per-track display settings, or when you're round-tripping a session
-exported from JBrowse Web.
+For most use cases the declarative [`init`](../setting-up-the-view/#with-init)
+field is easier to author by hand. Reach for the full `defaultSession` when you
+need finer control over per-track display settings, or when you're
+round-tripping a session exported from JBrowse Web.
 
 ### Exporting from JBrowse Web
 

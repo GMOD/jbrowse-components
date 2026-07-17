@@ -24,11 +24,21 @@ describe('gene-glyph collapse notice', () => {
     display.setGeneGlyphMode('longestCoding')
 
     // no multi-isoform gene in the data → nothing to switch, control hidden
-    display.setRpcData(0, makeFeatureData({ hasMultiIsoformGenes: false }), 1, region)
+    display.setRpcData(
+      0,
+      makeFeatureData({ hasMultiIsoformGenes: false }),
+      1,
+      region,
+    )
     expect(display.showGeneGlyphNotice).toBe(false)
 
     // multi-isoform gene present under longestCoding → visible + loud chip
-    display.setRpcData(0, makeFeatureData({ hasMultiIsoformGenes: true }), 1, region)
+    display.setRpcData(
+      0,
+      makeFeatureData({ hasMultiIsoformGenes: true }),
+      1,
+      region,
+    )
     expect(display.showGeneGlyphNotice).toBe(true)
     expect(display.geneGlyphCollapsed).toBe(true)
 
@@ -43,7 +53,12 @@ describe('gene-glyph collapse notice', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setGeneGlyphMode('longestCoding')
-    display.setRpcData(0, makeFeatureData({ hasMultiIsoformGenes: true }), 1, region)
+    display.setRpcData(
+      0,
+      makeFeatureData({ hasMultiIsoformGenes: true }),
+      1,
+      region,
+    )
 
     expect(display.showGeneGlyphNotice).toBe(true)
     expect(display.geneGlyphNoticeDismissed).toBe(false)

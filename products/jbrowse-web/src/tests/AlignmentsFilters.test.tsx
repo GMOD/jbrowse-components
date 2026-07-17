@@ -54,4 +54,3 @@ xtest('filter by RG tag cram (special case tag)', async () => {
   await testFilterTrack('volvox_cram', 'RG', '6')
   expect(container).toMatchSnapshot()
 }, 50000)
-

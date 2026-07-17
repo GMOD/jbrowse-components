@@ -63,7 +63,9 @@ describe('buildFeatureAdmission', () => {
     // features or non-NCBI features (which carry no gbkey).
     const admit = buildFeatureAdmission({
       jexl,
-      config: mockDisplayConfig({ jexlFilters: [`get(feature,'gbkey')!='Src'`] }),
+      config: mockDisplayConfig({
+        jexlFilters: [`get(feature,'gbkey')!='Src'`],
+      }),
     })
     expect(admit(feat('region', { gbkey: 'Src' }))).toBe(false)
     expect(admit(feat('region', { gbkey: 'CpG_island' }))).toBe(true)

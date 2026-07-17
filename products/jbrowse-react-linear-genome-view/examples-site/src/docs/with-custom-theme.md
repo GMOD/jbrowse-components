@@ -20,5 +20,5 @@ const state = createViewState({
 ```
 
 See the [theming guide](https://jbrowse.org/jb2/docs/config_guides/theme/) for
-the full set of options, and [dark mode](../theming/#with-dark-theme) for the built-in
-dark palette.
+the full set of options, and [dark mode](../theming/#with-dark-theme) for the
+built-in dark palette.

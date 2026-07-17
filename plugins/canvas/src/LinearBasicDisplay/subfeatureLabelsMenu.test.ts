@@ -33,7 +33,9 @@ function showSubMenu(display: { trackMenuItems: () => MenuItem[] }) {
     throw new Error('"Subfeature labels" subHeader not found')
   }
   const rest = items.slice(start + 1)
-  const end = rest.findIndex(i => i.type === 'subHeader' || i.type === 'divider')
+  const end = rest.findIndex(
+    i => i.type === 'subHeader' || i.type === 'divider',
+  )
   return end === -1 ? rest : rest.slice(0, end)
 }
 

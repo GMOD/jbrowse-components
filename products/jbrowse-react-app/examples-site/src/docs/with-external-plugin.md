@@ -22,5 +22,6 @@ const state = createViewState({
 Because `loadPlugins` is async, run it in an effect and render the view only
 once the state resolves. This example loads the UCSC plugin from unpkg and shows
 a `UCSCAdapter` track on hg19. For plugins you author or `npm install` yourself,
-pass the class directly — see [embedded plugins](../plugins/#embedded-plugin). The
-[plugin store](https://jbrowse.org/jb2/plugin_store/) lists published plugins.
+pass the class directly — see [embedded plugins](../plugins/#embedded-plugin).
+The [plugin store](https://jbrowse.org/jb2/plugin_store/) lists published
+plugins.

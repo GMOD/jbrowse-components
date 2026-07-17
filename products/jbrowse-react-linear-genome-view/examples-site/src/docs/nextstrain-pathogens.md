@@ -29,7 +29,8 @@ coordinates. The Zika and measles configs additionally carry a `CramAdapter`
 reference with `minimap2`).
 
 Because each config is a plain JS object, it can be imported, generated, or
-templated by your own code. See [default session](../default-session/#default-session) for the
-session structure, [the config guide](https://jbrowse.org/jb2/docs/config_guide)
-for the track/assembly shapes, and [Nextstrain MSA + tree](../nextstrain-msa/)
-for the matching reconstructed alignments.
+templated by your own code. See
+[default session](../default-session/#default-session) for the session
+structure, [the config guide](https://jbrowse.org/jb2/docs/config_guide) for the
+track/assembly shapes, and [Nextstrain MSA + tree](../nextstrain-msa/) for the
+matching reconstructed alignments.

@@ -10,8 +10,11 @@ import type { CoverageGap } from '@jbrowse/alignments-core'
 // `strand` here is getEffectiveStrand's output: +1/-1 for an XS/TS/ts-tagged
 // read, 0 for an untagged one.
 function skips(specs: { start: number; end: number; strand: number }[]) {
-  return specs.map(s => ({ ...s, type: 'skip', featureStrand: 1 })) as
-    CoverageGap[]
+  return specs.map(s => ({
+    ...s,
+    type: 'skip',
+    featureStrand: 1,
+  })) as CoverageGap[]
 }
 
 function rep(n: number, start: number, end: number, strand: number) {

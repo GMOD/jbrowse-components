@@ -6,9 +6,10 @@ renders through a
 which offers several renderers (`xyplot`, `density`, `line`) and an autoscaling
 score axis.
 
-The [`displayDefaults` object shorthand](../feature-colors-and-labels/#with-track-color-shorthand) is the
-easiest way to configure all of this up front — JBrowse routes each key to the
-wiggle display:
+The
+[`displayDefaults` object shorthand](../feature-colors-and-labels/#with-track-color-shorthand)
+is the easiest way to configure all of this up front — JBrowse routes each key
+to the wiggle display:
 
 ```js
 displayDefaults: {

@@ -17,7 +17,7 @@ it, so you don't have to know the display's type name:
 ```
 
 A `jexl:` expression works the same way for per-feature coloring — see
-[jexl colors and labels](../feature-colors-and-labels/#with-jexl-feature-colors-and-labels). For full
-control (giving two displays different values, an explicit `displayId`, or
-choosing the default display) pass `displays` as the array form instead, per the
-[track config guide](https://jbrowse.org/jb2/docs/config_guides/tracks/).
+[jexl colors and labels](../feature-colors-and-labels/#with-jexl-feature-colors-and-labels).
+For full control (giving two displays different values, an explicit `displayId`,
+or choosing the default display) pass `displays` as the array form instead, per
+the [track config guide](https://jbrowse.org/jb2/docs/config_guides/tracks/).

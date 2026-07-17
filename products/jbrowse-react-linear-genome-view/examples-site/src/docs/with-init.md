@@ -28,6 +28,7 @@ automatically, so you rarely need to spell out the nested `bamLocation`/`index`
 form. The full assembly/track config shape is covered in the
 [config guide](https://jbrowse.org/jb2/docs/config_guide/).
 
-See [Advanced init](../session-setup/#with-init-advanced) for per-track display snapshots and
-view-level settings (cytobands, gridlines, colorByCDS, …), and
-[Default session](../default-session/#default-session) for the full imperative snapshot form.
+See [Advanced init](../session-setup/#with-init-advanced) for per-track display
+snapshots and view-level settings (cytobands, gridlines, colorByCDS, …), and
+[Default session](../default-session/#default-session) for the full imperative
+snapshot form.

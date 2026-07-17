@@ -26,4 +26,5 @@ Build the index with the `--file` form of
 [`jbrowse text-index`](https://jbrowse.org/jb2/docs/cli/#jbrowse-text-index)
 (one `--file`/`--fileId` pair per track); `--fileId` must match the runtime
 `trackId` so a hit knows which track to open. For one index per track instead,
-see [per-track text searching](../text-searching/#with-per-track-text-searching).
+see
+[per-track text searching](../text-searching/#with-per-track-text-searching).

@@ -26,5 +26,5 @@ The full set of `displaySnapshot` keys comes from the
 [LinearAlignmentsDisplay](https://jbrowse.org/jb2/docs/config/linearalignmentsdisplay/)
 config, and the track-level slots from
 [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack/). See
-[advanced init](../session-setup/#with-init-advanced) for the general `displaySnapshot` /
-`trackSnapshot` shape.
+[advanced init](../session-setup/#with-init-advanced) for the general
+`displaySnapshot` / `trackSnapshot` shape.

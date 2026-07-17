@@ -508,7 +508,9 @@ describe('canvas display fit escalation ladder', () => {
 
     // Fit mode squeezed to its floor and still overflowing: no slack to center.
     display.setHeightMode('fit')
-    display.setHeight(Math.max(20, Math.round((bodiesH * display.fitMinScale) / 2)))
+    display.setHeight(
+      Math.max(20, Math.round((bodiesH * display.fitMinScale) / 2)),
+    )
     expect(display.fitScale).toBe(display.fitMinScale)
     expect(display.hasOverflow).toBe(true)
     expect(display.fitContentOffsetY).toBe(0)

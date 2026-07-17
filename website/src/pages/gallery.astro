@@ -19,7 +19,9 @@ import page from '../styles/page.module.css'
 // stamped on each <img> so the browser reserves the right box and the page
 // doesn't jump as the lazy-loaded screenshots arrive.
 function pngSize(file: string) {
-  const path = fileURLToPath(new URL(`../../static/img/${file}`, import.meta.url))
+  const path = fileURLToPath(
+    new URL(`../../static/img/${file}`, import.meta.url),
+  )
   const fd = openSync(path, 'r')
   const buf = Buffer.alloc(24)
   readSync(fd, buf, 0, 24, 0)
@@ -68,7 +70,9 @@ const sections = gallerySections
                     : 'Read the guide ↗'
                   // Enlarging opens the live view when there is one, else the guide.
                   const primaryHref = liveHref || guideHref
-                  const primaryLabel = liveHref ? 'Open in JBrowse ↗' : guideLabel
+                  const primaryLabel = liveHref
+                    ? 'Open in JBrowse ↗'
+                    : guideLabel
                   return (
                     <figure class="card">
                       <button

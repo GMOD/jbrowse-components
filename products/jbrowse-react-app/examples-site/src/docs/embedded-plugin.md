@@ -20,8 +20,8 @@ item to the linear genome view's rubber-band menu — click and drag on the rule
 to see it. NPM-published plugins look identical from your app's perspective:
 `import` the class and pass it the same way.
 
-Plugins can also be [loaded from a URL](../plugins/#with-external-plugin) at runtime.
-See the
+Plugins can also be [loaded from a URL](../plugins/#with-external-plugin) at
+runtime. See the
 [plugin development guide](https://jbrowse.org/jb2/docs/developer_guide/) for
 authoring. Note: if you enable the [web worker RPC](../with-web-worker/),
 plugins must be registered in **both** the main thread and the worker.

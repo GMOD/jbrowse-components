@@ -133,7 +133,9 @@ describe('canvas display runtime filters', () => {
     // With the slot left unset, activeFilters() surfaces the schema default so
     // the "Filter by..." dialog shows it pre-populated and removable.
     const display = createDisplay()
-    expect(display.activeFilters()).toEqual([`jexl:get(feature,'gbkey')!='Src'`])
+    expect(display.activeFilters()).toEqual([
+      `jexl:get(feature,'gbkey')!='Src'`,
+    ])
   })
 
   it('the runtime override replaces (shadows) the config jexlFilters slot', () => {

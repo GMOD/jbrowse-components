@@ -35,7 +35,11 @@ const useStyles = makeStyles()(theme => ({
 
 // The chip carries the (×) to minimize itself; the minimized icon button has no
 // (×), so its tooltip drops that clause.
-function getTooltip(mode: GeneGlyphMode, collapsed: boolean, dismissed: boolean) {
+function getTooltip(
+  mode: GeneGlyphMode,
+  collapsed: boolean,
+  dismissed: boolean,
+) {
   const showing = collapsed
     ? 'Showing the longest coding transcript per gene'
     : 'Showing all transcripts per gene'

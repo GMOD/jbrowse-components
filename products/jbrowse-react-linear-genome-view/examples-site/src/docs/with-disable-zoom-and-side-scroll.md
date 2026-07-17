@@ -5,8 +5,8 @@ needs no changes to the embedded component itself — you register the plugin vi
 the `plugins` option to `createViewState`.
 
 The lock applies to wheel zoom and click-drag side-scroll while leaving the rest
-of the view interactive. See [Using plugins](../plugins/#with-inline-plugins) for the
-general inline-plugin pattern this builds on, the
+of the view interactive. See [Using plugins](../plugins/#with-inline-plugins)
+for the general inline-plugin pattern this builds on, the
 [plugin developer guide](https://jbrowse.org/jb2/docs/developer_guide/) for how
 action-wrapping works, and the
 [LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/)

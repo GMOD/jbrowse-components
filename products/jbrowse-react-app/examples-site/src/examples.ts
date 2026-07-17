@@ -30,7 +30,8 @@ export const pages: ExamplePage[] = [
       {
         slug: 'dark-theme',
         title: 'Dark theme',
-        description: 'Use the built-in dark theme via the config theme palette.',
+        description:
+          'Use the built-in dark theme via the config theme palette.',
       },
       {
         slug: 'with-on-change',
@@ -64,7 +65,8 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-fetch-config-json',
         title: 'Fetch a config.json',
-        description: 'Fetch a config.json at runtime, then build the view state.',
+        description:
+          'Fetch a config.json at runtime, then build the view state.',
       },
       {
         slug: 'add-tracks-programmatically',
