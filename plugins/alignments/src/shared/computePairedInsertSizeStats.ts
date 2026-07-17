@@ -15,8 +15,9 @@ function isPrimaryProperPair(flags: number) {
 }
 
 /**
- * Insert-size stats (mean ± 3 SD color thresholds) from primary proper-pair
- * reads only. `insertSize` is already `abs(template_length)`, so this is the
+ * Insert-size stats (robust median ± 3·1.4826·MAD color thresholds; see
+ * getInsertSizeStats) from primary proper-pair reads only. `insertSize` is
+ * already `abs(template_length)`, so this is the
  * chain denominator (template length) too — pileup and chain share one scale.
  * The insert-size distribution is a property of the whole fetched read set, so
  * the caller pools every read of a region (across groups) and feeds one shared

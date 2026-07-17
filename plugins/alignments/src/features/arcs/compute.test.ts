@@ -1249,6 +1249,68 @@ describe('computeArcsFromPileupData', () => {
     // fwd→rev split junction → split-inversion slot 7, not long-insert 1
     expect(loneArc.colorType).toBe(7)
   })
+
+  test('long-range threshold is robust to a few extreme-insert outliers', () => {
+    // A tight cluster of normal-radius LR pairs, two extreme outliers, and one
+    // target pair with a large-but-not-outlier radius (~15kb). The outliers
+    // inflate a mean+3·std threshold (~570kb) past the target, so the old
+    // estimator would leave the target unflagged; the robust median±3·1.4826·MAD
+    // threshold (~1.2kb) stays near the cluster and flags it. colorByType
+    // 'orientation' ignores insert size except via the long-range override, so
+    // an LR pair is COLOR_DEFAULT (0) unless the override fires → COLOR_LONG_INSERT
+    // (1). This is the only path computeLongRangeThreshold feeds.
+    const spans = [
+      1800, 1900, 2000, 2000, 2000, 2100, 2100, 2200, 1950, 2050, // cluster
+      1_000_000, 1_000_000, // outliers (radius ~500kb)
+      30_000, // target (radius ~15kb > 10kb large-insert threshold)
+    ]
+    const positions: number[] = []
+    const flags: number[] = []
+    const strands: number[] = []
+    const orientations: number[] = []
+    const inserts: number[] = []
+    const names: string[] = []
+    spans.forEach((span, i) => {
+      const a = 1000 + i * 4000
+      const b = a + span
+      positions.push(a, a + 100, b, b + 100)
+      flags.push(
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      )
+      strands.push(1, -1)
+      orientations.push(1, 1) // LR
+      inserts.push(span, span)
+      names.push(`pair${i}`, `pair${i}`)
+    })
+    const data = makePileupData({
+      regionStart: 0,
+      readPositions: new Uint32Array(positions),
+      readFlags: new Uint16Array(flags),
+      readStrands: new Int8Array(strands),
+      readPairOrientations: new Uint8Array(orientations),
+      readInsertSizes: new Float32Array(inserts),
+      readNames: names,
+    })
+    const regions = [
+      { refName: 'chr1', start: 0, end: 2_000_000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'orientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    const radius = (a: (typeof arcs)[number]) =>
+      Math.abs((a.p2.bp - a.p1.bp) / 2)
+    // Target (~15kb radius) is flagged long-range despite the outliers.
+    const target = arcs.find(a => radius(a) > 10_000 && radius(a) < 100_000)!
+    expect(target.colorType).toBe(1) // COLOR_LONG_INSERT
+    // The threshold sits between the cluster and the target: normal-radius LR
+    // pairs stay COLOR_DEFAULT, confirming it isn't trivially low.
+    expect(
+      arcs.filter(a => radius(a) < 5_000).every(a => a.colorType === 0),
+    ).toBe(true)
+  })
 })
 
 describe('groupArcsByRef', () => {

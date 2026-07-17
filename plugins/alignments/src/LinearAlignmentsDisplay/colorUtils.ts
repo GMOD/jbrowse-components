@@ -1,6 +1,7 @@
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
 import { ColorScheme } from './constants.ts'
+import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
 import { IS_GRADIENT_SPAN_FRAC } from './shaders/slang/read.iface.generated.ts'
 
@@ -102,15 +103,16 @@ function insertSizeCategory(
 
 // Schemes whose color depends on pair orientation/insert size, so an unmapped
 // mate (tlen=0) or inter-chromosomal mate needs its own bucket rather than a
-// misleading "short insert"/orientation hue. Module-level so the per-read
-// classification in readColorCategory (a render + legend hot loop) does not
-// reallocate this each call.
-const orientationSchemes = new Set([
-  ColorScheme.insertSize,
-  ColorScheme.pairOrientation,
-  ColorScheme.insertSizeAndOrientation,
-  ColorScheme.insertSizeGradient,
-])
+// misleading "short insert"/orientation hue. Derived from the `mateAware` flag
+// in the shared COLOR_SCHEMES registry (single source), mapped to shader
+// indices. Module-level so the per-read classification in readColorCategory (a
+// render + legend hot loop) does not reallocate this each call. SYNC: the shader
+// twin `isOrientationScheme` (read.slang) hard-codes the same membership.
+const orientationSchemes = new Set(
+  Object.values(COLOR_SCHEMES)
+    .filter(s => s.mateAware)
+    .map(s => ColorScheme[s.shaderScheme]),
+)
 
 // Classify read `i` under the active color scheme. Precedence:
 // opt-in paired-supplementary override → long-read-chain-supplementary strand

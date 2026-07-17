@@ -147,6 +147,10 @@ float3 modificationsColor(uint flags, Uniforms u) {
   return unpackRGBA(u.colorModFwd).xyz;
 }
 
+// SYNC: this membership mirrors the `mateAware` flag in the COLOR_SCHEMES
+// registry (colorSchemes.ts), which drives the `orientationSchemes` set in the
+// Canvas2D twin. Slang can't read that registry, so a new mate-aware scheme must
+// be added here by hand.
 bool isOrientationScheme(int cs) {
   return cs == CS_INSERT_SIZE || cs == CS_PAIR_ORIENT
       || cs == CS_IS_AND_ORIENT || cs == CS_IS_GRADIENT;

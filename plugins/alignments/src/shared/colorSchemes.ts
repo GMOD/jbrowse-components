@@ -25,6 +25,18 @@ export interface ColorSchemeDef {
   // name always names a real shader branch.
   shaderScheme: ShaderScheme
   menu: ColorSchemeMenu
+  // Color depends on the read's MATE (insert size / pair orientation), so an
+  // unmapped mate (tlen=0) or inter-chromosomal mate needs its own color bucket
+  // rather than a misleading insert/orientation hue. Drives `orientationSchemes`
+  // in colorUtils.ts. SYNC: the shader twin `isOrientationScheme` (read.slang)
+  // hard-codes the same membership (Slang can't read this registry) — keep the
+  // two in step.
+  mateAware?: boolean
+  // Meaningful only for paired-end data, so toggling "view as pairs" auto-
+  // switches these on/off (see PAIRING_COLOR_SCHEMES in the model). Broader than
+  // mateAware: first-of-pair strand is paired-only but reads only its own flags,
+  // so it is pairedOnly but NOT mateAware.
+  pairedOnly?: boolean
 }
 
 // Single registry of color-by schemes, keyed by ColorSchemeType. Adding a scheme
@@ -66,6 +78,8 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'insertSize',
     shaderScheme: 'insertSize',
     menu: { kind: 'radio', label: 'Insert size', group: 'pairedEnd' },
+    mateAware: true,
+    pairedOnly: true,
   },
   insertSizeGradient: {
     type: 'insertSizeGradient',
@@ -75,16 +89,21 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
       label: 'Insert size (gradient)',
       group: 'pairedEnd',
     },
+    mateAware: true,
+    pairedOnly: true,
   },
   firstOfPairStrand: {
     type: 'firstOfPairStrand',
     shaderScheme: 'firstOfPairStrand',
     menu: { kind: 'radio', label: 'First of pair strand', group: 'pairedEnd' },
+    pairedOnly: true,
   },
   pairOrientation: {
     type: 'pairOrientation',
     shaderScheme: 'pairOrientation',
     menu: { kind: 'radio', label: 'Pair orientation', group: 'pairedEnd' },
+    mateAware: true,
+    pairedOnly: true,
   },
   insertSizeAndOrientation: {
     type: 'insertSizeAndOrientation',
@@ -94,12 +113,15 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
       label: 'Insert size and orientation',
       group: 'pairedEnd',
     },
+    mateAware: true,
+    pairedOnly: true,
   },
   // legacy alias for firstOfPairStrand; never shown as its own radio
   stranded: {
     type: 'stranded',
     shaderScheme: 'firstOfPairStrand',
     menu: { kind: 'special', label: 'First of pair strand' },
+    pairedOnly: true,
   },
   tag: {
     type: 'tag',

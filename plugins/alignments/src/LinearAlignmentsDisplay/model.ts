@@ -233,14 +233,12 @@ function colorSchemeIndexFor(type: ColorSchemeType) {
 // Color schemes that only carry meaning for paired-end data. Toggling "view as
 // pairs" auto-switches between plain and pairing coloring for these, but leaves
 // an explicit non-pairing choice (tag, methylation, base quality, ...) alone.
-const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>([
-  'insertSize',
-  'insertSizeGradient',
-  'insertSizeAndOrientation',
-  'pairOrientation',
-  'firstOfPairStrand',
-  'stranded',
-])
+// Derived from the `pairedOnly` flag in the shared COLOR_SCHEMES registry.
+const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
+  Object.values(COLOR_SCHEMES)
+    .filter(s => s.pairedOnly)
+    .map(s => s.type),
+)
 
 // Material UI 200-tone palette for color-by-tag values. The first value
 // hit gets index 0, the eleventh wraps to index 0 again.

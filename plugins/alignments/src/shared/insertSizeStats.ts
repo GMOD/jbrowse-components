@@ -79,41 +79,50 @@ export function classifyInsertSize(
   return 'normal'
 }
 
-export function getInsertSizeStats(filtered: number[]): InsertSizeStats {
-  const len = filtered.length
-  const avg = sum(filtered) / len
-  // Two-pass mean-subtracted variance. The single-pass sum-of-squares form
-  // (len*Σx² − (Σx)²)/len² is unstable at high coverage: both terms grow as
-  // O(len²·x̄²), overflow 2^53, and lose precision to catastrophic cancellation
-  // — a slightly-negative result then yields sd = NaN, which silently collapses
-  // insert-size coloring (every read compares as "normal").
+export interface RobustSpread {
+  center: number
+  spread: number
+  avg: number
+  sd: number
+}
+
+// Robust center + spread of a sample: the median with a MAD-based spread
+// (sd ≈ 1.4826·MAD), scaled by `numSds` (default 3 → the classic ±3σ band),
+// plus the mean/sd for callers that want them. Prefer this over mean ± Nσ for
+// right-skewed data: insert-size distributions (and paired-end arc radii) have a
+// long upper tail — deletions, large SVs — that inflates sd, driving the lower
+// bound negative (nothing flagged "short") and the upper bound past genuine
+// long-range signal. The MAD measures spread from the normal bulk and ignores
+// that tail. When MAD = 0 (over half the values identical) the robust spread is
+// degenerate, so fall back to mean/sd there.
+//
+// The sd itself is a two-pass mean-subtracted variance. The single-pass
+// sum-of-squares form (len*Σx² − (Σx)²)/len² is unstable at high coverage: both
+// terms grow as O(len²·x̄²), overflow 2^53, and lose precision to catastrophic
+// cancellation — a slightly-negative result then yields sd = NaN.
+export function robustSpread(values: number[], numSds = 3): RobustSpread {
+  const len = values.length
+  const avg = sum(values) / len
   let sumSqDiff = 0
   for (let i = 0; i < len; i++) {
-    const diff = filtered[i]! - avg
+    const diff = values[i]! - avg
     sumSqDiff += diff * diff
   }
   const sd = Math.sqrt(sumSqDiff / len)
 
-  // Color thresholds use a robust spread (median ± 3·1.4826·MAD) rather than
-  // mean ± 3·sd. Insert-size distributions are right-skewed: deletions and
-  // large SVs sit in a long upper tail that inflates sd, which on the short
-  // side drives avg − 3·sd negative (clamped to 0) so NOTHING is ever flagged
-  // "short insert" and the insertion-supporting signal silently vanishes. The
-  // MAD measures spread from the normal-insert bulk and ignores that tail, so
-  // the lower bound stays positive and meaningful and the upper bound tracks
-  // the bulk closely enough that moderate deletions aren't masked. When MAD = 0
-  // (over half the values identical) the robust spread is degenerate, so fall
-  // back to the mean/sd estimate there.
-  const sorted = [...filtered].sort((a, b) => a - b)
+  const sorted = [...values].sort((a, b) => a - b)
   const med = median(sorted)
   const mad = medianAbsDevFromSorted(sorted, med)
   const center = mad > 0 ? med : avg
-  const spread = mad > 0 ? 3 * MAD_TO_SD * mad : 3 * sd
-  const upper = center + spread
-  const lower = Math.max(0, center - spread)
+  const spread = mad > 0 ? numSds * MAD_TO_SD * mad : numSds * sd
+  return { center, spread, avg, sd }
+}
+
+export function getInsertSizeStats(filtered: number[]): InsertSizeStats {
+  const { center, spread, avg, sd } = robustSpread(filtered)
   return {
-    upper,
-    lower,
+    upper: center + spread,
+    lower: Math.max(0, center - spread),
     avg,
     sd,
   }

@@ -11,7 +11,7 @@ import {
   readTrailingBp,
 } from '@jbrowse/cigar-utils'
 
-import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
+import { classifyInsertSize, robustSpread } from '../../shared/insertSizeStats.ts'
 import {
   connectionEndpoints,
   resolveReadGroup,
@@ -339,7 +339,7 @@ function computeArcShape({
 
 function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
   // Split-junction spans are breakpoint gaps, not paired-end insert radii;
-  // mixing them into the distribution skews mean + 3·std and mis-classifies the
+  // mixing them into the distribution skews the spread and mis-classifies the
   // long-insert coloring. Characterize the threshold from mate-link arcs only.
   const radii = pendingArcs
     .filter(a => !a.isSplit && a.p1Ref === a.p2Ref)
@@ -347,10 +347,11 @@ function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
   if (radii.length === 0) {
     return Infinity
   }
-  const mean = radii.reduce((a, b) => a + b, 0) / radii.length
-  const variance = radii.reduce((a, b) => a + (b - mean) ** 2, 0) / radii.length
-  const std = Math.sqrt(variance)
-  return mean + LONG_RANGE_STDDEV_THRESHOLD * std
+  // Robust center + spread (median ± N·1.4826·MAD): arc radii are right-skewed
+  // like insert sizes, so a few very large inserts would inflate a mean/std
+  // threshold and let genuine long-range pairs escape the long-insert override.
+  const { center, spread } = robustSpread(radii, LONG_RANGE_STDDEV_THRESHOLD)
+  return center + spread
 }
 
 interface ReadEntry {

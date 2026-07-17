@@ -2,6 +2,8 @@ import {
   SAM_FLAG_FIRST_IN_PAIR,
   SAM_FLAG_PROPER_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
+  isAbnormalPairDirection,
+  pairDirection,
 } from '@jbrowse/alignments-core'
 import {
   createProgressReporter,
@@ -61,11 +63,9 @@ import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 // whether the aligner set the 0x2 flag.
 function isConcordantOrientation(f: Feature) {
   const orientation = f.get('pair_orientation') as string | undefined
-  return (
-    orientation === undefined ||
-    orientation === 'F1R2' ||
-    orientation === 'F2R1'
-  )
+  // LR (F1R2/F2R1) — or unknown — is concordant; everything else is aberrant.
+  // Defers to the shared FR classifier so the LR set lives in one place.
+  return !isAbnormalPairDirection(pairDirection(orientation))
 }
 
 // A chain counts as a proper pair only when every read carries the proper-pair

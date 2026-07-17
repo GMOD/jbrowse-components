@@ -64,6 +64,10 @@ export function isNormalOrientation(
   return hasPaired ? orientNum <= 1 : s1 === s2
 }
 
+// `orientNum` is a readPairOrientations code; this passes it through as the
+// color index unchanged, which is only correct because LINKED_READ_COLOR_PAIR_*
+// (1..4) are defined equal to PAIR_DIRECTION_NUM (buildBaseFeatureData.ts:
+// LR:1, RL:2, RR:3, LL:4). SYNC: keep the two orderings identical.
 function pairedColorType(orientNum: number) {
   return orientNum >= LINKED_READ_COLOR_PAIR_LR &&
     orientNum <= LINKED_READ_COLOR_PAIR_LL
