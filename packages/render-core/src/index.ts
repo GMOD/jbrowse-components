@@ -77,6 +77,7 @@ export {
   getPreparedCanvas2D,
   lookupColorRamp,
   makeBpMapper,
+  makeCellLeftMapper,
   makeRampFillStyleLut,
   prepareCanvas,
   syncCanvasSize,

@@ -1,7 +1,6 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
-  bpToScreenX,
-  pileupCellWidth,
+  makePileupCellMapper,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -24,8 +23,12 @@ export function drawPerBaseLetter(
 ) {
   const n = region.perBaseLetterPositions.length
   const fH = state.featureHeight
-  const bpPerPx = bpLength / fullBlockWidth
-  const w = pileupCellWidth(bpPerPx, true)
+  const { cellX, w } = makePileupCellMapper(
+    block,
+    bpLength,
+    fullBlockWidth,
+    true,
+  )
   // Same per-base palette as mismatch / softclip-base draws, so the Canvas2D
   // and GPU paths render identical colors (and both mute under modifications).
   const baseColors = buildBaseColorTupleMap(state)
@@ -37,8 +40,7 @@ export function drawPerBaseLetter(
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
-    const bp = region.perBaseLetterPositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const x = cellX(region.perBaseLetterPositions[i]!)
     ctx.fillStyle = rgb255(baseColors[region.perBaseLetterBases[i]!] ?? unknown)
     ctx.fillRect(x, y, w, fH)
   }

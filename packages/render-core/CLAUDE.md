@@ -79,6 +79,18 @@ package_.
   through `writeBpRangeUniforms(f32, U.bpRangeX, clip, reversed)` in either
   pattern; don't hand-roll the `f32[U.bpRangeX + n] = …` triple (the
   reversed-block pivot is easy to get subtly wrong per copy).
+- **Per-base Canvas2D cells go through `makeCellLeftMapper`, never
+  `makeBpMapper` directly.** `makeBpMapper(bp)` is the cell's left edge only on
+  a forward block: reversed runs bp leftward, so it returns the _right_ edge and
+  a `fillRect(x, y, +w, h)` from there covers the neighboring base. One base of
+  error — invisible zoomed out (cells floor to ~1px), glaring zoomed in, and
+  only on flipped regions, so it survives review. MAF and the alignments pileup
+  each hand-rolled this pivot; the pileup got it wrong across all five of its
+  cell layers. Two-edge spans (`min(toX(start), toX(end))`) and boundary marks
+  (insertions, clip bars) are orientation-safe and don't need it. Cell _width_
+  stays with the caller — it's a per-plugin rule. The Canvas2D twin of
+  `writeBpRangeUniforms` above.
+
 - **`gpuDevice` is a shared singleton.** `getGpuDevice` serves both the HAL and
   the LD-matrix WebGPU compute path (`plugins/variants/.../getLDMatrixGPU.ts`),
   so its `?renderer=` override checks are load-bearing in both. The `.lost`

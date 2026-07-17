@@ -1,9 +1,8 @@
 import { buildBaseColorTupleMap } from './baseColors.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
-  bpToScreenX,
   frequencyFade,
-  pileupCellWidth,
+  makePileupCellMapper,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -24,9 +23,13 @@ export function drawMismatches(
   state: RenderState,
 ) {
   const fH = state.featureHeight
-  const bpPerPx = bpLength / fullBlockWidth
   const pxPerBp = fullBlockWidth / bpLength
-  const w = pileupCellWidth(bpPerPx, false)
+  const { cellX, w } = makePileupCellMapper(
+    block,
+    bpLength,
+    fullBlockWidth,
+    false,
+  )
   const baseColors = buildBaseColorTupleMap(state)
 
   for (let i = 0; i < region.mismatchPositions.length; i++) {
@@ -35,8 +38,7 @@ export function drawMismatches(
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
-    const bp = region.mismatchPositions[i]!
-    const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
+    const x = cellX(region.mismatchPositions[i]!)
     const base = region.mismatchBases[i]!
     // N has a palette entry; any other non-A/C/G/T byte falls back to the N
     // color, matching the GPU shader (mismatch.slang baseColor catch-all).

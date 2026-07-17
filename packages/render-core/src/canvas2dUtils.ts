@@ -205,3 +205,37 @@ export function makeBpMapper(bounds: BpRegionBounds) {
     ? (bp: number) => screenEndPx - ((bp - start) / span) * w
     : (bp: number) => screenStartPx + ((bp - start) / span) * w
 }
+
+/**
+ * Left edge of the **1bp cell** covering `bp` — for painters that fill a rect
+ * per base (MAF alignment cells, the alignments pileup's mismatch /
+ * modification / per-base quality+letter / soft-clip base layers).
+ *
+ * Use this, not `makeBpMapper`, whenever the mark is a cell rather than a point
+ * or a two-edge span. `makeBpMapper(bp)` is the cell's left edge only on a
+ * forward block: a reversed block runs bp leftward, so it lands on the cell's
+ * *right* edge, and `fillRect(x, y, +w, h)` from there covers bp-1 instead. The
+ * error is one base wide — invisible zoomed out (cells floor to ~1px), a whole
+ * base off zoomed in, and it only reproduces on flipped regions, so it survives
+ * casual review. Every plugin that hand-rolled the pivot had to rediscover it;
+ * the alignments pileup got it wrong across all five of its cell layers.
+ *
+ * Two-edge spans (`min(toX(start), toX(end))`) and boundary marks (insertions,
+ * clip bars, centered on a bp edge) are orientation-safe already and don't need
+ * this. The GPU side has no equivalent bug — shaders span
+ * `bpToClipX(pos)`→`bpToClipX(pos+1)` unflipped and mirror via `flipX` — and
+ * gets its own pivot from `writeBpRangeUniforms`.
+ *
+ * Callers own the cell *width*: it's a per-plugin rule (MAF uses the raw
+ * bp-scale; the pileup floors at 1px and adds a seam fudge). Only the pivot is
+ * shared.
+ */
+export function makeCellLeftMapper(bounds: BpRegionBounds) {
+  const toX = makeBpMapper(bounds)
+  const pxPerBp =
+    (bounds.screenEndPx - bounds.screenStartPx) / (bounds.end - bounds.start)
+  // One base's signed span: exact for fractional zooms, and one add per cell —
+  // these run per base per row, so a second mapper call per cell would show.
+  const shift = bounds.reversed ? -pxPerBp : 0
+  return (bp: number) => toX(bp) + shift
+}

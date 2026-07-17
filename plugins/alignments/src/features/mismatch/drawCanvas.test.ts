@@ -8,9 +8,11 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Records the fillStyle in effect at each fillRect, so we can read back the
-// exact CSS color (and its alpha) the mismatch drew with.
+// exact CSS color (and its alpha) the mismatch drew with, plus the rect's
+// horizontal extent for the cell-geometry tests.
 function recordingCtx() {
   const fills: string[] = []
+  const rects: { x: number; w: number }[] = []
   let currentFill = ''
   const ctx = {
     set fillStyle(v: string) {
@@ -19,11 +21,12 @@ function recordingCtx() {
     get fillStyle() {
       return currentFill
     },
-    fillRect() {
+    fillRect(x: number, _y: number, w: number) {
       fills.push(currentFill)
+      rects.push({ x, w })
     },
   } as unknown as Ctx2D
-  return { ctx, fills }
+  return { ctx, fills, rects }
 }
 
 // Full RenderState with a red 'A' base color. Only the fields drawMismatches
@@ -93,6 +96,40 @@ function drawOne(state: RenderState, qual: number) {
   drawMismatches(ctx, oneMismatch(qual), BLOCK, BP_LENGTH, BLOCK_WIDTH, state)
   return fills[0]
 }
+
+// A mismatch cell must cover its own base in both orientations. `bpToScreenX`
+// returns the cell's *right* edge on a reversed block (bp runs leftward), so a
+// painter that treats it as the left edge lands a full base off once a base is
+// wider than a pixel — invisible zoomed out (width floors to 1px), glaring
+// zoomed in. makePileupCellMapper owns that pivot for every 1bp-cell painter.
+describe('drawMismatches cell geometry', () => {
+  // BLOCK is bp 100..110 across 100px => 10 px/bp, so bp 100 owns [0,10]
+  // forward. Reversed, bp 100 is the rightmost base and owns [90,100].
+  const cellFor = (block: DrawBlock) => {
+    const { ctx, rects } = recordingCtx()
+    drawMismatches(
+      ctx,
+      oneMismatch(60),
+      block,
+      BP_LENGTH,
+      BLOCK_WIDTH,
+      baseState(),
+    )
+    return rects[0]!
+  }
+
+  test('forward block: cell covers its base', () => {
+    const { x, w } = cellFor(BLOCK)
+    expect(x).toBeCloseTo(0)
+    expect(x + w).toBeCloseTo(10)
+  })
+
+  test('reversed block: cell covers its base, not the neighbor', () => {
+    const { x, w } = cellFor({ ...BLOCK, reversed: true })
+    expect(x).toBeCloseTo(90)
+    expect(x + w).toBeCloseTo(100)
+  })
+})
 
 describe('drawMismatches quality fade', () => {
   test('mismatchAlpha off: base is fully opaque regardless of quality', () => {

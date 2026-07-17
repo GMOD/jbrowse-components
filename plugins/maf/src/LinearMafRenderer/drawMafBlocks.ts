@@ -1,6 +1,6 @@
 import {
   clipBlockForCanvas,
-  makeBpMapper,
+  makeCellLeftMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { renderBases } from './rendering/bases.ts'
@@ -49,13 +49,7 @@ export function drawMafBlocks(
       continue
     }
     const scale = clip.fullBlockWidth / clip.bpLength
-    const { reversed } = renderBlock
-    const bpToPx = makeBpMapper(renderBlock)
-    // For non-reversed, bpToPx(bp) is the LEFT edge of the cell at bp.
-    // For reversed, bpToPx(bp) is the RIGHT edge — subtract one cell width.
-    const bpToCellLeftPx = reversed
-      ? (bp: number) => bpToPx(bp) - scale
-      : bpToPx
+    const bpToCellLeftPx = makeCellLeftMapper(renderBlock)
     const renderingContext = { ctx, scale, h, cellColorConfig, bpToCellLeftPx }
 
     ctx.save()

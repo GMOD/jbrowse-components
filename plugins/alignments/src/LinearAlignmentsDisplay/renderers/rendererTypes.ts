@@ -1,3 +1,5 @@
+import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
+
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
@@ -245,8 +247,43 @@ export function frequencyFade(
 // Canvas2D-only compensation; keeping it here means every base-wall layer shares
 // one rule instead of hardcoding (or forgetting) the `+ 0.5` locally.
 const PILEUP_CELL_SEAM_FUDGE_PX = 0.5
-export function pileupCellWidth(bpPerPx: number, contiguous: boolean) {
+// Private on purpose: a width alone invites pairing it with a bare
+// `bpToScreenX`, which is the reversed-block bug makePileupCellMapper exists to
+// prevent. Go through the mapper — it hands back the matching left edge.
+function pileupCellWidth(bpPerPx: number, contiguous: boolean) {
   return Math.max(1, 1 / bpPerPx) + (contiguous ? PILEUP_CELL_SEAM_FUDGE_PX : 0)
+}
+
+/**
+ * Per-block mapper for the 1bp-cell painters (mismatch, modification, per-base
+ * quality/letter, soft-clip bases): `cellX(bp)` is the LEFT edge of base `bp`'s
+ * cell and `w` its width.
+ *
+ * Returning both together is the point — a bare width invites pairing it with a
+ * bare `bpToScreenX`, which is the reversed-block bug that hit all five layers
+ * (see `makeCellLeftMapper`, which owns the pivot for every plugin). Width stays
+ * local because the floor-and-seam-fudge rule is ours alone.
+ *
+ * `bpLength`/`fullBlockWidth` are the same block's clip-derived span
+ * (`clipBlockForCanvas` defines them as `end - start` / `screenEndPx -
+ * screenStartPx`), so reconstructing `screenEndPx` here is exact.
+ */
+export function makePileupCellMapper(
+  block: DrawBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+  contiguous: boolean,
+) {
+  return {
+    w: pileupCellWidth(bpLength / fullBlockWidth, contiguous),
+    cellX: makeCellLeftMapper({
+      start: block.start,
+      end: block.start + bpLength,
+      screenStartPx: block.screenStartPx,
+      screenEndPx: block.screenStartPx + fullBlockWidth,
+      reversed: block.reversed,
+    }),
+  }
 }
 
 // Introns (skip/N gaps) draw as 1px centerlines; once reads get compact the
