@@ -1,3 +1,4 @@
+import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { scaleTypeFromString } from '@jbrowse/wiggle-core'
 
 import type {
@@ -110,17 +111,47 @@ export function renderingTypeToInt(type: string): WiggleRenderingType {
 // once so row-placement lives in a single spot.
 export type WiggleLayer = Omit<SourceRenderData, 'rowIndex'>
 
-// The min/avg/max whisker layers for one source. Collapses to just the avg
-// layer in density mode or when the data carries no summary variation. Scatter
-// draws points back-to-front, so its layer order is reversed.
+// One whisker band's per-instance colors: each feature gets posColor or negColor
+// by whether that band's value sits above or below the pivot, then the band tint
+// (lighten for max, darken for min, none for mean) is baked in. Only two packed
+// colors are possible per band, so they're computed once and indexed by sign.
+function bandColorsAbgr(
+  bandScores: Float32Array,
+  numFeatures: number,
+  pivot: number,
+  posColor: [number, number, number],
+  negColor: [number, number, number],
+  tint: (c: [number, number, number]) => [number, number, number],
+): Uint32Array {
+  const posAbgr = normalizedRgbToABGR(...tint(posColor))
+  const negAbgr = normalizedRgbToABGR(...tint(negColor))
+  const out = new Uint32Array(numFeatures)
+  for (let i = 0; i < numFeatures; i++) {
+    out[i] = bandScores[i]! >= pivot ? posAbgr : negAbgr
+  }
+  return out
+}
+
+const noTint = (c: [number, number, number]) => c
+
+// The min/avg/max whisker layers for one source. Each band is bicolor: colored
+// by its own value's sign vs the pivot (posColor above, negColor below), so
+// signed data (e.g. phyloP) reads as pos/neg while the light-max/dark-min tint
+// still conveys the whisker range. Collapses to just the avg layer in density
+// mode or when the data carries no summary variation. Scatter draws points
+// back-to-front, so its layer order is reversed.
 export function makeWhiskersLayers({
   data,
-  color,
+  posColor,
+  negColor,
+  pivot,
   isDensityMode,
   isScatter,
 }: {
   data: FeatureArrays
-  color: [number, number, number]
+  posColor: [number, number, number]
+  negColor: [number, number, number]
+  pivot: number
   isDensityMode: boolean
   isScatter: boolean
 }): WiggleLayer[] {
@@ -129,7 +160,15 @@ export function makeWhiskersLayers({
     featurePositions,
     featureScores: data.featureScores,
     numFeatures,
-    color,
+    color: posColor,
+    colorsAbgr: bandColorsAbgr(
+      data.featureScores,
+      numFeatures,
+      pivot,
+      posColor,
+      negColor,
+      noTint,
+    ),
   }
   const layers =
     isDensityMode || !data.hasSummaryScores
@@ -139,14 +178,30 @@ export function makeWhiskersLayers({
             featurePositions,
             featureScores: data.featureMaxScores,
             numFeatures,
-            color: lightenColor(color, 0.4),
+            color: lightenColor(posColor, 0.4),
+            colorsAbgr: bandColorsAbgr(
+              data.featureMaxScores,
+              numFeatures,
+              pivot,
+              posColor,
+              negColor,
+              c => lightenColor(c, 0.4),
+            ),
           },
           avg,
           {
             featurePositions,
             featureScores: data.featureMinScores,
             numFeatures,
-            color: darkenColor(color, 0.4),
+            color: darkenColor(posColor, 0.4),
+            colorsAbgr: bandColorsAbgr(
+              data.featureMinScores,
+              numFeatures,
+              pivot,
+              posColor,
+              negColor,
+              c => darkenColor(c, 0.4),
+            ),
           },
         ]
   return isScatter ? layers.reverse() : layers
@@ -320,6 +375,7 @@ export function makeRenderState(
   numRows: number,
   scatterPointSize: number,
   lineWidth: number,
+  origin: number,
 ): WiggleGPURenderState {
   return {
     domainY: domain,
@@ -330,5 +386,6 @@ export function makeRenderState(
     numRows,
     scatterPointSize,
     lineWidth,
+    origin,
   }
 }

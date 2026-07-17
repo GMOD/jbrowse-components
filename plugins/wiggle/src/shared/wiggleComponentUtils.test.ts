@@ -115,7 +115,8 @@ describe('makeWhiskersLayers', () => {
   const scores = new Float32Array([5, 8])
   const minScores = new Float32Array([2, 4])
   const maxScores = new Float32Array([9, 12])
-  const color: [number, number, number] = [0.2, 0.4, 0.8]
+  const posColor: [number, number, number] = [0.2, 0.4, 0.8]
+  const negColor: [number, number, number] = [0.9, 0.2, 0.2]
 
   const summaryData = {
     featurePositions: positions,
@@ -135,10 +136,12 @@ describe('makeWhiskersLayers', () => {
     hasSummaryScores: false,
   }
 
+  const base = { posColor, negColor, pivot: 0 }
+
   test('returns 3 layers (max, avg, min) when summary data present', () => {
     const result = makeWhiskersLayers({
       data: summaryData,
-      color,
+      ...base,
       isDensityMode: false,
       isScatter: false,
     })
@@ -151,7 +154,7 @@ describe('makeWhiskersLayers', () => {
   test('returns single layer when no summary variation', () => {
     const result = makeWhiskersLayers({
       data: noSummaryData,
-      color,
+      ...base,
       isDensityMode: false,
       isScatter: false,
     })
@@ -161,7 +164,7 @@ describe('makeWhiskersLayers', () => {
   test('returns single layer in density mode', () => {
     const result = makeWhiskersLayers({
       data: summaryData,
-      color,
+      ...base,
       isDensityMode: true,
       isScatter: false,
     })
@@ -171,13 +174,35 @@ describe('makeWhiskersLayers', () => {
   test('reverses order in scatter mode', () => {
     const result = makeWhiskersLayers({
       data: summaryData,
-      color,
+      ...base,
       isDensityMode: false,
       isScatter: true,
     })
     expect(result).toHaveLength(3)
     expect(result[0]!.featureScores).toBe(minScores)
     expect(result[2]!.featureScores).toBe(maxScores)
+  })
+
+  test('colors each band per feature by sign vs pivot', () => {
+    // pivot 6: avg [5,8] -> neg,pos (differ); max [9,12] -> pos,pos (same);
+    // min [2,4] -> neg,neg (same).
+    const [max, avg, min] = makeWhiskersLayers({
+      data: summaryData,
+      posColor,
+      negColor,
+      pivot: 6,
+      isDensityMode: false,
+      isScatter: false,
+    })
+    expect(avg!.colorsAbgr).toHaveLength(2)
+    expect(avg!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![1]) // neg vs pos
+    expect(max!.colorsAbgr![0]).toBe(max!.colorsAbgr![1]) // both pos
+    expect(min!.colorsAbgr![0]).toBe(min!.colorsAbgr![1]) // both neg
+    // the max band's pos color is a lightened variant of the avg band's pos
+    expect(max!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![1])
+    // below-pivot avg color equals the min band's (both plain neg, but min is
+    // darkened) — so they must differ by the tint
+    expect(min!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![0])
   })
 })
 

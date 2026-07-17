@@ -21,6 +21,7 @@ function sourceLayers({
   scatter,
   posColor,
   negColor,
+  pivot,
 }: {
   source: WiggleSourceData
   summaryScoreMode: string
@@ -28,15 +29,18 @@ function sourceLayers({
   scatter: boolean
   posColor: [number, number, number]
   negColor: [number, number, number]
+  pivot: number
 }): WiggleLayer[] {
-  // summaryScoreMode selects the presentation. whiskers/min/max read the full
-  // (unsplit) score arrays, so they render regardless of the bicolor pos/neg
-  // split, which is the 'avg' presentation. density has no whiskers variant, so
-  // it falls through to the avg split.
+  // summaryScoreMode selects the presentation. whiskers is bicolor per band
+  // (colored by each band's value vs the pivot). min/max read the full (unsplit)
+  // score arrays as a single color; 'avg' uses the worker's pos/neg split.
+  // density has no whiskers variant, so it falls through to the avg split.
   if (summaryScoreMode === 'whiskers' && !isDensityMode) {
     return makeWhiskersLayers({
       data: source,
-      color: posColor,
+      posColor,
+      negColor,
+      pivot,
       isDensityMode,
       isScatter: scatter,
     })
@@ -87,6 +91,10 @@ export interface WiggleGpuProps {
   summaryScoreMode: string
   renderingType: string
   isDensityMode: boolean
+  // Threshold the whiskers bands are colored around (= bicolorPivot). Lives in
+  // gpuProps (not rpcProps) so a pivot change re-encodes the color buffer
+  // without an RPC roundtrip.
+  bicolorPivot: number
 }
 
 export function buildSourceRenderData(
@@ -100,6 +108,7 @@ export function buildSourceRenderData(
     summaryScoreMode,
     renderingType,
     isDensityMode,
+    bicolorPivot,
   } = gpuProps
   const overlay = isOverlayMode(renderingType)
   const scatter = isScatterMode(renderingType)
@@ -134,6 +143,7 @@ export function buildSourceRenderData(
         scatter,
         posColor,
         negColor: overlay ? posColor : defaultNegColor,
+        pivot: bicolorPivot,
       })
       for (const layer of layers) {
         result.push({ ...layer, rowIndex: row })

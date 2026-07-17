@@ -45,6 +45,7 @@ interface SingleModelLike {
   renderingType: string
   isDensityMode: boolean
   summaryScoreMode: string
+  bicolorPivot: number
 }
 
 // Mirror LinearWiggleDisplay.gpuProps() so tests exercise the same formula
@@ -60,6 +61,7 @@ function singleGpuProps(
     renderingType: 'xyplot',
     isDensityMode: false,
     summaryScoreMode: 'avg',
+    bicolorPivot: 0,
     ...overrides,
   }
   const wantsSolidColor = !m.useBicolor && !m.isDensityMode
@@ -75,6 +77,7 @@ function singleGpuProps(
     summaryScoreMode: m.summaryScoreMode,
     isDensityMode: m.isDensityMode,
     renderingType: m.renderingType,
+    bicolorPivot: m.bicolorPivot,
   }
 }
 

@@ -28,6 +28,7 @@ const baseGpuProps: WiggleGpuProps = {
   summaryScoreMode: 'avg',
   renderingType: 'xyplot',
   isDensityMode: false,
+  bicolorPivot: 0,
 }
 
 describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () => {

@@ -1,6 +1,6 @@
 import { SubmitDialog } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
-import { FormControlLabel, Radio, Typography } from '@mui/material'
+import { FormControlLabel, Radio, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const SetColorDialog = observer(function SetColorDialog({
@@ -12,10 +12,12 @@ const SetColorDialog = observer(function SetColorDialog({
     posColor: string
     negColor: string
     useBicolor: boolean
+    bicolorPivot: number
     setColor: (arg?: string) => void
     setPosColor: (arg?: string) => void
     setNegColor: (arg?: string) => void
     setUseBicolor: (arg?: boolean) => void
+    setBicolorPivot: (arg?: number) => void
   }
   handleClose: () => void
 }) {
@@ -31,6 +33,7 @@ const SetColorDialog = observer(function SetColorDialog({
         model.setNegColor(undefined)
         model.setColor(undefined)
         model.setUseBicolor(undefined)
+        model.setBicolorPivot(undefined)
       }}
     >
       <Typography>
@@ -69,6 +72,18 @@ const SetColorDialog = observer(function SetColorDialog({
             color={model.negColor}
             onChange={event => {
               model.setNegColor(event)
+            }}
+          />
+          <Typography>
+            Pivot value (scores above use the positive color and grow upward,
+            scores below use the negative color and grow downward)
+          </Typography>
+          <TextField
+            type="number"
+            value={model.bicolorPivot}
+            onChange={event => {
+              const val = event.target.value
+              model.setBicolorPivot(val === '' ? undefined : Number(val))
             }}
           />
         </>

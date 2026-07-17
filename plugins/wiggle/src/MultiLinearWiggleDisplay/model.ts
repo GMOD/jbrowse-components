@@ -206,6 +206,7 @@ export default function stateModelFactory(
             self.isOverlay ? 1 : self.numSources,
             self.scatterPointSize,
             self.lineWidth,
+            self.bicolorPivot,
           ),
         )
       },
@@ -227,6 +228,7 @@ export default function stateModelFactory(
           summaryScoreMode: self.summaryScoreMode,
           renderingType: self.renderingType,
           isDensityMode: self.isDensityMode,
+          bicolorPivot: self.bicolorPivot,
         }
       },
     }))

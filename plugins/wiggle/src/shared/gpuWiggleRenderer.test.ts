@@ -54,6 +54,7 @@ const DEFAULT_STATE = {
   numRows: 1,
   scatterPointSize: 2,
   lineWidth: 1,
+  origin: 0,
 }
 
 describe('GpuWiggleRenderer', () => {
@@ -335,6 +336,21 @@ describe('GpuWiggleRenderer', () => {
     } finally {
       globalThis.devicePixelRatio = originalDpr
     }
+  })
+
+  it('writes the bicolor pivot into the origin uniform', () => {
+    const hal = new MockHal(WIGGLE_PASSES)
+    const renderer = new GpuWiggleRenderer(hal)
+    const source = makeSource()
+
+    renderer.uploadRegion(0, [source])
+    renderer.renderBlocks([makeBlock()], new Map([[0, [source]]]), {
+      ...DEFAULT_STATE,
+      origin: 5,
+    })
+
+    const f32 = hal.getLastUniformsF32()!
+    expect(f32[U.origin]).toBe(5)
   })
 
   it('handles log scale type in uniforms', () => {

@@ -90,6 +90,7 @@ describe('Canvas2DWiggleRenderer', () => {
     numRows: 1,
     scatterPointSize: 2,
     lineWidth: 1,
+    origin: 0,
   }
 
   test('renderBlocks draws XY plot rectangles', () => {
@@ -114,6 +115,31 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(ctx.clip).toHaveBeenCalled()
     expect(ctx.restore).toHaveBeenCalled()
     expect(fillRectCalls.length).toBe(2)
+  })
+
+  test('bicolor pivot moves the bar baseline and flips growth direction', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    // domain [0,10], height 200 → scoreToY(s) = (1 - s/10) * 200. Pivot 5 puts
+    // the baseline at y=100: score 8 grows up (top y=40, h=60), score 2 grows
+    // down (top y=100, h=60).
+    const source = makeSource([8, 2], [0, 500], [500, 1000])
+
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      origin: 5,
+    })
+
+    expect(fillRectCalls.length).toBe(2)
+    expect(fillRectCalls[0]![1]).toBeCloseTo(40)
+    expect(fillRectCalls[0]![3]).toBeCloseTo(60)
+    expect(fillRectCalls[1]![1]).toBeCloseTo(100)
+    expect(fillRectCalls[1]![3]).toBeCloseTo(60)
   })
 
   test('renderBlocks skips regions with no data', () => {
@@ -389,6 +415,7 @@ const lineState = {
   numRows: 1,
   scatterPointSize: 2,
   lineWidth: 1,
+  origin: 0,
 }
 const zeroY = 200
 const score5Y = 100

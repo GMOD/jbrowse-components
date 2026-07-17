@@ -172,6 +172,7 @@ export default function stateModelFactory(
             1,
             self.scatterPointSize,
             self.lineWidth,
+            self.bicolorPivot,
           ),
         )
       },
@@ -210,6 +211,7 @@ export default function stateModelFactory(
           summaryScoreMode: self.summaryScoreMode,
           isDensityMode: self.isDensityMode,
           renderingType: self.renderingType,
+          bicolorPivot: self.bicolorPivot,
         }
       },
     }))

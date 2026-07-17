@@ -20,6 +20,7 @@ export const UNIFORM_OFFSET_F32 = {
   viewportWidth: 10,
   scatterPointSize: 11,
   lineWidth: 12,
+  origin: 13,
 } as const
 
 
@@ -35,6 +36,7 @@ export interface Uniforms {
   viewportWidth: number
   scatterPointSize: number
   lineWidth: number
+  origin: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -53,6 +55,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[10] = uniforms.viewportWidth
   f32[11] = uniforms.scatterPointSize
   f32[12] = uniforms.lineWidth
+  f32[13] = uniforms.origin
 }
 
 export const INSTANCE_STRIDE_BYTES = 36

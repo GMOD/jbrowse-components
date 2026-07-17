@@ -114,6 +114,7 @@ export class GpuWiggleRenderer
     this.uniformF32[U.viewportWidth] = clip.scissorW
     this.uniformF32[U.scatterPointSize] = state.scatterPointSize
     this.uniformF32[U.lineWidth] = state.lineWidth
+    this.uniformF32[U.origin] = state.origin
 
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(passId, block.displayedRegionIndex, PASS_FILL)

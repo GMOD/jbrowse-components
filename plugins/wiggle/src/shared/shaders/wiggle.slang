@@ -60,6 +60,9 @@ struct Uniforms {
   float  viewportWidth;
   float  scatterPointSize;
   float  lineWidth;
+  // Score the xyplot bars pivot around and the density gradient centers on
+  // (= bicolorPivot). Default 0 keeps the fixed-at-zero baseline.
+  float  origin;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -230,7 +233,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       botPx = rowTop + rowHeight;
     } else {
       float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
-      float originY = scoreToY(0.0,        u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
+      float originY = scoreToY(u.origin,   u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
       topPx = min(scoreY, originY) + rowTop;
       botPx = max(scoreY, originY) + rowTop;
     }
@@ -241,7 +244,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   float4 outColor;
   if (u.renderingType == RENDERING_TYPE_DENSITY) {
     float norm = normalizeScore(inst.score, u.domainYMin, u.domainYMax, u.scaleType);
-    float zeroNorm = normalizeScore(0.0,    u.domainYMin, u.domainYMax, u.scaleType);
+    float zeroNorm = normalizeScore(u.origin, u.domainYMin, u.domainYMax, u.scaleType);
     float maxDist = max(zeroNorm, 1.0 - zeroNorm);
     float t = abs(norm - zeroNorm) / max(maxDist, 0.0001);
     outColor = float4(lerp(float3(1.0), instColor.rgb, t), 1.0);

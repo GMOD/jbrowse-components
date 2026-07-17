@@ -19,6 +19,10 @@ export interface WiggleGPURenderState {
   // Stroke thickness in px for line rendering. Default 1 matches the canvas
   // default line width.
   lineWidth: number
+  // Score value the xyplot bars pivot around and the density gradient centers
+  // on (= the bicolorPivot config slot). Bars grow up for scores above it and
+  // down for scores below; default 0 reproduces the fixed-at-zero baseline.
+  origin: number
 }
 
 export interface SourceRenderData {
@@ -27,6 +31,11 @@ export interface SourceRenderData {
   numFeatures: number
   color: [number, number, number]
   rowIndex: number
+  // Optional per-instance packed ABGR colors. Used by bicolor whiskers, where
+  // each band (max/mean/min) is colored by its own value's sign vs the pivot,
+  // then tinted. When present it overrides `color` per feature in both backends;
+  // `color` stays the single-color fallback (and the legend/first-color source).
+  colorsAbgr?: Uint32Array
 }
 
 export interface WiggleRenderingBackend {

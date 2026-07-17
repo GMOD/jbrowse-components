@@ -1,9 +1,9 @@
 import { makeScoreNormalizer } from '../util.ts'
 
 // Density-color factory: maps a score to an "rgb(r,g,b)" string that fades
-// from white at score=0 toward the (r,g,b) color as |score| grows toward the
-// bigger end of the domain. Caches 256 string buckets so the hot drawing loop
-// avoids per-feature string allocation.
+// from white at the pivot (`origin`, default 0) toward the (r,g,b) color as
+// |score - origin| grows toward the bigger end of the domain. Caches 256 string
+// buckets so the hot drawing loop avoids per-feature string allocation.
 export function makeDensityRgbStringFn(
   domainMin: number,
   domainMax: number,
@@ -11,9 +11,10 @@ export function makeDensityRgbStringFn(
   r: number,
   g: number,
   b: number,
+  origin = 0,
 ) {
   const normalize = makeScoreNormalizer(domainMin, domainMax, isLog)
-  const zeroNorm = normalize(0)
+  const zeroNorm = normalize(origin)
   // maxDist = max(zeroNorm, 1-zeroNorm) is always >= 0.5, so the 0.0001 floor
   // never triggers — it's kept only to mirror the GPU shader's density branch
   // verbatim (wiggle.slang: `t = abs(norm - zeroNorm) / max(maxDist, 0.0001)`)

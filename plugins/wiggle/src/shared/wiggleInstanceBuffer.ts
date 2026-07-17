@@ -25,6 +25,9 @@ export function interleaveInstances(
     )
     const positions = source.featurePositions
     const scores = source.featureScores
+    // Per-instance colors (bicolor whiskers); falls back to the single per-layer
+    // colorAbgr when absent.
+    const colorsAbgr = source.colorsAbgr
     const n = source.numFeatures
     for (let i = 0; i < n; i++) {
       const pi = i * 2
@@ -64,7 +67,7 @@ export function interleaveInstances(
       // transition. (Drawing it on both sides would double-stroke the seam.)
       f32[off + FIELD_OFFSET_F32.prevScore] = prevAdj ? scores[i - 1]! : 0
       f32[off + FIELD_OFFSET_F32.nextScore] = nextAdj ? score : 0
-      u32[off + FIELD_OFFSET_F32.color] = colorAbgr
+      u32[off + FIELD_OFFSET_F32.color] = colorsAbgr ? colorsAbgr[i]! : colorAbgr
       f32[off + FIELD_OFFSET_F32.rowIndex] = row
       off += INSTANCE_STRIDE_F32
     }

@@ -40,6 +40,7 @@ function drawWiggleBlocks(
     numRows,
     scatterPointSize,
     lineWidth,
+    origin,
   } = state
   const rowHeight = canvasHeight / numRows
 
@@ -64,7 +65,16 @@ function drawWiggleBlocks(
       const g = Math.round(source.color[1] * 255)
       const b = Math.round(source.color[2] * 255)
       const rgb = `rgb(${r},${g},${b})`
-      const row = { ctx, source, block, rowHeight, rowTop, domainY, scaleType }
+      const row = {
+        ctx,
+        source,
+        block,
+        rowHeight,
+        rowTop,
+        domainY,
+        scaleType,
+        origin,
+      }
 
       switch (renderingType) {
         case RENDERING_TYPE_LINE:

@@ -1,3 +1,4 @@
+import { setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { bpToScreenPx, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 import { appendPointMarker } from '@jbrowse/wiggle-core'
 
@@ -24,6 +25,8 @@ interface RowDraw {
   rowTop: number
   domainY: [number, number]
   scaleType: number
+  // Score the bars pivot around / density gradient centers on (bicolorPivot).
+  origin: number
 }
 
 function makeScoreToY(
@@ -47,16 +50,31 @@ export function drawXYPlot({
   rowTop,
   domainY,
   scaleType,
+  origin,
   rgb,
 }: RowDraw & { rgb: string }) {
-  ctx.fillStyle = rgb
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
-  const originY = scoreToY(0) + rowTop
+  const originY = scoreToY(origin) + rowTop
   const positions = source.featurePositions
   const scores = source.featureScores
+  // Per-instance colors (bicolor whiskers): set fillStyle only when the packed
+  // color changes — a band has just two possible colors, so this rebuilds the
+  // style a handful of times, not once per feature.
+  const colorsAbgr = source.colorsAbgr
+  let lastAbgr = -1
+  if (!colorsAbgr) {
+    ctx.fillStyle = rgb
+  }
   const { screenStartPx, screenEndPx, reversed, start, end } = block
   const n = source.numFeatures
   for (let i = 0; i < n; i++) {
+    if (colorsAbgr) {
+      const c = colorsAbgr[i]!
+      if (c !== lastAbgr) {
+        setAbgrFill(ctx, c)
+        lastAbgr = c
+      }
+    }
     const x1 = bpToScreenPx(
       positions[i * 2]!,
       start,
@@ -93,6 +111,7 @@ export function drawDensity({
   rowTop,
   domainY,
   scaleType,
+  origin,
   r,
   g,
   b,
@@ -104,6 +123,7 @@ export function drawDensity({
     r,
     g,
     b,
+    origin,
   )
   const positions = source.featurePositions
   const scores = source.featureScores
