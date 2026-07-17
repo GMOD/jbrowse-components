@@ -42,6 +42,7 @@ import type {
   RegionRenderData,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { BlockClip } from '@jbrowse/render-core/canvas2dUtils'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 const CHEVRON_HALF_W = CHEVRON_W_PX * 0.5
@@ -125,12 +126,51 @@ function drawLines(
   }
 }
 
+// Dense pileups paint thousands of rects from a handful of distinct colors, so
+// the per-rect `rgba(...)` is built once per color and reused. The bigger win is
+// the `!==` guard on the assignment itself: setting fillStyle re-parses the CSS
+// string every time, and a pileup's rects mostly arrive in same-color runs, so
+// the parse collapses to roughly once per run instead of once per rect. Keyed by
+// color and fade together, since the fade scales the color's alpha.
+function rectFillStyle(
+  styles: Map<number, string>,
+  c: number,
+  fade: number | undefined,
+) {
+  const key = fade ? c + 0x1_0000_0000 : c
+  let style = styles.get(key)
+  if (style === undefined) {
+    // In the dense-pileup regime (thousands of collapsed row-0 marks) boxes draw
+    // semi-transparent so src-over accumulation makes the pileup read as a density
+    // texture instead of a flat block (mirrors rect.slang's densityAlpha); gene
+    // subfeature rects, stacked boxes, and sparse tracks stay fully opaque.
+    // rectDensityFade is that decision, so it alone gates the fade. Fold the
+    // factor into the fill color's alpha so it also applies on the SVG-export
+    // path (SvgCanvas has no globalAlpha).
+    const a = (abgrAlpha(c) / 255) * (fade ? MIN_DENSITY_ALPHA : 1)
+    style = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
+    styles.set(key, style)
+  }
+  return style
+}
+
 function drawRects(
   ctx: Ctx2D,
   region: RegionRenderData,
   toX: BpToScreen,
   scrollY: number,
 ) {
+  const styles = new Map<number, string>()
+  let lastStyle: string | undefined
+  // outlineColor is per-region, so the stroke state is hoisted out of the loop
+  // rather than re-assigned (and re-parsed) on every outlined rect.
+  const outlineStyle = region.outlineColor
+    ? abgrToCssRgba(region.outlineColor)
+    : undefined
+  if (outlineStyle !== undefined) {
+    ctx.strokeStyle = outlineStyle
+    ctx.lineWidth = 1
+  }
   for (let i = 0; i < region.rectYs.length; i++) {
     const startBp = region.rectPositions[i * 2]!
     const endBp = region.rectPositions[i * 2 + 1]!
@@ -147,21 +187,17 @@ function drawRects(
     const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
     const xLeft = spanLeft(sx1, sx2, w)
 
-    // In the dense-pileup regime (thousands of collapsed row-0 marks) boxes draw
-    // semi-transparent so src-over accumulation makes the pileup read as a density
-    // texture instead of a flat block (mirrors rect.slang's densityAlpha); gene
-    // subfeature rects, stacked boxes, and sparse tracks stay fully opaque.
-    // rectDensityFade is that decision, so it alone gates the fade. Fold the
-    // factor into the fill color's alpha so it also applies on the SVG-export
-    // path (SvgCanvas has no globalAlpha).
-    const c = region.rectColors[i]!
-    const densityAlpha = region.rectDensityFade[i] ? MIN_DENSITY_ALPHA : 1
-    const a = (abgrAlpha(c) / 255) * densityAlpha
-    ctx.fillStyle = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
+    const style = rectFillStyle(
+      styles,
+      region.rectColors[i]!,
+      region.rectDensityFade[i],
+    )
+    if (style !== lastStyle) {
+      ctx.fillStyle = style
+      lastStyle = style
+    }
     ctx.fillRect(xLeft, y, w, h)
-    if (region.outlineColor && w > 2 && h > 2) {
-      ctx.strokeStyle = abgrToCssRgba(region.outlineColor)
-      ctx.lineWidth = 1
+    if (outlineStyle !== undefined && w > 2 && h > 2) {
       ctx.strokeRect(xLeft + 0.5, y + 0.5, w - 1, h - 1)
     }
   }
@@ -298,6 +334,36 @@ function drawContinuation(
   }
 }
 
+// Runs `paint` for each block that has data and lands on-screen, inside that
+// block's scissor clip so a partial block can't bleed across a region boundary.
+// The Canvas2D counterpart of the GPU backend's per-block scissor + uniform
+// write (GpuCanvasFeatureRenderer.drawRegion), and the one place the
+// save/clip/restore pairing lives — both draw entry points below share it.
+//
+// One closure per draw call, not per feature: the per-feature loops live inside
+// the `paint` body and stay allocation-free.
+function forEachClippedBlock<T>(
+  ctx: Ctx2D,
+  regions: ReadonlyMap<number, T>,
+  blocks: FeatureRenderBlock[],
+  state: RenderState,
+  paint: (region: T, block: FeatureRenderBlock, toX: BpToScreen, clip: BlockClip) => void,
+) {
+  const { canvasWidth, canvasHeight } = state
+  for (const block of blocks) {
+    const region = regions.get(block.displayedRegionIndex)
+    const clip = region && clipBlockForCanvas(block, canvasWidth)
+    if (region && clip) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
+      ctx.clip()
+      paint(region, block, makeBpMapper(block), clip)
+      ctx.restore()
+    }
+  }
+}
+
 /**
  * Pure draw entry point. Paints lines, rects, and arrows for the laid-out
  * feature data into any 2D-canvas-like context. Per-block scissor clips so
@@ -311,44 +377,28 @@ export function drawFeatureBlocks(
   blocks: FeatureRenderBlock[],
   state: RenderState,
 ) {
-  const { canvasWidth, canvasHeight, scrollY } = state
-  if (regions.size === 0) {
-    return
-  }
-
-  for (const block of blocks) {
-    const region = regions.get(block.displayedRegionIndex)
-    if (!region) {
-      continue
-    }
-
-    const clip = clipBlockForCanvas(block, canvasWidth)
-    if (!clip) {
-      continue
-    }
-
-    ctx.save()
-    ctx.beginPath()
-    ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-    ctx.clip()
-
-    const toX = makeBpMapper(block)
-    drawLines(ctx, region, block, toX, scrollY, canvasWidth)
-    drawRects(ctx, region, toX, scrollY)
-    drawArrows(ctx, region, block, toX, scrollY)
-    // Drawn last so the markers sit on top of the glyphs they annotate.
-    drawContinuation(
-      ctx,
-      region,
-      toX,
-      scrollY,
-      clip.scissorX,
-      clip.scissorW,
-      canvasWidth,
-    )
-
-    ctx.restore()
-  }
+  const { canvasWidth, scrollY } = state
+  forEachClippedBlock(
+    ctx,
+    regions,
+    blocks,
+    state,
+    (region, block, toX, clip) => {
+      drawLines(ctx, region, block, toX, scrollY, canvasWidth)
+      drawRects(ctx, region, toX, scrollY)
+      drawArrows(ctx, region, block, toX, scrollY)
+      // Drawn last so the markers sit on top of the glyphs they annotate.
+      drawContinuation(
+        ctx,
+        region,
+        toX,
+        scrollY,
+        clip.scissorX,
+        clip.scissorW,
+        canvasWidth,
+      )
+    },
+  )
 }
 
 interface HighlightLabelContext {
@@ -416,50 +466,31 @@ export function drawHighlightBoxes(
   colors: { border: string; fill: string },
   labelContext: HighlightLabelContext,
 ) {
-  const { canvasWidth, canvasHeight, scrollY } = state
-  if (highlightedIds.size === 0 || regions.size === 0) {
+  const { scrollY } = state
+  if (highlightedIds.size === 0) {
     return
   }
-  for (const block of blocks) {
-    const region = regions.get(block.displayedRegionIndex)
-    if (region) {
-      const clip = clipBlockForCanvas(block, canvasWidth)
-      if (clip) {
-        ctx.save()
-        ctx.beginPath()
-        ctx.rect(clip.scissorX, 0, clip.scissorW, canvasHeight)
-        ctx.clip()
-        const toX = makeBpMapper(block)
-        for (const item of region.flatbushItems) {
-          if (highlightedIds.has(item.featureId)) {
-            drawHighlightBox(
-              ctx,
-              item,
-              toX,
-              scrollY,
-              colors,
-              region.floatingLabelsData[item.featureId],
-              labelContext,
-            )
-          }
-        }
-        for (const item of region.subfeatureInfos) {
-          if (highlightedIds.has(item.featureId)) {
-            drawHighlightBox(
-              ctx,
-              item,
-              toX,
-              scrollY,
-              colors,
-              undefined,
-              labelContext,
-            )
-          }
-        }
-        ctx.restore()
+  forEachClippedBlock(ctx, regions, blocks, state, (region, _block, toX) => {
+    for (const item of region.flatbushItems) {
+      if (highlightedIds.has(item.featureId)) {
+        drawHighlightBox(
+          ctx,
+          item,
+          toX,
+          scrollY,
+          colors,
+          region.floatingLabelsData[item.featureId],
+          labelContext,
+        )
       }
     }
-  }
+    // Subfeatures deliberately pass no labelData — see drawHighlightBox.
+    for (const item of region.subfeatureInfos) {
+      if (highlightedIds.has(item.featureId)) {
+        drawHighlightBox(ctx, item, toX, scrollY, colors, undefined, labelContext)
+      }
+    }
+  })
 }
 
 export class Canvas2DFeatureRenderer extends Canvas2DPerRegionRenderingBackend<

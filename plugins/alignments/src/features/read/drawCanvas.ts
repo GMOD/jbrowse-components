@@ -145,6 +145,14 @@ export function drawReads(
   ctx.strokeStyle = OUTLINE_STYLE
   ctx.lineWidth = OUTLINE_WIDTH
 
+  // Assigning fillStyle re-parses the CSS string, which is the per-read cost
+  // that matters here — getReadColor's string build is minor next to it. Under
+  // the default scheme every read resolves to the same color, so guarding the
+  // assignment collapses a deep pileup's parses to one; schemes that do vary
+  // per read (mapq, tag, insert-size gradient) just fall through and assign as
+  // before. Strings compare by value, so a freshly built one still matches.
+  let lastFill: string | undefined
+
   // Walk per-exon segments, not whole reads: a spliced read contributes one
   // body rect per exon, so the intron span between them is never filled — the
   // skip pass (drawGaps) draws only its 1px centerline there, with no
@@ -173,13 +181,17 @@ export function drawReads(
     const w = Math.max(1, xR - xL)
     const outline = state.showOutline && w > 2
 
-    ctx.fillStyle = getReadColor(
+    const fill = getReadColor(
       i,
       region,
       state.colorScheme,
       state.colors,
       colorOpts,
     )
+    if (fill !== lastFill) {
+      ctx.fillStyle = fill
+      lastFill = fill
+    }
 
     // Chevron rides only the read's leading exon: forward → last segment,
     // reverse → first segment (edgeFlags bit 1 = isLast, bit 0 = isFirst).

@@ -120,6 +120,33 @@ function draw(
 const wideFwd = { start: 10, end: 50, strand: 1 }
 const wideRev = { start: 10, end: 50, strand: -1 }
 
+// drawReads only re-assigns fillStyle when the resolved color changes, since
+// the assignment re-parses the CSS string and the default scheme paints every
+// read the same color. These pin that the skip can never leave a read wearing
+// its predecessor's color. Zoomed out (0.05 px/bp) so bodies are plain rects.
+test('reads of differing colors each keep their own fill', () => {
+  const svg = draw([wideFwd, wideRev], {}, 5)
+  expect(svg).toContain('fill="rgb(255,0,0)"')
+  expect(svg).toContain('fill="rgb(0,0,255)"')
+})
+
+test('a color repeating after another still paints its own fill', () => {
+  // fwd, rev, fwd: the third read must go back to red, not inherit blue.
+  const svg = draw([wideFwd, wideRev, wideFwd], {}, 5)
+  const fills = [...svg.matchAll(/fill="(rgb\([^"]*\))"/g)].map(m => m[1])
+  expect(fills).toEqual([
+    'rgb(255,0,0)',
+    'rgb(0,0,255)',
+    'rgb(255,0,0)',
+  ])
+})
+
+test('consecutive same-color reads each still paint their fill', () => {
+  const svg = draw([wideFwd, wideFwd], {}, 5)
+  const fills = [...svg.matchAll(/fill="(rgb\([^"]*\))"/g)].map(m => m[1])
+  expect(fills).toEqual(['rgb(255,0,0)', 'rgb(255,0,0)'])
+})
+
 test('forward read draws an arrowhead path with apex past the right edge', () => {
   const svg = draw([wideFwd])
   expect(svg).toContain('<path')
