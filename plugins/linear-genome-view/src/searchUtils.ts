@@ -120,15 +120,17 @@ export async function handleSelectedRegion({
   grow?: number
 }) {
   const { assemblyManager, textSearchManager } = getSession(model)
-  const assembly = assemblyManager.get(assemblyName)
-  // aliases must be loaded before isValidRefName can resolve them (it throws
-  // otherwise); load() is idempotent and resolves once refNameAliases is set
-  // (or setError ran), leaving initialized false on failure
-  await assembly?.load()
+  // resolves only once regions/aliases are loaded, which isValidRefName needs
+  // (it throws otherwise). A load failure is not this function's to report:
+  // swallow it and let the input fall through to the text-search path below
+  // rather than surfacing as a nav error
+  const assembly = await assemblyManager
+    .waitForAssembly(assemblyName)
+    .catch(() => undefined)
   // the same predicate navToLocstrings hands parseLocStrings, so a locstring
   // that passes here is one the parse below will accept
   const isRef = (ref: string) =>
-    !!assembly?.initialized && assemblyManager.isValidRefName(ref, assemblyName)
+    !!assembly && assemblyManager.isValidRefName(ref, assemblyName)
 
   // navigate treating input as one or more whitespace-separated locstrings
   const navToLocstrings = () =>
@@ -213,8 +215,9 @@ export async function fetchResults({
   )
 
   // ensure aliases are loaded: allRefNames is a pure getter, so reading it does
-  // not itself kick off the lazy load
-  await assembly?.load()
+  // not itself kick off the lazy load. A load failure just leaves allRefNames
+  // undefined, so this still returns whatever the text search turned up
+  await assembly?.load().catch(() => {})
   const refNameResults = assembly
     ? searchRefNames(assembly, queryString, searchType)
     : []

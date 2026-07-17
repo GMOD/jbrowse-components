@@ -157,14 +157,10 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
         if (!assembly) {
           return undefined
         }
-        // load() resolves only after setLoaded (regions + refNameAliases) or
-        // setError has run, so awaiting the promise is enough: no extra
-        // reactive wait needed
+        // load() resolves only after setLoaded (regions + refNameAliases) has
+        // run and rejects on failure, so awaiting the promise is enough: no
+        // extra reactive wait, and no error check, needed
         await assembly.load()
-        if (assembly.error) {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
-          throw assembly.error
-        }
         return assembly
       },
 

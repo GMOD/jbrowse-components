@@ -30,13 +30,9 @@ export async function loadRefNameMap(
     throw new Error('sessionId is required for loadRefNameMap')
   }
   // load() is idempotent and resolves only after regions + refNameAliases are
-  // set (or setError ran), so awaiting it is a direct, promise-based
-  // alternative to a reactive `when` on those volatiles
+  // set, so awaiting it is a direct, promise-based alternative to a reactive
+  // `when` on those volatiles. It rejects on failure, so no error check follows
   await assembly.load()
-  if (assembly.error) {
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
-    throw assembly.error
-  }
 
   // pass the assembly's sequence adapter config (as a snapshot, since MST
   // objects can't be assigned elsewhere) so BAM/CRAM adapters can cache it for

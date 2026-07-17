@@ -251,6 +251,15 @@ export default function assemblyFactory(
     .actions(self => ({
       /**
        * #action
+       * Resolves once regions + refNameAliases are set, and rejects with the
+       * load failure. Idempotent: concurrent callers share one attempt, and a
+       * failed attempt is discarded so the next call retries.
+       *
+       * The rejection is the authoritative signal for a caller that awaits it.
+       * `self.error` mirrors it for reactive consumers only (the UI renders it),
+       * and must not be consulted after an await: a concurrent retry clears it,
+       * so an awaiter reading it can see a cleared error and mistake a failed
+       * load for a successful one.
        */
       load() {
         if (!self.loadingP) {
@@ -261,6 +270,7 @@ export default function assemblyFactory(
             console.error(e)
             self.setLoadingP(undefined)
             self.setError(e)
+            throw e
           })
         }
         return self.loadingP
@@ -278,7 +288,10 @@ export default function assemblyFactory(
           addDisposer(
             self,
             onBecomeObserved(self, prop, () => {
-              void self.load()
+              // nothing awaits this fire-and-forget kick, so swallow the
+              // rejection: load() has already logged it and recorded it on
+              // self.error, which is what reactive consumers render
+              self.load().catch(() => {})
             }),
           )
         }

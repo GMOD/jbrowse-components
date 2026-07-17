@@ -122,7 +122,8 @@ function initialize() {
       get(str: string) {
         return self.assemblies.get(str)
       },
-      waitForAssembly(str: string) {
+
+      async waitForAssembly(str: string) {
         return self.assemblies.get(str)
       },
     }))
@@ -1218,7 +1219,8 @@ test('navToLocString with human assembly', async () => {
       get(str: string) {
         return self.assemblies.get(str)
       },
-      waitForAssembly(str: string) {
+
+      async waitForAssembly(str: string) {
         return self.assemblies.get(str)
       },
     }))
@@ -1529,7 +1531,8 @@ describe('TrackInit with display configuration', () => {
         get(str: string) {
           return self.assemblies.get(str)
         },
-        waitForAssembly(str: string) {
+
+        async waitForAssembly(str: string) {
           return self.assemblies.get(str)
         },
       }))
