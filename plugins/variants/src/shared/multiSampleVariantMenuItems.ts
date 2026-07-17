@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { makeSizeMenu } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
@@ -14,10 +15,6 @@ import TuneIcon from '@mui/icons-material/Tune'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { capitalizeFirst } from './constants.ts'
-import {
-  createMAFFilterMenuItem,
-  createMissingnessFilterMenuItem,
-} from './numberFilterMenuItems.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
@@ -236,8 +233,44 @@ export function variantTrackMenuItems(
       label: 'Filter by...',
       icon: FilterAltIcon,
       subMenu: [
-        createMAFFilterMenuItem(self),
-        createMissingnessFilterMenuItem(self),
+        // Both are bounded fractions tuned by feel, so they're inline sliders
+        // rather than a dialog round-trip. They're fetch inputs (rpcProps), so
+        // commitOnRelease keeps a drag from firing a worker refetch per step.
+        makeSizeMenu({
+          label: 'Minor allele frequency',
+          title: 'MAF',
+          min: 0,
+          max: 0.5,
+          step: 0.01,
+          format: n => (n === 0 ? 'off' : n.toFixed(2)),
+          commitOnRelease: true,
+          getValue: () => self.minorAlleleFrequencyFilter,
+          isDefault: self.minorAlleleFrequencyFilter === 0,
+          onChange: n => {
+            self.setMafFilter(n)
+          },
+          onReset: () => {
+            self.setMafFilter(0)
+          },
+        }),
+        makeSizeMenu({
+          label: 'Missingness',
+          title: 'Max missingness',
+          min: 0,
+          max: 1,
+          step: 0.01,
+          // 1 keeps every variant, i.e. the filter is off
+          format: n => (n === 1 ? 'off' : n.toFixed(2)),
+          commitOnRelease: true,
+          getValue: () => self.maxMissingnessFilter,
+          isDefault: self.maxMissingnessFilter === 1,
+          onChange: n => {
+            self.setMaxMissingnessFilter(n)
+          },
+          onReset: () => {
+            self.setMaxMissingnessFilter(1)
+          },
+        }),
         {
           label: 'Edit filters...',
           onClick: () => {
