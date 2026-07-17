@@ -114,6 +114,7 @@
     "./util/blockTypes": "./src/util/blockTypes.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
+    "./util/fetchHub": "./src/util/fetchHub.ts",
     "./util/chooseGridPitch": "./src/util/chooseGridPitch.ts",
     "./util/color": "./src/util/color/index.ts",
     "./util/colorBits": "./src/util/colorBits.ts",
@@ -135,6 +136,7 @@
     "./util/layouts/GranularRectLayout": "./src/util/layouts/GranularRectLayout.ts",
     "./util/layouts/placeRect": "./src/util/layouts/placeRect.ts",
     "./util/librpc": "./src/util/librpc.ts",
+    "./util/makeAssembly": "./src/util/makeAssembly.ts",
     "./util/nanoid": "./src/util/nanoid.ts",
     "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
     "./util/paintLayer": "./src/util/paintLayer.tsx",
@@ -584,6 +586,10 @@
         "types": "./esm/util/calculateStaticBlocks.d.ts",
         "import": "./esm/util/calculateStaticBlocks.js"
       },
+      "./util/fetchHub": {
+        "types": "./esm/util/fetchHub.d.ts",
+        "import": "./esm/util/fetchHub.js"
+      },
       "./util/chooseGridPitch": {
         "types": "./esm/util/chooseGridPitch.d.ts",
         "import": "./esm/util/chooseGridPitch.js"
@@ -667,6 +673,10 @@
       "./util/librpc": {
         "types": "./esm/util/librpc.d.ts",
         "import": "./esm/util/librpc.js"
+      },
+      "./util/makeAssembly": {
+        "types": "./esm/util/makeAssembly.d.ts",
+        "import": "./esm/util/makeAssembly.js"
       },
       "./util/nanoid": {
         "types": "./esm/util/nanoid.d.ts",

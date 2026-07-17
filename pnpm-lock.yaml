@@ -2028,24 +2028,6 @@ importers:
         specifier: ^4.46.0
         version: 4.46.0
 
-  products/jbrowse-embedded-linear-genome-view:
-    dependencies:
-      '@jbrowse/core':
-        specifier: workspace:^
-        version: link:../../packages/core
-      '@jbrowse/react-linear-genome-view2':
-        specifier: workspace:^
-        version: link:../jbrowse-react-linear-genome-view
-      mobx:
-        specifier: ^6.16.1
-        version: 6.16.1
-      react:
-        specifier: '>=18.0.0'
-        version: 19.2.7
-      react-dom:
-        specifier: '>=18.0.0'
-        version: 19.2.7(react@19.2.7)
-
   products/jbrowse-img:
     dependencies:
       '@emotion/cache':
@@ -2054,6 +2036,9 @@ importers:
       '@emotion/react':
         specifier: ^11.14.0
         version: 11.14.0(@types/react@19.2.17)(react@19.2.7)
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
       '@jbrowse/mobx-state-tree':
         specifier: ^5.12.0
         version: 5.12.0(mobx@6.16.1)
@@ -2244,6 +2229,9 @@ importers:
       react:
         specifier: '>=18.0.0'
         version: 19.2.7
+      react-dom:
+        specifier: '>=18.0.0'
+        version: 19.2.7(react@19.2.7)
 
   products/jbrowse-react-app/examples-site:
     dependencies:
@@ -2486,6 +2474,9 @@ importers:
       react:
         specifier: '>=18.0.0'
         version: 19.2.7
+      react-dom:
+        specifier: '>=18.0.0'
+        version: 19.2.7(react@19.2.7)
 
   products/jbrowse-react-linear-genome-view/examples-site:
     dependencies:

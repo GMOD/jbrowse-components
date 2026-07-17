@@ -1,3 +1,4 @@
+import { hubUrl } from '@jbrowse/core/util/fetchHub'
 import { addRelativeUris } from '@jbrowse/product-core'
 
 import type { Config } from './types.ts'
@@ -6,18 +7,7 @@ import type { Config } from './types.ts'
 // assembly (remote 2bit sequence, refNameAliases, cytobands, geneticCodes) plus
 // its full track set, all as remote URIs. `--hub` pulls one of these so a user
 // gets cytobands/aliasing/hosted trackIds without hand-wiring --fasta/--aliases.
-const GENOMES = 'https://jbrowse.org'
-
-// Map a --hub token to its hosted config.json URL. A GenArk accession
-// (GCA_/GCF_ + 9 digits) lives under /hubs/genark with the digits split into
-// triplets, e.g. GCA_964188535.1 -> GCA/964/188/535/GCA_964188535.1/config.json;
-// anything else is treated as a UCSC db name -> /ucsc/<db>/config.json.
-export function hubToConfigUrl(hub: string) {
-  const m = /^(GC[AF])_(\d{3})(\d{3})(\d{3})/.exec(hub)
-  return m
-    ? `${GENOMES}/hubs/genark/${m[1]}/${m[2]}/${m[3]}/${m[4]}/${hub}/config.json`
-    : `${GENOMES}/ucsc/${hub}/config.json`
-}
+// The token -> URL mapping is core's (shared with the embedded mounts).
 
 function isUrl(str: string) {
   return /^https?:\/\//i.test(str)
@@ -53,7 +43,7 @@ export async function resolveConfigObject({
   config?: string
 }) {
   if (hub) {
-    return fetchConfig(hubToConfigUrl(hub), `Failed to fetch --hub "${hub}"`)
+    return fetchConfig(hubUrl(hub), `Failed to fetch --hub "${hub}"`)
   }
   if (config && isUrl(config)) {
     return fetchConfig(config, `Failed to fetch --config "${config}"`)

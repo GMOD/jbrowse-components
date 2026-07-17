@@ -39,6 +39,7 @@
   "dependencies": {
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
+    "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.12.0",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-dotplot-view": "workspace:^",

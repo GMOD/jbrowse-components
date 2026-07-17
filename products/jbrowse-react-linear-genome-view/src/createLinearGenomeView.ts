@@ -1,23 +1,19 @@
 import { createElement } from 'react'
 
 import { getEnv, isFeature } from '@jbrowse/core/util'
+import { fetchHub } from '@jbrowse/core/util/fetchHub'
+import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 import { guessTrackConf } from '@jbrowse/core/util/tracks'
-import {
-  JBrowseLinearGenomeView,
-  createViewState,
-} from '@jbrowse/react-linear-genome-view2'
 import { autorun } from 'mobx'
 import { createRoot } from 'react-dom/client'
 
-import { fetchHub } from './fetchHub.ts'
-import { isSequenceUri, makeAssembly } from './makeAssembly.ts'
+import JBrowseLinearGenomeView from './JBrowseLinearGenomeView/index.ts'
+import createViewState from './createViewState.ts'
 
-import type { HubConfig } from './fetchHub.ts'
+import type { ViewModel } from './createModel/createModel.ts'
+import type { ViewStateOptions } from './createViewState.ts'
+import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 import type { LooseTrackInput } from '@jbrowse/core/util/tracks'
-import type {
-  ViewModel,
-  ViewStateOptions,
-} from '@jbrowse/react-linear-genome-view2'
 
 type Tracks = NonNullable<ViewStateOptions['tracks']>
 type TrackConf = Record<string, unknown>
