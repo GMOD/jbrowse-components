@@ -39,20 +39,18 @@ look at wakhan, pycnv
 
 The alignments **draw path** is now covered both orientations by
 `renderers/reversedMirror.test.ts` (drive `drawAlignmentBlocks` forward and
-reversed over identical data; every mark must have a mirrored twin). What that
-does NOT cover, and what's left:
+reversed over identical data; every mark must have a mirrored twin), across a
+plain pileup and a linked-reads layout — between them every pileup-band layer
+except soft-clip bases and insertions. What that does NOT cover:
 
 - **The wiring above the renderer.** The mirror test hands `reversed: true`
   straight to `renderBlocks`. Nothing asserts the model actually delivers it —
-  displayedRegion → `renderBlocks` → `renderState`. A jsdom test would:
-  `ReversedRegionLabels.test.tsx` is the working pattern
-  (`navToLocString('ctgA:1..7,720[rev]')` + SVG export, which runs the Canvas2D
-  path through `SvgCanvas` with no real canvas); swap the track for
-  `volvox_alignments_pileup_coverage`. Assert a property, not a snapshot — a
-  snapshot would have happily recorded the off-by-one-base bug.
+  displayedRegion → `renderBlocks` → `renderState`. `ReversedRegionLabels.test.tsx`
+  is the working pattern (`navToLocString('ctgA:1..7,720[rev]')` + SVG export,
+  which runs the Canvas2D path through `SvgCanvas` with no real canvas); swap the
+  track for `volvox_alignments_pileup_coverage`. Assert a property, not a
+  snapshot — a snapshot would have happily recorded the off-by-one-base bug.
 - **Nobody has looked at a reversed pileup.** Every check so far is programmatic.
-- **The overlap layer has no reversed coverage** in any test: `shouldDrawOverlaps`
-  needs a linked-reads layout, so the mirror fixture skips it.
 
 ## Canvas2D vs GPU `canvasDrawn` contract drift
 

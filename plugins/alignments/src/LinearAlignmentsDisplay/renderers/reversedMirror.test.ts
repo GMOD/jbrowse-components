@@ -20,12 +20,20 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
  * get wrong — and it exercises the real orchestrator (`drawAlignmentBlocks`:
  * block clip, sections, layer gating) rather than one painter in isolation.
  *
- * Covers the layers this fixture actually lights up: reads (chevron paths),
- * deletion gaps (a two-edge `Math.min` span, only ever argued orientation-safe,
- * never tested), and the four 1bp-cell layers. Reads paint as paths, not rects,
- * so vertices are captured too — without that they'd silently contribute
- * nothing. Overlaps are NOT covered: `shouldDrawOverlaps` needs a linked-reads
- * layout, which this fixture isn't.
+ * Runs over two configs because layer gating decides what's reachable at all: a
+ * plain pileup (reads, deletion gaps, the four 1bp-cell layers) and a
+ * linked-reads layout, which is the only way to reach overlaps and the
+ * connecting / linked-read line layers. Between them this is every pileup-band
+ * layer except soft-clip bases and insertions.
+ *
+ * Two traps the fixture guards against, both of which made an earlier draft
+ * prove less than it looked like it proved:
+ * - Reads paint chevrons via `fill()` on a path and never call `fillRect`, so a
+ *   rect-only recorder scores them as zero marks and mirrors them vacuously.
+ *   Path vertices are captured too.
+ * - A layer that silently stops drawing turns the mirror into a comparison of
+ *   two empty sets. Hence the non-empty assertions per config, and the check
+ *   that the linked-reads config really does draw more than the plain one.
  *
  * A one-base slip shows up as a PX_PER_BP-sized mirror violation, far outside
  * the tolerance below. Deliberately not a snapshot: a snapshot of a reversed
@@ -171,17 +179,19 @@ function pileupData(): PileupDataResult {
     perBaseLetterBases: new Uint8Array([84]),
     perBaseLetterReadIndices: new Uint32Array([1]),
 
-    // Empty: the overlap pass only runs in a linked-reads layout
-    // (shouldDrawOverlaps), which this fixture deliberately isn't.
-    overlapPositions: new Uint32Array(),
-    overlapYs: new Uint16Array(),
+    // Mate-overlap band on read 0 — a two-edge Math.min/abs span. Only drawn
+    // in the linked-reads config below (shouldDrawOverlaps).
+    overlapPositions: new Uint32Array([1016, 1019]),
+    overlapYs: new Uint16Array([0]),
 
-    connectingLinePositions: new Uint32Array(),
-    connectingLineYs: new Uint16Array(),
-    linkedReadLinePositions: new Uint32Array(),
-    linkedReadLineYs: new Uint16Array(),
-    linkedReadLineColorTypes: new Uint8Array(),
-    numLinkedReadLines: 0,
+    // Connecting line between the two reads, and a linked-read line spanning
+    // rows. Both paint as paths (moveTo/lineTo), and both are linked-reads-only.
+    connectingLinePositions: new Uint32Array([1020, 1030]),
+    connectingLineYs: new Uint16Array([0]),
+    linkedReadLinePositions: new Uint32Array([1005, 1044]),
+    linkedReadLineYs: new Uint16Array([0, 1]),
+    linkedReadLineColorTypes: new Uint8Array([0]),
+    numLinkedReadLines: 1,
 
     modCovPositions: new Uint32Array(),
     modCovYOffsets: new Float32Array(),
@@ -215,7 +225,7 @@ function pileupData(): PileupDataResult {
 
 const triple: [number, number, number] = [0.5, 0.5, 0.5]
 
-function state(): RenderState {
+function state(overrides: Partial<RenderState> = {}): RenderState {
   const section = {
     pileupTopOffset: 0,
     coverageTopOffset: 0,
@@ -292,10 +302,11 @@ function state(): RenderState {
     pileupTopOffset: 0,
     coverageTopOffset: 0,
     sections: [section],
+    ...overrides,
   } as unknown as RenderState
 }
 
-function drawAt(reversed: boolean) {
+function drawAt(reversed: boolean, overrides: Partial<RenderState> = {}) {
   const { ctx, marks } = recordingCtx()
   const canvas = {
     getContext: () => ctx,
@@ -323,7 +334,7 @@ function drawAt(reversed: boolean) {
         reversed,
       },
     ],
-    state(),
+    state(overrides),
   )
   return marks
 }
@@ -334,37 +345,63 @@ function mirrorX(m: Mark) {
   return BLOCK_WIDTH - m.x - m.w
 }
 
-describe('reversed block renders the mirror of the forward block', () => {
-  const forward = drawAt(false)
-  const reversed = drawAt(true)
+// Two configs, because layer gating decides what's even reachable. The plain
+// pileup can't draw overlaps or either line layer (`shouldDrawOverlaps` and the
+// connLine/linkedReadLine gates all need a linked-reads layout), so without the
+// second config those three layers have no reversed coverage anywhere.
+const CONFIGS: { name: string; overrides: Partial<RenderState> }[] = [
+  { name: 'plain pileup', overrides: {} },
+  {
+    name: 'linked reads (adds overlaps + connecting/linked-read lines)',
+    overrides: {
+      linkedReads: 'normal',
+      showLinkedReadLines: true,
+    },
+  },
+]
 
-  it('lights up both kinds of mark, so neither mirrors vacuously', () => {
-    // Guards the fixture itself: if a gate silently stops a layer drawing, the
-    // mirror check below would pass on an empty set and prove nothing.
-    expect(forward.filter(m => m.kind === 'rect').length).toBeGreaterThan(0)
-    expect(forward.filter(m => m.kind === 'vertex').length).toBeGreaterThan(0)
-    expect(reversed.length).toBe(forward.length)
-  })
+describe.each(CONFIGS)(
+  'reversed block renders the mirror of the forward block — $name',
+  ({ overrides }) => {
+    const forward = drawAt(false, overrides)
+    const reversed = drawAt(true, overrides)
 
-  it('every forward mark has a mirrored counterpart on the same row', () => {
-    // Match on the same y so a coincidental x-match on a different row can't
-    // stand in for the real twin.
-    const unmatched = forward.filter(f => {
-      const wantX = mirrorX(f)
-      return !reversed.some(
-        r =>
-          r.kind === f.kind &&
-          r.y === f.y &&
-          Math.abs(r.w - f.w) <= FUDGE_TOLERANCE_PX &&
-          Math.abs(r.x - wantX) <= FUDGE_TOLERANCE_PX,
-      )
+    it('lights up both kinds of mark, so neither mirrors vacuously', () => {
+      // Guards the fixture itself: if a gate silently stops a layer drawing,
+      // the mirror check below would pass on an empty set and prove nothing.
+      expect(forward.filter(m => m.kind === 'rect').length).toBeGreaterThan(0)
+      expect(forward.filter(m => m.kind === 'vertex').length).toBeGreaterThan(0)
+      expect(reversed.length).toBe(forward.length)
     })
-    expect(unmatched).toEqual([])
-  })
 
-  it('the tolerance is far tighter than the bug it guards against', () => {
-    // A one-base slip moves a mark PX_PER_BP; the tolerance only absorbs the
-    // sub-pixel seam fudge. If this ever inverts, the test above goes blind.
-    expect(FUDGE_TOLERANCE_PX).toBeLessThan(PX_PER_BP / 4)
-  })
+    it('every forward mark has a mirrored counterpart on the same row', () => {
+      // Match on the same y so a coincidental x-match on a different row can't
+      // stand in for the real twin.
+      const unmatched = forward.filter(f => {
+        const wantX = mirrorX(f)
+        return !reversed.some(
+          r =>
+            r.kind === f.kind &&
+            r.y === f.y &&
+            Math.abs(r.w - f.w) <= FUDGE_TOLERANCE_PX &&
+            Math.abs(r.x - wantX) <= FUDGE_TOLERANCE_PX,
+        )
+      })
+      expect(unmatched).toEqual([])
+    })
+  },
+)
+
+// The linked-reads config must actually reach the layers it exists for,
+// otherwise it silently degrades into a duplicate of the plain one.
+it('the linked-reads config draws strictly more than the plain pileup', () => {
+  expect(drawAt(false, CONFIGS[1]!.overrides).length).toBeGreaterThan(
+    drawAt(false, CONFIGS[0]!.overrides).length,
+  )
+})
+
+it('the tolerance is far tighter than the bug it guards against', () => {
+  // A one-base slip moves a mark PX_PER_BP; the tolerance only absorbs the
+  // sub-pixel seam fudge. If this ever inverts, the mirror checks go blind.
+  expect(FUDGE_TOLERANCE_PX).toBeLessThan(PX_PER_BP / 4)
 })
