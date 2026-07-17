@@ -2687,6 +2687,37 @@ export default function baseStateModelFactory(
           // wording would mislabel those.
           const subfeatureNoun = subfeature?.type ?? 'subfeature'
           const featureNoun = type ?? 'feature'
+          // One toggle shared by both highlight scopes: when already boxed,
+          // remove by the boxed id; otherwise add a highlight for the target.
+          function highlightItem(
+            active: boolean,
+            addLabel: string,
+            removeLabel: string,
+            boxedId: string,
+            target: HighlightTarget,
+          ) {
+            return {
+              label: active ? removeLabel : addLabel,
+              icon: Highlighter,
+              onClick: () => {
+                if (active) {
+                  self.removeFeatureHighlightsForId(boxedId)
+                } else {
+                  const region = self.loadedRegions.get(displayedRegionIndex)
+                  if (region) {
+                    self.addFeatureHighlightForItem(target, region.refName)
+                  }
+                }
+              },
+            }
+          }
+          const wholeFeatureItem = highlightItem(
+            highlighted,
+            subfeature ? `Whole ${featureNoun}` : 'Highlight feature',
+            subfeature ? `Remove whole ${featureNoun} highlight` : 'Remove highlight',
+            featureId,
+            { startBp, endBp, name },
+          )
           return [
             {
               label: 'Open feature details',
@@ -2730,82 +2761,28 @@ export default function baseStateModelFactory(
                     label: 'Highlight',
                     icon: Highlighter,
                     subMenu: [
-                      // The exact subfeature the user right-clicked, scoped to
-                      // subfeatures so it resolves to this isoform rather than
-                      // its gene even when the two share a span (the common
-                      // GFF3 case).
-                      {
-                        label: subfeatureHighlighted
-                          ? `Remove ${subfeatureNoun} highlight`
-                          : subfeature.displayLabel
-                            ? `${subfeatureNoun} ${subfeature.displayLabel}`
-                            : `This ${subfeatureNoun}`,
-                        icon: Highlighter,
-                        onClick: () => {
-                          if (subfeatureHighlighted) {
-                            self.removeFeatureHighlightsForId(
-                              subfeature.featureId,
-                            )
-                          } else {
-                            const region =
-                              self.loadedRegions.get(displayedRegionIndex)
-                            if (region) {
-                              self.addFeatureHighlightForItem(
-                                {
-                                  startBp: subfeature.startBp,
-                                  endBp: subfeature.endBp,
-                                  name: subfeature.displayLabel,
-                                  subfeature: true,
-                                },
-                                region.refName,
-                              )
-                            }
-                          }
+                      // The subfeature scope is keyed to subfeatures so it
+                      // resolves to this isoform rather than its gene even when
+                      // the two share a span (the common GFF3 case).
+                      highlightItem(
+                        subfeatureHighlighted,
+                        subfeature.displayLabel
+                          ? `${subfeatureNoun} ${subfeature.displayLabel}`
+                          : `This ${subfeatureNoun}`,
+                        `Remove ${subfeatureNoun} highlight`,
+                        subfeature.featureId,
+                        {
+                          startBp: subfeature.startBp,
+                          endBp: subfeature.endBp,
+                          name: subfeature.displayLabel,
+                          subfeature: true,
                         },
-                      },
-                      {
-                        label: highlighted
-                          ? `Remove whole ${featureNoun} highlight`
-                          : `Whole ${featureNoun}`,
-                        icon: Highlighter,
-                        onClick: () => {
-                          if (highlighted) {
-                            self.removeFeatureHighlightsForId(featureId)
-                          } else {
-                            const region =
-                              self.loadedRegions.get(displayedRegionIndex)
-                            if (region) {
-                              self.addFeatureHighlightForItem(
-                                { startBp, endBp, name },
-                                region.refName,
-                              )
-                            }
-                          }
-                        },
-                      },
+                      ),
+                      wholeFeatureItem,
                     ],
                   },
                 ]
-              : [
-                  {
-                    label: highlighted ? 'Remove highlight' : 'Highlight feature',
-                    icon: Highlighter,
-                    onClick: () => {
-                      if (highlighted) {
-                        self.removeFeatureHighlightsForId(featureId)
-                      } else {
-                        const region =
-                          self.loadedRegions.get(displayedRegionIndex)
-                        if (region) {
-                          self.addFeatureHighlightForItem(
-                            { startBp, endBp, name },
-                            region.refName,
-                          )
-                        }
-                      }
-                    },
-                  },
-                ]),
+              : [wholeFeatureItem]),
             // The show/hide family (pin, solo, hide) groups the growing set of
             // visibility toggles behind one submenu so the common actions above
             // stay one click away.
