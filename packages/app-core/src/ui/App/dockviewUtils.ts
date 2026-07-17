@@ -23,10 +23,46 @@ export function getViewsForPanel(
   panelId: string,
   session: DockviewSessionType & SessionWithDockviewLayout,
 ): AbstractViewModel[] {
-  return session
-    .getViewIdsForPanel(panelId)
-    .map(id => session.views.find(v => v.id === id))
-    .filter((v): v is AbstractViewModel => v !== undefined)
+  return session.getViewIdsForPanel(panelId).flatMap(id => {
+    const view = session.views.find(v => v.id === id)
+    return view ? [view] : []
+  })
+}
+
+/**
+ * Reconcile session views against dockview panels: assign any view lacking a
+ * panel to the active panel (creating one if there are none), then drop
+ * assignments for views that no longer exist. Runs inside an autorun in
+ * TiledViewsContainer whenever the view list or assignments change.
+ */
+export function reconcilePanelAssignments(
+  api: DockviewApi,
+  session: DockviewSessionType & SessionWithDockviewLayout,
+) {
+  const currentViewIds = new Set(session.views.map(v => v.id))
+
+  for (const view of session.views) {
+    if (!session.getPanelContainingView(view.id)) {
+      let activePanelId = session.activePanelId
+      if (!activePanelId || !api.getPanel(activePanelId)) {
+        const firstPanel = api.panels[0]
+        if (firstPanel) {
+          activePanelId = firstPanel.id
+        } else {
+          activePanelId = createPanelId()
+          api.addPanel(createPanelConfig(activePanelId))
+        }
+        session.setActivePanelId(activePanelId)
+      }
+      session.assignViewToPanel(activePanelId, view.id)
+    }
+  }
+
+  for (const id of [...session.panelViewAssignments.values()].flat()) {
+    if (!currentViewIds.has(id)) {
+      session.removeViewFromPanel(id)
+    }
+  }
 }
 
 // No `title`: an unset title makes JBrowseViewTab derive the tab name from the

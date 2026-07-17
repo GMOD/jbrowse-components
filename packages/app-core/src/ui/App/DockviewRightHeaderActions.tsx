@@ -35,55 +35,31 @@ export default function DockviewRightHeaderActions({
   const { classes } = useStyles()
   const { rearrangePanels } = useDockview()
 
-  const tileHorizontally = () => {
+  // Re-tile every panel after the first relative to it. 'within' stacks them
+  // all into one tab group; 'right'/'below' lay them out side by side.
+  const tile = (direction: 'right' | 'below' | 'within') => {
     rearrangePanels(api => {
       rearrangePanelsWithDirection(api, (idx, states) =>
-        idx === 0
-          ? undefined
-          : { referencePanel: states[0]!.id, direction: 'right' },
+        idx === 0 ? undefined : { referencePanel: states[0]!.id, direction },
       )
     })
   }
 
-  const tileVertically = () => {
-    rearrangePanels(api => {
-      rearrangePanelsWithDirection(api, (idx, states) =>
-        idx === 0
-          ? undefined
-          : { referencePanel: states[0]!.id, direction: 'below' },
-      )
-    })
-  }
-
+  // rearrangePanelsWithDirection no-ops below 2 panels, so cols is only used
+  // when there are enough panels for the grid math to matter.
   const tileGrid = () => {
     rearrangePanels(api => {
-      const panels = api.panels
-      if (panels.length <= 1) {
-        return
-      }
-      const cols = Math.ceil(Math.sqrt(panels.length))
+      const cols = Math.ceil(Math.sqrt(api.panels.length))
       rearrangePanelsWithDirection(api, (idx, states) => {
         if (idx === 0) {
           return undefined
         }
         const col = idx % cols
         const row = Math.floor(idx / cols)
-        if (col === 0) {
-          const refIdx = (row - 1) * cols
-          return { referencePanel: states[refIdx]!.id, direction: 'below' }
-        }
-        return { referencePanel: states[idx - 1]!.id, direction: 'right' }
+        return col === 0
+          ? { referencePanel: states[(row - 1) * cols]!.id, direction: 'below' }
+          : { referencePanel: states[idx - 1]!.id, direction: 'right' }
       })
-    })
-  }
-
-  const stackAll = () => {
-    rearrangePanels(api => {
-      rearrangePanelsWithDirection(api, (idx, states) =>
-        idx === 0
-          ? undefined
-          : { referencePanel: states[0]!.id, direction: 'within' },
-      )
     })
   }
 
@@ -98,17 +74,23 @@ export default function DockviewRightHeaderActions({
             {
               label: 'Global: change layout into set of tabs',
               icon: DynamicFeedIcon,
-              onClick: stackAll,
+              onClick: () => {
+                tile('within')
+              },
             },
             {
               label: 'Global: tile horizontally',
               icon: ViewColumnIcon,
-              onClick: tileHorizontally,
+              onClick: () => {
+                tile('right')
+              },
             },
             {
               label: 'Global: tile vertically',
               icon: TableRowsIcon,
-              onClick: tileVertically,
+              onClick: () => {
+                tile('below')
+              },
             },
             {
               label: 'Global: tile grid',
@@ -127,9 +109,7 @@ export default function DockviewRightHeaderActions({
           <IconButton
             size="small"
             onClick={() => {
-              for (const panel of group.panels) {
-                panel.api.close()
-              }
+              group.api.close()
             }}
             className={classes.headerButton}
           >

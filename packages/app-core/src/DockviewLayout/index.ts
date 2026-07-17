@@ -82,10 +82,14 @@ export function DockviewLayoutMixin() {
       .views(self => ({
         /**
          * #getter
-         * Get view IDs for a specific panel
+         * Get view IDs for a specific panel, as a plain snapshot array. Never
+         * the live MST node: callers iterate this while removing views (which
+         * splices the underlying array via the reconcile autorun), so leaking
+         * the live array would skip elements mid-iteration. Mutators go through
+         * getPanelContainingView instead.
          */
         getViewIdsForPanel(panelId: string) {
-          return self.panelViewAssignments.get(panelId) ?? []
+          return self.panelViewAssignments.get(panelId)?.slice() ?? []
         },
         /**
          * #getter

@@ -4,7 +4,7 @@ import type { DockviewSessionType } from './types.ts'
 import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
 
-interface DockviewContextValue {
+export interface DockviewContextValue {
   api: DockviewApi | null
   // The live MST session, supplied to dockview's portaled panel/tab components
   // via context rather than through serialized panel params (which would embed
