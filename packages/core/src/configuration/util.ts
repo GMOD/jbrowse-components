@@ -26,8 +26,10 @@ import {
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
+  AnyConfiguration,
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
+  AnyConfigurationSnapshot,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotValue,
@@ -46,10 +48,18 @@ function evalConfigCallback(
   args: Record<string, unknown>,
   confObject: unknown,
 ) {
-  const jexl = isStateTreeNode(confObject)
-    ? getEnv<{ pluginManager?: { jexl?: JexlInstance } }>(confObject)
-        .pluginManager?.jexl
-    : undefined
+  if (!isStateTreeNode(confObject)) {
+    // A jexl slot needs the realm's jexl instance, which is read from a live
+    // config node's env. A plain config snapshot (e.g. an un-hydrated
+    // session.tracks entry) carries no env — read it through a hydrated model,
+    // or use readConfigValue(config, key, feature, jexl) which takes jexl
+    // explicitly.
+    throw new Error(
+      `cannot evaluate jexl config callback ${JSON.stringify(expr)}: config is a plain snapshot, not a live model (no env to resolve the jexl instance)`,
+    )
+  }
+  const jexl = getEnv<{ pluginManager?: { jexl?: JexlInstance } }>(confObject)
+    .pluginManager?.jexl
   if (!jexl) {
     throw new Error(
       `cannot evaluate jexl config callback ${JSON.stringify(expr)}: no pluginManager jexl instance in config env`,
@@ -58,11 +68,14 @@ function evalConfigCallback(
   return evaluateJexl(expr, args, jexl)
 }
 
-// A config readable by readConfObject: a normal schema model, or a top-level
+// A config readable by readConfObject: a live schema model, a plain config
+// snapshot (an un-hydrated session.tracks entry, etc.), or a top-level
 // types.map of sub-schemas (e.g. an assembly's per-key configs) whose entries
 // are reachable via `.get()` rather than property access.
 type ReadableConfig =
-  AnyConfigurationModel | IMSTMap<AnyConfigurationSchemaType>
+  | AnyConfigurationModel
+  | AnyConfigurationSnapshot
+  | IMSTMap<AnyConfigurationSchemaType>
 
 function isConfigMap(
   confObject: ReadableConfig,
@@ -128,11 +141,16 @@ export function readConfObject<
 ): SLOT extends string
   ? ConfigurationSlotValue<ConfigurationSchemaForModel<CONFMODEL>, SLOT>
   : any
-// A top-level config can itself be a types.map of sub-schemas (e.g. an
-// assembly's per-key configs); rawSlotValue falls back to map.get() for these.
-// The map node lacks the schema model's actions, so it needs its own overload.
+// Two shapes that don't carry a resolvable schema type, so slot names/values
+// aren't checked (returns any):
+//  - a top-level types.map of sub-schemas (e.g. an assembly's per-key configs);
+//    rawSlotValue falls back to map.get() for these
+//  - a plain config snapshot, or a model-or-snapshot value (e.g. a
+//    session.tracks entry that may be a live node or an un-hydrated plain
+//    object) — matching the runtime, which reads plain objects directly. Jexl
+//    slots still require a live node (evalConfigCallback throws otherwise).
 export function readConfObject(
-  confObject: IMSTMap<AnyConfigurationSchemaType>,
+  confObject: IMSTMap<AnyConfigurationSchemaType> | AnyConfiguration,
   slotPath?: string | string[],
   args?: Record<string, unknown>,
 ): any

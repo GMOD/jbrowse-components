@@ -8,6 +8,7 @@ export type {
   AnyConfiguration,
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
+  AnyConfigurationSnapshot,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotValue,

@@ -98,6 +98,15 @@ export type ConfigurationSlotValue<SCHEMA, K extends string> =
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
 
-/** any configuration model, or snapshot thereof */
-export type AnyConfiguration =
-  AnyConfigurationModel | SnapshotOut<AnyConfigurationModel>
+/** a plain-object snapshot of a configuration model (not a live MST node) */
+export type AnyConfigurationSnapshot = SnapshotOut<AnyConfigurationModel>
+
+/**
+ * A value readable as configuration: either a live configuration model or a
+ * plain snapshot of one. `session.tracks` legitimately holds a mix (live
+ * `sessionTracks` nodes, plus plain frozen/merged base entries that hydrate to
+ * MST only on first reference access), and `readConfObject` reads both — so this
+ * is the honest type at those boundaries. Reserve `AnyConfigurationModel` for
+ * values that must be live (actions, identity, reference resolution).
+ */
+export type AnyConfiguration = AnyConfigurationModel | AnyConfigurationSnapshot
