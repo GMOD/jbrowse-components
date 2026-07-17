@@ -104,12 +104,6 @@ function buildReadExtents(
   return { starts, ends }
 }
 
-// [0..n) sorted by `cmp`. The shared scaffold of the placement-order builders,
-// which differ only in the comparator.
-function indicesSortedBy(n: number, cmp: (a: number, b: number) => number) {
-  return Array.from({ length: n }, (_, i) => i).sort(cmp)
-}
-
 // Widest [start,end) first (by span), genomic start as a deterministic tiebreak
 // — so the largest alignments take the lowest rows. Shared by the single-region
 // and multi-region largest-first orderings so the rule can't drift.
@@ -339,7 +333,7 @@ function buildSoftclipOrder(
   ext: ReadExtents,
   numReads: number,
 ) {
-  return indicesSortedBy(numReads, (a, b) =>
+  return Array.from({ length: numReads }, (_, i) => i).sort((a, b) =>
     ext.starts[a] !== ext.starts[b]
       ? ext.starts[a]! - ext.starts[b]!
       : (data.readPositions[a * 2] ?? 0) - (data.readPositions[b * 2] ?? 0),
@@ -353,8 +347,13 @@ function buildSoftclipOrder(
 // LGVSyntenyDisplay default). Not start-monotone, so the placement loop uses the
 // row-scan rather than the interval-partitioning fast path.
 function buildLargeFirstOrder(ext: ReadExtents, numReads: number) {
-  return indicesSortedBy(numReads, (a, b) =>
-    compareByExtentDesc(ext.starts[a]!, ext.ends[a]!, ext.starts[b]!, ext.ends[b]!),
+  return Array.from({ length: numReads }, (_, i) => i).sort((a, b) =>
+    compareByExtentDesc(
+      ext.starts[a]!,
+      ext.ends[a]!,
+      ext.starts[b]!,
+      ext.ends[b]!,
+    ),
   )
 }
 

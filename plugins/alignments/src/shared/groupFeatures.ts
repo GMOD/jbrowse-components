@@ -161,17 +161,20 @@ function orderGroups(groups: FeatureGroup[]) {
   return groups.sort((a, b) => compareGroupKeys(a.key, b.key))
 }
 
-// Append a single feature into its group, creating the group on first sight.
-// The per-group array is allocated once (getOrCreate skips make() on a hit), so
-// the per-read pileup path stays allocation-free over thousands of reads.
+// Append a single feature into its group, creating the group (seeded with the
+// feature) on first sight. A single push per read keeps the pileup path
+// allocation-free over thousands of reads.
 function appendFeature(
   groups: Map<string, FeatureGroup>,
   feature: Feature,
   { key, label }: GroupKey,
 ) {
-  getOrCreate(groups, key, () => ({ key, label, features: [] })).features.push(
-    feature,
-  )
+  const group = groups.get(key)
+  if (group) {
+    group.features.push(feature)
+  } else {
+    groups.set(key, { key, label, features: [feature] })
+  }
 }
 
 // The ungrouped result: one section keyed '' holding every feature. Both
