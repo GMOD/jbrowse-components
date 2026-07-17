@@ -1,6 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import {
   Button,
