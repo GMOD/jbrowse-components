@@ -1,4 +1,5 @@
 import { Menu } from '@jbrowse/core/ui'
+import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
@@ -59,6 +60,16 @@ export default function SelectionContextMenu({
           onClick: () => {
             if (mousedown && mouseup) {
               model.onDotplotView(mousedown, mouseup)
+            }
+            unhover()
+          },
+        },
+        {
+          label: 'Highlight region',
+          icon: HighlightAltIcon,
+          onClick: () => {
+            if (mousedown && mouseup) {
+              model.addHighlightFromMouseCoords(mousedown, mouseup)
             }
             unhover()
           },

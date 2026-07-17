@@ -5,6 +5,7 @@ import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewMo
 import HighlightsMixin from '@jbrowse/core/pluggableElementTypes/models/HighlightsMixin'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
+  clamp,
   getSession,
   isSessionModelWithWidgets,
   localStorageGetItem,
@@ -44,6 +45,8 @@ import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.ts
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcStatus } from '@jbrowse/core/util'
+import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
+import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
@@ -85,6 +88,19 @@ function canonicalRegion(
     : undefined
   const refName = asm?.getCanonicalRefName(region.refName) ?? region.refName
   return { ...region, refName }
+}
+
+// Collapse an axis' drag span into a single highlight region. A drag can start
+// or end past a region's edge, or run into the next region entirely, so both
+// ends are clamped into the region the drag started in rather than producing a
+// band that spans refNames.
+function dragToHighlight(a: PxToBpResult, b: PxToBpResult): HighlightType {
+  return {
+    assemblyName: a.assemblyName,
+    refName: a.refName,
+    start: clamp(a.coord0, a.start, a.end),
+    end: a.refName === b.refName ? clamp(b.coord0, a.start, a.end) : a.end,
+  }
 }
 
 // defaults for postProcessSnapshot filtering
@@ -791,6 +807,20 @@ export default function stateModelFactory(pm: PluginManager) {
             const [x1, x2, y1, y2] = result
             self.hview.moveTo(x1, x2)
             self.vview.moveTo(y2, y1)
+          }
+        },
+        /**
+         * #action
+         * highlights the clicked and dragged region: the x-span becomes a band
+         * on the horizontal axis and the y-span a band on the vertical axis, so
+         * the drag rect is their intersection
+         */
+        addHighlightFromMouseCoords(mousedown: Coord, mouseup: Coord) {
+          const result = this.getCoords(mousedown, mouseup)
+          if (result) {
+            const [x1, x2, y1, y2] = result
+            self.addToHighlights(dragToHighlight(x1!, x2!))
+            self.addToHighlights(dragToHighlight(y2!, y1!))
           }
         },
         /**

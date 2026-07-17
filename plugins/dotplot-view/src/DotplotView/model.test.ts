@@ -60,6 +60,41 @@ test('off-axis region returns undefined', () => {
   ).toBeUndefined()
 })
 
+test('addHighlightFromMouseCoords bands the drag rect on both axes', () => {
+  const model = setup()
+  const { viewHeight } = model
+  // drag from (100, viewHeight-200) to (300, viewHeight-400): x-span 100-300 on
+  // the h axis, y-span 200-400 on the v axis (which lays out bottom-to-top)
+  model.addHighlightFromMouseCoords(
+    [100, viewHeight - 200],
+    [300, viewHeight - 400],
+  )
+  expect(model.highlight).toEqual([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 100, end: 300 },
+    { assemblyName: 'volvox', refName: 'ctgA', start: 200, end: 400 },
+  ])
+})
+
+test('addHighlightFromMouseCoords clamps a drag past the region edges', () => {
+  const model = setup()
+  const { viewHeight } = model
+  // ctgA is 0-1000 at bpPerPx=1, so both ends of this drag run off the region
+  model.addHighlightFromMouseCoords(
+    [-50, viewHeight + 50],
+    [1200, viewHeight - 1200],
+  )
+  expect(model.highlight).toEqual([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 1000 },
+  ])
+})
+
+test('a drag under the 3px threshold adds no highlight', () => {
+  const model = setup()
+  model.addHighlightFromMouseCoords([100, 100], [102, 102])
+  expect(model.highlight).toHaveLength(0)
+})
+
 test('settled gates on autoDiagonalize completion when requested', () => {
   const model = setup()
   model.markCanvasDrawn()
