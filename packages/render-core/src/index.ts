@@ -80,6 +80,7 @@ export {
   makeCellLeftMapper,
   makeRampFillStyleLut,
   prepareCanvas,
+  spanLeft,
   syncCanvasSize,
 } from './canvas2dUtils.ts'
 export type { BlockClip } from './canvas2dUtils.ts'

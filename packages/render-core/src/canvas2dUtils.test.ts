@@ -4,6 +4,7 @@ import {
   getPreparedCanvas2D,
   makeBpMapper,
   makeCellLeftMapper,
+  spanLeft,
   syncCanvasSize,
 } from './canvas2dUtils.ts'
 
@@ -92,6 +93,45 @@ test('clamps an oversized backing store to the safe max instead of throwing', ()
 // The pivot every Canvas2D per-base cell painter needs. `makeBpMapper(bp)` is
 // the cell's left edge only on a forward block; reversed, bp runs leftward so it
 // lands on the cell's RIGHT edge and a rect filled rightward from it covers the
+// The Canvas2D twin of the pivot inside the shaders' extendToMinWidthX. When a
+// mark is widened to a floor, both must grow it away from the feature's start,
+// or the fallback painter and the shader disagree by up to that floor on
+// reversed blocks.
+describe('spanLeft', () => {
+  test('a span already wider than the floor is unaffected by the pivot', () => {
+    // width === |dx|, so the result is just min(x1, x2) either way.
+    expect(spanLeft(10, 20, 10)).toBe(10)
+    expect(spanLeft(20, 10, 10)).toBe(10)
+  })
+
+  test('forward: the widened mark grows right off the anchored start', () => {
+    expect(spanLeft(10, 10.5, 2)).toBe(10)
+  })
+
+  test('reversed: the widened mark grows left off the anchored start', () => {
+    // Flipped, x1 is the feature's start *and* its right edge, so the mark hangs
+    // to the left of it. Anchoring min(x1, x2) would put it at 9.5 — sliding the
+    // mark toward the block's end, which is the bug this pivot exists to stop.
+    expect(spanLeft(10, 9.5, 2)).toBe(8)
+    expect(spanLeft(500, 499, 2)).toBe(498)
+  })
+
+  test('a zero-length span has no orientation and grows right', () => {
+    // Matches the shader, where dx == 0 takes the +minWidth branch.
+    expect(spanLeft(10, 10, 2)).toBe(10)
+  })
+
+  test('the anchored start edge always bounds the painted span', () => {
+    for (const [x1, x2] of [
+      [10, 10.5],
+      [10, 9.5],
+    ] as const) {
+      const left = spanLeft(x1, x2, 2)
+      expect([left, left + 2]).toContain(x1)
+    }
+  })
+})
+
 // wrong base. One base of error: invisible zoomed out, glaring zoomed in, and
 // only on flipped regions.
 describe('makeCellLeftMapper', () => {

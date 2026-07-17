@@ -151,6 +151,33 @@ export function clipBlockForCanvas(
     : null
 }
 
+/**
+ * `fillRect` x for a mark that spans `x1`→`x2` but is painted at `width` — the
+ * Canvas2D pivot for every painter that widens a too-narrow span to a floor (a
+ * 1bp feature, a zoomed-out coverage bin), and the twin of the pivot baked into
+ * the shaders' `extendToMinWidthX`.
+ *
+ * The mark is anchored at `x1` and grows *away* from it. That's the whole point:
+ * on a reversed block `makeBpMapper` flips, so `x2 < x1`, `x1` is the feature's
+ * **start** — its right edge — and the mark must grow leftward from it. Spelling
+ * the fill as `min(x1, x2)` + `max(floor, |dx|)` instead anchors whichever edge
+ * happens to be leftmost, which reversed is the feature's *end*, sliding the
+ * mark by up to the floor. Forward blocks are identical either way, so the error
+ * only ever shows on flipped regions and survives review. The canvas rect
+ * painter (2px floor), the multi-row painter (1px), and wiggle (1.5px) each had
+ * it independently.
+ *
+ * Callers own the *width*, like `makeCellLeftMapper` below — it's a per-plugin
+ * rule (canvas/multi-row take `max(floor, |dx|)`, matching `extendToMinWidthX`
+ * exactly; wiggle adds a seam-closing fudge the shader deliberately omits).
+ * Only the pivot is shared, and it's the part that keeps being got wrong.
+ *
+ * Scalar in, scalar out: runs per feature per frame, so it must not allocate.
+ */
+export function spanLeft(x1: number, x2: number, width: number) {
+  return x2 < x1 ? x1 - width : x1
+}
+
 export function lookupColorRamp(ramp: Uint8Array, t: number) {
   const idx = Math.max(0, Math.min(255, Math.round(t * 255))) * 4
   return {

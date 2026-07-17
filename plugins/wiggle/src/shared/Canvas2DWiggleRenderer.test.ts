@@ -251,9 +251,15 @@ describe('Canvas2DWiggleRenderer', () => {
   })
 
   // Regression: a reversed block maps feature start→right edge, end→left edge,
-  // so x1 > x2. The fill must span the full mirrored cell (left=min, w=|x2-x1|),
-  // not collapse to the WIGGLE_MIN_PX floor anchored at the wrong edge.
-  // bpRange [0,1000]→screen [0,800] reversed: bp 0→800px, bp 500→400px.
+  // so x1 > x2. The fill must span the full mirrored cell, not collapse to the
+  // WIGGLE_MIN_PX floor anchored at the wrong edge.
+  //
+  // bpRange [0,1000]→screen [0,800] reversed: bp 0→800px, bp 500→400px, so the
+  // true cell is [400,800]. The bar is anchored on the bin's *start* (x1=800,
+  // matching extendToMinWidthX in wiggle.slang) and widened away from it, so the
+  // WIGGLE_FUDGE_FACTOR overhang lands at 399.2 — past the bp-500 edge, which is
+  // the seam with the next bin genomically. Forward it overhangs the other way,
+  // for the same reason: a bar always bleeds into its genomic successor.
   test.each([
     ['xyplot', RENDERING_TYPE_XYPLOT],
     ['density', RENDERING_TYPE_DENSITY],
@@ -277,10 +283,41 @@ describe('Canvas2DWiggleRenderer', () => {
 
       expect(fillRectCalls.length).toBe(1)
       const [x, , w] = fillRectCalls[0]!
-      expect(x).toBeCloseTo(400)
+      expect(x).toBeCloseTo(399.2)
       expect(w).toBeCloseTo(400.8)
+      // The anchored start edge is exact; only the fudge overhangs.
+      expect(x + w).toBeCloseTo(800)
     },
   )
+
+  // The case the start-edge anchor exists for. Zoomed out to 100kb over 800px a
+  // 1bp bin is 0.008px, so even with the fudge it hits the WIGGLE_MIN_PX floor
+  // and the anchor decides the whole placement. bp 50000 sits at x=400 in both
+  // orientations, so the bar hangs off the opposite side of it depending on
+  // which way the block runs — and both match the [x1, x1±1.5] the shader's
+  // extendToMinWidthX produces exactly, the fudge being absorbed by the floor.
+  test.each([
+    ['forward', false, 400],
+    ['reversed', true, 398.5],
+  ])('sub-floor bin is floored away from its start edge (%s)', (_n, rev, x0) => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    renderer.renderBlocks(
+      [{ ...defaultBlock, end: 100000, reversed: rev }],
+      new Map([[0, [makeSource([5], [50000], [50001])]]]),
+      defaultState,
+    )
+
+    expect(fillRectCalls.length).toBe(1)
+    const [x, , w] = fillRectCalls[0]!
+    expect(w).toBeCloseTo(1.5)
+    expect(x).toBeCloseTo(x0)
+  })
 
   test('reversed block centers a scatter point on the mirrored midpoint', () => {
     const { canvas, rectCalls } = createMockCanvas()

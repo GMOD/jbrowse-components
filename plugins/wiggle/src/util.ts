@@ -221,7 +221,13 @@ export function featuresToRaw(
 // histogram bars overlap by a fraction of a pixel instead of leaving thin
 // anti-aliased gaps between them. The GPU shader intentionally does NOT apply
 // this — it relies on its own min-clip-width floor (minClipW in wiggle.slang),
-// so the two backends differ by sub-pixel amounts by design.
+// so the two backends' bar *widths* differ by sub-pixel amounts by design.
+//
+// Only the width, though: which edge the bar is anchored on is shared, and both
+// backends anchor the bin's start (`spanLeft` here, `extendToMinWidthX` in the
+// shader). Anchoring the leftmost edge instead would shift every sub-floor bin
+// on a reversed block by up to WIGGLE_MIN_PX — an actual mismatch, not this
+// deliberate sub-pixel one.
 export const WIGGLE_FUDGE_FACTOR = 0.8
 
 export const WIGGLE_MIN_PX = 1.5

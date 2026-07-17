@@ -1,4 +1,4 @@
-import { bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
+import { bpToScreenPx, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 import { appendPointMarker } from '@jbrowse/wiggle-core'
 
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
@@ -74,10 +74,14 @@ export function drawXYPlot({
       reversed,
     )
     const scoreY = scoreToY(scores[i]!) + rowTop
-    const left = Math.min(x1, x2)
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
     // bar grows from the score baseline (originY) up or down to the score
-    ctx.fillRect(left, Math.min(scoreY, originY), w, Math.abs(originY - scoreY))
+    ctx.fillRect(
+      spanLeft(x1, x2, w),
+      Math.min(scoreY, originY),
+      w,
+      Math.abs(originY - scoreY),
+    )
   }
 }
 
@@ -122,10 +126,9 @@ export function drawDensity({
       screenEndPx,
       reversed,
     )
-    const left = Math.min(x1, x2)
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
     ctx.fillStyle = colorFn(scores[i]!)
-    ctx.fillRect(left, rowTop, w, rowHeight)
+    ctx.fillRect(spanLeft(x1, x2, w), rowTop, w, rowHeight)
   }
 }
 

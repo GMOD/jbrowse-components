@@ -2,6 +2,7 @@ import { setAbgrFill } from '@jbrowse/core/util/colorBits'
 import {
   clipBlockForCanvas,
   makeBpMapper,
+  spanLeft,
 } from '@jbrowse/render-core/canvas2dUtils'
 
 import { resolveLocalRowIndices } from './resolveLocalRowIndices.ts'
@@ -62,8 +63,8 @@ export function drawMultiRowBlocks(
           if (rowIndex !== undefined && !hiddenColors?.has(featureColors[i]!)) {
             const xa = bpToPx(featureStarts[i]!)
             const xb = bpToPx(featureEnds[i]!)
-            const left = Math.min(xa, xb)
             const width = Math.max(1, Math.abs(xb - xa))
+            const left = spanLeft(xa, xb, width)
             const top = offset + rowHeight * rowIndex
             setAbgrFill(ctx, rowColorsByIndex?.[rowIndex] ?? featureColors[i]!)
             ctx.fillRect(left, top, width, h)

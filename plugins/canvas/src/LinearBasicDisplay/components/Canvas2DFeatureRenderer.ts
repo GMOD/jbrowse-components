@@ -8,6 +8,7 @@ import {
 import {
   clipBlockForCanvas,
   makeBpMapper,
+  spanLeft,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
@@ -139,11 +140,12 @@ function drawRects(
     const h = Math.floor(region.rectHeights[i]! + 0.5)
     // Pixel-snap the endpoints (matching the GPU shader's snapToPixelX) so a
     // min-width box is a crisp >=2px column instead of an anti-aliased sub-2px
-    // blur. On reversed blocks bpToScreenPx flips so x1 > x2, hence abs + min.
+    // blur. spanLeft then anchors the box on the feature's start edge the way
+    // rect.slang's extendToMinWidthX does — reversed, that's its right edge.
     const sx1 = Math.round(x1)
     const sx2 = Math.round(x2)
-    const xLeft = Math.min(sx1, sx2)
     const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
+    const xLeft = spanLeft(sx1, sx2, w)
 
     // In the dense-pileup regime (thousands of collapsed row-0 marks) boxes draw
     // semi-transparent so src-over accumulation makes the pileup read as a density
@@ -236,6 +238,13 @@ function drawContinuation(
     scissorW,
     canvasWidth,
   )
+  // An interior block in a multi-region view touches neither canvas edge, so no
+  // rect of it can qualify — skip the per-rect scan entirely rather than testing
+  // thousands of rects against two flags that are already false. (The GPU pays
+  // this per instance; here it's one branch.)
+  if (!leftIsCanvasEdge && !rightIsCanvasEdge) {
+    return
+  }
   for (let i = 0; i < region.rectYs.length; i++) {
     const x1 = toX(region.rectPositions[i * 2]!)
     const x2 = toX(region.rectPositions[i * 2 + 1]!)
