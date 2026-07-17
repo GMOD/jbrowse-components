@@ -136,13 +136,21 @@ function strokeWidthForCount(count: number) {
   return Math.max(1, Math.log(count + 1))
 }
 
+// The interleaving test's whole input: any left<=right ordered pair. RawArc
+// satisfies it in screen px; the pre-layout band gate (`hasCrossingSpans`)
+// passes genomic bp.
+interface Span {
+  left: number
+  right: number
+}
+
 // Two arcs "cross" when their spans strictly interleave (a < c < b < d) — not
 // nested and not disjoint. Nested/disjoint pairs never visually collide once
 // heights are span-scaled, so only crossings need to be pulled onto opposite
 // sides. Junctions sharing an endpoint (same donor or same acceptor, common in
 // alternative splicing) are nested, not crossing, so `x.left < y.left` must be
 // strict — otherwise a shared-start pair gets needlessly split across bands.
-function crosses(a: RawArc, b: RawArc) {
+function crosses(a: Span, b: Span) {
   const [x, y] = a.left <= b.left ? [a, b] : [b, a]
   return x.left < y.left && y.left < x.right && x.right < y.right
 }
@@ -171,6 +179,20 @@ function assignSides(raw: RawArc[]): SashimiSide[] {
     }
   }
   return sides
+}
+
+// Exactly the condition under which `assignSides` puts at least one arc 'down',
+// so the layout can reserve the below-coverage strip only when 'auto' will
+// actually fill it (a score filter that removes every crossing junction lets the
+// survivors reclaim that space). No crossings => every arc sees
+// upCross == downCross == 0 and takes 'up'. One crossing pair (a before b in
+// heaviest-first order) => either a is already 'down', or a is 'up' and b sees
+// upCross >= 1, so b only stays 'up' when some earlier arc is 'down'. Either way
+// the band is used.
+//
+// O(n²) like `assignSides`, on the same low arc counts.
+export function hasCrossingSpans(spans: Span[]) {
+  return spans.some((a, i) => spans.slice(i + 1).some(b => crosses(a, b)))
 }
 
 export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {

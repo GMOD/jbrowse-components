@@ -18,9 +18,8 @@ const baseBands: BelowCoverageBandsInput = {
   readConnectionsDown: false,
   readConnectionsHeight: 40,
   showSashimiArcs: false,
-  sashimiArcsMode: 'auto',
   sashimiArcsHeight: 40,
-  hasSashimiArcs: false,
+  hasSashimiDownArcs: false,
 }
 
 test('belowCoverageBandsGeometry: coverage only => pileup right below coverage', () => {
@@ -53,19 +52,19 @@ test('belowCoverageBandsGeometry: up-mode arcs overlay coverage (no reserved ban
   expect(r.bottom).toBe(45)
 })
 
-test('belowCoverageBandsGeometry: sashimi band needs coverage + non-up + arcs present', () => {
+test('belowCoverageBandsGeometry: sashimi band needs coverage + a down-bound arc', () => {
   const on = belowCoverageBandsGeometry({
     ...baseBands,
     showSashimiArcs: true,
-    hasSashimiArcs: true,
+    hasSashimiDownArcs: true,
   })
   expect(on.hasSashimiBand).toBe(true)
   expect(on.bottom).toBe(45 + 40)
-  // no junctions present => no reserved sashimi band even when enabled
+  // nothing lands below coverage => no reserved band even when enabled
   const off = belowCoverageBandsGeometry({
     ...baseBands,
     showSashimiArcs: true,
-    hasSashimiArcs: false,
+    hasSashimiDownArcs: false,
   })
   expect(off.hasSashimiBand).toBe(false)
   expect(off.bottom).toBe(45)

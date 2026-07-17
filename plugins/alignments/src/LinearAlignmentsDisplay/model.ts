@@ -60,7 +60,7 @@ import {
   nextGroupHeightOverride,
 } from './groupLayout.ts'
 import {
-  anyGroupHasSashimi,
+  anyGroupHasSashimiDownArcs,
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
@@ -1162,11 +1162,11 @@ export default function stateModelFactory(
             readConnectionsDown: self.readConnectionsDown,
             readConnectionsHeight: self.readConnectionsHeight,
             showSashimiArcs: self.showSashimiArcs,
-            sashimiArcsMode: self.sashimiArcsMode,
             sashimiArcsHeight: self.sashimiArcsHeight,
-            hasSashimiArcs: anyGroupHasSashimi(
+            hasSashimiDownArcs: anyGroupHasSashimiDownArcs(
               self.rpcDataMap,
               self.minSashimiScore,
+              self.sashimiArcsMode,
             ),
           }
         },

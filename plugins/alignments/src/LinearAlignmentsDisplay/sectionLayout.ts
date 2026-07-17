@@ -72,9 +72,11 @@ export interface BelowCoverageBandsInput {
   readConnectionsDown: boolean
   readConnectionsHeight: number
   showSashimiArcs: boolean
-  sashimiArcsMode: string
   sashimiArcsHeight: number
-  hasSashimiArcs: boolean
+  // Whether any junction actually lands in the below-coverage strip, already
+  // resolved against the mode + score filter by `anyGroupHasSashimiDownArcs`
+  // (mode lives there, not here: 'auto' has to inspect the junctions to know).
+  hasSashimiDownArcs: boolean
 }
 
 export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
@@ -84,10 +86,7 @@ export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
   // histogram: down mode always, and up mode when coverage is hidden.
   const hasArcsBand = arcsOn && (s.readConnectionsDown || !s.showCoverage)
   const hasSashimiBand =
-    s.showSashimiArcs &&
-    s.sashimiArcsMode !== 'up' &&
-    s.showCoverage &&
-    s.hasSashimiArcs
+    s.showSashimiArcs && s.showCoverage && s.hasSashimiDownArcs
   const stack = computeBandStack({
     coverageHeight: coverageBand,
     hasArcsBand,

@@ -15,6 +15,7 @@ import {
 
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
+import { makeEmptyPileupData } from './testUtils.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -361,5 +362,74 @@ describe('openContextMenu atomic state and stale-read reset', () => {
     expect(display.contextMenuIndicatorHit).toBeUndefined()
     expect(display.contextMenuFeature).toBeUndefined()
     expect(display.contextMenuBlock).toBeUndefined()
+  })
+})
+
+// The strip below coverage is reserved for sashimi arcs that 'auto' pushed down,
+// and 'auto' only pushes an arc down to resolve a crossing. So filtering out the
+// junctions that did the crossing has to hand that space back to the pileup —
+// driven here through the real model (config slot -> getter -> band geometry)
+// rather than the pure `belowCoverageBandsGeometry`, so the wiring is covered too.
+describe('sashimi score filter releases the reserved band', () => {
+  // Two interleaving junctions, the second supported by only 2 reads.
+  function seedCrossingJunctions(display: ReturnType<typeof createDisplay>) {
+    display.setRpcData(0, {
+      groups: [
+        {
+          key: '',
+          label: '',
+          data: {
+            ...makeEmptyPileupData(),
+            sashimiX1: new Uint32Array([100, 300]),
+            sashimiX2: new Uint32Array([500, 700]),
+            sashimiColorTypes: new Uint8Array([0, 0]),
+            sashimiCounts: new Uint32Array([20, 2]),
+          },
+        },
+      ],
+    })
+  }
+
+  test('auto: filtering out the crossing junction gives the strip back to the pileup', () => {
+    const display = createDisplay()
+    display.setShowSashimiArcs(true)
+    display.setSashimiArcsMode('auto')
+    display.setMinSashimiScore(0)
+    seedCrossingJunctions(display)
+
+    expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
+    expect(display.coverageDisplayHeight).toBe(
+      display.coverageHeight + display.sashimiArcsHeight,
+    )
+
+    // drops the 2-read junction => nothing left to cross => nothing goes down
+    display.setMinSashimiScore(5)
+    expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
+    expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
+  })
+
+  test('down: the strip stays reserved for any surviving junction', () => {
+    const display = createDisplay()
+    display.setShowSashimiArcs(true)
+    display.setSashimiArcsMode('down')
+    display.setMinSashimiScore(5)
+    seedCrossingJunctions(display)
+
+    // the 20-read junction survives and still draws below coverage
+    expect(display.belowCoverageBands.hasSashimiBand).toBe(true)
+
+    display.setMinSashimiScore(50)
+    expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
+  })
+
+  test('up: arcs overlay coverage, so the strip is never reserved', () => {
+    const display = createDisplay()
+    display.setShowSashimiArcs(true)
+    display.setSashimiArcsMode('up')
+    display.setMinSashimiScore(0)
+    seedCrossingJunctions(display)
+
+    expect(display.belowCoverageBands.hasSashimiBand).toBe(false)
+    expect(display.coverageDisplayHeight).toBe(display.coverageHeight)
   })
 })

@@ -2,6 +2,7 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import {
   anyGroupHasSashimi,
+  anyGroupHasSashimiDownArcs,
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
@@ -295,4 +296,74 @@ test('anyGroupHasSashimi: true when any group has a junction at/above threshold'
 test('anyGroupHasSashimi: false when no group has any junction', () => {
   const m = new Map([[0, grouped([{ key: '', data: sashimiData([]) }])]])
   expect(anyGroupHasSashimi(m, 0)).toBe(false)
+})
+
+// [start, end, count] per junction.
+function junctionData(junctions: [number, number, number][]): PileupDataResult {
+  return {
+    sashimiX1: new Uint32Array(junctions.map(j => j[0])),
+    sashimiX2: new Uint32Array(junctions.map(j => j[1])),
+    sashimiCounts: junctions.map(j => j[2]),
+  } as unknown as PileupDataResult
+}
+
+// Two interleaving junctions, the second thinly supported.
+const crossing: [number, number, number][] = [
+  [100, 500, 20],
+  [300, 700, 2],
+]
+
+test('anyGroupHasSashimiDownArcs: auto reserves the strip only while a crossing pair survives the score filter', () => {
+  const m = new Map([[0, grouped([{ key: '', data: junctionData(crossing) }])]])
+  expect(anyGroupHasSashimiDownArcs(m, 0, 'auto')).toBe(true)
+  // filtering the 2-read junction leaves nothing to cross => nothing goes down
+  expect(anyGroupHasSashimiDownArcs(m, 5, 'auto')).toBe(false)
+})
+
+test('anyGroupHasSashimiDownArcs: auto ignores nested + disjoint junctions', () => {
+  const m = new Map([
+    [
+      0,
+      grouped([
+        {
+          key: '',
+          data: junctionData([
+            [100, 700, 9], // nests the next two
+            [200, 400, 9],
+            [100, 200, 9], // shares a donor => nested, not crossing
+            [800, 900, 9], // disjoint
+          ]),
+        },
+      ]),
+    ],
+  ])
+  expect(anyGroupHasSashimiDownArcs(m, 0, 'auto')).toBe(false)
+})
+
+test('anyGroupHasSashimiDownArcs: auto pools a group across regions, but not across groups', () => {
+  const split = new Map([
+    [0, grouped([{ key: '+', data: junctionData([crossing[0]!]) }])],
+    [1, grouped([{ key: '+', data: junctionData([crossing[1]!]) }])],
+  ])
+  expect(anyGroupHasSashimiDownArcs(split, 0, 'auto')).toBe(true)
+  // same two junctions, but each group assigns sides alone => neither crosses
+  const perGroup = new Map([
+    [
+      0,
+      grouped([
+        { key: '+', data: junctionData([crossing[0]!]) },
+        { key: '-', data: junctionData([crossing[1]!]) },
+      ]),
+    ],
+  ])
+  expect(anyGroupHasSashimiDownArcs(perGroup, 0, 'auto')).toBe(false)
+})
+
+test('anyGroupHasSashimiDownArcs: down reserves for any surviving junction, up never does', () => {
+  const m = new Map([
+    [0, grouped([{ key: '', data: junctionData([[100, 700, 3]]) }])],
+  ])
+  expect(anyGroupHasSashimiDownArcs(m, 0, 'down')).toBe(true)
+  expect(anyGroupHasSashimiDownArcs(m, 4, 'down')).toBe(false)
+  expect(anyGroupHasSashimiDownArcs(m, 0, 'up')).toBe(false)
 })

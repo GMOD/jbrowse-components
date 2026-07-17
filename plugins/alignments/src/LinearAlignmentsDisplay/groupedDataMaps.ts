@@ -1,6 +1,7 @@
+import { hasCrossingSpans } from '../features/sashimi/computeOverlay.ts'
 import { compareGroupKeys } from '../shared/groupFeatures.ts'
 
-import type { LinkedReadsMode } from './constants.ts'
+import type { LinkedReadsMode, SashimiArcsMode } from './constants.ts'
 import type {
   GroupedAlignmentsResult,
   PileupDataResult,
@@ -67,6 +68,50 @@ export function anyGroupHasSashimi(
   return someGroupData(rpcDataMap, d =>
     d.sashimiCounts.some(c => c >= minSashimiScore),
   )
+}
+
+// True when some junction will actually be drawn in the strip below coverage —
+// i.e. whether that strip is worth reserving. 'up' never uses it; 'down' uses it
+// for any surviving junction; 'auto' only splits an arc down when junctions
+// cross (see `hasCrossingSpans`), so a score filter that leaves no crossing pair
+// frees the strip entirely and the survivors reclaim it.
+//
+// Deliberately genomic-bp, over every *loaded* region, so the layout keeps
+// depending only on `rpcDataMap` — projecting to screen px would make the pileup
+// re-lay-out on every pan frame. Interleaving survives any monotonic projection,
+// so within a region this matches the screen-space assignment `computeSashimiArcs`
+// runs; it only ever over-reserves (loaded ⊇ visible).
+export function anyGroupHasSashimiDownArcs(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  minSashimiScore: number,
+  mode: SashimiArcsMode,
+) {
+  return mode === 'up'
+    ? false
+    : mode === 'down'
+      ? anyGroupHasSashimi(rpcDataMap, minSashimiScore)
+      : anyGroupHasCrossingSashimi(rpcDataMap, minSashimiScore)
+}
+
+// 'auto' pools a group's junctions across its regions before assigning sides, so
+// the crossing scan pools the same way — a pair interleaving across two
+// collapsed-intron regions of one group still reserves the strip.
+function anyGroupHasCrossingSashimi(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  minSashimiScore: number,
+) {
+  const spansByGroup = new Map<string, { left: number; right: number }[]>()
+  for (const { key, data } of eachGroup(rpcDataMap)) {
+    const spans = getOrCreate(spansByGroup, key, () => [])
+    for (const [i, count] of data.sashimiCounts.entries()) {
+      if (count >= minSashimiScore) {
+        const start = data.sashimiX1[i]!
+        const end = data.sashimiX2[i]!
+        spans.push({ left: Math.min(start, end), right: Math.max(start, end) })
+      }
+    }
+  }
+  return [...spansByGroup.values()].some(hasCrossingSpans)
 }
 
 // A group's stable identity: its sort key and human-readable label.
