@@ -298,7 +298,11 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             },
           })
           if (indexType === 'perTrack') {
-            for (const trackId of trackIds) {
+            // iterate the configs that were actually indexed, not the raw
+            // requested trackIds: a track filtered out for an unsupported
+            // adapter (or since-deleted) must not get a "success" notice and a
+            // textSearchAdapter config pointing at an .ix that was never written
+            for (const { trackId } of trackConfigs) {
               this.addTrackTextSearchConf({
                 trackId,
                 assemblies,

@@ -65,7 +65,10 @@ export async function indexTracks(args: {
 }
 
 function resolveOutDir(outFlag = '.') {
-  const isDir = fs.lstatSync(outFlag).isDirectory()
+  // statSync (follows symlinks) not lstatSync: a symlink pointing at a
+  // directory should be treated as the output directory, not misclassified as
+  // the config file itself
+  const isDir = fs.statSync(outFlag).isDirectory()
   const confFilePath = isDir ? path.join(outFlag, 'config.json') : outFlag
   const outDir = path.dirname(confFilePath)
   fs.mkdirSync(path.join(outDir, 'trix'), { recursive: true })
