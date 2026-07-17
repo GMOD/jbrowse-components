@@ -116,6 +116,30 @@ function loadTarget(win: BrowserWindow, target: LaunchTarget) {
     .catch(logError)
 }
 
+// A jbrowse:// link is handed to us by whatever web page wanted it opened, and
+// acting on one navigates the window to a new session — destroying whatever the
+// user was looking at. So confirm the destination first, the way the paste-a-
+// link dialog does in-app: this is the only consent point on the protocol route
+// when the linked config declares no plugins (an untrusted plugin has its own
+// prompt). Shows the exact url, so a user who did click a real link just
+// accepts, and one who did not can decline. A file argument is not gated — it
+// only ever comes from the user's own machine (argv or an OS open-file).
+async function confirmOpenLink(url: string, parent: BrowserWindow | null) {
+  const options = {
+    type: 'question' as const,
+    buttons: ['Open', 'Cancel'],
+    defaultId: 0,
+    cancelId: 1,
+    title: 'Open JBrowse Web link',
+    message: 'A link is asking to open a new session in JBrowse. Open it?',
+    detail: url,
+  }
+  const { response } = await (parent
+    ? dialog.showMessageBox(parent, options)
+    : dialog.showMessageBox(options))
+  return response === 0
+}
+
 // Tracks the single main window. Concurrent ensureWindow calls during creation
 // share the in-flight promise; the 'closed' handler nulls both bindings
 // together so the next call rebuilds the window.
@@ -179,6 +203,19 @@ function runApp() {
   const initialTarget = getInitialTarget()
   const wm = createWindowManager()
 
+  // Every route that can carry a launch target funnels through here so a link
+  // is confirmed exactly once, wherever it arrived from (cold launch, macOS
+  // open-url, Windows/Linux second-instance). A declined link still yields a
+  // window — the start screen if none exists yet — rather than opening the
+  // linked session.
+  async function openTarget(target: LaunchTarget | undefined) {
+    if (target?.type === 'link' && !(await confirmOpenLink(target.url, wm.current))) {
+      await wm.ensureWindow()
+    } else {
+      await wm.ensureWindow(target)
+    }
+  }
+
   // Claims the jbrowse:// scheme so an "open in Desktop" link resolves here.
   // An installed app is already registered by its packaging — Info.plist on
   // macOS (scripts/packaging/packager.ts), the NSIS installer on Windows, the
@@ -211,13 +248,11 @@ function runApp() {
       app.on('second-instance', (_event, argv, workingDirectory) => {
         // Windows/Linux hand a jbrowse:// link to the running instance here, as
         // an argv entry — the same path a file argument takes
-        wm.ensureWindow(findLaunchTarget(argv, workingDirectory)).catch(
-          logError,
-        )
+        openTarget(findLaunchTarget(argv, workingDirectory)).catch(logError)
       })
       app.on('open-file', (event, filePath) => {
         event.preventDefault()
-        wm.ensureWindow({ type: 'file', path: filePath }).catch(logError)
+        openTarget({ type: 'file', path: filePath }).catch(logError)
       })
       // macOS delivers a jbrowse:// link this way, whether or not the app is
       // already running
@@ -225,7 +260,7 @@ function runApp() {
         event.preventDefault()
         const link = parseProtocolUrl(url)
         if (link) {
-          wm.ensureWindow({ type: 'link', url: link }).catch(logError)
+          openTarget({ type: 'link', url: link }).catch(logError)
         }
       })
       app.on('activate', () => {
@@ -233,7 +268,7 @@ function runApp() {
       })
 
       await initializeFileSystem(paths)
-      await wm.ensureWindow(await initialTarget)
+      await openTarget(await initialTarget)
     } catch (error) {
       showFatalError('Failed to initialize application', error)
     }

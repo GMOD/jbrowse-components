@@ -57,6 +57,25 @@ test('a link wins over a file, and a malformed link never falls back to one', ()
       '/home/me',
     ),
   ).toBeUndefined()
+  // ...and not even when a real file argument sits alongside the bad link: the
+  // link claims the launch, so its rejection is a bad link, not "open the file"
+  expect(
+    findLaunchTarget(
+      [
+        'jbrowse-desktop',
+        'my.jbrowse',
+        'jbrowse://open?url=file%3A%2F%2F%2Fetc%2Fpasswd',
+      ],
+      '/home/me',
+    ),
+  ).toBeUndefined()
+})
+
+test('recognizes the jbrowse:// scheme case-insensitively', () => {
+  // URL schemes are case-insensitive and Windows preserves the caller's casing
+  expect(
+    findLaunchTarget(['jbrowse-desktop', toProtocolUrl(webUrl).replace('jbrowse://', 'JBrowse://')], '/home/me'),
+  ).toEqual({ type: 'link', url: webUrl })
 })
 
 test('ignores flags and the argv[0] binary path', () => {

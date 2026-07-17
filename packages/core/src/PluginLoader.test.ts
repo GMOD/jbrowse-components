@@ -1,4 +1,8 @@
-import { dropVendoredPlugins } from './PluginLoader.ts'
+import PluginLoader, {
+  dropVendoredPlugins,
+  pluginDescriptionString,
+  pluginUrl,
+} from './PluginLoader.ts'
 
 import type { PluginDefinition } from './PluginLoader.ts'
 
@@ -26,4 +30,31 @@ test('leaves ESM/CJS definitions untouched (no name field to match)', () => {
     { cjsUrl: 'https://example.com/mafviewer.cjs.js' },
   ]
   expect(dropVendoredPlugins(defs)).toEqual(defs)
+})
+
+// pluginUrl feeds the trust gate (checkPlugins) and pluginDescriptionString the
+// approval prompt; both must name the url loadPlugin will actually run, or the
+// gate vets one url and the loader executes another. loadPlugin dispatches
+// CJS -> ESM -> UMD, so a mixed definition resolves to its CJS url in both.
+test('pluginUrl/description resolve to the url loadPlugin runs, not another', () => {
+  const def = {
+    name: 'Innocent',
+    umdUrl: 'https://jbrowse.org/plugins/innocent.js',
+    cjsUrl: 'https://evil.example.com/pwn.js',
+  } as unknown as PluginDefinition
+  expect(pluginUrl(def)).toBe('https://evil.example.com/pwn.js')
+  expect(pluginDescriptionString(def)).toBe(
+    'CJS plugin https://evil.example.com/pwn.js',
+  )
+})
+
+test('loadPlugin refuses a definition that names more than one plugin type', async () => {
+  const def = {
+    name: 'Innocent',
+    umdUrl: 'https://jbrowse.org/plugins/innocent.js',
+    cjsUrl: 'https://evil.example.com/pwn.js',
+  } as unknown as PluginDefinition
+  await expect(new PluginLoader().loadPlugin(def)).rejects.toThrow(
+    /more than one plugin type/,
+  )
 })

@@ -141,26 +141,55 @@ export interface LoadedPlugin {
   default: PluginConstructor
 }
 
+// The two functions below describe a definition by picking the one url it will
+// be loaded from, so both dispatch in loadPlugin's order — CJS, then ESM, then
+// UMD. Keep them in step with it: they are what the plugin trust gate
+// (checkPlugins) reads and what the untrusted-plugin prompt shows, so an order
+// that disagrees with the loader's vets one url and executes another. They once
+// did disagree, and a definition carrying both `umdUrl` and `cjsUrl` was
+// approved on its jbrowse.org umd url while loadPlugin require()d its cjs one.
+// assertSingleKind now rejects such a definition outright; this order is the
+// second half of that guarantee, since the gate runs before the loader does.
 export function pluginDescriptionString(d: PluginDefinition) {
-  if (isUMDPluginDefinition(d)) {
-    return `UMD plugin ${d.name}`
+  if (isCJSPluginDefinition(d)) {
+    return `CJS plugin ${d.cjsUrl}`
   } else if (isESMPluginDefinition(d)) {
     return `ESM plugin ${'esmUrl' in d ? d.esmUrl : d.esmLoc.uri}`
-  } else if (isCJSPluginDefinition(d)) {
-    return `CJS plugin ${d.cjsUrl}`
+  } else if (isUMDPluginDefinition(d)) {
+    return `UMD plugin ${d.name}`
   } else {
     return 'unknown plugin'
   }
 }
 export function pluginUrl(d: PluginDefinition) {
-  if (isUMDPluginDefinition(d)) {
-    return 'umdLoc' in d ? d.umdLoc.uri : 'umdUrl' in d ? d.umdUrl : d.url
+  if (isCJSPluginDefinition(d)) {
+    return d.cjsUrl
   } else if (isESMPluginDefinition(d)) {
     return 'esmUrl' in d ? d.esmUrl : d.esmLoc.uri
-  } else if (isCJSPluginDefinition(d)) {
-    return d.cjsUrl
+  } else if (isUMDPluginDefinition(d)) {
+    return 'umdLoc' in d ? d.umdLoc.uri : 'umdUrl' in d ? d.umdUrl : d.url
   } else {
     return 'unknown url'
+  }
+}
+
+/**
+ * A definition names exactly one loader. More than one is malformed — no real
+ * config declares a plugin twice — and it is the shape that lets "the url we
+ * vetted" and "the url we run" drift apart, so refuse it rather than pick a
+ * winner. That keeps them the same string by construction, instead of by every
+ * url-based inspection of a definition remembering to match loadPlugin's order.
+ */
+function assertSingleKind(def: PluginDefinition) {
+  const kinds = [
+    isCJSPluginDefinition(def) ? 'CJS' : undefined,
+    isESMPluginDefinition(def) ? 'ESM' : undefined,
+    isUMDPluginDefinition(def) ? 'UMD' : undefined,
+  ].filter(kind => kind !== undefined)
+  if (kinds.length > 1) {
+    throw new Error(
+      `Plugin definition names more than one plugin type (${kinds.join(', ')}), refusing to load: ${JSON.stringify(def)}`,
+    )
   }
 }
 
@@ -260,6 +289,7 @@ export default class PluginLoader {
   }
 
   async loadPlugin(def: PluginDefinition, baseUri?: string) {
+    assertSingleKind(def)
     let plugin: LoadedPlugin
     if (isCJSPluginDefinition(def)) {
       if (!isElectron) {

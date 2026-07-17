@@ -59,8 +59,10 @@ export function parseProtocolUrl(input: string): string | undefined {
   }
 }
 
+// URL schemes are case-insensitive, and Windows hands the link back with
+// whatever casing the caller wrote, so match the scheme without regard to case.
 export function isProtocolUrl(arg: string) {
-  return arg.startsWith(`${JBROWSE_PROTOCOL}://`)
+  return arg.toLowerCase().startsWith(`${JBROWSE_PROTOCOL}://`)
 }
 
 /**
@@ -73,9 +75,14 @@ export function findLaunchTarget(
   cwd: string,
 ): LaunchTarget | undefined {
   const args = argv.slice(1)
-  const link = args.filter(isProtocolUrl).map(parseProtocolUrl).find(Boolean)
-  if (link) {
-    return { type: 'link', url: link }
+  // Any jbrowse:// argument is claimed here, whether or not it parses: an
+  // unusable one (a rejected inner protocol, a missing url) must fail as a bad
+  // link, never fall through to the file branch below where a payload like
+  // `jbrowse://open?url=file:///secret.json` would be re-read as a path to open.
+  const protocolArgs = args.filter(isProtocolUrl)
+  if (protocolArgs.length) {
+    const url = protocolArgs.map(parseProtocolUrl).find(Boolean)
+    return url ? { type: 'link', url } : undefined
   }
   const file = args.find(a =>
     LAUNCH_FILE_EXTENSIONS.some(ext => a.endsWith(ext)),
