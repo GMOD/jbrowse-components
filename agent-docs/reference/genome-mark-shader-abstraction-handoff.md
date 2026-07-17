@@ -122,7 +122,8 @@ degradation and is worth doing even if the generic path dies.
 - **GLSL post-processor:** `packages/shader-tools/src/shader-codegen/vulkanGlslToWebgl2.ts`.
 - **Shared Slang modules:** `packages/render-core/src/shaders/{hpmath,colorPack}.slang`.
 - **Canonical concrete shader + its generated output:**
-  `plugins/canvas/src/LinearBasicDisplay/passes/shaders/rect.{slang,generated.ts,iface.generated.ts}`.
+  `plugins/canvas/src/LinearBasicDisplay/passes/shaders/rect.slang`, and its
+  generated `rect.generated.ts` / `rect.iface.generated.ts`.
 - **Pass assembly:** `packages/render-core/src/slangPass.ts`,
   `plugins/canvas/src/LinearBasicDisplay/passes/index.ts`.
 - **GL-attribute safety net (keep green):**
