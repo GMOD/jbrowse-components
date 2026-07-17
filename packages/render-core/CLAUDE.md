@@ -93,16 +93,16 @@ package_.
 
 - **Min-width widening goes through `extendToMinWidth`, never
   `max(minPx, abs(dx))` off `min(x1, x2)`.** Both spellings widen a sub-pixel
-  mark to the floor, but only the first anchors the feature's *start* edge the
+  mark to the floor, but only the first anchors the feature's _start_ edge the
   way the shaders' `extendToMinWidthX` does. On a reversed block `makeBpMapper`
-  flips, so the leftmost edge is the feature's *end* and the in-place spelling
+  flips, so the leftmost edge is the feature's _end_ and the in-place spelling
   slides the mark up to `minPx` toward the block's end — invisible on forward
   blocks, so it survives review. The canvas rect painter (2px) and the multi-row
   painter (1px) each had it. Same shape of bug as the `makeCellLeftMapper` pivot
-  below — and note the two are alternatives, not partners: a painter either fills
-  per-base *cells* (`makeCellLeftMapper`, caller owns width) or a two-edge *span*
-  widened to a floor (`extendToMinWidth`). MAF's cell painter is the former,
-  wiggle/multi-row/canvas-rect the latter.
+  below — and note the two are alternatives, not partners: a painter either
+  fills per-base _cells_ (`makeCellLeftMapper`, caller owns width) or a two-edge
+  _span_ widened to a floor (`extendToMinWidth`). MAF's cell painter is the
+  former, wiggle/multi-row/canvas-rect the latter.
 - **`gpuDevice` is a shared singleton.** `getGpuDevice` serves both the HAL and
   the LD-matrix WebGPU compute path (`plugins/variants/.../getLDMatrixGPU.ts`),
   so its `?renderer=` override checks are load-bearing in both. The `.lost`

@@ -73,9 +73,8 @@ describe('computeVariantCells phased no-call vs unphased', () => {
 
   test('missing genotypes render no-call, real unphased renders black', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const { BLACK_ABGR, NO_CALL_COLOR } = await import(
-      '../../shared/constants.ts'
-    )
+    const { BLACK_ABGR, NO_CALL_COLOR } =
+      await import('../../shared/constants.ts')
     const result = computeVariantCells({
       mafs: [{ feature, mostFrequentAlt: '1' }],
       sources,

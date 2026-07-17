@@ -1,5 +1,9 @@
 import { StatusProgressBar } from '@jbrowse/core/ui'
-import { progressLabel, statusFraction, statusMessageText } from '@jbrowse/core/util'
+import {
+  progressLabel,
+  statusFraction,
+  statusMessageText,
+} from '@jbrowse/core/util'
 import { Button } from '@mui/material'
 
 import type { RpcStatus } from '@jbrowse/core/util'

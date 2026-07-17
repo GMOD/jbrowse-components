@@ -437,9 +437,9 @@ it('the soft-clip-base and insertion layers are non-vacuous', () => {
   )
   // Soft-clip base at bp 1002 → cell left edge at x = 40 (unique: coverage
   // starts at bp 1006 = x 120, nothing else paints this far left).
-  expect(
-    marks.some(m => m.kind === 'rect' && Math.abs(m.x - 40) < 1),
-  ).toBe(true)
+  expect(marks.some(m => m.kind === 'rect' && Math.abs(m.x - 40) < 1)).toBe(
+    true,
+  )
   // Small-insertion box at bp 1018 → centered at x = 360, 1px wide, so the
   // rect sits at x ≈ 359.5 with w ≈ 1 (the only ~1px-wide rect here).
   expect(

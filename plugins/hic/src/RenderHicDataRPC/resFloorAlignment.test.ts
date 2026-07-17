@@ -20,7 +20,12 @@ interface Rec {
 
 const ROT_45 = Math.SQRT1_2
 
-async function run(region: Region, records: Rec[], bpPerPx: number, res: number) {
+async function run(
+  region: Region,
+  records: Rec[],
+  bpPerPx: number,
+  res: number,
+) {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getMultiRegionContactRecords: () =>
@@ -55,25 +60,31 @@ function cellLeftGenomicPx(d: HicDataResult, i: number) {
 // flooring `start/res` drew every cell of a sub-res-offset block snapped to the
 // block edge instead of its true genomic position.
 describe('hic matrix aligns to the ruler on a non-res-aligned block start', () => {
-  test.each([0, 50, 99, 137])('start=%i draws cells at true genomic px', async start => {
-    const res = 100
-    const bpPerPx = 1
-    const bins = [0, 3, 9]
-    const records: Rec[] = bins.map(b => ({
-      bin1: b,
-      bin2: b,
-      counts: 1,
-      region1Idx: 0,
-      region2Idx: 0,
-    }))
-    const d = await run(
-      { refName: 'a', start, end: start + 1000, assemblyName: 'a' },
-      records,
-      bpPerPx,
-      res,
-    )
-    bins.forEach((b, i) => {
-      expect(cellLeftGenomicPx(d, i)).toBeCloseTo((b * res - start) / bpPerPx, 3)
-    })
-  })
+  test.each([0, 50, 99, 137])(
+    'start=%i draws cells at true genomic px',
+    async start => {
+      const res = 100
+      const bpPerPx = 1
+      const bins = [0, 3, 9]
+      const records: Rec[] = bins.map(b => ({
+        bin1: b,
+        bin2: b,
+        counts: 1,
+        region1Idx: 0,
+        region2Idx: 0,
+      }))
+      const d = await run(
+        { refName: 'a', start, end: start + 1000, assemblyName: 'a' },
+        records,
+        bpPerPx,
+        res,
+      )
+      bins.forEach((b, i) => {
+        expect(cellLeftGenomicPx(d, i)).toBeCloseTo(
+          (b * res - start) / bpPerPx,
+          3,
+        )
+      })
+    },
+  )
 })

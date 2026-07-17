@@ -31,9 +31,9 @@ test('offers None, the per-read dimensions, then Tag... last', () => {
 })
 
 test('chain mode offers only the chain-consistent dimensions', () => {
-  expect(radios(makeModel({ isChainMode: true }).model).map(i => i.label)).toEqual(
-    ['None', 'First-of-pair strand', 'Pair orientation', 'Tag...'],
-  )
+  expect(
+    radios(makeModel({ isChainMode: true }).model).map(i => i.label),
+  ).toEqual(['None', 'First-of-pair strand', 'Pair orientation', 'Tag...'])
 })
 
 test('ungrouped checks None', () => {

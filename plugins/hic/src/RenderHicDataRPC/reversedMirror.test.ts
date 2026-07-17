@@ -111,10 +111,7 @@ describe('reversed hic regions', () => {
     ['only region 1 reversed', [false, true]],
     ['only region 0 reversed', [true, false]],
   ])('%s: every cell stays above the axis', async (_name, rev) => {
-    const d = await run(
-      [region('a', rev[0]!), region('b', rev[1]!)],
-      MULTI,
-    )
+    const d = await run([region('a', rev[0]!), region('b', rev[1]!)], MULTI)
     // ry < 0 renders below the axis — what a naive per-endpoint mirror does
     // when it breaks the u1 ≤ u2 ordering.
     for (let i = 0; i < d.numContacts; i++) {

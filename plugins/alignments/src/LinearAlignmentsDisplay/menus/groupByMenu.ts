@@ -46,7 +46,11 @@ export function groupByRadioMenuItem({
     type: 'subMenu' as const,
     subMenu: [
       radio(undefined, 'None', onNone),
-      ...options.map(o => radio(o.type, o.label, () => { onSelect(o.type) })),
+      ...options.map(o =>
+        radio(o.type, o.label, () => {
+          onSelect(o.type)
+        }),
+      ),
       ...extra.map(e => radio(e.type, e.label, e.onClick)),
     ] satisfies MenuItem[],
   }

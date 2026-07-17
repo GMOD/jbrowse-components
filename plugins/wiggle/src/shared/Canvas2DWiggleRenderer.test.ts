@@ -299,25 +299,28 @@ describe('Canvas2DWiggleRenderer', () => {
   test.each([
     ['forward', false, 400],
     ['reversed', true, 398.5],
-  ])('sub-floor bin is floored away from its start edge (%s)', (_n, rev, x0) => {
-    const { canvas, fillRectCalls } = createMockCanvas()
-    Object.defineProperty(window, 'devicePixelRatio', {
-      value: 1,
-      writable: true,
-    })
+  ])(
+    'sub-floor bin is floored away from its start edge (%s)',
+    (_n, rev, x0) => {
+      const { canvas, fillRectCalls } = createMockCanvas()
+      Object.defineProperty(window, 'devicePixelRatio', {
+        value: 1,
+        writable: true,
+      })
 
-    const renderer = new Canvas2DWiggleRenderer(canvas)
-    renderer.renderBlocks(
-      [{ ...defaultBlock, end: 100000, reversed: rev }],
-      new Map([[0, [makeSource([5], [50000], [50001])]]]),
-      defaultState,
-    )
+      const renderer = new Canvas2DWiggleRenderer(canvas)
+      renderer.renderBlocks(
+        [{ ...defaultBlock, end: 100000, reversed: rev }],
+        new Map([[0, [makeSource([5], [50000], [50001])]]]),
+        defaultState,
+      )
 
-    expect(fillRectCalls.length).toBe(1)
-    const [x, , w] = fillRectCalls[0]!
-    expect(w).toBeCloseTo(1.5)
-    expect(x).toBeCloseTo(x0)
-  })
+      expect(fillRectCalls.length).toBe(1)
+      const [x, , w] = fillRectCalls[0]!
+      expect(w).toBeCloseTo(1.5)
+      expect(x).toBeCloseTo(x0)
+    },
+  )
 
   test('reversed block centers a scatter point on the mirrored midpoint', () => {
     const { canvas, rectCalls } = createMockCanvas()

@@ -57,9 +57,7 @@ function syntenyDisplay() {
               id: 'track1',
               type: 'SyntenyTrack',
               configuration: 'volvox_synteny',
-              displays: [
-                { id: 'display1', type: 'LGVSyntenyDisplay' },
-              ],
+              displays: [{ id: 'display1', type: 'LGVSyntenyDisplay' }],
             },
           ],
         },

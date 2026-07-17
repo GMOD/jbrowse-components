@@ -347,7 +347,12 @@ function forEachClippedBlock<T>(
   regions: ReadonlyMap<number, T>,
   blocks: FeatureRenderBlock[],
   state: RenderState,
-  paint: (region: T, block: FeatureRenderBlock, toX: BpToScreen, clip: BlockClip) => void,
+  paint: (
+    region: T,
+    block: FeatureRenderBlock,
+    toX: BpToScreen,
+    clip: BlockClip,
+  ) => void,
 ) {
   const { canvasWidth, canvasHeight } = state
   for (const block of blocks) {
@@ -487,7 +492,15 @@ export function drawHighlightBoxes(
     // Subfeatures deliberately pass no labelData — see drawHighlightBox.
     for (const item of region.subfeatureInfos) {
       if (highlightedIds.has(item.featureId)) {
-        drawHighlightBox(ctx, item, toX, scrollY, colors, undefined, labelContext)
+        drawHighlightBox(
+          ctx,
+          item,
+          toX,
+          scrollY,
+          colors,
+          undefined,
+          labelContext,
+        )
       }
     }
   })

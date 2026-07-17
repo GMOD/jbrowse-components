@@ -21,35 +21,36 @@ describe('parseStackLine', () => {
   })
 
   test('keeps a port in the uri', () => {
-    expect(parseStackLine('    at f (https://example.com:8080/b.js:1:2)')?.uri)
-      .toBe('https://example.com:8080/b.js')
+    expect(
+      parseStackLine('    at f (https://example.com:8080/b.js:1:2)')?.uri,
+    ).toBe('https://example.com:8080/b.js')
   })
 
   test('keeps a query in the uri', () => {
-    expect(parseStackLine('    at f (https://example.com/b.js?v=1:1:2)')?.uri)
-      .toBe('https://example.com/b.js?v=1')
+    expect(
+      parseStackLine('    at f (https://example.com/b.js?v=1:1:2)')?.uri,
+    ).toBe('https://example.com/b.js?v=1')
   })
 
   // a blob: url embeds a second scheme; the uri must not truncate to the inner
   // https:// url, which points at a script that does not exist
   test('parses a blob: worker url', () => {
-    expect(parseStackLine('    at w (blob:https://example.com/uuid:5:6)')).toEqual(
-      {
-        name: 'w',
-        uri: 'blob:https://example.com/uuid',
-        line: 5,
-        column: 6,
-      },
-    )
+    expect(
+      parseStackLine('    at w (blob:https://example.com/uuid:5:6)'),
+    ).toEqual({
+      name: 'w',
+      uri: 'blob:https://example.com/uuid',
+      line: 5,
+      column: 6,
+    })
   })
 
-  test.each([
-    'TypeError: x is not a function',
-    '    at <anonymous>',
-    '',
-  ])('no frame in %s', line => {
-    expect(parseStackLine(line)).toBeUndefined()
-  })
+  test.each(['TypeError: x is not a function', '    at <anonymous>', ''])(
+    'no frame in %s',
+    line => {
+      expect(parseStackLine(line)).toBeUndefined()
+    },
+  )
 })
 
 describe('mapStackTrace', () => {

@@ -25,12 +25,17 @@ test.each([undefined, null, ''])('returns empty for %s', v => {
 // the wrapper's frames point at the machinery that caught the error; the cause
 // holds the frames of what actually broke
 test('appends the cause chain', () => {
-  const inner = err('inner boom', 'Error: inner boom\n    at deep (file.js:9:9)')
+  const inner = err(
+    'inner boom',
+    'Error: inner boom\n    at deep (file.js:9:9)',
+  )
   const outer = err('outer', 'Error: outer\n    at wrap (file.js:2:2)', inner)
   expect(formatErrorStack(outer)).toBe(
-    ['    at wrap (file.js:2:2)', 'Caused by: Error: inner boom', '    at deep (file.js:9:9)'].join(
-      '\n',
-    ),
+    [
+      '    at wrap (file.js:2:2)',
+      'Caused by: Error: inner boom',
+      '    at deep (file.js:9:9)',
+    ].join('\n'),
   )
 })
 
@@ -55,14 +60,20 @@ test('separates the label from a firefox-style stack', () => {
   const inner = err('inner boom', 'deep@file.js:9:9')
   const outer = err('outer', 'wrap@file.js:2:2', inner)
   expect(formatErrorStack(outer)).toBe(
-    ['wrap@file.js:2:2', 'Caused by: Error: inner boom', 'deep@file.js:9:9'].join(
-      '\n',
-    ),
+    [
+      'wrap@file.js:2:2',
+      'Caused by: Error: inner boom',
+      'deep@file.js:9:9',
+    ].join('\n'),
   )
 })
 
 test('labels a non-Error cause', () => {
-  const e = err('outer', 'Error: outer\n    at wrap (file.js:2:2)', 'a string reason')
+  const e = err(
+    'outer',
+    'Error: outer\n    at wrap (file.js:2:2)',
+    'a string reason',
+  )
   expect(formatErrorStack(e)).toBe(
     '    at wrap (file.js:2:2)\nCaused by: a string reason',
   )

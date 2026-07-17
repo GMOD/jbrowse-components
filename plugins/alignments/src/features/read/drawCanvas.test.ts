@@ -134,11 +134,7 @@ test('a color repeating after another still paints its own fill', () => {
   // fwd, rev, fwd: the third read must go back to red, not inherit blue.
   const svg = draw([wideFwd, wideRev, wideFwd], {}, 5)
   const fills = [...svg.matchAll(/fill="(rgb\([^"]*\))"/g)].map(m => m[1])
-  expect(fills).toEqual([
-    'rgb(255,0,0)',
-    'rgb(0,0,255)',
-    'rgb(255,0,0)',
-  ])
+  expect(fills).toEqual(['rgb(255,0,0)', 'rgb(0,0,255)', 'rgb(255,0,0)'])
 })
 
 test('consecutive same-color reads each still paint their fill', () => {

@@ -48,9 +48,9 @@ describe('mateRefName (chromosome painting) colors', () => {
 
 describe('overlayReadTagColors', () => {
   const overlay = (colorBy: Parameters<typeof overlayReadTagColors>[1]) =>
-    overlayReadTagColors(new Map([[0, pileupWith(['chr1'])]]), colorBy, {})
-      .get(0)!
-      .readTagColors.length
+    overlayReadTagColors(new Map([[0, pileupWith(['chr1'])]]), colorBy, {}).get(
+      0,
+    )!.readTagColors.length
 
   test('bakes colors for mateRefName', () => {
     expect(overlay({ type: 'mateRefName' })).toBe(1)

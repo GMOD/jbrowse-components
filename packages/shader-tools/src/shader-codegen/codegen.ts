@@ -249,7 +249,10 @@ export function emitInterface(inputs: CodegenInputs) {
   // actually declares, and the entry-point name can't drift from the function.
   const cs = reflection.entryPoints.find(e => e.stage === 'compute')
   if (cs) {
-    lines.push(`export const COMPUTE_ENTRY_POINT = ${toStringLiteral(cs.name)}`, '')
+    lines.push(
+      `export const COMPUTE_ENTRY_POINT = ${toStringLiteral(cs.name)}`,
+      '',
+    )
     if (cs.threadGroupSize) {
       lines.push(`export const WORKGROUP_SIZE_X = ${cs.threadGroupSize[0]}`, '')
     }

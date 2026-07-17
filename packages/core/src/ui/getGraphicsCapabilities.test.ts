@@ -6,7 +6,9 @@ import {
 
 // jsdom has no navigator.gpu; define a minimal stub. `value` on a property
 // descriptor is untyped, so the partial adapter needs no cast.
-function mockGpu(adapter: { info: { vendor: string; architecture: string } } | undefined) {
+function mockGpu(
+  adapter: { info: { vendor: string; architecture: string } } | undefined,
+) {
   Object.defineProperty(navigator, 'gpu', {
     configurable: true,
     value: adapter && { requestAdapter: () => Promise.resolve(adapter) },
@@ -14,7 +16,10 @@ function mockGpu(adapter: { info: { vendor: string; architecture: string } } | u
 }
 
 afterEach(() => {
-  Object.defineProperty(navigator, 'gpu', { configurable: true, value: undefined })
+  Object.defineProperty(navigator, 'gpu', {
+    configurable: true,
+    value: undefined,
+  })
 })
 
 test('captures GPU vendor/architecture when a WebGPU adapter is available', async () => {

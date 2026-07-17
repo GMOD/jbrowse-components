@@ -99,8 +99,8 @@ const GroupByDialog = observer(function GroupByDialog(props: {
       onSubmit={handleSubmit}
     >
       <Typography color="text.secondary">
-        Renders the reads as stacked sections — one per distinct value of the tag
-        — inside this track, sharing one coverage scale.
+        Renders the reads as stacked sections — one per distinct value of the
+        tag — inside this track, sharing one coverage scale.
       </Typography>
       <TagTextField
         // Seed from `groupByTag` (parent state) so it stays in lockstep with
