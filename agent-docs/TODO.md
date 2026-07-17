@@ -35,29 +35,6 @@ look at wakhan, pycnv
 
 
 
-## reversed-region coverage: remaining gaps
-
-The alignments **draw path** is covered both orientations by
-`renderers/reversedMirror.test.ts` (drive `drawAlignmentBlocks` forward and
-reversed over identical data; every mark must have a mirrored twin), across a
-plain pileup and a linked-reads layout — now **every** pileup-band layer,
-including soft-clip bases and insertions. The reversed pileup has also been
-eyeballed in the app and looks correct. A source read of every Canvas2D
-`fillRect`/`rect` draw loop repo-wide found no cell/sliver/cull bug remaining.
-What is still NOT covered:
-
-- **The wiring above the renderer.** The mirror test hands `reversed: true`
-  straight to `renderBlocks`. Nothing asserts the model actually delivers it —
-  displayedRegion → `renderBlocks` → `renderState`. `ReversedRegionLabels.test.tsx`
-  is the working pattern (`navToLocString('ctgA:1..7,720[rev]')` + SVG export,
-  which runs the Canvas2D path through `SvgCanvas` with no real canvas); swap the
-  track for `volvox_alignments_pileup_coverage`. Assert a property, not a
-  snapshot — a snapshot would have happily recorded the off-by-one-base bug.
-- **GPU rasterization.** The bp→clip pivot is centralized and unit-tested
-  (`bpRangeXTuple`/`writeBpRangeUniforms`, `blockClipUtils.test.ts`) and no
-  renderer hand-rolls it, but nothing rasterizes a reversed block to confirm
-  `flipX` lands cells on the right pixels — needs a browser test.
-
 ## Hi-C / LD reversed regions
 
 Both the Hi-C and LD triangle displays render **unflipped** on a reversed
@@ -72,6 +49,15 @@ and the worker position computation (`hic/regionOffsets.ts` +
 `executeRenderHicData.ts`, and the LD equivalent), and the hit-test must invert
 whatever the render does. Niche (needs a flipped region over one of these
 tracks); hover stays correct because it inverts the same forward transform.
+
+Diagnosis confirmed against the source, and the rotation geometry worked out, in
+`guides/HIC_LD_REVERSED_HANDOFF.md` — read it first. Two corrections it makes to
+the framing above: SVG export comes free (it reuses `drawHicBlocks` +
+`renderState`), and the per-region flip is only the *general* fix. For a single
+visible reversed block — the realistic case — the mirror reduces to negating the
+post-rotation `rx`, which is one shader line. What actually blocks the general
+case isn't the affine so much as the `bin1 ≤ bin2` invariant the triangle
+depends on, which per-block mirroring inverts.
 
 ## Canvas2D vs GPU `canvasDrawn` contract drift
 
