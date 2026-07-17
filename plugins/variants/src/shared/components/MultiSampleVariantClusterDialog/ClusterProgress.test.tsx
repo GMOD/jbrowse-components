@@ -21,23 +21,16 @@ describe('ClusterProgress', () => {
     )
   })
 
-  it('stays indeterminate for a phase with no denominator', () => {
-    render(
-      <ClusterProgress
-        status={{
-          message: 'Running hierarchical clustering in WASM',
-          current: 0,
-          total: 0,
-        }}
-        onStop={() => {}}
-      />,
-    )
+  // MUI sweeps an indeterminate bar across the full width, which reads as ~100%
+  // and then appears to jump backwards once the first real (small) fraction
+  // lands. Startup holds at a determinate 0 instead, and the label carries no
+  // percentage until there is one to show.
+  it('holds at a determinate 0 before any counts arrive', () => {
+    render(<ClusterProgress status="Initializing" onStop={() => {}} />)
 
-    expect(
-      screen.getByText('Running hierarchical clustering in WASM'),
-    ).toBeTruthy()
-    expect(
-      screen.getByRole('progressbar').getAttribute('aria-valuenow'),
-    ).toBeNull()
+    expect(screen.getByText('Initializing')).toBeTruthy()
+    const bar = screen.getByRole('progressbar')
+    expect(bar.getAttribute('aria-valuenow')).toBe('0')
+    expect(bar.className).not.toMatch(/indeterminate/)
   })
 })

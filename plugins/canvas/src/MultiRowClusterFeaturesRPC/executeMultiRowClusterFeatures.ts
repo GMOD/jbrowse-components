@@ -5,6 +5,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { clusterProgressStatus } from '@jbrowse/tree-sidebar'
 
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 import { makeFeatureColorResolver } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
@@ -67,8 +68,8 @@ export async function executeMultiRowClusterFeatures({
   }
   const result = await clusterObject({
     data,
-    onProgress: ({ message, current, total }) => {
-      statusCallback({ message, current, total })
+    onProgress: p => {
+      statusCallback(clusterProgressStatus(p))
     },
     checkCancellation: () => {
       checkStopToken2(stopTokenCheck)

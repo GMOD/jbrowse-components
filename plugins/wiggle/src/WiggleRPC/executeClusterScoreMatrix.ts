@@ -3,6 +3,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { clusterProgressStatus } from '@jbrowse/tree-sidebar'
 
 import { getScoreMatrix } from './getScoreMatrix.ts'
 
@@ -26,8 +27,8 @@ export async function executeClusterScoreMatrix({
   })
   const result = await clusterObject({
     data: matrix,
-    onProgress: ({ message, current, total }) => {
-      args.statusCallback?.({ message, current, total })
+    onProgress: p => {
+      args.statusCallback?.(clusterProgressStatus(p))
     },
     checkCancellation: () => {
       checkStopToken2(stopTokenCheck)

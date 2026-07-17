@@ -3,6 +3,7 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
+import { clusterProgressStatus } from '@jbrowse/tree-sidebar'
 
 import { getGenotypeMatrix } from './getGenotypeMatrix.ts'
 import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
@@ -46,8 +47,8 @@ export async function executeClusterGenotypeMatrix({
       : await getGenotypeMatrix({ pluginManager, args: argsWithCheck })
   const result = await clusterObject({
     data: matrix,
-    onProgress: ({ message, current, total }) => {
-      args.statusCallback({ message, current, total })
+    onProgress: p => {
+      args.statusCallback(clusterProgressStatus(p))
     },
     checkCancellation: () => {
       checkStopToken2(stopTokenCheck)
