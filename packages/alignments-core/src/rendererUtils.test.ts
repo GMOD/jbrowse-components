@@ -511,3 +511,84 @@ describe('drawIndicators', () => {
     expect(fillCalls.length).toBe(0)
   })
 })
+
+// Every bar layer here resolves a bp cell to `bpToX(pos)` + a width. On a
+// reversed block bpToX runs bp leftward, so bpToX(pos) is the cell's RIGHT edge
+// and `px2 - px` is NEGATIVE — which `Math.max(..., 1)` silently clamped to a
+// 1px sliver anchored one cell off. The coverage histogram all but vanished on
+// a flipped region once zoomed past 1bp/px. These pin the mirror instead.
+describe('reversed blocks', () => {
+  const identity = (d: number) => d
+  const VIEW = 200
+  // bp 100..120 across 200px = 10 px/bp. Forward: bp 100 → [0,10].
+  // Reversed: bp 100 is the rightmost base → [190,200].
+  const fwd = (bp: number) => (bp - 100) * 10
+  const rev = (bp: number) => VIEW - (bp - 100) * 10
+
+  function widthAndX(bpToX: (bp: number) => number) {
+    const { ctx, calls } = makeCtx()
+    drawCoverageBins(
+      ctx,
+      packCoverageBinsCanvas2D(new Float32Array([0.5]), 100),
+      identity,
+      50,
+      'blue',
+      bpToX,
+      VIEW,
+    )
+    const [x, , w] = calls.find(c => c.method === 'fillRect')!.args as number[]
+    return { x: x!, w: w! }
+  }
+
+  it('drawCoverageBins spans a full bin, not a 1px sliver', () => {
+    expect(widthAndX(fwd)).toEqual({ x: 0, w: 10 })
+    // The bar must cover bp 100's cell — [190,200] — not sit at 200 with w=1.
+    expect(widthAndX(rev)).toEqual({ x: 190, w: 10 })
+  })
+
+  it('drawSnpSegments spans a full base', () => {
+    const buf = new ArrayBuffer(5 * 4)
+    const u32 = new Uint32Array(buf)
+    const f32 = new Float32Array(buf)
+    u32[0] = 100
+    f32[1] = 0
+    f32[2] = 1
+    f32[3] = 1
+    f32[4] = 1
+    const colors = {
+      baseA: 'red',
+      baseC: 'blue',
+      baseG: 'green',
+      baseT: 'yellow',
+      baseN: 'grey',
+      mismatch: 'gray',
+      deletion: 'black',
+      insertion: 'purple',
+    }
+    const draw = (bpToX: (bp: number) => number) => {
+      const { ctx, calls } = makeCtx()
+      drawSnpSegments(ctx, buf, identity, 1, 50, colors, bpToX, VIEW)
+      const [x, , w] = calls.find(c => c.method === 'fillRect')!
+        .args as number[]
+      return { x: x!, w: w! }
+    }
+    expect(draw(fwd)).toEqual({ x: 0, w: 10 })
+    expect(draw(rev)).toEqual({ x: 190, w: 10 })
+  })
+
+  it('a bin straddling the left viewport edge is not culled when reversed', () => {
+    // bp 119 sits at reversed screen [0,10] — fully visible. The old cull
+    // (`px2 < 0`, assuming px < px2) compared the wrong edge and dropped it.
+    const { ctx, calls } = makeCtx()
+    drawCoverageBins(
+      ctx,
+      packCoverageBinsCanvas2D(new Float32Array([0.5]), 119),
+      identity,
+      50,
+      'blue',
+      rev,
+      VIEW,
+    )
+    expect(calls.filter(c => c.method === 'fillRect').length).toBe(1)
+  })
+})

@@ -132,8 +132,19 @@ export function drawCoverageBins(
   for (let i = 0; i < binCount; i++) {
     const off = i * STRIDE_F32
     const pos = u32[off + FIELD.position]!
-    const px = bpToX(pos)
-    const px2 = bpToX(pos + 1)
+    // bpToX(pos) is the bin's left edge on a forward block but its RIGHT edge
+    // on a reversed one, so resolve both edges and order them. Anchoring at
+    // bpToX(pos) with width px2-px put the bar a full bin off AND drove the
+    // width negative, which `Math.max(..., 1)` then clamped to a 1px sliver —
+    // the coverage histogram all but vanished on flipped regions past 1bp/px.
+    // Ordering the edges also fixes the cull, which assumed px < px2 and so
+    // dropped bins straddling either viewport edge when reversed.
+    // Kept inline rather than shared: this loop runs per covered bp, and
+    // returning a {left,right} would allocate per bin (see CLAUDE.md).
+    const pxA = bpToX(pos)
+    const pxB = bpToX(pos + 1)
+    const px = Math.min(pxA, pxB)
+    const px2 = Math.max(pxA, pxB)
     if (px > viewWidth || px2 < 0) {
       continue
     }
@@ -172,8 +183,11 @@ export function drawSnpSegments(
   for (let i = 0; i < segmentCount; i++) {
     const off = i * SNP_STRIDE
     const pos = u32[off + SNP_FIELD.position]!
-    const px = bpToX(pos)
-    const px2 = bpToX(pos + 1)
+    // Both edges, ordered — see drawCoverageBins for why.
+    const pxA = bpToX(pos)
+    const pxB = bpToX(pos + 1)
+    const px = Math.min(pxA, pxB)
+    const px2 = Math.max(pxA, pxB)
     if (px > viewWidth || px2 < 0) {
       continue
     }
@@ -241,9 +255,14 @@ export function drawInterbaseSegments(
   for (let i = 0; i < segmentCount; i++) {
     const off = i * INTERBASE_STRIDE
     const pos = u32[off + INTERBASE_FIELD.position]!
+    // Unlike the bar layers, the mark here is a 1px bar centered on the bp
+    // BOUNDARY, and bpToX(pos) is that boundary in either orientation — so `px`
+    // stays the anchor. Only the cull needs both edges ordered: as `px > width
+    // || px2 < 0` it assumed px < px2 and dropped marks at either viewport edge
+    // on a reversed block.
     const px = bpToX(pos)
     const px2 = bpToX(pos + 1)
-    if (px > viewWidth || px2 < 0) {
+    if (Math.min(px, px2) > viewWidth || Math.max(px, px2) < 0) {
       continue
     }
     const yOffset = f32[off + INTERBASE_FIELD.yOffset]!
@@ -274,8 +293,11 @@ export function drawModCovSegments(
   for (let i = 0; i < segmentCount; i++) {
     const off = i * MOD_COV_STRIDE
     const pos = u32[off + MOD_COV_FIELD.position]!
-    const px = bpToX(pos)
-    const px2 = bpToX(pos + 1)
+    // Both edges, ordered — see drawCoverageBins for why.
+    const pxA = bpToX(pos)
+    const pxB = bpToX(pos + 1)
+    const px = Math.min(pxA, pxB)
+    const px2 = Math.max(pxA, pxB)
     if (px > viewWidth || px2 < 0) {
       continue
     }
