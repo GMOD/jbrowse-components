@@ -345,6 +345,14 @@ export function drawAlignmentBlocks(
     return false
   }
 
+  // Whether any band actually painted, mirroring the GPU's
+  // `drewCoverage || drewPileup || arcBand !== undefined` per-section contract
+  // so both backends flip `canvasDrawn` on the same states (see the parity
+  // cases in coverageParity.test.ts). A bare `true` here — decided by
+  // `regions.size` before the loop — drifted from the GPU: a coverage-off,
+  // collapsed-pileup, no-arc section paints nothing yet reported drawn.
+  let painted = false
+
   for (const block of blocks) {
     const blockClip = clipBlockForCanvas(block, canvasWidth)
     if (!blockClip) {
@@ -370,6 +378,16 @@ export function drawAlignmentBlocks(
         continue
       }
       const sectionState = sectionRenderState(state, sec)
+
+      // Same three bands the GPU's drawSection counts. A collapsed band
+      // (height 0) draws nothing — matching the GPU's `cov.height > 0` /
+      // `pileup.height > 0` gates — so it must not count as a paint. Arcs and
+      // coverage-only sections (empty pileup, e.g. read-cloud) still count.
+      const drewCoverage = state.showCoverage && sec.covClipHeight > 0
+      const drewPileup = sec.pileupClipHeight > 0
+      if (drewCoverage || drewPileup || sec.arcBand !== undefined) {
+        painted = true
+      }
 
       if (state.showCoverage) {
         ctx.save()
@@ -434,7 +452,7 @@ export function drawAlignmentBlocks(
 
     ctx.restore() // block clip
   }
-  return true
+  return painted
 }
 
 function drawCoverage(

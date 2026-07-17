@@ -17,6 +17,7 @@ import {
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type {
+  AlignmentsRenderingBackend,
   ColorPalette,
   CoverageUploadData,
   ReadUploadData,
@@ -207,6 +208,7 @@ function recordingCtx() {
       strokeStyle: '',
       lineWidth: 1,
       stroke() {},
+      setLineDash() {},
     } as unknown as CanvasRenderingContext2D,
   }
 }
@@ -510,10 +512,13 @@ describe('GPU sync rebuild transaction', () => {
 })
 
 // `renderBlocks` returns whether anything painted; the model feeds that into
-// `canvasDrawn`. A coverage- or arcs-only section (empty pileup band, e.g.
-// read-cloud) still paints real content — gating the return on the
-// pileup band once left read-cloud stuck on "Loading". Lock that in.
-describe('GPU renderBlocks canvasDrawn gating', () => {
+// `canvasDrawn`. The GPU and Canvas2D backends must agree on this: a coverage-
+// or arcs-only section (empty pileup band, e.g. read-cloud) still paints real
+// content, while a section with no visible band paints nothing. Gating the
+// return on the pileup band once left read-cloud stuck on "Loading"; a bare
+// `true` from the Canvas2D path once drifted the other way. One scenario table,
+// both backends, same expected result — lock the shared contract in.
+describe('renderBlocks canvasDrawn gating parity', () => {
   const triple: [number, number, number] = [0, 0, 0]
   const fullColors: ColorPalette = {
     colorFwdStrand: triple,
@@ -608,11 +613,20 @@ describe('GPU renderBlocks canvasDrawn gating', () => {
     }
   }
 
-  // A renderer with region 0 synced (coverage + empty pileup), ready to draw.
-  function syncedRenderer() {
-    const hal = new MockHal(ALIGNMENTS_PASSES)
-    const gpu = new GpuAlignmentsRenderer(hal)
-    gpu.sync({
+  // Fresh, unsynced backends. `synced` gives one region 0 (coverage + empty
+  // pileup) to draw; leaving it unsynced is the "no synced region" case.
+  const gpu = () => new GpuAlignmentsRenderer(new MockHal(ALIGNMENTS_PASSES))
+  const canvas2d = () => {
+    const { ctx } = recordingCtx()
+    return new Canvas2DAlignmentsRenderer({
+      getContext: () => ctx,
+      width: 0,
+      height: 0,
+    } as unknown as HTMLCanvasElement)
+  }
+
+  function synced(renderer: AlignmentsRenderingBackend) {
+    renderer.sync({
       sections: [
         {
           groupKey: '',
@@ -623,50 +637,61 @@ describe('GPU renderBlocks canvasDrawn gating', () => {
         },
       ],
     })
-    return gpu
+    return renderer
   }
 
-  it('returns true for a coverage-only section with an empty pileup band', () => {
-    const drew = syncedRenderer().renderBlocks(
-      [block],
-      makeState(
-        { covClipHeight: 100, pileupClipTop: 100, pileupClipHeight: 0 },
-        { showCoverage: true },
-      ),
-    )
-    expect(drew).toBe(true)
-  })
-
-  it('returns true for an arcs-only section (read-cloud) with empty pileup and no coverage', () => {
-    const drew = syncedRenderer().renderBlocks(
-      [block],
-      makeState({
+  const scenarios: {
+    name: string
+    sync: boolean
+    section: Partial<SectionRender>
+    extra?: Partial<RenderState>
+    expected: boolean
+  }[] = [
+    {
+      name: 'a coverage-only section with an empty pileup band',
+      sync: true,
+      section: { covClipHeight: 100, pileupClipTop: 100, pileupClipHeight: 0 },
+      extra: { showCoverage: true },
+      expected: true,
+    },
+    {
+      name: 'an arcs-only section (read-cloud): empty pileup, no coverage',
+      sync: true,
+      section: {
         covClipHeight: 0,
         pileupClipHeight: 0,
         arcBand: { top: 0, height: 100, down: false },
-      }),
-    )
-    expect(drew).toBe(true)
-  })
+      },
+      expected: true,
+    },
+    {
+      name: 'a section where no band paints',
+      sync: true,
+      section: { covClipHeight: 0, pileupClipHeight: 0 },
+      expected: false,
+    },
+    {
+      name: 'a block with no synced region',
+      sync: false,
+      section: { covClipHeight: 100, pileupClipHeight: 100 },
+      extra: { showCoverage: true },
+      expected: false,
+    },
+  ]
 
-  it('returns false when no band paints', () => {
-    const drew = syncedRenderer().renderBlocks(
-      [block],
-      makeState({ covClipHeight: 0, pileupClipHeight: 0 }),
-    )
-    expect(drew).toBe(false)
-  })
-
-  it('returns false when the block has no synced region', () => {
-    const hal = new MockHal(ALIGNMENTS_PASSES)
-    const gpu = new GpuAlignmentsRenderer(hal)
-    const drew = gpu.renderBlocks(
-      [block],
-      makeState(
-        { covClipHeight: 100, pileupClipHeight: 100 },
-        { showCoverage: true },
-      ),
-    )
-    expect(drew).toBe(false)
-  })
+  for (const [backend, make] of [
+    ['GPU', gpu],
+    ['Canvas2D', canvas2d],
+  ] as const) {
+    describe(backend, () => {
+      for (const { name, sync, section, extra, expected } of scenarios) {
+        it(`returns ${expected} for ${name}`, () => {
+          const renderer = sync ? synced(make()) : make()
+          expect(
+            renderer.renderBlocks([block], makeState(section, extra)),
+          ).toBe(expected)
+        })
+      }
+    })
+  }
 })
