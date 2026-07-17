@@ -138,19 +138,46 @@ export function links<N extends { children: N[] | null }>(
   return result
 }
 
+// Structural copy sharing `data` but with fresh node objects, so laying out a
+// clone never mutates the input tree.
+function cloneHierarchy<T>(
+  node: HierarchyNode<T>,
+  parent: HierarchyNode<T> | null,
+): HierarchyNode<T> {
+  const copy: HierarchyNode<T> = {
+    data: node.data,
+    children: null,
+    parent,
+    depth: node.depth,
+    height: node.height,
+    value: node.value,
+  }
+  if (node.children) {
+    copy.children = node.children.map(child => cloneHierarchy(child, copy))
+  }
+  return copy
+}
+
 export function clusterLayout<T extends { length?: number }>(
   root: HierarchyNode<T>,
   sizeX: number,
   sizeY: number,
   showBranchLength = false,
 ): PositionedHierarchyNode<T> {
-  const leafNodes = leaves(root)
+  // Lay out a fresh copy rather than mutating `root` in place. Callers derive
+  // `root` from a memoized tree (parsed once per newick), so mutating it both
+  // corrupts that cache and — because the returned reference then never changes
+  // — leaves MobX values derived from the layout stale when sizeX/sizeY change
+  // (e.g. the hit-test spatial index froze at the row height it was first built
+  // with, so hovering the tree missed after a shift+scroll row resize).
+  const laid = cloneHierarchy(root, null)
+  const leafNodes = leaves(laid)
   const n = leafNodes.length
   const step = n > 0 ? sizeX / n : 0
   for (let i = 0; i < n; i++) {
     leafNodes[i]!.x = (i + 0.5) * step
   }
-  eachAfter(root, node => {
+  eachAfter(laid, node => {
     if (node.children) {
       let totalX = 0
       for (const child of node.children) {
@@ -161,12 +188,12 @@ export function clusterLayout<T extends { length?: number }>(
   })
   // A dendrogram with no merge heights (e.g. a topology-only tree) can't show a
   // meaningful phylogram, so fall back to the cladogram layout in that case.
-  if (showBranchLength && maxNodeHeight(root) > 0) {
-    assignBranchLengthY(root, sizeY)
+  if (showBranchLength && maxNodeHeight(laid) > 0) {
+    assignBranchLengthY(laid, sizeY)
   } else {
-    assignDepthY(root, sizeY)
+    assignDepthY(laid, sizeY)
   }
-  return root as unknown as PositionedHierarchyNode<T>
+  return laid as unknown as PositionedHierarchyNode<T>
 }
 
 // Post-order traversal (children visited before their parent)

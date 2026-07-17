@@ -128,6 +128,20 @@ test('clusterLayout handles a single leaf without dividing by zero', () => {
   expect(laid.y).toBe(10)
 })
 
+// Regression: clusterLayout must lay out a FRESH copy, not mutate its input.
+// Callers pass a memoized tree, so mutating in place both corrupts that cache
+// and returns a stable reference — which left the hit-test spatial index frozen
+// at the row height it was first built at, so hovering missed after a resize.
+test('clusterLayout returns a fresh tree and leaves its input unmutated', () => {
+  const root = hierarchy(sample(), childrenOf)
+  const laid1 = clusterLayout(root, 30, 10)
+  const laid2 = clusterLayout(root, 60, 10)
+  expect(root.x).toBeUndefined()
+  expect(root.y).toBeUndefined()
+  expect(laid2).not.toBe(laid1)
+  expect(laid2).not.toBe(root)
+})
+
 test('assignDepthY positions by depth-to-leaf, aligning leaves at the edge', () => {
   const root = hierarchy(sample(), childrenOf)
   assignDepthY(root, 100)
@@ -174,10 +188,9 @@ test('assignBranchLengthY positions nodes by absolute merge height', () => {
 })
 
 test('clusterLayout uses branch-length layout when enabled', () => {
-  const root = hierarchy(dendro(), childrenOf)
-  clusterLayout(root, 30, 100, true)
-  expect(root.y).toBe(2)
-  expect(root.children![1]!.y).toBe(75.5)
+  const laid = clusterLayout(hierarchy(dendro(), childrenOf), 30, 100, true)
+  expect(laid.y).toBe(2)
+  expect(laid.children![1]!.y).toBe(75.5)
 })
 
 // real phylo shape (UCSC multiz style): `:` lengths on every branch, leaves
@@ -227,10 +240,13 @@ test('assignBranchLengthY positions phylo nodes by cumulative root distance', ()
 })
 
 test('clusterLayout falls back to cladogram when no merge heights exist', () => {
-  const withLen = hierarchy(cladogram(), childrenOf)
-  clusterLayout(withLen, 30, 100, true)
-  const clado = hierarchy(cladogram(), childrenOf)
-  clusterLayout(clado, 30, 100, false)
+  const withLen = clusterLayout(
+    hierarchy(cladogram(), childrenOf),
+    30,
+    100,
+    true,
+  )
+  const clado = clusterLayout(hierarchy(cladogram(), childrenOf), 30, 100, false)
   expect(descendants(withLen).map(n => n.y)).toEqual(
     descendants(clado).map(n => n.y),
   )
