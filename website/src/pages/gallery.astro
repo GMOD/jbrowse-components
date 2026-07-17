@@ -1,7 +1,7 @@
 ---
 import { Buffer } from 'node:buffer'
 import { closeSync, openSync, readSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
 import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import SidebarLayout from '../layouts/SidebarLayout.astro'
@@ -19,10 +19,12 @@ import page from '../styles/page.module.css'
 // stamped on each <img> so the browser reserves the right box and the page
 // doesn't jump as the lazy-loaded screenshots arrive.
 function pngSize(file: string) {
-  const path = fileURLToPath(
-    new URL(`../../static/img/${file}`, import.meta.url),
-  )
-  const fd = openSync(path, 'r')
+  // Astro bundles this frontmatter into a chunk under dist/ for prerendering,
+  // so an import.meta.url-relative path resolves against the compiled chunk's
+  // location (varies with chunking) instead of the source tree — read from
+  // cwd (the site root `pnpm build` always runs from) instead.
+  const filePath = path.resolve(process.cwd(), 'static/img', file)
+  const fd = openSync(filePath, 'r')
   const buf = Buffer.alloc(24)
   readSync(fd, buf, 0, 24, 0)
   closeSync(fd)
