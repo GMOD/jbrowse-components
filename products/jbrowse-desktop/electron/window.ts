@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { BrowserWindow, Menu, app, shell } from 'electron'
 
 import { checkForUpdatesManually } from './autoUpdater.ts'
+import { isAppUrl, isSafeExternalUrl } from './navigationGuard.ts'
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
@@ -41,6 +42,16 @@ export function buildAppUrl(
     url.searchParams.set('renderer', renderer)
   }
   return url
+}
+
+// Hands a url the page supplied to the OS, but only a web one: openExternal on
+// e.g. file:// would launch a local path in whatever app claims it.
+function openExternal(url: string) {
+  if (isSafeExternalUrl(url)) {
+    shell.openExternal(url).catch(logError)
+  } else {
+    console.error(`Refusing to open non-web url externally: ${url}`)
+  }
 }
 
 function createMenu(autoUpdater: AppUpdater) {
@@ -107,17 +118,33 @@ export async function createMainWindow(
     })
   }
 
+  const appUrl = buildAppUrl(devServerUrl, initialTarget, renderer)
+
   // Attached before loadURL, like the ready-to-show handler above: a page that
   // calls window.open while still loading would otherwise get Chromium's
   // default behavior (a real BrowserWindow) instead of the external browser.
   mainWindow.webContents.setWindowOpenHandler(edata => {
-    shell.openExternal(edata.url).catch(logError)
+    openExternal(edata.url)
     return { action: 'deny' }
   })
 
-  await mainWindow.loadURL(
-    buildAppUrl(devServerUrl, initialTarget, renderer).href,
-  )
+  // This window has nodeIntegration, so any document it navigates to gets
+  // require() and with it the user's machine. window.open is covered above, but
+  // an in-place navigation (window.location = …, a plain link click) is a
+  // separate path that Chromium would otherwise just follow. Send it to the
+  // real browser instead — which is also the right answer for a link, since
+  // navigating this window away would destroy the session in it.
+  //
+  // Programmatic loadURL from the main process does not emit will-navigate, so
+  // this does not interfere with loadTarget opening a new session.
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (!isAppUrl(url, appUrl.href)) {
+      event.preventDefault()
+      openExternal(url)
+    }
+  })
+
+  await mainWindow.loadURL(appUrl.href)
 
   if (process.platform === 'darwin') {
     Menu.setApplicationMenu(createMenu(autoUpdater))

@@ -4,7 +4,7 @@
   "exclude": [],
   "compilerOptions": {
     "lib": ["esnext"],
-    "types": ["node"],
+    "types": ["node", "jest"],
     "noEmit": true
   }
 }

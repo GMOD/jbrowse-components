@@ -5,6 +5,18 @@ import { relativeUrisToLocalPaths } from './relativeUrisToLocalPaths.ts'
 const dir = path.resolve('/home/u/project')
 const abs = (p: string) => path.resolve(dir, p)
 
+// relativeUrisToLocalPaths rewrites a plain JSON tree in place, so a fixture's
+// inferred literal type doesn't describe what it holds afterwards. Naming the
+// keys the rewrite can add lets the assertions read them back.
+interface Loc {
+  type?: string
+  uri?: string
+  baseUri?: string
+  localPath?: string
+  locationType?: string
+  index?: { location: Loc }
+}
+
 test('bare relative uri becomes a localPath resolved against the config dir', () => {
   const cfg = { adapter: { type: 'BamAdapter', uri: 'sample.bam' } }
   relativeUrisToLocalPaths(cfg, dir)
@@ -18,7 +30,7 @@ test('bare relative uri becomes a localPath resolved against the config dir', ()
 test('a nested index location is resolved alongside its data file', () => {
   // regression: a shorthand `uri` on the adapter must not stop recursion into
   // the nested index location
-  const cfg = {
+  const cfg: { adapter: Loc } = {
     adapter: {
       type: 'BamAdapter',
       uri: 'aln.bam',
@@ -28,7 +40,7 @@ test('a nested index location is resolved alongside its data file', () => {
   relativeUrisToLocalPaths(cfg, dir)
   expect(cfg.adapter.localPath).toBe(abs('aln.bam'))
   expect('uri' in cfg.adapter).toBe(false)
-  expect(cfg.adapter.index.location).toEqual({
+  expect(cfg.adapter.index!.location).toEqual({
     localPath: abs('aln.bam.bai'),
     locationType: 'LocalPathLocation',
   })
@@ -72,7 +84,10 @@ test('an existing localPath is left untouched', () => {
 })
 
 test('walks arrays and assemblies, resolving every relative uri', () => {
-  const cfg = {
+  const cfg: {
+    assemblies: { sequence: { adapter: Loc } }[]
+    tracks: { adapter: Loc }[]
+  } = {
     assemblies: [
       { sequence: { adapter: { uri: 'ref.fa.gz' } } },
       { sequence: { adapter: { uri: 'https://host/ref2.fa.gz' } } },
