@@ -18,6 +18,13 @@ export {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,
 } from './renameRegionsForAdapter.ts'
+export { executeDiagonalize } from './executeDiagonalize.ts'
+export type {
+  DiagonalizeAdapterSpec,
+  DiagonalizeArgs,
+} from './executeDiagonalize.ts'
+export { default as DiagonalizeRpcBase } from './DiagonalizeRpcBase.ts'
+export { prepareDiagonalizeAdapter } from './prepareDiagonalizeAdapter.ts'
 export {
   blendOverWhite,
   coerceColorBy,

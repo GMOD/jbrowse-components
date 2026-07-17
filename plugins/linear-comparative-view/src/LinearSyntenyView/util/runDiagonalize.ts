@@ -1,9 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  getAdapterToCanonicalRefNameMap,
-  renameRegionsForAdapter,
-} from '@jbrowse/synteny-core'
+import { prepareDiagonalizeAdapter } from '@jbrowse/synteny-core'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
@@ -71,31 +68,15 @@ export async function runDiagonalize(
       // path's `targetAssemblyName: v2.displayedRegions[0]?.assemblyName`.
       const targetAssemblyName = currentRegions[0]?.assemblyName
       const adapters = await Promise.all(
-        displays.map(async (d: LinearSyntenyDisplayModel) => {
-          const { adapterConfig } = d
-          const [fetchRegions, refRefNameMap, queryRefNameMap] =
-            await Promise.all([
-              renameRegionsForAdapter({
-                assemblyManager,
-                sessionId,
-                adapterConfig,
-                regions: referenceRegions,
-              }),
-              getAdapterToCanonicalRefNameMap({
-                assemblyManager,
-                sessionId,
-                adapterConfig,
-                regions: referenceRegions,
-              }),
-              getAdapterToCanonicalRefNameMap({
-                assemblyManager,
-                sessionId,
-                adapterConfig,
-                regions: currentRegions,
-              }),
-            ])
-          return { adapterConfig, fetchRegions, refRefNameMap, queryRefNameMap }
-        }),
+        displays.map((d: LinearSyntenyDisplayModel) =>
+          prepareDiagonalizeAdapter({
+            assemblyManager,
+            sessionId,
+            adapterConfig: d.adapterConfig,
+            referenceRegions,
+            currentRegions,
+          }),
+        ),
       )
       const result = await rpcManager.call(sessionId, 'DiagonalizeSynteny', {
         adapters,

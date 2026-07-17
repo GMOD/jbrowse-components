@@ -1,113 +1,30 @@
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { dedupe } from '@jbrowse/core/util'
-import {
-  type DiagonalizationResult,
-  diagonalizeRegions,
-} from '@jbrowse/core/util/diagonalizeRegions'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
-import { extractAlignmentData } from '@jbrowse/synteny-core'
+import { DiagonalizeRpcBase } from '@jbrowse/synteny-core'
 
-import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'
+import type { DiagonalizeArgs } from '@jbrowse/synteny-core'
+
+// A dotplot's two axes: `referenceRegions` is the horizontal axis (which
+// supplies the ordering), `currentRegions` the vertical axis (which gets
+// reordered). Both canonical; the worker translates fetched alignments back via
+// each adapter spec's refName maps.
+export type DiagonalizeDotplotArgs = DiagonalizeArgs
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     DiagonalizeDotplot: {
       args: DiagonalizeDotplotArgs
-      // null when there are no alignments to reorder (mirrors DiagonalizeSynteny)
+      // null when there are no alignments to reorder
       return: DiagonalizationResult | null
     }
   }
 }
 
-export interface DiagonalizeDotplotArgs {
-  sessionId: string
-  // horizontal axis (already renamed into the adapter's refName namespace on the
-  // main thread): drives the getFeatures query and the reference ordering
-  referenceRegions: Region[]
-  // vertical axis, kept in canonical namespace because the reordered result is
-  // handed straight back to the view
-  currentRegions: Region[]
-  // adapter refName -> canonical refName for the vertical axis, so fetched
-  // alignments line up with the canonical currentRegions
-  queryRefNameMap: Record<string, string>
-  adapterConfig: Record<string, unknown>
-  stopToken?: StopToken
-  statusCallback?: StatusCallback
-}
-
-export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRenameRegions {
+// Body lives in @jbrowse/synteny-core's executeDiagonalize, shared with
+// DiagonalizeSynteny. Registered separately because an RPC method is only
+// callable if the plugin registering it is loaded, and dotplot-view can be
+// installed without linear-comparative-view.
+export default class DiagonalizeDotplotRpc extends DiagonalizeRpcBase {
   name = 'DiagonalizeDotplot'
-
-  async execute(args: DiagonalizeDotplotArgs, rpcDriverClassName: string) {
-    const {
-      referenceRegions,
-      currentRegions,
-      queryRefNameMap,
-      sessionId,
-      adapterConfig,
-      stopToken,
-      statusCallback,
-    } = await this.deserializeArguments(args, rpcDriverClassName)
-
-    if (!sessionId) {
-      throw new Error('must pass a unique session id')
-    }
-
-    checkStopToken(stopToken)
-    statusCallback?.('Fetching features')
-
-    const dataAdapter = await getFeatureAdapterOrThrow({
-      pluginManager: this.pluginManager,
-      sessionId,
-      adapterConfig,
-    })
-    const feats = dedupe(
-      await dataAdapter.getFeaturesInMultipleRegionsArray(referenceRegions, {
-        sessionId,
-        stopToken,
-        statusCallback,
-        // which pair this dotplot is, for a multi-genome adapter — see the
-        // render path in executeDotplotFeaturesAndPositions. currentRegions is
-        // the vertical axis and stays canonical, so its assemblyName is the
-        // target.
-        targetAssemblyName: currentRegions[0]?.assemblyName,
-      }),
-      f => f.id(),
-    )
-
-    checkStopToken(stopToken)
-    statusCallback?.('Extracting alignment data')
-
-    // referenceRegions are already adapter-space (renamed on the main thread),
-    // so the reference axis needs no translation; only the query axis is mapped
-    // back to canonical to line up with the canonical currentRegions.
-    const alignments = extractAlignmentData(feats, { queryRefNameMap })
-
-    // return null rather than throw (like DiagonalizeSynteny) so an empty pair
-    // reads as "no regions to reorder", and an init-time auto-diagonalize still
-    // resolves and releases the `settled` gate instead of stalling capture.
-    if (alignments.length === 0) {
-      return null
-    }
-
-    statusCallback?.(
-      `Running diagonalization on ${alignments.length} alignments`,
-    )
-
-    const result = await diagonalizeRegions(
-      alignments,
-      referenceRegions,
-      currentRegions,
-      () => {
-        checkStopToken(stopToken)
-      },
-    )
-
-    statusCallback?.('Diagonalization complete!')
-    return result
-  }
 }
 
 export { type DiagonalizationResult } from '@jbrowse/core/util/diagonalizeRegions'

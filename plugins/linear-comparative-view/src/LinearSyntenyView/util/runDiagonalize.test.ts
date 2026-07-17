@@ -5,13 +5,22 @@ import { runDiagonalize } from './runDiagonalize.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { Region } from '@jbrowse/core/util'
 
-// jest hoists these mocks above the imports. renameRegionsForAdapter /
-// getAdapterToCanonicalRefNameMap only do refName reconciliation, irrelevant to
-// the sweep order, so stub them to passthrough.
+// jest hoists these mocks above the imports. prepareDiagonalizeAdapter only
+// does refName reconciliation, irrelevant to the sweep order, so stub it to a
+// passthrough spec.
 jest.mock('@jbrowse/synteny-core', () => ({
-  renameRegionsForAdapter: async ({ regions }: { regions: Region[] }) =>
-    regions,
-  getAdapterToCanonicalRefNameMap: async () => ({}),
+  prepareDiagonalizeAdapter: async ({
+    adapterConfig,
+    referenceRegions,
+  }: {
+    adapterConfig: Record<string, unknown>
+    referenceRegions: Region[]
+  }) => ({
+    adapterConfig,
+    fetchRegions: referenceRegions,
+    refRefNameMap: {},
+    queryRefNameMap: {},
+  }),
 }))
 jest.mock('@jbrowse/core/util/tracks', () => ({
   getRpcSessionId: () => 'test-session',

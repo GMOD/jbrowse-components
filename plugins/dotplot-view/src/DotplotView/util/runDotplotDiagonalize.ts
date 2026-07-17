@@ -1,9 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import {
-  getAdapterToCanonicalRefNameMap,
-  renameRegionsForAdapter,
-} from '@jbrowse/synteny-core'
+import { prepareDiagonalizeAdapter } from '@jbrowse/synteny-core'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
@@ -35,32 +32,26 @@ export async function runDotplotDiagonalize(
     const { adapterConfig } = display
     const { assemblyManager, rpcManager } = getSession(model)
 
-    // The worker has no assemblyManager, so refName aliases are reconciled here:
-    // the horizontal (reference) regions are renamed into the adapter's
-    // namespace so the worker's getFeatures + reference ordering line up, while
-    // the vertical (query) regions stay canonical because the reordered result
-    // is written straight back to the view. queryRefNameMap lets the worker
-    // translate each alignment's query refName back to canonical to bridge them.
+    // Both axes stay canonical: the worker matches against them and reorders
+    // currentRegions back into the view. RefName reconciliation (the renamed
+    // fetch regions + the per-axis adapter->canonical maps) is resolved here on
+    // the main thread, since the worker has no assemblyManager.
+    const referenceRegions = model.hview.displayedRegions
     const currentRegions = model.vview.displayedRegions
-    const [referenceRegions, queryRefNameMap] = await Promise.all([
-      renameRegionsForAdapter({
-        assemblyManager,
-        sessionId,
-        adapterConfig,
-        regions: model.hview.displayedRegions,
-      }),
-      getAdapterToCanonicalRefNameMap({
-        assemblyManager,
-        sessionId,
-        adapterConfig,
-        regions: currentRegions,
-      }),
-    ])
-    const result = await rpcManager.call(sessionId, 'DiagonalizeDotplot', {
+    const adapter = await prepareDiagonalizeAdapter({
+      assemblyManager,
+      sessionId,
+      adapterConfig,
       referenceRegions,
       currentRegions,
-      queryRefNameMap,
-      adapterConfig,
+    })
+    const result = await rpcManager.call(sessionId, 'DiagonalizeDotplot', {
+      adapters: [adapter],
+      referenceRegions,
+      currentRegions,
+      // the assembly on the vertical axis; a multi-genome adapter uses it to
+      // pick which pair this dotplot is (see the render path)
+      targetAssemblyName: currentRegions[0]?.assemblyName,
       stopToken: opts.stopToken,
       statusCallback: opts.statusCallback,
     })
