@@ -4,8 +4,8 @@ import {
   fetchPlugins,
 } from './checkPlugins.ts'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import type { JBrowsePlugin } from '@jbrowse/core/util/types'
+import type { PluginDefinition } from './PluginLoader.ts'
+import type { JBrowsePlugin } from './util/types/index.ts'
 
 // fills the required JBrowsePlugin metadata so tests can specify just urls
 function store(entries: Partial<JBrowsePlugin>[]): {

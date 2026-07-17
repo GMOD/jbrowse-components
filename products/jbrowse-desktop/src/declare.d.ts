@@ -5,6 +5,8 @@ interface Window {
   // MST utilities exposed for testing (temporary)
   getSnapshot?: unknown
   resolveIdentifier?: unknown
-  // injected by Electron preload — Node.js's require() in the renderer
+  // Node's require(), available in the renderer because the window is created
+  // with nodeIntegration/contextIsolation:false (see electron/window.ts). There
+  // is no preload script — this is the real Node require, not a bridged subset.
   require: NodeJS.Require
 }

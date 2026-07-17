@@ -107,14 +107,17 @@ export async function createMainWindow(
     })
   }
 
-  await mainWindow.loadURL(
-    buildAppUrl(devServerUrl, initialTarget, renderer).href,
-  )
-
+  // Attached before loadURL, like the ready-to-show handler above: a page that
+  // calls window.open while still loading would otherwise get Chromium's
+  // default behavior (a real BrowserWindow) instead of the external browser.
   mainWindow.webContents.setWindowOpenHandler(edata => {
     shell.openExternal(edata.url).catch(logError)
     return { action: 'deny' }
   })
+
+  await mainWindow.loadURL(
+    buildAppUrl(devServerUrl, initialTarget, renderer).href,
+  )
 
   if (process.platform === 'darwin') {
     Menu.setApplicationMenu(createMenu(autoUpdater))

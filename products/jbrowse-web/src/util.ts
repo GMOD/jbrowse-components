@@ -1,6 +1,6 @@
 export { addRelativeUris, removeAttr } from '@jbrowse/product-core'
 export { b64PadSuffix, fromUrlSafeB64, toUrlSafeB64 } from '@jbrowse/core/util'
-export { checkPlugins } from './checkPlugins.ts'
+export { checkPlugins } from '@jbrowse/core/checkPlugins'
 
 // raw readConf alternative for before conf is initialized
 export function readConf(

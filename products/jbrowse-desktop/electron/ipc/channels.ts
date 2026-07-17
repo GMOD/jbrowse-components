@@ -56,6 +56,14 @@ export interface IpcChannels {
     args: [params: AuthWindowParams]
     return: string | undefined
   }
+  // Asks the user to vouch for plugins that aren't in the plugin store, before
+  // a link-supplied config gets to run their javascript. Native+modal rather
+  // than a React dialog so it can't be missed and needs no plumbing through the
+  // async session-load path.
+  confirmUntrustedPlugins: {
+    args: [plugins: { description: string; url: string }[]]
+    return: boolean
+  }
   // opens the BLAT server in a window so the user can solve its CAPTCHA
   openBlatChallenge: { args: [url: string]; return: boolean }
   // POSTs a BLAT query from the main process so the solved-challenge cookie

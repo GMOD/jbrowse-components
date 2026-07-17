@@ -36,6 +36,7 @@
     "./assemblyManager": "./src/assemblyManager/index.ts",
     "./assemblyManager/assembly": "./src/assemblyManager/assembly.ts",
     "./assemblyManager/assemblyConfigSchema": "./src/assemblyManager/assemblyConfigSchema.ts",
+    "./checkPlugins": "./src/checkPlugins.ts",
     "./configuration": "./src/configuration/index.ts",
     "./configuration/configurationSchema": "./src/configuration/configurationSchema.ts",
     "./data_adapters/BaseAdapter": "./src/data_adapters/BaseAdapter/index.ts",
@@ -270,6 +271,10 @@
       "./assemblyManager/assemblyConfigSchema": {
         "types": "./esm/assemblyManager/assemblyConfigSchema.d.ts",
         "import": "./esm/assemblyManager/assemblyConfigSchema.js"
+      },
+      "./checkPlugins": {
+        "types": "./esm/checkPlugins.d.ts",
+        "import": "./esm/checkPlugins.js"
       },
       "./configuration": {
         "types": "./esm/configuration/index.d.ts",
@@ -801,6 +806,9 @@
         ],
         "assemblyManager/assemblyConfigSchema": [
           "esm/assemblyManager/assemblyConfigSchema.d.ts"
+        ],
+        "checkPlugins": [
+          "esm/checkPlugins.d.ts"
         ],
         "configuration": [
           "esm/configuration/index.d.ts"

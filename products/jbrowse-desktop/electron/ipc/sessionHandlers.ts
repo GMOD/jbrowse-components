@@ -19,6 +19,39 @@ import type { RecentSession, SessionSnap } from './channels.ts'
 const { unlink, readFile, writeFile, rename } = fs.promises
 const THUMBNAIL_WIDTH = 500
 
+// capturePage stalls on a full readback of the window's framebuffer, so it must
+// not ride the 1s autosave: while a user pans, the session snapshot changes
+// every tick and this would fire once a second forever. The thumbnail only
+// fronts a start-screen card, so a few seconds of staleness costs nothing.
+const THUMBNAIL_INTERVAL_MS = 30_000
+let lastThumbnail = { path: '', at: 0 }
+
+// undefined when the thumbnail for this save is being skipped
+async function captureThumbnail(
+  win: Electron.BrowserWindow | null,
+  sessionPath: string,
+) {
+  const now = Date.now()
+  // Throttle per session, not globally: a session saved for the first time
+  // needs its card populated now, and only a session being saved over and over
+  // (the autosave) is worth rate limiting.
+  const isFirstSaveOfSession = sessionPath !== lastThumbnail.path
+  if (
+    !win ||
+    (!isFirstSaveOfSession && now - lastThumbnail.at < THUMBNAIL_INTERVAL_MS)
+  ) {
+    return undefined
+  }
+  // claimed before the await so concurrent saves can't both get through
+  lastThumbnail = { path: sessionPath, at: now }
+  // Thumbnail capture is cosmetic; a capturePage rejection must never abort the
+  // session write (the 1s autosave would otherwise error every tick)
+  return win
+    .capturePage()
+    .then(page => page.resize({ width: THUMBNAIL_WIDTH }).toDataURL())
+    .catch(logError)
+}
+
 async function readRecentSessions(
   recentSessionsPath: string,
 ): Promise<RecentSession[]> {
@@ -70,7 +103,10 @@ function upsertRecentSession(sessions: RecentSession[], entry: RecentSession) {
 let recentSessionsQueue: Promise<unknown> = Promise.resolve()
 
 function serializeRecentSessions<T>(fn: () => Promise<T>): Promise<T> {
-  const run = recentSessionsQueue.then(fn).catch(fn)
+  // recentSessionsQueue is always catch-guarded below, so it never rejects and
+  // fn always runs — a failing entry must not block the ones behind it. fn's
+  // own rejection propagates to this caller only.
+  const run = recentSessionsQueue.then(fn)
   recentSessionsQueue = run.catch(() => {})
   return run
 }
@@ -132,12 +168,7 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('saveSession', async (_, sessionPath, snap) => {
-    // Thumbnail capture is cosmetic; a capturePage rejection must never abort
-    // the session write (the 1s autosave would otherwise error every tick)
-    const png = await getMainWindow()
-      ?.capturePage()
-      .then(page => page.resize({ width: THUMBNAIL_WIDTH }).toDataURL())
-      .catch(logError)
+    const png = await captureThumbnail(getMainWindow(), sessionPath)
     const entry: RecentSession = {
       path: sessionPath,
       updated: Date.now(),

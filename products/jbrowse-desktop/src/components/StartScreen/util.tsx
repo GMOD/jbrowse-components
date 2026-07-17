@@ -1,5 +1,6 @@
 import PluginLoader, { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 import PluginManager from '@jbrowse/core/PluginManager'
+import { checkPlugins } from '@jbrowse/core/checkPlugins'
 import { readConfObject } from '@jbrowse/core/configuration'
 import { dedupe, fetchJson } from '@jbrowse/core/util'
 import {
@@ -10,6 +11,7 @@ import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import { addRelativeUris } from '@jbrowse/product-core'
 import deepmerge from 'deepmerge'
 
+import { assertPluginsTrusted } from './assertPluginsTrusted.ts'
 import { launchFromLink } from './launchFromLink.ts'
 import { newSessionName, resolveSessionName } from './sessionName.ts'
 import corePlugins from '../../corePlugins.ts'
@@ -49,10 +51,23 @@ export async function fetchConfig(url: string) {
  * Open a JBrowse Web link as a new session. Shared by the File → Session → "Open
  * JBrowse Web link..." dialog and by a jbrowse:// link the main process
  * forwarded as ?specLink=, so both routes build the session identically.
+ *
+ * The config behind the link is remote and attacker-supplied in the worst case
+ * (any web page can make the OS hand us a jbrowse:// link), so its plugins are
+ * vetted before it is written to disk or handed to PluginLoader — see
+ * assertPluginsTrusted.
  */
 export async function openSpecLink(link: string) {
   return launchFromLink(link, {
-    fetchConfig,
+    fetchConfig: async url => {
+      const config = await fetchConfig(url)
+      await assertPluginsTrusted(config.plugins, {
+        checkPlugins,
+        confirm: plugins =>
+          ipcRenderer.invoke('confirmUntrustedPlugins', plugins),
+      })
+      return config
+    },
     createPluginManager: async config =>
       loadPluginManager(
         await ipcRenderer.invoke('createInitialAutosaveFile', {

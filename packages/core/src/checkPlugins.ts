@@ -1,7 +1,14 @@
-import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import { pluginUrl } from './PluginLoader.ts'
 
-import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
-import type { JBrowsePlugin } from '@jbrowse/core/util/types'
+import type { PluginDefinition } from './PluginLoader.ts'
+import type { JBrowsePlugin } from './util/types/index.ts'
+
+// Whether a set of plugin definitions is safe to load without asking the user.
+// Lives in core rather than a product because every product that can be handed
+// a config by an untrusted party needs the same gate: Web from its address bar,
+// Desktop from a jbrowse:// link. Loading a plugin runs its javascript with the
+// product's full privileges — in Desktop that is Node — so a product must not
+// reach PluginLoader with unvetted definitions.
 
 export const TRUSTED_PLUGIN_URL_PREFIXES = ['https://jbrowse.org/plugins/']
 

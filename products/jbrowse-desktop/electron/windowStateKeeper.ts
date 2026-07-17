@@ -19,6 +19,9 @@ interface Options {
   defaultHeight: number
 }
 
+// enough of the window must land on some display to grab and drag it back
+const MIN_VISIBLE_PX = 48
+
 export default function windowStateKeeper(options: Options) {
   const { defaultWidth, defaultHeight } = options
   const stateFile = path.join(app.getPath('userData'), 'window-state.json')
@@ -55,14 +58,16 @@ export default function windowStateKeeper(options: Options) {
     }
 
     if (hasBounds && x !== undefined && y !== undefined) {
+      // Overlap, not containment: a window straddling two monitors (or hanging
+      // slightly off one edge) is still reachable, and demanding it fit wholly
+      // inside a single display would reset it to default size on every restart.
+      // Require a title-bar-sized sliver so a window on a now-disconnected
+      // monitor still falls back to the default position.
       const visible = screen.getAllDisplays().some(display => {
         const b = display.bounds
-        return (
-          x >= b.x &&
-          y >= b.y &&
-          x + width <= b.x + b.width &&
-          y + height <= b.y + b.height
-        )
+        const overlapX = Math.min(x + width, b.x + b.width) - Math.max(x, b.x)
+        const overlapY = Math.min(y + height, b.y + b.height) - Math.max(y, b.y)
+        return overlapX >= MIN_VISIBLE_PX && overlapY >= MIN_VISIBLE_PX
       })
       if (!visible) {
         return false

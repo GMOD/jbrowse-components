@@ -52,6 +52,21 @@ test('fetches the config the link names, then builds the spec session on it', as
   expect(result).toBe(pluginManager)
 })
 
+// openSpecLink vets a remote config's plugins inside its fetchConfig, so a
+// rejection there must strand the link before any plugin javascript is loaded —
+// createPluginManager is what reaches PluginLoader.
+test('a config rejected by its plugin gate never builds a plugin manager', async () => {
+  const fetchConfig = jest.fn().mockRejectedValue(new Error('not trusted'))
+  const createPluginManager = jest.fn().mockResolvedValue(pluginManager)
+
+  await expect(
+    launchFromLink(link, { fetchConfig, createPluginManager }),
+  ).rejects.toThrow('not trusted')
+
+  expect(createPluginManager).not.toHaveBeenCalled()
+  expect(mockLoadSessionSpec).not.toHaveBeenCalled()
+})
+
 test('a spec carrying its own assemblies needs no config fetch', async () => {
   const selfContained = {
     views: [{ type: 'LinearGenomeView', assembly: 'mine' }],
