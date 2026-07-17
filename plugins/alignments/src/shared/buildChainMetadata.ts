@@ -153,6 +153,10 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     // unique synthetic key so they never merge with their primary's chain
     // (cross-region merge + chainIdMap both key on this). Never displayed.
     chainNames.push(chainKey)
+    // 1=fwd primary, 2=rev primary. For a paired chain (two opposite-strand
+    // primaries) this is whichever was iterated last, but that's fine: the fwd-
+    // vs-rev (1-vs-2) distinction is only read on the unpaired branch of the
+    // read-fill classifier (colorUtils), where a chain has exactly one primary.
     chainSuppTypes[chainIdx] = hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
     chainMate0SplitKind[chainIdx] = mate0SplitKind
     chainMate1SplitKind[chainIdx] = mate1SplitKind
