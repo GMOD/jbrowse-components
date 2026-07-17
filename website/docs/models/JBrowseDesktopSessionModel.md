@@ -1182,9 +1182,7 @@ Find the panel containing a view, returning the panel ID, that panel's view-ID
 list, and the view's index within it (or undefined if unassigned)
 
 ```ts
-type getPanelContainingView = (
-  viewId: string,
-) =>
+type getPanelContainingView = (viewId: string) =>
   | {
       panelId: string
       viewIds: IMSTArray<ISimpleType<string>> &

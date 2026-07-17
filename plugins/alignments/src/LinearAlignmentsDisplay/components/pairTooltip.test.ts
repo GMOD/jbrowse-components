@@ -4,7 +4,9 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Single-read payload for the chain/pileup hover tooltip. The pair-anomaly rows
 // read flags / insert size / orientation / mate ref + insertSizeStats.
-function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResult {
+function makeRpcData(
+  overrides: Partial<PileupDataResult> = {},
+): PileupDataResult {
   return {
     readNames: ['readA'],
     readPositions: new Uint32Array([1000, 1100]),

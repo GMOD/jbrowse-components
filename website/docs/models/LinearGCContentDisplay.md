@@ -401,6 +401,7 @@ type gpuProps = () => {
   summaryScoreMode: string
   isDensityMode: boolean
   renderingType: string
+  bicolorPivot: number
 }
 ```
 

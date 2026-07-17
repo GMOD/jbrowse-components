@@ -2714,7 +2714,9 @@ export default function baseStateModelFactory(
           const wholeFeatureItem = highlightItem(
             highlighted,
             subfeature ? `Whole ${featureNoun}` : 'Highlight feature',
-            subfeature ? `Remove whole ${featureNoun} highlight` : 'Remove highlight',
+            subfeature
+              ? `Remove whole ${featureNoun} highlight`
+              : 'Remove highlight',
             featureId,
             { startBp, endBp, name },
           )

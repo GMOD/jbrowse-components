@@ -11,7 +11,10 @@ import {
   readTrailingBp,
 } from '@jbrowse/cigar-utils'
 
-import { classifyInsertSize, robustSpread } from '../../shared/insertSizeStats.ts'
+import {
+  classifyInsertSize,
+  robustSpread,
+} from '../../shared/insertSizeStats.ts'
 import {
   connectionEndpoints,
   resolveReadGroup,

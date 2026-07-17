@@ -35,7 +35,9 @@ declare module '@jbrowse/core/PluginManager' {
 function detectHardwareConcurrency() {
   // fall back to 1 if navigator.hardwareConcurrency is absent, else clamp()
   // sees NaN and collapses the pool to zero workers
-  return typeof navigator === 'undefined' ? 1 : navigator.hardwareConcurrency || 1
+  return typeof navigator === 'undefined'
+    ? 1
+    : navigator.hardwareConcurrency || 1
 }
 
 class LazyWorker {

@@ -67,7 +67,9 @@ export function interleaveInstances(
       // transition. (Drawing it on both sides would double-stroke the seam.)
       f32[off + FIELD_OFFSET_F32.prevScore] = prevAdj ? scores[i - 1]! : 0
       f32[off + FIELD_OFFSET_F32.nextScore] = nextAdj ? score : 0
-      u32[off + FIELD_OFFSET_F32.color] = colorsAbgr ? colorsAbgr[i]! : colorAbgr
+      u32[off + FIELD_OFFSET_F32.color] = colorsAbgr
+        ? colorsAbgr[i]!
+        : colorAbgr
       f32[off + FIELD_OFFSET_F32.rowIndex] = row
       off += INSTANCE_STRIDE_F32
     }

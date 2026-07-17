@@ -24,8 +24,9 @@ interface ConfNode {
   }
 }
 const confNode = (self: unknown) => self as ConfNode
-const setConf = (self: unknown, slot: string, val: unknown) =>
-  { confNode(self).configuration.setSlot(slot, val) }
+const setConf = (self: unknown, slot: string, val: unknown) => {
+  confNode(self).configuration.setSlot(slot, val)
+}
 // `prefersOffset` is the optional per-display convention (BaseLinearDisplay)
 // signalling the track label is drawn above the plot, not overlapping it.
 const offsetNode = (self: unknown) => self as { prefersOffset?: boolean }

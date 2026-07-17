@@ -597,12 +597,19 @@ describe('computeArcsFromPileupData', () => {
       { refName: 'chr1', start: 0, end: 600000, displayedRegionIndex: 0 },
     ]
 
-    for (const colorByType of ['orientation', 'insertSizeAndOrientation'] as const) {
-      const result = computeArcsFromPileupData(new Map([[0, mkData()]]), regions, {
-        colorByType,
-        drawInter: false,
-        drawLongRange: true,
-      })
+    for (const colorByType of [
+      'orientation',
+      'insertSizeAndOrientation',
+    ] as const) {
+      const result = computeArcsFromPileupData(
+        new Map([[0, mkData()]]),
+        regions,
+        {
+          colorByType,
+          drawInter: false,
+          drawLongRange: true,
+        },
+      )
       expect(result.arcs.length).toBe(1)
       expect(result.arcs[0]!.colorType).toBe(6)
     }
@@ -1292,8 +1299,18 @@ describe('computeArcsFromPileupData', () => {
     // an LR pair is COLOR_DEFAULT (0) unless the override fires → COLOR_LONG_INSERT
     // (1). This is the only path computeLongRangeThreshold feeds.
     const spans = [
-      1800, 1900, 2000, 2000, 2000, 2100, 2100, 2200, 1950, 2050, // cluster
-      1_000_000, 1_000_000, // outliers (radius ~500kb)
+      1800,
+      1900,
+      2000,
+      2000,
+      2000,
+      2100,
+      2100,
+      2200,
+      1950,
+      2050, // cluster
+      1_000_000,
+      1_000_000, // outliers (radius ~500kb)
       30_000, // target (radius ~15kb > 10kb large-insert threshold)
     ]
     const positions: number[] = []

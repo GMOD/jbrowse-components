@@ -1291,7 +1291,7 @@ type showSubmenuMenuItems = () => MenuItem[]
 #### method: contextMenuItems
 
 ```ts
-type contextMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
+type contextMenuItems = () => ({ label: string; icon: (props: SvgIconProps) => Element; onClick: () => void; } | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { ...; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
 ```
 
 #### method: colorMenuItems

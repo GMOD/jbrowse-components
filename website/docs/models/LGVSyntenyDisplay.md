@@ -1667,9 +1667,7 @@ type isGroupTruncated = (key: string) => boolean
 #### method: findFeatureInRpcData
 
 ```ts
-type findFeatureInRpcData = (
-  featureId: string,
-) =>
+type findFeatureInRpcData = (featureId: string) =>
   | {
       displayedRegionIndex: number
       idx: number
@@ -1710,9 +1708,7 @@ type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
 #### method: getFeatureInfoById
 
 ```ts
-type getFeatureInfoById = (
-  featureId: string,
-) =>
+type getFeatureInfoById = (featureId: string) =>
   | {
       id: string
       name: string

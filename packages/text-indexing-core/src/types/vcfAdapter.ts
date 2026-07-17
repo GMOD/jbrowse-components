@@ -51,8 +51,7 @@ export async function* indexVcf({
     // an empty `END=` parses to 0 via Number(''), which is finite; require a
     // non-empty value before trusting it, else fall back to pos+1
     const endNum = Number(fields.END)
-    const end =
-      fields.END && Number.isFinite(endNum) ? endNum : Number(pos) + 1
+    const end = fields.END && Number.isFinite(endNum) ? endNum : Number(pos) + 1
     const locStr = `${ref}:${pos}..${end}`
     const encodedLocStr = encodeURIComponent(locStr)
 

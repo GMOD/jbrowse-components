@@ -19,6 +19,7 @@ import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
 import { processFeaturesFromArrays } from '../util.ts'
 
+import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type { WiggleDataResult } from '../util.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -179,7 +180,7 @@ function createTestEnvironment() {
     ])
 
     const track = view.tracks[0]!
-    const display = track.displays[0]!
+    const display = track.displays[0]! as MultiLinearWiggleDisplayModel
     return { session, view, track, display, mockRpcCall }
   }
 
