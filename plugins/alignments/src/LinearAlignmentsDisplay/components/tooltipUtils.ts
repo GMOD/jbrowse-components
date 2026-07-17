@@ -5,6 +5,7 @@ import {
 } from '@jbrowse/alignments-core'
 import { toLocale } from '@jbrowse/core/util'
 
+import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import { interbaseTypeName } from '../../shared/types.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
@@ -14,6 +15,7 @@ import type {
   CigarHitResult,
   SashimiArcHitResult,
 } from '../../shared/hitTestTypes.ts'
+import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
 
 export interface IndicatorTooltipPayload {
@@ -65,44 +67,55 @@ export function formatLenRange(minLen: number, maxLen: number) {
 
 const PAIR_ORIENTATION_NAMES = ['', 'LR', 'RL', 'RR', 'LL'] as const
 
-function getPairTypeDescription(
+function orientationDescription(pairOrientation: number) {
+  const name = PAIR_ORIENTATION_NAMES[pairOrientation] ?? ''
+  if (name === 'RR') {
+    return 'Both mates reverse strand'
+  }
+  if (name === 'RL') {
+    return 'Outward facing pair'
+  }
+  if (name === 'LL') {
+    return 'Both mates forward strand'
+  }
+  return name ? `Abnormal orientation (${name})` : undefined
+}
+
+// Human-readable pair anomalies for the tooltip. An unmapped mate or an
+// inter-chromosomal mate makes insert size / orientation meaningless (matching
+// the dedicated color buckets), so those pre-empt everything. Otherwise a
+// same-chromosome pair can be BOTH abnormally oriented AND have an anomalous
+// insert size, so both lines are reported — unlike the single fill color, which
+// must pick one. Insert size flows through the shared classifyInsertSize (its
+// unset-TLEN guard included) so it can't drift from the coloring thresholds.
+function getPairTypeDescriptions(
   flags: number,
   pairOrientation: number,
   insertSize: number,
-  insertSizeStats?: { upper: number; lower: number },
+  insertSizeStats?: InsertSizeBand,
   nextRef?: string,
   refName?: string,
-) {
+): string[] {
   if (flags & 8) {
-    return 'Unmapped mate'
+    return ['Unmapped mate']
   }
   if (nextRef && refName && nextRef !== refName && nextRef !== '=') {
-    return `Inter-chromosomal (mate on ${nextRef})`
+    return [`Inter-chromosomal (mate on ${nextRef})`]
   }
+  const out: string[] = []
   if (pairOrientation > 1) {
-    const name = PAIR_ORIENTATION_NAMES[pairOrientation] ?? ''
-    if (name === 'RR') {
-      return 'Both mates reverse strand'
-    }
-    if (name === 'RL') {
-      return 'Outward facing pair'
-    }
-    if (name === 'LL') {
-      return 'Both mates forward strand'
-    }
-    return `Abnormal orientation (${name})`
-  }
-  const tlen = Math.abs(insertSize)
-  if (insertSizeStats) {
-    if (tlen > insertSizeStats.upper) {
-      return 'Long insert size'
-    }
-    // tlen 0 = unset (single-end / unpaired); never label it "short insert".
-    if (tlen > 0 && tlen < insertSizeStats.lower) {
-      return 'Short insert size'
+    const orient = orientationDescription(pairOrientation)
+    if (orient) {
+      out.push(orient)
     }
   }
-  return undefined
+  const insertClass = classifyInsertSize(Math.abs(insertSize), insertSizeStats)
+  if (insertClass === 'long') {
+    out.push('Long insert size')
+  } else if (insertClass === 'short') {
+    out.push('Short insert size')
+  }
+  return out
 }
 
 export function formatChainTooltip(
@@ -132,17 +145,16 @@ export function formatChainTooltip(
   }
 
   const nextRef = rpcData.readNextRefs?.[idx] ?? ''
-  const pairDesc = getPairTypeDescription(
-    flags,
-    pairOrientation,
-    insertSize,
-    rpcData.insertSizeStats,
-    nextRef,
-    refName,
+  lines.push(
+    ...getPairTypeDescriptions(
+      flags,
+      pairOrientation,
+      insertSize,
+      rpcData.insertSizeStats,
+      nextRef,
+      refName,
+    ),
   )
-  if (pairDesc) {
-    lines.push(pairDesc)
-  }
 
   if (flags & 2048) {
     lines.push('Supplementary alignment')
