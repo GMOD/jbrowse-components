@@ -2,6 +2,7 @@
   "name": "img-node20",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "yarn@1.22.22",
   "type": "module",
   "scripts": {
     "testimg": "node --import ./register.mjs run.mjs"

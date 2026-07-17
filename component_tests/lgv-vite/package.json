@@ -2,6 +2,7 @@
   "name": "lgv-vite",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "yarn@1.22.22",
   "type": "module",
   "scripts": {
     "dev": "vite",
