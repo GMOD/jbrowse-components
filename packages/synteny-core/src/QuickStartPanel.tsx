@@ -1,5 +1,7 @@
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import {
   Button,
   CircularProgress,
@@ -7,9 +9,18 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+const useStyles = makeStyles()({
+  summary: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 20,
+  },
+})
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -31,6 +42,8 @@ const QuickStartPanel = observer(function QuickStartPanel({
   trackId,
   onChange,
   onLaunch,
+  onSwap,
+  swapTitle,
   submitting,
   children,
 }: {
@@ -39,9 +52,12 @@ const QuickStartPanel = observer(function QuickStartPanel({
   trackId: string
   onChange: (trackId: string) => void
   onLaunch: () => void
+  onSwap: () => void
+  swapTitle: string
   submitting: boolean
   children?: React.ReactNode
 }) {
+  const { classes } = useStyles()
   const session = getSession(model)
   return tracks.length ? (
     <div>
@@ -62,7 +78,21 @@ const QuickStartPanel = observer(function QuickStartPanel({
           ))}
         </Select>
       </FormControl>
-      {children}
+      <div className={classes.summary}>
+        {children}
+        <Tooltip title={swapTitle}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<SwapVertIcon />}
+            onClick={() => {
+              onSwap()
+            }}
+          >
+            Swap
+          </Button>
+        </Tooltip>
+      </div>
       <Button
         style={{ marginTop: 10 }}
         disabled={submitting}

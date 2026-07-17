@@ -13,11 +13,12 @@ rearrangements appear as off-diagonal blocks.
 
 Launch a new Dotplot view from the Add menu. If your config already has a
 synteny track, the form opens in **Quick start**: pick the track and click
-**Launch**, and it takes both axes from that track's `assemblyNames`. Switch to
-**Manual** to select the two assemblies yourself and optionally supply a synteny
-file. The import form and the supported file types (`.paf`, `.out`, `.delta`,
-`.chain`, `.anchors`/`.anchors.simple`) are shared with the linear synteny view.
-See
+**Launch**. It takes both axes from that track's `assemblyNames`, and since a
+synteny track is queryable in either direction, **Swap** puts them the other way
+round (which just transposes the plot). Switch to **Manual** to select the two
+assemblies yourself and optionally supply a synteny file. The import form and
+the supported file types (`.paf`, `.out`, `.delta`, `.chain`,
+`.anchors`/`.anchors.simple`) are shared with the linear synteny view. See
 [Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
 for the full file-format details.
 

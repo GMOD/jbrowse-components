@@ -18,9 +18,12 @@ inversion or rearrangement relative to the other genome.
 
 Launch a new Linear synteny view. If your config already has a synteny track,
 the form opens in **Quick start**: pick the track and click **Launch**, and it
-fills in a row per assembly the track names. Switch to **Manual** to select the
-two assemblies to compare yourself, where you can optionally add a .paf, .out
-(MashMap), .delta (MUMmer), .chain, .anchors, or .anchors.simple (MCScan) file.
+fills in a row per assembly the track names. **Swap** reverses that row order,
+since a synteny track is queryable in either direction and the order it lists
+its assemblies in is not a claim about which genome belongs on top. Switch to
+**Manual** to select the two assemblies to compare yourself, where you can
+optionally add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors, or
+.anchors.simple (MCScan) file.
 Manual also lets you stack more than two genomes; see
 [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) for a worked example.
 

@@ -56,6 +56,9 @@ const LinearSyntenyViewImportForm = observer(
     const [quickTrackId, setQuickTrackId] = useState(
       quickTracks[0]?.trackId ?? '',
     )
+    // a synteny track answers in either direction, so the row order it implies
+    // is a starting point the user can flip, not a property of the track
+    const [quickSwapped, setQuickSwapped] = useState(false)
     const [selectedRow, setSelectedRow] = useState(0)
     const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
       defaultAssemblyName,
@@ -65,7 +68,8 @@ const LinearSyntenyViewImportForm = observer(
     const [submitting, setSubmitting] = useState(false)
 
     const quickTrack = quickTracks.find(t => t.trackId === quickTrackId)
-    const quickRows = quickTrack ? syntenyTrackRows(quickTrack) : []
+    const trackRows = quickTrack ? syntenyTrackRows(quickTrack) : []
+    const quickRows = quickSwapped ? [...trackRows].reverse() : trackRows
 
     // the chosen track backs every adjacent band: a pairwise track has one pair,
     // an all-vs-all track has one per adjacent row
@@ -120,6 +124,9 @@ const LinearSyntenyViewImportForm = observer(
             rows={quickRows}
             submitting={submitting}
             onChange={setQuickTrackId}
+            onSwap={() => {
+              setQuickSwapped(!quickSwapped)
+            }}
             onLaunch={() => {
               applyQuickSelections(quickRows, quickTrackId)
               void launch(quickRows)

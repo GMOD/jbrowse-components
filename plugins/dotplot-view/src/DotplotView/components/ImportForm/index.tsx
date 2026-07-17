@@ -43,13 +43,17 @@ const DotplotImportForm = observer(function DotplotImportForm({
     quickTracks.length ? 'quick' : 'manual',
   )
   const [quickTrackId, setQuickTrackId] = useState(quickTracks[0]?.trackId ?? '')
+  // a synteny track answers in either direction, so the axes it implies are a
+  // starting point the user can flip, not a property of the track
+  const [quickSwapped, setQuickSwapped] = useState(false)
   const [assemblyX, setAssemblyX] = useState(firstAssembly)
   const [assemblyY, setAssemblyY] = useState(firstAssembly)
   const [error, setError] = useState<unknown>()
 
   const quickTrack = quickTracks.find(t => t.trackId === quickTrackId)
-  const quickRows = quickTrack ? syntenyTrackRows(quickTrack) : []
+  const trackRows = quickTrack ? syntenyTrackRows(quickTrack) : []
   // the extension-point/core convention is assembly1 = Y, assembly2 = X
+  const quickRows = quickSwapped ? [...trackRows].reverse() : trackRows
   const quickY = quickRows[0] ?? firstAssembly
   const quickX = quickRows[1] ?? firstAssembly
 
@@ -102,6 +106,9 @@ const DotplotImportForm = observer(function DotplotImportForm({
             rows={quickRows}
             submitting={false}
             onChange={setQuickTrackId}
+            onSwap={() => {
+              setQuickSwapped(!quickSwapped)
+            }}
             onLaunch={() => {
               model.setImportFormSyntenyTrack(0, {
                 type: 'preConfigured',

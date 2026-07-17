@@ -78,13 +78,16 @@ off-diagonal if there are rearrangements).
 
 From the main JBrowse start screen, click **Dotplot view**. Since the track you
 added above is already in the config, the form opens in **Quick start**: pick
-that track and click **Launch**, and it reads both axes off the track's own
-`assemblyNames`.
+that track and click **Launch**.
 
-To choose the axes yourself, switch to **Manual**, which starts from whatever
-Quick start had selected and lets you change either axis or the track. A dotplot
-renders correctly with the two assemblies either way round — swapping them just
-transposes the plot — so pick whichever orientation you want to read.
+Quick start takes both axes from the track's `assemblyNames`, putting the query
+(first in `-a`) on the Y-axis and the target on the X-axis. That order is only a
+starting point: a synteny track is queryable in either direction, so click
+**Swap** to put them the other way round. Swapping transposes the plot and
+otherwise changes nothing, so use whichever orientation you find easier to read.
+
+Switching to **Manual** keeps whatever Quick start had selected, and lets you
+change either axis or the track by hand.
 
 <Figure caption="The dotplot import form in Manual mode, where you choose each axis: a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 

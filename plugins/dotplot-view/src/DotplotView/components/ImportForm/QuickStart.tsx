@@ -7,7 +7,9 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 // A dotplot is one pair, so only the track's first two assemblies are used; an
 // all-vs-all track's extra assemblies are called out rather than silently
-// dropped. Track assemblyNames are ordered [assembly1, assembly2] = [Y, X].
+// dropped. Track assemblyNames are ordered [assembly1, assembly2] = [Y, X], but
+// a synteny track is queryable in either direction, so which assembly lands on
+// which axis is the user's choice, not a fact about the track — hence Swap.
 const QuickStart = observer(function QuickStart({
   model,
   tracks,
@@ -16,6 +18,7 @@ const QuickStart = observer(function QuickStart({
   submitting,
   onChange,
   onLaunch,
+  onSwap,
 }: {
   model: DotplotViewModel
   tracks: AnyConfigurationModel[]
@@ -24,6 +27,7 @@ const QuickStart = observer(function QuickStart({
   submitting: boolean
   onChange: (trackId: string) => void
   onLaunch: () => void
+  onSwap: () => void
 }) {
   return (
     <QuickStartPanel
@@ -33,6 +37,8 @@ const QuickStart = observer(function QuickStart({
       submitting={submitting}
       onChange={onChange}
       onLaunch={onLaunch}
+      onSwap={onSwap}
+      swapTitle="Put each assembly on the other axis (transposes the plot)"
     >
       <div data-testid="quick-start-axes">
         <Typography variant="body2">X-axis: {rows[1]}</Typography>
