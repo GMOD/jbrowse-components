@@ -46,7 +46,9 @@ export async function executeClusterGenotypeMatrix({
       : await getGenotypeMatrix({ pluginManager, args: argsWithCheck })
   const result = await clusterObject({
     data: matrix,
-    onProgress: args.statusCallback,
+    onProgress: ({ message, current, total }) => {
+      args.statusCallback({ message, current, total })
+    },
     checkCancellation: () => {
       checkStopToken2(stopTokenCheck)
     },

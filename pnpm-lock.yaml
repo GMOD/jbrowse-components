@@ -904,8 +904,8 @@ importers:
   plugins/canvas:
     dependencies:
       '@gmod/hclust':
-        specifier: 3.0.14
-        version: 3.0.14
+        specifier: 4.0.0
+        version: 4.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1697,8 +1697,8 @@ importers:
   plugins/variants:
     dependencies:
       '@gmod/hclust':
-        specifier: 3.0.14
-        version: 3.0.14
+        specifier: 4.0.0
+        version: 4.0.0
       '@gmod/tabix':
         specifier: ^3.4.2
         version: 3.4.2
@@ -1763,8 +1763,8 @@ importers:
         specifier: ^9.3.3
         version: 9.3.3
       '@gmod/hclust':
-        specifier: 3.0.14
-        version: 3.0.14
+        specifier: 4.0.0
+        version: 4.0.0
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -4263,8 +4263,8 @@ packages:
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
     engines: {node: '>=15'}
 
-  '@gmod/hclust@3.0.14':
-    resolution: {integrity: sha512-RED2t41otUeFoBR/hWawpfaZbT16Af/NO8rpXXkXSUaE1NHEzPnXEd8Fhf8caFdWUErKhiyKp0U+SWW0PLQBUA==}
+  '@gmod/hclust@4.0.0':
+    resolution: {integrity: sha512-olKdPjpMwqKsnBHBy8Ak2sH4PbA8IVGqC70e1BFfSHdeWOo2KH/tE2C5m2nZPrfuVQFw0IUEKDazad/eAKUJKA==}
 
   '@gmod/indexedfasta@5.0.7':
     resolution: {integrity: sha512-E/BtszY8K4xN6s2IEafpfZ1E8pyWsBx4xEmcMr0SKaBLPzh0VGqEKdmZpH+Sq5Kq7vYVuL8UriFhc6xNwLfXcA==}
@@ -12148,7 +12148,7 @@ snapshots:
 
   '@gmod/faidx@2.0.0': {}
 
-  '@gmod/hclust@3.0.14': {}
+  '@gmod/hclust@4.0.0': {}
 
   '@gmod/indexedfasta@5.0.7':
     dependencies:

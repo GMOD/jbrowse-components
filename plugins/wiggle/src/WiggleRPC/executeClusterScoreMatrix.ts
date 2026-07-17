@@ -26,8 +26,8 @@ export async function executeClusterScoreMatrix({
   })
   const result = await clusterObject({
     data: matrix,
-    onProgress: a => {
-      args.statusCallback?.(a)
+    onProgress: ({ message, current, total }) => {
+      args.statusCallback?.({ message, current, total })
     },
     checkCancellation: () => {
       checkStopToken2(stopTokenCheck)

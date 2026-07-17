@@ -67,8 +67,8 @@ export async function executeMultiRowClusterFeatures({
   }
   const result = await clusterObject({
     data,
-    onProgress: a => {
-      statusCallback(a)
+    onProgress: ({ message, current, total }) => {
+      statusCallback({ message, current, total })
     },
     checkCancellation: () => {
       checkStopToken2(stopTokenCheck)

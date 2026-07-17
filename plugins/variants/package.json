@@ -30,7 +30,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/hclust": "3.0.14",
+    "@gmod/hclust": "4.0.0",
     "@gmod/tabix": "^3.4.2",
     "@gmod/vcf": "^7.0.9",
     "@jbrowse/core": "workspace:^",

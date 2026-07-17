@@ -1,24 +1,11 @@
-import { useState } from 'react'
-
 import { ErrorBanner } from '@jbrowse/core/ui'
-import {
-  getContainingView,
-  getSession,
-  isAbortException,
-  statusMessageText,
-} from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { runGenotypeClustering } from '../../runGenotypeClustering.ts'
+import ClusterProgress from './ClusterProgress.tsx'
+import { useClusterRun } from './useClusterRun.ts'
 
 import type { ReducedModel } from './types.ts'
-import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const ClusterDialogAuto = observer(function ClusterDialogAuto({
   model,
@@ -29,11 +16,10 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
   children: React.ReactNode
   handleClose: () => void
 }) {
-  const [progress, setProgress] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<unknown>()
-  const [stopToken, setStopToken] = useState<StopToken>()
-  const { rpcManager } = getSession(model)
+  const { status, loading, error, run, stop } = useClusterRun({
+    model,
+    onSuccess: handleClose,
+  })
   const { sourcesVolatile, renderingMode } = model
   const isHaplotypeClustering = renderingMode === 'phased'
 
@@ -47,19 +33,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
           </div>
         ) : null}
         <div>
-          {loading ? (
-            <div style={{ padding: 50 }}>
-              <span>{progress || 'Loading...'}</span>
-              <Button
-                variant="contained"
-                onClick={() => {
-                  stopStopToken(stopToken)
-                }}
-              >
-                Stop
-              </Button>
-            </div>
-          ) : null}
+          {loading ? <ClusterProgress status={status} onStop={stop} /> : null}
           {error ? <ErrorBanner error={error} /> : null}
         </div>
       </DialogContent>
@@ -67,39 +41,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
         <Button
           variant="contained"
           disabled={loading || !sourcesVolatile}
-          onClick={async () => {
-            try {
-              setError(undefined)
-              setProgress('Initializing')
-              setLoading(true)
-              const view = getContainingView(model) as LinearGenomeViewModel
-              if (!view.initialized) {
-                return
-              }
-              const stopToken = createStopToken()
-              setStopToken(stopToken)
-              await runGenotypeClustering({
-                model,
-                rpcManager,
-                sessionId: getRpcSessionId(model),
-                regions: view.dynamicBlocks.contentBlocks,
-                stopToken,
-                statusCallback: (status: RpcStatus) => {
-                  setProgress(statusMessageText(status) ?? '')
-                },
-              })
-              handleClose()
-            } catch (e) {
-              if (!isAbortException(e) && isAlive(model)) {
-                console.error(e)
-                setError(e)
-              }
-            } finally {
-              setLoading(false)
-              setProgress('')
-              setStopToken(undefined)
-            }
-          }}
+          onClick={run}
         >
           Run clustering
         </Button>
@@ -108,9 +50,7 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
           color="secondary"
           onClick={() => {
             handleClose()
-            if (stopToken) {
-              stopStopToken(stopToken)
-            }
+            stop()
           }}
         >
           Cancel
