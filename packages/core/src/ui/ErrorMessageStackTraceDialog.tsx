@@ -145,6 +145,9 @@ export default function ErrorMessageStackTraceDialog({
   const graphicsInfo = graphicsCapabilities
     ? `Graphics: ${preferredRenderer(graphicsCapabilities)} (${availableRenderers(graphicsCapabilities).join(', ')})`
     : ''
+  const gpuInfo = graphicsCapabilities?.gpuVendor
+    ? `GPU: ${graphicsCapabilities.gpuVendor}${graphicsCapabilities.gpuArchitecture ? ` (${graphicsCapabilities.gpuArchitecture})` : ''}`
+    : ''
   const sabInfo = `Worker abort: ${hasSharedArrayBuffer ? 'SharedArrayBuffer' : 'XHR fallback'}`
 
   const session = (window as unknown as { JBrowseSession?: SessionGlobal })
@@ -165,6 +168,7 @@ export default function ErrorMessageStackTraceDialog({
     '--- environment ---',
     version ? `JBrowse ${version}` : '',
     graphicsInfo,
+    gpuInfo,
     rpcInfo,
     sabInfo,
     `Cross-origin isolated: ${crossOriginIsolated}`,

@@ -1,4 +1,8 @@
 import { readConfObject } from '../configuration/index.ts'
+import {
+  getGraphicsCapabilities,
+  preferredRenderer,
+} from '../ui/getGraphicsCapabilities.ts'
 import { isElectron } from '../util/index.ts'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -39,6 +43,9 @@ export async function writeAWSAnalytics(
       name.includes('localSaved-'),
     ).length
 
+    // which rendering backend the ladder resolves to (WebGPU/WebGL2/Canvas2D)
+    const renderer = preferredRenderer(await getGraphicsCapabilities())
+
     const { jbrowse: config, session, version: ver } = rootModel
     const { tracks, assemblies, plugins } = config
 
@@ -64,8 +71,10 @@ export async function writeAWSAnalytics(
       // window geometry
       'win-h': window.innerHeight,
       'win-w': window.innerWidth,
+      dpr: window.devicePixelRatio,
 
       electron: isElectron,
+      renderer,
       loadTime: (Date.now() - initialTimestamp) / 1000,
       jb2: true,
     }
