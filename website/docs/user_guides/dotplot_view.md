@@ -11,14 +11,17 @@ rearrangements appear as off-diagonal blocks.
 
 ## Opening a dotplot view
 
-Launch a new Dotplot view from the Add menu, select the two assemblies to
-compare, and optionally supply a synteny file. The import form and the supported
-file types (`.paf`, `.out`, `.delta`, `.chain`, `.anchors`/`.anchors.simple`)
-are shared with the linear synteny view. See
+Launch a new Dotplot view from the Add menu. If your config already has a
+synteny track, the form opens in **Quick start**: pick the track and click
+**Launch**, and it takes both axes from that track's `assemblyNames`. Switch to
+**Manual** to select the two assemblies yourself and optionally supply a synteny
+file. The import form and the supported file types (`.paf`, `.out`, `.delta`,
+`.chain`, `.anchors`/`.anchors.simple`) are shared with the linear synteny view.
+See
 [Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
 for the full file-format details.
 
-<Figure caption="Launching a dotplot view from the Add menu (top), then the import form where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
+<Figure caption="Launching a dotplot view from the Add menu (top), then the import form's Manual mode, where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
 
 <Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes. Diagonal streaks are syntenic blocks where the two genomes are collinear. Off-diagonal blocks indicate chromosomal rearrangements; reverse-diagonal segments indicate inversions." src="/img/dotplot.png" />
 

@@ -504,7 +504,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'sv_cgiab/dotplot_import_form',
     url: cgiabUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
-    readyText: 'Select assemblies for dotplot view',
+    // the cgiab config has synteny tracks, so the form opens in Quick start;
+    // this figure is about picking the two assemblies, which is Manual
+    readyText: 'Quick start',
     readyTimeout: 60000,
     settleMs: 3000,
     viewportWidth: 1500,
@@ -512,15 +514,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // selectors and the full wrapped helper text
     viewportHeight: 400,
     actions: [
-      // both selectors show GRCh38_GIABv3; the first match is the x-axis one —
-      // open it and switch to HG008T.hap1. Let the menu's open animation settle
-      // before clicking the item, else the click misses mid-transition.
-      { type: 'click', text: 'GRCh38_GIABv3' },
-      { type: 'waitForText', text: 'HG008T.hap1' },
-      { type: 'delay', ms: 600 },
-      // target the MUI Select option by data-value (reliable vs a text click
-      // that can land on the backdrop during the menu transition)
-      { type: 'click', selector: 'li[data-value="HG008T.hap1"]' },
+      // Manual inherits Quick start's track, so the axes already read
+      // HG008T.hap1 / GRCh38_GIABv3 with the synteny track selected — exactly
+      // the pairing this figure wants. No menu-driving needed to set them.
+      { type: 'click', text: 'Manual' },
+      { type: 'waitForText', text: 'Select assemblies for dotplot view' },
       { type: 'delay', ms: 1000 },
     ],
   },
@@ -586,9 +584,17 @@ export const syntenySpecs: ScreenshotSpec[] = [
     // DotplotView, but this tutorial image is specifically the import form
     name: 'sv_synteny/dotplot_import',
     url: hpyloriUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
-    readyText: 'Select assemblies for dotplot view',
+    // the hpylori config has synteny tracks, so the form opens in Quick start;
+    // this tutorial is specifically about choosing each axis, so switch to
+    // Manual rather than capture a mode the surrounding prose doesn't describe
+    readyText: 'Quick start',
     readyTimeout: 60000,
     settleMs: 3000,
+    actions: [
+      { type: 'click', text: 'Manual' },
+      { type: 'waitForText', text: 'Select assemblies for dotplot view' },
+      { type: 'delay', ms: 1000 },
+    ],
     // No callouts: the import form already labels its two selectors ("x-axis
     // assembly"/"y-axis assembly"), and which assembly goes on which axis is
     // arbitrary here (the old "query"/"target" framing was a track-level
@@ -653,6 +659,10 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Dotplot view' },
+          // volvox has synteny tracks, so the form opens in Quick start; this
+          // figure is about picking assemblies by hand, which is Manual
+          { type: 'waitForText', text: 'Quick start' },
+          { type: 'click', text: 'Manual' },
           { type: 'waitForText', text: 'Select assemblies for dotplot view' },
           { type: 'delay', ms: 1500 },
         ],

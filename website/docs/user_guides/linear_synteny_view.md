@@ -16,11 +16,15 @@ inversion or rearrangement relative to the other genome.
 
 ## Opening a linear synteny view
 
-Launch a new Linear synteny view and select the two assemblies to compare. You
-can optionally add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors, or
-.anchors.simple (MCScan) file.
+Launch a new Linear synteny view. If your config already has a synteny track,
+the form opens in **Quick start**: pick the track and click **Launch**, and it
+fills in a row per assembly the track names. Switch to **Manual** to select the
+two assemblies to compare yourself, where you can optionally add a .paf, .out
+(MashMap), .delta (MUMmer), .chain, .anchors, or .anchors.simple (MCScan) file.
+Manual also lets you stack more than two genomes; see
+[Synteny all-vs-all](/docs/tutorials/allvsall_synteny) for a worked example.
 
-<Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). You can select two different assemblies and an additional file can be supplied." src="/img/dotplot_add.png" />
+<Figure caption="Synteny and dotplot views share an import form, reached from the Add menu (shown here via Dotplot view; Linear synteny view opens the same form). Its Manual mode, shown here, is where you select two different assemblies and can supply an additional file." src="/img/dotplot_add.png" />
 
 <Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
 

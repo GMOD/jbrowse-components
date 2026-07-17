@@ -76,12 +76,17 @@ off-diagonal if there are rearrangements).
 
 ### Launching the dotplot
 
-From the main JBrowse start screen, click **Dotplot view**, select two
-assemblies (one per axis), and pick the synteny track. The query assembly goes
-in the first box and the target in the second, the same query/target order as
-the PAF columns.
+From the main JBrowse start screen, click **Dotplot view**. Since the track you
+added above is already in the config, the form opens in **Quick start**: pick
+that track and click **Launch**, and it reads both axes off the track's own
+`assemblyNames`.
 
-<Figure caption="The dotplot import form. The red callouts point at the two assembly selectors: choose a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
+To choose the axes yourself, switch to **Manual**, which starts from whatever
+Quick start had selected and lets you change either axis or the track. A dotplot
+renders correctly with the two assemblies either way round — swapping them just
+transposes the plot — so pick whichever orientation you want to read.
+
+<Figure caption="The dotplot import form in Manual mode, where you choose each axis: a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 
 <Figure caption="A dotplot of the H. pylori J99 (X-axis) vs 26695 (Y-axis) whole-genome alignment. The long diagonal is the collinear backbone, and the off-diagonal segments are rearrangements between the two strains." src="/img/sv_synteny/dotplot.png" />
 
