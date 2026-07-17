@@ -216,17 +216,25 @@ function getArcColorType(args: {
       ? COLOR_DEFAULT
       : unpairedOrientationColor(arc.p1Strand, arc.p2Strand)
   }
-  // Long-range, large-insert pairs always paint as long-insert.
-  if (longRange && largeInsert) {
-    return COLOR_LONG_INSERT
-  }
   const orient = orientationColor(arc.pairOrientationNum)
-  const insert = insertSizeColor(arc.tlen, stats)
+  // A genomically far-apart pair reads as long-insert even when its TLEN-based
+  // class is normal — discordant pairs often carry an unreliable/0 TLEN, so the
+  // span is the more trustworthy signal. Folded into the insert class (and, in
+  // pure 'orientation' mode, applied only as the LR fallback) rather than as a
+  // blanket pre-switch override, so it can't repaint an abnormal-orientation
+  // pair (RL/RR/LL) whose orientation is the real SV signal — the same
+  // protection the split branch above relies on.
+  const longRangeColor =
+    longRange && largeInsert ? COLOR_LONG_INSERT : COLOR_DEFAULT
+  const insert =
+    longRange && largeInsert
+      ? COLOR_LONG_INSERT
+      : insertSizeColor(arc.tlen, stats)
   switch (colorByType) {
     case 'insertSize':
       return insert
     case 'orientation':
-      return orient ?? COLOR_DEFAULT
+      return orient ?? longRangeColor
     // Short-insert pairs always paint pink, even with abnormal orientation;
     // otherwise orientation wins, falling back to long-/normal-insert.
     case 'insertSizeAndOrientation':

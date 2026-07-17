@@ -576,6 +576,38 @@ describe('computeArcsFromPileupData', () => {
     expect(result.arcs[0]!.colorType).toBe(1)
   })
 
+  test('long-range abnormal-orientation pair keeps its orientation color, not long-insert', () => {
+    // A far-apart RL (everted) pair is a classic large-SV signature: its
+    // orientation is the real signal, so the long-range/large-insert span must
+    // not repaint it long-insert (colorType 1). It keeps RL (6) under both the
+    // orientation and insertSizeAndOrientation modes — matching the read fill.
+    const mkData = () =>
+      makePileupData({
+        regionStart: 0,
+        readPositions: new Uint32Array([0, 100]),
+        readFlags: new Uint16Array([SAM_FLAG_PAIRED]),
+        readStrands: new Int8Array([1]),
+        readInsertSizes: new Float32Array([500000]),
+        readPairOrientations: new Uint8Array([2]),
+        readNames: ['readA'],
+        readNextRefs: ['chr1'],
+        readNextPositions: new Uint32Array([500000]),
+      })
+    const regions = [
+      { refName: 'chr1', start: 0, end: 600000, displayedRegionIndex: 0 },
+    ]
+
+    for (const colorByType of ['orientation', 'insertSizeAndOrientation'] as const) {
+      const result = computeArcsFromPileupData(new Map([[0, mkData()]]), regions, {
+        colorByType,
+        drawInter: false,
+        drawLongRange: true,
+      })
+      expect(result.arcs.length).toBe(1)
+      expect(result.arcs[0]!.colorType).toBe(6)
+    }
+  })
+
   test('read cloud colors by orientation like arcs (insertSizeAndOrientation)', () => {
     const mkData = (orient: number) =>
       makePileupData({
