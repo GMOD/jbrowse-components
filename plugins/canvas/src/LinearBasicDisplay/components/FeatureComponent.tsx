@@ -525,6 +525,9 @@ const FeatureBody = observer(function FeatureBody({
     }
   }, [model])
 
+  // setHover itself is inert while a context menu is open (it pins the hover to
+  // the menu's target), so this needs no guard of its own — unlike
+  // handleMouseMove, whose early return also skips the hit test.
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem, displayedRegionIndex: number, e: React.MouseEvent) => {
       setClientXY([e.clientX, e.clientY])

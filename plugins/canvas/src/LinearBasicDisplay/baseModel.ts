@@ -1590,18 +1590,25 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Flatbush spatial indexes per region for hit testing. Recomputes when
-        // any input observable moves (laid-out data, label visibility, zoom,
-        // reversed flag); MobX caches the value so repeated hover events read
-        // the same indexes for free.
+        // Flatbush spatial indexes per region for hit testing. MobX caches this,
+        // but ONLY because afterAttach keeps an autorun subscribed to it: its one
+        // consumer is hit-testing inside DOM event handlers, and an unobserved
+        // computed is suspended by MobX (it drops its dependency subscriptions, so
+        // it can't know when a cached value went stale, and re-evaluates on every
+        // read) — which made every mousemove rebuild a Hilbert-sorted index per
+        // region. See the CanvasHitIndexes autorun.
+        //
+        // coarseBpPerPx (debounced), NOT live bpPerPx: the only bpPerPx-dependent
+        // parts are the px->bp conversions for the hit padding and the label
+        // overhang, and the layout already reserved that overhang at coarseBpPerPx
+        // — so this both matches the geometry the rows were packed at and keeps a
+        // smooth zoom from rebuilding every index each frame.
         get flatbushIndexes() {
-          const view = getView(self)
+          const bpPerPx = getView(self).coarseBpPerPx
           const labels = {
             showLabels: self.renderedShowLabels,
             showDescriptions: self.renderedShowDescriptions,
           }
-          const reversedRegions = self.reversedRegions
-          const bpPerPx = view.bpPerPx
           const result = new Map<number, FlatbushRegionIndexes>()
           for (const [idx, data] of self.laidOutDataMap) {
             result.set(idx, {
@@ -1609,7 +1616,7 @@ export default function baseStateModelFactory(
                 data.flatbushItems,
                 data.floatingLabelsData,
                 bpPerPx,
-                reversedRegions.has(idx),
+                self.reversedRegions.has(idx),
                 labels,
               ),
               subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
@@ -1776,14 +1783,23 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        // Inert while a context menu is open: openContextMenu pins the hover to
+        // the menu's target so the highlight box always frames what the menu acts
+        // on, and that pin has to survive the cursor drifting onto a neighbouring
+        // feature's label (the label layer keeps emitting mousemove over its own
+        // divs). Enforced here rather than at each call site because this model
+        // owns both halves of the invariant — contextMenuInfo and the hover — so a
+        // new hover source can't reintroduce the bug. closeContextMenu releases it.
         setHover(
           featureId: string | null,
           subfeatureId: string | null,
           tooltip: string | undefined,
         ) {
-          self.featureIdUnderMouse = featureId
-          self.subfeatureIdUnderMouse = subfeatureId
-          self.mouseoverExtraInformation = tooltip
+          if (!self.contextMenuInfo) {
+            self.featureIdUnderMouse = featureId
+            self.subfeatureIdUnderMouse = subfeatureId
+            self.mouseoverExtraInformation = tooltip
+          }
         },
 
         /**
@@ -2228,8 +2244,7 @@ export default function baseStateModelFactory(
           const view = getView(self)
           return view.visibleBp < AUTO_FORCE_LOAD_BP
             ? undefined
-            : (self.userByteSizeLimit ??
-                readConfObject(self.conf, 'fetchSizeLimit'))
+            : (self.userByteSizeLimit ?? self.configuredFetchSizeLimit)
         },
       }))
       .actions(self => ({
@@ -2346,7 +2361,7 @@ export default function baseStateModelFactory(
            * #action
            */
           async reload() {
-            const view = getContainingView(self) as LinearGenomeViewModel
+            const view = getView(self)
             if (!view.initialized) {
               return
             }
@@ -2449,7 +2464,7 @@ export default function baseStateModelFactory(
               self,
               autorun(
                 () => {
-                  const view = getContainingView(self) as LinearGenomeViewModel
+                  const view = getView(self)
                   if (!view.initialized) {
                     return
                   }
@@ -2481,6 +2496,25 @@ export default function baseStateModelFactory(
                 self.setScrollTop(0)
               },
               'CanvasClearDensityOnDisplayedRegions',
+            )
+
+            // Keep the hit-test indexes observed, which is the only reason MobX
+            // caches them. Their sole consumer is hit-testing inside DOM event
+            // handlers, and MobX suspends a computed with no observers — so
+            // without this subscription every mousemove rebuilt a Hilbert-sorted
+            // Flatbush per visible region. Subscribing moves that rebuild onto the
+            // layout's own cadence (it recomputes only when laidOutDataMap /
+            // coarseBpPerPx / label visibility actually change), which is a small
+            // marginal cost on top of the strictly more expensive layout pass that
+            // already runs eagerly for every track on those same inputs.
+            // autorunOnReadyView because flatbushIndexes transitively reads view
+            // geometry that throws before the view is measured.
+            autorunOnReadyView(
+              self,
+              () => {
+                void self.flatbushIndexes
+              },
+              { name: 'CanvasHitIndexes' },
             )
 
             // Clear hover when the viewport moves under a stationary cursor
