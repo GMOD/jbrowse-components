@@ -30,6 +30,15 @@ import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { Feature, ProgressReporter, Region } from '@jbrowse/core/util'
 import type { ModificationType } from '@jbrowse/modifications-utils'
 
+// The name of whatever this feature aligns *to*. A synteny/PAF block carries a
+// `mate` describing its position in the other assembly; a BAM read names its
+// mate's reference in next_ref. Returns undefined when the feature has neither,
+// so the caller can leave it uncolored rather than paint a hash of ''.
+function getMateRefName(feature: Feature) {
+  const mate = feature.get('mate') as { refName?: string } | undefined
+  return mate?.refName ?? (feature.get('next_ref') as string | undefined)
+}
+
 interface ExtractOpts {
   colorBy: ColorBy | undefined
   showSoftClipping: boolean
@@ -75,6 +84,11 @@ export function extractFeatureArrays<T extends FeatureData>(
   // genomic order. Synteny features have no CIGAR and contribute 0.
   const clipAtStart: number[] = []
   const isTagColorMode = colorBy?.type === 'tag' && !!colorBy.tag
+  // Chromosome painting reuses the tag channel: both resolve one string per
+  // read that the main thread bakes into a color (see buildReadTagColors), so
+  // the mate refName travels as a `tagColorValues` entry rather than earning a
+  // parallel array. Only synteny features carry a mate, hence the ?? ''.
+  const isMateRefNameMode = colorBy?.type === 'mateRefName'
   const sortTagValues: string[] | undefined = sortTag ? [] : undefined
 
   // readIndex is the feature's position here; it equals its index in the
@@ -104,6 +118,8 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     if (isTagColorMode) {
       tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
+    } else if (isMateRefNameMode) {
+      tagColorValues.push(getMateRefName(feature) ?? '')
     }
 
     if (sortTagValues && sortTag) {

@@ -38,13 +38,16 @@ export interface ModificationsModel extends ColorByModel {
   modificationThreshold: number
 }
 
-// A model that may or may not carry the modification fields — the alignments
-// display has all of them, a synteny display has none.
+// A model that may or may not carry the modification fields.
 type AnyColorByModel = ColorByModel & Partial<ModificationsModel>
 
 // The modification fields always travel together, so one probe narrows the whole
-// group. `modModel(model)` returns the narrowed model or undefined, letting the
-// menu sniff the display kind exactly once instead of re-testing per section.
+// group. Only a type guard for callers whose model genuinely lacks them —
+// whether a section is *offered* is the caller's explicit opt-in below, never
+// inferred from the model's shape. LGVSyntenyDisplay composes the alignments
+// state model, so it carries every field a probe could test; sniffing gave it
+// the paired-end and bisulfite sections even though a PAF block has no pairs and
+// no reads to bisulfite-convert.
 function modModel(model: AnyColorByModel): ModificationsModel | undefined {
   return model.modificationsReady === undefined
     ? undefined
@@ -53,6 +56,11 @@ function modModel(model: AnyColorByModel): ModificationsModel | undefined {
 
 interface ColorByMenuOptions {
   includeTagOption?: boolean
+  // Insert size / pair orientation / first-of-pair — meaningful only where reads
+  // come in pairs.
+  includePairedEnd?: boolean
+  // The MM/ML modification submenu plus reference-based bisulfite.
+  includeModifications?: boolean
   colorOptions?: ColorOption[]
   // Read-connection arc coloring lives here rather than in the Read connections
   // menu — it's a rare setting and colors belong together. Omitted (like every
@@ -490,8 +498,14 @@ export function getColorByMenuItem(
     subMenu: [
       schemeRadios(model, options.colorOptions, options.displayTypeDefault),
       tagSection(model, options.includeTagOption ?? false),
-      pairedEndSection(mods, options.displayTypeDefault),
-      modificationsSection(mods, options.displayTypeDefault),
+      pairedEndSection(
+        options.includePairedEnd ? mods : undefined,
+        options.displayTypeDefault,
+      ),
+      modificationsSection(
+        options.includeModifications ? mods : undefined,
+        options.displayTypeDefault,
+      ),
       arcColorSection(options.arcColor),
       supplementarySection(options.supplementaryColoring),
     ].flat(),

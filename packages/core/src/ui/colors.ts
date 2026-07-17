@@ -81,4 +81,27 @@ export const paletteColors = {
 
 // only category10 and set1 are imported by name; the rest are reached through
 // paletteColors above
+/**
+ * Deterministic non-negative 32-bit hash of a string.
+ */
+export function hashString(str: string) {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash |= 0
+  }
+  return Math.abs(hash)
+}
+
+/**
+ * Stable category10 color for a sequence name, via `hashString`. Lives here
+ * rather than in a view-specific package because several unrelated displays
+ * paint by refName — the synteny/dotplot views and the alignments display's
+ * mateRefName scheme — and a contig must get the same color in all of them.
+ */
+export function getQueryColor(queryName: string) {
+  return category10[hashString(queryName) % category10.length]!
+}
+
 export { category10, set1 }

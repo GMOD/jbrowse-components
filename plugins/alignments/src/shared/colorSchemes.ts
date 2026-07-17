@@ -5,7 +5,10 @@ import type {
   ShaderScheme,
 } from './types.ts'
 
-export type ColorGroup = 'basic' | 'pairedEnd'
+// 'synteny' schemes are radios like any other, but they answer questions only a
+// synteny/PAF block poses (what does this block align to?), so no menu renders
+// that group wholesale — LGVSyntenyDisplay names them via pickColorOptions.
+export type ColorGroup = 'basic' | 'pairedEnd' | 'synteny'
 
 // Menu placement for a color scheme. Discriminated so a scheme is either a plain
 // radio (shown in the 'basic' top-level list or the 'pairedEnd' submenu) or
@@ -102,6 +105,15 @@ export const COLOR_SCHEMES: Record<ColorSchemeType, ColorSchemeDef> = {
     type: 'tag',
     shaderScheme: 'tag',
     menu: { kind: 'special', label: 'Tag' },
+  },
+  // Chromosome painting: hash the mate's refName to a stable color, matching
+  // the synteny view's 'query' mode (both go through core's getQueryColor, so
+  // one contig paints the same color in both views). Rides the 'tag' shader
+  // path — the color is baked per-read on the CPU either way.
+  mateRefName: {
+    type: 'mateRefName',
+    shaderScheme: 'tag',
+    menu: { kind: 'radio', label: 'Query name', group: 'synteny' },
   },
   // methylation/bisulfite reuse the modifications shader path with different
   // config (see model getMethBins / bisulfite is reference-based)

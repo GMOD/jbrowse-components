@@ -175,11 +175,16 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
         // layers) is what makes this synteny's menu rather than a copy.
         trackMenuItems() {
           return [
+            // Paired-end and modification/bisulfite coloring are deliberately
+            // not opted into: a PAF block has no mate pair and no basecaller
+            // tags. 'mateRefName' ("Query name") is the synteny-only scheme —
+            // chromosome painting, matching the synteny view's Query mode.
             getColorByMenuItem(self, {
               colorOptions: pickColorOptions(
                 'normal',
                 'strand',
                 'mappingQuality',
+                'mateRefName',
               ),
             }),
             // No base pair / tag: a PAF block has no per-base sequence to sort a

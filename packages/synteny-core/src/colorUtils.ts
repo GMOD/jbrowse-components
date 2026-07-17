@@ -1,4 +1,3 @@
-import { category10 } from '@jbrowse/core/ui/colors'
 import {
   alpha as setAlpha,
   cssColorToRgb,
@@ -8,26 +7,13 @@ import {
 
 /**
  * #api
- * Deterministic non-negative 32-bit hash of a string.
+ * `hashString` is a deterministic non-negative 32-bit hash of a string;
+ * `getQueryColor` is the stable category10 color it maps a query name to. Both
+ * now live in core, which owns them so that every by-refName coloring — this
+ * package's views and the alignments display's mateRefName scheme — hashes a
+ * contig to the same color. Re-exported here to keep the published API stable.
  */
-export function hashString(str: string) {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = (hash << 5) - hash + char
-    hash |= 0
-  }
-  return Math.abs(hash)
-}
-
-/**
- * #api
- * Stable category10 color for a query name, via `hashString`.
- */
-export function getQueryColor(queryName: string) {
-  const hash = hashString(queryName)
-  return category10[hash % category10.length]!
-}
+export { getQueryColor, hashString } from '@jbrowse/core/ui/colors'
 
 // CIGAR operation colors. Kept opaque — every consumer either runs them
 // through applyAlpha() or packs them via cssColorToABGR() and applies an

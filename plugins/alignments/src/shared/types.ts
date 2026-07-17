@@ -71,6 +71,9 @@ export function isModificationTypeVisible(
 // actually implements. Several ColorSchemeTypes share one path: perBaseQuality/
 // perBaseLetter paint over the 'normal' body, methylation/bisulfite reuse
 // 'modifications' with different config, 'stranded' aliases 'firstOfPairStrand'.
+// 'tag' is the generic per-read explicit-color path — the shader just unpacks a
+// baked ABGR u32, so any scheme that resolves to one color per read on the CPU
+// (tag values, mateRefName) rides it without a new shader branch.
 // `COLOR_SCHEMES` (shared/colorSchemes.ts) maps each ColorSchemeType to one of
 // these names; `ColorScheme` (display constants) is typed
 // `Record<ShaderScheme, number>`, so the name list and the shader index map
@@ -105,6 +108,7 @@ export type ColorSchemeType =
   | 'perBaseQuality'
   | 'perBaseLetter'
   | 'tag'
+  | 'mateRefName'
   | 'modifications'
   | 'bisulfite'
 

@@ -3047,6 +3047,8 @@ export default function stateModelFactory(
           return [
             getColorByMenuItem(self, {
               includeTagOption: true,
+              includePairedEnd: true,
+              includeModifications: true,
               arcColor:
                 self.readConnections === 'off'
                   ? undefined

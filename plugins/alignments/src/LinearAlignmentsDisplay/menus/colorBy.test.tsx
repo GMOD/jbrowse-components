@@ -1,6 +1,7 @@
 import { isValidElement } from 'react'
 
 import { getColorByMenuItem } from './colorBy.tsx'
+import { pickColorOptions } from '../../shared/colorSchemes.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'
@@ -49,12 +50,20 @@ function subMenuOf(item: MenuItem | undefined) {
 }
 
 // Flatten the Color by... menu one level so both top-level scheme radios and the
-// nested "Paired end" radios are reachable by label.
+// nested "Paired end" radios are reachable by label. These specs describe the
+// alignments display's menu, which opts into every section — a caller that opts
+// out is covered by the curation tests below.
 function allItems(
   model: Model,
   opts?: Parameters<typeof getColorByMenuItem>[1],
 ) {
-  const top = subMenuOf(getColorByMenuItem(model, opts))
+  const top = subMenuOf(
+    getColorByMenuItem(model, {
+      includePairedEnd: true,
+      includeModifications: true,
+      ...opts,
+    }),
+  )
   return top.flatMap(i => ('subMenu' in i ? [i, ...i.subMenu] : [i]))
 }
 
@@ -269,5 +278,41 @@ describe('color by modifications menu', () => {
   test('cytosine context is shown only for cytosine methylation data', () => {
     expect(byLabel(makeModModel(['m', 'h']), 'Cytosine context')).toBeTruthy()
     expect(byLabel(makeModModel(['a']), 'Cytosine context')).toBeFalsy()
+  })
+})
+
+// A display that composes the alignments state model (LGVSyntenyDisplay does)
+// carries every modification field, so the menu cannot infer from the model's
+// shape that pairs/modifications are meaningless for it — the caller says so.
+describe('color by menu curation', () => {
+  const labelsFor = (opts: Parameters<typeof getColorByMenuItem>[1]) =>
+    subMenuOf(getColorByMenuItem(makeModel(), opts)).map(i =>
+      'label' in i ? i.label : '',
+    )
+
+  test('paired-end and modification sections are absent unless opted into', () => {
+    const labels = labelsFor({})
+    expect(labels).not.toContain('Paired end')
+    expect(labels).not.toContain('Bisulfite / EM-seq')
+    expect(labels).not.toContain('Tag...')
+  })
+
+  test('each section is opted into independently', () => {
+    expect(labelsFor({ includePairedEnd: true })).toContain('Paired end')
+    expect(labelsFor({ includePairedEnd: true })).not.toContain(
+      'Bisulfite / EM-seq',
+    )
+    expect(labelsFor({ includeModifications: true })).toContain(
+      'Bisulfite / EM-seq',
+    )
+    expect(labelsFor({ includeModifications: true })).not.toContain(
+      'Paired end',
+    )
+  })
+
+  test('curated colorOptions replace the basic radios', () => {
+    expect(
+      labelsFor({ colorOptions: pickColorOptions('normal', 'mateRefName') }),
+    ).toEqual(['Normal', 'Query name'])
   })
 })
