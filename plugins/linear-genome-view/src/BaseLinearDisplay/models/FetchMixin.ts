@@ -228,6 +228,18 @@ export default function FetchMixin() {
       },
       /**
        * #action
+       * Release an in-flight fetch's stop token on teardown. Without this, a
+       * display destroyed mid-fetch (track/view closed while loading) never
+       * revokes its token — a blob-URL leak on the non-SAB fallback path — and
+       * never signals the worker to abort the now-useless work. MST auto-chains
+       * lifecycle hooks, so a composing display can still define its own
+       * beforeDestroy.
+       */
+      beforeDestroy() {
+        self.stopActiveFetch()
+      },
+      /**
+       * #action
        * Run a cancel-safe fetch (cancels any prior). The work callback gets a
        * FetchContext with a stopToken to forward to the RPC and an isStale()
        * check to short-circuit commits once the user has moved on. Abort
@@ -262,6 +274,13 @@ export default function FetchMixin() {
           }
         } finally {
           if (!isStale()) {
+            // Release this fetch's stop token now that it has ended. On the
+            // blob-URL fallback path (no SharedArrayBuffer) this revokes the
+            // URL — resetStatus only drops the reference, so without this every
+            // completed fetch would leak one blob URL. The stale branch is a
+            // superseded fetch: whoever superseded it (runFetch start or
+            // stopActiveFetch) already released this token, so skip it.
+            stopStopToken(stopToken)
             self.resetStatus()
             self.fetchGeneration++
           }
