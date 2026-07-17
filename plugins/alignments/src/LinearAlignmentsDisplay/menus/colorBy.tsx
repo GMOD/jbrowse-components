@@ -10,7 +10,7 @@ import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import {
   cytosineContextOptions,
-  modificationData,
+  getModificationName,
 } from '../../shared/modificationData.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
 
@@ -34,7 +34,7 @@ interface ColorByModel {
 export interface ModificationsModel extends ColorByModel {
   modificationsReady: boolean
   regionTooLarge: boolean
-  visibleModificationTypes: string[]
+  detectedModificationTypes: string[]
   modificationThreshold: number
 }
 
@@ -153,7 +153,7 @@ function currentMods(model: ModificationsModel) {
 // the data). getMethBins is cytosine-only, so other modifications (6mA…) fall
 // back to plain two-color.
 function hasCytosineMeth(model: ModificationsModel) {
-  return model.visibleModificationTypes.some(k => k === 'm' || k === 'h')
+  return model.detectedModificationTypes.some(k => k === 'm' || k === 'h')
 }
 
 function patchMods(
@@ -199,7 +199,7 @@ function modificationsMenu(
   const twoColorView: ModificationColorBy = hasCytosineMeth(model)
     ? { fillUnmarked: true }
     : { twoColor: true }
-  const types = model.visibleModificationTypes
+  const types = model.detectedModificationTypes
   const shownType =
     mods.shownModifications?.length === 1 ? mods.shownModifications[0] : 'all'
   const clearView = { twoColor: undefined, fillUnmarked: undefined }
@@ -243,7 +243,7 @@ function modificationsMenu(
                   { value: 'all', label: 'All detected types' },
                   ...types.map(t => ({
                     value: t,
-                    label: modificationData[t]?.name ?? t,
+                    label: getModificationName(t),
                   })),
                 ],
                 shownType,
@@ -298,13 +298,13 @@ function modificationsMenu(
 // Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
 // MM/ML tags and applies to any alignments display — it sits beside
 // "Modifications" rather than inside it. Picking a cytosine context activates
-// it; the CpG (context) and two-color (both defaults) are omitted from the
-// scheme so a default session carries no redundant fields.
+// it; CpG (context) and two-color (both defaults) are omitted from the scheme so
+// a default session carries no redundant fields.
 function bisulfiteItem(model: ModificationsModel): MenuItem {
   const isBis = model.colorBy.type === 'bisulfite'
   const mods = isBis ? (model.colorBy.modifications ?? {}) : {}
   const context = mods.cytosineContext ?? 'CG'
-  const twoColor = mods.twoColor !== false
+  const twoColor = !!mods.twoColor
 
   const setBisulfite = (
     nextContext: CytosineContext,
@@ -314,7 +314,7 @@ function bisulfiteItem(model: ModificationsModel): MenuItem {
       type: 'bisulfite',
       modifications: {
         ...(nextContext === 'CG' ? {} : { cytosineContext: nextContext }),
-        ...(nextTwoColor ? {} : { twoColor: false }),
+        ...(nextTwoColor ? { twoColor: true } : {}),
       },
     })
   }
@@ -322,7 +322,7 @@ function bisulfiteItem(model: ModificationsModel): MenuItem {
   return {
     label: 'Bisulfite / EM-seq',
     helpText:
-      'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated red, unmethylated blue, by cytosine context — turn off "Show unmethylated" to draw the methylated sites only.',
+      'Reference-based methylation read from C→T conversion; needs no MM/ML tags. Methylated cytosines paint red, by cytosine context — turn on "Show unmethylated" to paint the converted sites blue as well.',
     subMenu: [
       ...radioItems<CytosineContext>(
         cytosineContextOptions,
@@ -342,7 +342,7 @@ function bisulfiteItem(model: ModificationsModel): MenuItem {
               },
               {
                 helpText:
-                  'When off, only methylated sites (red) are drawn; the unmethylated (converted) sites are left blank.',
+                  'When on, the unmethylated (converted) sites paint blue as well as the methylated ones painting red. Off by default, so a track reads as presence/absence of methylation rather than a red/blue mix on every read.',
               },
             ),
           ]
@@ -425,7 +425,7 @@ function modificationsSection(
   displayTypeDefault: ColorByMenuOptions['displayTypeDefault'],
 ): MenuItem[] {
   const loading = model && !model.modificationsReady && !model.regionTooLarge
-  const hasTypes = !!model?.visibleModificationTypes.length
+  const hasTypes = !!model?.detectedModificationTypes.length
   return model
     ? [
         ...(model.modificationsReady && hasTypes

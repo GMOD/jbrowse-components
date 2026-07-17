@@ -8,7 +8,7 @@ import { isModificationScheme } from './colorSchemes.ts'
 import { getModificationName } from './modificationData.ts'
 import {
   isModificationTypeVisible,
-  paintsUnmethylatedState,
+  paintsUnmodifiedState,
   usesMethylationLegend,
 } from './types.ts'
 import {
@@ -16,12 +16,7 @@ import {
   rgb255,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 
-import type {
-  ColorBy,
-  ColorSchemeType,
-  ModificationColorBy,
-  ModificationTypeWithColor,
-} from './types.ts'
+import type { ColorBy, ColorSchemeType } from './types.ts'
 import type {
   ReadColorCategory,
   SwatchCategory,
@@ -114,32 +109,36 @@ const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
 // is the strand key, not a per-value list.
 const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
 
-// The methylation (fill-unmarked) view keys exactly what extractMethylation
-// paints: 5mC red, 5hmC pink, and every implicitly-unmodified cytosine — the
-// color that floods a hypomethylated region — blue. The by-type MM palette (a
-// magenta 5hmC, no "unmethylated" swatch at all) would mismatch the reads.
-function fillUnmarkedLegend(
-  modifications: ModificationColorBy | undefined,
-  visibleModifications: ReadonlyMap<string, ModificationTypeWithColor>,
-  showUnmethylated: boolean,
+// The methylation views key exactly what extractMethylation/extractBisulfite
+// paint: 5mC red and 5hmC pink (the blue unmodified swatch is appended by the
+// shared path below). The by-type MM palette — a magenta 5hmC — would mismatch
+// the reads.
+//
+// `detectedModifications` is populated only from parsed MM/ML tags, so it is
+// ALWAYS empty for bisulfite, which is reference-based (read C->T vs. the
+// reference) and reads no tags at all. Gating bisulfite on it therefore dropped
+// the red 5mC swatch on every bisulfite track. Bisulfite paints exactly one
+// modified state, so key it unconditionally instead.
+function methylationLegend(
+  colorBy: ColorBy | undefined,
+  detectedModifications: ReadonlyMap<string, string>,
 ): LegendItem[] {
+  if (colorBy?.type === 'bisulfite') {
+    return [{ color: methylated5mC, label: '5mC methylated' }]
+  }
+  const modifications = colorBy?.modifications
   const items: LegendItem[] = []
   if (
-    visibleModifications.has('m') &&
+    detectedModifications.has('m') &&
     isModificationTypeVisible(modifications, 'm')
   ) {
     items.push({ color: methylated5mC, label: '5mC methylated' })
   }
   if (
-    visibleModifications.has('h') &&
+    detectedModifications.has('h') &&
     isModificationTypeVisible(modifications, 'h')
   ) {
     items.push({ color: methylated5hmC, label: '5hmC methylated' })
-  }
-  // Bisulfite's methylated-only view paints no unmethylated marks, so it omits
-  // the swatch; every other methylation legend keys it.
-  if (showUnmethylated) {
-    items.push({ color: unmethylated5mC, label: 'Unmethylated' })
   }
   return items
 }
@@ -170,13 +169,14 @@ function crossCuttingBuckets(
  * read buckets actually seen in the rendered reads (from readColorCategory), so
  * only relevant swatches are listed, and `palette` is the live render palette so
  * swatch colors match the painted reads exactly. Modification swatches come from
- * `visibleModifications`; mapping/per-base quality are fixed hue ramps.
+ * `detectedModifications` (type code -> painted color); mapping/per-base quality
+ * are fixed hue ramps.
  */
 export function getReadDisplayLegendItems(
   colorBy: ColorBy | undefined,
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
-  visibleModifications?: ReadonlyMap<string, ModificationTypeWithColor>,
+  detectedModifications?: ReadonlyMap<string, string>,
   colorTagMap?: Record<string, string>,
 ): LegendItem[] {
   const colorType = colorBy?.type
@@ -234,28 +234,35 @@ export function getReadDisplayLegendItems(
       ...buckets,
     ]
   }
-  if (colorType && isModificationScheme(colorType) && visibleModifications) {
+  if (colorType && isModificationScheme(colorType) && detectedModifications) {
     // The methylation views (fill-unmarked and bisulfite) key the 5mC/5hmC
-    // states — plus the "Unmethylated" swatch when they paint it — not the
-    // per-type MM palette; every other modification view keys each detected type
-    // in the color the reads use.
-    const items = usesMethylationLegend(colorBy)
-      ? fillUnmarkedLegend(
-          colorBy.modifications,
-          visibleModifications,
-          paintsUnmethylatedState(colorBy),
-        )
-      : [...visibleModifications]
+    // states, not the per-type MM palette; every other modification view keys
+    // each detected type in the color the reads use.
+    const isMethylation = usesMethylationLegend(colorBy)
+    const items = isMethylation
+      ? methylationLegend(colorBy, detectedModifications)
+      : [...detectedModifications]
           .filter(([type]) =>
             isModificationTypeVisible(colorBy.modifications, type),
           )
-          .map(([type, mod]) => ({
-            color: mod.color,
-            label: getModificationName(type),
-          }))
-    // Split reads (chain mode) and supplementary/unmapped-mate exceptions carry
-    // their own fixed swatches, appended after the modification-type key.
-    return [...items, ...buckets]
+          .map(([type, color]) => ({ color, label: getModificationName(type) }))
+    // Both keys append the blue "not modified" swatch whenever the mode paints
+    // that state, so two-color over a non-cytosine mod (blue low-probability 6mA
+    // calls) is keyed too — it previously showed only the 6mA swatch, leaving
+    // its blue marks unexplained. Split reads (chain mode) and supplementary /
+    // unmapped-mate exceptions carry their own fixed swatches, last.
+    return [
+      ...items,
+      ...(paintsUnmodifiedState(colorBy)
+        ? [
+            {
+              color: unmethylated5mC,
+              label: isMethylation ? 'Unmethylated' : 'Unmodified',
+            },
+          ]
+        : []),
+      ...buckets,
+    ]
   }
 
   // The normal scheme paints every read one flat color ('plain' → colorPairLR),

@@ -277,10 +277,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
           overCigarItem: true,
           featureIdUnderMouse: result.featureHit?.id,
           mouseoverExtraInformation: formatModificationTooltip(
-            result.hit.position,
-            result.hit.modType,
-            result.hit.probability,
-            result.hit.color,
+            result.hit,
             result.resolved.refName,
             snpBase,
           ),

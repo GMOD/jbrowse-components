@@ -154,6 +154,7 @@ test('a modification hit offers "Open modification details"', () => {
     contextMenuModHit: {
       position: 100,
       modType: 'm',
+      noMod: false,
       probability: 0.9,
       color: 'rgb(255,0,0)',
     },

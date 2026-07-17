@@ -208,6 +208,10 @@ export interface PileupDataResult {
   modificationProbabilities?: Uint8Array
   modificationReadIndices: Uint32Array // maps each modification to its parent read index
   modificationTypeIndices?: Uint8Array // maps each modification to index in detectedModifications
+  // 1 = the no-mod bucket (this call says the base is UNmodified, and its
+  // probability is the confidence of that). modType stays the canonical mod code
+  // in both buckets, so this is the only thing that tells them apart.
+  modificationNoMod?: Uint8Array
 
   // Per-base quality overlay data — only populated when colorBy.type === 'perBaseQuality'.
   // One entry per ref-aligned base inside the region; main thread paints

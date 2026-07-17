@@ -1,19 +1,19 @@
 import { getReadDisplayLegendItems } from './legendUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 
-import type { ColorSchemeType, ModificationTypeWithColor } from './types.ts'
+import type { ColorSchemeType } from './types.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 
 function labels(
   type: ColorSchemeType,
   categories: ReadColorCategory[],
-  visibleModifications?: Map<string, ModificationTypeWithColor>,
+  detectedModifications?: Map<string, string>,
 ) {
   return getReadDisplayLegendItems(
     { type },
     new Set(categories),
     makeTestPalette(),
-    visibleModifications,
+    detectedModifications,
   ).map(i => i.label)
 }
 
@@ -142,7 +142,7 @@ describe('getReadDisplayLegendItems', () => {
 
   test('modifications view surfaces chain-mode split reads after the mod-type key', () => {
     const mods = new Map([
-      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
+      ['m', 'red'],
     ])
     expect(labels('modifications', ['fwdStrand', 'revStrand'], mods)).toEqual([
       '5mC',
@@ -197,8 +197,8 @@ describe('getReadDisplayLegendItems', () => {
 
   test('modifications list visible mod types by friendly name, gating supplementary on presence', () => {
     const mods = new Map([
-      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
-      ['h', { color: 'blue', type: 'h', base: 'C', strand: '+' }],
+      ['m', 'red'],
+      ['h', 'blue'],
     ])
     expect(labels('modifications', [], mods)).toEqual(['5mC', '5hmC'])
     expect(labels('modifications', ['supplementary'], mods)).toEqual([
@@ -210,9 +210,9 @@ describe('getReadDisplayLegendItems', () => {
 
   test('hiddenModifications drops the swatch even though the type was detected', () => {
     const mods = new Map([
-      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
-      ['h', { color: 'blue', type: 'h', base: 'C', strand: '+' }],
-      ['a', { color: 'purple', type: 'a', base: 'A', strand: '+' }],
+      ['m', 'red'],
+      ['h', 'blue'],
+      ['a', 'purple'],
     ])
     expect(
       getReadDisplayLegendItems(
@@ -229,9 +229,9 @@ describe('getReadDisplayLegendItems', () => {
 
   test('shownModifications allow-list keeps only the listed swatch', () => {
     const mods = new Map([
-      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
-      ['h', { color: 'blue', type: 'h', base: 'C', strand: '+' }],
-      ['a', { color: 'purple', type: 'a', base: 'A', strand: '+' }],
+      ['m', 'red'],
+      ['h', 'blue'],
+      ['a', 'purple'],
     ])
     expect(
       getReadDisplayLegendItems(
@@ -248,8 +248,8 @@ describe('getReadDisplayLegendItems', () => {
 
   test('fill-unmarked (methylation) view keys the states it paints, incl. the blue unmethylated swatch', () => {
     const mods = new Map([
-      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
-      ['h', { color: 'magenta', type: 'h', base: 'C', strand: '+' }],
+      ['m', 'red'],
+      ['h', 'magenta'],
     ])
     const items = getReadDisplayLegendItems(
       { type: 'modifications', modifications: { fillUnmarked: true } },
@@ -264,21 +264,45 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('bisulfite view keys the unmethylated state it paints, like fill-unmarked', () => {
-    // bisulfite paints methylated (5mC red) + unmethylated (blue) cytosines, so
-    // its legend must surface the "Unmethylated" swatch rather than only "5mC".
-    const mods = new Map([
-      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
-    ])
-    expect(labels('bisulfite', [], mods)).toEqual([
-      '5mC methylated',
-      'Unmethylated',
-    ])
+  // Bisulfite is reference-based and parses no MM/ML tags, so the detected-types
+  // map is ALWAYS empty for it — the real shape of a bisulfite track. Gating its
+  // swatches on that map dropped the red 5mC key entirely.
+  test('bisulfite keys the methylated state it paints, with no MM types detected', () => {
+    // twoColor is off by default in every mode, so a default bisulfite track
+    // paints methylated (red) only, and must not key a blue swatch it never
+    // draws.
+    expect(labels('bisulfite', [], new Map())).toEqual(['5mC methylated'])
+  })
+
+  test('bisulfite keys the unmethylated swatch once twoColor paints it', () => {
+    expect(
+      getReadDisplayLegendItems(
+        { type: 'bisulfite', modifications: { twoColor: true } },
+        new Set(),
+        makeTestPalette(),
+        new Map(),
+      ).map(i => i.label),
+    ).toEqual(['5mC methylated', 'Unmethylated'])
+  })
+
+  // Regression: two-color over a non-cytosine mod paints blue low-probability
+  // calls (extract.ts), but usesMethylationLegend is false for it, so the
+  // by-type branch keyed only '6mA' and left the blue marks unexplained.
+  test('two-color over a non-cytosine mod keys its blue unmodified swatch', () => {
+    const mods = new Map([['a', 'purple']])
+    expect(
+      getReadDisplayLegendItems(
+        { type: 'modifications', modifications: { twoColor: true } },
+        new Set(),
+        makeTestPalette(),
+        mods,
+      ).map(i => i.label),
+    ).toEqual(['6mA', 'Unmodified'])
   })
 
   test('fill-unmarked view omits the 5hmC swatch when only 5mC was detected', () => {
     const mods = new Map([
-      ['m', { color: 'red', type: 'm', base: 'C', strand: '+' }],
+      ['m', 'red'],
     ])
     expect(
       getReadDisplayLegendItems(

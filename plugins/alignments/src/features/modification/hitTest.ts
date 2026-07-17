@@ -5,6 +5,10 @@ import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 export interface ModificationHitResult {
   position: number
   modType: string | undefined
+  // True when this is the no-mod bucket: `probability` is then the confidence
+  // the base is UNmodified, not the confidence of `modType`. Name the call via
+  // getModificationCallName rather than off modType alone.
+  noMod: boolean
   probability: number
   color: string
 }
@@ -40,6 +44,7 @@ export function hitTestModification(
     modificationColors,
     modificationProbabilities,
     modificationTypeIndices,
+    modificationNoMod,
     detectedModifications,
   } = resolved.rpcData
   const colorPacked = modificationColors[idx]!
@@ -47,6 +52,7 @@ export function hitTestModification(
   return {
     position: modificationPositions[idx]!,
     modType: typeIdx !== undefined ? detectedModifications[typeIdx] : undefined,
+    noMod: modificationNoMod?.[idx] === 1,
     probability: (modificationProbabilities?.[idx] ?? 255) / 255,
     color: `rgb(${abgrRed(colorPacked)},${abgrGreen(colorPacked)},${abgrBlue(colorPacked)})`,
   }

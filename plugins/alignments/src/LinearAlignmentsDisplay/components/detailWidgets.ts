@@ -2,7 +2,7 @@ import { openFeatureWidget } from '@jbrowse/core/util'
 
 import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
 import { formatLenRange, getTooltipBin, pct } from './tooltipUtils.ts'
-import { getModificationName } from '../../shared/modificationData.ts'
+import { getModificationCallName } from '../../shared/modificationData.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
@@ -122,7 +122,9 @@ export function openModificationWidget(
 ) {
   const featureData: SimpleFeatureSerialized = {
     uniqueId: `modification-${refName}-${modHit.position}-${modHit.modType ?? 'unknown'}`,
-    name: modHit.modType ? getModificationName(modHit.modType) : 'Modification',
+    name: modHit.modType
+      ? getModificationCallName(modHit.modType, modHit.noMod)
+      : 'Modification',
     type: 'modification',
     refName,
     start: modHit.position,

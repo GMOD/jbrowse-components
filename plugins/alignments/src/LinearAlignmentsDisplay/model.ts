@@ -136,7 +136,6 @@ import type {
   ColorSchemeType,
   FilterBy,
   GroupBy,
-  ModificationTypeWithColor,
   PersistedColorBy,
   SortedBy,
 } from '../shared/types'
@@ -632,10 +631,13 @@ export default function stateModelFactory(
           /**
            * #volatile
            */
-          visibleModifications: observable.map<
-            string,
-            ModificationTypeWithColor
-          >({}),
+          /**
+           * Modification type code -> painted color, for every type seen in the
+           * fetched reads. This is what the data CONTAINS; what is actually
+           * drawn is filtered separately by isModificationTypeVisible, so don't
+           * rename this back to "visible".
+           */
+          detectedModifications: observable.map<string, string>({}),
           /**
            * #volatile
            */
@@ -760,8 +762,8 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        get visibleModificationTypes() {
-          return [...self.visibleModifications.keys()]
+        get detectedModificationTypes() {
+          return [...self.detectedModifications.keys()]
         },
 
         /**
@@ -1142,7 +1144,7 @@ export default function stateModelFactory(
               ...this.readCloudLegendCategories,
             ]),
             this.colorPalette,
-            self.visibleModifications,
+            self.detectedModifications,
             self.colorTagMap,
           )
         },
@@ -2136,13 +2138,11 @@ export default function stateModelFactory(
       .actions(self => {
         const superSetError = self.setError
         function addModification(modType: string) {
-          if (!self.visibleModifications.has(modType)) {
-            self.visibleModifications.set(modType, {
-              type: modType,
-              base: '',
-              strand: '',
-              color: getColorForModification(modType),
-            })
+          if (!self.detectedModifications.has(modType)) {
+            self.detectedModifications.set(
+              modType,
+              getColorForModification(modType),
+            )
           }
         }
         function clearMouseoverState() {

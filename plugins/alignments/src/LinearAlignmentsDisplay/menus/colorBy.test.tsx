@@ -19,7 +19,7 @@ function makeModel() {
     pinned: new Set<string>(),
     modificationsReady: false,
     regionTooLarge: false,
-    visibleModificationTypes: [] as string[],
+    detectedModificationTypes: [] as string[],
     modificationThreshold: 0.5,
   }
 }
@@ -133,7 +133,7 @@ describe('color by menu', () => {
 function makeModModel(types = ['m', 'h']) {
   const model = makeModel()
   model.modificationsReady = true
-  model.visibleModificationTypes = types
+  model.detectedModificationTypes = types
   model.modificationThreshold = 10
   return model
 }

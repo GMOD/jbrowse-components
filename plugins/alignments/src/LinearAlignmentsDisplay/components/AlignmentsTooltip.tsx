@@ -6,7 +6,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { formatLenRange, formatSashimiLocation, pct } from './tooltipUtils.ts'
-import { getModificationName } from '../../shared/modificationData.ts'
+import { getModificationCallName } from '../../shared/modificationData.ts'
 import { getInterbaseTypeLabel } from '../../shared/types.ts'
 
 import type { TooltipPayload } from './tooltipUtils.ts'
@@ -365,7 +365,7 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
       )
     }
     case 'modification': {
-      const { modType, probability, color, refName, position, snpBase } =
+      const { modType, noMod, probability, color, refName, position, snpBase } =
         tooltipData
       return (
         <BaseTooltip clientPoint={{ x, y }}>
@@ -379,7 +379,9 @@ const AlignmentsTooltip = observer(function AlignmentsTooltip({
                   <td>
                     <div style={{ width: 10, height: 10, background: color }} />
                   </td>
-                  <td>{modType ? getModificationName(modType) : 'Unknown'}</td>
+                  <td>
+                    {modType ? getModificationCallName(modType, noMod) : 'Unknown'}
+                  </td>
                 </tr>
                 <tr>
                   <td>Probability</td>

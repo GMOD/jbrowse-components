@@ -32,10 +32,9 @@ function wgbsContextTrack(context: 'CG' | 'CHG' | 'CHH') {
       type: 'LinearAlignmentsDisplay',
       colorBy: {
         type: 'bisulfite',
-        // one-color mode: draw only methylated (red) sites, leaving the
-        // unmethylated ones blank so the tri-context contrast reads as
+        // methylated-only is the default, so the tri-context contrast reads as
         // presence/absence of red rather than a red/blue mix per read
-        modifications: { cytosineContext: context, twoColor: false },
+        modifications: { cytosineContext: context },
       },
       // compact reads, coverage hidden: three stacked pileups stay legible and
       // the row's message is the read colors, not a per-copy histogram

@@ -9,6 +9,7 @@ import { interbaseTypeName } from '../../shared/types.ts'
 import { getOrCreate } from '../../shared/util.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
+import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type {
   CigarHitResult,
   SashimiArcHitResult,
@@ -27,13 +28,9 @@ export interface CoverageTooltipPayload {
   refName?: string
 }
 
-export interface ModificationTooltipPayload {
+export interface ModificationTooltipPayload extends ModificationHitResult {
   type: 'modification'
-  modType?: string
-  probability: number
-  color: string
   refName?: string
-  position: number
   snpBase?: string
 }
 
@@ -344,22 +341,11 @@ export function formatCoverageTooltip(
 }
 
 export function formatModificationTooltip(
-  position: number,
-  modType: string | undefined,
-  probability: number,
-  color: string,
+  hit: ModificationHitResult,
   refName: string | undefined,
   snpBase?: string,
 ): ModificationTooltipPayload {
-  return {
-    type: 'modification',
-    modType,
-    probability,
-    color,
-    refName,
-    position,
-    snpBase,
-  }
+  return { type: 'modification', ...hit, refName, snpBase }
 }
 
 // 1-based inclusive display range for a sashimi junction's half-open

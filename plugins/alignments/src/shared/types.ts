@@ -1,12 +1,5 @@
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
-export interface ModificationTypeWithColor {
-  color: string
-  type: string
-  base: string
-  strand: string
-}
-
 export type ArcColorByType =
   'insertSizeAndOrientation' | 'insertSize' | 'orientation'
 
@@ -15,10 +8,11 @@ export type ArcColorByType =
 export const DEFAULT_MODIFICATION_THRESHOLD = 10
 
 export interface ModificationColorBy {
-  // In modifications mode, paints the not-modified side blue instead of leaving
-  // it blank (default off). In bisulfite mode it gates the unmethylated (blue)
-  // marks: default two-color draws them, `twoColor: false` draws methylated
-  // (red) only.
+  // Paint the not-modified side blue instead of leaving it blank. One meaning,
+  // one default (off), in every mode that reads it — modifications and
+  // bisulfite alike. Bisulfite used to default this ON and spell the check as
+  // `twoColor !== false`, so the same field name meant opposite things with
+  // opposite defaults in the two modes.
   twoColor?: boolean
   // modification type codes to hide; absent/empty means show every detected
   // type. Stored as the hidden set (not the shown set) so types newly
@@ -130,21 +124,24 @@ export function isFillUnmarkedMode(colorBy: ColorBy | undefined) {
   )
 }
 
-// True when the mode keys the methylated/unmethylated legend (5mC/5hmC named,
-// optional "Unmethylated" swatch) rather than the per-type MM palette: the
-// fill-unmarked cytosine walk and bisulfite (read C->T vs. reference) both do —
-// see extractBisulfite / the fill-unmarked path.
+// True when the mode keys the methylated/unmethylated legend (5mC/5hmC named)
+// rather than the per-type MM palette: the fill-unmarked cytosine walk and
+// bisulfite (read C->T vs. reference) both do — see extractBisulfite / the
+// fill-unmarked path.
 export function usesMethylationLegend(colorBy: ColorBy | undefined) {
   return isFillUnmarkedMode(colorBy) || colorBy?.type === 'bisulfite'
 }
 
-// True when the mode actually paints an explicit unmethylated (blue) state: the
-// fill-unmarked walk always does; bisulfite does unless switched to the
-// methylated-only (single-color) view. Gates the "Unmethylated" legend swatch.
-export function paintsUnmethylatedState(colorBy: ColorBy | undefined) {
+// True when the mode actually paints the explicit "not modified" (blue) state,
+// gating that legend swatch. The fill-unmarked walk always does; every other
+// mode does exactly when `twoColor` is on — including two-color over a
+// non-cytosine mod, which paints blue low-probability 6mA calls (extract.ts) and
+// used to key no swatch for them at all.
+export function paintsUnmodifiedState(colorBy: ColorBy | undefined) {
   return (
     isFillUnmarkedMode(colorBy) ||
-    (colorBy?.type === 'bisulfite' && colorBy.modifications?.twoColor !== false)
+    ((colorBy?.type === 'modifications' || colorBy?.type === 'bisulfite') &&
+      !!colorBy.modifications?.twoColor)
   )
 }
 

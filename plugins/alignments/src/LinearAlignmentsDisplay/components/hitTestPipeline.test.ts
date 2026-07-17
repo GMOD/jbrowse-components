@@ -358,7 +358,13 @@ describe('contextMenuFieldsForHit', () => {
       position: 7,
       base: 'A',
     } as const
-    const mod = { position: 7, modType: 'm', probability: 0.9, color: '#f00' }
+    const mod = {
+      position: 7,
+      modType: 'm',
+      noMod: false,
+      probability: 0.9,
+      color: '#f00',
+    }
     const fields = contextMenuFieldsForHit({
       type: 'modification',
       hit: mod,

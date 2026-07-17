@@ -1,7 +1,9 @@
 import { abgrAlpha, packAbgr } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { buildModificationArrays } from './buildArrays.ts'
 import { hitTestModification } from './hitTest.ts'
+import { getModificationCallName } from '../../shared/modificationData.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
@@ -215,5 +217,48 @@ describe('modification probability round-trip', () => {
     // eslint-disable-next-line unicorn/no-constant-zero-expression -- 0*0 mirrors the p*p+0.1 alpha formula at p=0
     const a = Math.round(Math.min(1, 0 * 0 + 0.1) * 255) & 0xff
     expect(a / 255).toBeGreaterThan(0)
+  })
+})
+
+// The no-mod bucket keeps the canonical mod code ('m'), so before
+// `modificationNoMod` existed the hit test could only report modType and every
+// consumer named the call "5mC" — labeling a blue UNmethylated mark with the
+// name of the modification it is the absence of, at the confidence it is absent.
+describe('no-mod bucket survives the packed arrays', () => {
+  const detected = new Set(['m'])
+  const entry = (noMod: boolean) => ({
+    readIndex: 0,
+    position: 1000,
+    base: 'C',
+    modType: 'm',
+    strand: 1,
+    color: packAbgr(0, 0, 255, 255),
+    prob: 0.95,
+    noMod,
+  })
+
+  function hitFor(noMod: boolean) {
+    const arrays = buildModificationArrays([entry(noMod)], 0, detected)
+    const rpcData = makeRpcData({
+      ...arrays,
+      detectedModifications: [...detected],
+      modFlatbush: makeModFlatbush([1000], [0]),
+    })
+    return hitTestModification(makeResolved(rpcData), makeCoords(), 10)
+  }
+
+  it('reports noMod and names the call "Unmodified C", not "5mC"', () => {
+    const hit = hitFor(true)
+    expect(hit?.noMod).toBe(true)
+    expect(hit?.modType).toBe('m')
+    expect(getModificationCallName(hit!.modType!, hit!.noMod)).toBe(
+      'Unmodified C',
+    )
+  })
+
+  it('still names a genuine modified call by its modification', () => {
+    const hit = hitFor(false)
+    expect(hit?.noMod).toBe(false)
+    expect(getModificationCallName(hit!.modType!, hit!.noMod)).toBe('5mC')
   })
 })

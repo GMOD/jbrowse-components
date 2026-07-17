@@ -21,8 +21,11 @@ import {
   matchesCytosineContext,
 } from '@jbrowse/modifications-utils'
 
-import { getMaxProbModAtEachPosition } from '../../shared/getMaximumModificationAtEachPosition.ts'
-import { isModificationTypeVisible } from '../../shared/types.ts'
+import { getMaxProbModAtEachPosition } from '../../shared/getMaxProbModAtEachPosition.ts'
+import {
+  DEFAULT_MODIFICATION_THRESHOLD,
+  isModificationTypeVisible,
+} from '../../shared/types.ts'
 import { getFlags } from '../../shared/util.ts'
 import { getColorForModification, getTagAlt } from '../../util.ts'
 
@@ -35,13 +38,19 @@ import type {
   ParsedModData,
 } from '@jbrowse/modifications-utils'
 
-// Methylated/unmethylated display colors for bisulfite/ONT methylation mode,
-// packed once to opaque ABGR (the modificationColors / GPU vertex format).
-// Differ from the modification-mode colors in shared/modificationData.ts —
-// theme.ts is source of truth, converted once here for the worker context.
-const METH_5MC_METHYLATED = cssColorToABGR(methylated5mC)
-const METH_5MC_UNMETHYLATED = cssColorToABGR(unmethylated5mC)
-const METH_5HMC_METHYLATED = cssColorToABGR(methylated5hmC)
+// Methylated/unmodified display colors, packed once to opaque ABGR (the
+// modificationColors / GPU vertex format). Differ from the modification-mode
+// colors in shared/modificationData.ts — theme.ts is source of truth, converted
+// once here for the worker context.
+//
+// ABGR_UNMODIFIED is the generic "this base is NOT modified" blue for every
+// mode that paints that state — the methylation fill, bisulfite, and two-color
+// over any mod type (a low-probability 6mA call paints it too). It is not
+// 5mC-specific despite the theme export it comes from; naming it as if it were
+// is what hid the missing two-color legend swatch for non-cytosine mods.
+const ABGR_5MC_METHYLATED = cssColorToABGR(methylated5mC)
+const ABGR_UNMODIFIED = cssColorToABGR(unmethylated5mC)
+const ABGR_5HMC_METHYLATED = cssColorToABGR(methylated5hmC)
 
 // getColorForModification + cssColorToABGR are pure functions of the mod code,
 // but the mods.forEach loop below hits them once per modified base — thousands
@@ -108,7 +117,8 @@ export function extractModifications(
     !colorBy.modifications?.fillUnmarked
   ) {
     const modStrand = strand === -1 ? -1 : 1
-    const modThreshold = (colorBy.modifications?.threshold ?? 10) / 100
+    const modThreshold =
+      (colorBy.modifications?.threshold ?? DEFAULT_MODIFICATION_THRESHOLD) / 100
     const twoColor = colorBy.modifications?.twoColor ?? false
     const mods = getMaxProbModAtEachPosition(
       modifications,
@@ -132,7 +142,7 @@ export function extractModifications(
           base,
           modType: type,
           strand: modStrand,
-          color: isMeth ? modColorForType(type) : METH_5MC_UNMETHYLATED,
+          color: isMeth ? modColorForType(type) : ABGR_UNMODIFIED,
           prob: isMeth ? prob : 1 - prob,
           noMod: !isMeth,
         })
@@ -192,10 +202,10 @@ export function extractMethylation(
       modType: isHydroxy ? 'h' : 'm',
       strand: methStrand,
       color: isHydroxy
-        ? METH_5HMC_METHYLATED
+        ? ABGR_5HMC_METHYLATED
         : isMeth
-          ? METH_5MC_METHYLATED
-          : METH_5MC_UNMETHYLATED,
+          ? ABGR_5MC_METHYLATED
+          : ABGR_UNMODIFIED,
       prob: isHydroxy ? hProb : isMeth ? mProb : noModProb,
       noMod: !isHydroxy && !isMeth,
     })
@@ -278,7 +288,7 @@ export function extractBisulfite(
               base: 'C',
               modType: 'm',
               strand: methStrand,
-              color: methylated ? METH_5MC_METHYLATED : METH_5MC_UNMETHYLATED,
+              color: methylated ? ABGR_5MC_METHYLATED : ABGR_UNMODIFIED,
               prob: 1,
               noMod: !methylated,
             })
