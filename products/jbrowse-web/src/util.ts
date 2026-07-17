@@ -1,5 +1,4 @@
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
-export { removeAttr } from '@jbrowse/product-core'
 export { b64PadSuffix, fromUrlSafeB64, toUrlSafeB64 } from '@jbrowse/core/util'
 export { checkPlugins } from '@jbrowse/core/checkPlugins'
 

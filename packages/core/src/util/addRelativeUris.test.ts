@@ -1,4 +1,4 @@
-import { addRelativeUris } from './addRelativeUris.ts'
+import { addRelativeUris, stripBaseUris } from './addRelativeUris.ts'
 
 test('addRelativeUris stamps baseUri next to a uri key', () => {
   const config: Record<string, unknown> = { uri: 'data.bam' }
@@ -35,4 +35,34 @@ test('addRelativeUris tolerates null', () => {
   expect(() => {
     addRelativeUris(null, new URL('https://example.com/'))
   }).not.toThrow()
+})
+
+test('stripBaseUris deletes baseUri at every nesting level', () => {
+  const config = {
+    a: 1,
+    baseUri: 'top',
+    b: { baseUri: 'nested', c: 2, d: { baseUri: 'deep', e: 3 } },
+    tracks: [{ uri: 'a.bam', baseUri: 'x' }],
+  }
+  expect(stripBaseUris(config)).toEqual({
+    a: 1,
+    b: { c: 2, d: { e: 3 } },
+    tracks: [{ uri: 'a.bam' }],
+  })
+})
+
+test('stripBaseUris round-trips addRelativeUris', () => {
+  const config: Record<string, unknown> = {
+    adapter: { uri: 'data.bam' },
+    tracks: [{ uri: 'a.bam' }],
+  }
+  const original = structuredClone(config)
+  addRelativeUris(config, new URL('https://example.com/'))
+  expect(stripBaseUris(config)).toEqual(original)
+})
+
+test('stripBaseUris leaves null values intact and returns the input', () => {
+  const obj = { a: null, baseUri: 'x' }
+  expect(stripBaseUris(obj)).toBe(obj)
+  expect(obj).toEqual({ a: null })
 })

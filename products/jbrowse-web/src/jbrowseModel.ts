@@ -1,6 +1,6 @@
 import { JBrowseModelF } from '@jbrowse/app-core'
+import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
 import { getSnapshot, resolveIdentifier, types } from '@jbrowse/mobx-state-tree'
-import { removeAttr } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -30,7 +30,7 @@ export default function JBrowseWeb({
       // strip the synthetic baseUri keys added by addRelativeUris when
       // serializing config back out (e.g. for the admin "Save config" flow)
       postProcessor(snapshot) {
-        return removeAttr(structuredClone(snapshot), 'baseUri')
+        return stripBaseUris(structuredClone(snapshot))
       },
     },
   )

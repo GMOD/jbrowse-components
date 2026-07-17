@@ -1,8 +1,7 @@
 import { CopyToClipboardButton } from '@jbrowse/core/ui'
+import { stripBaseUris } from '@jbrowse/core/util/addRelativeUris'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
-
-import { removeAttr } from './util.ts'
 
 const useStyles = makeStyles()({
   button: {
@@ -33,7 +32,7 @@ function HeaderButtons({ conf, setShowRefNames }: HeaderButtonsProps) {
         variant="contained"
         value={() =>
           JSON.stringify(
-            removeAttr(JSON.parse(JSON.stringify(conf)), 'baseUri'),
+            stripBaseUris(structuredClone(conf)),
             null,
             2,
           )

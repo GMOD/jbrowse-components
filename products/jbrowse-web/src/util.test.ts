@@ -2,7 +2,6 @@ import {
   addRelativeUris,
   b64PadSuffix,
   fromUrlSafeB64,
-  removeAttr,
   toUrlSafeB64,
 } from './util.ts'
 
@@ -84,26 +83,5 @@ describe('addRelativeUris', () => {
     expect(() => {
       addRelativeUris(null, base)
     }).not.toThrow()
-  })
-})
-
-describe('removeAttr', () => {
-  it('removes the specified attribute at the top level', () => {
-    const obj = { a: 1, baseUri: 'https://example.com/', b: 2 }
-    const result = removeAttr(obj, 'baseUri')
-    expect(result).not.toHaveProperty('baseUri')
-    expect(result.a).toBe(1)
-  })
-
-  it('removes the attribute recursively', () => {
-    const obj = { nested: { baseUri: 'https://example.com/', value: 42 } }
-    removeAttr(obj, 'baseUri')
-    expect((obj.nested as Record<string, unknown>).baseUri).toBeUndefined()
-    expect((obj.nested as Record<string, unknown>).value).toBe(42)
-  })
-
-  it('returns the modified object', () => {
-    const obj = { x: 1 }
-    expect(removeAttr(obj, 'missing')).toBe(obj)
   })
 })

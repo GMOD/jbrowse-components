@@ -55,21 +55,6 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 /**
- * Recursively delete every occurrence of a property key from a nested plain
- * object (mutates in place), e.g. stripping `baseUri` from a config snapshot.
- */
-export function removeAttr(obj: Record<string, unknown>, attr: string) {
-  for (const prop in obj) {
-    if (prop === attr) {
-      delete obj[prop]
-    } else if (obj[prop] !== null && typeof obj[prop] === 'object') {
-      removeAttr(obj[prop] as Record<string, unknown>, attr)
-    }
-  }
-  return obj
-}
-
-/**
  * Read a single config slot from either a live MST config or a plain snapshot
  * object, evaluating the value if it is a `jexl:` expression. A plain snapshot
  * routes through the same `isCallbackValue`/`evaluateJexl` boundary as the MST

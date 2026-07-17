@@ -23,3 +23,22 @@ export function addRelativeUris(
     }
   }
 }
+
+/**
+ * Inverse of {@link addRelativeUris}: recursively delete every synthetic
+ * `baseUri` key (mutates in place), e.g. before serializing a config snapshot
+ * back out in the admin "Save config" flow or a "Copy config" button.
+ */
+export function stripBaseUris<T>(config: T): T {
+  if (typeof config === 'object' && config !== null) {
+    for (const key of Object.keys(config)) {
+      const obj = config as Record<string, unknown>
+      if (key === 'baseUri') {
+        delete obj[key]
+      } else {
+        stripBaseUris(obj[key])
+      }
+    }
+  }
+  return config
+}
