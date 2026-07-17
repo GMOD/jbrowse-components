@@ -609,7 +609,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
         {
           type: 'DotplotView',
           tracks: ['26695_vs_j99.pif'],
-          views: [{ assembly: 'hpylori_j99' }, { assembly: 'hpylori_26695' }],
+          // Axis order matches what the import form's Quick start produces for
+          // this track, so the tutorial's click-path lands on this exact plot:
+          // assemblyNames is [query, target] = [j99, 26695], and a dotplot puts
+          // query on y / target on x. hview is views[0], vview is views[1].
+          views: [{ assembly: 'hpylori_26695' }, { assembly: 'hpylori_j99' }],
         },
       ],
     }),

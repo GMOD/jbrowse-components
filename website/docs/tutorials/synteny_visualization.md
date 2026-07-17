@@ -91,7 +91,7 @@ change either axis or the track by hand.
 
 <Figure caption="The dotplot import form in Manual mode, where you choose each axis: a query (X-axis) and target (Y-axis) assembly, then optionally add a synteny file (.paf, .out, .delta, .chain, .anchors, or .anchors.simple)." src="/img/sv_synteny/dotplot_import.png" />
 
-<Figure caption="A dotplot of the H. pylori J99 (X-axis) vs 26695 (Y-axis) whole-genome alignment. The long diagonal is the collinear backbone, and the off-diagonal segments are rearrangements between the two strains." src="/img/sv_synteny/dotplot.png" />
+<Figure caption="The dotplot Quick start opens for this track: H. pylori 26695 (X-axis, the target) vs J99 (Y-axis, the query). The long diagonal is the collinear backbone, and the off-diagonal segments are rearrangements between the two strains. Swap transposes it." src="/img/sv_synteny/dotplot.png" />
 
 ### Launching a linear synteny view from the dotplot
 
