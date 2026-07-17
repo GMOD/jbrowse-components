@@ -11,10 +11,11 @@ const useStyles = makeStyles()({
 
 interface HeaderButtonsProps {
   conf: Record<string, unknown>
+  hideUris?: boolean
   setShowRefNames: (show: boolean) => void
 }
 
-function HeaderButtons({ conf, setShowRefNames }: HeaderButtonsProps) {
+function HeaderButtons({ conf, hideUris, setShowRefNames }: HeaderButtonsProps) {
   const { classes } = useStyles()
 
   return (
@@ -28,18 +29,17 @@ function HeaderButtons({ conf, setShowRefNames }: HeaderButtonsProps) {
       >
         Show ref names
       </Button>
-      <CopyToClipboardButton
-        variant="contained"
-        value={() =>
-          JSON.stringify(
-            stripBaseUris(structuredClone(conf)),
-            null,
-            2,
-          )
-        }
-      >
-        Copy config
-      </CopyToClipboardButton>
+      {/* Copy config dumps the full config JSON including URIs, so it stays
+          hidden when hideUris is set — but Show ref names exposes no URIs and
+          remains available */}
+      {hideUris ? null : (
+        <CopyToClipboardButton
+          variant="contained"
+          value={() => JSON.stringify(stripBaseUris(structuredClone(conf)), null, 2)}
+        >
+          Copy config
+        </CopyToClipboardButton>
+      )}
     </span>
   )
 }

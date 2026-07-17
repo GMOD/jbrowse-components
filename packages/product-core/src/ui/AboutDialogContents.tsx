@@ -31,9 +31,10 @@ const AboutDialogContents = observer(function AboutDialogContents({
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)
 
-  const hideUris =
+  const hideUris = Boolean(
     getConf(session, ['formatAbout', 'hideUris']) ||
-    readConfSlot(config, ['formatAbout', 'hideUris'])
+      readConfSlot<boolean>(config, ['formatAbout', 'hideUris']),
+  )
 
   const { pluginManager } = getEnv(session)
 
@@ -56,9 +57,11 @@ const AboutDialogContents = observer(function AboutDialogContents({
   return (
     <div className={classes.content}>
       <BaseCard title="Configuration">
-        {!hideUris ? (
-          <HeaderButtons conf={conf} setShowRefNames={setShowRefNames} />
-        ) : null}
+        <HeaderButtons
+          conf={conf}
+          hideUris={hideUris}
+          setShowRefNames={setShowRefNames}
+        />
         <Attributes
           attributes={confPostExt.config}
           omit={[...hideFields, 'metadata']}
