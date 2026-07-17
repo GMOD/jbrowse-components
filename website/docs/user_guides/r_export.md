@@ -28,6 +28,11 @@ Because the whole figure is a function of the region, you can loop
 `plot_region()` over a BED file to batch-render many loci (a commented example is
 included at the end of the script).
 
+Everything the script needs is emitted as small, visible helper functions
+(`read_bigwig`, `read_bam`, `read_vcf`, …) rather than hidden in a package, so you
+can read and edit any part of the plot — the geoms, scales, colors, and theme are
+all right there.
+
 ### Multiple regions
 
 If the view is showing several regions at once (a discontiguous view), they are
@@ -46,11 +51,6 @@ p <- plot_regions(data.frame(
   end   = c(6000, 17000)))
 ```
 
-Everything the script needs is emitted as small, visible helper functions
-(`read_bigwig`, `read_bam`, `read_vcf`, …) rather than hidden in a package, so you
-can read and edit any part of the plot — the geoms, scales, colors, and theme are
-all right there.
-
 ## Requirements
 
 The script uses base R plus a handful of Bioconductor/CRAN packages, only the
@@ -64,31 +64,104 @@ ones the tracks in your view actually need:
 CRAM tracks additionally shell out to `samtools` (Bioconductor's reader is
 BAM-only), which the script decodes to a temporary BAM automatically.
 
-## Supported tracks
+## Gallery
 
-Most JBrowse track types export, each as the idiomatic ggplot2 equivalent of what
-the browser draws:
+Every figure below is genuine export output — the generated `.R` run through
+`Rscript` — one per track type. Each is the idiomatic ggplot2 equivalent of what
+the browser draws.
 
-- **Quantitative** (BigWig) — bars, lines, or a density strip, single or
-  multi-wiggle
-- **Alignments** (BAM/CRAM) — a coverage histogram plus a pileup with
-  reference-free mismatch ticks (from the MD tag), color-by schemes, modifications
-  (MM/ML), per-base quality, clip indicators, CIGAR indels, linked reads, the
-  "Filter by" flag/read-name/tag filters, and the center-line sorts below
-- **Features / genes** (GFF3, BED)
-- **Variants** (VCF), including the multi-sample matrix and per-sample rows
-- **Hi-C** (`.hic`) — the rotated contact triangle
-- **GWAS** (tabixed BED) — a Manhattan plot
+### Quantitative (BigWig)
 
-## Sorting
+A single BigWig track becomes `geom_rect` bars (or lines / a density strip,
+matching the display's render mode).
 
-The alignments "Sort by..." options are reproduced by a `sorted_pileup_layout`
-helper that mirrors JBrowse's localized sort: the reads covering the center-line
-column are ordered by the criterion (start position, strand, or base) and placed
-first, so they line up as a block, and the remaining reads fill in around them.
-The sort column is baked into the script as an editable `sort_pos` variable.
+<Figure caption="A BigWig track redrawn as geom_rect bars (Volvox microarray, ctgA:1-50,000)." src="/img/rexport/wiggle.png"/>
 
-<Figure caption="Alignments pileup exported with 'Sort by base' at ctgA:1,693: reads carrying the alternate allele (blue mismatch ticks) are grouped at the top, reference-matching reads below." src="/img/rexport/alignments_sort.png"/>
+A multi-wiggle track reads every BigWig into one long data.frame and draws it in
+whichever mode the display is in — multi-row (one facet per source), overlay
+(one panel colored by source), or density (a per-source viridis heatmap strip).
+
+<Figure caption="A multi-wiggle track drawn multi-row: one faceted, colored row per BigWig source." src="/img/rexport/multiwiggle_rows.png"/>
+
+### Alignments (BAM/CRAM)
+
+A BAM or CRAM track exports as a coverage histogram above a strand-colored
+pileup, with rows packed by `IRanges::disjointBins`.
+
+<Figure caption="A BAM track: a coverage histogram above a strand-colored pileup (Volvox alignments, ctgA:1-8,000)." src="/img/rexport/alignments.png"/>
+
+**Modifications / methylation.** With `colorBy: modifications` (or `methylation`)
+the read bodies stay grey and per-base modification ticks are parsed
+reference-free from the MM/ML tags, colored by modification type above an
+editable probability threshold.
+
+<Figure caption="colorBy modifications: MM/ML base-modification ticks on grey read bodies — 5mC (red) and 5hmC (magenta) from an Arabidopsis WGBS modBAM." src="/img/rexport/modifications.png"/>
+
+**CIGAR indels and splicing.** Each read's CIGAR is walked so a deletion draws as
+a grey rect over the body, a spliced intron (`N`) as an erased body with a thin
+teal connector between exons, and an insertion as a purple tick.
+
+<Figure caption="CIGAR-aware pileup: spliced RNA-seq reads split across an intron (teal connectors), coverage dropping to zero over the gap (ctgA:401-1,100)." src="/img/rexport/spliced.png"/>
+
+**Sorting.** JBrowse's localized "Sort by..." (at the center line) is reproduced
+by a `sorted_pileup_layout` helper that mirrors JBrowse: the reads covering the
+sort column are ordered by the criterion (start position, strand, or base) and
+placed first as a block, then the remaining reads fill in around them. The sort
+column is baked into the script as an editable `sort_pos` variable.
+
+<Figure caption="Alignments pileup exported with 'Sort by base' at ctgA:1,693: reads carrying the alternate allele (blue mismatch ticks) group at the top, reference-matching reads below." src="/img/rexport/alignments_sort.png"/>
+
+### Genes and features (GFF3, BED)
+
+Gene models draw with directional `geom_segment` bodies (arrowheads point in the
+transcription direction) plus `geom_rect` boxes — thin for exons/UTRs, thick for
+CDS — keyed off the feature `type` so coding regions read like the browser glyph.
+GFF3 and BED (expanding BED12 blocks into exons) feed the same panel.
+
+<Figure caption="A gene track (GFF3): directional bodies with thin exon/UTR boxes and thick CDS boxes (Volvox genes)." src="/img/rexport/genes.png"/>
+
+### Variants (VCF)
+
+A VCF track reads over the tabix index and draws each record as a `geom_rect`
+box, like a feature track.
+
+<Figure caption="A VCF track: each record a geom_rect box, rows packed by IRanges::disjointBins (ctgA:1-20,000)." src="/img/rexport/variants.png"/>
+
+The multi-sample matrix display draws a per-sample genotype grid instead: each
+cell is classed ref / het / hom / other / no-call, samples (rows) are ordered by
+`hclust` with a hand-rolled dendrogram composed as a left panel, and columns are
+laid out by site index (matching JBrowse's matrix, not genomic position).
+
+<Figure caption="The multi-sample variant matrix: per-sample genotype cells, samples clustered with hclust and a dendrogram drawn alongside (1094-sample simulation)." src="/img/rexport/variant_matrix.png"/>
+
+### Hi-C
+
+A `.hic` contact map is read with `strawr` and rotated 45° into the triangular
+contact view — the diagonal on the genomic x-axis, interaction distance up the
+y-axis — so it stacks with ordinary 1-D tracks on a shared x-range. Bin size and
+normalization are emitted as editable script variables.
+
+<Figure caption="A Hi-C .hic contact map rotated into the triangular view, log-scaled viridis (HMEC, Rao et al. 2014, 1:1,000,000-2,000,000)." src="/img/rexport/hic.png"/>
+
+### GWAS
+
+GWAS summary statistics from a tabix'd BED draw as a Manhattan plot of
+-log10(p) against position, with the 5e-8 genome-wide significance line.
+
+<Figure caption="GWAS summary statistics as a Manhattan plot with the 5e-8 significance line (SLE association peak, hg19 chr2)." src="/img/rexport/gwas.png"/>
+
+### Combining tracks and regions
+
+Every track in the view stacks into one `patchwork` figure sharing an x-range, so
+one `plot_region()` call redraws the whole panel — loop it over a BED file for
+batch figures.
+
+<Figure caption="Wiggle, genes, and an alignments coverage+pileup stacked into one patchwork figure over one shared axis (ctgA:1-8,000)." src="/img/rexport/combined.png"/>
+
+A discontiguous view concatenates its regions onto one cumulative-bp axis, with a
+region ruler, a divider, and each region keeping its own genomic tick labels.
+
+<Figure caption="A two-region view (ctgA:1,001-6,000 + ctgA:15,001-17,000) on one cumulative axis: coverage, genes, and a pileup, each region's features clipped at its boundary." src="/img/rexport/multiregion.png"/>
 
 ## Filtering
 
@@ -98,8 +171,7 @@ as editable script variables (`flag_include`, `flag_exclude`, `read_name`,
 `tag_filters`). Rather than dropping reads, it marks a `keep` column so the
 per-base overlays still line up by read index; the layout then leaves a filtered
 read at an NA row, which ggplot omits. The flag defaults match JBrowse
-(`flag_exclude <- 1540` = unmapped + QC-fail + duplicate). Note the coverage
-panel is computed over all reads, so only the pileup reflects the filter.
+(`flag_exclude <- 1540` = unmapped + QC-fail + duplicate).
 
 ## Not pixel-perfect, by design
 
@@ -109,5 +181,7 @@ approximate the canvas palette, and a few details (LD coloring on GWAS, phase-se
 hues on phased genotypes) are simplified. The goal is a figure that shows the same
 data and that you can restyle freely, not a screenshot.
 
-A gallery of example figures for every track type lives in the
-[R export gallery](https://github.com/GMOD/jbrowse-components/tree/main/website/static/img/rexport).
+A deeper gallery, with per-track design notes and the R helper details, lives in
+the [R export gallery README](https://github.com/GMOD/jbrowse-components/tree/main/website/static/img/rexport).
+</content>
+</invoke>
