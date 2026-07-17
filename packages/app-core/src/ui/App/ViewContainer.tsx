@@ -64,6 +64,14 @@ const ViewContainer = observer(function ViewContainer({
     session.setFocusedViewId(view.id)
   })
 
+  // A minimized view renders no body, so it neither mounts the (GPU-heavy) view
+  // component nor reserves placeholder scroll-space; a spacer would otherwise
+  // re-expand the collapsed view to its pre-minimize height as soon as it
+  // scrolled out of the viewport.
+  const { minimized } = view
+  const showBody = visible && !minimized
+  const reserveSpace = !visible && !minimized
+
   const backgroundColorClassName =
     session.focusedViewId === view.id
       ? classes.focusedView
@@ -92,11 +100,13 @@ const ViewContainer = observer(function ViewContainer({
         scrollOnMount={scrollOnMount}
       />
       <Paper elevation={0}>
+        {/* stays mounted even when empty, so the visibility observer keeps a
+        stable node to watch */}
         <div
           ref={bodyRef}
-          style={visible ? undefined : { height: placeholderHeight }}
+          style={reserveSpace ? { height: placeholderHeight } : undefined}
         >
-          {visible ? <ViewWrapper view={view} session={session} /> : null}
+          {showBody ? <ViewWrapper view={view} session={session} /> : null}
         </div>
       </Paper>
     </Paper>

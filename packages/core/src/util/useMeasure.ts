@@ -19,11 +19,13 @@ export default function useMeasure() {
       return
     }
     const observer = new RS(entries => {
-      const box = entries[0]!.contentBoxSize[0]!
-      setDims({
-        width: box.inlineSize,
-        height: box.blockSize,
-      })
+      const box = entries.at(-1)?.contentBoxSize[0]
+      if (box) {
+        setDims({
+          width: box.inlineSize,
+          height: box.blockSize,
+        })
+      }
     })
     observer.observe(ref.current)
     return () => {

@@ -24,7 +24,7 @@ function intersectionObserverAvailable() {
 export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
   const ref = useRef<HTMLDivElement>(null)
   const [visible, setVisible] = useState(() => !intersectionObserverAvailable())
-  const [rememberedHeight, setRememberedHeight] = useState(0)
+  const [rememberedHeight, setRememberedHeight] = useState<number>()
 
   // Toggle `visible` as the body scrolls in/out of the viewport (root: null).
   useEffect(() => {
@@ -32,7 +32,7 @@ export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
     if (node && intersectionObserverAvailable()) {
       const io = new IntersectionObserver(
         entries => {
-          const entry = entries[entries.length - 1]
+          const entry = entries.at(-1)
           if (entry) {
             setVisible(entry.isIntersecting)
           }
@@ -55,7 +55,8 @@ export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
     const node = ref.current
     if (node && visible && 'ResizeObserver' in window) {
       const ro = new ResizeObserver(entries => {
-        const box = entries[entries.length - 1]?.contentBoxSize[0]
+        const box = entries.at(-1)?.contentBoxSize[0]
+        // ignore a transient 0 measured before the body has laid out content
         if (box && box.blockSize > 0) {
           setRememberedHeight(box.blockSize)
         }
@@ -71,6 +72,6 @@ export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
   return {
     ref,
     visible,
-    placeholderHeight: rememberedHeight || estimatedHeight,
+    placeholderHeight: rememberedHeight ?? estimatedHeight,
   }
 }

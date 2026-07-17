@@ -4,6 +4,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { viewTitle } from './viewTitle.ts'
+
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
 
 const useStyles = makeStyles()(theme => ({
@@ -37,11 +39,7 @@ const ViewContainerTitle = observer(function ViewContainerTitle({
 }) {
   const { classes } = useStyles()
   const { assemblyManager } = getSession(view)
-  const title =
-    view.displayName ??
-    `${view.assemblyNames?.map(r => assemblyManager.getDisplayName(r)).join(',') ?? 'Untitled view'}${
-      view.minimized ? ' (minimized)' : ''
-    }`
+  const title = viewTitle(view, r => assemblyManager.getDisplayName(r))
   return (
     <Tooltip title={`${title} (click to rename)`} arrow>
       <EditableTypography
