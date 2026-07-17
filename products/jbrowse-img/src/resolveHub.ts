@@ -1,5 +1,5 @@
-import { hubUrl } from '@jbrowse/core/util/fetchHub'
 import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
+import { hubUrl } from '@jbrowse/core/util/fetchHub'
 
 import type { Config } from './types.ts'
 
