@@ -12,7 +12,7 @@ export const DEFAULTS = {
   mismatchRendering: true,
   showAsUpperCase: true,
   showTree: true,
-  showBranchLength: false,
+  showBranchLength: true,
   showCoverage: true,
   showAlignments: true,
   coverageHeight: 45,

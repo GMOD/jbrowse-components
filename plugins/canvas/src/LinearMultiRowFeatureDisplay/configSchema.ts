@@ -191,7 +191,7 @@ export default function configSchemaF(pluginManager: PluginManager) {
        */
       showBranchLength: {
         type: 'boolean',
-        defaultValue: false,
+        defaultValue: true,
         description: 'position tree nodes by branch length (dendrogram)',
       },
     },

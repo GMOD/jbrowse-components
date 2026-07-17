@@ -226,12 +226,38 @@ export function maxNodeHeight<T extends { length?: number }>(
   return max
 }
 
-// Phylogram (dendrogram) y positions from absolute merge heights: root (max
-// height) at 0, every leaf (height 0) at sizeY, internal nodes proportional to
-// where their cluster merged. Unlike a cumulative branch-length sum, this reads
-// each node's height directly, matching the hclust `(A,B)1.5` encoding where the
-// number is an absolute height, not an incremental branch length.
+// Newick's `length` field means two different things depending on who wrote the
+// tree, and the two need opposite layouts:
+//
+//   hclust  `(A,B)1.5`      — absolute merge height, counted down from the root
+//   phylo   `(A:0.1,B:0.2)` — incremental branch length, summed from the root
+//
+// `toNewick` serializes leaves bare (name only, no number), so a leaf carrying a
+// length can only have come from a `:` token — i.e. a real phylogeny such as a
+// MAF guide tree. Reading one form as the other inverts the tree (the root, with
+// no length of its own, lands at the leaf edge).
+export function hasIncrementalBranchLengths<T extends { length?: number }>(
+  node: HierarchyNode<T>,
+): boolean {
+  return leaves(node).some(l => l.data.length !== undefined)
+}
+
+// Phylogram y positions, dispatching on which encoding the tree uses.
 export function assignBranchLengthY<T extends { length?: number }>(
+  node: HierarchyNode<T>,
+  sizeY: number,
+) {
+  if (hasIncrementalBranchLengths(node)) {
+    assignCumulativeLengthY(node, sizeY)
+  } else {
+    assignMergeHeightY(node, sizeY)
+  }
+}
+
+// Absolute-merge-height form (hclust): root (max height) at 0, every leaf
+// (height 0) at sizeY, internal nodes proportional to where their cluster
+// merged. Matches R's `plot.hclust` node placement exactly.
+function assignMergeHeightY<T extends { length?: number }>(
   node: HierarchyNode<T>,
   sizeY: number,
 ) {
@@ -246,6 +272,33 @@ export function assignBranchLengthY<T extends { length?: number }>(
     }
   }
   visit(node)
+}
+
+// Incremental form (phylo): each node sits at its cumulative root distance, so
+// leaves land at their true evolutionary distance and the right edge is ragged
+// rather than flush. The root's own `length` is a stem up to an absent parent,
+// so the walk starts the accumulator at 0 and ignores it.
+function assignCumulativeLengthY<T extends { length?: number }>(
+  node: HierarchyNode<T>,
+  sizeY: number,
+) {
+  const dist = new Map<HierarchyNode<T>, number>()
+  function visit(n: HierarchyNode<T>, acc: number) {
+    dist.set(n, acc)
+    if (n.children) {
+      for (const child of n.children) {
+        visit(child, acc + (child.data.length ?? 0))
+      }
+    }
+  }
+  visit(node, 0)
+  let max = 0
+  for (const d of dist.values()) {
+    max = Math.max(max, d)
+  }
+  for (const [n, d] of dist) {
+    n.y = insetY(max === 0 ? 1 : d / max, sizeY)
+  }
 }
 
 // The two orthogonal segments of a parent→child dendrogram connector, in

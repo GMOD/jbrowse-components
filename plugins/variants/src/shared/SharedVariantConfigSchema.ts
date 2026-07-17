@@ -39,7 +39,7 @@ export default function sharedVariantConfigFactory() {
        */
       showBranchLength: {
         type: 'boolean',
-        defaultValue: false,
+        defaultValue: true,
         description: 'Draw the clustering tree with branch lengths',
       },
       /**

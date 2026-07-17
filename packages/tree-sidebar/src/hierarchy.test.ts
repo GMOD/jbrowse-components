@@ -4,6 +4,7 @@ import {
   clusterLayout,
   descendants,
   eachAfter,
+  hasIncrementalBranchLengths,
   hierarchy,
   leaves,
   links,
@@ -177,6 +178,52 @@ test('clusterLayout uses branch-length layout when enabled', () => {
   clusterLayout(root, 30, 100, true)
   expect(root.y).toBe(2)
   expect(root.children![1]!.y).toBe(75.5)
+})
+
+// real phylo shape (UCSC multiz style): `:` lengths on every branch, leaves
+// included, and incremental rather than absolute
+const phylo = (): Node => ({
+  children: [
+    {
+      length: 0.0057,
+      children: [
+        { name: 'hg38', length: 0.0067 },
+        { name: 'panTro4', length: 0.0067 },
+      ],
+    },
+    {
+      length: 0.05,
+      children: [
+        { name: 'mm10', length: 0.3 },
+        { name: 'rn5', length: 0.3 },
+      ],
+    },
+  ],
+})
+
+test('hasIncrementalBranchLengths distinguishes phylo from hclust newick', () => {
+  // hclust `toNewick` writes leaves bare, so a leaf length means a `:` token
+  expect(hasIncrementalBranchLengths(hierarchy(dendro(), childrenOf))).toBe(
+    false,
+  )
+  expect(hasIncrementalBranchLengths(hierarchy(cladogram(), childrenOf))).toBe(
+    false,
+  )
+  expect(hasIncrementalBranchLengths(hierarchy(phylo(), childrenOf))).toBe(true)
+})
+
+test('assignBranchLengthY positions phylo nodes by cumulative root distance', () => {
+  const root = hierarchy(phylo(), childrenOf)
+  assignBranchLengthY(root, 100)
+  // fractions match ape::node.depth.edgelength / max: the deepest root->leaf
+  // path is mm10/rn5 at 0.05+0.3=0.35, so hg38 sits at (0.0057+0.0067)/0.35
+  const frac = (n: { y?: number }) => ((n.y ?? 0) - 2) / 98
+  expect(root.y).toBe(2) // root at the left inset, not the leaf edge
+  expect(frac(root.children![0]!)).toBeCloseTo(0.016, 3)
+  expect(frac(root.children![0]!.children![0]!)).toBeCloseTo(0.035, 3)
+  expect(frac(root.children![1]!)).toBeCloseTo(0.143, 3)
+  // longest branches reach the right edge; the near leaves stay left of them
+  expect(frac(root.children![1]!.children![0]!)).toBeCloseTo(1, 3)
 })
 
 test('clusterLayout falls back to cladogram when no merge heights exist', () => {
