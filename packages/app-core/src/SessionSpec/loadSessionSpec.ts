@@ -7,23 +7,27 @@ import type { LayoutNode, ViewSpec } from './types.ts'
 import type { DockviewLayoutNode } from '../DockviewLayout/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// Convert LayoutNode (with view indices) to DockviewLayoutNode (with view IDs)
+// Convert LayoutNode (view indices into the spec's `views` array) to
+// DockviewLayoutNode (view IDs). `viewIds` is indexed the same as that spec
+// array — element i is the id of the view the i-th spec entry created, or
+// undefined if it created none — so a layout index maps to the right view
+// regardless of what order the views ended up in on the session.
 function convertLayoutNode(
   node: LayoutNode,
-  views: { id: string }[],
+  viewIds: (string | undefined)[],
 ): DockviewLayoutNode {
   if (node.views !== undefined) {
     // Panel node - convert view indices to view IDs
-    const viewIds = node.views
-      .map(idx => views[idx]?.id)
+    const ids = node.views
+      .map(idx => viewIds[idx])
       .filter((id): id is string => id !== undefined)
-    return { viewIds, size: node.size }
+    return { viewIds: ids, size: node.size }
   }
   if (node.children) {
     // Container node - recursively convert children
     return {
       direction: node.direction,
-      children: node.children.map(child => convertLayoutNode(child, views)),
+      children: node.children.map(child => convertLayoutNode(child, viewIds)),
       size: node.size,
     }
   }
@@ -88,23 +92,31 @@ export async function loadSessionSpec(
       )
     }
 
-    await Promise.all(
-      // `type` is the dispatch key, not view init data: forwarding it would
-      // land in the view's declarative init blob and trip the spurious
-      // "init ignored unknown key(s): type" warning meant to catch real typos
-      views.map(({ type, ...view }) =>
-        pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${type}`, {
-          ...view,
-          session: rootModel.session,
-        }),
-      ),
-    )
+    // Launch sequentially and record the id each spec view created, so the
+    // layout below can map its indices to real views. Reading session.views
+    // positionally afterwards only works while every handler happens to addView
+    // synchronously and in order; capturing the delta per launch instead is
+    // correct even if a handler awaits or adds an auxiliary view, and lets a
+    // later spec view (e.g. a connected MsaView) reference an earlier one that
+    // now already exists. `type` is the dispatch key, not view init data:
+    // forwarding it would land in the view's declarative init blob and trip the
+    // spurious "init ignored unknown key(s): type" warning meant to catch typos.
+    const sessionViews = () =>
+      (rootModel.session as unknown as { views?: { id: string }[] }).views ?? []
+    const createdViewIds: (string | undefined)[] = []
+    for (const { type, ...view } of views) {
+      const before = new Set(sessionViews().map(v => v.id))
+      await pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${type}`, {
+        ...view,
+        session: rootModel.session,
+      })
+      createdViewIds.push(sessionViews().find(v => !before.has(v.id))?.id)
+    }
 
     // Apply layout if specified
     if (layout) {
       // Cast through unknown since AbstractSessionModel doesn't include workspace types
       const session = rootModel.session as unknown as {
-        views: { id: string }[]
         useWorkspaces: boolean
         setUseWorkspaces: (value: boolean) => void
         setInit: (init: DockviewLayoutNode | undefined) => void
@@ -114,7 +126,7 @@ export async function loadSessionSpec(
       session.setUseWorkspaces(true)
 
       // Convert layout from view indices to view IDs and set init
-      session.setInit(convertLayoutNode(layout, session.views))
+      session.setInit(convertLayoutNode(layout, createdViewIds))
     }
   } catch (e) {
     console.error(e)
