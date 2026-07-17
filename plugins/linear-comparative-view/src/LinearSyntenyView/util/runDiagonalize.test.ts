@@ -62,11 +62,12 @@ function setupRpc() {
       args: {
         referenceRegions: Region[]
         currentRegions: Region[]
-        targetAssemblyName?: string
       },
     ) => {
       seenReferenceRegions.push(args.referenceRegions)
-      seenTargets.push(args.targetAssemblyName)
+      // the worker derives the fetch target from currentRegions' assembly
+      // (executeDiagonalize), so that is what the caller must get right
+      seenTargets.push(args.currentRegions[0]?.assemblyName)
       return {
         newRegions: [...args.currentRegions].reverse(),
         stats: {
@@ -111,10 +112,11 @@ describe('runDiagonalize cascade', () => {
     // level 1 reordered grape
     expect(grape.displayedRegions.map(r => r.refName)).toEqual(['g2', 'g1'])
 
-    // each level names the row it is reordering as the fetch target, so a
-    // multi-genome adapter draws the right pair (level 0 reorders cacao, level 1
-    // reorders grape) — without this the adapter defaults the mate to the first
-    // other assembly and the reordered row's alignments match nothing
+    // each level hands the row it is reordering as currentRegions, which is what
+    // the worker derives the fetch target from — so a multi-genome adapter draws
+    // the right pair (level 0 reorders cacao, level 1 reorders grape). Get this
+    // wrong and the adapter defaults the mate to the first other assembly, and
+    // the reordered row's alignments match nothing.
     expect(seenTargets).toEqual(['cacao', 'grape'])
   })
 

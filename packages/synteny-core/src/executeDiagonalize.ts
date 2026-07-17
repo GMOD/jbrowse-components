@@ -43,11 +43,9 @@ export interface DiagonalizeArgs {
   // horizontal axis)
   referenceRegions: Region[]
   // the axis being reordered (synteny: the row below; dotplot: the vertical
-  // axis)
+  // axis). Its assembly is also the pair selector handed to the adapter — see
+  // targetAssemblyName in the body.
   currentRegions: Region[]
-  // the assembly on the query axis; a multi-genome adapter uses it to select
-  // which of its N-1 pairs this call is about
-  targetAssemblyName?: string
   // forwarded to getFeatures for adapters with bpPerPx-driven level-of-detail.
   // Optional on purpose: the synteny view passes its reference view's zoom, the
   // dotplot passes nothing so its diagonalize fetch stays LOD-unculled.
@@ -75,7 +73,6 @@ export async function executeDiagonalize(
     adapters,
     referenceRegions,
     currentRegions,
-    targetAssemblyName,
     bpPerPx,
     stopToken,
     statusCallback,
@@ -85,6 +82,14 @@ export async function executeDiagonalize(
     throw new Error('must pass a unique session id')
   }
   checkStopToken(stopToken)
+
+  // Which of its N-1 pairs a multi-genome adapter (MCScanBlocksAdapter,
+  // AllVsAllPAFAdapter) should return: the assembly being reordered. Derived
+  // rather than taken as an argument — it is exactly currentRegions' assembly,
+  // so a caller could only ever pass the same value or a wrong one. Forgetting
+  // to pass it is what made the dotplot diagonalize against the wrong band
+  // while the synteny view worked.
+  const targetAssemblyName = currentRegions[0]?.assemblyName
 
   // The getFeatures call upgrades "Fetching features" to a determinate
   // download/parse bar while it runs. Fetch sequentially (not Promise.all): the

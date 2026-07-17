@@ -49,9 +49,6 @@ export async function runDotplotDiagonalize(
       adapters: [adapter],
       referenceRegions,
       currentRegions,
-      // the assembly on the vertical axis; a multi-genome adapter uses it to
-      // pick which pair this dotplot is (see the render path)
-      targetAssemblyName: currentRegions[0]?.assemblyName,
       stopToken: opts.stopToken,
       statusCallback: opts.statusCallback,
     })

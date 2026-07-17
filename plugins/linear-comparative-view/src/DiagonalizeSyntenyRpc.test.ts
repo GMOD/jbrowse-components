@@ -7,9 +7,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 // Capture the opts the RPC passes to getFeatures so we can assert the pair
-// selector (targetAssemblyName) is forwarded — a multi-genome adapter needs it
-// to draw the right band, and dropping the forward silently reintroduces the
-// "middle row never diagonalizes" bug.
+// selector (targetAssemblyName) reaches the adapter — a multi-genome adapter
+// needs it to draw the right band, and losing it silently reintroduces the
+// "middle row never diagonalizes" bug. It is derived from currentRegions'
+// assembly rather than passed, so this asserts the derivation.
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
 const getFeaturesInMultipleRegionsArray = jest.fn()
 jest
@@ -67,7 +68,6 @@ test('execute forwards targetAssemblyName to getFeatures and reorders the query 
         { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
         { refName: 'c2', start: 0, end: 1000, assemblyName: 'cacao' },
       ],
-      targetAssemblyName: 'cacao',
       bpPerPx: 1,
     },
     'MainThreadRpcDriver',

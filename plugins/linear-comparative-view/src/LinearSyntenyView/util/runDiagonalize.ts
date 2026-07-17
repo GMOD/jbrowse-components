@@ -59,14 +59,6 @@ export async function runDiagonalize(
       // alignments back to canonical.
       const referenceRegions = model.views[i]!.displayedRegions
       const currentRegions = model.views[i + 1]!.displayedRegions
-      // The assembly being reordered (the query axis / row below). A
-      // multi-genome adapter (MCScanBlocksAdapter, AllVsAllPAFAdapter) draws N-1
-      // pairs from one track, so the fetch must name which pair this level is —
-      // otherwise the adapter defaults the mate to the first other assembly and
-      // fetches the wrong band's alignments (whose query refNames match no
-      // currentRegions, leaving this row un-reordered). Mirrors the render
-      // path's `targetAssemblyName: v2.displayedRegions[0]?.assemblyName`.
-      const targetAssemblyName = currentRegions[0]?.assemblyName
       const adapters = await Promise.all(
         displays.map((d: LinearSyntenyDisplayModel) =>
           prepareDiagonalizeAdapter({
@@ -82,7 +74,6 @@ export async function runDiagonalize(
         adapters,
         referenceRegions,
         currentRegions,
-        targetAssemblyName,
         bpPerPx: model.views[i]!.bpPerPx,
         stopToken: opts.stopToken,
         statusCallback: opts.statusCallback,

@@ -31,7 +31,11 @@ function feature(
   })
 }
 
-test('execute forwards targetAssemblyName and reorders the vertical axis', async () => {
+// targetAssemblyName is not an argument: it is derived from currentRegions'
+// assembly, so the caller cannot forget it (which is exactly how the dotplot
+// used to diagonalize against the wrong band). Passing no target here and
+// asserting 'cacao' reaches the adapter is what proves the derivation.
+test('derives the pair selector from the vertical axis and reorders it', async () => {
   // grape (horizontal) has g1,g2; the alignments put cacao c2 on g1 and c1 on
   // g2, so the vertical axis must reorder to [c2, c1] from its input [c1, c2].
   getFeaturesInMultipleRegionsArray.mockResolvedValue([
@@ -62,7 +66,6 @@ test('execute forwards targetAssemblyName and reorders the vertical axis', async
         { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
         { refName: 'c2', start: 0, end: 1000, assemblyName: 'cacao' },
       ],
-      targetAssemblyName: 'cacao',
     },
     'MainThreadRpcDriver',
   )
@@ -100,7 +103,6 @@ test('returns null when the pair has no alignments', async () => {
       currentRegions: [
         { refName: 'c1', start: 0, end: 1000, assemblyName: 'cacao' },
       ],
-      targetAssemblyName: 'cacao',
     },
     'MainThreadRpcDriver',
   )
