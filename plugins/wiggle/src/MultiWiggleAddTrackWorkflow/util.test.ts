@@ -21,9 +21,14 @@ describe('parseItems', () => {
     ])
   })
 
-  it('falls back to line-split when JSON parses to a non-array', () => {
+  it('falls back to line-split when JSON parses to a bare string', () => {
     expect(parseItems('"https://a.bw"')).toEqual(['"https://a.bw"'])
-    expect(parseItems('{"foo":1}')).toEqual(['{"foo":1}'])
+  })
+
+  it('wraps a single JSON object as one subadapter config', () => {
+    expect(parseItems('{"type":"BigWigAdapter","source":"a"}')).toEqual([
+      { type: 'BigWigAdapter', source: 'a' },
+    ])
   })
 
   it('handles mixed CR/LF line endings and trims blanks', () => {

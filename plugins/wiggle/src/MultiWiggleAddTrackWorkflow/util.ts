@@ -23,6 +23,12 @@ export function parseItems(val: string): TrackItem[] {
     if (Array.isArray(parsed)) {
       return parsed as TrackItem[]
     }
+    // A single JSON object is one subadapter config — wrap it rather than
+    // letting it fall through to line-splitting, which would shred the JSON
+    // text into junk track rows.
+    if (typeof parsed === 'object' && parsed !== null) {
+      return [parsed as Record<string, unknown>]
+    }
   } catch {}
   return lineSplit(val)
 }
