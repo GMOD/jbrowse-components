@@ -3,7 +3,7 @@ import {
   getGraphicsCapabilities,
   preferredRenderer,
 } from '../ui/getGraphicsCapabilities.ts'
-import { isElectron } from '../util/index.ts'
+import { isElectron, rIC } from '../util/index.ts'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 
@@ -147,10 +147,17 @@ export function doAnalytics(
     rootModel &&
     !readConfObject(rootModel.jbrowse.configuration, 'disableAnalytics')
   ) {
-    // ok if these are unhandled
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    writeGAAnalytics(rootModel, initialTimestamp)
+    // Defer off the critical load path: writeGAAnalytics injects a third-party
+    // Google Analytics script and writeAWSAnalytics probes graphics
+    // capabilities, together ~hundreds of ms of main-thread work at startup.
+    // loadTime is still measured from initialTimestamp, so the reported metric
+    // is unaffected by running these when the browser is idle.
+    rIC(() => {
+      // ok if these are unhandled
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      writeAWSAnalytics(rootModel, initialTimestamp, initialSessionQuery)
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      writeGAAnalytics(rootModel, initialTimestamp)
+    })
   }
 }
