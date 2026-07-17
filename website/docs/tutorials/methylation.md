@@ -208,5 +208,5 @@ there.
   long-read cancer workflow, using the HG008 PacBio HiFi dataset
 - [modkit documentation](https://nanoporetech.github.io/modkit/) - generating
   bedMethyl pileups and phased output
-- [Gallery: methylation and base modifications](/gallery/#methylation) - a live
+- [Gallery: methylation and base modifications](/gallery/#alignments) - a live
   nanopore methylation-coloring example to open and explore
