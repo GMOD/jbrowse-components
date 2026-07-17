@@ -45,7 +45,10 @@ export interface TreeDrawingModel {
   height: number
   lineZoneHeight?: number
   scrollTop?: number
-  rowHeight: number
+  // Resolved px row height, never a fit-to-height sentinel: variants/maf keep a
+  // raw `rowHeight` where 0 means auto-fit, so this must be their
+  // `effectiveRowHeight`.
+  effectiveRowHeight: number
   totalHeight?: number
   hoveredTreeNode?: HoveredTreeNode
   sources?: TreeSource[]

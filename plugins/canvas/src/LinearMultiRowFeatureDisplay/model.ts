@@ -390,6 +390,11 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
+      // `rowHeight` is already resolved here; this satisfies tree-sidebar's
+      // `TreeDrawingModel`, whose other users keep a raw fit-sentinel prop.
+      get effectiveRowHeight(): number {
+        return self.rowHeight
+      },
       /**
        * #getter
        * Override BaseLinearDisplay.height so the track container matches the

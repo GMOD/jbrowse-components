@@ -1,10 +1,10 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { buildTree } from './clusterUtils.ts'
+import { buildTree, getLeafNames } from './clusterUtils.ts'
 import { clusterLayout } from './hierarchy.ts'
 import { setupTreeDrawingAutorun } from './treeDrawingAutorun.ts'
 
-import type { ClusterHierarchyNode } from './types.ts'
+import type { ClusterHierarchyNode, HoveredTreeNode } from './types.ts'
 
 const nwk = '((a:1,b:1):1,(c:1,d:1):1):0;'
 
@@ -22,7 +22,7 @@ const stubCtx = {
   restore() {},
   arc() {},
   fill() {},
-  fillRect() {},
+  fillRect: jest.fn(),
   strokeStyle: '',
   fillStyle: '',
   lineWidth: 0,
@@ -37,18 +37,24 @@ beforeAll(() => {
     stubCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext
 })
 
+// `rowHeight: 0` is the fit-to-height sentinel that variants/maf default to;
+// only `effectiveRowHeight` resolves it, which is what the autorun must read.
 const Display = types
   .model('TestTreeDisplay', {
     height: types.optional(types.number, 40),
     treeAreaWidth: types.optional(types.number, 80),
-    rowHeight: types.optional(types.number, 10),
+    rowHeight: types.optional(types.number, 0),
     lineZoneHeight: types.optional(types.number, 0),
   })
   .volatile(() => ({
     treeCanvas: null as HTMLCanvasElement | null,
     mouseoverCanvas: null as HTMLCanvasElement | null,
+    hoveredTreeNode: undefined as HoveredTreeNode | undefined,
   }))
   .views(self => ({
+    get effectiveRowHeight() {
+      return self.rowHeight === 0 ? self.height / 4 : self.rowHeight
+    },
     get totalHeight() {
       return self.height
     },
@@ -71,6 +77,9 @@ const Display = types
     },
     setMouseoverCanvasRef(ref: HTMLCanvasElement | null) {
       self.mouseoverCanvas = ref
+    },
+    setHoveredTreeNode(node?: HoveredTreeNode) {
+      self.hoveredTreeNode = node
     },
   }))
 
@@ -118,4 +127,24 @@ test('autorun sizes the mouseover canvas to view width x content height', () => 
 
   display.setHeight(20)
   expect(canvas.height).toBe(20 * DPR)
+})
+
+// Reading the raw `rowHeight` here painted zero-height rows, so hovering the
+// tree highlighted nothing in fit-to-height mode (variants' default).
+test('subtree hover highlights rows at the resolved row height', () => {
+  const { display } = View.create({ id: 'view3' })
+  setupTreeDrawingAutorun(display)
+  display.setMouseoverCanvasRef(document.createElement('canvas'))
+
+  const fillRect = stubCtx.fillRect as unknown as jest.Mock
+  fillRect.mockClear()
+
+  // The root's first child is the (a,b) subtree: rows 0 and 1.
+  const node = display.hierarchy.children![0]!
+  display.setHoveredTreeNode({ node, descendantNames: getLeafNames(node) })
+
+  expect(fillRect.mock.calls).toEqual([
+    [0, 0, 800, 10],
+    [0, 10, 800, 10],
+  ])
 })

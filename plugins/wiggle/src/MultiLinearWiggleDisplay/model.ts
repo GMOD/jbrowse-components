@@ -165,6 +165,11 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
+      // `rowHeight` is already resolved here; this satisfies tree-sidebar's
+      // `TreeDrawingModel`, whose other users keep a raw fit-sentinel prop.
+      get effectiveRowHeight() {
+        return self.rowHeight
+      },
       get rowHeightTooSmallForScalebar() {
         return self.rowHeight < 70
       },

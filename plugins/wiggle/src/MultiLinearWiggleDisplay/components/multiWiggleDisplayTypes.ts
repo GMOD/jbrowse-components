@@ -16,6 +16,7 @@ export interface MultiWiggleDisplayModel
   isDensityMode: boolean
   numSources: number
   rowHeight: number
+  effectiveRowHeight: number
   rowHeightTooSmallForScalebar: boolean
   hierarchy?: ClusterHierarchyNode
   treeAreaWidth: number

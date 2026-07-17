@@ -7,6 +7,17 @@ provide (`hierarchy`, `leaves`, `descendants`, `links`, `sum`, `sort`, and a
 `clusterLayout`/`assign*Y` dendrogram layout). d3-hierarchy is pure ESM and
 breaks Jest, so it isn't used as an npm dependency — don't reintroduce it.
 
+## `TreeDrawingModel` takes `effectiveRowHeight`, never a raw `rowHeight`
+
+The subtree-hover highlight sizes its row rects off `effectiveRowHeight`, which
+must be a resolved px value. Variants and MAF keep `rowHeight` as the raw
+property where `0` means fit-to-height — and `0` is their default, so reading it
+painted zero-height rects and the hover highlight silently did nothing on a
+fresh track. Canvas and wiggle resolve the sentinel inside their own `rowHeight`
+getter and alias `effectiveRowHeight` to it purely to satisfy this contract.
+Structural typing is what let the raw property through unnoticed, so keep the
+contract field named for the resolved value.
+
 ## SVG export: render the sidebar via `SvgTreeSidebar`, never `SvgRowLabels` alone
 
 A clusterable display's `renderSvg` must paint its left sidebar through

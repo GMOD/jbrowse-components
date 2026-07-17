@@ -69,7 +69,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         const {
           mouseoverCanvas,
           hierarchy,
-          rowHeight,
+          effectiveRowHeight,
           hoveredTreeNode,
           scrollTop = 0,
           sources,
@@ -102,8 +102,8 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           for (let i = 0, l = sources.length; i < l; i++) {
             const source = sources[i]!
             if (descendantSet.has(source.name)) {
-              const y = i * rowHeight
-              ctx.fillRect(0, y, viewWidth, rowHeight)
+              const y = i * effectiveRowHeight
+              ctx.fillRect(0, y, viewWidth, effectiveRowHeight)
             }
           }
 
