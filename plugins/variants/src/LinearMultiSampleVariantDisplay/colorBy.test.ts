@@ -3,7 +3,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-// Runtime "Color samples by" wiring: setColorBy writes colorBy directly onto
+// Runtime "Color by...→Samples" wiring: setColorBy writes colorBy directly onto
 // the display's config and recolors the sample rows (persisted as `layout`);
 // colorByAttributes lists the samplesTsv metadata keys the user can group by.
 describe('multi-sample variant colorBy', () => {

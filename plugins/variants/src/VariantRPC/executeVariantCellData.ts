@@ -72,7 +72,7 @@ interface CellDataBase {
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
-  // "Color cells by consequence" menu option.
+  // "Color by...→Consequence impact" menu option.
   hasConsequence: boolean
   simplifiedFeatures: SimplifiedVariantFeature[]
   // Interned genotype payload (see shared/genotypeCodec.ts): the distinct

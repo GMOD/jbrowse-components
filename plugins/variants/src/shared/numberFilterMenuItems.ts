@@ -10,6 +10,8 @@ const NumberFilterDialog = lazy(
   () => import('./components/NumberFilterDialog.tsx'),
 )
 
+// The label carries the trailing "..." at each call site: every one of these
+// opens the number dialog.
 function numberFilterMenuItem(
   model: IAnyStateTreeNode,
   menuLabel: string,
@@ -31,7 +33,7 @@ export function createMAFFilterMenuItem(model: {
   minorAlleleFrequencyFilter?: number
   setMafFilter: (arg: number) => void
 }): MenuItem {
-  return numberFilterMenuItem(model, 'Minor allele frequency', {
+  return numberFilterMenuItem(model, 'Minor allele frequency...', {
     title: 'Set minor allele frequency (MAF) filter',
     description:
       'Filter out variants with minor allele frequency below this threshold. Valid range: 0 to 0.5',
@@ -52,7 +54,7 @@ export function createMissingnessFilterMenuItem(model: {
   maxMissingnessFilter?: number
   setMaxMissingnessFilter: (arg: number) => void
 }): MenuItem {
-  return numberFilterMenuItem(model, 'Missingness', {
+  return numberFilterMenuItem(model, 'Missingness...', {
     title: 'Set missingness filter',
     description:
       'Hide variants where the fraction of no-call (missing) genotypes is above this threshold — useful for clearing out the sparse sites that clutter a multi-sample matrix. High missingness can also flag structural variants, so filter with care. Valid range: 0 to 1 (1 keeps every variant).',

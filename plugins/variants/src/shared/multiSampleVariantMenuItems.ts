@@ -3,14 +3,14 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
-import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import FormatColorFillIcon from '@mui/icons-material/FormatColorFill'
+import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import HeightIcon from '@mui/icons-material/Height'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
+import TuneIcon from '@mui/icons-material/Tune'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { capitalizeFirst } from './constants.ts'
@@ -164,11 +164,18 @@ export function variantTrackMenuItems(
         },
       ],
     },
-
+    // One "Color by..." with the cell coloring and the (optional) sample
+    // metadata coloring as subHeader-separated radio groups: they're
+    // independent axes (cell fill vs. sidebar/sample palette) but both answer
+    // "color by what", so they read better sectioned than as two sibling menus.
     {
-      label: 'Color cells by',
-      icon: FormatColorFillIcon,
+      label: 'Color by...',
+      icon: PaletteIcon,
       subMenu: [
+        {
+          label: 'Cells',
+          type: 'subHeader',
+        },
         {
           label: 'Genotype',
           helpText:
@@ -199,47 +206,12 @@ export function variantTrackMenuItems(
             self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
           },
         },
-      ],
-    },
-    {
-      label: 'Filter by',
-      icon: ClearAllIcon,
-      subMenu: [
-        createMAFFilterMenuItem(self),
-        createMissingnessFilterMenuItem(self),
-        {
-          label: 'Edit filters',
-          onClick: () => {
-            getSession(self).queueDialog(handleClose => [
-              AddFiltersDialog,
+        ...(self.colorByAttributes.length
+          ? [
               {
-                model: self,
-                handleClose,
+                label: 'Samples',
+                type: 'subHeader' as const,
               },
-            ])
-          },
-        },
-      ],
-    },
-    {
-      label: 'Cluster by genotype',
-      icon: CategoryIcon,
-      onClick: () => {
-        getSession(self).queueDialog(handleClose => [
-          ClusterDialog,
-          {
-            model: self,
-            handleClose,
-          },
-        ])
-      },
-    },
-    ...(self.colorByAttributes.length
-      ? [
-          {
-            label: 'Color samples by',
-            icon: PaletteIcon,
-            subMenu: [
               {
                 label: 'None',
                 type: 'radio' as const,
@@ -256,12 +228,46 @@ export function variantTrackMenuItems(
                   self.setColorBy(attr)
                 },
               })),
-            ],
+            ]
+          : []),
+      ],
+    },
+    {
+      label: 'Filter by...',
+      icon: FilterAltIcon,
+      subMenu: [
+        createMAFFilterMenuItem(self),
+        createMissingnessFilterMenuItem(self),
+        {
+          label: 'Edit filters...',
+          onClick: () => {
+            getSession(self).queueDialog(handleClose => [
+              AddFiltersDialog,
+              {
+                model: self,
+                handleClose,
+              },
+            ])
           },
-        ]
-      : []),
+        },
+      ],
+    },
+    {
+      label: 'Cluster by genotype...',
+      icon: CategoryIcon,
+      onClick: () => {
+        getSession(self).queueDialog(handleClose => [
+          ClusterDialog,
+          {
+            model: self,
+            handleClose,
+          },
+        ])
+      },
+    },
     {
       label: 'Edit colors/arrangement...',
+      icon: TuneIcon,
       disabled: !self.sourcesVolatile?.length,
       onClick: () => {
         getSession(self).queueDialog(handleClose => [

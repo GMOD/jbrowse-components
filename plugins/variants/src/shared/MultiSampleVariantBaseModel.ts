@@ -413,7 +413,7 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Whether any visible variant carries a SnpEff/VEP annotation, gating
-         * the "Color cells by consequence" menu option.
+         * the "Color by...→Consequence impact" menu option.
          */
         get hasConsequence() {
           return self.cellData?.hasConsequence ?? false

@@ -37,7 +37,7 @@ export function getAltColorForDosage(dosage: number) {
 
 // Sample-metadata keys that are internal row plumbing (identity, haplotype
 // index, rendering color/label) rather than user-facing grouping attributes.
-// Shared by the "Color samples by" attribute list (which offers everything a
+// Shared by the "Color by...→Samples" attribute list (which offers everything a
 // samplesTsv carries *except* these) and the hover tooltip (which shows the
 // metadata rows *except* these), so the two can't drift apart.
 export const INTERNAL_SOURCE_KEYS = new Set([
