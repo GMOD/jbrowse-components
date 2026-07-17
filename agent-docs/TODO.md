@@ -37,6 +37,10 @@ look at wakhan, pycnv
 
 ## reversed-region coverage: app wiring + a human look
 
+**Doing a broad pass? Read [guides/REVERSED_REGION_AUDIT.md](guides/REVERSED_REGION_AUDIT.md)
+first** — the rule, the three mark shapes, what's already verified clean (don't
+redo it), and the traps that made earlier tests prove less than they looked like.
+
 The alignments **draw path** is now covered both orientations by
 `renderers/reversedMirror.test.ts` (drive `drawAlignmentBlocks` forward and
 reversed over identical data; every mark must have a mirrored twin), across a

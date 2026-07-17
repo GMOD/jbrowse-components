@@ -112,6 +112,7 @@ how-tos in **[guides/](guides/)**, and design rationale in
 | ------------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
 | **[TEST_INFRASTRUCTURE.md](guides/TEST_INFRASTRUCTURE.md)**               | Browser + unit tests, WebGPU CI                             | Running or writing tests, validating RPC      |
 | **[PERF_INSTRUMENTATION.md](guides/PERF_INSTRUMENTATION.md)**             | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
+| **[REVERSED_REGION_AUDIT.md](guides/REVERSED_REGION_AUDIT.md)**           | Rendering correctness on flipped regions: the rule, the three mark shapes, what's checked, what isn't | Touching orientation code; auditing this bug class |
 | **[SCREENSHOT_REVIEW_HANDOFF.md](guides/SCREENSHOT_REVIEW_HANDOFF.md)**   | Working the `bad`-status screenshot-review backlog (regen pipeline, hosted-track sources) | Fixing website screenshot specs / gallery figures |
 
 ### `architecture-decision-records/`
