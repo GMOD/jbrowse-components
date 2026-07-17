@@ -3,8 +3,6 @@ import { Typography, alpha } from '@mui/material'
 import ExternalLink from './ExternalLink.tsx'
 import { makeStyles } from '../util/tss-react/index.ts'
 
-// produce a source-map resolved stack trace
-// reference code https://stackoverflow.com/a/77158517/2129219
 const EMAIL = 'jbrowse2@berkeley.edu'
 
 const useStyles = makeStyles()(theme => ({
