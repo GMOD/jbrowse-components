@@ -10,7 +10,19 @@ import {
   setup,
 } from './util.tsx'
 
+import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
 setup()
+
+// `view.tracks[0].displays[0]` is untyped, so a getter that doesn't exist on
+// the model reads as `any` and only fails as a waitFor timeout. Annotating it
+// with the real model type makes that a typecheck error instead.
+function alignmentsDisplay(
+  view: LinearGenomeViewModel,
+): LinearAlignmentsDisplayModel {
+  return view.tracks[0].displays[0]
+}
 
 beforeEach(() => {
   doBeforeEach()
@@ -35,7 +47,7 @@ test('group by strand stacks two sections in one track', async () => {
   await screen.findByTestId('pileup-display-done', ...opts)
 
   // setGroupBy is the Stage 5 action the dialog's "stack" mode calls.
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setGroupBy({ type: 'strand' })
 
   // The worker re-partitions; wait until every fetched region carries the two
@@ -72,7 +84,7 @@ test('group draws per-section paired-end arcs', async () => {
   await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
   await screen.findByTestId('pileup-display-done', ...opts)
 
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setReadConnections('arc')
   display.setGroupBy({ type: 'firstOfPairStrand' })
 
@@ -107,7 +119,7 @@ test('group draws per-section read-cloud lines', async () => {
   await user.click(await screen.findByTestId(hts('volvox_sv_cram'), ...opts))
   await screen.findByTestId('pileup-display-done', ...opts)
 
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setReadConnections('cloud')
   display.setGroupBy({ type: 'firstOfPairStrand' })
 
@@ -142,7 +154,7 @@ test('group draws per-section sashimi arcs', async () => {
   await user.click(await screen.findByTestId(hts('spliced'), ...opts))
   await screen.findByTestId('pileup-display-done', ...opts)
 
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setShowSashimiArcs(true)
   display.setGroupBy({ type: 'strand' })
 
@@ -151,13 +163,11 @@ test('group draws per-section sashimi arcs', async () => {
       expect(display.isGrouped).toBe(true)
       expect(display.groupOrder.length).toBe(2)
       // every section yields its own sashimi band, and at least one has arcs.
-      expect(display.sashimiSections.length).toBe(2)
+      expect(display.sashimiArcSections.length).toBe(2)
       let withArcs = 0
-      for (const section of display.sashimiSections) {
-        for (const data of section.rpcDataMap.values()) {
-          if (data.sashimiX1.length > 0) {
-            withArcs++
-          }
+      for (const section of display.sashimiArcSections) {
+        if (section.up.length + section.down.length > 0) {
+          withArcs++
         }
       }
       expect(withArcs).toBeGreaterThan(0)
@@ -181,7 +191,7 @@ test('chain mode groups whole chains by HP tag into sections', async () => {
   await user.click(await screen.findByTestId(hts('volvox_cram'), ...opts))
   await screen.findByTestId('pileup-display-done', ...opts)
 
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setLinkedReads('normal')
   display.setGroupBy({ type: 'tag', tag: 'HP' })
 
@@ -226,7 +236,7 @@ test('chain mode ignores a per-read group dimension (single section)', async () 
   )
   await screen.findByTestId('pileup-display-done', ...opts)
 
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setLinkedReads('normal')
   display.setGroupBy({ type: 'strand' })
 
@@ -255,7 +265,7 @@ test('ungroup restores a single section', async () => {
   )
   await screen.findByTestId('pileup-display-done', ...opts)
 
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setGroupBy({ type: 'strand' })
   await waitFor(() => {
     expect(display.isGrouped).toBe(true)
@@ -286,25 +296,25 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
   )
   await screen.findByTestId('pileup-display-done', ...opts)
 
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setGroupBy({ type: 'strand' })
   await waitFor(() => {
     expect(display.renderSections.length).toBe(2)
   }, delay)
 
-  const firstKey = display.groupOrder[0].key
-  const otherPileupBefore = display.sections.sections[1].pileupHeight
+  const firstKey = display.groupOrder[0]!.key
+  const otherPileupBefore = display.sections.sections[1]!.pileupHeight
   display.toggleGroupCollapsed(firstKey)
 
   await waitFor(() => {
     expect(display.isGroupCollapsed(firstKey)).toBe(true)
     // collapsed section's pileup band is 0; coverage band remains.
-    const sec = display.sections.sections[0]
+    const sec = display.sections.sections[0]!
     expect(sec.pileupHeight).toBe(0)
     expect(sec.coverageHeight).toBeGreaterThan(0)
     // fit-to-viewport hands the collapsed group's pileup slice to the group
     // still showing a pileup, so that section's band grows to fill the space.
-    expect(display.sections.sections[1].pileupHeight).toBeGreaterThan(
+    expect(display.sections.sections[1]!.pileupHeight).toBeGreaterThan(
       otherPileupBefore,
     )
   }, delay)
@@ -322,15 +332,15 @@ test('resizing a group caps its rows independently of the others', async () => {
   )
   await screen.findByTestId('pileup-display-done', ...opts)
 
-  const display = view.tracks[0]?.displays[0]
+  const display = alignmentsDisplay(view)
   display.setGroupBy({ type: 'strand' })
   await waitFor(() => {
     expect(display.renderSections.length).toBe(2)
   }, delay)
 
-  const firstKey = display.groupOrder[0].key
-  const before = display.sections.sections[0].pileupHeight
-  const otherBefore = display.sections.sections[1].pileupHeight
+  const firstKey = display.groupOrder[0]!.key
+  const before = display.sections.sections[0]!.pileupHeight
+  const otherBefore = display.sections.sections[1]!.pileupHeight
   // The first group needs >1 row for a shrink to be observable.
   expect(before).toBeGreaterThan(display.featureHeight + display.featureSpacing)
 
@@ -338,10 +348,10 @@ test('resizing a group caps its rows independently of the others', async () => {
   display.resizeGroupHeight(firstKey, -before)
 
   await waitFor(() => {
-    const sec = display.sections.sections[0]
+    const sec = display.sections.sections[0]!
     expect(sec.pileupHeight).toBeLessThan(before)
     expect(sec.pileupHeight).toBeGreaterThan(0)
     // the other section is untouched by a per-group resize.
-    expect(display.sections.sections[1].pileupHeight).toBe(otherBefore)
+    expect(display.sections.sections[1]!.pileupHeight).toBe(otherBefore)
   }, delay)
 }, 60000)
