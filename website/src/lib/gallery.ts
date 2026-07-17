@@ -107,7 +107,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'linear_synteny_gallery',
         guide: 'tutorials/synteny_visualization',
         description:
-          'Grape vs peach MCScan synteny: fine per-gene links riding on top of the larger blocks, red where colinear and blue where inverted.',
+          'Grape vs peach MCScan synteny: fine per-gene links riding on top of the larger blocks, red where collinear and blue where inverted.',
       },
       {
         label: 'Human vs mouse synteny',
