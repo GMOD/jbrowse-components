@@ -90,11 +90,17 @@ function initialize() {
       initialized: true,
     }))
     .views(() => ({
+      // mirrors the real model: resolves an alias or any casing to the
+      // canonical name, and returns undefined for a name this assembly lacks.
+      // Returning the input unchanged would make every string look like a valid
+      // refName, which is what isValidRefName keys off
       getCanonicalRefName(refName: string) {
-        if (refName === 'contigA') {
-          return 'ctgA'
+        const canonical: Record<string, string> = {
+          ctga: 'ctgA',
+          ctgb: 'ctgB',
+          contiga: 'ctgA',
         }
-        return refName
+        return canonical[refName.toLowerCase()]
       },
     }))
     .actions(() => ({
@@ -1201,8 +1207,11 @@ test('navToLocString with human assembly', async () => {
       regions: hg38Regions,
     }))
     .views(() => ({
+      // hg38 fixture refNames are unprefixed ('1'), so 'chr1' is an alias of
+      // '1'; undefined for anything the assembly lacks, as the real model does
       getCanonicalRefName(refName: string) {
-        return refName.replace('chr', '')
+        const name = refName.replace('chr', '')
+        return hg38Regions.some(r => r.refName === name) ? name : undefined
       },
     }))
     .actions(() => ({
@@ -1515,8 +1524,13 @@ describe('TrackInit with display configuration', () => {
         initialized: true,
       }))
       .views(() => ({
+        // undefined for a name this assembly lacks, as the real model does
         getCanonicalRefName(refName: string) {
-          return refName
+          const canonical: Record<string, string> = {
+            ctga: 'ctgA',
+            ctgb: 'ctgB',
+          }
+          return canonical[refName.toLowerCase()]
         },
       }))
 
