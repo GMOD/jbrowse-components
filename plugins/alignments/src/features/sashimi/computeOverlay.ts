@@ -4,6 +4,7 @@ import {
   colorNostrand,
   colorRevStrand,
 } from '@jbrowse/core/ui/theme'
+import { measureText } from '@jbrowse/core/util'
 
 import { colorTypeToStrand } from './compute.ts'
 
@@ -70,16 +71,30 @@ function getArcColor(strand: number) {
       : colorNostrand
 }
 
+// Type size of the arc's count label. Owned here rather than by
+// `SashimiArcLabel` (which imports it) because `labelSpanPx` below has to know
+// how wide the text renders in order to suppress it — a font size the component
+// picked on its own would silently desync the two.
+export const SASHIMI_LABEL_FONT_SIZE = 9
+
 // Screen-px span below which the count label can't fit and is suppressed.
 const MIN_LABEL_SPAN_PX = 22
 
-// Screen-px the count text actually needs: ~0.6em per digit at SashimiArcLabel's
-// fontSize 9, plus breathing room. Floored at MIN_LABEL_SPAN_PX so short counts
-// keep the conservative span they always had; the digit term only ever
-// suppresses *more* — a 4-5 digit count on deep RNA-seq overflowed its arc when
-// the threshold was a flat 22px regardless of how wide the text was.
+// Breathing room left around the text.
+const LABEL_PADDING_PX = 6
+
+// Screen-px the count text actually needs. `measureText` is the shared glyph-
+// width estimate (a table for one font, so approximate — but it beats a
+// hand-rolled per-digit constant, and it tracks SASHIMI_LABEL_FONT_SIZE instead
+// of restating it). Floored at MIN_LABEL_SPAN_PX so short counts keep the
+// conservative span they always had; the digit term only ever suppresses *more*
+// — a 4-5 digit count on deep RNA-seq overflowed its arc when the threshold was
+// a flat 22px regardless of how wide the text was.
 function labelSpanPx(count: number) {
-  return Math.max(MIN_LABEL_SPAN_PX, `${count}`.length * 6 + 6)
+  return Math.max(
+    MIN_LABEL_SPAN_PX,
+    measureText(count, SASHIMI_LABEL_FONT_SIZE) + LABEL_PADDING_PX,
+  )
 }
 
 // Fraction of the band a span-scaled arc may occupy. Arc height scales with the

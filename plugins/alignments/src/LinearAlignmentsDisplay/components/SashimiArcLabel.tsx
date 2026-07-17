@@ -1,3 +1,5 @@
+import { SASHIMI_LABEL_FONT_SIZE } from '../../features/sashimi/computeOverlay.ts'
+
 // Read-count label at a sashimi arc's apex, shared by the on-screen overlay and
 // the SVG export so the two can't drift. The white halo (paint-order: stroke)
 // keeps the count legible over both the arc and the coverage histogram behind
@@ -17,7 +19,7 @@ export default function SashimiArcLabel({
       y={y}
       textAnchor="middle"
       dominantBaseline="central"
-      fontSize={9}
+      fontSize={SASHIMI_LABEL_FONT_SIZE}
       fill="#222"
       stroke="#fff"
       strokeWidth={2.5}

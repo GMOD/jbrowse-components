@@ -236,11 +236,12 @@ export interface PileupDataResult {
   // Pre-packed GPU buffer for PASS_MOD_COV (worker-built).
   modCovPackedBuffer: ArrayBuffer
 
-  // Sashimi arc data (splice junctions from skip gaps)
+  // Sashimi arc data (splice junctions from skip gaps). One entry per junction,
+  // parallel across all four arrays.
   sashimiX1: Uint32Array // absolute genomic bp (junction start)
   sashimiX2: Uint32Array // absolute genomic bp (junction end)
-  sashimiColorTypes: Uint8Array // 0=forward, 1=reverse
-  sashimiCounts: Uint32Array // actual read counts per junction
+  sashimiColorTypes: Uint8Array // dominant strand: 0=forward, 1=reverse, 2=unknown
+  sashimiCounts: Uint32Array // supporting reads per junction, all strands
 
   // Layout info
   maxY: number
