@@ -396,23 +396,35 @@ describe('readGroupConnections', () => {
     ])
   })
 
-  it('paired: one mate link, drops unmapped-mate entry', () => {
+  it('mate-unmapped split read keeps its split junction, emits no dangling link', () => {
+    // Realistic scenario: read1's mate is unmapped (so has no position and is
+    // never fetched here), but read1 is itself SA-split into a primary +
+    // supplementary — both flagged mate-unmapped. The within-read split junction
+    // must still be drawn; no mate link is emitted because no second mate is
+    // present. (A read flagged mate-unmapped never appears next to the mate it
+    // declares unmapped, so filtering it out only ever deleted this junction.)
     const data = makeData({
       names: ['r', 'r'],
       flags: [
-        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
-        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR | SAM_FLAG_MATE_UNMAPPED,
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_MATE_UNMAPPED,
+        SAM_FLAG_PAIRED |
+          SAM_FLAG_FIRST_IN_PAIR |
+          SAM_FLAG_SUPPLEMENTARY |
+          SAM_FLAG_MATE_UNMAPPED,
       ],
-      strands: [1, -1],
+      strands: [1, 1],
       positions: [
         [100, 200],
         [300, 400],
       ],
       orientations: [1, 1],
       ys: [0, 0],
+      clips: [0, 50],
     })
     const cs = readGroupConnections([makeEntry(data, 0), makeEntry(data, 1)])
-    expect(cs).toHaveLength(0) // mate dropped → no link, no junction
+    expect(cs).toHaveLength(1)
+    expect(cs[0]!.isSplit).toBe(true)
+    expect([cs[0]!.e1.readIdx, cs[0]!.e2.readIdx]).toEqual([0, 1])
   })
 
   it('paired + SA-split: per-mate junction kept AND the mate link drawn', () => {

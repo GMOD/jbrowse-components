@@ -11,6 +11,33 @@ import { chainGroupingKey } from './chainGroupingKey.ts'
 
 import type { ChainFeatureData } from './webglRpcTypes.ts'
 
+// How a mate's supplementary segment splits away from its own primary. Kept as a
+// worker-local classification (the read-fill markers it maps to live in
+// buildChainResultFields); exported so that mapping can name the cases it reads.
+export const SPLIT_NONE = 0
+export const SPLIT_INVERSION = 1
+export const SPLIT_DELETION = 2
+
+// Classify one supplementary segment against its primary mate's strand:
+// opposite strand = an inversion junction; same known strand = a co-linear
+// deletion / tandem-dup junction; unknown (the primary is off-screen, strand 0)
+// = nothing to draw. Uses the shared splitInversion classifier so this can't
+// drift from the arc/connector coloring.
+function classifySplitKind(primaryStrand: number, suppStrand: number) {
+  if (splitInversion(primaryStrand, suppStrand) !== undefined) {
+    return SPLIT_INVERSION
+  }
+  return primaryStrand !== 0 && suppStrand !== 0 ? SPLIT_DELETION : SPLIT_NONE
+}
+
+// A mate can carry several supplementary segments; inversion is the stronger
+// signal and wins over a plain deletion, which in turn wins over none.
+function strongerSplitKind(a: number, b: number) {
+  return a === SPLIT_INVERSION || b === SPLIT_INVERSION
+    ? SPLIT_INVERSION
+    : Math.max(a, b)
+}
+
 /**
  * Group chain features by name and compute per-chain metadata used by the
  * main-thread layout. Returns the chain-keyed TypedArrays plus a worker-local
@@ -39,12 +66,11 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   // (inversion) and 4 (deletion) are applied per-read in the fan-out to BOTH
   // segments of a split mate — see chainMate{0,1}SplitKind below.)
   const chainSuppTypes = new Uint8Array(numChains)
-  // Per-mate (read1/read2) split kind: 0=none, 1=inverted (supplementary maps
-  // opposite-strand to its own primary — an inversion junction), 2=co-linear
-  // (same-strand supplementary — a deletion / tandem-dup junction). Worker-local.
-  // The fan-out paints BOTH segments of a split mate the matching color so the
-  // split read stands out and which mate split is visible; the normal partner
-  // mate keeps its own pair-orientation color.
+  // Per-mate (read1/read2) split kind (SPLIT_NONE/INVERSION/DELETION, see
+  // classifySplitKind). Worker-local. The fan-out paints BOTH segments of a
+  // split mate the matching color so the split read stands out and which mate
+  // split is visible; the normal partner mate keeps its own pair-orientation
+  // color.
   const chainMate0SplitKind = new Uint8Array(numChains)
   const chainMate1SplitKind = new Uint8Array(numChains)
   // Pair orientation (0=unknown, 1=LR, 2=RL, 3=RR, 4=LL) taken from the chain's
@@ -92,28 +118,23 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
       featureIdToChainIdx.set(f.id, chainIdx)
     }
     // Second pass over the (tiny) chain, only when it could matter: classify
-    // each mate's split as inverted (opposite-strand supp — via the shared
-    // splitInversion classifier, so this can't drift from the arc/connector) or
-    // co-linear (same-strand supp — a deletion junction). Inversion is the
-    // stronger signal and wins if a mate has both. Primaries are known from pass
-    // 1, so segment order is moot.
-    let mate0SplitKind = 0
-    let mate1SplitKind = 0
+    // each mate's split against its own primary (known from pass 1, so segment
+    // order is moot). A mate with several supplementary segments keeps the
+    // strongest kind.
+    let mate0SplitKind = SPLIT_NONE
+    let mate1SplitKind = SPLIT_NONE
     if (paired && hasSupp) {
       for (const f of chain) {
         if (f.flags & SAM_FLAG_SUPPLEMENTARY) {
           const isFirst = (f.flags & SAM_FLAG_FIRST_IN_PAIR) !== 0
-          const primary = isFirst ? mate0Primary : mate1Primary
-          const kind =
-            splitInversion(primary, f.strand) !== undefined
-              ? 1
-              : primary !== 0 && f.strand !== 0
-                ? 2
-                : 0
+          const kind = classifySplitKind(
+            isFirst ? mate0Primary : mate1Primary,
+            f.strand,
+          )
           if (isFirst) {
-            mate0SplitKind = kind === 1 ? 1 : mate0SplitKind || kind
+            mate0SplitKind = strongerSplitKind(mate0SplitKind, kind)
           } else {
-            mate1SplitKind = kind === 1 ? 1 : mate1SplitKind || kind
+            mate1SplitKind = strongerSplitKind(mate1SplitKind, kind)
           }
         }
       }

@@ -108,6 +108,27 @@ describe('filterChainFeatures showOnlySplitAlignments=true', () => {
     ])
   })
 
+  test('keeps a primary whose SA tag names an off-screen supplementary', () => {
+    // Only the primary is in view (its supplementary maps outside the fetched
+    // region), so no on-screen member carries the supplementary flag — but the
+    // SA tag proves the read is split, so it must survive "show only split".
+    const features = [
+      new SimpleFeature({
+        uniqueId: 'saonly-1',
+        refName: 'ctgA',
+        start: 0,
+        end: 100,
+        name: 'saonly',
+        flags: 0,
+        pair_orientation: 'F1R2',
+        tags: { SA: 'ctgB,5000,+,50S50M,60,0;' },
+      }),
+    ]
+    expect(names(filterChainFeatures(features, true, true, true))).toEqual([
+      'saonly',
+    ])
+  })
+
   test('keeps everything when showOnlySplitAlignments is false', () => {
     const features = pair('plain', 'F1R2', 0)
     expect(filterChainFeatures(features, true, true, false)).toHaveLength(2)

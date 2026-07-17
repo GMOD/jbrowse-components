@@ -10,7 +10,7 @@ import {
 } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
-import { detectSimplexModifications } from '@jbrowse/modifications-utils'
+import { detectSimplexModifications, getTag } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
@@ -19,7 +19,11 @@ import {
   buildChainFeatureData,
 } from '../shared/buildBaseFeatureData.ts'
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
-import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
+import {
+  SPLIT_DELETION,
+  SPLIT_INVERSION,
+  buildChainMetadata,
+} from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
 import { chainGroupingKey } from '../shared/chainGroupingKey.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
@@ -110,12 +114,16 @@ function dedupeById(features: Feature[]) {
   return out
 }
 
-// A chain is "split" when any of its members carries the supplementary flag —
-// i.e. the read has a chimeric/split segment elsewhere.
+// A chain is "split" when any of its members is a chimeric/split segment —
+// either it carries the supplementary flag, or its SA tag names a segment mapped
+// elsewhere. The SA check keeps a split read visible under "show only split
+// alignments" even when only its primary is in view and the supplementary maps
+// outside the fetched region (the arc path already draws that off-screen
+// junction); without it, such a read would be dropped as if it weren't split.
 function isSplitChain(chain: Feature[]) {
   return chain.some((f: Feature) => {
     const flags = (f.get('flags') as number | undefined) ?? 0
-    return !!(flags & SAM_FLAG_SUPPLEMENTARY)
+    return !!(flags & SAM_FLAG_SUPPLEMENTARY) || getTag(f, 'SA') !== undefined
   })
 }
 
@@ -157,6 +165,13 @@ export function filterChainFeatures(
   return deduped.filter(f => keptIds.has(f.id()))
 }
 
+// readChainHasSupp values written for a split mate's segments, layered on top of
+// the plain has-supp values (1=fwd primary, 2=rev primary) that buildChainMetadata
+// emits. SYNC: read.slang `chainHasSupp == 3u / == 4u`, colorUtils `chainSupp
+// === 3 / === 4`.
+const CHAIN_FILL_SPLIT_INVERSION = 3
+const CHAIN_FILL_SPLIT_DELETION = 4
+
 // Chain metadata + the per-read arrays linking each read back to its chain.
 // `readPairOrientations` (already built by buildBaseReadArrays) is corrected in
 // place: a supplementary segment's own record computes a divergent orientation
@@ -193,15 +208,18 @@ function buildChainResultFields(
     const f = features[i]!
     const cIdx = featureIdToChainIdx.get(f.id) ?? 0
     // Split markers are per-MATE: BOTH segments of a split mate get the marker
-    // (3=inversion, 4=deletion) so the whole split read stands out; the normal
-    // partner mate keeps the chain's plain has-supp value (1/2) and its pair
-    // color.
+    // so the whole split read stands out; the normal partner mate keeps the
+    // chain's plain has-supp value (1/2) and its pair color.
     const splitKind =
       f.flags & SAM_FLAG_FIRST_IN_PAIR
         ? chainMate0SplitKind[cIdx]!
         : chainMate1SplitKind[cIdx]!
     readChainHasSupp[i] =
-      splitKind === 1 ? 3 : splitKind === 2 ? 4 : chainSuppTypes[cIdx]!
+      splitKind === SPLIT_INVERSION
+        ? CHAIN_FILL_SPLIT_INVERSION
+        : splitKind === SPLIT_DELETION
+          ? CHAIN_FILL_SPLIT_DELETION
+          : chainSuppTypes[cIdx]!
     readChainIndices[i] = cIdx
     readNextRefs.push(f.nextRef ?? '')
     // Only overwrite when the chain's primary (paired) read set an orientation;

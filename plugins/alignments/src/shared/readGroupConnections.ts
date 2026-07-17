@@ -1,6 +1,5 @@
 import {
   SAM_FLAG_FIRST_IN_PAIR,
-  SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
@@ -83,17 +82,19 @@ export function connectionEndpoints<E extends MinEntry>({
 // which getClip already makes strand-correct) and emit a split junction between
 // each consecutive pair. Genomic order ≠ read order for inversions, so the sort
 // is what makes a fwd→rev junction chain the right two segments.
-function chainSubRead<E extends MinEntry>(segs: E[], out: ReadConnection<E>[]) {
-  segs.sort((a, b) => clipAt(a) - clipAt(b))
-  for (let j = 0; j < segs.length - 1; j++) {
-    out.push({ e1: segs[j]!, e2: segs[j + 1]!, isSplit: true })
+function splitJunctions<E extends MinEntry>(segs: E[]): ReadConnection<E>[] {
+  const ordered = [...segs].sort((a, b) => clipAt(a) - clipAt(b))
+  const out: ReadConnection<E>[] = []
+  for (let j = 0; j < ordered.length - 1; j++) {
+    out.push({ e1: ordered[j]!, e2: ordered[j + 1]!, isSplit: true })
   }
+  return out
 }
 
 // The primary (non-supplementary) segment carries the read's pair orientation /
 // template length, so the mate link sources its color from it. Falls back to
 // the read-order-first segment if no primary is on screen.
-export function primaryOf<E extends MinEntry>(segs: E[]) {
+function primaryOf<E extends MinEntry>(segs: E[]) {
   return segs.find(e => !(flagsOf(e) & SAM_FLAG_SUPPLEMENTARY)) ?? segs[0]!
 }
 
@@ -103,15 +104,21 @@ export function primaryOf<E extends MinEntry>(segs: E[]) {
 //     (e.g. spanning collapsed-intron exons) is returned by each region's
 //     fetch, arriving as duplicate entries sharing a readId (f.id() =
 //     adapter.id + fileOffset, stable across fetches). Collapse them, else the
-//     copies look like a 2-segment split read and chainSubRead fabricates a
+//     copies look like a 2-segment split read and splitJunctions fabricates a
 //     self-junction. Genuine split segments and mates are distinct records with
 //     distinct ids, so they survive.
-//   - filter: secondary alignments are alternate mappings, not split segments;
-//     paired reads with an unmapped mate would create a spurious mate link.
+//   - filter: secondary alignments are alternate mappings, not split segments,
+//     so they never chain. Mate-unmapped reads are NOT filtered here: an
+//     unmapped mate has no position and is never fetched alongside this read, so
+//     the only same-name members are this read's own primary + supplementary
+//     segments — dropping them would delete a legitimate split junction, and the
+//     first/second guard in readGroupConnections already blocks a dangling mate
+//     link when the second mate is absent.
 //   - partition: everything lands in `first` when the group is unpaired.
-// Shared by the mate-link resolver and the arc path's SA-augmented per-mate
-// chaining, so both agree on which segments belong to which mate.
-export function partitionReadGroup<E extends MinEntry>(entries: E[]) {
+// Used only by resolveReadGroup below, which both the mate-link resolver and the
+// arc path's SA-augmented chaining route through, so both agree on which
+// segments belong to which mate.
+function partitionReadGroup<E extends MinEntry>(entries: E[]) {
   const byId = new Map<string, E>()
   for (const e of entries) {
     const id = readIdOf(e)
@@ -119,11 +126,9 @@ export function partitionReadGroup<E extends MinEntry>(entries: E[]) {
       byId.set(id, e)
     }
   }
-  const filtered = [...byId.values()].filter(e => {
-    const f = flagsOf(e)
-    const paired = !!(f & SAM_FLAG_PAIRED)
-    return !(f & SAM_FLAG_SECONDARY) && !(paired && f & SAM_FLAG_MATE_UNMAPPED)
-  })
+  const filtered = [...byId.values()].filter(
+    e => !(flagsOf(e) & SAM_FLAG_SECONDARY),
+  )
   const hasPaired = filtered.some(e => flagsOf(e) & SAM_FLAG_PAIRED)
   const first: E[] = []
   const second: E[] = []
@@ -137,28 +142,45 @@ export function partitionReadGroup<E extends MinEntry>(entries: E[]) {
   return { first, second, hasPaired }
 }
 
-// Resolve a QNAME group (≥2 on-screen alignments sharing a read name) into the
-// connections to draw, unifying paired and split-read semantics:
-//   - paired: partition into first/second-in-pair sub-reads, chain each sub-
-//     read's split junctions in read order, then one mate link between the two
-//     sub-reads' primaries. A paired read that is itself SA-split therefore
-//     gets both its within-read junctions and the mate link.
-//   - unpaired (long read): a single sub-read whose consecutive segments are
-//     split junctions.
-// Secondary alignments are always dropped; paired entries with an unmapped mate
-// are dropped (they would create spurious links). Supplementary alignments are
-// kept — they are the split segments.
-export function readGroupConnections<E extends MinEntry>(
+// The shape every connection renderer shares: chain each mate's own segments in
+// read order (`chainMate`), then link the two mates' primaries (`mateLink`) —
+// but only when both mates are actually present, so a lone read (unmapped or
+// off-screen mate) never emits a dangling link. Generic over the produced
+// element `T` so the bezier overlay (ReadConnection) and the coverage arcs
+// (PendingArc) route through one skeleton and can't drift on which segments
+// join. Each caller supplies its own per-mate chainer: the bezier path chains
+// only the on-screen segments (`splitJunctions`), the arc path additionally
+// walks off-screen SA segments.
+export function resolveReadGroup<E extends MinEntry, T>(
   entries: E[],
-): ReadConnection<E>[] {
+  chainMate: (segs: E[]) => T[],
+  mateLink: (primary1: E, primary2: E) => T,
+): T[] {
   const { first, second, hasPaired } = partitionReadGroup(entries)
-  const out: ReadConnection<E>[] = []
-  chainSubRead(first, out)
+  const out = chainMate(first)
   if (hasPaired) {
-    chainSubRead(second, out)
+    out.push(...chainMate(second))
     if (first.length > 0 && second.length > 0) {
-      out.push({ e1: primaryOf(first), e2: primaryOf(second), isSplit: false })
+      out.push(mateLink(primaryOf(first), primaryOf(second)))
     }
   }
   return out
+}
+
+// Resolve a QNAME group (≥2 on-screen alignments sharing a read name) into the
+// connections to draw, unifying paired and split-read semantics: each mate's
+// on-screen split junctions (in read order) plus one mate link between the two
+// mates' primaries. A paired read that is itself SA-split therefore gets both
+// its within-read junctions and the mate link; an unpaired long read is a single
+// sub-read whose consecutive segments are split junctions. Secondary alignments
+// are dropped upstream; supplementary alignments are kept — they are the split
+// segments.
+export function readGroupConnections<E extends MinEntry>(
+  entries: E[],
+): ReadConnection<E>[] {
+  return resolveReadGroup(entries, splitJunctions, (e1, e2) => ({
+    e1,
+    e2,
+    isSplit: false,
+  }))
 }

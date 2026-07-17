@@ -14,8 +14,7 @@ import {
 import { classifyInsertSize } from '../../shared/insertSizeStats.ts'
 import {
   connectionEndpoints,
-  partitionReadGroup,
-  primaryOf,
+  resolveReadGroup,
 } from '../../shared/readGroupConnections.ts'
 
 import type { ArcsUploadData } from './types.ts'
@@ -491,6 +490,11 @@ function unpairedReadChain(
     }
   }
   for (const { data, readIdx } of entries) {
+    // Secondary alignments are alternate mappings, not part of the read's split
+    // chain — skip their SA tags too, matching the on-screen-segment loop above.
+    if (data.readFlags[readIdx]! & SAM_FLAG_SECONDARY) {
+      continue
+    }
     for (const sa of featurizeSA(
       data.readSuppAlignments?.[readIdx],
       data.readIds[readIdx]!,
@@ -622,28 +626,20 @@ function collectPendingArcs(
         }
       }
     } else {
-      // ≥2 on-screen paired alignments sharing a name. Partition into first/
-      // second-in-pair sub-reads and chain each in read order, stepping through
-      // any off-screen SA segment (gated by drawLongRange) exactly as the
-      // unpaired path does — so a 3rd, off-screen split segment still gets its
-      // junctions instead of being skipped over — then add the single mate link
-      // between the two mates' primaries. (readGroupConnections, used by the
-      // bezier overlay, only chains the on-screen entries; the SA-tag off-screen
-      // walk lives here so it doesn't leak pseudo-entries into that path.)
-      const { first, second, hasPaired } = partitionReadGroup(entries)
-      pendingArcs.push(...unpairedChainArcs(first, ctx))
-      if (hasPaired) {
-        pendingArcs.push(...unpairedChainArcs(second, ctx))
-        if (first.length > 0 && second.length > 0) {
-          pendingArcs.push(
-            pendingArcFromConnection({
-              e1: primaryOf(first),
-              e2: primaryOf(second),
-              isSplit: false,
-            }),
-          )
-        }
-      }
+      // ≥2 on-screen paired alignments sharing a name. Same group resolution as
+      // the bezier overlay (resolveReadGroup owns the partition + mate-link
+      // guard), but with the SA-augmented per-mate chainer: it steps through any
+      // off-screen SA segment (gated by drawLongRange) so a 3rd, off-screen split
+      // segment still gets its junctions instead of being skipped over. The
+      // bezier path chains only on-screen entries, so the SA walk lives here
+      // rather than leaking pseudo-entries into the shared skeleton.
+      pendingArcs.push(
+        ...resolveReadGroup(
+          entries,
+          segs => unpairedChainArcs(segs, ctx),
+          (e1, e2) => pendingArcFromConnection({ e1, e2, isSplit: false }),
+        ),
+      )
     }
   }
   return pendingArcs
