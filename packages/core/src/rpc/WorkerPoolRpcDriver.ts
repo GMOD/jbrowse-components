@@ -8,6 +8,9 @@ import type { StatusCallback } from '../util/progress.ts'
 
 export interface WorkerHandle {
   destroy(): void
+  // fires when the worker dies, so the pool can drop and re-boot the slot;
+  // drivers with no such failure mode omit it
+  onError?(callback: () => void): void
   call(
     functionName: string,
     args?: unknown,
@@ -30,7 +33,9 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 function detectHardwareConcurrency() {
-  return typeof navigator === 'undefined' ? 1 : navigator.hardwareConcurrency
+  // fall back to 1 if navigator.hardwareConcurrency is absent, else clamp()
+  // sees NaN and collapses the pool to zero workers
+  return typeof navigator === 'undefined' ? 1 : navigator.hardwareConcurrency || 1
 }
 
 class LazyWorker {
@@ -40,14 +45,22 @@ class LazyWorker {
 
   async getWorker() {
     if (!this.workerP) {
-      // wrap so a rejection clears workerP, letting the next caller retry
       const p = this.driver.makeWorker()
       this.workerP = p
-      p.catch(() => {
+      // drop this slot so the next getWorker re-boots, whether the boot failed
+      // or the booted worker later died (a dead worker never replies)
+      const invalidate = () => {
         if (this.workerP === p) {
           this.workerP = undefined
         }
-      })
+      }
+      p.catch(invalidate)
+      p.then(worker => {
+        worker.onError?.(() => {
+          invalidate()
+          worker.destroy()
+        })
+      }).catch(() => {})
     }
     return this.workerP
   }

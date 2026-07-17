@@ -31,6 +31,11 @@ class WebWorkerHandle {
     this.worker.terminate()
   }
 
+  // lets the pool discard this handle once the worker throws a fatal error
+  onError(callback: () => void) {
+    this.client.on('error', callback)
+  }
+
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${nanoid()}`
@@ -88,11 +93,15 @@ export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
 
     // send the worker its boot configuration using info from the pluginManager
     return new Promise((resolve: (w: WebWorkerHandle) => void, reject) => {
-      const listener = (e: MessageEvent) => {
+      const cleanup = () => {
+        instance.removeEventListener('message', onMessage)
+        instance.removeEventListener('error', onError)
+      }
+      const onMessage = (e: MessageEvent) => {
         switch (e.data.message) {
           case 'ready': {
+            cleanup()
             resolve(handle)
-            instance.removeEventListener('message', listener)
             break
           }
           case 'readyForConfig': {
@@ -103,14 +112,21 @@ export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
             break
           }
           case 'error': {
+            cleanup()
             reject(deserializeError(e.data.error))
-            instance.removeEventListener('message', listener)
             break
           }
           // No default
         }
       }
-      instance.addEventListener('message', listener)
+      // a worker that throws while loading its script posts no message, so
+      // reject on the raw ErrorEvent too, else the boot promise hangs forever
+      const onError = (e: ErrorEvent) => {
+        cleanup()
+        reject(new Error(e.message || 'worker failed to load'))
+      }
+      instance.addEventListener('message', onMessage)
+      instance.addEventListener('error', onError)
     })
   }
 }

@@ -11,9 +11,21 @@ function makeConfig(overrides: { workerCount?: number } = {}) {
 class FakeWorker implements WorkerHandle {
   destroyed = false
   calls: { fn: string; args: unknown; opts?: unknown }[] = []
+  private errorCallbacks: (() => void)[] = []
 
   destroy() {
     this.destroyed = true
+  }
+
+  onError(callback: () => void) {
+    this.errorCallbacks.push(callback)
+  }
+
+  // test hook: simulate an uncaught worker error reaching the handle
+  triggerError() {
+    for (const cb of this.errorCallbacks) {
+      cb()
+    }
   }
 
   async call(fn: string, args?: unknown, opts?: unknown) {
@@ -172,5 +184,21 @@ describe('WorkerPoolRpcDriver LazyWorker retry on failure', () => {
     expect(a).toBe(b)
     // only one worker was actually created
     expect(driver.workers).toHaveLength(1)
+  })
+
+  test('an uncaught worker error drops the slot so the next call re-boots', async () => {
+    const driver = new TestDriver(makeConfig({ workerCount: 1 }))
+    const first = await driver.getWorker('s')
+    // let the .then() that registers the onError handler run
+    await Promise.resolve()
+
+    ;(first as FakeWorker).triggerError()
+
+    const second = await driver.getWorker('s')
+    // the dead worker was terminated and a fresh one booted in its place
+    expect((first as FakeWorker).destroyed).toBe(true)
+    expect(second).not.toBe(first)
+    expect((second as FakeWorker).destroyed).toBe(false)
+    expect(driver.workers).toHaveLength(2)
   })
 })
