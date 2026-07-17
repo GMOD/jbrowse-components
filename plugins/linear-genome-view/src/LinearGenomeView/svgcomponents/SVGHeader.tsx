@@ -94,17 +94,15 @@ export default function SVGHeader({
   })
   return (
     <g id="header">
-      {assemblyNames.length ? (
-        <text
-          x={0}
-          y={0}
-          dominantBaseline="hanging"
-          fontSize={fontSize}
-          fill={fill}
-        >
-          {assemblyNames.join(', ')}
-        </text>
-      ) : null}
+      <text
+        x={0}
+        y={0}
+        dominantBaseline="hanging"
+        fontSize={fontSize}
+        fill={fill}
+      >
+        {assemblyNames.join(', ')}
+      </text>
 
       {effectiveShowCytobands ? (
         <CytobandOverview model={model} assembly={assembly} y={cytobandTop} />

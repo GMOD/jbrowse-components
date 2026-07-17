@@ -5,17 +5,9 @@ import SVGGridlines from './SVGGridlines.tsx'
 import SVGRuler from './SVGRuler.tsx'
 import SVGTracks from './SVGTracks.tsx'
 
+import type { SvgDisplayResult } from './util.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-interface DisplayResult {
-  track: {
-    configuration: AnyConfigurationModel
-    displays: { height: number }[]
-  }
-  result: React.ReactNode
-}
 
 // One LGV's worth of exported SVG: assembly label + ruler on top, then optional
 // gridlines and the track bodies. Shared verbatim by the linear-synteny and
@@ -36,7 +28,7 @@ export default function SVGView({
   leftBuffer = 0,
 }: {
   view: LinearGenomeViewModel
-  displayResults: DisplayResult[]
+  displayResults: SvgDisplayResult[]
   fontSize: number
   textHeight: number
   trackLabels: TrackLabelMode

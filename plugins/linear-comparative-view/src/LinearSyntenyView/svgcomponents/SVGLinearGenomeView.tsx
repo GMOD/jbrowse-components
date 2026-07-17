@@ -1,25 +1,18 @@
-import type { ReactNode } from 'react'
-
-import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import { getEnv } from '@jbrowse/core/util'
-import { SVGHighlights, SVGView } from '@jbrowse/plugin-linear-genome-view'
+import {
+  SVGHighlightsOverlay,
+  SVGView,
+} from '@jbrowse/plugin-linear-genome-view'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   LinearGenomeViewModel,
+  SvgDisplayResult,
   TrackLabelMode,
 } from '@jbrowse/plugin-linear-genome-view'
 
 export interface ViewDisplayResults {
   view: LinearGenomeViewModel
-  data: {
-    track: {
-      configuration: AnyConfigurationModel
-      displays: { height: number }[]
-    }
-    result: ReactNode
-  }[]
+  data: SvgDisplayResult[]
 }
 
 export default function SVGLinearGenomeView({
@@ -42,14 +35,6 @@ export default function SVGLinearGenomeView({
   tracksHeight: number
 }) {
   const { view } = displayResults
-  const { pluginManager } = getEnv(view)
-  const clipId = `highlight-clip-${view.id}`
-  const bookmarkHighlights = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint LinearGenomeView-HighlightSVGComponent | sync | Add an SVG highlight overlay in the LGV SVG export */
-    'LinearGenomeView-HighlightSVGComponent',
-    [] as ReactNode[],
-    { model: view, height: tracksHeight },
-  )
   return (
     <g transform={`translate(${exportMargin} ${fontSize})`}>
       <SVGView
@@ -65,10 +50,7 @@ export default function SVGLinearGenomeView({
         leftBuffer={exportMargin}
       />
       <g transform={`translate(${trackLabelOffset} ${rulerHeight})`}>
-        <SvgClipRect id={clipId} width={view.width} height={tracksHeight}>
-          <SVGHighlights model={view} height={tracksHeight} />
-          {bookmarkHighlights}
-        </SvgClipRect>
+        <SVGHighlightsOverlay model={view} tracksHeight={tracksHeight} />
       </g>
     </g>
   )

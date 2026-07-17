@@ -1,25 +1,16 @@
 import { getSession } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { labelOffset, trackBoxHeight } from './util.ts'
+import { labelOffset, svgTrackName, trackBoxHeight } from './util.ts'
 
+import type { SvgDisplayResult } from './util.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 type LGV = LinearGenomeViewModel
 
-interface DisplayResult {
-  track: {
-    configuration: AnyConfigurationModel
-    displays: { height: number }[]
-  }
-  result: React.ReactNode
-}
-
-function getOffsets(displayResults: DisplayResult[], textOffset: number) {
+function getOffsets(displayResults: SvgDisplayResult[], textOffset: number) {
   const offsets: number[] = []
   let total = 0
   for (const { track } of displayResults) {
@@ -39,7 +30,7 @@ export default function SVGTracks({
   leftBuffer = 0,
   legendWidth = 0,
 }: {
-  displayResults: DisplayResult[]
+  displayResults: SvgDisplayResult[]
   model: LGV
   textHeight: number
   fontSize: number
@@ -56,7 +47,7 @@ export default function SVGTracks({
     <>
       {displayResults.map(({ track, result }, i) => {
         const conf = track.configuration
-        const trackName = getTrackName(conf, session)
+        const trackName = svgTrackName(track, session)
         const display = track.displays[0]!
         const clipId = `track-clip-${model.id}-${conf.trackId}`
         const currentOffset = offsets[i]!

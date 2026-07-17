@@ -1,8 +1,8 @@
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import BlockClipGroup from './BlockClipGroup.tsx'
-import { makeBlockTicks } from '../util.ts'
+import { staticBlocksDx, vlinePath } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -15,40 +15,33 @@ export default function SVGGridlines({
   model: LGV
   height: number
 }) {
-  const {
-    dynamicBlocks: { contentBlocks },
-    offsetPx: viewOffsetPx,
-    bpPerPx,
-  } = model
+  const { gridlineTicks, width } = model
   const theme = useTheme()
   // share the on-screen gridline colors; getStrokeProps splits the rgba alpha
   // into strokeOpacity so the exported SVG stays renderer-safe
   const minor = getStrokeProps(theme.palette.gridlineMinor)
   const major = getStrokeProps(theme.palette.gridlineMajor)
+  const dx = staticBlocksDx(model)
+  const xs = (wantMajor: boolean) =>
+    gridlineTicks.filter(t => t.major === wantMajor).map(t => dx + t.x)
 
+  // gridlineTicks spans the whole staticBlocks frame, which overhangs the
+  // viewport on both sides, so clip to the view width rather than letting ticks
+  // bleed into the export margin
   return (
-    <>
-      {contentBlocks.map(block => (
-        <BlockClipGroup
-          key={block.key}
-          block={block}
-          viewOffsetPx={viewOffsetPx}
-          height={height}
-          idPrefix={`gridline-clip-${model.id}`}
-        >
-          {makeBlockTicks(block, bpPerPx).map(({ base, type, x }) => (
-            <line
-              key={`gridline-${base}`}
-              x1={x}
-              x2={x}
-              y1={0}
-              y2={height}
-              strokeWidth={1}
-              {...(type === 'major' ? major : minor)}
-            />
-          ))}
-        </BlockClipGroup>
-      ))}
-    </>
+    <SvgClipRect id={`gridline-clip-${model.id}`} width={width} height={height}>
+      <path
+        d={vlinePath(xs(false), 0, height)}
+        strokeWidth={1}
+        fill="none"
+        {...minor}
+      />
+      <path
+        d={vlinePath(xs(true), 0, height)}
+        strokeWidth={1}
+        fill="none"
+        {...major}
+      />
+    </SvgClipRect>
   )
 }

@@ -180,6 +180,7 @@ export {
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
+export { default as SVGHighlightsOverlay } from './LinearGenomeView/svgcomponents/SVGHighlightsOverlay.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
 export { default as ConnectedHoverHighlight } from './LinearGenomeView/components/ConnectedHoverHighlight.tsx'
 export { default as HoverPositionHighlight } from './LinearGenomeView/components/HoverPositionHighlight.tsx'
@@ -197,4 +198,6 @@ export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 export {
   totalHeight,
   trackBoxHeight,
+  trackLabelLeftOffset,
 } from './LinearGenomeView/svgcomponents/util.ts'
+export type { SvgDisplayResult } from './LinearGenomeView/svgcomponents/util.ts'

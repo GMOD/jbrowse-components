@@ -210,3 +210,32 @@ test('multi-wiggle SVG export includes row separators and cross-hatches when ena
   expect(svg).toContain('stroke="rgb(200,200,200)"') // cross-hatches
   expect(svg).toContain('stroke-opacity="0.8"')
 }, 45000)
+
+// x of each ruler coordinate label. The ruler clip group holds only the tick
+// path and these labels (no nested <g>), so a non-greedy match scopes cleanly to
+// it and can't pick up the scalebar or overview labels.
+function rulerLabelXs(svg: string) {
+  const ruler = /<g clip-path="url\(#ruler-clip-[^)]*\)">(.*?)<\/g>/.exec(svg)
+  return [...ruler![1]!.matchAll(/<text x="([\d.-]+)"/g)].map(m => Number(m[1]))
+}
+
+test('SVG export labels ruler coordinates when many regions are visible', async () => {
+  const { view } = await createView()
+  // Six visible regions. The export used to suppress every coordinate label
+  // once five or more content blocks were in view, though the on-screen
+  // scalebar labels them regardless — labelFitsInBlock already drops the ones a
+  // narrow region can't fit.
+  view.setDisplayedRegions(
+    Array.from({ length: 6 }, (_, i) => ({
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start: i * 8000,
+      end: i * 8000 + 8000,
+    })),
+  )
+  view.showAllRegions()
+  expect(view.dynamicBlocks.contentBlocks.length).toBeGreaterThanOrEqual(5)
+
+  await view.exportSvg({ rasterizeLayers: false })
+  expect(rulerLabelXs(getSavedSvg()).length).toBeGreaterThan(0)
+}, 45000)

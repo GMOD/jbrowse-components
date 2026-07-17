@@ -1,20 +1,20 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
-import { getTickDisplayStr, stripAlpha } from '@jbrowse/core/util'
+import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import BlockClipGroup from './BlockClipGroup.tsx'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import {
   RULER_MAJOR_TICK,
   RULER_MINOR_TICK,
   RULER_TICK_FONT_SIZE,
   getRulerLayout,
+  staticBlocksDx,
+  vlinePath,
 } from './util.ts'
 import {
   REF_NAME_LABEL_FONT_SIZE,
   getScalebarRefNameLabels,
   labelFitsInBlock,
-  makeBlockTicks,
   tickLabelWidth,
 } from '../util.ts'
 
@@ -22,26 +22,18 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 type LGV = LinearGenomeViewModel
 
+// Tick marks and their coordinate labels, read from the same model getters the
+// on-screen Gridlines/ScalebarCoordinateLabels use (gridlineTicks /
+// scalebarLabels), so tick pitch, label text and label placement can't drift
+// from the screen. Both are computed in the staticBlocks frame, which overhangs
+// the viewport, so shift by staticBlocksDx and let the caller's clip trim the
+// overhang.
 function Ruler({
-  start,
-  end,
-  bpPerPx,
-  reversed = false,
-  major = true,
-  minor = true,
-  hideText = false,
-  widthPx,
+  model,
   tickTopY,
   numbersBaselineY,
 }: {
-  start: number
-  end: number
-  bpPerPx: number
-  reversed?: boolean
-  major?: boolean
-  minor?: boolean
-  hideText?: boolean
-  widthPx: number
+  model: LGV
   // Top y of the tick marks; they hang downward toward the tracks.
   tickTopY: number
   // Baseline y for the tick-number text, positioned above the tick marks.
@@ -49,47 +41,41 @@ function Ruler({
 }) {
   const theme = useTheme()
   const color = stripAlpha(theme.palette.text.secondary)
-  const ticks = makeBlockTicks({ start, end, reversed }, bpPerPx, major, minor)
+  const { gridlineTicks, scalebarLabels, width } = model
+  const dx = staticBlocksDx(model)
+  const xs = (wantMajor: boolean) =>
+    gridlineTicks.filter(t => t.major === wantMajor).map(t => dx + t.x)
+  // major and minor marks share a stroke and differ only in length, so both
+  // collapse into a single path
+  const ticks =
+    vlinePath(xs(true), tickTopY, tickTopY + RULER_MAJOR_TICK) +
+    vlinePath(xs(false), tickTopY, tickTopY + RULER_MINOR_TICK)
   return (
     <>
-      {ticks.map(({ base, type, x }) => (
-        <line
-          key={`tick-${base}`}
-          x1={x}
-          x2={x}
-          y1={tickTopY}
-          y2={
-            tickTopY + (type === 'major' ? RULER_MAJOR_TICK : RULER_MINOR_TICK)
-          }
-          strokeWidth={1}
-          stroke={color}
-        />
-      ))}
-      {!hideText
-        ? ticks
-            .filter(({ type }) => type === 'major')
-            .map(({ base, x }) => {
-              const label = getTickDisplayStr(base + 1, bpPerPx)
-              const width = tickLabelWidth(label)
-              // center the label on its major tick (textAnchor middle at x), so
-              // the SVG export matches the on-screen scalebar, which centers via
-              // a zero-width flex tick (ScalebarCoordinateLabels). The fit test
-              // uses the centered span [x - width/2, x + width/2] so a label near
-              // either block edge is dropped rather than clipped.
-              return labelFitsInBlock(x - width / 2, width, widthPx) ? (
-                <text
-                  key={`label-${base}`}
-                  x={x}
-                  y={numbersBaselineY}
-                  textAnchor="middle"
-                  fontSize={RULER_TICK_FONT_SIZE}
-                  fill={color}
-                >
-                  {label}
-                </text>
-              ) : null
-            })
-        : null}
+      <path d={ticks} strokeWidth={1} stroke={color} fill="none" />
+      {/* Centered on the tick (textAnchor middle), matching the on-screen
+      scalebar's zero-width flex tick. scalebarLabels only drops labels that
+      overrun their *region*, so one at the view's edge survives it and would
+      export half-cut by the clip below — on screen that reads as a label
+      scrolled partly out of frame, but a static image has no frame to scroll,
+      so drop it instead. */}
+      {scalebarLabels
+        .filter(({ x, label }) => {
+          const w = tickLabelWidth(label)
+          return labelFitsInBlock(dx + x - w / 2, w, width)
+        })
+        .map(({ x, label, key }) => (
+          <text
+            key={key}
+            x={dx + x}
+            y={numbersBaselineY}
+            textAnchor="middle"
+            fontSize={RULER_TICK_FONT_SIZE}
+            fill={color}
+          >
+            {label}
+          </text>
+        ))}
     </>
   )
 }
@@ -164,42 +150,23 @@ export default function SVGRuler({
   // just above the marks.
   rulerHeight: number
 }) {
-  const {
-    dynamicBlocks: { contentBlocks },
-    offsetPx: viewOffsetPx,
-    bpPerPx,
-  } = model
-  const renderRuler = contentBlocks.length < 5
   const { tickTopY, numbersBaselineY } = getRulerLayout(rulerHeight)
   return (
     <>
       <SVGRegionSeparators model={model} height={rulerHeight} />
-      {contentBlocks.map(block => {
-        const { start, end, key, reversed, widthPx } = block
-        // always draw the tick lines (even on narrow whole-genome chromosomes);
-        // the numeric coordinate labels are what crowd a narrow region, and
-        // those are already suppressed via hideText
-        return widthPx >= 20 ? (
-          <BlockClipGroup
-            key={key}
-            block={block}
-            viewOffsetPx={viewOffsetPx}
-            height={rulerHeight}
-            idPrefix={`clip-${model.id}`}
-          >
-            <Ruler
-              hideText={!renderRuler}
-              start={start}
-              end={end}
-              bpPerPx={bpPerPx}
-              reversed={reversed}
-              widthPx={widthPx}
-              tickTopY={tickTopY}
-              numbersBaselineY={numbersBaselineY}
-            />
-          </BlockClipGroup>
-        ) : null
-      })}
+      {/* the tick frame overhangs the viewport on both sides; clip so ticks and
+      labels can't bleed into the export margin */}
+      <SvgClipRect
+        id={`ruler-clip-${model.id}`}
+        width={model.width}
+        height={rulerHeight}
+      >
+        <Ruler
+          model={model}
+          tickTopY={tickTopY}
+          numbersBaselineY={numbersBaselineY}
+        />
+      </SvgClipRect>
       <SVGRefNameLabels model={model} fontSize={fontSize} />
     </>
   )

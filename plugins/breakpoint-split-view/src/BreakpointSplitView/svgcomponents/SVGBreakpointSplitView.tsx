@@ -1,10 +1,14 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, sum } from '@jbrowse/core/util'
-import { SVGView, totalHeight } from '@jbrowse/plugin-linear-genome-view'
+import {
+  SVGView,
+  totalHeight,
+  trackLabelLeftOffset,
+} from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import { getTrackNameMaxLen, getTrackOffsets } from './util.ts'
+import { getTrackOffsets } from './util.ts'
 import Overlay from '../components/Overlay.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
@@ -56,9 +60,12 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     ),
   )
 
-  const trackLabelMaxLen =
-    getTrackNameMaxLen(visibleTracksByView.flat(), fontSize, session) + 40
-  const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
+  const trackLabelOffset = trackLabelLeftOffset({
+    tracks: visibleTracksByView.flat(),
+    trackLabels,
+    fontSize,
+    session,
+  })
   const textOffset = trackLabels === 'offset' ? textHeight : 0
   const trackOffsets = visibleTracksByView.map((tracks, idx) =>
     getTrackOffsets(

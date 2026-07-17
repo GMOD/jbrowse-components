@@ -1,19 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import type { ReactNode } from 'react'
-
-import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
-import { getEnv, getSession, max, measureText } from '@jbrowse/core/util'
-import { getTrackName } from '@jbrowse/core/util/tracks'
+import { getSession, max } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
-import SVGHighlights from './SVGHighlights.tsx'
+import SVGHighlightsOverlay from './SVGHighlightsOverlay.tsx'
 import SVGTracks from './SVGTracks.tsx'
-import { getHeaderLayout, totalHeight } from './util.ts'
+import { getHeaderLayout, totalHeight, trackLabelLeftOffset } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ExportSvgOptions } from '../types.ts'
@@ -66,23 +62,13 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       }),
     })),
   )
-  const trackLabelOffset =
-    trackLabels === 'left'
-      ? max(
-          visibleTracks.map(t =>
-            measureText(getTrackName(t.configuration, session), fontSize),
-          ),
-          0,
-        ) + 40
-      : 0
+  const trackLabelOffset = trackLabelLeftOffset({
+    tracks: visibleTracks,
+    trackLabels,
+    fontSize,
+    session,
+  })
   const w = width + trackLabelOffset + legendWidth
-
-  const { pluginManager } = getEnv(model)
-  const bookmarkHighlights = pluginManager.evaluateExtensionPoint(
-    'LinearGenomeView-HighlightSVGComponent',
-    [] as ReactNode[],
-    { model, height: tracksHeight },
-  )
 
   // the xlink namespace is used for rendering <image> tag
   return wrapSvgExport({
@@ -118,14 +104,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
           />
         </g>
         <g transform={`translate(${trackLabelOffset} ${offset})`}>
-          <SvgClipRect
-            id={`highlight-clip-${model.id}`}
-            width={width}
-            height={tracksHeight}
-          >
-            <SVGHighlights model={model} height={tracksHeight} />
-            {bookmarkHighlights}
-          </SvgClipRect>
+          <SVGHighlightsOverlay model={model} tracksHeight={tracksHeight} />
         </g>
       </g>
     ),
