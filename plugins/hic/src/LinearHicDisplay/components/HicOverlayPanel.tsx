@@ -50,6 +50,11 @@ const useStyles = makeStyles()(theme => ({
   spacer: {
     flex: 1,
   },
+  // reserve the reset button's slot so the row doesn't reflow when it appears
+  resetSlot: {
+    width: 18,
+    display: 'flex',
+  },
   gradientBar: {
     width: 100,
     height: 10,
@@ -91,19 +96,51 @@ const ResolutionRow = observer(function ResolutionRow({
           </option>
         ))}
       </select>
-      {resolutionBias === 0 ? null : (
-        <Tooltip title="Back to auto (tracks zoom)">
-          <IconButton
-            className={classes.iconBtn}
-            size="small"
-            onClick={() => {
-              model.resetResolutionBias()
-            }}
-          >
-            <RestartAltIcon className={classes.icon} />
-          </IconButton>
-        </Tooltip>
-      )}
+      <span className={classes.resetSlot}>
+        {resolutionBias === 0 ? null : (
+          <Tooltip title="Back to auto (tracks zoom)">
+            <IconButton
+              className={classes.iconBtn}
+              size="small"
+              onClick={() => {
+                model.resetResolutionBias()
+              }}
+            >
+              <RestartAltIcon className={classes.icon} />
+            </IconButton>
+          </Tooltip>
+        )}
+      </span>
+    </div>
+  )
+})
+
+// Normalization was previously a read-only readout that pointed users at the
+// track menu; the model already exposes the list and the setter, so it's the
+// same one-click control as the resolution row.
+const NormalizationRow = observer(function NormalizationRow({
+  model,
+}: {
+  model: LinearHicDisplayModel
+}) {
+  const { classes } = useStyles()
+  const { activeNormalization, availableNormalizations } = model
+  return (
+    <div className={classes.row}>
+      <span className={classes.normLabel}>Norm:</span>
+      <select
+        className={classes.select}
+        value={activeNormalization}
+        onChange={event => {
+          model.setActiveNormalization(event.target.value)
+        }}
+      >
+        {availableNormalizations?.map(norm => (
+          <option key={norm} value={norm}>
+            {norm}
+          </option>
+        ))}
+      </select>
     </div>
   )
 })
@@ -123,13 +160,12 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     showResolutionControls,
     availableResolutions,
     availableNormalizations,
-    activeNormalization,
   } = model
 
   const showLegendArea = showLegend && hasLegendData
-  const showResArea =
-    showResolutionControls && availableResolutions !== undefined
-  if (!showLegendArea && !showResArea) {
+  const showResArea = showResolutionControls && !!availableResolutions?.length
+  const showNormArea = (availableNormalizations?.length ?? 0) > 1
+  if (!showLegendArea && !showResArea && !showNormArea) {
     return null
   }
 
@@ -145,16 +181,17 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
             <div className={classes.row}>
               <span>Contacts</span>
               <span className={classes.spacer} />
-              <IconButton
-                className={classes.iconBtn}
-                size="small"
-                title="Hide legend"
-                onClick={() => {
-                  model.setShowLegend(false)
-                }}
-              >
-                <CloseIcon className={classes.icon} />
-              </IconButton>
+              <Tooltip title="Hide legend">
+                <IconButton
+                  className={classes.iconBtn}
+                  size="small"
+                  onClick={() => {
+                    model.setShowLegend(false)
+                  }}
+                >
+                  <CloseIcon className={classes.icon} />
+                </IconButton>
+              </Tooltip>
             </div>
             <div
               className={classes.gradientBar}
@@ -166,14 +203,7 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
             </div>
           </>
         ) : null}
-        {availableNormalizations && availableNormalizations.length > 1 ? (
-          <div
-            className={classes.normLabel}
-            title="Normalization (change in track menu)"
-          >
-            norm: {activeNormalization}
-          </div>
-        ) : null}
+        {showNormArea ? <NormalizationRow model={model} /> : null}
       </div>
     </TrackOverlayPortal>
   )

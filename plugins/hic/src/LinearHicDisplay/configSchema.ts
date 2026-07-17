@@ -107,7 +107,7 @@ const HicTrackConfigFactory = () => {
       showResolutionControls: {
         type: 'boolean',
         defaultValue: false,
-        description: 'show the on-figure resolution stepper in the overlay',
+        description: 'show the on-figure resolution dropdown in the overlay',
       },
       /**
        * #slot

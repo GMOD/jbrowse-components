@@ -2,6 +2,7 @@ import type React from 'react'
 
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
+import { GRADIENT_LEGEND_SVG_AREA_WIDTH } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getRpcSessionId,
@@ -191,6 +192,16 @@ export default function stateModelFactory(
           })
         )
       },
+      /**
+       * #getter
+       * Data has arrived for the current viewport and it is genuinely empty —
+       * the file has no contacts here at this resolution (HicAdapter returns
+       * `[]` for such a region pair). Lets the UI tell "nothing to show" apart
+       * from "still fetching", which otherwise look identical: a blank track.
+       */
+      get isEmpty(): boolean {
+        return this.dataLoaded && self.rpcData?.numContacts === 0
+      },
       get colorScheme(): HicColorScheme {
         return getConf(self, 'colorScheme')
       },
@@ -272,15 +283,13 @@ export default function stateModelFactory(
           ),
         )
       },
-    }))
-    .views(self => ({
       /**
        * #getter
        * The actual binsize to fetch at, after auto-pick + bias.
        */
       get effectiveResolution(): number | undefined {
         const avail = self.availableResolutions
-        return avail?.length ? avail[self.effectiveResolutionIdx]! : undefined
+        return avail?.length ? avail[this.effectiveResolutionIdx]! : undefined
       },
     }))
     .views(self => ({
@@ -363,7 +372,9 @@ export default function stateModelFactory(
        * when no legend will be drawn so the export framework can omit space.
        */
       svgLegendWidth(): number {
-        return self.showLegend && self.hasLegendData ? 140 : 0
+        return self.showLegend && self.hasLegendData
+          ? GRADIENT_LEGEND_SVG_AREA_WIDTH
+          : 0
       },
     }))
     .actions(self => ({
@@ -457,10 +468,9 @@ export default function stateModelFactory(
        * #action
        */
       setAvailableResolutions(f: number[]) {
-        // Sort ascending (smallest binsize first) so index-based stepping is
-        // consistent regardless of the order returned by hic-straw. This
-        // makes "Finer" = idx-1 = smaller binsize and "Coarser" = idx+1 =
-        // larger binsize.
+        // Sort ascending (smallest binsize first) regardless of the order
+        // hic-straw returns, so `resolutionBias` arithmetic is consistent: a
+        // negative bias is always finer, a positive one always coarser.
         self.availableResolutions = [...f].sort((a, b) => a - b)
       },
       /**

@@ -6,7 +6,7 @@ import {
   reducePrecision,
   toLocale,
 } from '@jbrowse/core/util'
-import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import { BlockMsg, DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import HicOverlayPanel from './HicOverlayPanel.tsx'
@@ -21,8 +21,11 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
+// `item` is absent over an empty bin, where the guide still draws (reading a
+// position off the axes is exactly what you want somewhere with no contact) but
+// there is nothing to put in a tooltip.
 interface Hover {
-  item: HicContactItem
+  item: HicContactItem | undefined
   clientX: number
   clientY: number
   localX: number
@@ -53,6 +56,28 @@ function HicTooltip({
       <div>{formatLocus(data, item.region2Idx, item.bin2)}</div>
       <div>Score: {reducePrecision(item.counts)}</div>
     </BaseTooltip>
+  )
+}
+
+// A .hic file legitimately has no contacts for many region pairs at a given
+// binsize (HicAdapter returns [] for those), which otherwise paints an empty
+// track indistinguishable from one still fetching.
+function EmptyMessage() {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        pointerEvents: 'none',
+      }}
+    >
+      <BlockMsg
+        severity="info"
+        message="No contacts in this region at this resolution"
+      />
+    </div>
   )
 }
 
@@ -105,7 +130,7 @@ const HicCanvas = observer(function HicCanvas({
   return (
     <div
       style={{
-        cursor: hover ? 'crosshair' : undefined,
+        cursor: 'crosshair',
         position: 'relative',
         width,
         height,
@@ -115,18 +140,13 @@ const HicCanvas = observer(function HicCanvas({
         const rect = event.currentTarget.getBoundingClientRect()
         const localX = event.clientX - rect.left
         const localY = event.clientY - rect.top
-        const item = model.hitTest(localX, localY)
-        setHover(
-          item
-            ? {
-                item,
-                clientX: event.clientX,
-                clientY: event.clientY,
-                localX,
-                localY,
-              }
-            : undefined,
-        )
+        setHover({
+          item: model.hitTest(localX, localY),
+          clientX: event.clientX,
+          clientY: event.clientY,
+          localX,
+          localY,
+        })
       }}
       onMouseLeave={() => {
         setHover(undefined)
@@ -142,6 +162,7 @@ const HicCanvas = observer(function HicCanvas({
           left: 0,
         }}
       />
+      {model.isEmpty ? <EmptyMessage /> : null}
       <HicOverlayPanel model={model} />
       {hover ? (
         <>
@@ -152,7 +173,7 @@ const HicCanvas = observer(function HicCanvas({
             width={width}
             height={height}
           />
-          {model.rpcData ? (
+          {hover.item && model.rpcData ? (
             <HicTooltip
               item={hover.item}
               data={model.rpcData}

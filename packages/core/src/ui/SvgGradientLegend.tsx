@@ -20,6 +20,11 @@ export interface GradientLabel {
 export const GRADIENT_LEGEND_WIDTH = 120
 export const GRADIENT_LEGEND_HEIGHT = 40
 
+// Horizontal space a display should reserve (via `svgLegendWidth()`) to park
+// this legend beside the plot in an SVG export: the bar itself plus a 10px
+// margin either side.
+export const GRADIENT_LEGEND_SVG_AREA_WIDTH = GRADIENT_LEGEND_WIDTH + 20
+
 // Shared SVG color-ramp key: a rounded translucent box, a horizontal gradient
 // bar, and labels below it. Used by any display that colors by a continuous
 // scale (Hi-C contact counts, LD r²/D'). Renders a <g>; position via x/y.

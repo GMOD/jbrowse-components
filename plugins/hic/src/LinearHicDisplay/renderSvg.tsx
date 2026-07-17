@@ -117,7 +117,11 @@ function HicSvgBody({
           colorScheme={colorScheme}
           useLogScale={useLogScale}
           width={visibleWidth}
-          positionOutside={opts.legendWidth !== undefined}
+          // >0 means the container reserved a legend area to the right (it
+          // maxes svgLegendWidth() across tracks). Absent/0 — e.g. the synteny
+          // and breakpoint exports, which don't reserve any — floats the legend
+          // over the plot instead.
+          positionOutside={(opts.legendWidth ?? 0) > 0}
           idSuffix={self.id}
         />
       ) : null}

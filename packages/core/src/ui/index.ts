@@ -62,6 +62,7 @@ export {
 export const VIEW_HEADER_HEIGHT = 28
 export {
   GRADIENT_LEGEND_HEIGHT,
+  GRADIENT_LEGEND_SVG_AREA_WIDTH,
   GRADIENT_LEGEND_WIDTH,
   default as SvgGradientLegend,
 } from './SvgGradientLegend.tsx'
