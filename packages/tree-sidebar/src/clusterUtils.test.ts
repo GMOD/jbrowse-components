@@ -3,6 +3,7 @@ import {
   getLeafNames,
   parseClusterTree,
   pruneNewickToLeaves,
+  validateClusterOrder,
 } from './clusterUtils.ts'
 import { hierarchy, leaves } from './hierarchy.ts'
 
@@ -131,4 +132,14 @@ test('buildClusteredLayout throws on out-of-bounds index', () => {
   expect(() => buildClusteredLayout([{ name: 'A' }], [], [5])).toThrow(
     /out of bounds/,
   )
+})
+
+test('validateClusterOrder accepts a full permutation', () => {
+  expect(() => { validateClusterOrder([2, 0, 1], 3) }).not.toThrow()
+})
+
+test('validateClusterOrder rejects out-of-range, duplicate, and wrong-length', () => {
+  expect(() => { validateClusterOrder([0, 3], 3) }).toThrow(/out of range/)
+  expect(() => { validateClusterOrder([0, 1, 1], 3) }).toThrow(/duplicated/)
+  expect(() => { validateClusterOrder([0, 1], 3) }).toThrow(/expected 3 entries/)
 })

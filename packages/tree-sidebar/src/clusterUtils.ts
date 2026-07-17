@@ -144,6 +144,30 @@ export function parseClusterOrder(paste: string): number[] {
     .map(r => +r)
 }
 
+// A pasted order is only meaningful if it's a full permutation of the rows:
+// buildClusteredLayout catches out-of-range indices, but a partial paste or one
+// with duplicates would silently drop/duplicate subtracks. Throw a clear error
+// instead. `order` is 0-based.
+export function validateClusterOrder(order: number[], length: number) {
+  const seen = new Set<number>()
+  for (const idx of order) {
+    if (!Number.isInteger(idx) || idx < 0 || idx >= length) {
+      throw new Error(
+        `Invalid clustering order: entry ${idx + 1} is out of range 1-${length}`,
+      )
+    }
+    if (seen.has(idx)) {
+      throw new Error(`Invalid clustering order: entry ${idx + 1} is duplicated`)
+    }
+    seen.add(idx)
+  }
+  if (order.length !== length) {
+    throw new Error(
+      `Invalid clustering order: expected ${length} entries, got ${order.length}`,
+    )
+  }
+}
+
 // Reconcile a persisted `layout` (user reorder/relabel/override) against the
 // rows currently discovered in the data: keep layout order, drop layout rows no
 // longer present, append newly-discovered rows in discovered order. Layout

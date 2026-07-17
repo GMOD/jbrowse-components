@@ -16,6 +16,7 @@ export {
   parseClusterOrder,
   parseClusterTree,
   reconcileLayout,
+  validateClusterOrder,
 } from './clusterUtils.ts'
 export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
 export { clusterProgressStatus } from './clusterProgressStatus.ts'

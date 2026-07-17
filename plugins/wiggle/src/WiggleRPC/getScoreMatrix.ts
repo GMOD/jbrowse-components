@@ -26,37 +26,50 @@ export async function getScoreMatrix({
     adapterConfig,
   })
 
-  const r0 = regions[0]!
-  const r0len = r0.end - r0.start
-  const w = Math.floor(r0len / bpPerPx)
-  const feats = await dataAdapter.getFeaturesArray(r0, args)
-
-  const groups = groupBy(feats, f => f.get('source')!)
-  const rows: Record<string, Float32Array> = {}
-
-  // pre-compute values used in inner loop
-  const r0Start = r0.start
   const invBpPerPx = 1 / bpPerPx
 
-  for (const source of sources) {
-    const { name } = source
-    const features = groups[name] ?? []
+  // Every visible block contributes a segment; each source's vector is those
+  // segments concatenated, so a multi-region (e.g. whole-genome) view clusters
+  // on the full visible data instead of silently only the first block.
+  const widths = regions.map(r =>
+    Math.max(0, Math.floor((r.end - r.start) * invBpPerPx)),
+  )
+  const offsets: number[] = []
+  let totalWidth = 0
+  for (const w of widths) {
+    offsets.push(totalWidth)
+    totalWidth += w
+  }
 
-    const arr = new Float32Array(w)
-    for (const feat of features) {
-      const fstart = feat.get('start')
-      const fend = feat.get('end')
-      const score = feat.get('score') ?? 0
+  const rows: Record<string, Float32Array> = {}
+  for (const { name } of sources) {
+    rows[name] = new Float32Array(totalWidth)
+  }
 
-      const startX = Math.max(0, ((fstart - r0Start) * invBpPerPx) | 0)
-      const endX = Math.min(w, ((fend - r0Start) * invBpPerPx) | 0)
+  for (const [i, region] of regions.entries()) {
+    const w = widths[i]!
+    const colOffset = offsets[i]!
+    const regionStart = region.start
+    const feats = await dataAdapter.getFeaturesArray(region, args)
+    const groups = groupBy(feats, f => f.get('source')!)
 
-      for (let x = startX; x < endX; x++) {
-        arr[x] = score
+    for (const { name } of sources) {
+      const arr = rows[name]!
+      const features = groups[name] ?? []
+      for (const feat of features) {
+        const fstart = feat.get('start')
+        const fend = feat.get('end')
+        const score = feat.get('score') ?? 0
+
+        const startX = Math.max(0, ((fstart - regionStart) * invBpPerPx) | 0)
+        const endX = Math.min(w, ((fend - regionStart) * invBpPerPx) | 0)
+
+        for (let x = startX; x < endX; x++) {
+          arr[colOffset + x] = score
+        }
       }
+      checkStopToken2(stopTokenCheck)
     }
-    rows[name] = arr
-    checkStopToken2(stopTokenCheck)
   }
 
   return rows

@@ -12,6 +12,7 @@ import {
   generateClusterRScript,
   matrixToTsv,
   parseClusterOrder,
+  validateClusterOrder,
 } from '@jbrowse/tree-sidebar'
 import {
   Button,
@@ -210,23 +211,20 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
           disabled={!paste.trim()}
           onClick={() => {
             const { sourcesWithoutLayout } = model
-            if (sourcesWithoutLayout.length) {
-              try {
-                // parseClusterOrder yields 1-based R indices; buildClusteredLayout
-                // (shared with the auto dialog) expects 0-based.
-                model.setLayout(
-                  buildClusteredLayout(
-                    sourcesWithoutLayout,
-                    model.layout,
-                    parseClusterOrder(paste).map(idx => idx - 1),
-                  ),
-                )
-              } catch (e) {
-                console.error(e)
-                getSession(model).notifyError(`${e}`, e)
-              }
+            try {
+              // parseClusterOrder yields 1-based R indices; buildClusteredLayout
+              // (shared with the auto dialog) expects 0-based.
+              const order = parseClusterOrder(paste).map(idx => idx - 1)
+              validateClusterOrder(order, sourcesWithoutLayout.length)
+              model.setLayout(
+                buildClusteredLayout(sourcesWithoutLayout, model.layout, order),
+              )
+              // keep the dialog open on a bad paste so the user can fix it
+              handleClose()
+            } catch (e) {
+              console.error(e)
+              getSession(model).notifyError(`${e}`, e)
             }
-            handleClose()
           }}
         >
           Apply clustering
