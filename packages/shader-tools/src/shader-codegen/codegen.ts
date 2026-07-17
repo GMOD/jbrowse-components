@@ -64,6 +64,8 @@ interface Parameter {
 interface EntryPoint {
   name: string
   stage: 'vertex' | 'fragment' | 'compute'
+  // Slang reflects `[numthreads(X, Y, Z)]` on a compute entry point.
+  threadGroupSize?: [number, number, number]
   parameters: {
     name: string
     type: SlangType | StructType
@@ -123,18 +125,20 @@ function findVertexStruct(r: Reflection) {
   // Prefer an instance struct read from a StructuredBuffer at module scope —
   // that's the layout the TS side has to pack. Fall back to a vertex-input
   // struct (ATTR-semantic parameter) for shaders that use vertex attributes.
+  // The `struct` check matters: a compute shader's StructuredBuffer<uint>
+  // reflects a scalar resultType, which has no fields to pack.
   for (const p of r.parameters) {
     const t = p.type as {
       kind?: string
       baseShape?: string
-      resultType?: StructType
+      resultType?: { kind?: string }
     }
     if (
       t.kind === 'resource' &&
       t.baseShape === 'structuredBuffer' &&
-      t.resultType
+      t.resultType?.kind === 'struct'
     ) {
-      return t.resultType
+      return t.resultType as StructType
     }
   }
   const vs = r.entryPoints.find(e => e.stage === 'vertex')
@@ -215,14 +219,19 @@ export function emitInterface(inputs: CodegenInputs) {
   const { baseName, reflection, textures, vertsPerInstance, exportedConsts } =
     inputs
   const lines = header(baseName)
-  const halImports = ['GlAttributeLayout']
+  // Import only the HAL types the emitted module actually references. A compute
+  // shader has no instance attributes and no textures, so it imports neither.
+  const vs = findVertexStruct(reflection)
+  const halImports = vs ? ['GlAttributeLayout'] : []
   if (textures && textures.length > 0) {
     halImports.push('TextureBinding')
   }
-  lines.push(
-    `import type { ${halImports.join(', ')} } from '@jbrowse/render-core/hal'`,
-    '',
-  )
+  if (halImports.length > 0) {
+    lines.push(
+      `import type { ${halImports.join(', ')} } from '@jbrowse/render-core/hal'`,
+      '',
+    )
+  }
 
   if (vertsPerInstance !== undefined) {
     lines.push(`export const VERTS_PER_INSTANCE = ${vertsPerInstance}`, '')
@@ -231,6 +240,18 @@ export function emitInterface(inputs: CodegenInputs) {
   if (exportedConsts) {
     for (const [name, value] of Object.entries(exportedConsts)) {
       lines.push(`export const ${name} = ${value}`, '')
+    }
+  }
+
+  // Compute entry point + its [numthreads] X dimension. Both come from the
+  // shader's own declaration, so the dispatch count a TS caller computes
+  // (ceil(work / WORKGROUP_SIZE_X)) can't drift from the workgroup the kernel
+  // actually declares, and the entry-point name can't drift from the function.
+  const cs = reflection.entryPoints.find(e => e.stage === 'compute')
+  if (cs) {
+    lines.push(`export const COMPUTE_ENTRY_POINT = ${toStringLiteral(cs.name)}`, '')
+    if (cs.threadGroupSize) {
+      lines.push(`export const WORKGROUP_SIZE_X = ${cs.threadGroupSize[0]}`, '')
     }
   }
 
@@ -346,7 +367,6 @@ export function emitInterface(inputs: CodegenInputs) {
     lines.push('}', '')
   }
 
-  const vs = findVertexStruct(reflection)
   if (vs) {
     let cursor = 0
     const attrs = vs.fields.map(f => {

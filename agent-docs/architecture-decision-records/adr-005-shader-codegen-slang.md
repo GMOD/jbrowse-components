@@ -155,6 +155,12 @@ A build-time step compiles each `.slang` to:
    - TS interface types
    - `writeInstance(buf, i, inst)` typed packer
    - `GL_ATTRIBUTES: GlAttributeLayout[]` (matches `PassDescriptor` shape)
+   - compute entry points only: `COMPUTE_ENTRY_POINT` and `WORKGROUP_SIZE_X`,
+     read from the entry point's name and its `[numthreads(X, …)]`, so a TS
+     dispatch count (`ceil(work / WORKGROUP_SIZE_X)`) can't drift from the
+     workgroup the kernel declares. A compute shader emits no instance layout
+     or `GL_ATTRIBUTES` — its `StructuredBuffer<T>` is a bound resource, not a
+     per-instance vertex buffer the CPU packs.
 
 Generated files are committed. CI regenerates and fails the build if the output
 differs (catches "forgot to run gen:shaders").
@@ -264,25 +270,26 @@ field was renamed/removed. Stride drift is no longer expressible.
 
 ### Migration staging
 
-1. **Tooling infrastructure** ✅ (landed): slangc fetch script, build-shaders
-   script, committed `codegen.ts` + `vulkanGlslToWebgl2.ts`, `.cache/` gitignore
-   entry, pnpm task.
-2. **HAL vertex-buffer support** (current stage): extend `WebGPUHal` per
-   Prerequisite A so it can drive vertex-attribute-based passes. No shader
-   migration yet — just a feature flag that's off by default. Storage-buffer
-   passes continue to work unchanged.
-3. **Canvas feature shaders**: migrate `rect` first as the end-to-end proof of
-   the new pipeline. Then `line`, `chevron`, `arrow`.
-4. **Remaining vertex shaders**: wiggle, dotplot, HiC, synteny (two), variant
-   (three), LD.
-5. **Compute shaders**: LD compute, LD phased compute. WGSL-only, fastest.
-6. **Cleanup**: delete `*Shaders.ts` / `*GlslShaders.ts` / `HP_*_CORE` once all
-   shaders are migrated.
+All stages have landed; every shader in the repo is authored in Slang and there
+are no hand-written WGSL/GLSL sources left.
 
-Each stage is its own PR and merges independently. Rollback of any stage is a
-revert of that PR; the build infrastructure stays in place. Critically, stage 2
-lands without migrating any shader, so a regression there cannot affect
-production rendering.
+1. **Tooling infrastructure** ✅: slangc fetch script, build-shaders script,
+   committed `codegen.ts` + `vulkanGlslToWebgl2.ts`, `.cache/` gitignore entry,
+   pnpm task.
+2. **HAL vertex-buffer support** ✅: `WebGPUHal` drives vertex-attribute passes
+   per Prerequisite A.
+3. **Canvas feature shaders** ✅: `rect` first as the end-to-end proof, then
+   `line`, `chevron`, `arrow`.
+4. **Remaining vertex shaders** ✅: wiggle, dotplot, HiC, synteny, variant, LD.
+5. **Compute shaders** ✅: `ldCompute` / `ldPhasedCompute` (`//! targets: wgsl`).
+   These bind `StructuredBuffer`/`RWStructuredBuffer` and are dispatched
+   directly against `getGpuDevice()` from the variant RPC — the HAL has no
+   compute path, since one call site isn't enough to design an abstraction
+   against. A second compute kernel is the trigger to add one.
+6. **Cleanup** ✅: `*Shaders.ts` / `*GlslShaders.ts` / `HP_*_CORE` deleted.
+
+Each stage was its own PR, independently revertable, with the build
+infrastructure staying in place regardless.
 
 ### Lessons learned (from the rect-first spike)
 

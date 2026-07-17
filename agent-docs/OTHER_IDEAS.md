@@ -924,10 +924,6 @@ marker).
 **Rolling average.** Smoothing option for wiggle/coverage (rolling mean, rendered as a
 line).
 
-**Migrate compute shaders to Slang.** `plugins/variants/src/VariantRPC/{ldComputeShader,
-ldPhasedComputeShader}.ts` are hand-written WGSL (WebGPU-only); migrate to Slang with
-`//! targets: wgsl`. Not urgent — they work.
-
 ## UI / UX
 
 **CSS Custom Highlight API for search text.** `HighlightText` in `FacetedSelector`

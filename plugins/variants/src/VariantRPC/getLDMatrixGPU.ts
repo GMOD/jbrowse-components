@@ -2,13 +2,12 @@
 
 import { getGpuDevice, onDeviceLost } from '@jbrowse/render-core/gpuDevice'
 
-import { ldComputeShader } from './ldComputeShader.ts'
-import { ldPhasedComputeShader } from './ldPhasedComputeShader.ts'
+import * as ldCompute from '../LDDisplay/components/shaders/ldCompute.generated.ts'
+import * as ldPhasedCompute from '../LDDisplay/components/shaders/ldPhasedCompute.generated.ts'
 
 import type { LDMetric } from './getLDMatrix.ts'
 import type { PackedHaplotypes } from '@jbrowse/ld-core'
 
-const WORKGROUP_SIZE = 64
 const MIN_WORK = 500_000
 
 interface ComputeState {
@@ -16,21 +15,6 @@ interface ComputeState {
   pipeline: GPUComputePipeline
   bindGroupLayout: GPUBindGroupLayout
 }
-
-let computeState: ComputeState | null = null
-let computeStatePromise: Promise<ComputeState> | null = null
-
-let phasedComputeState: ComputeState | null = null
-let phasedComputeStatePromise: Promise<ComputeState> | null = null
-
-// Invalidate cached pipelines when the device is lost so the next call
-// re-creates them against a freshly acquired device.
-onDeviceLost(() => {
-  computeState = null
-  computeStatePromise = null
-  phasedComputeState = null
-  phasedComputeStatePromise = null
-})
 
 function makeBindGroupLayout(device: GPUDevice) {
   return device.createBindGroupLayout({
@@ -54,60 +38,67 @@ function makeBindGroupLayout(device: GPUDevice) {
   })
 }
 
-async function ensurePipeline(device: GPUDevice): Promise<ComputeState> {
-  if (computeState?.device === device) {
-    return computeState
+// Both LD kernels share a bind group layout and differ only in source + entry
+// point, so one cache factory serves both. The cache is invalidated on device
+// loss so the next call rebuilds against a freshly acquired device.
+function makePipelineCache(code: string, entryPoint: string) {
+  let state: ComputeState | null = null
+  // Serializes concurrent callers during async pipeline creation.
+  let statePromise: Promise<ComputeState> | null = null
+  onDeviceLost(() => {
+    state = null
+    statePromise = null
+  })
+  return async function ensurePipeline(device: GPUDevice) {
+    if (state?.device === device) {
+      return state
+    }
+    if (statePromise) {
+      return statePromise
+    }
+    statePromise = (async () => {
+      const module = device.createShaderModule({ code })
+      const bindGroupLayout = makeBindGroupLayout(device)
+      const pipeline = await device.createComputePipelineAsync({
+        layout: device.createPipelineLayout({
+          bindGroupLayouts: [bindGroupLayout],
+        }),
+        compute: { module, entryPoint },
+      })
+      state = { device, pipeline, bindGroupLayout }
+      statePromise = null
+      return state
+    })()
+    return statePromise
   }
-  if (computeStatePromise) {
-    return computeStatePromise
-  }
-  computeStatePromise = (async () => {
-    const module = device.createShaderModule({ code: ldComputeShader })
-    const bindGroupLayout = makeBindGroupLayout(device)
-    const pipeline = await device.createComputePipelineAsync({
-      layout: device.createPipelineLayout({
-        bindGroupLayouts: [bindGroupLayout],
-      }),
-      compute: { module, entryPoint: 'computeLD' },
-    })
-    computeState = { device, pipeline, bindGroupLayout }
-    computeStatePromise = null
-    return computeState
-  })()
-  return computeStatePromise
 }
 
-async function ensurePhasedPipeline(device: GPUDevice): Promise<ComputeState> {
-  if (phasedComputeState?.device === device) {
-    return phasedComputeState
-  }
-  if (phasedComputeStatePromise) {
-    return phasedComputeStatePromise
-  }
-  phasedComputeStatePromise = (async () => {
-    const module = device.createShaderModule({ code: ldPhasedComputeShader })
-    const bindGroupLayout = makeBindGroupLayout(device)
-    const pipeline = await device.createComputePipelineAsync({
-      layout: device.createPipelineLayout({
-        bindGroupLayouts: [bindGroupLayout],
-      }),
-      compute: { module, entryPoint: 'computeLDPhased' },
-    })
-    phasedComputeState = { device, pipeline, bindGroupLayout }
-    phasedComputeStatePromise = null
-    return phasedComputeState
-  })()
-  return phasedComputeStatePromise
-}
+const ensureUnphasedPipeline = makePipelineCache(
+  ldCompute.WGSL_SOURCE,
+  ldCompute.COMPUTE_ENTRY_POINT,
+)
+const ensurePhasedPipeline = makePipelineCache(
+  ldPhasedCompute.WGSL_SOURCE,
+  ldPhasedCompute.COMPUTE_ENTRY_POINT,
+)
 
-async function runGPUCompute(
-  device: GPUDevice,
-  pipeline: GPUComputePipeline,
-  bindGroupLayout: GPUBindGroupLayout,
-  inputBuffer: Uint32Array,
-  uniformData: Uint32Array,
-  numCells: number,
-): Promise<Float32Array> {
+async function runGPUCompute({
+  device,
+  pipeline,
+  bindGroupLayout,
+  inputBuffer,
+  uniformData,
+  numCells,
+  workgroupSize,
+}: {
+  device: GPUDevice
+  pipeline: GPUComputePipeline
+  bindGroupLayout: GPUBindGroupLayout
+  inputBuffer: Uint32Array
+  uniformData: ArrayBuffer
+  numCells: number
+  workgroupSize: number
+}): Promise<Float32Array> {
   const genoBuffer = device.createBuffer({
     size: inputBuffer.byteLength,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
@@ -133,13 +124,7 @@ async function runGPUCompute(
       inputBuffer.byteOffset,
       inputBuffer.byteLength,
     )
-    device.queue.writeBuffer(
-      uniformBuffer,
-      0,
-      uniformData.buffer,
-      uniformData.byteOffset,
-      uniformData.byteLength,
-    )
+    device.queue.writeBuffer(uniformBuffer, 0, uniformData)
 
     const bindGroup = device.createBindGroup({
       layout: bindGroupLayout,
@@ -154,7 +139,7 @@ async function runGPUCompute(
     const pass = encoder.beginComputePass()
     pass.setPipeline(pipeline)
     pass.setBindGroup(0, bindGroup)
-    pass.dispatchWorkgroups(Math.ceil(numCells / WORKGROUP_SIZE))
+    pass.dispatchWorkgroups(Math.ceil(numCells / workgroupSize))
     pass.end()
     encoder.copyBufferToBuffer(ldBuffer, 0, readbackBuffer, 0, numCells * 4)
     device.queue.submit([encoder.finish()])
@@ -193,7 +178,7 @@ export async function computeLDMatrixGPU(
     return null
   }
 
-  const { pipeline, bindGroupLayout } = await ensurePipeline(device)
+  const { pipeline, bindGroupLayout } = await ensureUnphasedPipeline(device)
 
   // Pack genotypes: 4 samples per u32, missing (-1) stored as 0xFF.
   // Build each word in a local variable (1 write vs 4 read-modify-writes).
@@ -224,21 +209,24 @@ export async function computeLDMatrixGPU(
     }
   }
 
-  const uniformData = new Uint32Array(8)
-  uniformData[0] = n
-  uniformData[1] = numSamples
-  uniformData[2] = numSamplesPacked
-  uniformData[3] = ldMetric === 'dprime' ? 1 : 0
-  uniformData[4] = signedLD ? 1 : 0
+  const uniformData = new ArrayBuffer(ldCompute.UNIFORMS_SIZE_BYTES)
+  ldCompute.writeUniforms(uniformData, {
+    numSnps: n,
+    numSamples,
+    numSamplesPacked,
+    ldMetric: ldMetric === 'dprime' ? 1 : 0,
+    signedLD: signedLD ? 1 : 0,
+  })
 
-  return runGPUCompute(
+  return runGPUCompute({
     device,
     pipeline,
     bindGroupLayout,
-    genoPacked,
+    inputBuffer: genoPacked,
     uniformData,
     numCells,
-  )
+    workgroupSize: ldCompute.WORKGROUP_SIZE_X,
+  })
 }
 
 export async function computeLDMatrixGPUPhased(
@@ -278,18 +266,21 @@ export async function computeLDMatrixGPUPhased(
     hapsPacked.set(h.validH2, base + numWords * 3)
   }
 
-  const uniformData = new Uint32Array(8)
-  uniformData[0] = n
-  uniformData[1] = numWords
-  uniformData[2] = ldMetric === 'dprime' ? 1 : 0
-  uniformData[3] = signedLD ? 1 : 0
+  const uniformData = new ArrayBuffer(ldPhasedCompute.UNIFORMS_SIZE_BYTES)
+  ldPhasedCompute.writeUniforms(uniformData, {
+    numSnps: n,
+    numWords,
+    ldMetric: ldMetric === 'dprime' ? 1 : 0,
+    signedLD: signedLD ? 1 : 0,
+  })
 
-  return runGPUCompute(
+  return runGPUCompute({
     device,
     pipeline,
     bindGroupLayout,
-    hapsPacked,
+    inputBuffer: hapsPacked,
     uniformData,
     numCells,
-  )
+    workgroupSize: ldPhasedCompute.WORKGROUP_SIZE_X,
+  })
 }

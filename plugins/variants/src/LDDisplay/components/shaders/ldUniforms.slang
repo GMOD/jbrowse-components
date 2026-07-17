@@ -42,9 +42,10 @@ public float4 ldRampColor(float ldValue, Uniforms u, Sampler2D<float4> ramp) {
 // Decode flat lower-triangular instance index `idx` into (i, j) with i > j,
 // where idx = i*(i-1)/2 + j. The float sqrt gives an approximate `i`; the
 // correction loops fix the off-by-one that float32 rounding introduces once
-// 8*idx exceeds 2^24 (~n>2000 cells). Must match the worker compute shaders'
-// decode (ldComputeShader / ldPhasedComputeShader) or cells land at the wrong
-// grid position.
+// 8*idx exceeds 2^24 (~n>2000 cells). Shared with the worker compute kernels
+// (ldCompute / ldPhasedCompute): they decode each cell to the same (i, j) the
+// render path lays it out at, so a divergent copy would put values in the
+// wrong grid cell.
 public uint2 decodeTriangular(uint idx) {
   uint i = uint((1.0 + sqrt(1.0 + 8.0 * float(idx))) * 0.5);
   while (i * (i - 1u) / 2u > idx) { i -= 1u; }

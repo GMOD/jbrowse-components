@@ -141,6 +141,53 @@ describe('emitInterface instances', () => {
   })
 })
 
+// A compute kernel binds StructuredBuffer<uint>, whose resultType reflects as a
+// bare scalar — no fields to pack, unlike a vertex shader's
+// StructuredBuffer<Inst>. Mirrors the real ldCompute.slang reflection.
+const computeReflection = {
+  parameters: [
+    {
+      name: 'genotypes',
+      binding: { kind: 'descriptorTableSlot', index: 0 },
+      type: {
+        kind: 'resource',
+        baseShape: 'structuredBuffer',
+        resultType: scalar('uint32'),
+      },
+    },
+    uniformParam,
+  ],
+  entryPoints: [
+    {
+      name: 'computeLD',
+      stage: 'compute',
+      threadGroupSize: [64, 1, 1],
+      parameters: [],
+    },
+  ],
+} as Reflection
+
+describe('emitInterface compute', () => {
+  const out = emitInterface({ baseName: 'test', reflection: computeReflection })
+
+  test('emits entry point + workgroup size so TS dispatch tracks [numthreads]', () => {
+    expect(out).toContain('export const COMPUTE_ENTRY_POINT = "computeLD"')
+    expect(out).toContain('export const WORKGROUP_SIZE_X = 64')
+  })
+
+  test('emits uniform layout but no instance layout', () => {
+    expect(out).toContain('export const UNIFORMS_SIZE_BYTES = 48')
+    expect(out).toContain('u32[0] = uniforms.flag')
+    expect(out).not.toContain('INSTANCE_STRIDE_BYTES')
+    expect(out).not.toContain('GL_ATTRIBUTES')
+  })
+
+  // Would otherwise emit an unused import — nothing here references the type.
+  test('omits the HAL type import when there are no attributes or textures', () => {
+    expect(out).not.toContain('@jbrowse/render-core/hal')
+  })
+})
+
 describe('emitLayoutOnly', () => {
   const out = emitLayoutOnly({ baseName: 'test', reflection })
 
@@ -175,8 +222,10 @@ describe('emitShaderStrings', () => {
 describe('emitInterface textures', () => {
   test('emits TEXTURES bindings with sequential GL texture units', () => {
     const out = emitInterface({
+      // A shader sampling a texture also draws geometry, so this reflection
+      // carries instance attributes too — the case that imports both HAL types.
       baseName: 'test',
-      reflection: { parameters: [], entryPoints: [] },
+      reflection,
       textures: [
         { name: 'colorRamp', textureBinding: 0, samplerBinding: 1 },
         { name: 'mask', textureBinding: 2, samplerBinding: 3 },
