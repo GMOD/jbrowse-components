@@ -144,9 +144,9 @@ test('group draws per-section read-cloud lines', async () => {
   expectCanvasMatch(findCanvasIn(el), 0.05)
 }, 90000)
 
-// Sashimi junction arcs draw per stacked
-// section. Grouping spliced RNA-seq reads by strand keeps each junction in its
-// read's strand group, so both sections carry their own sashimi arcs.
+// Sashimi junction arcs draw per stacked section. Grouping spliced RNA-seq
+// reads by strand keeps each junction in its read's strand group, so each
+// section's arcs come only from that section's reads.
 test('group draws per-section sashimi arcs', async () => {
   const user = userEvent.setup()
   const { view } = await createView()
@@ -162,21 +162,55 @@ test('group draws per-section sashimi arcs', async () => {
     () => {
       expect(display.isGrouped).toBe(true)
       expect(display.groupOrder.length).toBe(2)
-      // every section yields its own sashimi band, and at least one has arcs.
+      // Both strand groups yield their own band, in stacking order. Only the
+      // reverse one draws arcs: spliced.bam carries 1739 junction reads on the
+      // reverse strand and exactly one on the forward strand, and a lone read
+      // is below the default minSashimiScore of 2. Asserting each section by
+      // key (rather than just "some section has arcs") is what pins arcs to the
+      // group whose reads produced them.
       expect(display.sashimiArcSections.length).toBe(2)
-      let withArcs = 0
-      for (const section of display.sashimiArcSections) {
-        if (section.up.length + section.down.length > 0) {
-          withArcs++
-        }
-      }
-      expect(withArcs).toBeGreaterThan(0)
+      const [forward, reverse] = display.sashimiArcSections
+      expect(forward!.groupKey).toBe('+')
+      expect(reverse!.groupKey).toBe('-')
+      expect(forward!.up.length + forward!.down.length).toBe(0)
+      expect(reverse!.up.length + reverse!.down.length).toBeGreaterThan(0)
     },
     { timeout: 30000 },
   )
 
   const el = await screen.findByTestId('pileup-display-done', ...opts)
   expectCanvasMatch(findCanvasIn(el), 0.05)
+}, 90000)
+
+// The forward strand's empty band above is the score filter at work, not a dead
+// per-section pipeline — dropping minSashimiScore to 0 surfaces that group's
+// lone single-read junction (ctgA:23074, 87M6023N13M) in the forward section
+// and nowhere else. Without this, a regression that dropped a group's junctions
+// on the floor entirely would still satisfy the test above.
+test('lowering the sashimi score reveals a group-specific junction', async () => {
+  const user = userEvent.setup()
+  const { view } = await createView()
+  await view.navToLocString('ctgA:1-50000')
+  await user.click(await screen.findByTestId(hts('spliced'), ...opts))
+  await screen.findByTestId('pileup-display-done', ...opts)
+
+  const display = alignmentsDisplay(view)
+  display.setShowSashimiArcs(true)
+  display.setGroupBy({ type: 'strand' })
+  await waitFor(() => {
+    expect(display.sashimiArcSections.length).toBe(2)
+  }, delay)
+
+  display.setMinSashimiScore(0)
+
+  await waitFor(() => {
+    const forward = display.sashimiArcSections[0]!
+    expect(forward.groupKey).toBe('+')
+    // exactly one junction on this strand, supported by exactly one read.
+    const arcs = [...forward.up, ...forward.down]
+    expect(arcs.length).toBe(1)
+    expect(arcs[0]!.score).toBe(1)
+  }, delay)
 }, 90000)
 
 // Chain (linked-read) mode + HP-tag grouping: the
