@@ -39,12 +39,14 @@ read one section, read [The cascade](#the-cascade).
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Pin adornment + row builders | `packages/core/src/ui/{DefaultForAllAdornment.tsx,promotableMenuItems.tsx}` |
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
-| Adopter: `displayMode` (sentinel) | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` |
-| Adopter: `heightMode` / `linkedReads` / `readConnections` / `sashimiArcsMode` (sentinel) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
-| Adopter: `showSoftClipping` / `featureHeight` / `featureSpacing` / `colorBy` / `readConnectionsDown` / `showSashimiLabels` (plain) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
+| Adopters (all sentinel): `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` |
+| Adopters (sentinel): `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping`; the lone plain slot: `readConnectionsDown` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
+| Adopters (sentinel): `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
+| Shared `heightMode` mixin (canvas + alignments) | `plugins/linear-genome-view/src/BaseLinearDisplay/models/{HeightModeMixin.ts,heightMode.ts}` |
 
 Tests: `promotableDefaults.test.ts` (resolver + control builders),
-`showSoftClipping.test.ts` (plain + sentinel adopters end-to-end),
+`showSoftClipping.test.ts` (sentinel adopters `showSoftClipping`/`featureHeight`
++ per-preset pins end-to-end),
 `colorBy.test.tsx` / `readConnections.test.tsx` / `sashimi.test.ts` (per-row
 pins), `DefaultForAllAdornment.test.tsx` (the pin), `OverrideBadge.test.tsx`
 (badge), `ShareablePromotedDefaults.test.ts` (the share/export bake +
@@ -83,32 +85,40 @@ this path; a new object/array slot needs nothing extra.
 The only real design choice per slot: **can a track hold the default value
 itself while an opposite default is promoted?**
 
-- **Plain** (`showSoftClipping`, `featureHeight`, `featureSpacing`) —
-  `defaultValue` doubles as the base *and* the follows-the-default signal.
-  Consequence: a track can't customize that one value over an opposite promoted
-  default. With a `true` soft-clipping default, a track can't hold `false`
-  (writing `false` reads as "follow the default" → resolves back to `true`).
-  **One-directional.**
+- **Plain** (`readConnectionsDown` — the only one left) — `defaultValue` doubles
+  as the base *and* the follows-the-default signal. Consequence: a track can't
+  customize that one value over an opposite promoted default. With
+  `readConnectionsDown`'s `true` default, a track can't hold `false` (writing
+  `false` reads as "follow the default" → resolves back to `true`), so its pin
+  only ever promotes the `true` base. **One-directional.**
 
-- **Sentinel** (`displayMode`, `heightMode`, `linkedReads`, `readConnections`) —
-  `defaultValue` is a dedicated `'inherit'` enum member (the CSS `inherit`
-  keyword), and a separate `promotedBase` field holds the value it resolves to
-  (the CSS `initial`, e.g. `'normal'` for displayMode, `'off'` for linkedReads).
-  Now **every real value — `promotedBase` included — is customizable**, so a
-  track *can* hold `displayMode: 'normal'` over a `compact` default, or
+- **Sentinel** (everything else) — `defaultValue` is a dedicated inherit
+  sentinel, and a separate `promotedBase` field holds the value it resolves to
+  (the CSS `initial`). Two forms, by slot type:
+  - a spare `stringEnum` member — an `'inherit'` choice (the CSS `inherit`
+    keyword): `displayMode`/`heightMode`/`linkedReads`/`readConnections`/
+    `sashimiArcsMode`, resolving to `'normal'`/`'fixed'`/`'off'`/`'off'`/`'up'`.
+  - the `undefined` of a `maybeNumber`/`maybeBoolean` — a number or boolean has
+    no spare in-band value for "inherit", so the `maybe*` type spends `undefined`
+    on it: `featureHeight`/`scatterPointSize`/`lineWidth` (numbers, e.g.
+    `featureHeight` → `7`) and `showSoftClipping`/`mismatchAlpha`/
+    `showSashimiLabels`/`displayDirectionalChevrons` (booleans). `colorBy` is the
+    `frozen` analogue — a `{ type: 'inherit' }` sentinel resolving to
+    `{ type: 'normal' }`.
+
+  Either way **every real value — `promotedBase` included — stays customizable**,
+  so a track *can* hold `displayMode: 'normal'` over a `compact` default, or
   `linkedReads: 'off'` over a `normal` (view-as-pairs) default.
 
 Reach for a sentinel when the value users promote is the **non-default** and
 they'll plausibly want to opt an individual track back out — the whole point of
 `linkedReads`/`readConnections` is to promote pairs/arcs (non-default) as the
-default while still letting one track hold `off`. The plain limitation is only
-acceptable when the reverse doesn't happen in practice (nobody customizes a
-number to *exactly* its default; a `showSoftClipping` track rarely needs to
-force `false` under an on default). Still don't add sentinels reflexively — a
-*boolean* that needed one would go tri-state (true/false/inherit) and need an
-inherit control in the UI; prefer a stringEnum with an explicit `'inherit'`
-member (the sentinel getter never surfaces it — `getConfResolved` returns
-`promotedBase`).
+default while still letting one track hold `off`. In practice **almost every slot
+is a sentinel**: the `maybeNumber`/`maybeBoolean` types make a number/boolean
+sentinel free — no tri-state UI, because `getConfResolved` resolves `undefined`
+to `promotedBase` and the getter never surfaces it. The plain form is only worth
+its one-directional limitation when the reverse never happens (as with
+`readConnectionsDown`, whose pin only ever promotes its `true` base).
 
 ## The resolver
 
@@ -198,8 +208,11 @@ public barrel. Consume the three `make*Control` builders, not these.
   two toggles sharing one slot (arcs `'arc'` vs read cloud `'cloud'`; sashimi
   `'down'` vs `'auto'`) stay independent.
 - **`makeSlotsValueDisplayTypeDefaultControl` (per-value, grouped)** — same, but
-  a group of slots moves behind one pin (feature-height presets = `featureHeight`
-  + `featureSpacing`; a `colorBy` scheme row).
+  a group of slots moves behind one pin. The base builder the other two delegate
+  to; its one current caller is the `colorBy` scheme row. (Feature-height presets
+  once grouped `featureHeight` + `featureSpacing` here, but `featureSpacing` is
+  now *derived* from `featureHeight` — never a stored slot — so that pin is a
+  single-value `makeDisplayTypeDefaultControl` on `featureHeight`.)
 - **`makeCurrentValueDisplayTypeDefaultControl` (promote-current)** — the pin
   means "whatever I'm showing", not a fixed on-value. Use for symmetric or
   continuous settings where a fixed value makes no sense (wiggle point size, arc
@@ -345,15 +358,19 @@ for free (no per-display passthroughs).
 
 ## Adding a promotable slot
 
-1. In the display's config schema, add `promotable: true` to the slot. For a
-   value users will want to keep *at its default* while an opposite default is
-   promoted (rare — think hard), instead make the default a dedicated inherit
-   sentinel and add `promotedBase: <realDefault>`. If the slot's *shape* alone
-   can't tell a valid value from a stale one (e.g. a `frozen` `colorBy` whose
-   `.type` must name a registered scheme, not just be some string), add a
-   `validate: (value) => boolean` hook — it gates both a promoted default and a
-   track's own saved value, so a value that's since gone invalid degrades to the
-   base instead of reaching a consumer that trusts it.
+1. In the display's config schema, add `promotable: true` to the slot. **Default
+   to the sentinel form** — a `maybeNumber`/`maybeBoolean` (whose `undefined` is
+   the inherit signal), or a `stringEnum` with a spare `'inherit'` member, plus
+   `promotedBase: <realDefault>`. It costs nothing extra and lets a track hold any
+   real value — `promotedBase` included — over an opposite promoted default. Only
+   skip it (plain slot, where `defaultValue` doubles as the inherit signal) when
+   no control will ever promote the *opposite* of `defaultValue`, as with
+   `readConnectionsDown`. If the slot's *shape* alone can't tell a valid value
+   from a stale one (e.g. a `frozen` `colorBy` whose `.type` must name a
+   registered scheme, not just be some string), add a `validate: (value) =>
+   boolean` hook — it gates both a promoted default and a track's own saved value,
+   so a value that's since gone invalid degrades to the base instead of reaching a
+   consumer that trusts it.
 2. Read it on the display via `getConfResolved(self, slot)` (never raw `getConf`
    for a promotable slot — raw won't apply the display-type default, and for a
    sentinel slot could hand a consumer `'inherit'`).

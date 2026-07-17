@@ -93,6 +93,13 @@ export class SvgCanvas {
   // `transformSize` stays magnitude-only because an SVG width/height can't be
   // negative. A no-op for positive scales (every caller today), which is why
   // this was never noticed.
+  //
+  // A negative *size* argument (`fillRect(x, y, -w, h)`, which a real canvas
+  // treats as the same rect anchored at `x-w`) is NOT normalized here — SVG
+  // would emit `width="-w"` and silently not render. Callers must pass a
+  // non-negative size; spans resolve both edges and take
+  // `left = min(x1,x2)` / `w = abs(x2-x1)` (see render-core/CLAUDE.md), the
+  // same convention that keeps reversed blocks correct.
   private transformRect(x: number, y: number, w: number, h: number) {
     const [tx, ty] = this.transformPoint(
       this.sx < 0 ? x + w : x,

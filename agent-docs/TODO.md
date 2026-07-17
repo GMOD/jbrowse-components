@@ -35,17 +35,16 @@ look at wakhan, pycnv
 
 
 
-## reversed-region coverage: app wiring + a human look
+## reversed-region coverage: remaining gaps
 
-**Doing a broad pass? Read [guides/REVERSED_REGION_AUDIT.md](guides/REVERSED_REGION_AUDIT.md)
-first** — the rule, the three mark shapes, what's already verified clean (don't
-redo it), and the traps that made earlier tests prove less than they looked like.
-
-The alignments **draw path** is now covered both orientations by
+The alignments **draw path** is covered both orientations by
 `renderers/reversedMirror.test.ts` (drive `drawAlignmentBlocks` forward and
 reversed over identical data; every mark must have a mirrored twin), across a
-plain pileup and a linked-reads layout — between them every pileup-band layer
-except soft-clip bases and insertions. What that does NOT cover:
+plain pileup and a linked-reads layout — now **every** pileup-band layer,
+including soft-clip bases and insertions. The reversed pileup has also been
+eyeballed in the app and looks correct. A source read of every Canvas2D
+`fillRect`/`rect` draw loop repo-wide found no cell/sliver/cull bug remaining.
+What is still NOT covered:
 
 - **The wiring above the renderer.** The mirror test hands `reversed: true`
   straight to `renderBlocks`. Nothing asserts the model actually delivers it —
@@ -54,7 +53,25 @@ except soft-clip bases and insertions. What that does NOT cover:
   which runs the Canvas2D path through `SvgCanvas` with no real canvas); swap the
   track for `volvox_alignments_pileup_coverage`. Assert a property, not a
   snapshot — a snapshot would have happily recorded the off-by-one-base bug.
-- **Nobody has looked at a reversed pileup.** Every check so far is programmatic.
+- **GPU rasterization.** The bp→clip pivot is centralized and unit-tested
+  (`bpRangeXTuple`/`writeBpRangeUniforms`, `blockClipUtils.test.ts`) and no
+  renderer hand-rolls it, but nothing rasterizes a reversed block to confirm
+  `flipX` lands cells on the right pixels — needs a browser test.
+
+## Hi-C / LD reversed regions
+
+Both the Hi-C and LD triangle displays render **unflipped** on a reversed
+displayed region — the matrix lays out by forward genomic position while the
+ruler runs right-to-left, so it's mirrored relative to the axis. Not the
+1bp-cell pixel class: it's architectural. Both share `computeRenderTransform`
+(`BaseLinearDisplay/models/renderTransform.ts`), a single positive-scale affine
+over the whole view that never consults `reversed` (a `FORWARD-ONLY` note is on
+the helper). One linear map can't express a reversed — let alone
+mixed-orientation — axis. A fix needs a per-region flip in both the transform
+and the worker position computation (`hic/regionOffsets.ts` +
+`executeRenderHicData.ts`, and the LD equivalent), and the hit-test must invert
+whatever the render does. Niche (needs a flipped region over one of these
+tracks); hover stays correct because it inverts the same forward transform.
 
 ## Canvas2D vs GPU `canvasDrawn` contract drift
 

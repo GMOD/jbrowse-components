@@ -520,7 +520,14 @@ function paintSelectionBox(
   const y = pileupRowY(bounds.yRow, state)
   ctx.strokeStyle = '#00b8ff'
   ctx.lineWidth = 2
-  ctx.strokeRect(x1, y, x2 - x1, state.featureHeight)
+  // Span, so order the edges: on a reversed block bpToScreenX flips (startBp
+  // lands right of endBp), and a raw `x2 - x1` width goes negative. The raster
+  // canvas tolerates that, but SvgCanvas would emit `width="-…"` and the box
+  // silently vanished from SVG export. min/abs is the same rule every other
+  // span here uses (render-core/CLAUDE.md).
+  const left = Math.min(x1, x2)
+  const w = Math.abs(x2 - x1)
+  ctx.strokeRect(left, y, w, state.featureHeight)
 }
 
 // Selection only — the hover highlight is a React overlay (HighlightOverlay).

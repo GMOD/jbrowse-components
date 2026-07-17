@@ -1,4 +1,9 @@
-import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
+import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
+
+import {
+  Canvas2DAlignmentsRenderer,
+  drawAlignmentsToCtx,
+} from './Canvas2DAlignmentsRenderer.ts'
 
 import type { RenderState } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -21,10 +26,10 @@ Object.defineProperty(globalThis, 'devicePixelRatio', {
  * block clip, sections, layer gating) rather than one painter in isolation.
  *
  * Runs over two configs because layer gating decides what's reachable at all: a
- * plain pileup (reads, deletion gaps, the four 1bp-cell layers) and a
- * linked-reads layout, which is the only way to reach overlaps and the
- * connecting / linked-read line layers. Between them this is every pileup-band
- * layer except soft-clip bases and insertions.
+ * plain pileup (reads, deletion gaps, the four 1bp-cell layers, soft-clip bases,
+ * insertions) and a linked-reads layout, which is the only way to reach overlaps
+ * and the connecting / linked-read line layers. Between them this is every
+ * pileup-band layer.
  *
  * Two traps the fixture guards against, both of which made an earlier draft
  * prove less than it looked like it proved:
@@ -156,16 +161,25 @@ function pileupData(): PileupDataResult {
     mismatchFrequencies: new Uint8Array([255, 255]),
     mismatchQuals: new Uint8Array([0, 0]),
 
-    interbasePositions: new Uint32Array(),
-    interbaseYs: new Uint16Array(),
-    interbaseLengths: new Uint16Array(),
-    interbaseFrequencies: new Uint8Array(),
-    numInsertions: 0,
+    // One small insertion (len 3) at bp 1018 on read 0. Interbase arrays are
+    // partitioned [insertions | softclips | hardclips] by numInsertions/
+    // numSoftclips/numHardclips (interbaseRangeEnds); only the insertion slice
+    // is populated. drawInsertions centers a boundary marker on the bp — the
+    // marker must land at the mirror position on a reversed block.
+    interbasePositions: new Uint32Array([1018]),
+    interbaseYs: new Uint16Array([0]),
+    interbaseLengths: new Uint16Array([3]),
+    interbaseFrequencies: new Uint8Array([255]),
+    numInsertions: 1,
     numSoftclips: 0,
     numHardclips: 0,
-    softclipBasePositions: new Uint32Array(),
-    softclipBaseYs: new Uint16Array(),
-    softclipBaseBases: new Uint8Array(),
+    // Two soft-clipped bases (a per-base 1bp-cell layer, gated on
+    // showSoftClipping) just left of read 0's aligned start. These paint via
+    // makeCellLeftMapper like the other cell layers, so a reversed block must
+    // mirror them cell-for-cell.
+    softclipBasePositions: new Uint32Array([1002, 1003]),
+    softclipBaseYs: new Uint16Array([0, 0]),
+    softclipBaseBases: new Uint8Array([65, 67]),
 
     modificationPositions: new Uint32Array([1010]),
     modificationYs: new Uint16Array([0]),
@@ -258,7 +272,9 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     showMismatches: true,
     filterMismatchesByFrequency: false,
     mismatchAlpha: false,
-    showSoftClipping: false,
+    // ON so the soft-clip-base cell layer (gated on this) is reachable; the
+    // insertion layer rides showMismatches, already on.
+    showSoftClipping: true,
     showInterbaseIndicators: false,
     showModifications: true,
     showPerBaseQuality: true,
@@ -407,8 +423,96 @@ it('the linked-reads config draws strictly more than the plain pileup', () => {
   )
 })
 
+// Guard the two layers this fixture was extended to reach (soft-clip bases +
+// insertions). The mirror check above compares reversed against forward, so if
+// a gate silently dropped a layer in *both* it would still pass — assert each
+// puts its expected mark on the forward render. Positions are exact from the
+// fixture: bp→x is (bp - 1000) / 50 * 1000 = 20 px/bp.
+it('the soft-clip-base and insertion layers are non-vacuous', () => {
+  const marks = drawAt(false)
+  // Turning soft-clipping off must remove marks — proves the layer is gated
+  // and currently drawing, not dead.
+  expect(marks.length).toBeGreaterThan(
+    drawAt(false, { showSoftClipping: false }).length,
+  )
+  // Soft-clip base at bp 1002 → cell left edge at x = 40 (unique: coverage
+  // starts at bp 1006 = x 120, nothing else paints this far left).
+  expect(
+    marks.some(m => m.kind === 'rect' && Math.abs(m.x - 40) < 1),
+  ).toBe(true)
+  // Small-insertion box at bp 1018 → centered at x = 360, 1px wide, so the
+  // rect sits at x ≈ 359.5 with w ≈ 1 (the only ~1px-wide rect here).
+  expect(
+    marks.some(
+      m =>
+        m.kind === 'rect' &&
+        Math.abs(m.x - 359.5) < 1 &&
+        Math.abs(m.w - 1) < 0.6,
+    ),
+  ).toBe(true)
+})
+
 it('the tolerance is far tighter than the bug it guards against', () => {
   // A one-base slip moves a mark PX_PER_BP; the tolerance only absorbs the
   // sub-pixel seam fudge. If this ever inverts, the mirror checks go blind.
   expect(FUDGE_TOLERANCE_PX).toBeLessThan(PX_PER_BP / 4)
+})
+
+// The selection box is the one span in the shared draw path emitted as
+// `strokeRect(x1, y, x2 - x1, h)`. On a reversed block bpToScreenX flips, so
+// x2 < x1 and the width goes negative. The raster canvas normalizes a negative
+// rect, but SvgCanvas emitted `width="-…"`, which SVG refuses to render — so a
+// selected read's box vanished only in SVG export of a reversed view. The
+// recording ctx above no-ops strokeRect, so this exercises the real SvgCanvas
+// export path (the same drawAlignmentsToCtx renderSvg.tsx calls).
+describe('reversed selection box SVG export', () => {
+  function exportSvg(reversed: boolean) {
+    const svg = new SvgCanvas()
+    drawAlignmentsToCtx(
+      svg,
+      {
+        sections: [
+          {
+            groupKey: '',
+            laidOutPileupMap: new Map([[0, pileupData()]]),
+            arcsRpcDataMap: new Map(),
+          },
+        ],
+      },
+      [
+        {
+          displayedRegionIndex: 0,
+          start: START,
+          end: END,
+          screenStartPx: 0,
+          screenEndPx: BLOCK_WIDTH,
+          reversed,
+        },
+      ],
+      // read r1 spans [1005,1020]: forward → [100,400], reversed → [600,900].
+      state({ selectedFeatureId: 'r1' }),
+    )
+    return svg.getSerializedSvg()
+  }
+
+  // The selection box is the only #00b8ff stroke; pull just that <rect>.
+  const selectionRect = (svg: string) =>
+    /<rect [^>]*stroke="#00b8ff"[^>]*\/>/.exec(svg)?.[0]
+
+  it('emits a valid positive-width rect (never width="-…")', () => {
+    const rev = exportSvg(true)
+    expect(rev).not.toContain('width="-')
+    const rect = selectionRect(rev)
+    expect(rect).toBeDefined()
+    // reversed: min(600,900)=600, width abs(900-600)=300.
+    expect(rect).toContain('x="600"')
+    expect(rect).toContain('width="300"')
+  })
+
+  it('mirrors the forward box: same width, edge W - x - w', () => {
+    const fwd = selectionRect(exportSvg(false))!
+    // forward: x=100, width=300 → mirror edge = 1000 - 100 - 300 = 600.
+    expect(fwd).toContain('x="100"')
+    expect(fwd).toContain('width="300"')
+  })
 })

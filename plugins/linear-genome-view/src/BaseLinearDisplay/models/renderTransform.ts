@@ -15,6 +15,15 @@
  * which is the gap when the user has scrolled left of genome start.
  *
  * `undefined` inputs are treated as fresh (no stale info yet).
+ *
+ * FORWARD-ONLY. Inputs are `offsetPx`/`bpPerPx` (orientation-agnostic pan/zoom
+ * scalars) and `scale` is always positive, so this maps forward genomic order
+ * to increasing screen-x. It does NOT consult displayed-region `reversed` — a
+ * flipped region renders the matrix mirrored relative to the ruler (hover still
+ * matches the drawn pixels, since hit-test inverts the same transform). A single
+ * linear map can't express a reversed or mixed-orientation axis; handling it
+ * needs a per-region flip in both this transform and the worker's position
+ * computation. Affects hic + LD (both consumers).
  */
 export interface RenderTransformInputs {
   lastDrawnOffsetPx: number | undefined
