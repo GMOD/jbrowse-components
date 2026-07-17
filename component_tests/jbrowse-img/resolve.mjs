@@ -1,4 +1,4 @@
-// ESM resolve hook for the packed-@jbrowse/img component test.
+// ESM resolve/load hooks for the packed-@jbrowse/img component test.
 //
 // @mui/material's `internal/Transition.mjs` deep-imports the bare subpath
 // `react-transition-group/TransitionGroupContext`. That subpath is a directory
@@ -12,4 +12,15 @@ export async function resolve(specifier, context, nextResolve) {
   return m
     ? nextResolve(`react-transition-group/esm/${m[1]}.js`, context)
     : nextResolve(specifier, context)
+}
+
+// @jbrowse/react-app2's barrel side-effect imports dockview-react's CSS for
+// browser bundles. Bundlers strip/inline it; Node's ESM loader has no CSS
+// support and throws ERR_UNKNOWN_FILE_EXTENSION. jb2export is headless (no
+// dockview panel is ever rendered), so the stylesheet is a no-op here - short
+// circuit it to an empty module instead of loading the file.
+export async function load(url, context, nextLoad) {
+  return url.endsWith('.css')
+    ? { format: 'module', source: '', shortCircuit: true }
+    : nextLoad(url, context)
 }

@@ -44,7 +44,20 @@ function fp(f) {
 
 // Add node_modules/.bin to PATH so we can call jb2export directly
 const binPath = resolve('./node_modules/.bin')
-const env = { ...process.env, PATH: `${binPath}:${process.env.PATH}` }
+// jb2export runs as its own `node` process (not this script), so the
+// --import hook registered above via `node --import ./register.mjs run.mjs`
+// doesn't carry over to it - NODE_OPTIONS re-applies it for the child.
+const nodeOptions = [
+  process.env.NODE_OPTIONS,
+  `--import ${resolve('./register.mjs')}`,
+]
+  .filter(Boolean)
+  .join(' ')
+const env = {
+  ...process.env,
+  PATH: `${binPath}:${process.env.PATH}`,
+  NODE_OPTIONS: nodeOptions,
+}
 
 const [jb2exportFile, jb2exportBaseArgs] = existsSync(
   join(binPath, 'jb2export'),
