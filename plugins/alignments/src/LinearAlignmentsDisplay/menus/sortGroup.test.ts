@@ -102,9 +102,10 @@ describe('curated modes', () => {
 
   test('offers only the requested modes, in the requested order', () => {
     expect(
-      getSortByMenuItem(makeModel(), { ...opts, modes: [...opts.modes] }).subMenu.map(
-        i => i.label,
-      ),
+      getSortByMenuItem(makeModel(), {
+        ...opts,
+        modes: [...opts.modes],
+      }).subMenu.map(i => i.label),
     ).toEqual(['Start location', 'Longest features first', 'Feature strand'])
   })
 

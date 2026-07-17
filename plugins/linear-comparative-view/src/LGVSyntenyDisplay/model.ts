@@ -23,10 +23,7 @@ import {
   findVisibleBlockForFeature,
   getMate,
 } from './components/util.ts'
-import {
-  getSyntenyGroupByMenuItem,
-  getSyntenyShowMenuItem,
-} from './menus.ts'
+import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'

@@ -1,6 +1,6 @@
 import { formatHEX, getAlpha, newColor, parseCssColorOr } from './colorBits.ts'
 
-// Matches colord()'s fallback for unparseable input.
+// Matches colord()'s fallback for unparsable input.
 const FALLBACK = newColor(0, 0, 0, 255)
 
 // Works on the packed Color directly rather than via colord(): these run per

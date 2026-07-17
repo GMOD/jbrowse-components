@@ -23,9 +23,11 @@ test('offers None plus the synteny-applicable dimensions', () => {
 })
 
 test('ungrouped checks None', () => {
-  expect(radios(makeModel()).filter(i => i.checked).map(i => i.label)).toEqual([
-    'None',
-  ])
+  expect(
+    radios(makeModel())
+      .filter(i => i.checked)
+      .map(i => i.label),
+  ).toEqual(['None'])
 })
 
 test('the active dimension is the only one checked', () => {
@@ -38,9 +40,13 @@ test('the active dimension is the only one checked', () => {
 
 test('picking a dimension sets it; picking None ungroups', () => {
   const model = makeModel('mateAssembly')
-  radios(model).find(i => i.label === 'Strand')!.onClick()
+  radios(model)
+    .find(i => i.label === 'Strand')!
+    .onClick()
   expect(model.setGroupBy).toHaveBeenCalledWith({ type: 'strand' })
 
-  radios(model).find(i => i.label === 'None')!.onClick()
+  radios(model)
+    .find(i => i.label === 'None')!
+    .onClick()
   expect(model.setGroupBy).toHaveBeenCalledWith(undefined)
 })

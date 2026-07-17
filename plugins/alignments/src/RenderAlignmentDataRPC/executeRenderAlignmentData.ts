@@ -10,7 +10,10 @@ import {
 } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
-import { detectSimplexModifications, getTag } from '@jbrowse/modifications-utils'
+import {
+  detectSimplexModifications,
+  getTag,
+} from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
