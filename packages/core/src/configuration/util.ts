@@ -230,6 +230,30 @@ export function getConf<
 }
 
 /**
+ * #api core/configuration
+ * Write counterpart to `getConf`: sets a slot on a state model that has a
+ * `.configuration` member (a track or display state model). Centralizes the
+ * `configuration.setSlot` cast so mixins whose `self` isn't typed with
+ * `configuration` don't each re-cast.
+ *
+ * @param model - object containing a 'configuration' member
+ * @param slotName - the slot to write
+ * @param value - the new value
+ */
+export function setConf<
+  CONFMODEL extends AnyConfigurationModel,
+  SLOT extends
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+>(model: { configuration: CONFMODEL }, slotName: SLOT, value: unknown) {
+  ;(
+    model.configuration as CONFMODEL & {
+      setSlot: (slotName: string, value: unknown) => void
+    }
+  ).setSlot(slotName, value)
+}
+
+/**
  * given a union of explicitly typed configuration schema types,
  * extract an array of the type names contained in the union
  *

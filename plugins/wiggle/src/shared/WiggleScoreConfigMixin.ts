@@ -16,13 +16,16 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // The mixin composes onto a display that supplies `configuration`, but that
 // prop is declared by the concrete display, not here, so `self` isn't typed
 // with it. This is the shared read/write handle: `getConf` for reads,
-// `configuration.setSlot` for writes. Mirrors TrackHeightMixin's cast idiom.
+// `setConf` (wrapping `configuration.setSlot`) for writes. Mirrors
+// TrackHeightMixin's cast idiom.
 interface ConfNode {
   configuration: AnyConfigurationModel & {
     setSlot: (slotName: string, value: unknown) => void
   }
 }
 const confNode = (self: unknown) => self as ConfNode
+const setConf = (self: unknown, slot: string, val: unknown) =>
+  { confNode(self).configuration.setSlot(slot, val) }
 // `prefersOffset` is the optional per-display convention (BaseLinearDisplay)
 // signalling the track label is drawn above the plot, not overlapping it.
 const offsetNode = (self: unknown) => self as { prefersOffset?: boolean }
@@ -189,49 +192,55 @@ export function WiggleScoreConfigMixin() {
        * #action
        */
       setScaleType(scaleType: string) {
-        confNode(self).configuration.setSlot('scaleType', scaleType)
+        setConf(self, 'scaleType', scaleType)
+      },
+      /**
+       * #action
+       */
+      setBicolorPivot(val?: number) {
+        setConf(self, 'bicolorPivot', val)
       },
       /**
        * #action
        */
       setMinScore(val?: number) {
-        confNode(self).configuration.setSlot('minScore', val)
+        setConf(self, 'minScore', val)
       },
       /**
        * #action
        */
       setMaxScore(val?: number) {
-        confNode(self).configuration.setSlot('maxScore', val)
+        setConf(self, 'maxScore', val)
       },
       /**
        * #action
        */
       setRenderingType(type: string) {
-        confNode(self).configuration.setSlot('defaultRendering', type)
+        setConf(self, 'defaultRendering', type)
       },
       /**
        * #action
        */
       setSummaryScoreMode(val: string) {
-        confNode(self).configuration.setSlot('summaryScoreMode', val)
+        setConf(self, 'summaryScoreMode', val)
       },
       /**
        * #action
        */
       setScatterPointSize(val?: number) {
-        confNode(self).configuration.setSlot('scatterPointSize', val)
+        setConf(self, 'scatterPointSize', val)
       },
       /**
        * #action
        */
       setLineWidth(val?: number) {
-        confNode(self).configuration.setSlot('lineWidth', val)
+        setConf(self, 'lineWidth', val)
       },
       /**
        * #action
        */
       setAutoscale(val?: string) {
-        confNode(self).configuration.setSlot('autoscale', val)
+        setConf(self, 'autoscale', val)
       },
       /**
        * #action

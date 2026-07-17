@@ -1,4 +1,4 @@
-import { getConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { MIN_DISPLAY_HEIGHT } from './const.ts'
@@ -46,7 +46,7 @@ export default function TrackHeightMixin<
        */
       setHeight(displayHeight: number) {
         const height = Math.max(displayHeight, MIN_DISPLAY_HEIGHT)
-        ;(self as unknown as TConf).configuration.setSlot('height', height)
+        setConf(self as unknown as TConf, 'height', height)
         return height
       },
       /**
@@ -55,7 +55,7 @@ export default function TrackHeightMixin<
       resizeHeight(distance: number) {
         const oldHeight = self.height
         const newHeight = Math.max(oldHeight + distance, MIN_DISPLAY_HEIGHT)
-        ;(self as unknown as TConf).configuration.setSlot('height', newHeight)
+        setConf(self as unknown as TConf, 'height', newHeight)
         return newHeight - oldHeight
       },
     }))
