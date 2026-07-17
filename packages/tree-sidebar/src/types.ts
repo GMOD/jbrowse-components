@@ -35,6 +35,9 @@ export interface TreeSidebarModel {
   setHoveredTreeNode: (node?: HoveredTreeNode) => void
   setTreeAreaWidth: (width: number) => void
   setSubtreeFilter: (names?: string[]) => void
+  // optional: displays with a virtual scroll reset it when the subtree filter
+  // re-lays-out the tree, so it shows from the top instead of a stale offset
+  setScrollTop?: (scrollTop: number) => void
 }
 
 export interface TreeDrawingModel {

@@ -102,6 +102,11 @@ const TreeSidebar = observer(function TreeSidebar({
   }
 
   function handleMouseMove(event: React.MouseEvent) {
+    // while the subtree popover is open, freeze the highlight on the clicked
+    // node rather than tracking the cursor
+    if (menuAnchor) {
+      return
+    }
     const node = hitTestNode(event)
     model.setHoveredTreeNode(
       node ? { node, descendantNames: getLeafNames(node) } : undefined,
@@ -111,12 +116,26 @@ const TreeSidebar = observer(function TreeSidebar({
   function handleClick(event: React.MouseEvent) {
     const node = hitTestNode(event)
     if (node) {
-      setMenuAnchor({
-        x: event.clientX,
-        y: event.clientY,
-        names: getLeafNames(node),
-      })
+      const names = getLeafNames(node)
+      // keep the subtree highlighted for as long as its popover is open — the
+      // cursor leaves the tree onto the menu backdrop, which would otherwise
+      // clear the hover via onMouseLeave
+      model.setHoveredTreeNode({ node, descendantNames: names })
+      setMenuAnchor({ x: event.clientX, y: event.clientY, names })
     }
+  }
+
+  function closeMenu() {
+    setMenuAnchor(null)
+    model.setHoveredTreeNode(undefined)
+  }
+
+  function applyFilter(names?: string[]) {
+    model.setSubtreeFilter(names)
+    // the filter re-lays-out the tree from y=0; without this the old scroll
+    // offset strands the (usually shorter) subtree at the bottom, out of view
+    model.setScrollTop?.(0)
+    closeMenu()
   }
 
   if (!hierarchy || !showTree || !sources?.length) {
@@ -173,7 +192,10 @@ const TreeSidebar = observer(function TreeSidebar({
         <div
           onMouseMove={handleMouseMove}
           onMouseLeave={() => {
-            model.setHoveredTreeNode(undefined)
+            // keep the highlight while the popover is open
+            if (!menuAnchor) {
+              model.setHoveredTreeNode(undefined)
+            }
           }}
           onClick={handleClick}
           style={{
@@ -204,9 +226,7 @@ const TreeSidebar = observer(function TreeSidebar({
       </div>
       <Menu
         open={!!menuAnchor}
-        onClose={() => {
-          setMenuAnchor(null)
-        }}
+        onClose={closeMenu}
         anchorReference="anchorPosition"
         anchorPosition={
           menuAnchor ? { top: menuAnchor.y, left: menuAnchor.x } : undefined
@@ -215,8 +235,7 @@ const TreeSidebar = observer(function TreeSidebar({
         {model.subtreeFilter?.length ? (
           <MenuItem
             onClick={() => {
-              model.setSubtreeFilter(undefined)
-              setMenuAnchor(null)
+              applyFilter(undefined)
             }}
           >
             Clear subtree filter
@@ -225,8 +244,7 @@ const TreeSidebar = observer(function TreeSidebar({
         {menuAnchor ? (
           <MenuItem
             onClick={() => {
-              model.setSubtreeFilter(menuAnchor.names)
-              setMenuAnchor(null)
+              applyFilter(menuAnchor.names)
             }}
           >
             Show only subtree ({menuAnchor.names.length} samples)
