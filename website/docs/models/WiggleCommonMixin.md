@@ -51,6 +51,7 @@ instead.
 | [setResolution](#action-setresolution)                       | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [setLoadedBpPerPx](#action-setloadedbpperpx)                 | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [setScaleType](#action-setscaletype)                         | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
+| [setBicolorPivot](#action-setbicolorpivot)                   | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [setMinScore](#action-setminscore)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [setMaxScore](#action-setmaxscore)                           | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [setRenderingType](#action-setrenderingtype)                 | Actions    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
@@ -303,6 +304,12 @@ type setLoadedBpPerPx = (bpPerPx: number | undefined) => void
 
 ```ts
 type setScaleType = (scaleType: string) => void
+```
+
+#### action: setBicolorPivot
+
+```ts
+type setBicolorPivot = (val?: number | undefined) => void
 ```
 
 #### action: setMinScore

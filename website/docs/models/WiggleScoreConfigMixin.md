@@ -43,6 +43,7 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 | [setResolution](#action-setresolution)               | Actions    | WiggleScoreConfigMixin |                                    |
 | [setLoadedBpPerPx](#action-setloadedbpperpx)         | Actions    | WiggleScoreConfigMixin |                                    |
 | [setScaleType](#action-setscaletype)                 | Actions    | WiggleScoreConfigMixin |                                    |
+| [setBicolorPivot](#action-setbicolorpivot)           | Actions    | WiggleScoreConfigMixin |                                    |
 | [setMinScore](#action-setminscore)                   | Actions    | WiggleScoreConfigMixin |                                    |
 | [setMaxScore](#action-setmaxscore)                   | Actions    | WiggleScoreConfigMixin |                                    |
 | [setRenderingType](#action-setrenderingtype)         | Actions    | WiggleScoreConfigMixin |                                    |
@@ -228,6 +229,12 @@ type setLoadedBpPerPx = (bpPerPx: number | undefined) => void
 
 ```ts
 type setScaleType = (scaleType: string) => void
+```
+
+#### action: setBicolorPivot
+
+```ts
+type setBicolorPivot = (val?: number | undefined) => void
 ```
 
 #### action: setMinScore

@@ -80,7 +80,7 @@ URL of the session-sharing backend used by the Share button, a JBrowse-hosted
 service by default
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'https://share.jbrowse.org/api/v1/'` · _advanced_
+`DEFAULT_SHARE_URL` · _advanced_
 
 #### slot: configuration.disableAnalytics
 
