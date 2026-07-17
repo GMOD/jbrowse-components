@@ -185,4 +185,24 @@ describe('alignments grow-mode reactive height', () => {
     expect(readConfObject(display.configuration, 'height')).toBe(grown)
     expect(display.height).toBe(grown)
   })
+
+  // A drag-resize leaves grow mode AND applies a delta in the same action. The
+  // bake must not clobber the drag delta: the height ends at grown + distance,
+  // not just the baked grown height.
+  it('a drag-resize leaving grow keeps the drag delta on top of the grown height', () => {
+    const { view, display } = createEnv()
+    view.setWidth(800)
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
+    ])
+
+    display.setHeightMode('grow')
+    const grown = display.grownHeight
+    expect(display.autoHeight).toBe(true)
+
+    display.resizeHeight(40)
+    expect(display.autoHeight).toBe(false)
+    expect(display.heightMode).toBe('fixed')
+    expect(display.height).toBe(grown + 40)
+  })
 })

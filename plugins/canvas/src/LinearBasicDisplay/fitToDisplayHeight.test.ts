@@ -345,15 +345,21 @@ describe('canvas display fit-to-display-height', () => {
   })
 
   // A manual drag-resize leaves grow mode; the bake-on-exit keeps the height the
-  // user was seeing, then the drag delta applies on top of it.
+  // user was seeing, then the drag delta applies on top of it — the first drag
+  // frame must not be swallowed by the bake.
   it('a manual drag-resize leaves grow mode so the height sticks', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
+    const { display, view } = createDisplay()
     display.setHeightMode('grow')
+    display.setRpcData(0, stackedRegionData(12, 20), view.bpPerPx, ctgA)
+    const grown = display.grownHeight
     expect(display.autoHeight).toBe(true)
+
     display.resizeHeight(50)
     expect(display.autoHeight).toBe(false)
     expect(display.heightMode).toBe('fixed')
+    // The drag delta lands on top of the grown height the user was seeing.
+    expect(display.height).toBe(grown + 50)
   })
 
   // Grow, like fit, resets scroll on entry so the sticky GPU canvas can't be

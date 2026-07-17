@@ -3225,10 +3225,15 @@ export default function stateModelFactory(
            * A manual drag-resize means the user wants a fixed height; leave grow
            * mode first, otherwise the grow autorun snaps the height back on the
            * next relayout and the drag appears to do nothing (mirrors canvas).
+           * Read the displayed (grown) height before flipping and write
+           * `grown + distance` directly — the grow-exit bake skips when the slot
+           * is written during the exit, so this delta isn't clobbered.
            */
           resizeHeight(distance: number) {
             if (self.autoHeight) {
+              const grown = self.height
               self.setHeightMode('fixed')
+              return self.setHeight(grown + distance) - grown
             }
             return superResizeHeight(distance)
           },

@@ -88,12 +88,19 @@ export default function HeightModeMixin<
  * bake the wrong value. Guarded on `view.initialized` (grownHeight transitively
  * reads view geometry that throws pre-init). No loop: `setHeight` writes only the
  * `height` slot, which the expression ignores once `autoHeight` is false.
+ *
+ * Skip the bake when the `height` slot itself was written during the exit (`slot`
+ * changed alongside `mode`): that is a drag-resize leaving grow (`resizeHeight`
+ * writes `grownHeight + distance` in the same action), and re-baking `prev.grown`
+ * would clobber the drag delta. Menu/cascade exits leave the slot untouched, so
+ * they still bake the displayed height.
  */
 export function installGrowExitBake(
   self: {
     heightMode: HeightMode
     autoHeight: boolean
     grownHeight: number
+    fitTargetHeight: number
     setHeight: (height: number) => number
   },
   view: { initialized: boolean },
@@ -102,12 +109,14 @@ export function installGrowExitBake(
     () => ({
       mode: self.heightMode,
       grown: self.autoHeight && view.initialized ? self.grownHeight : undefined,
+      slot: self.fitTargetHeight,
     }),
     (curr, prev) => {
       if (
         prev.mode === 'grow' &&
         curr.mode !== 'grow' &&
-        prev.grown !== undefined
+        prev.grown !== undefined &&
+        curr.slot === prev.slot
       ) {
         self.setHeight(prev.grown)
       }

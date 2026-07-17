@@ -2364,11 +2364,16 @@ export default function baseStateModelFactory(
            * A manual drag-resize means the user wants a fixed height; leave grow
            * mode first, otherwise the reactive `height` getter re-derives
            * grownHeight on the next layout change and the drag appears to do
-           * nothing.
+           * nothing. Read the displayed (grown) height before flipping and write
+           * `grown + distance` directly — the grow-exit bake skips when the slot
+           * is written during the exit, so this delta isn't clobbered (a plain
+           * `superResizeHeight` would read the stale slot post-flip and lose it).
            */
           resizeHeight(distance: number) {
             if (self.autoHeight) {
+              const grown = self.height
               self.setHeightMode('fixed')
+              return self.setHeight(grown + distance) - grown
             }
             return superResizeHeight(distance)
           },

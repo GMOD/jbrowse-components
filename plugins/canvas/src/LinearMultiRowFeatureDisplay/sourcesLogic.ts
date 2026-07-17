@@ -45,7 +45,7 @@ export function orderPartitionValues(
   values: Set<string>,
   rowOrder: readonly string[],
 ): string[] {
-  const listed = rowOrder.filter(v => values.has(v))
+  const listed = [...new Set(rowOrder)].filter(v => values.has(v))
   const seen = new Set(listed)
   const rest = [...values].filter(v => !seen.has(v)).sort()
   return [...listed, ...rest]
