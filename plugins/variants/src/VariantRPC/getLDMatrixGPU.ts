@@ -82,6 +82,37 @@ const ensurePhasedPipeline = makePipelineCache(
   ldPhasedCompute.COMPUTE_ENTRY_POINT,
 )
 
+interface DispatchPlan {
+  width: number
+  height: number
+  rowStride: number
+}
+
+// Cells are dispatched over a 2D workgroup grid, because a 1D dispatch is
+// capped at maxComputeWorkgroupsPerDimension (65535) workgroups — only ~4.19M
+// cells, which just ~2896 SNPs already exceeds. The kernel rebuilds the flat
+// cell index as `gid.y * rowStride + gid.x`.
+//
+// Returns null when the work doesn't fit this device even as a 2D grid, or the
+// output buffer would exceed its limits; the caller then leaves the matrix to
+// the CPU path rather than issuing a dispatch that would fail validation.
+function planDispatch(
+  device: GPUDevice,
+  numCells: number,
+  workgroupSizeX: number,
+): DispatchPlan | null {
+  const maxPerDim = device.limits.maxComputeWorkgroupsPerDimension
+  const groups = Math.ceil(numCells / workgroupSizeX)
+  const width = Math.min(groups, maxPerDim)
+  const height = Math.ceil(groups / width)
+  const outputBytes = numCells * 4
+  const fits =
+    height <= maxPerDim &&
+    outputBytes <= device.limits.maxStorageBufferBindingSize &&
+    outputBytes <= device.limits.maxBufferSize
+  return fits ? { width, height, rowStride: width * workgroupSizeX } : null
+}
+
 async function runGPUCompute({
   device,
   pipeline,
@@ -89,7 +120,7 @@ async function runGPUCompute({
   inputBuffer,
   uniformData,
   numCells,
-  workgroupSize,
+  dispatch,
 }: {
   device: GPUDevice
   pipeline: GPUComputePipeline
@@ -97,7 +128,7 @@ async function runGPUCompute({
   inputBuffer: Uint32Array
   uniformData: ArrayBuffer
   numCells: number
-  workgroupSize: number
+  dispatch: DispatchPlan
 }): Promise<Float32Array> {
   const genoBuffer = device.createBuffer({
     size: inputBuffer.byteLength,
@@ -135,14 +166,24 @@ async function runGPUCompute({
       ],
     })
 
+    // A failed dispatch is not an exception: WebGPU records validation errors
+    // asynchronously, leaves ldBuffer unwritten, and mapAsync still resolves —
+    // so without this scope an over-limit or otherwise invalid dispatch reads
+    // back as a plausible all-zero matrix and the caller's CPU fallback never
+    // fires. Throwing here is what routes any such failure to the CPU path.
+    device.pushErrorScope('validation')
     const encoder = device.createCommandEncoder()
     const pass = encoder.beginComputePass()
     pass.setPipeline(pipeline)
     pass.setBindGroup(0, bindGroup)
-    pass.dispatchWorkgroups(Math.ceil(numCells / workgroupSize))
+    pass.dispatchWorkgroups(dispatch.width, dispatch.height)
     pass.end()
     encoder.copyBufferToBuffer(ldBuffer, 0, readbackBuffer, 0, numCells * 4)
     device.queue.submit([encoder.finish()])
+    const validationError = await device.popErrorScope()
+    if (validationError) {
+      throw new Error(`LD compute dispatch failed: ${validationError.message}`)
+    }
 
     await readbackBuffer.mapAsync(GPUMapMode.READ)
     // Copy out of the mapped range before destroy() (which implicitly unmaps
@@ -175,6 +216,11 @@ export async function computeLDMatrixGPU(
 
   const device = await getGpuDevice()
   if (!device) {
+    return null
+  }
+
+  const plan = planDispatch(device, numCells, ldCompute.WORKGROUP_SIZE_X)
+  if (!plan) {
     return null
   }
 
@@ -216,6 +262,7 @@ export async function computeLDMatrixGPU(
     numSamplesPacked,
     ldMetric: ldMetric === 'dprime' ? 1 : 0,
     signedLD: signedLD ? 1 : 0,
+    dispatchRowStride: plan.rowStride,
   })
 
   return runGPUCompute({
@@ -225,7 +272,7 @@ export async function computeLDMatrixGPU(
     inputBuffer: genoPacked,
     uniformData,
     numCells,
-    workgroupSize: ldCompute.WORKGROUP_SIZE_X,
+    dispatch: plan,
   })
 }
 
@@ -252,6 +299,11 @@ export async function computeLDMatrixGPUPhased(
     return null
   }
 
+  const plan = planDispatch(device, numCells, ldPhasedCompute.WORKGROUP_SIZE_X)
+  if (!plan) {
+    return null
+  }
+
   const { pipeline, bindGroupLayout } = await ensurePhasedPipeline(device)
 
   // Layout: for each SNP i, 4 arrays of numWords each:
@@ -272,6 +324,7 @@ export async function computeLDMatrixGPUPhased(
     numWords,
     ldMetric: ldMetric === 'dprime' ? 1 : 0,
     signedLD: signedLD ? 1 : 0,
+    dispatchRowStride: plan.rowStride,
   })
 
   return runGPUCompute({
@@ -281,6 +334,6 @@ export async function computeLDMatrixGPUPhased(
     inputBuffer: hapsPacked,
     uniformData,
     numCells,
-    workgroupSize: ldPhasedCompute.WORKGROUP_SIZE_X,
+    dispatch: plan,
   })
 }

@@ -15,6 +15,11 @@ struct LDComputeUniforms {
   uint numSamplesPacked;
   uint ldMetric;
   uint signedLD;
+  // Threads per dispatch row (workgroupsX * WORKGROUP_SIZE_X). Cells are
+  // addressed as a 2D grid: a 1D dispatch caps at
+  // maxComputeWorkgroupsPerDimension (65535) workgroups = ~4.19M cells, which
+  // a mere ~2896 SNPs exceeds.
+  uint dispatchRowStride;
 };
 
 [[vk::binding(0, 0)]] StructuredBuffer<uint> genotypes;
@@ -32,7 +37,7 @@ int getGeno(uint snp, uint sample) {
 [shader("compute")]
 [numthreads(64, 1, 1)]
 void computeLD(uint3 gid: SV_DispatchThreadID) {
-  uint k = gid.x;
+  uint k = gid.y * u.dispatchRowStride + gid.x;
   uint numCells = u.numSnps * (u.numSnps - 1u) / 2u;
   if (k >= numCells) {
     return;

@@ -13,6 +13,8 @@ struct LDPhasedComputeUniforms {
   uint numWords;
   uint ldMetric;
   uint signedLD;
+  // Threads per dispatch row — see ldCompute.slang.
+  uint dispatchRowStride;
 };
 
 [[vk::binding(0, 0)]] StructuredBuffer<uint> haps;
@@ -28,7 +30,7 @@ uint getWord(uint snp, uint arr, uint word) {
 [shader("compute")]
 [numthreads(64, 1, 1)]
 void computeLDPhased(uint3 gid: SV_DispatchThreadID) {
-  uint k = gid.x;
+  uint k = gid.y * u.dispatchRowStride + gid.x;
   uint numCells = u.numSnps * (u.numSnps - 1u) / 2u;
   if (k >= numCells) {
     return;

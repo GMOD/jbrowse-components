@@ -5,7 +5,7 @@ export const COMPUTE_ENTRY_POINT = "computeLDPhased"
 
 export const WORKGROUP_SIZE_X = 64
 
-export const UNIFORMS_SIZE_BYTES = 16
+export const UNIFORMS_SIZE_BYTES = 32
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -13,6 +13,7 @@ export const UNIFORM_OFFSET_F32 = {
   numWords: 1,
   ldMetric: 2,
   signedLD: 3,
+  dispatchRowStride: 4,
 } as const
 
 
@@ -21,6 +22,7 @@ export interface Uniforms {
   numWords: number
   ldMetric: number
   signedLD: number
+  dispatchRowStride: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -29,4 +31,5 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[1] = uniforms.numWords
   u32[2] = uniforms.ldMetric
   u32[3] = uniforms.signedLD
+  u32[4] = uniforms.dispatchRowStride
 }

@@ -14,6 +14,7 @@ export const UNIFORM_OFFSET_F32 = {
   numSamplesPacked: 2,
   ldMetric: 3,
   signedLD: 4,
+  dispatchRowStride: 5,
 } as const
 
 
@@ -23,6 +24,7 @@ export interface Uniforms {
   numSamplesPacked: number
   ldMetric: number
   signedLD: number
+  dispatchRowStride: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -32,4 +34,5 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   u32[2] = uniforms.numSamplesPacked
   u32[3] = uniforms.ldMetric
   u32[4] = uniforms.signedLD
+  u32[5] = uniforms.dispatchRowStride
 }
