@@ -35,15 +35,20 @@ look at wakhan, pycnv
 
 
 
-## reversed-region browser coverage
+## reversed-region integration coverage beyond gene labels
 
-There appears to be no browser test that flips a region, on any track type. The
-reversed-block cell bug (all five alignments 1bp-cell painters painting the
-neighboring base, now fixed via `makeCellLeftMapper`) survived precisely because
-nothing drives a flipped region end-to-end — it's unit-tested only, and nobody
-has looked at a reversed pileup on the Canvas2D fallback in the real app. A
-reversed-region browser test would cover the whole class rather than that one
-bug.
+Exactly one test flips a region: `products/jbrowse-web/src/tests/ReversedRegionLabels.test.tsx`
+(`navToLocString('ctgA:1..7,720[rev]')` → SVG export of gff3tabix_genes labels).
+Nothing exercises a reversed region for **alignments**, and nothing anywhere
+checks reversed per-base cells — which is how the 1bp-cell bug (all five
+alignments cell painters painting the neighboring base, now fixed via
+`makeCellLeftMapper`) went unnoticed. It's unit-tested now, but nobody has
+looked at a reversed pileup on the Canvas2D fallback in a real app.
+
+Cheap because the harness exists: copy `ReversedRegionLabels.test.tsx` and swap
+the track for volvox alignments (per-base letters / mismatches at high zoom, so
+cells are wider than a pixel and a one-base slip is visible). That covers the
+whole orientation class rather than the one bug.
 
 ## Canvas2D vs GPU `canvasDrawn` contract drift
 
