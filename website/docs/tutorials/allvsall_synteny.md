@@ -48,10 +48,8 @@ NCTC86  GCF_003697165.2
 EOF
 ```
 
-(`GCF_000005845.2` is K-12 MG1655, `GCF_000008865.2` is O157:H7 Sakai,
-`GCF_000007445.1` is the uropathogenic CFT073, and `GCF_003697165.2` is the _E.
-coli_ type strain NCTC 86 / ATCC 11775.) `gff3` pulls each strain's annotation
-down in the same call; [gene tracks](#add-gene-tracks) use it further below.
+`gff3` pulls each strain's annotation down in the same call;
+[gene tracks](#add-gene-tracks) use it further below.
 
 Those four FASTAs become the JBrowse assemblies as-is. The PanSN names exist
 only inside the PAF, so make a separate concatenated copy for minimap2 rather
@@ -68,11 +66,11 @@ minimap2 -c -x asm20 all.fa all.fa > all_vs_all.paf
 ```
 
 `-c` emits the base-level CIGAR the linear synteny view needs. Self-alignments
-are deliberately kept: they're what makes the
+are kept deliberately: they let the
 [one-vs-all](#one-strain-against-all-the-others) mode below show a strain's own
-repeats (rRNA operons, IS elements). The adapter drops only the degenerate
-full-length self-diagonal, so keeping them costs nothing. Add `-X` if you want a
-strictly pairwise file, at the price of that paralogy.
+repeats (rRNA operons, IS elements), and the adapter drops only the degenerate
+self-diagonal, so they cost nothing. Add `-X` for a strictly pairwise file, at
+the price of that paralogy.
 
 ## Set up the four assemblies
 
@@ -129,10 +127,13 @@ otherwise be read as a pairwise `PAFAdapter`:
 
 ```bash
 jbrowse add-track all_vs_all.paf --adapterType AllVsAllPAFAdapter \
-  -a K12,Sakai,CFT073,NCTC86 --load copy
+  --trackId ecoli_ava -a K12,Sakai,CFT073,NCTC86 --load copy
 ```
 
-Both the track and the adapter get the four `assemblyNames`.
+Both the track and the adapter get all four `assemblyNames`. Unlike a pairwise
+PAF track, where `-a` is `query,target`, order does not matter here: one
+all-vs-all file backs every pair, so `-a` is simply the full set of assemblies
+it covers.
 
 ## Large files: index with make-pif
 
@@ -168,8 +169,10 @@ from the un-indexed version above:
 ```
 
 `assemblyNames`, `assemblyNameToPanSN`, and stacking the rows all work as above.
-The `.pif.gz` keeps its PanSN sequence names, and `make-pif` also emits a coarse
-zoomed-out tier so whole-genome views stay responsive.
+The `.pif.gz` keeps its PanSN sequence names, and `make-pif` emits a coarse
+zoomed-out tier by default so whole-genome views stay responsive — `--coarse`
+tunes that tier and `--csi` swaps the TBI index for sequences longer than ~512
+Mb (not an issue for _E. coli_).
 
 ## Stacking the genomes
 
@@ -185,11 +188,10 @@ build the rows by hand. Choose it and each assembly it lists becomes a row, one
 per strain, with that one track wired up to back every band. Click **Launch**
 and you have the stacked view.
 
-Switch to **Manual** to build the stack yourself, using **Add row** to add a
-strain and the connector button between each pair to pick its synteny track —
-but for an all-vs-all track Quick start saves you the trouble. Switching over
-carries across whatever Quick start had selected, so Manual is also the way to
-start from a track and then adjust it.
+**Manual** mode builds the stack by hand (**Add row** per strain, the connector
+button between each pair to pick its track) and inherits whatever Quick start
+had selected — but for an all-vs-all track Quick start already does all of this,
+so reach for Manual only when you want to start from a track and then adjust it.
 
 <Figure caption="The all-vs-all Quick start in the import form. The ecoli_ava track fills its four assemblies in as rows; Launch opens the stack." src="/img/multiway_synteny/ecoli_import_form.png" />
 
@@ -214,7 +216,7 @@ means three bands, so `tracks` has three entries, all served by the same track:
             { "assembly": "NCTC86" }
           ],
           "tracks": [["ecoli_ava"], ["ecoli_ava"], ["ecoli_ava"]],
-          "drawCurves": true,
+          "drawCurves": false,
           "minAlignmentLength": 10000
         }
       }
@@ -237,11 +239,9 @@ to stack is a direct alignment rather than a transitive link.
 
 <Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from one minimap2 all-vs-all PAF (short alignments hidden with minAlignmentLength). The continuous ribbons are the ~4 Mb backbone shared by all four strains, and the gaps are strain-specific islands." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-The gaps in those ribbons are where the strains actually differ. Sakai's are the
-prophage S-loops carrying the Shiga-toxin genes
-([Hayashi et al. 2001](https://academic.oup.com/dnaresearch/article/8/1/11/466363)),
-and CFT073 carries its own pathogenicity islands
-([Welch et al. 2002](https://www.pnas.org/doi/10.1073/pnas.252529799)).
+The gaps in those ribbons are where the strains actually differ — Sakai's
+largest carry its prophage Shiga-toxin genes, CFT073's are its own pathogenicity
+islands.
 
 ## Add gene tracks
 
@@ -256,8 +256,7 @@ the assembly kept only the chromosome:
 for strain in K12 Sakai CFT073 NCTC86; do
   # the chromosome is the FASTA's first record, whose accession is the seqid to keep
   acc=$(awk '/^>/{print substr($1, 2); exit}' "$strain"/ncbi_dataset/data/*/*.fna)
-  # -F'\t' matters: the default separator also splits on the spaces inside GFF
-  # attributes, which rewriting the line with OFS would then turn into tabs
+  # -F'\t': without it, awk also splits on the spaces inside GFF attributes
   awk -F'\t' -v acc="$acc" -v OFS='\t' '$1 == acc {$1 = "chr"; print}' \
     "$strain"/ncbi_dataset/data/*/genomic.gff > "$strain.gff"
 
@@ -275,9 +274,8 @@ land on `chr` at coordinates that mean nothing.
 With genes loaded, the gaps become readable. Navigate Sakai's row to
 `chr:1,267,000-1,268,400` and the gap holds `stx2A` and `stx2B` — the
 Shiga-toxin subunits, sitting in a region where no alignment to K-12 exists at
-all. The second copy, `stx1A`/`stx1B`, is at `chr:2,924,600-2,925,900`. That
-absence is the point: these are the prophage-borne genes that make O157:H7
-pathogenic and that K-12 simply does not carry.
+all. That absence is the point: these are the prophage-borne genes that make
+O157:H7 pathogenic and that K-12 simply does not carry.
 
 <Figure caption="K-12 (top) and Sakai (bottom) with their gene tracks, framing the Sp5 prophage. The ribbon carries the backbone the two strains share — the tor operon, cbpA, wrbA — and runs out at Sakai 1,246,166. Everything right of it, stx2B included, is ~22 kb of Sakai with no counterpart in K-12." src="/img/multiway_synteny/ecoli_stx_island.png" />
 
@@ -302,6 +300,28 @@ offers to launch a synteny view against its mate, but only for mates the track
 lists in `assemblyNames`, since the view needs a real assembly to open a row
 for.
 
+## Reproduce it end to end
+
+Every command above is wrapped in one script,
+[`build_ecoli_pangenome_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_synteny.sh):
+
+```bash
+bash scripts/build_ecoli_pangenome_synteny.sh   # builds ./ecoli_pangenome_build/jbrowse2
+npx --yes serve ecoli_pangenome_build/jbrowse2  # then open the printed URL
+```
+
+It downloads the four RefSeq genomes, self-aligns them into the all-vs-all PAF,
+downloads JBrowse, and writes a `config.json` with the four assemblies, the
+per-strain gene tracks, the all-vs-all synteny track, and a default session that
+opens on the stacked view. It needs the NCBI
+[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+CLI, `minimap2`, `samtools`, htslib (`bgzip`, `tabix`), `unzip`, and `node` on
+your `PATH`.
+
+For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
+`AllVsAllIndexedPAFAdapter` path from
+[Large files](#large-files-index-with-make-pif).
+
 ## Where to take it next
 
 **Open a dotplot.** The same track works in **Add → Dotplot view**, which shows
@@ -309,10 +329,8 @@ whole-genome structure (inversions, translocations) that the stacked ribbons
 compress into crossings.
 
 **Scale it up.** Four strains fit in memory comfortably; a real pangenome of
-hundreds does not. The PIF path above is the same workflow — `make-pif` and
-change the adapter type. `make-pif --coarse` tunes the zoomed-out tier, and
-`--csi` is only needed for sequences longer than ~512 Mb (not an issue for _E.
-coli_).
+hundreds does not. [Index it with `make-pif`](#large-files-index-with-make-pif)
+and switch to `AllVsAllIndexedPAFAdapter`, as above.
 
 ## See also
 
