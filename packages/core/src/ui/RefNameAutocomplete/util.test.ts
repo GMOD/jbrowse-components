@@ -114,4 +114,23 @@ describe('getInputWidth', () => {
     expect(long).toBeGreaterThan(short)
     expect(long).toBeLessThanOrEqual(550)
   })
+
+  it('quantizes so a small length change does not reflow the box', () => {
+    // crossing 99,999 -> 100,000 grows the string by a digit+comma (~8px) but
+    // both land in the same step, which is what stops the header jittering as
+    // the user pans/zooms
+    expect(getInputWidth('chr1:1..99,999', 50, 550)).toBe(
+      getInputWidth('chr1:1..100,000', 50, 550),
+    )
+  })
+
+  it('returns a multiple of the quantization step between the bounds', () => {
+    expect(getInputWidth('chr1:1..2,000,000', 50, 550) % 30).toBe(0)
+  })
+
+  it('reserves less width when the adornment is smaller', () => {
+    const withHelp = getInputWidth('chr1:1..2,000,000', 50, 550, 100)
+    const withoutHelp = getInputWidth('chr1:1..2,000,000', 50, 550, 70)
+    expect(withoutHelp).toBeLessThan(withHelp)
+  })
 })

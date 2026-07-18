@@ -1,6 +1,8 @@
 import type React from 'react'
 
 import {
+  ADORNMENT_RESERVE_PX,
+  HELP_BUTTON_RESERVE_PX,
   RefNameAutocomplete,
   RefNameAutocompleteEndAdornment,
 } from '@jbrowse/core/ui'
@@ -66,6 +68,9 @@ const SearchBox = observer(function SearchBox({
       value={model.coarseVisibleLocStrings}
       minWidth={minWidth}
       maxWidth={maxWidth}
+      adornmentWidth={
+        ADORNMENT_RESERVE_PX + (showHelp ? HELP_BUTTON_RESERVE_PX : 0)
+      }
       style={style}
       endAdornment={<RefNameAutocompleteEndAdornment showHelp={showHelp} />}
       inputStyle={{

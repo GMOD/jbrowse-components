@@ -29,6 +29,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   onChange,
   minWidth = 200,
   maxWidth = 550,
+  adornmentWidth,
   style,
   endAdornment,
   helperText,
@@ -44,6 +45,9 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   onChange?: (val: string) => void
   minWidth?: number
   maxWidth?: number
+  // px reserved for the endAdornment + input padding when sizing the box to the
+  // value; defaults to room for the search + help icons
+  adornmentWidth?: number
   style?: CSSProperties
   endAdornment?: ReactNode
   helperText?: string
@@ -72,7 +76,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     },
   )
 
-  const width = getInputWidth(externalValue, minWidth, maxWidth)
+  const width = getInputWidth(externalValue, minWidth, maxWidth, adornmentWidth)
   // assembly.regions can hold ~10^6 refnames. This is only the browse/pre-fetch
   // fallback list (typed queries resolve through fetchResults), MUI is not
   // virtualized, and the visible list is capped at MAX_OPTIONS anyway — so only
@@ -162,3 +166,4 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
 
 export default RefNameAutocomplete
 export { default as RefNameAutocompleteEndAdornment } from './EndAdornment.tsx'
+export { ADORNMENT_RESERVE_PX, HELP_BUTTON_RESERVE_PX } from './util.ts'

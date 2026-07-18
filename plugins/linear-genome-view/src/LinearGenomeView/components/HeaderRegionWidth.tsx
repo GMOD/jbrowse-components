@@ -8,6 +8,11 @@ const useStyles = makeStyles()(theme => ({
   bp: {
     display: 'flex',
     alignItems: 'center',
+    // reserve a fixed width so the varying-length bp string (e.g. 19.5Mbp vs
+    // 950Kbp) does not shift the adjacent zoom controls as the user zooms/pans
+    minWidth: 50,
+    // equal-width digits so the number does not reflow as it changes
+    fontVariantNumeric: 'tabular-nums',
     color: theme.palette.text.secondary,
   },
 }))

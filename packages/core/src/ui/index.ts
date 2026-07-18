@@ -6,6 +6,8 @@ export { LogoFull, Logomark } from './Logo.tsx'
 export { default as AssemblySelector } from './AssemblySelector.tsx'
 export { useAssemblySelection } from './useAssemblySelection.ts'
 export {
+  ADORNMENT_RESERVE_PX,
+  HELP_BUTTON_RESERVE_PX,
   RefNameAutocompleteEndAdornment,
   default as RefNameAutocomplete,
 } from './RefNameAutocomplete/index.tsx'
