@@ -1,8 +1,9 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Checkbox, FormControlLabel } from '@mui/material'
+import { FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import CheckboxLite from './CheckboxLite.tsx'
 import OverrideBadge from './OverrideBadge.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 import { isUnsupported } from '../../util.ts'
@@ -44,7 +45,7 @@ const TrackCheckbox = observer(function TrackCheckbox({
   className: string
 }) {
   return (
-    <Checkbox
+    <CheckboxLite
       className={className}
       checked={model.shownTrackIds.has(trackId)}
       onChange={() => {
