@@ -228,6 +228,37 @@ individual molecules — in the CHG/CHH copies each read stays blank over the ge
 body and picks up red (methylated) marks as it crosses into the silenced
 element.
 
+## Reproduce it end to end
+
+The whole pipeline is wrapped in one script,
+[`build_arabidopsis_wgbs.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_arabidopsis_wgbs.sh):
+
+```bash
+bash scripts/build_arabidopsis_wgbs.sh          # builds ./arabidopsis_wgbs_build/jbrowse2
+npx --yes serve arabidopsis_wgbs_build/jbrowse2 # then open the printed URL
+```
+
+It downloads the TAIR10 reference and the DRR029742 WGBS run, trims and
+bisulfite-aligns them with bwameth, downloads JBrowse, and writes a
+`config.json` with the assembly, the gene models, and the per-read pileup
+pre-colored Bisulfite / CpG, opening on the window above. It requires:
+
+- the NCBI `datasets` CLI
+- `wget`
+- [Trim Galore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
+- [bwameth](https://github.com/brentp/bwa-meth)
+- `samtools`
+- htslib (`bgzip`, `tabix`)
+- `node`
+
+On Debian/Ubuntu, `apt install wget samtools tabix` covers several of these.
+bwameth, Trim Galore, and the NCBI
+[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+CLI install from their own instructions, and `node` comes from
+[nodejs.org](https://nodejs.org/). The alignment step downloads a full WGBS run,
+so allow time and disk for it. The optional MethylDackel aggregate track above
+is left out of the script; add it by hand if you want it.
+
 ## See also
 
 - [DNA methylation](/docs/tutorials/methylation) - per-read methylation from

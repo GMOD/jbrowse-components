@@ -192,6 +192,37 @@ The [gallery](/gallery) has a grape-vs-peach linear synteny example (genes plus
 synteny blocks, rendered both as ribbons and as a feature track) alongside a
 whole-genome human-vs-mouse comparison.
 
+## Reproduce it end to end
+
+The three-strain _H. pylori_ demo linked at the top is built by one script,
+[`build_hpylori_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hpylori_synteny.sh):
+
+```bash
+bash scripts/build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/jbrowse2
+npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
+```
+
+It downloads the three RefSeq assemblies, aligns the two adjacent strain pairs
+with minimap2, downloads JBrowse, and writes a `config.json` with the three
+assemblies, a gene track per strain, the two pairwise synteny tracks, and a
+default session that stacks all three in one linear synteny view. It requires:
+
+- the NCBI
+  [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+  CLI
+- `minimap2`
+- `samtools`
+- htslib (`bgzip`, `tabix`)
+- `unzip`
+- `node`
+
+On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
+these. The NCBI
+[`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
+CLI is a single-binary download, and `node` comes from
+[nodejs.org](https://nodejs.org/). The same two `.paf` files also open in **Add
+→ Dotplot view**.
+
 ## See also
 
 - [Synteny track config guide](/docs/config_guides/synteny_track) - adapter and

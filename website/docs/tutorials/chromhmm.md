@@ -167,6 +167,29 @@ You can open both tracks live in the
 under the **ENCODE → Chromatin state** and **Roadmap Epigenomics → Chromatin
 state** categories.
 
+## Reproduce it end to end
+
+Every step above is wrapped in one script,
+[`build_chromhmm_multirow.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_multirow.sh):
+
+```bash
+bash scripts/build_chromhmm_multirow.sh   # builds ./chromhmm_build/jbrowse2
+npx --yes serve chromhmm_build/jbrowse2   # then open the printed URL
+```
+
+It downloads the nine ENCODE Broad HMM segmentation BEDs, merges them into the
+single `cellType`-tagged BED, bgzips and tabixes it, downloads JBrowse, and
+writes a `config.json` with the hg19 assembly and the multi-row ChromHMM track
+described above, opening on the HOXA cluster. It requires:
+
+- `bash` 4+ (for the `declare -A` map)
+- `wget`
+- htslib (`bgzip`, `tabix`)
+- `node`
+
+On Debian/Ubuntu, `apt install wget tabix` covers `wget` and htslib
+(`bgzip`/`tabix`); `node` comes from [nodejs.org](https://nodejs.org/).
+
 ## See also
 
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - another multi-row

@@ -195,62 +195,35 @@ bedGraphToBigWig tajd_all.bedgraph dm6.chrom.sizes tajd_all.bw
 
 ## Full pipeline
 
-The complete pipeline as one script. Save it as `popgen.sh` and run it in an
-empty directory:
+Every step above (the downloads, the group split, and all three scans) is
+wrapped in one script,
+[`build_dgrp_popgen.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dgrp_popgen.sh),
+which also downloads JBrowse and writes a ready-to-serve config:
 
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-BASE=https://resources.aertslab.org/DGRP2/NCSU/final/dm6
-VCF=DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
-
-# 1. data (skip re-download if already present)
-[ -f "$VCF" ]     || curl -LO "$BASE/$VCF"
-[ -f "$VCF.csi" ] || curl -LO "$BASE/$VCF.csi"
-[ -f In2Lt.tsv ]  || curl -Lo In2Lt.tsv https://dgrpool.epfl.ch/phenotypes/1520/download
-
-# 2. chrom.sizes from the VCF header (names guaranteed to match)
-bcftools view -h "$VCF" \
-  | awk -F'[=,>]' '/^##contig/{print $3"\t"$5}' > dm6.chrom.sizes
-
-# 3. In(2L)t karyotype groups, normalized to VCF sample names
-bcftools query -l "$VCF" | sort > vcf.samples
-awk -F'\t' 'NR>1 && $3==0 {gsub(/_/,"-",$1); print $1}' In2Lt.tsv \
-  | sort | comm -12 - vcf.samples > In2Lt_STD.txt
-awk -F'\t' 'NR>1 && $3==2 {gsub(/_/,"-",$1); print $1}' In2Lt.tsv \
-  | sort | comm -12 - vcf.samples > In2Lt_INV.txt
-
-# 4. windowed Fst -> bigWig
-vcftools --gzvcf "$VCF" \
-  --weir-fst-pop In2Lt_INV.txt --weir-fst-pop In2Lt_STD.txt \
-  --fst-window-size 2000 --fst-window-step 2000 --out fst_In2Lt
-awk 'NR>1 && $5!="-nan" {v=($5<0?0:$5); print $1"\t"($2-1)"\t"$3"\t"v}' \
-  fst_In2Lt.windowed.weir.fst | sort -k1,1 -k2,2n > fst_In2Lt.bedgraph
-bedGraphToBigWig fst_In2Lt.bedgraph dm6.chrom.sizes fst_In2Lt.bw
-
-# 5. windowed pi -> bigWig (whole panel + each In(2L)t arrangement)
-vcftools --gzvcf "$VCF" --window-pi 2000 --out pi_all
-vcftools --gzvcf "$VCF" --keep In2Lt_INV.txt --window-pi 2000 --out pi_INV
-vcftools --gzvcf "$VCF" --keep In2Lt_STD.txt --window-pi 2000 --out pi_STD
-for g in all INV STD; do
-  awk 'NR>1 && $5!="nan" {print $1"\t"($2-1)"\t"$3"\t"$5}' \
-    pi_$g.windowed.pi | sort -k1,1 -k2,2n > pi_$g.bedgraph
-  bedGraphToBigWig pi_$g.bedgraph dm6.chrom.sizes pi_$g.bw
-done
-
-# 6. windowed Tajima's D -> bigWig (whole panel)
-vcftools --gzvcf "$VCF" --TajimaD 2000 --out tajd_all
-awk 'NR>1 && $4!="nan" && $4!="-nan" {print $1"\t"$2"\t"($2+2000)"\t"$4}' \
-  tajd_all.Tajima.D | sort -k1,1 -k2,2n > tajd_all.bedgraph
-bedGraphToBigWig tajd_all.bedgraph dm6.chrom.sizes tajd_all.bw
-
-echo "done: fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw tajd_all.bw"
+bash scripts/build_dgrp_popgen.sh          # builds ./dgrp_popgen_build/jbrowse2
+npx --yes serve dgrp_popgen_build/jbrowse2 # then open the printed URL
 ```
 
-Host the `.bw` files somewhere JBrowse can reach (any static web server, or
+It writes a `config.json` with the dm6 assembly (from UCSC) plus the Fst, π, and
+Tajima's D scan tracks, opening on the In(2L)t inversion across arm 2L. It
+requires:
+
+- `vcftools`
+- `bcftools`
+- UCSC `bedGraphToBigWig`
+- `curl`
+- `node`
+
+On Debian/Ubuntu, `apt install vcftools bcftools curl` covers three of these;
+`bedGraphToBigWig` is a
+[UCSC binary download](https://hgdownload.soe.ucsc.edu/admin/exe/), and `node`
+comes from [nodejs.org](https://nodejs.org/).
+
+The `.bw` files are written next to the config, so you can host them elsewhere
+or
 [open them as local track files](/docs/user_guides/basic_usage#opening-tracks)
-in JBrowse Desktop).
+in JBrowse Desktop.
 
 ## Loading in JBrowse
 
