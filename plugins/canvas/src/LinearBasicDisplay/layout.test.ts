@@ -1,9 +1,9 @@
 import {
   computeLaidOutData,
   createIncrementalLayout,
+  maxBottom,
   scaleLaidOutData,
 } from './layout.ts'
-import { maxBottom } from './yMorph.ts'
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import { ROW_PADDING } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {

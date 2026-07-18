@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
+import { maxBottom } from './layout.ts'
 import { createTestEnvironment } from './testEnv.ts'
-import { maxBottom } from './yMorph.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,

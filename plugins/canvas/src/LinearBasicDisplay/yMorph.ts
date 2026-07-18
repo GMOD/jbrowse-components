@@ -6,7 +6,7 @@ export const MORPH_DURATION_MS = 300
 
 // Above this many rect primitives, skip the per-frame interpolate + re-upload
 // and snap instead — the animation isn't worth the GPU churn on dense views.
-export const MORPH_MAX_RECTS = 20000
+const MORPH_MAX_RECTS = 20000
 
 // featureId -> row top (px) for the layout being animated away from. Keyed by
 // id (not array index) so the transition survives a re-fetch: a zoom rebuilds
@@ -31,19 +31,6 @@ function morphDelta(
   return prevTop !== undefined && targetTop >= 0
     ? prevTop - targetTop
     : undefined
-}
-
-// Tallest row bottom across a layout, i.e. its content height.
-export function maxBottom(map: ReadonlyMap<number, FeatureDataResult>) {
-  let max = 0
-  for (const data of map.values()) {
-    for (const item of data.flatbushItems) {
-      if (item.bottomPx > max) {
-        max = item.bottomPx
-      }
-    }
-  }
-  return max
 }
 
 // Everything that fixes a feature's row *height* and vertical *offset*, as a
@@ -174,10 +161,11 @@ export function interpolateYData(
     const deltaById = new Map<string, number>()
     let moved = false
     for (let i = 0; i < items.length; i++) {
-      const d = morphDelta(fromTops, items[i]!.featureId, items[i]!.topPx)
+      const item = items[i]!
+      const d = morphDelta(fromTops, item.featureId, item.topPx)
       if (d !== undefined) {
         deltas[i] = d
-        deltaById.set(items[i]!.featureId, d)
+        deltaById.set(item.featureId, d)
         if (d !== 0) {
           moved = true
         }

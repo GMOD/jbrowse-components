@@ -22,6 +22,19 @@ import type {
 // instead of stacking them at y=0. Float32 handles this magnitude losslessly.
 const OFFSCREEN_Y = -1e6
 
+// Tallest row bottom across a layout, i.e. its content height.
+export function maxBottom(map: ReadonlyMap<number, FeatureDataResult>) {
+  let max = 0
+  for (const data of map.values()) {
+    for (const item of data.flatbushItems) {
+      if (item.bottomPx > max) {
+        max = item.bottomPx
+      }
+    }
+  }
+  return max
+}
+
 // How names are chosen when `showLabels` is on. `all` reserves + renders every
 // feature's name (the default, used at the `full`/`labels` fit rungs and in all
 // non-fit modes); `fitWidth` keeps a name only where the feature's box is wide

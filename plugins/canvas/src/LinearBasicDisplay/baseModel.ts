@@ -73,6 +73,7 @@ import { resolveFitLadder, snapFittedContentHeight } from './fitLadder.ts'
 import {
   computeLaidOutData,
   createIncrementalLayout,
+  maxBottom,
   scaleLaidOutData,
 } from './layout.ts'
 import {
@@ -81,7 +82,6 @@ import {
   captureFeatureTops,
   easeInOutCubic,
   interpolateYData,
-  maxBottom,
   rowGeometrySignature,
 } from './yMorph.ts'
 import {
@@ -1302,7 +1302,13 @@ export default function baseStateModelFactory(
         // don't re-upload/re-render unless an animation is in flight.
         get renderDataMap(): Map<number, FeatureDataResult> {
           const from = self.morphFromTops
-          if (from === undefined) {
+          // morphProgress === 1 is the settled frame between the clock's final
+          // setMorphProgress(1) and endYMorph clearing morphFromTops: every
+          // feature already sits at its destination, so return laidOutDataMap by
+          // reference (same as idle) instead of rebuilding an identical map. The
+          // stable reference also lets the MobX computed skip a redundant
+          // re-render when endYMorph then clears the morph.
+          if (from === undefined || self.morphProgress === 1) {
             return self.laidOutDataMap
           }
           return interpolateYData(
