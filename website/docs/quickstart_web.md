@@ -29,6 +29,25 @@ See [Building a config with the CLI for Desktop](/docs/tutorials/cli_desktop).
 - `jbrowse text-index`
 - `npx serve -S .`
 
+## Reproduce it end to end
+
+The TLDR above uses placeholder filenames (`genome.fa`, `file.bam`, `file.vcf`)
+that you supply. To see the exact same flow run against real data,
+[`build_quickstart_web.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_quickstart_web.sh)
+fills those in with the volvox sample data JBrowse ships:
+
+```bash
+bash scripts/build_quickstart_web.sh   # builds ./quickstart_web_build/jbrowse2
+npx serve -S quickstart_web_build/jbrowse2   # then open the printed URL
+```
+
+It downloads a FASTA, a BAM, a VCF, and a GFF3, runs the same `samtools faidx` /
+`samtools index` / `bgzip` + `tabix` indexing and `add-assembly` / `add-track` /
+`text-index` commands, and writes a `config.json` with an alignments track, a
+variant track, and a searchable gene track. Every input is pinned, so re-running
+reproduces the same config. It needs `samtools`, htslib's `bgzip` and `tabix`,
+`curl`, and node (for the JBrowse CLI).
+
 ## Prerequisites
 
 - Node.js 18+ - use [NodeSource](https://github.com/nodesource) or
