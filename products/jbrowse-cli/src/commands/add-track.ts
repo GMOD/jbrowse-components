@@ -64,7 +64,7 @@ export async function run(args?: string[]) {
       type: 'string',
       short: 'a',
       description:
-        'Assembly name or names for track as comma separated string. For synteny tracks the order is query,target (reverse of minimap2/nucmer argument order)',
+        'Assembly name or names for track as comma separated string. For pairwise synteny tracks the order is query,target (reverse of minimap2/nucmer argument order); for all-vs-all adapters (AllVsAllPAFAdapter/AllVsAllIndexedPAFAdapter) list every assembly the file covers, in any order',
     },
     category: {
       type: 'string',
@@ -156,8 +156,11 @@ export async function run(args?: string[]) {
     '--color \'jexl:feature.strand==1?"blue":"red"\'. --displayDefaults takes ' +
     'inline JSON for any other appearance setting (labels, mouseover, ' +
     'jexlFilters).\n\n' +
-    'For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — ' +
-    'the reverse of the minimap2/nucmer input order.'
+    'For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is ' +
+    'query,target — the reverse of the minimap2/nucmer input order. For the ' +
+    'all-vs-all adapters (AllVsAllPAFAdapter, AllVsAllIndexedPAFAdapter) it is ' +
+    'instead the full list of assemblies the file covers, in any order, since ' +
+    'one all-vs-all file backs every pair.'
 
   const examples = [
     '# copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json',
