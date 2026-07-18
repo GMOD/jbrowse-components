@@ -56,7 +56,7 @@ function CytobandOverview({
         y={0.5}
       />
       <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
-        <OverviewScalebarPolygon overview={overview} model={model} />
+        <OverviewScalebarPolygon overview={overview} model={model} exportSvg />
       </g>
     </g>
   ) : null

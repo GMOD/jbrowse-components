@@ -1,5 +1,6 @@
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
-import { alpha, useTheme } from '@mui/material'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
@@ -56,6 +57,17 @@ function regionBlocksPxExtent(blocks: BaseBlock[]): Span | undefined {
     : undefined
 }
 
+// Fill/stroke are theme-derived and zoom-invariant, so they live in a static
+// class computed once per theme (makeStyles memoizes) — an on-screen zoom frame
+// then does zero color parsing. SVG export can't carry a CSS class, so that path
+// serializes explicit fill/stroke attributes instead (see `exportSvg` below).
+const useStyles = makeStyles()(theme => ({
+  polygon: {
+    fill: alpha(theme.palette.tertiary.light, 0.3),
+    stroke: alpha(theme.palette.tertiary.light, 0.8),
+  },
+}))
+
 /**
  * The "you are here" connector: a trapezoid joining the visible region's extent
  * in the overview (top edge) to that same extent in the main view (bottom
@@ -65,18 +77,22 @@ function regionBlocksPxExtent(blocks: BaseBlock[]): Span | undefined {
  * @param overviewOffsetPx - pixels the overview is shifted right of the main
  * view's origin. In the interactive view the overview clears the chromosome-
  * name gap (cytobandOffset); in SVG export it is flush (0).
+ * @param exportSvg - serialize explicit fill/stroke attributes (the split the
+ * `getFill/StrokeProps` helpers exist for) instead of the on-screen CSS class,
+ * which wouldn't survive into a standalone exported SVG.
  */
 const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   model,
   overview,
   overviewOffsetPx = 0,
+  exportSvg = false,
 }: {
   model: LinearGenomeViewModel
   overview: ViewLayout
   overviewOffsetPx?: number
+  exportSvg?: boolean
 }) {
-  const theme = useTheme()
-  const polygonColor = theme.palette.tertiary.light
+  const { classes, theme } = useStyles()
   const { offsetPx, bpPerPx, dynamicBlocks } = model
   const extent = regionBlocksPxExtent(dynamicBlocks.blocks)
   if (!extent) {
@@ -95,12 +111,14 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   const bottom = transformSpan(extent, 1, -offsetPx)
   const points = trapezoidPoints(top, bottom, HEADER_BAR_HEIGHT)
 
-  return (
+  return exportSvg ? (
     <polygon
       points={points}
-      {...getFillProps(alpha(polygonColor, 0.3))}
-      {...getStrokeProps(alpha(polygonColor, 0.8))}
+      {...getFillProps(alpha(theme.palette.tertiary.light, 0.3))}
+      {...getStrokeProps(alpha(theme.palette.tertiary.light, 0.8))}
     />
+  ) : (
+    <polygon points={points} className={classes.polygon} />
   )
 })
 
