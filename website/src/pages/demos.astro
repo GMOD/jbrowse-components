@@ -6,6 +6,8 @@ import {
   gallerySections,
   guidedDemos,
   itemGuideHref,
+  itemGuideKind,
+  itemHref,
   itemLiveHref,
 } from '../lib/gallery.ts'
 import page from '../styles/page.module.css'
@@ -37,14 +39,12 @@ import page from '../styles/page.module.css'
                 {s.items.map(item => {
                   const liveHref = itemLiveHref(item)
                   const guideHref = itemGuideHref(item, baseUrl)
-                  const guideLabel = item.guide?.startsWith('tutorials/')
-                    ? 'tutorial'
-                    : 'guide'
+                  const guideLabel = itemGuideKind(item)
                   return (
                     <li>
                       <a
                         class="demo"
-                        href={liveHref || guideHref}
+                        href={itemHref(item, baseUrl)}
                         title={item.description}
                       >
                         {item.label}

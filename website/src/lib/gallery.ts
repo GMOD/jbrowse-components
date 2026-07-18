@@ -74,6 +74,13 @@ export function itemLiveHref(item: GalleryItem) {
   return ''
 }
 
+// Whether an item's backing doc is a tutorial or a user guide — the two pages
+// word the link differently ("Read the tutorial ↗" vs a bare "tutorial"), but
+// the tutorials/ vs guide distinction is shared, so it lives here.
+export function itemGuideKind(item: GalleryItem) {
+  return item.guide?.startsWith('tutorials/') ? 'tutorial' : 'guide'
+}
+
 // Docs URL for the tutorial / user guide backing an item, if it names one.
 // `baseUrl` is the site base (e.g. /jb2) so the link resolves under the deploy.
 export function itemGuideHref(item: GalleryItem, baseUrl: string) {

@@ -9,6 +9,7 @@ import { baseUrl } from '../lib/base-url.ts'
 import {
   gallerySections,
   itemGuideHref,
+  itemGuideKind,
   itemHref,
   itemImg,
   itemLiveHref,
@@ -67,9 +68,7 @@ const sections = gallerySections
                   const src = `${baseUrl}/img/${itemImg(item)}`
                   const liveHref = itemLiveHref(item)
                   const guideHref = itemGuideHref(item, baseUrl)
-                  const guideLabel = item.guide?.startsWith('tutorials/')
-                    ? 'Read the tutorial ↗'
-                    : 'Read the guide ↗'
+                  const guideLabel = `Read the ${itemGuideKind(item)} ↗`
                   // Enlarging opens the live view when there is one, else the guide.
                   const primaryHref = liveHref || guideHref
                   const primaryLabel = liveHref
@@ -99,12 +98,22 @@ const sections = gallerySections
                         {item.description && <p>{item.description}</p>}
                         <p class="card-links">
                           {liveHref && (
-                            <a href={liveHref} class="card-open">
+                            <a
+                              href={liveHref}
+                              class="card-open"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               Open in JBrowse ↗
                             </a>
                           )}
                           {guideHref && (
-                            <a href={guideHref} class="card-open">
+                            <a
+                              href={guideHref}
+                              class="card-open"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               {guideLabel}
                             </a>
                           )}
@@ -134,59 +143,54 @@ const sections = gallerySections
     </div>
   </div>
 
-  <div id="lightbox" class="lightbox" hidden>
+  <dialog id="lightbox" class="lightbox" aria-label="Enlarged figure">
     <button type="button" class="lightbox-close" aria-label="Close">×</button>
     <figure class="lightbox-fig">
       <img id="lightbox-img" src="" alt="" />
       <figcaption>
         <span id="lightbox-caption"></span>
-        <a id="lightbox-link" class="lightbox-open" href=""></a>
+        <a
+          id="lightbox-link"
+          class="lightbox-open"
+          href=""
+          target="_blank"
+          rel="noopener noreferrer"></a>
       </figcaption>
     </figure>
-  </div>
+  </dialog>
 </SidebarLayout>
 
 <script>
-  const lb = document.getElementById('lightbox')!
+  // Native <dialog>.showModal() gives us the focus trap, Esc-to-close, and
+  // focus-return-to-trigger for free — so the script only wires up open/close.
+  const lb = document.getElementById('lightbox') as HTMLDialogElement
   const lbImg = document.getElementById('lightbox-img') as HTMLImageElement
   const lbCaption = document.getElementById('lightbox-caption')!
   const lbLink = document.getElementById('lightbox-link') as HTMLAnchorElement
 
-  function openLightbox(btn: HTMLElement) {
-    lbImg.src = btn.dataset.full ?? ''
-    lbImg.alt = btn.dataset.label ?? ''
-    lbCaption.textContent = btn.dataset.label ?? ''
-    lbLink.href = btn.dataset.href ?? ''
-    lbLink.textContent = btn.dataset.openLabel ?? ''
-    lb.hidden = false
-    document.body.style.overflow = 'hidden'
-  }
-
-  function closeLightbox() {
-    lb.hidden = true
-    lbImg.src = ''
-    document.body.style.overflow = ''
-  }
-
   for (const btn of document.querySelectorAll<HTMLElement>('.card-img-btn')) {
     btn.addEventListener('click', () => {
-      openLightbox(btn)
+      lbImg.src = btn.dataset.full ?? ''
+      lbImg.alt = btn.dataset.label ?? ''
+      lbCaption.textContent = btn.dataset.label ?? ''
+      lbLink.href = btn.dataset.href ?? ''
+      lbLink.textContent = btn.dataset.openLabel ?? ''
+      lb.showModal()
+      document.body.style.overflow = 'hidden'
     })
   }
 
   // Backdrop, image, or close-button click closes; only the "open" link passes
-  // through (it navigates).
+  // through (it navigates in a new tab).
   lb.addEventListener('click', e => {
-    const target = e.target as HTMLElement
-    if (target !== lbLink) {
-      closeLightbox()
+    if (e.target !== lbLink) {
+      lb.close()
     }
   })
 
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && !lb.hidden) {
-      closeLightbox()
-    }
+  lb.addEventListener('close', () => {
+    lbImg.src = ''
+    document.body.style.overflow = ''
   })
 </script>
 
@@ -245,17 +249,23 @@ const sections = gallerySections
   }
 
   .lightbox {
-    position: fixed;
     inset: 0;
-    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    margin: 0;
+    padding: 2rem;
+    border: none;
+    background: rgba(0, 0, 0, 0.85);
+  }
+  .lightbox[open] {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
-    background: rgba(0, 0, 0, 0.85);
   }
-  .lightbox[hidden] {
-    display: none;
+  .lightbox::backdrop {
+    background: rgba(0, 0, 0, 0.85);
   }
   .lightbox-fig {
     margin: 0;
