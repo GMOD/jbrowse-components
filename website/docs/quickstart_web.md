@@ -41,12 +41,13 @@ bash scripts/build_quickstart_web.sh   # builds ./quickstart_web_build/jbrowse2
 npx serve -S quickstart_web_build/jbrowse2   # then open the printed URL
 ```
 
-It downloads a FASTA, a BAM, a VCF, and a GFF3, runs the same `samtools faidx` /
-`samtools index` / `bgzip` + `tabix` indexing and `add-assembly` / `add-track` /
-`text-index` commands, and writes a `config.json` with an alignments track, a
-variant track, and a searchable gene track. Every input is pinned, so re-running
-reproduces the same config. It needs `samtools`, htslib's `bgzip` and `tabix`,
-`curl`, and node (for the JBrowse CLI).
+It downloads a FASTA, a BAM, a BigWig, a VCF, and a GFF3, runs the same
+`samtools faidx` / `samtools index` / `bgzip` + `tabix` indexing and
+`add-assembly` / `add-track` / `text-index` commands, and writes a `config.json`
+with an alignments track, a coverage track, a variant track, and a searchable
+gene track. Every input is pinned, so re-running reproduces the same config. It
+needs `samtools`, htslib's `bgzip` and `tabix`, `curl`, and node (for the
+JBrowse CLI).
 
 ## Prerequisites
 

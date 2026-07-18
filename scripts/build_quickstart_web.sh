@@ -40,6 +40,7 @@ else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
 
+# dl URL DEST: download unless DEST already exists (curl ships on macOS + Linux).
 dl() { [ -f "$2" ] || curl -fLsS "$1" -o "$2"; }
 
 mkdir -p "$OUTDIR"
@@ -57,6 +58,10 @@ jb add-assembly volvox.fa --load copy --force --out "$APP"
 dl "$BASE/volvox-sorted.bam" volvox-sorted.bam
 samtools index volvox-sorted.bam
 jb add-track volvox-sorted.bam --load copy --force --out "$APP"
+
+# ── Coverage (BigWig): fetch, add (no external index needed) ─────────────────
+dl "$BASE/volvox.bw" volvox.bw
+jb add-track volvox.bw --load copy --force --out "$APP"
 
 # ── Variants (VCF): fetch plain VCF, bgzip + tabix, add ──────────────────────
 dl "$BASE/volvox.filtered.vcf" volvox.filtered.vcf
