@@ -1,0 +1,15 @@
+---
+import Example from "../examples/WithSessionPersistence.tsx"
+import code from "../examples/WithSessionPersistence.tsx?raw"
+import { pages } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "with-session-persistence")!
+---
+
+<Layout page={page}>
+  <Section slug="with-session-persistence" code={code}>
+    <Example client:only="react" />
+  </Section>
+</Layout>

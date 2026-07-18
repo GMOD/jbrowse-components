@@ -276,6 +276,39 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'with-session-persistence',
+    title: 'Persist & restore the session',
+    description:
+      'Mirror the live session to localStorage with onSnapshot, and restore it as defaultSession on reload.',
+    group: 'Sessions & state',
+    sections: [
+      {
+        slug: 'with-session-persistence',
+        title: 'Persist & restore the session',
+        description:
+          'Mirror the live session to localStorage with onSnapshot, and restore it as defaultSession on reload.',
+      },
+    ],
+  },
+  {
+    slug: 'export-svg',
+    title: 'Export the view (SVG/PNG)',
+    description:
+      'Render the whole view to a vector SVG (or rasterized PNG) with the exportSvg action.',
+    group: 'Sessions & state',
+    // exportSvg re-renders every track's GPU layer through the SVG path, which
+    // crashes CI's headless software-WebGL
+    skipSmoke: true,
+    sections: [
+      {
+        slug: 'export-svg',
+        title: 'Export the view (SVG/PNG)',
+        description:
+          'Render the whole view to a vector SVG (or rasterized PNG) with the exportSvg action.',
+      },
+    ],
+  },
+  {
     slug: 'with-error-handler',
     title: 'Custom error handling',
     description: 'Catch and render view errors with your own UI.',

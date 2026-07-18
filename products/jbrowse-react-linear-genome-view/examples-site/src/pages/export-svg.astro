@@ -1,0 +1,15 @@
+---
+import Example from "../examples/ExportSvg.tsx"
+import code from "../examples/ExportSvg.tsx?raw"
+import { pages } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "export-svg")!
+---
+
+<Layout page={page}>
+  <Section slug="export-svg" code={code}>
+    <Example client:only="react" />
+  </Section>
+</Layout>

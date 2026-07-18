@@ -29,13 +29,13 @@ export default function WithPerTrackTextSearching() {
             type: 'TrixTextSearchAdapter',
             textSearchAdapterId: 'gff3tabix_genes-index',
             ixFilePath: {
-              uri: 'https://example.com/storybook_data/gff3tabix_genes.ix',
+              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/gff3tabix_genes.ix',
             },
             ixxFilePath: {
-              uri: 'https://example.com/storybook_data/gff3tabix_genes.ixx',
+              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/gff3tabix_genes.ixx',
             },
             metaFilePath: {
-              uri: 'https://example.com/storybook_data/gff3tabix_genes_meta.json',
+              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/gff3tabix_genes_meta.json',
             },
             assemblyNames: ['volvox'],
           },

@@ -59,7 +59,9 @@ export default function WithMultipleDisplayedRegionsFlipped() {
       view: {
         type: 'LinearGenomeView',
         init: {
-          loc: 'chr1:113073119..113073695 chr1:113091267..113091433',
+          // two displayed regions, the second reverse-complemented via its own
+          // [rev] suffix — orientation is per-region, so they can differ
+          loc: 'chr1:113073119..113073695 chr1:113091267..113091433[rev]',
           assembly: 'GRCh38',
           tracks: ['ncbi-refseq-genes'],
         },

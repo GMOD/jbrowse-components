@@ -120,7 +120,19 @@ export default function ObserveVisible() {
         },
       },
     ],
-    location: 'ctgA:1105..1221',
+    // open the track (via a default session) so it appears in view.tracks — the
+    // feature table below reads its adapter to fetch the visible features
+    defaultSession: {
+      name: 'Observe visible',
+      view: {
+        type: 'LinearGenomeView',
+        init: {
+          assembly: 'volvox',
+          loc: 'ctgA:1105..1221',
+          tracks: ['volvox_gff3'],
+        },
+      },
+    },
   })
   return (
     <div>
