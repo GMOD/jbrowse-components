@@ -35,7 +35,7 @@
     "@gmod/vcf": "^7.0.9",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/ld-core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.12.0",
+    "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/plugin-canvas": "workspace:^",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/render-core": "workspace:^",

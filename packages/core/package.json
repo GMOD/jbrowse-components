@@ -181,7 +181,7 @@
     "@floating-ui/react": "^0.27.20",
     "@gmod/bgzf-filehandle": "^6.2.0",
     "@jbrowse/jexl": "^3.0.2",
-    "@jbrowse/mobx-state-tree": "^5.12.0",
+    "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/quick-lru": "^7.3.5",
     "@jbrowse/render-core": "workspace:^",
     "@leeoniya/ufuzzy": "^1.0.19",

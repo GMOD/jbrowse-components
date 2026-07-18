@@ -16,7 +16,7 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@jbrowse/core": "workspace:*",
-    "@jbrowse/mobx-state-tree": "^5.12.0",
+    "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/react-circular-genome-view2": "workspace:*",
     "astro": "^7.1.1",
     "mobx": "^6.16.1",

@@ -53,7 +53,7 @@
     "@emotion/styled": "^11.14.1",
     "@eslint-react/eslint-plugin": "^5.16.1",
     "@eslint/js": "^10.0.1",
-    "@jbrowse/mobx-state-tree": "^5.12.0",
+    "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/web": "workspace:^",
     "@mui/material": "^9.2.0",
     "@mui/system": "^9.2.0",

@@ -34,7 +34,7 @@
   "dependencies": {
     "@gmod/hclust": "4.0.0",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.12.0",
+    "@jbrowse/mobx-state-tree": "^5.13.0",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@mui/icons-material": "^9.2.0",
