@@ -52,11 +52,11 @@ if command -v jbrowse >/dev/null 2>&1; then
 else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
-[ -f jbrowse2/index.html ] || jb create jbrowse2 --force
+[ -f jbrowse2/index.html ] || jb create jbrowse2
 
 jb add-assembly tair10.fa --name tair10 --load copy --force --out jbrowse2
 jb sort-gff genomic.gff | bgzip > tair10.gff.gz
-tabix -p gff tair10.gff.gz
+tabix -f -p gff tair10.gff.gz
 jb add-track tair10.gff.gz --name "TAIR10 genes" --trackId tair10_genes \
   --load copy --force --out jbrowse2
 jb add-track arabidopsis_wgbs.bam --name "Arabidopsis WGBS (bwameth)" \

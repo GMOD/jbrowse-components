@@ -38,9 +38,12 @@ To generate a PAF alignment, install
 minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
 ```
 
-The `-x asm5` preset is tuned for whole-genome assembly comparison, and `-c`
-emits the base-level CIGAR that the linear synteny view needs to draw alignments
-at base resolution. The `--eqx` flag tells minimap2 to distinguish matches (`=`)
+The `-x asm5` preset is tuned for whole-genome assembly comparison at up to ~5%
+divergence; step up to `asm10` or `asm20` for more divergent genomes (the
+_H. pylori_ strains this tutorial's demo uses are aligned with `asm20`, since
+same-species bacterial strains can still diverge well past 5%). `-c` emits the
+base-level CIGAR that the linear synteny view needs to draw alignments at base
+resolution. The `--eqx` flag tells minimap2 to distinguish matches (`=`)
 from mismatches (`X`) in the CIGAR, which lets JBrowse compute per-alignment
 identity and offer the **Color by → Identity** mode described below. If you'd
 rather use [MUMmer](https://github.com/mummer4/mummer), convert its `.delta`
@@ -163,7 +166,7 @@ color in every panel — and a gene's synteny becomes legible by color alone.
 | Problem                                          | Possible cause                                  | Solution                                                                                                                |
 | ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | The dotplot or synteny view is blank             | Assemblies or track names don't match           | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands                                     |
-| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Ensure you passed `-c --eqx` and a preset matching your divergence (`asm5` for same-species, `asm20` for cross-species) |
+| Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Ensure you passed `-c --eqx` and a preset matching your divergence (`asm5` up to ~5%, `asm10`/`asm20` for more divergent genomes, including divergent same-species strains) |
 | Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`                                               |
 
 ## Using PIF for large genomes
@@ -202,9 +205,9 @@ bash scripts/build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/
 npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
 ```
 
-It downloads the three RefSeq assemblies, aligns the two adjacent strain pairs
-with minimap2, downloads JBrowse, and writes a `config.json` with the three
-assemblies, a gene track per strain, the two pairwise synteny tracks, and a
+It downloads the three RefSeq assemblies, aligns all three strain pairs with
+minimap2, downloads JBrowse, and writes a `config.json` with the three
+assemblies, a gene track per strain, the three pairwise synteny tracks, and a
 default session that stacks all three in one linear synteny view. It requires:
 
 - the NCBI
@@ -220,8 +223,9 @@ On Debian/Ubuntu, `apt install minimap2 samtools tabix unzip` covers most of
 these. The NCBI
 [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
 CLI is a single-binary download, and `node` comes from
-[nodejs.org](https://nodejs.org/). The same two `.paf` files also open in **Add
-→ Dotplot view**.
+[nodejs.org](https://nodejs.org/). The same three `.paf` files also open in
+**Add → Dotplot view** — the `26695 vs J99` track is the non-adjacent pair the
+dotplot figure above shows.
 
 ## See also
 

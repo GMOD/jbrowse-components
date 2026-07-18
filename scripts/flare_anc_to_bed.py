@@ -8,7 +8,7 @@ Usage: flare_anc_to_bed.py <flare.anc.vcf.gz> <child> <father> <mother> <out.bed
 Output columns (matching the config_demo BedTabixAdapter columnNames):
   chrom start end name score strand thickStart thickEnd itemRgb sample ancestry
 where `sample` is the row label ("Child hap1", ...) partitioned on by the
-display, and `itemRgb` drives the row color via jexl.
+display, and `itemRgb` colors each block directly (the BED itemRgb column).
 """
 import gzip
 import sys

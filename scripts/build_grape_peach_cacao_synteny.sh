@@ -82,7 +82,7 @@ done
 # Per-genome gene tracks, so "Show only genes" has something to draw
 for sp in grape peach cacao; do
   gunzip -c "$sp.gff3.gz" | jb sort-gff | bgzip > "$sp.sorted.gff3.gz"
-  tabix -p gff "$sp.sorted.gff3.gz"
+  tabix -f -p gff "$sp.sorted.gff3.gz"
   jb add-track "$sp.sorted.gff3.gz" -a "$sp" --name "$sp genes" \
     --trackId "${sp}_genes" --load copy --force --out "$APP"
 done

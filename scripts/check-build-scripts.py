@@ -3,7 +3,9 @@
 silent rot. For each script it runs `bash -n`, `shellcheck` (if installed), and
 validates every embedded quoted heredoc tagged JSON (must be valid JSON) or PY
 (must be syntactically valid Python) — the config.json / session.json blocks and
-the config-patching snippets. It does NOT download data or run the pipelines.
+the config-patching snippets. It also syntax-checks every standalone helper in
+scripts/*.py (reroot_maf.py, hapibd_to_bed.py, …), which the scripts invoke as
+real pipeline steps. It does NOT download data or run the pipelines.
 
 Usage: python3 scripts/check-build-scripts.py
 """
@@ -36,6 +38,27 @@ for f in scripts:
         print(f"FAIL shellcheck: {f}")
         failed = True
     src = open(f).read()
+    lines = src.splitlines()
+
+    # Dead rerun-guard: a var set to a path under $OUTDIR *before* `cd "$OUTDIR"`
+    # resolves wrong after the cd (OUTDIR/OUTDIR/...), silently defeating the
+    # `[ -f "$APP/index.html" ]` guard. Set it AFTER the cd (APP=jbrowse2).
+    cd_idx = next((i for i, ln in enumerate(lines)
+                   if re.match(r"\s*cd\s+\"?\$OUTDIR", ln)), None)
+    if cd_idx is not None:
+        for i, ln in enumerate(lines[:cd_idx]):
+            if re.match(r'\s*\w+="?\$OUTDIR/', ln):
+                print(f"FAIL dead rerun-guard in {f}:{i + 1}: "
+                      f"`{ln.strip()}` set before `cd $OUTDIR`; move it after")
+                failed = True
+
+    # tabix without -f aborts under `set -e` on a re-run ("index exists").
+    for i, ln in enumerate(lines):
+        code = ln.split("#", 1)[0]
+        if re.search(r"(^|[|;&]|\bthen\b)\s*tabix\b", code) and "-f" not in code:
+            print(f"FAIL tabix without -f in {f}:{i + 1}: `{ln.strip()}`")
+            failed = True
+
     # each quoted heredoc: <<'TAG' ... TAG. Validate the JSON/PY ones (skip data
     # heredocs like STRAINS). Non-greedy body, backreference closes on the tag.
     for tag, body in re.findall(r"<<'(\w+)'\n(.*?)\n\1\b", src, re.S):
@@ -52,6 +75,16 @@ for f in scripts:
                 print(f"FAIL invalid PY heredoc in {f}: {e}")
                 failed = True
 
+# The standalone .py helpers the build scripts invoke (not heredocs) — a syntax
+# error here would break a pipeline step but is otherwise unchecked.
+helpers = sorted(glob.glob("scripts/*.py"))
+for f in helpers:
+    try:
+        ast.parse(open(f).read(), filename=f)
+    except SyntaxError as e:
+        print(f"FAIL invalid python: {f}: {e}")
+        failed = True
+
 if failed:
     sys.exit(1)
-print(f"ok: {len(scripts)} build scripts valid")
+print(f"ok: {len(scripts)} build scripts + {len(helpers)} python helpers valid")

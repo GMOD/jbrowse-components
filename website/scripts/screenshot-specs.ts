@@ -13,6 +13,7 @@ import { gwasSpecs } from './specs/gwas.ts'
 import { hicSpecs } from './specs/hic.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
+import { pangenomeSpecs } from './specs/pangenome.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { qtlSpecs } from './specs/qtl.ts'
 import { svSpecs } from './specs/sv.ts'
@@ -41,6 +42,7 @@ export const specs: ScreenshotSpec[] = [
   ...trioSpecs,
   ...gallerySpecs,
   ...mafSpecs,
+  ...pangenomeSpecs,
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,

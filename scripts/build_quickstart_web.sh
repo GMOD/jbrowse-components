@@ -5,9 +5,10 @@
 # The quickstart's TLDR uses placeholder filenames (genome.fa, file.bam,
 # file.vcf) that the reader supplies. This script fills them in with the volvox
 # sample data JBrowse ships, so the whole flow runs end to end: it downloads a
-# FASTA, a BAM, a VCF, and a GFF3, runs the exact index + add-assembly +
-# add-track + text-index chain from the doc, and leaves a servable jbrowse2/
-# with an alignments track, a variant track, and a searchable gene track.
+# FASTA, a BAM, a VCF, a GFF3, and a BigWig, runs the exact index + add-assembly
+# + add-track + text-index chain from the doc, and leaves a servable jbrowse2/
+# with an alignments track, a variant track, a coverage track, and a searchable
+# gene track.
 #
 # Raw data is fetched into $OUTDIR, then copied into $OUTDIR/jbrowse2 by
 # `--load copy --out jbrowse2` (the doc's alternative to running from inside the

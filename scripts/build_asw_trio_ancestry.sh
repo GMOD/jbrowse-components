@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Reproducibly build the ASW-trio local-ancestry track shown in
-# website/docs/tutorials/analyze_trio.md ("Coloring the trio by ancestry").
+# website/docs/tutorials/analyze_trio.md ("Coloring an admixed trio by ancestry").
 #
 # It infers per-haplotype continental ancestry along chr1 for a 1000 Genomes
 # African-American (ASW) trio with FLARE, then collapses the per-marker calls
@@ -11,7 +11,7 @@
 # panel selected by a documented rule, and a fixed FLARE seed), so re-running
 # reproduces the hosted track byte-for-similar.
 #
-# Requires: bcftools, tabix/bgzip, java (17+), python3, curl, unzip.
+# Requires: bcftools, tabix/bgzip, java (8+), python3, curl, unzip.
 # Usage:    bash scripts/build_asw_trio_ancestry.sh [outdir]
 #
 set -euo pipefail
@@ -94,7 +94,7 @@ python3 "$(dirname "$0")/flare_anc_to_bed.py" asw_trio.anc.vcf.gz \
   "$CHILD" "$FATHER" "$MOTHER" "$BED"
 
 sort -k1,1 -k2,2n "$BED" | bgzip > "$BED.gz"
-tabix -p bed "$BED.gz"
+tabix -f -p bed "$BED.gz"
 
 echo
 echo "Built $BED.gz (+ .tbi) in $(pwd)"

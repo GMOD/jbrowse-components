@@ -55,7 +55,7 @@ java -jar hap-ibd.jar \
 # ── Collapse IBD segments into the painted BED9 (father blues, mother reds) ──
 python3 "$SCRIPT_DIR/hapibd_to_bed.py" trio.ibd.gz "$CHILD" "$FATHER" "$MOTHER" trio.hapibd.bed
 sort -k1,1 -k2,2n trio.hapibd.bed | bgzip > trio.hapibd.bed.gz
-tabix -p bed trio.hapibd.bed.gz
+tabix -f -p bed trio.hapibd.bed.gz
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ───────
 if command -v jbrowse >/dev/null 2>&1; then

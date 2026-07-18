@@ -54,7 +54,9 @@ with opener(ibd_file) as fh:
         f = line.rstrip("\n").split("\t")
         if len(f) < 7:
             continue
-        s1, h1, s2, h2, chrom, start, end = f[0], int(f[1]), f[2], int(f[3]), f[4], int(f[5]), int(f[6])
+        # hap-ibd positions are 1-based inclusive; BED is 0-based half-open, so
+        # shift start down by one (the inclusive end already equals the BED end).
+        s1, h1, s2, h2, chrom, start, end = f[0], int(f[1]), f[2], int(f[3]), f[4], int(f[5]) - 1, int(f[6])
         # keep segments pairing the child with a known parent
         if s1 == child and s2 in role_of:
             segments[h1].append((chrom, start, end, s2, h2))

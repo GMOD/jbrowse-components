@@ -20,13 +20,14 @@
 set -euo pipefail
 
 OUTDIR="${1:-chromhmm_build}"
-APP="$OUTDIR/jbrowse2"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
+APP=jbrowse2   # relative to $OUTDIR, so the [ -f ] guard resolves after the cd
 
 # ── Fetch the nine per-cell-type Broad HMM segmentation BEDs ──────────────────
 UCSC=http://hgdownload.soe.ucsc.edu/goldenPath/hg19/encodeDCC/wgEncodeBroadHmm
-wget -q -r -np -nd -A 'wgEncodeBroadHmm*HMM.bed.gz' "$UCSC/"
+ls wgEncodeBroadHmm*HMM.bed.gz >/dev/null 2>&1 \
+  || wget -q -r -np -nd -A 'wgEncodeBroadHmm*HMM.bed.gz' "$UCSC/"
 
 # ── Concatenate into one BED9 + a trailing `cellType` column, coordinate-sorted
 # map each UCSC filename token to its canonical ENCODE cell-line label
@@ -41,7 +42,7 @@ done | sort -k1,1 -k2,2n > wgEncodeBroadHmm.multirow.bed
 
 # already coordinate-sorted, so just compress + index (no bigBed conversion)
 bgzip -f wgEncodeBroadHmm.multirow.bed
-tabix -p bed wgEncodeBroadHmm.multirow.bed.gz
+tabix -f -p bed wgEncodeBroadHmm.multirow.bed.gz
 
 # ── Set up JBrowse (uses an installed `jbrowse`, else the CLI via npx) ────────
 if command -v jbrowse >/dev/null 2>&1; then
@@ -49,8 +50,8 @@ if command -v jbrowse >/dev/null 2>&1; then
 else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
-[ -f "jbrowse2/index.html" ] || jb create jbrowse2 --force
-cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi jbrowse2/
+[ -f "$APP/index.html" ] || jb create "$APP"
+cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi "$APP"/
 
 # ── config.json: hg19 + the multi-row ChromHMM track ─────────────────────────
 # The assembly is sourced entirely from UCSC (hgdownload), the same host the
@@ -59,7 +60,7 @@ cp wgEncodeBroadHmm.multirow.bed.gz wgEncodeBroadHmm.multirow.bed.gz.tbi jbrowse
 # display can split on it; itemRgb (column 9) paints each feature its state
 # color automatically. The CLI can't set columnNames/partitionField/rowOrder, so
 # the track is written straight into config.json.
-cat > jbrowse2/config.json <<'JSON'
+cat > "$APP"/config.json <<'JSON'
 {
   "assemblies": [
     {
@@ -107,7 +108,7 @@ cat > jbrowse2/config.json <<'JSON'
             "GM12878", "H1-hESC", "K562", "HepG2", "HUVEC",
             "HMEC", "HSMM", "NHEK", "NHLF"
           ],
-          "height": 300
+          "height": 200
         }
       ]
     }
@@ -135,4 +136,4 @@ echo "track (nine cell types, one color-coded row each). It opens on the HOXA"
 echo "cluster (chr7:27,050,000-27,300,000), where the stem-cell line (H1-hESC)"
 echo "reads as Polycomb-repressed while differentiated lines carry active states."
 echo "Serve it and open in a browser, e.g.:"
-echo "  npx --yes serve $(pwd)/jbrowse2"
+echo "  npx --yes serve $(pwd)/$APP"

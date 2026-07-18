@@ -193,7 +193,7 @@ bedGraphToBigWig tajd_all.bedgraph dm6.chrom.sizes tajd_all.bw
 0-based half-open bedGraph coordinate, with no `-1` shift, unlike the 1-based
 `--window-pi` output above.
 
-## Full pipeline
+## Reproduce it end to end
 
 Every step above (the downloads, the group split, and all three scans) is
 wrapped in one script,

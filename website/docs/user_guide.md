@@ -50,6 +50,7 @@ sidebar_label: Overview
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
 - [DNA methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
+- [Pangenome graphs](/docs/tutorials/pangenome) - Visualize a pggb / Minigraph-Cactus pangenome graph in JBrowse
 - [Population genomics](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus a genotype matrix from one VCF
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [RNA-seq visualization](/docs/tutorials/rnaseq) - Spliced reads, splice arcs, and strand-specific coverage in RNA-seq

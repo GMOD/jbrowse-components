@@ -19,9 +19,9 @@
 set -euo pipefail
 
 OUTDIR="${1:-dgrp_popgen_build}"
-APP="$OUTDIR/jbrowse2"
 mkdir -p "$OUTDIR"
 cd "$OUTDIR"
+APP=jbrowse2   # relative to $OUTDIR, so the [ -f ] guard resolves after the cd
 
 BASE=https://resources.aertslab.org/DGRP2/NCSU/final/dm6
 VCF=DGRP2.source_NCSU.dm6.final.SNPs_only.vcf.gz
@@ -73,14 +73,14 @@ if command -v jbrowse >/dev/null 2>&1; then
 else
   jb() { npx -y @jbrowse/cli "$@"; }
 fi
-[ -f "$APP/index.html" ] || jb create jbrowse2 --force
-cp fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw tajd_all.bw jbrowse2/
+[ -f "$APP/index.html" ] || jb create "$APP"
+cp fst_In2Lt.bw pi_all.bw pi_INV.bw pi_STD.bw tajd_all.bw "$APP"/
 
 # ── config.json: dm6 from UCSC + the scan tracks ─────────────────────────────
 # The VCF names arms 2L/2R (FlyBase-style); dm6 from UCSC names them chr2L/chr2R.
 # The UCSC chromAlias reconciles the two, so the scans (built with the VCF names)
 # line up on the assembly with no renaming.
-cat > jbrowse2/config.json <<'JSON'
+cat > "$APP"/config.json <<'JSON'
 {
   "assemblies": [
     {
@@ -129,21 +129,21 @@ cat > jbrowse2/config.json <<'JSON'
     {
       "type": "MultiQuantitativeTrack",
       "trackId": "pi_by_arrangement",
-      "name": "pi by In(2L)t arrangement",
+      "name": "π by In(2L)t arrangement",
       "assemblyNames": ["dm6"],
       "category": ["DGRP scans"],
       "adapter": {
         "type": "MultiWiggleAdapter",
         "subadapters": [
-          { "type": "BigWigAdapter", "source": "pi inverted", "uri": "pi_INV.bw" },
-          { "type": "BigWigAdapter", "source": "pi standard", "uri": "pi_STD.bw" }
+          { "type": "BigWigAdapter", "source": "π inverted", "uri": "pi_INV.bw" },
+          { "type": "BigWigAdapter", "source": "π standard", "uri": "pi_STD.bw" }
         ]
       }
     },
     {
       "type": "QuantitativeTrack",
       "trackId": "pi_all",
-      "name": "Nucleotide diversity pi (whole panel, 2kb windows)",
+      "name": "Nucleotide diversity π (whole panel, 2kb windows)",
       "assemblyNames": ["dm6"],
       "category": ["DGRP scans"],
       "adapter": { "type": "BigWigAdapter", "uri": "pi_all.bw" }
@@ -179,4 +179,4 @@ echo "Built $APP/config.json with the dm6 assembly and the Fst / pi / Tajima's D
 echo "scan tracks. It opens on the whole 2L arm, where the In(2L)t Fst block"
 echo "stands out across the inverted region. Search 'Cyp6g1' and add the Tajima's"
 echo "D + whole-panel pi tracks to see the joint sweep dip. Serve it, e.g.:"
-echo "  npx --yes serve $(pwd)/jbrowse2"
+echo "  npx --yes serve $(pwd)/$APP"

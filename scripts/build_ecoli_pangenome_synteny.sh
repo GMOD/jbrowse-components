@@ -80,7 +80,7 @@ for strain in K12 Sakai CFT073 NCTC86; do
   awk -F'\t' -v acc="$acc" -v OFS='\t' '$1 == acc {$1 = "chr"; print}' \
     "$strain"/ncbi_dataset/data/*/genomic.gff > "$strain.gff"
   jb sort-gff "$strain.gff" | bgzip > "$strain.gff.gz"
-  tabix "$strain.gff.gz"
+  tabix -f "$strain.gff.gz"
   jb add-track "$strain.gff.gz" --trackId "${strain}_genes" \
     -a "$strain" --name "$strain genes" --load copy --force --out "$APP"
 done

@@ -243,9 +243,11 @@ npx --yes serve bxd_demo/jbrowse2     # then open the printed URL
 ```
 
 It downloads JBrowse and the GeneNetwork/rqtl source files, builds the painting
-and the coat-color scan next to it, and writes a `config.json` that opens on
-mm10 chr4 with both tracks. It needs `python3` (with `pandas`, `numpy`, `scipy`)
-and htslib (`bgzip`, `tabix`) on your `PATH`.
+and both QTL scans next to it (coat color, trait `11280`, peaking on chr4; and
+brain weight, trait `10672`, the subtler chr19 peak), and writes a `config.json`
+that opens on mm10 chr4 with the coat-color scan over the painting. It needs
+`python3` (with `pandas`, `numpy`, `scipy`) and htslib (`bgzip`, `tabix`) on your
+`PATH`.
 
 ## See also
 

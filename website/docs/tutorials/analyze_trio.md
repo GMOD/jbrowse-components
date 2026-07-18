@@ -231,8 +231,8 @@ haplotype gets a row:
       "sample",
       "ancestry"
     ],
-    "bedGzLocation": { "uri": "asw_trio.ancestry.bed.gz" },
-    "index": { "location": { "uri": "asw_trio.ancestry.bed.gz.tbi" } }
+    "bedGzLocation": { "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz" },
+    "index": { "location": { "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz.tbi" } }
   },
   "displays": [
     {
