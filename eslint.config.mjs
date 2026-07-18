@@ -10,109 +10,37 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 import baselineJs from 'eslint-plugin-baseline-js'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
+// Single source of truth for ignore globs, shared with the oxlint fast-lint
+// pass (`pnpm lint:fast`) so the two can't drift. Kept as strict JSON because
+// Node's JSON import assertion rejects JSONC comments. Rationale for the
+// non-obvious entries:
+//   - products/jbrowse-img/src/**/*.mjs — integration tests + their tsx loader
+//     hook run via node:test (not jest/typed-lint); see jbrowse-img/CLAUDE.md.
+//   - products/*/examples-site/** astro apps are standalone demos excluded from
+//     the root tsconfig, so the type-aware pipeline can't parse their
+//     frontmatter; lint them via their own tooling, not here.
+import oxlintConfig from './.oxlintrc.json' with { type: 'json' }
+
+// Shared no-restricted-syntax selectors. Flat config *overrides* (not merges)
+// the rule when a later block re-declares it, so any block that needs its own
+// extra selectors must re-list these. Keep them here so the message text can't
+// drift between copies.
+const noMockFromSrc = {
+  selector:
+    "CallExpression[callee.object.name='jest'][callee.property.name=/^(un)?mock$/] > Literal[value=/^@jbrowse\\/[^/]+\\/src(\\/.+)?$/]",
+  message:
+    'Do not mock from the src directory of another package. Use the package public API instead.',
+}
+const noReadableFromWeb = {
+  selector:
+    "CallExpression[callee.object.name='Readable'][callee.property.name='fromWeb']",
+  message:
+    "Do not use Readable.fromWeb on a fetch body. In renderer/worker code the global fetch returns Chromium's DOM ReadableStream, a different realm than node:stream/web, and fromWeb's instanceof check throws the misleading 'must be an instance of ReadableStream. Received an instance of ReadableStream'. Drive body.getReader() into a node Readable instead (see packages/text-indexing-core webStreamToNodeReadable).",
+}
 
 export default defineConfig(
   {
-    ignores: [
-      // Build outputs
-      '**/build',
-      '**/dist*',
-      '**/esm',
-      '**/public',
-      '**/.astro',
-
-      // Config and tooling
-      'config/jest',
-      'agent-docs',
-      'infrastructure',
-      'jest.config.js',
-      'website/scripts/flip-review.mjs',
-      'products/jbrowse-web/browser-tests/memsticky.ts',
-      'products/jbrowse-web/browser-tests/memprofile.ts',
-      'products/jbrowse-web/browser-tests/memstress.ts',
-      'babel.config.cjs',
-      'eslint.config.mjs',
-      'products/**/webpack.config.js',
-      'products/**/webpack.config.mjs',
-      '**/umd_plugin.js',
-
-      'scripts/announce.mjs',
-      'scripts/releaseBlog.mjs',
-      'scripts/releasenotes.mjs',
-      'products/jbrowse-desktop/test/**',
-      'plugins/blat/esbuild.mjs',
-
-      // Vendored/external code
-      'packages/core/src/util/map-obj',
-      'packages/core/src/util/nanoid.js',
-      'packages/core/src/util/nanoid.ts',
-      'packages/core/src/ReExports/material-ui-colors.js',
-      'packages/tree-sidebar/src/d3-hierarchy2',
-      'plugins/variants/src/d3-hierarchy2',
-      'plugins/wiggle/src/d3-hierarchy2',
-      'plugins/alignments/src/CramAdapter/testNA12878.mjs',
-
-      // Desktop tests
-      'products/jbrowse-desktop/test/specs/test.e2e.ts',
-      'products/jbrowse-desktop/wdio.conf.ts',
-
-      // Scripts
-      'scripts/analyze_cpuprof.ts',
-      'scripts/getSuggestions.js',
-      'scripts/ribbon-plot-pif.mjs',
-      'scripts/ribbon-plot.mjs',
-      'scripts/verify-hs1-mm39-dotplot.mjs',
-      'scripts/verify-hs1-mm39.mjs',
-      'packages/core/scripts/generateExports.mjs',
-      'plugins/data-management/scripts',
-      'products/jbrowse-desktop/scripts',
-      'products/jbrowse-desktop/linux-sandbox-fix.cjs',
-      'products/jbrowse-desktop/linux-sandbox-fix.js',
-      'products/jbrowse-desktop/sign.js',
-      'products/jbrowse-web/scripts',
-      'products/**/examples-site/scripts',
-      'products/jbrowse-img/src/bin.js',
-
-      // jbrowse-img integration tests + their tsx loader hook run via node:test
-      // (not jest/typed-lint); see products/jbrowse-img/CLAUDE.md
-      'products/jbrowse-img/src/**/*.mjs',
-
-      'packages/core/src/util/p-limit.ts',
-
-      // AWS Lambda functions
-      'aws',
-      'products/jbrowse-aws-lambda-functions',
-
-      // Test fixtures and mocks
-      '**/test_data',
-      'test/data',
-      'packages/__mocks__',
-      'integration.test.js',
-
-      // Excluded directories
-      'webpack',
-      'website/blog',
-      'website/docs',
-      'website/static',
-
-      'website/.astro',
-      'website/.prettierrc.mjs',
-      'website/astro.config.mjs',
-      'products/*/examples-site/astro.config.mjs',
-      // examples-site Astro apps are standalone demos excluded from the root
-      // tsconfig; their TS frontmatter isn't parsed by the type-aware pipeline,
-      // so lint them via their own tooling, not here.
-      'products/*/examples-site/**/*.astro',
-      'products/examples-site-shared/**/*.astro',
-      'docs',
-      'benchmarks',
-      'auth_test_utils',
-      'component_tests',
-      'embedded_demos',
-      'plugin-development-tools',
-      'products/jbrowse-cli/lib',
-      'products/jbrowse-cli/bundle',
-    ],
+    ignores: oxlintConfig.ignorePatterns,
   },
   {
     languageOptions: {
@@ -139,6 +67,7 @@ export default defineConfig(
     plugins: {
       'react-compiler': reactCompiler,
       'tss-unused-classes': tssUnusedClasses,
+      'react-refresh': eslintPluginReactRefresh,
     },
     rules: {
       'react-compiler/react-compiler': 'error',
@@ -216,7 +145,10 @@ export default defineConfig(
       'unicorn/prefer-continue': 'off', // 53
       'unicorn/no-return-array-push': 'off', // 53
       'unicorn/prefer-number-coercion': 'off', // 53
-      'unicorn/require-array-sort-compare': 'off', // 52
+      // HIGH-VALUE bug-catcher: bare .sort() sorts numbers lexicographically
+      // (1,10,2). Priority burndown — needs a per-site comparator each, not
+      // auto-fixable, and string-sort sites may move snapshots.
+      'unicorn/require-array-sort-compare': 'off', // 81
       'unicorn/consistent-class-member-order': 'off', // 52
       'unicorn/no-global-object-property-assignment': 'off', // 43
       'unicorn/prefer-switch': 'off', // 41
@@ -254,7 +186,7 @@ export default defineConfig(
       'unicorn/text-encoding-identifier-case': 'off', // 8
       'unicorn/prefer-top-level-await': 'off', // 8
       'unicorn/no-negated-array-predicate': 'off', // 7
-      'unicorn/no-unsafe-string-replacement': 'off', // 7
+      'unicorn/no-unsafe-string-replacement': 'off', // 12 — real correctness (non-literal replacement can hit $&/$1 specials)
       'unicorn/prefer-boolean-return': 'off', // 6
       'unicorn/prefer-array-from-map': 'off', // 6
       'unicorn/prefer-promise-with-resolvers': 'off', // 6
@@ -323,11 +255,6 @@ export default defineConfig(
           available: 'widely',
         },
       ],
-    },
-  },
-  {
-    plugins: {
-      'react-refresh': eslintPluginReactRefresh,
     },
   },
   {
@@ -529,21 +456,7 @@ export default defineConfig(
   // no-restricted-imports only covers import statements, not call expressions.
   {
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            "CallExpression[callee.object.name='jest'][callee.property.name=/^(un)?mock$/] > Literal[value=/^@jbrowse\\/[^/]+\\/src(\\/.+)?$/]",
-          message:
-            'Do not mock from the src directory of another package. Use the package public API instead.',
-        },
-        {
-          selector:
-            "CallExpression[callee.object.name='Readable'][callee.property.name='fromWeb']",
-          message:
-            "Do not use Readable.fromWeb on a fetch body. In renderer/worker code the global fetch returns Chromium's DOM ReadableStream, a different realm than node:stream/web, and fromWeb's instanceof check throws the misleading 'must be an instance of ReadableStream. Received an instance of ReadableStream'. Drive body.getReader() into a node Readable instead (see packages/text-indexing-core webStreamToNodeReadable).",
-        },
-      ],
+      'no-restricted-syntax': ['error', noMockFromSrc, noReadableFromWeb],
     },
   },
   // Guards against regressions in the SVG-export pipeline. See
@@ -557,18 +470,8 @@ export default defineConfig(
     rules: {
       'no-restricted-syntax': [
         'error',
-        {
-          selector:
-            "CallExpression[callee.object.name='jest'][callee.property.name=/^(un)?mock$/] > Literal[value=/^@jbrowse\\/[^/]+\\/src(\\/.+)?$/]",
-          message:
-            'Do not mock from the src directory of another package. Use the package public API instead.',
-        },
-        {
-          selector:
-            "CallExpression[callee.object.name='Readable'][callee.property.name='fromWeb']",
-          message:
-            "Do not use Readable.fromWeb on a fetch body. In renderer/worker code the global fetch returns Chromium's DOM ReadableStream, a different realm than node:stream/web, and fromWeb's instanceof check throws the misleading 'must be an instance of ReadableStream. Received an instance of ReadableStream'. Drive body.getReader() into a node Readable instead (see packages/text-indexing-core webStreamToNodeReadable).",
-        },
+        noMockFromSrc,
+        noReadableFromWeb,
         {
           selector: "NewExpression[callee.name='SvgCanvas']",
           message:
