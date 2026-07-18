@@ -11,7 +11,7 @@ column pulled from the rqtl/qtl2data/BXD `pheno.csv`).
 Usage: bxd_qtl_scan.py <BXD.geno> <phenotype.csv> <out.tsv>
   phenotype.csv: `strain,value` per line (a header line is auto-skipped).
 
-Then: sort -k1,1 -k2,2n out.tsv | bgzip > bxd_gwas.tsv.gz && tabix -s1 -b2 -e3 ...
+Then: sort -k1,1 -k2,2n out.tsv | bgzip > bxd_gwas.tsv.gz && tabix -p bed bxd_gwas.tsv.gz
 
 Requires: numpy, scipy.
 """

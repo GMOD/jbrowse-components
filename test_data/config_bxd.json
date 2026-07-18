@@ -71,7 +71,6 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "bxd_chromosome_painting_mm10-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
-          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
           "showTree": true,
           "height": 700
         }
