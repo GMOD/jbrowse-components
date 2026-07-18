@@ -99,10 +99,10 @@ first.
 
 ## Converting hap-ibd data into painted inheritance blocks
 
-The goal is one row per parental haplotype (father copy 1, father copy 2,
-mother copy 1, mother copy 2), with the child's inherited chromosome tiled
-across each parent's pair of rows. A crossover then shows up as a block stepping
-from one row to its partner.
+The goal is one row per parental haplotype (father copy 1, father copy 2, mother
+copy 1, mother copy 2), with the child's inherited chromosome tiled across each
+parent's pair of rows. A crossover then shows up as a block stepping from one
+row to its partner.
 
 [`hapibd_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hapibd_to_bed.py)
 does the cleanup. Per child haplotype it:
