@@ -1,41 +1,62 @@
 import { Suspense, lazy, useState } from 'react'
 
-import HelpIcon from '@mui/icons-material/Help'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
-import { IconButton, InputAdornment } from '@mui/material'
+import { InputAdornment } from '@mui/material'
+
+import CascadingMenuButton from '../CascadingMenuButton.tsx'
+
+import type { MenuItem } from '../Menu.tsx'
 
 const HelpDialog = lazy(() => import('./HelpDialog.tsx'))
 
-function HelpAdornment() {
-  const [isHelpDialogDisplayed, setIsHelpDialogDisplayed] = useState(false)
+// The search-box overflow (⋮) menu: consumer-supplied rows (e.g. recent
+// locations) sit above the built-in help entry. Rendered only when there is
+// something to show, so a bare box keeps just its search icon.
+export default function EndAdornment({
+  showHelp,
+  menuItems = [],
+}: {
+  showHelp?: boolean
+  menuItems?: MenuItem[]
+}) {
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false)
+  const items: MenuItem[] = [
+    ...menuItems,
+    ...(showHelp
+      ? [
+          ...(menuItems.length ? [{ type: 'divider' as const }] : []),
+          {
+            label: 'Search box help',
+            onClick: () => {
+              setHelpDialogOpen(true)
+            },
+          },
+        ]
+      : []),
+  ]
   return (
-    <>
-      <IconButton
-        onClick={() => {
-          setIsHelpDialogDisplayed(true)
-        }}
-        size="small"
-      >
-        <HelpIcon fontSize="small" />
-      </IconButton>
-      {isHelpDialogDisplayed ? (
+    <InputAdornment position="end" style={{ marginRight: 7 }}>
+      <SearchIcon fontSize="small" />
+      {items.length ? (
+        <CascadingMenuButton
+          menuItems={items}
+          size="small"
+          stopPropagation
+          tooltip="Search box options"
+        >
+          <MoreVertIcon fontSize="small" />
+        </CascadingMenuButton>
+      ) : null}
+      {helpDialogOpen ? (
         <Suspense fallback={null}>
           <HelpDialog
             handleClose={() => {
-              setIsHelpDialogDisplayed(false)
+              setHelpDialogOpen(false)
             }}
           />
         </Suspense>
       ) : null}
-    </>
-  )
-}
-
-export default function EndAdornment({ showHelp }: { showHelp?: boolean }) {
-  return (
-    <InputAdornment position="end" style={{ marginRight: 7 }}>
-      <SearchIcon fontSize="small" />
-      {showHelp ? <HelpAdornment /> : null}
     </InputAdornment>
   )
 }
