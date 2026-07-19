@@ -240,4 +240,18 @@ harmless no-op since they're dropped anyway.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### setConf
+
+Write counterpart to `getConf`: sets a slot on a state model that has a
+`.configuration` member (a track or display state model). Centralizes the
+`configuration.setSlot` cast so mixins whose `self` isn't typed with
+`configuration` don't each re-cast.
+
+```js
+// type signature
+<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { ...; }, slotName: SLOT, value: unknown) => void
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)
+
 <!-- API_DOCS_END -->
