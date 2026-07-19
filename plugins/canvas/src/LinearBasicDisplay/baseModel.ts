@@ -34,6 +34,7 @@ import {
   installGrowExitBake,
   onDisplayedRegionsChange,
   raiseLimitPast,
+  resolveByteLimit,
   scaledForceLoadByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
@@ -957,6 +958,16 @@ export default function baseStateModelFactory(
          */
         get configuredFetchSizeLimit(): number {
           return readConfObject(self.conf, 'fetchSizeLimit')
+        },
+        /**
+         * #getter
+         * The adapter's own `fetchSizeLimit` slot, or undefined when the adapter
+         * type has no such slot. `resolveByteLimit` prefers this over the display
+         * config so the byte gate honors an adapter-declared limit — the same
+         * precedence the pre-flight path (alignments/LD/wiggle) already uses.
+         */
+        get adapterFetchSizeLimit(): number | undefined {
+          return readConfObject(self.adapterConfig, 'fetchSizeLimit')
         },
         /**
          * #getter
@@ -2198,15 +2209,21 @@ export default function baseStateModelFactory(
         // (canvas gates inside the fetch RPC rather than via the shared
         // pre-flight estimate RPC, so there's no second round-trip to race).
         // Only gated in the force-load zone (visibleBp >= AUTO_FORCE_LOAD_BP);
-        // below it small regions always load. `userByteSizeLimit` (set by
-        // force-load) raises the budget so a forced fetch isn't re-blocked.
+        // below it small regions always load. Resolved through the same
+        // `resolveByteLimit` the pre-flight path uses so the two gates can't
+        // drift: force-load (`userByteSizeLimit`) raises the budget, then an
+        // adapter-declared limit, then the display config.
         byteSizeLimit(): number | undefined {
           const view = getView(self)
           // forceLoad → no worker byte gate (undefined = unlimited), matching the
           // released banner so the forced fetch isn't re-blocked in the RPC.
           return self.configForceLoad || view.visibleBp < AUTO_FORCE_LOAD_BP
             ? undefined
-            : (self.userByteSizeLimit ?? self.configuredFetchSizeLimit)
+            : resolveByteLimit({
+                userByteSizeLimit: self.userByteSizeLimit,
+                adapterFetchSizeLimit: self.adapterFetchSizeLimit,
+                configFetchSizeLimit: self.configuredFetchSizeLimit,
+              })
         },
       }))
       .actions(self => ({
@@ -2315,7 +2332,13 @@ export default function baseStateModelFactory(
           // introns) where every region individually fits must not be blanked
           // just because the total across regions exceeds one region's budget.
           // Mirrors the density gate, which already takes the per-region max.
-          self.setFeatureDensityStats({ bytes: maxBytes })
+          // Carry the adapter's limit so the banner's `resolveByteLimit` picks
+          // the same budget the worker gated on (else banner and worker disagree
+          // when the adapter declares a limit above the display config).
+          self.setFeatureDensityStats({
+            bytes: maxBytes,
+            fetchSizeLimit: self.adapterFetchSizeLimit,
+          })
         }
 
         return {

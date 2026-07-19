@@ -582,6 +582,62 @@ describe('byte estimate pre-check', () => {
   })
 })
 
+// The byte gate must honor an adapter-declared fetchSizeLimit above the display
+// config, the same precedence resolveByteLimit gives the pre-flight path
+// (alignments/LD/wiggle). Regression: canvas used to gate on the display config
+// alone, so a VcfTabixAdapter.fetchSizeLimit was a silent no-op in feature mode.
+describe('adapter fetchSizeLimit in the byte gate', () => {
+  function makeLargeView(env: ReturnType<typeof createTestEnvironment>) {
+    const { display, view } = env.createDisplay()
+    view.setDisplayedRegions([
+      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
+    ])
+    // visibleBp = 62.5 * 800 = 50,000 > AUTO_FORCE_LOAD_BP (20,000)
+    view.zoomTo(62.5)
+    return { display, view }
+  }
+
+  // 200 bytes/bp × 50kb ≈ 10MB: over the 5MB display config, under a 50MB adapter
+  // limit → the adapter limit must let it through.
+  it('lets a region through that fits the adapter limit but not the display config', async () => {
+    const env = createTestEnvironment({ adapterFetchSizeLimit: 50_000_000 })
+    const { display } = makeLargeView(env)
+
+    expect(display.adapterFetchSizeLimit).toBe(50_000_000)
+    expect(display.byteSizeLimit()).toBe(50_000_000)
+
+    env.mockRpcCall.mockImplementation(makeByteGatedRender(200))
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(false)
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    // the stored estimate carries the adapter limit, so the banner's
+    // resolveByteLimit agrees with the worker gate
+    expect(display.featureDensityStats?.fetchSizeLimit).toBe(50_000_000)
+  })
+
+  // Control: no adapter limit → the display config (5MB) gates, so the same
+  // ~10MB region is too large.
+  it('falls back to the display config when the adapter declares no limit', async () => {
+    const env = createTestEnvironment()
+    const { display } = makeLargeView(env)
+
+    expect(display.adapterFetchSizeLimit).toBeUndefined()
+    expect(display.byteSizeLimit()).toBe(display.configuredFetchSizeLimit)
+
+    env.mockRpcCall.mockImplementation(makeByteGatedRender(200))
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+  })
+})
+
 // Derived regionTooLarge: stays a pure function of cached density stats ×
 // current bpPerPx. These tests pin down the behavior the imperative path
 // used to get wrong (banner flicker on small zoom, refetch loops, stale

@@ -33,11 +33,16 @@ whole-genome fan-out then costs one cheap index read per chromosome instead of
 downloading every chromosome's features.
 
 `applyFetchResults` records the per-region `bytes` **max**, not the sum, into
-`featureDensityStats`. Each region is gated against the same per-region budget,
-so a multi-region view where every region individually fits is never blanked just
-because the cross-region total exceeds one region's budget. The budget comes from
-the display's `byteSizeLimit()` (`userByteSizeLimit ?? fetchSizeLimit`, only in
-the force-load zone).
+`featureDensityStats` (along with the adapter's `fetchSizeLimit`, so the banner's
+`resolveByteLimit` picks the same budget the worker gated on). Each region is
+gated against the same per-region budget, so a multi-region view where every
+region individually fits is never blanked just because the cross-region total
+exceeds one region's budget. The budget comes from the display's
+`byteSizeLimit()`, which routes through the shared `resolveByteLimit`
+(`userByteSizeLimit ?? adapterFetchSizeLimit ?? configFetchSizeLimit`, only in
+the force-load zone) — so an adapter-declared `fetchSizeLimit` (e.g. on a
+`VcfTabixAdapter` feature track) is honored here exactly as it is on the
+pre-flight path, rather than being overridden by the display config.
 
 ## The derived gate: opt-in hooks
 

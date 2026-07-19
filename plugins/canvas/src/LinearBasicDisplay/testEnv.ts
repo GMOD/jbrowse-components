@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import AdapterType from '@jbrowse/core/pluggableElementTypes/AdapterType'
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
 import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
 import {
@@ -22,12 +23,31 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // real display model can be created and driven in unit tests. createDisplay
 // accepts extra display-snapshot props so tests can seed persistent state (e.g.
 // soloFeatureIds) declaratively, exactly as the app does via addView.
-export function createTestEnvironment() {
+export function createTestEnvironment(opts?: {
+  // when set, the track gets a TestAdapter whose fetchSizeLimit slot carries
+  // this value, exercising the adapter-limit path in the byte gate
+  adapterFetchSizeLimit?: number
+}) {
   console.warn = jest.fn()
   console.error = jest.fn()
   const pluginManager = new PluginManager()
 
   const configSchema = configSchemaFactory(pluginManager)
+
+  // Config-only adapter with a fetchSizeLimit slot; the RPC is mocked so the
+  // adapter class is never instantiated — the display only reads its config.
+  pluginManager.addAdapterType(
+    () =>
+      new AdapterType({
+        name: 'TestAdapter',
+        configSchema: ConfigurationSchema('TestAdapter', {
+          fetchSizeLimit: { type: 'number', defaultValue: 5_000_000 },
+        }),
+        getAdapterClass: () => {
+          throw new Error('TestAdapter is config-only in tests')
+        },
+      }),
+  )
 
   pluginManager.addTrackType(() => {
     const trackConfigSchema = ConfigurationSchema(
@@ -73,6 +93,14 @@ export function createTestEnvironment() {
       type: 'FeatureTrack',
       trackId: 'test_track',
       assemblyNames: ['volvox'],
+      ...(opts?.adapterFetchSizeLimit === undefined
+        ? {}
+        : {
+            adapter: {
+              type: 'TestAdapter',
+              fetchSizeLimit: opts.adapterFetchSizeLimit,
+            },
+          }),
     },
     { pluginManager },
   )
