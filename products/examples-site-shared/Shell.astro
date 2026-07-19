@@ -40,22 +40,71 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href={`${base}favicon.ico`} />
     <title>{title} — JBrowse {componentLabel}</title>
+    {/* apply the saved theme before first paint to avoid a flash */}
+    <script is:inline>
+      const saved = localStorage.getItem('jb-theme')
+      if (saved === 'dark' || saved === 'light') {
+        document.documentElement.dataset.theme = saved
+      }
+    </script>
     <style is:global>
       :root {
         --accent: #135ba8;
-        --border: #e2e2e2;
+        --accent-fg: #ffffff;
+        --bg: #ffffff;
+        --fg: #1a1a1a;
+        --fg-soft: #333333;
         --muted: #5a5a5a;
+        --border: #e2e2e2;
+        --rule: #eeeeee;
+        --hover: #f1f5fa;
+        --card-hover: #f5f9fd;
+        --code-inline-bg: #f4f4f4;
         --sidebar-width: 260px;
+        --topbar-h: 53px;
+      }
+      /* dark palette: explicit toggle wins; otherwise follow the OS setting */
+      :root[data-theme='dark'] {
+        --accent: #6db3f2;
+        --accent-fg: #10151b;
+        --bg: #16191d;
+        --fg: #e4e6e8;
+        --fg-soft: #c6c9cd;
+        --muted: #9aa0a6;
+        --border: #2c3138;
+        --rule: #262b31;
+        --hover: #1e242b;
+        --card-hover: #1e242b;
+        --code-inline-bg: #23282f;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --accent: #6db3f2;
+          --accent-fg: #10151b;
+          --bg: #16191d;
+          --fg: #e4e6e8;
+          --fg-soft: #c6c9cd;
+          --muted: #9aa0a6;
+          --border: #2c3138;
+          --rule: #262b31;
+          --hover: #1e242b;
+          --card-hover: #1e242b;
+          --code-inline-bg: #23282f;
+        }
       }
       * {
         box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
       }
       body {
         margin: 0;
         font-family:
           -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
           Arial, sans-serif;
-        color: #1a1a1a;
+        background: var(--bg);
+        color: var(--fg);
         line-height: 1.55;
       }
       a {
@@ -70,12 +119,12 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
         justify-content: space-between;
         gap: 16px;
         padding: 10px 20px;
-        background: #fff;
+        background: var(--bg);
         border-bottom: 1px solid var(--border);
       }
       header.topbar .brand {
         font-weight: 700;
-        color: #1a1a1a;
+        color: var(--fg);
         text-decoration: none;
         font-size: 1.05em;
       }
@@ -85,6 +134,7 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
       }
       header.topbar nav {
         display: flex;
+        align-items: center;
         gap: 18px;
         font-size: 0.92em;
       }
@@ -94,17 +144,42 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
       header.topbar nav a:hover {
         text-decoration: underline;
       }
+      .theme-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        font-size: 1em;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--fg);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+      }
+      .theme-toggle:hover {
+        background: var(--hover);
+      }
       .layout {
         display: flex;
         align-items: flex-start;
+      }
+      /* mobile-only disclosure for the example list */
+      .nav-toggle-cb {
+        display: none;
+      }
+      .nav-toggle-label {
+        display: none;
       }
       aside.sidebar {
         flex: 0 0 var(--sidebar-width);
         width: var(--sidebar-width);
         position: sticky;
-        top: 53px;
+        top: var(--topbar-h);
         align-self: flex-start;
-        height: calc(100vh - 53px);
+        height: calc(100vh - var(--topbar-h));
         overflow-y: auto;
         border-right: 1px solid var(--border);
         padding: 16px 12px 48px;
@@ -128,15 +203,15 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
         padding: 4px 8px;
         border-radius: 4px;
         text-decoration: none;
-        color: #333;
+        color: var(--fg-soft);
         font-size: 0.9em;
       }
       aside.sidebar a:hover {
-        background: #f1f5fa;
+        background: var(--hover);
       }
       aside.sidebar a[aria-current='page'] {
         background: var(--accent);
-        color: #fff;
+        color: var(--accent-fg);
         font-weight: 600;
       }
       main {
@@ -148,6 +223,10 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
       h1 {
         margin-top: 0;
       }
+      /* keep sticky-header-anchored jumps from hiding under the topbar */
+      main [id] {
+        scroll-margin-top: calc(var(--topbar-h) + 12px);
+      }
       /* example-page chrome (ExampleLayout) */
       .lead {
         font-size: 1.05em;
@@ -156,7 +235,7 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
       }
       .doc h2 {
         margin-top: 28px;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--rule);
         padding-bottom: 4px;
       }
       .doc p {
@@ -166,7 +245,7 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
         margin-top: 20px;
       }
       .doc code {
-        background: #f4f4f4;
+        background: var(--code-inline-bg);
         padding: 1px 4px;
         border-radius: 3px;
         font-size: 0.9em;
@@ -176,8 +255,32 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
         padding: 0;
       }
       .astro-code {
+        position: relative;
         border-radius: 8px;
         padding: 14px 16px;
+      }
+      /* copy-to-clipboard button injected into every shiki code block */
+      .copy-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        padding: 3px 8px;
+        font-size: 0.75em;
+        font-family: inherit;
+        color: #cdd3da;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 4px;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.12s;
+      }
+      .astro-code:hover .copy-btn,
+      .copy-btn:focus-visible {
+        opacity: 1;
+      }
+      .copy-btn:hover {
+        background: rgba(255, 255, 255, 0.16);
       }
       .demo {
         border: 1px solid var(--border);
@@ -218,7 +321,7 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
         margin-top: 32px;
       }
       .gallery h2 {
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--rule);
         padding-bottom: 4px;
       }
       .gallery ul {
@@ -240,7 +343,7 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
       }
       .gallery li a:hover {
         border-color: var(--accent);
-        background: #f5f9fd;
+        background: var(--card-hover);
       }
       .gallery .title {
         font-weight: 600;
@@ -255,12 +358,32 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
         .layout {
           display: block;
         }
+        .nav-toggle-label {
+          display: block;
+          margin: 0;
+          padding: 10px 16px;
+          font-size: 0.9em;
+          font-weight: 600;
+          color: var(--fg);
+          cursor: pointer;
+          user-select: none;
+          border-bottom: 1px solid var(--border);
+        }
         aside.sidebar {
+          display: none;
           position: static;
           width: 100%;
           height: auto;
           border-right: none;
           border-bottom: 1px solid var(--border);
+        }
+        .nav-toggle-cb:checked ~ aside.sidebar {
+          display: block;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
         }
       }
     </style>
@@ -273,9 +396,19 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
       <nav>
         <a href={docsHref}>Embedding docs</a>
         <a href="https://jbrowse.org/jb2/">jbrowse.org</a>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle dark mode"
+        >
+          ☾
+        </button>
       </nav>
     </header>
     <div class="layout">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle-cb" />
+      <label class="nav-toggle-label" for="nav-toggle">☰ Examples menu</label>
       <aside class="sidebar">
         {
           groups.map(group => (
@@ -303,5 +436,46 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
         <slot />
       </main>
     </div>
+    <script is:inline>
+      // theme toggle: flip data-theme, remember it, keep the icon in sync
+      ;(() => {
+        const root = document.documentElement
+        const btn = document.getElementById('theme-toggle')
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+        const current = () =>
+          root.dataset.theme || (prefersDark.matches ? 'dark' : 'light')
+        const render = () => {
+          btn.textContent = current() === 'dark' ? '☀' : '☾'
+        }
+        btn.addEventListener('click', () => {
+          const next = current() === 'dark' ? 'light' : 'dark'
+          root.dataset.theme = next
+          localStorage.setItem('jb-theme', next)
+          render()
+        })
+        prefersDark.addEventListener('change', render)
+        render()
+      })()
+
+      // add a copy button to every shiki code block
+      document.querySelectorAll('pre.astro-code').forEach(pre => {
+        const code = pre.querySelector('code')
+        if (!code) {
+          return
+        }
+        const btn = document.createElement('button')
+        btn.type = 'button'
+        btn.className = 'copy-btn'
+        btn.textContent = 'Copy'
+        btn.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(code.innerText)
+          btn.textContent = 'Copied'
+          setTimeout(() => {
+            btn.textContent = 'Copy'
+          }, 1500)
+        })
+        pre.appendChild(btn)
+      })
+    </script>
   </body>
 </html>
