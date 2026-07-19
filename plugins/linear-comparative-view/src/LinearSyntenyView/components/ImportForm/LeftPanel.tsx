@@ -84,6 +84,17 @@ const AssemblyRows = observer(function AssemblyRows({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
+  function removeRow(idx: number) {
+    const rowCount = selectedAssemblyNames.length
+    // the pair-selection that disappears is the pair below this row, except for
+    // the last row, whose only pair is the one above it
+    model.importFormRemoveRow(Math.min(idx, rowCount - 2))
+    setSelectedAssemblyNames(selectedAssemblyNames.filter((_, i) => i !== idx))
+    // keep the arrow on the same pair — a removal above it shifts its index
+    // down — then clamp into the new pair range [0, rowCount - 3]
+    const shifted = idx < selectedRow ? selectedRow - 1 : selectedRow
+    setSelectedRow(Math.min(shifted, rowCount - 3))
+  }
   return selectedAssemblyNames.map((assemblyName, idx) => {
     const isPairRow = idx !== selectedAssemblyNames.length - 1
     const needsConfig =
@@ -126,13 +137,7 @@ const AssemblyRows = observer(function AssemblyRows({
               aria-label={`Remove row ${idx + 1}`}
               disabled={selectedAssemblyNames.length <= 2}
               onClick={() => {
-                model.importFormRemoveRow(idx)
-                setSelectedAssemblyNames(
-                  selectedAssemblyNames.filter((_, idx2) => idx2 !== idx),
-                )
-                if (selectedRow >= selectedAssemblyNames.length - 2) {
-                  setSelectedRow(0)
-                }
+                removeRow(idx)
               }}
             >
               <CloseIcon />

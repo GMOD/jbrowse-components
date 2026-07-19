@@ -332,9 +332,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
+       * Remove the pair-selection at the given index — the pair that vanishes
+       * when an assembly row is removed. The caller computes which pair index
+       * that is, since the row-to-pair mapping lives with the React-side
+       * assembly list.
        */
-      importFormRemoveRow(idx: number) {
-        self.importFormSyntenyTrackSelections.splice(idx, 1)
+      importFormRemoveRow(pairIdx: number) {
+        self.importFormSyntenyTrackSelections.splice(pairIdx, 1)
       },
       /**
        * #action
