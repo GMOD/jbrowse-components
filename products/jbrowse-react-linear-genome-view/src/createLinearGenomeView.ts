@@ -126,16 +126,26 @@ function mergeSearchAdapters(a: SearchAdapters, b: SearchAdapters) {
   return merged.length ? merged : undefined
 }
 
-// open every wanted track and close any others the view is currently showing;
-// showTrack/addTrackConf dedupe by trackId, so this is safe on mount and on
-// every later setTracks
+// register a track config only if the session can't already resolve it — then
+// show it. The guard matters: addTrackConf only dedupes against sessionTracks,
+// so re-adding a config already seeded into the config catalog (createViewState
+// `tracks`) would push a duplicate into sessionTracks that then shadows the
+// catalog entry. getTrackById resolves catalog + connection + session tracks,
+// so this is idempotent on mount and on every later setTracks.
+function openTrack(session: ViewModel['session'], conf: Tracks[number]) {
+  if (!session.getTrackById(conf.trackId)) {
+    session.addTrackConf(conf)
+  }
+  session.view.showTrack(conf.trackId)
+}
+
+// open every wanted track and close any others the view is currently showing
 function reconcileTracks(viewState: ViewModel, tracks: Tracks) {
   const { session } = viewState
   const { view } = session
   const wanted = new Set(tracks.map(t => t.trackId))
   for (const conf of tracks) {
-    session.addTrackConf(conf)
-    view.showTrack(conf.trackId)
+    openTrack(session, conf)
   }
   // materialize the ids first: hideTrack splices view.tracks, so iterating it
   // live would skip entries
@@ -264,7 +274,11 @@ export function createLinearGenomeView(
     async setLocation(loc) {
       location = loc
       const view = current?.session.view
-      if (view && loc && view.coarseVisibleLocStrings !== loc) {
+      // navToLocString no-ops cleanly when already at loc (MST skips identical
+      // offsetPx/bpPerPx writes), so no guard against the current position is
+      // needed — and the previous coarseVisibleLocStrings comparison never
+      // matched anyway (formatted "ctgA:1..100" vs a raw "ctgA:1-100"/gene input)
+      if (view && loc) {
         await view.navToLocString(loc)
       }
     },
@@ -286,8 +300,7 @@ export function createLinearGenomeView(
       tracks = [...tracks, track]
       if (current) {
         const [conf] = resolveTracks([track], current, assemblyName)
-        current.session.addTrackConf(conf)
-        current.session.view.showTrack(conf.trackId)
+        openTrack(current.session, conf)
       }
     },
     removeTrack(trackId) {
