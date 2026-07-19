@@ -59,6 +59,11 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
+  // Gates "Open in new view". Deliberately NOT isViewContainer/`'addView' in
+  // session`: the embedded react-LGV session has addView too, but it
+  // destructively REPLACES its single view, and its `views` getter returns a
+  // fresh plain array. An observable `views` array is what actually
+  // distinguishes a real multi-view container that can hold an added view.
   const canLaunchView = isObservableArray(getSession(view).views)
   // Always the originally-clicked feature id, even for a specific transcript
   // row: solo is an exact uniqueId match (featureAdmission), and a gene-shaped

@@ -207,14 +207,12 @@ function transcriptLabel(transcripts: Feature[]) {
   return (f ? getFeatureName(f) : undefined) ?? 'feature'
 }
 
-function buildArgs({
-  view,
+function buildMergedRegions({
   transcripts,
   assembly,
   padding,
   flip,
 }: {
-  view: LinearGenomeViewModel
   transcripts: Feature[]
   assembly: Assembly
   padding: number
@@ -238,13 +236,9 @@ function buildArgs({
   })
   // flip declaratively: reverse region order and mark each reversed so a
   // minus-strand gene reads 5'->3' left-to-right
-  const mergedRegions = flip
+  return flip
     ? genomicRegions.map(r => ({ ...r, reversed: true })).reverse()
     : genomicRegions
-  return {
-    mergedRegions,
-    initialState: calculateInitialViewState(mergedRegions, view.width),
-  }
 }
 
 // Shared args for the two intron actions. `soloFeatureId` (set when the dialog's
@@ -269,7 +263,12 @@ export function replaceIntrons({
   trackId,
   soloFeatureId,
 }: IntronActionArgs) {
-  const args = buildArgs({ view, transcripts, assembly, padding, flip })
+  const mergedRegions = buildMergedRegions({
+    transcripts,
+    assembly,
+    padding,
+    flip,
+  })
   // snapshot the prior location so "Undo" can restore the original view.
   // displayedRegions is a types.frozen (plain immutable array), so it's kept
   // by reference rather than via getSnapshot (which only accepts MST nodes)
@@ -278,8 +277,12 @@ export function replaceIntrons({
     bpPerPx: view.bpPerPx,
     offsetPx: view.offsetPx,
   }
-  view.setDisplayedRegions(args.mergedRegions)
-  view.setNewView(args.initialState.bpPerPx, args.initialState.offsetPx)
+  view.setDisplayedRegions(mergedRegions)
+  // the view holds the collapsed regions now, so let it frame them itself.
+  // showAllRegions is the canonical fit-all zoom/center — identical to the
+  // precomputed initialState for real inputs, but it also applies the
+  // minBpPerPx floor that a hand-computed setNewView would miss.
+  view.showAllRegions()
   const restoreSolo =
     soloFeatureId === undefined
       ? undefined
@@ -325,7 +328,16 @@ export function buildCollapsedViewSnapshot({
   trackId,
   soloFeatureId,
 }: IntronActionArgs) {
-  const args = buildArgs({ view, transcripts, assembly, padding, flip })
+  const mergedRegions = buildMergedRegions({
+    transcripts,
+    assembly,
+    padding,
+    flip,
+  })
+  // the target view doesn't exist yet, so its zoom/offset must be precomputed
+  // into the snapshot (unlike replaceIntrons, which calls showAllRegions on the
+  // live view) to avoid a layout flash on first render.
+  const initialState = calculateInitialViewState(mergedRegions, view.width)
   const { id, ...rest } = getSnapshot(view)
   const tracks =
     soloFeatureId === undefined
@@ -335,9 +347,9 @@ export function buildCollapsedViewSnapshot({
     ...rest,
     tracks: stripTrackIds(tracks),
     displayName: `${transcriptLabel(transcripts)} (introns collapsed)`,
-    displayedRegions: args.mergedRegions,
-    bpPerPx: args.initialState.bpPerPx,
-    offsetPx: args.initialState.offsetPx,
+    displayedRegions: mergedRegions,
+    bpPerPx: initialState.bpPerPx,
+    offsetPx: initialState.offsetPx,
   }
 }
 
