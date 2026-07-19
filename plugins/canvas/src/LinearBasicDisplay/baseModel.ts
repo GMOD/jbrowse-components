@@ -23,7 +23,6 @@ import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  AUTO_FORCE_LOAD_BP,
   GROW_MAX_HEIGHT,
   HeightModeMixin,
   MultiRegionDisplayMixin,
@@ -33,8 +32,6 @@ import {
   heightModeMenuItems,
   installGrowExitBake,
   onDisplayedRegionsChange,
-  resolveByteLimit,
-  resolveForceLoadLimits,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -57,9 +54,9 @@ import {
   findSubfeatureById,
   indexById,
   inlineRadioGroup,
-  screenDensity,
   toggleArrayMember,
 } from './baseModelHelpers.ts'
+import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
@@ -95,7 +92,6 @@ import {
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
-import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type {
   DisplayConfig,
   DisplayMode,
@@ -298,6 +294,13 @@ export default function baseStateModelFactory(
         TrackHeightMixin(),
         HeightModeMixin(),
         MultiRegionDisplayMixin(),
+        // The whole byte + feature-density region-too-large gate: the model-side
+        // sibling of DisplayChrome. Supplies densityStatsPerRegion,
+        // userFeatureDensityLimit, byteSizeLimit(), maxFeatureDensity,
+        // observedMaxDensity/visibleFeatureDensityPerPx, the dual-axis
+        // setFeatureDensityStatsLimit, and commit/clear helpers — folded into the
+        // feature fetch below. Same instance the multi-row display composes.
+        CanvasFeatureGateMixin(),
         PromotableDefaultsMixin(configSchema),
         types.model({
           /**
@@ -381,15 +384,6 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        // Per-region density stats (featureCount over genomic span) populated
-        // for both successful fetches and worker-side too-large responses.
-        // Drives the derived `regionTooLarge` getter so banner state is a
-        // pure function of cached data + current bpPerPx (no flicker on
-        // small zoom changes).
-        densityStatsPerRegion: observable.map<number, RegionDensityStats>(),
-        /**
-         * #volatile
-         */
         featureIdUnderMouse: null as string | null,
         /**
          * #volatile
@@ -415,10 +409,6 @@ export default function baseStateModelFactory(
               clientY: number
             }
           | undefined,
-        /**
-         * #volatile
-         */
-        userFeatureDensityLimit: undefined as number | undefined,
         /**
          * #volatile
          */
@@ -467,37 +457,6 @@ export default function baseStateModelFactory(
          */
         get conf(): LinearBasicDisplayConfigModel {
           return self.configuration
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         */
-        // Highest features-per-pixel across the visible regions at the given
-        // bpPerPx, from cached per-region counts. Shared by the density gate
-        // (debounced coarseBpPerPx) and the force-load baseline (live bpPerPx).
-        observedMaxDensity(bpPerPx: number) {
-          return Math.max(
-            0,
-            ...getView(self).visibleRegions.map(r => {
-              const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
-              return ds ? screenDensity(ds, bpPerPx) : 0
-            }),
-          )
-        },
-
-        /**
-         * #getter
-         */
-        // Current features-per-pixel across the visible regions, recomputed
-        // from cached per-region counts and the debounced coarseBpPerPx (500ms
-        // after the gesture settles). Drives label visibility and the
-        // regionTooLarge banner; both also feed the coarse-packed layout, so
-        // using coarseBpPerPx keeps all three on one cadence and avoids
-        // per-frame relayout/banner flicker when a smooth zoom hovers near a
-        // threshold. Still far faster than the old fetch-time snapshot.
-        get visibleFeatureDensityPerPx() {
-          return this.observedMaxDensity(getView(self).coarseBpPerPx)
         },
       }))
       .views(self => ({
@@ -698,29 +657,6 @@ export default function baseStateModelFactory(
             ? getSession(self).selection
             : undefined
           return isFeature(selection) ? selection.id() : undefined
-        },
-
-        /**
-         * #getter
-         */
-        get maxFeatureDensity() {
-          // Declarative force-load disables the density gate outright (and, being
-          // undefined, passes no density limit to the worker gate either).
-          if (readConfObject(self.conf, 'forceLoad')) {
-            return undefined
-          }
-          // Skip density gating when the user has already force-loaded via byte estimate
-          if (self.userByteSizeLimit !== undefined) {
-            return undefined
-          }
-          const view = getView(self)
-          if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
-            return undefined
-          }
-          return (
-            self.userFeatureDensityLimit ??
-            getConf(self, 'maxFeatureScreenDensity')
-          )
         },
 
         /**
@@ -927,62 +863,6 @@ export default function baseStateModelFactory(
             // themes invalidates the RPC cache and refetches with new colors.
             theme: getSession(self).themeOptions,
           }
-        },
-      }))
-      // Opt into RegionTooLargeMixin's shared derived byte gate, folding the
-      // feature-density axis in via densityTooLargeForDerivedGate. The banner is
-      // then a pure function of cached stats × current view (no imperative
-      // clear-and-reset, no flicker on small zoom/pan). afterAttach's
-      // clearStaleDensityState drops the cached estimate on chromosome nav.
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get densityTooLarge() {
-          const max = self.maxFeatureDensity
-          return max === undefined
-            ? false
-            : self.visibleFeatureDensityPerPx > max
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get derivedRegionTooLargeEnabled() {
-          return true
-        },
-        /**
-         * #getter
-         */
-        get configuredFetchSizeLimit(): number {
-          return readConfObject(self.conf, 'fetchSizeLimit')
-        },
-        /**
-         * #getter
-         * The adapter's own `fetchSizeLimit` slot, or undefined when the adapter
-         * type has no such slot. `resolveByteLimit` prefers this over the display
-         * config so the byte gate honors an adapter-declared limit — the same
-         * precedence the pre-flight path (alignments/LD/wiggle) already uses.
-         */
-        get adapterFetchSizeLimit(): number | undefined {
-          return readConfObject(self.adapterConfig, 'fetchSizeLimit')
-        },
-        /**
-         * #getter
-         * Declarative force-load (the `forceLoad` config slot) — feeds the shared
-         * mixin's verdict short-circuit and the worker byte/density gates below.
-         */
-        get configForceLoad(): boolean {
-          return readConfObject(self.conf, 'forceLoad')
-        },
-        /**
-         * #getter
-         * Folds canvas's feature-density gate into the shared derived verdict
-         * (`RegionTooLargeMixin.tooLargeStatus`), which is byte-only by default.
-         */
-        get densityTooLargeForDerivedGate() {
-          return self.densityTooLarge
         },
       }))
       // Laid-out data derived from the raw per-region fetch results. MobX
@@ -1624,16 +1504,6 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        setDensityStats(
-          displayedRegionIndex: number,
-          stats: RegionDensityStats,
-        ) {
-          self.densityStatsPerRegion.set(displayedRegionIndex, stats)
-        },
-
-        /**
-         * #action
-         */
         clearDisplaySpecificData() {
           // Density stats survive viewport-change clearAllRpcData calls so
           // the derived `regionTooLarge` banner stays stable across small
@@ -1706,41 +1576,6 @@ export default function baseStateModelFactory(
               return true
             },
           })
-        },
-
-        /**
-         * #action
-         */
-        setFeatureDensityStatsLimit(stats?: {
-          bytes?: number
-          fetchSizeLimit?: number
-        }) {
-          // Clear both gates first so maxFeatureDensity (which short-circuits to
-          // undefined when userByteSizeLimit is set) re-evaluates for the density
-          // branch, then let the shared decision pick which single axis to raise
-          // (byte vs density) — one source with the canvas multi-row gate so the
-          // "don't lower the ceiling" guard can't drift.
-          self.userByteSizeLimit = undefined
-          self.userFeatureDensityLimit = undefined
-          const limits = resolveForceLoadLimits({
-            estimatedVisibleBytes: self.estimatedVisibleBytes,
-            rawBytes: stats?.bytes,
-            baselineByteLimit: resolveByteLimit({
-              userByteSizeLimit: undefined,
-              adapterFetchSizeLimit: self.adapterFetchSizeLimit,
-              configFetchSizeLimit: self.configuredFetchSizeLimit,
-            }),
-            densityGateActive: self.maxFeatureDensity !== undefined,
-            observedMaxDensity: self.observedMaxDensity(getView(self).bpPerPx),
-            configuredMaxDensity: readConfObject(
-              self.conf,
-              'maxFeatureScreenDensity',
-            ),
-          })
-          self.userByteSizeLimit = limits.userByteSizeLimit
-          self.userFeatureDensityLimit = limits.userFeatureDensityLimit
-          // Derived regionTooLarge recomputes once the limit changes — no
-          // imperative flag to clear.
         },
 
         /**
@@ -2196,32 +2031,6 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        // Compressed-byte budget passed into the feature-fetch RPC, which
-        // short-circuits an over-budget region before downloading features
-        // (canvas gates inside the fetch RPC rather than via the shared
-        // pre-flight estimate RPC, so there's no second round-trip to race).
-        // Only gated in the force-load zone (visibleBp >= AUTO_FORCE_LOAD_BP);
-        // below it small regions always load. Resolved through the same
-        // `resolveByteLimit` the pre-flight path uses so the two gates can't
-        // drift: force-load (`userByteSizeLimit`) raises the budget, then an
-        // adapter-declared limit, then the display config.
-        byteSizeLimit(): number | undefined {
-          const view = getView(self)
-          // forceLoad → no worker byte gate (undefined = unlimited), matching the
-          // released banner so the forced fetch isn't re-blocked in the RPC.
-          return self.configForceLoad || view.visibleBp < AUTO_FORCE_LOAD_BP
-            ? undefined
-            : resolveByteLimit({
-                userByteSizeLimit: self.userByteSizeLimit,
-                adapterFetchSizeLimit: self.adapterFetchSizeLimit,
-                configFetchSizeLimit: self.configuredFetchSizeLimit,
-              })
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         */
         // Re-fetch the full feature by id and open it in the details widget (the
         // painting ships only slim render arrays). With a subfeatureInfo we fetch
         // its parent and descend to the clicked subfeature; otherwise the feature
@@ -2297,40 +2106,23 @@ export default function baseStateModelFactory(
         }
 
         function applyFetchResults(fetches: RegionFetch[]) {
-          let maxBytes = 0
-          for (const {
-            displayedRegionIndex,
-            region,
-            bpPerPx,
-            result,
-          } of fetches) {
-            maxBytes = Math.max(maxBytes, result.bytes ?? 0)
-            // featureCount drives the density gate; absent only on a byte
-            // short-circuit (no features were counted), which the byte gate
-            // covers via maxBytes instead.
-            if (result.featureCount !== undefined) {
-              self.setDensityStats(displayedRegionIndex, {
-                featureCount: result.featureCount,
-                regionWidthBp: region.end - region.start,
-              })
-            }
+          for (const { displayedRegionIndex, region, bpPerPx, result } of fetches) {
             if (!('regionTooLarge' in result)) {
               self.setRpcData(displayedRegionIndex, result, bpPerPx, region)
             }
           }
-          // Feed the derived byte gate the largest single region's estimate, not
-          // the sum: the worker gates each region against the same per-region
-          // byteSizeLimit, so a multi-region view (whole genome, collapsed
-          // introns) where every region individually fits must not be blanked
-          // just because the total across regions exceeds one region's budget.
-          // Mirrors the density gate, which already takes the per-region max.
-          // Carry the adapter's limit so the banner's `resolveByteLimit` picks
-          // the same budget the worker gated on (else banner and worker disagree
-          // when the adapter declares a limit above the display config).
-          self.setFeatureDensityStats({
-            bytes: maxBytes,
-            fetchSizeLimit: self.adapterFetchSizeLimit,
-          })
+          // Commit the per-region byte/density estimates to the shared gate (byte
+          // **max**, not sum, so a multi-region view where each region fits isn't
+          // blanked by the cross-region total). Same helper the multi-row display
+          // uses, so the two canvas gates can't drift.
+          self.commitFeatureGateStats(
+            fetches.map(({ displayedRegionIndex, region, result }) => ({
+              displayedRegionIndex,
+              regionWidthBp: region.end - region.start,
+              bytes: result.bytes,
+              featureCount: result.featureCount,
+            })),
+          )
         }
 
         return {
@@ -2383,15 +2175,6 @@ export default function baseStateModelFactory(
           },
         }
       })
-      .actions(self => ({
-        /**
-         * #action
-         */
-        clearStaleDensityState() {
-          self.densityStatsPerRegion.clear()
-          self.setFeatureDensityStats(undefined)
-        },
-      }))
       .actions(self => {
         const superResizeHeight = self.resizeHeight
         return {
@@ -2470,7 +2253,7 @@ export default function baseStateModelFactory(
             onDisplayedRegionsChange(
               self,
               () => {
-                self.clearStaleDensityState()
+                self.clearFeatureGateStats()
                 // Reset scroll to the top only on an actual region-list change
                 // (chromosome navigation) — not on same-region zoom/pan, which
                 // must keep the user's scroll position (see
