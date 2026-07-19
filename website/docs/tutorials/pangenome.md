@@ -14,18 +14,19 @@ build these graphs; [odgi](https://github.com/pangenome/odgi) manipulates them.
 
 JBrowse does not draw the graph itself — it has no graph-native track. What it
 draws are the graph's **linear projections**: the same graph flattened onto one
-reference genome's coordinates, in three complementary views. Every builder can
-emit all three, so a graph built with any of these tools lands on three JBrowse
-track types you already have:
+reference genome's coordinates, in four complementary views. Every builder can
+emit all four, so a graph built with any of these tools lands on JBrowse track
+types you already have:
 
-| Projection             | What it shows                                        | From the graph                                           | JBrowse track                                                      |
-| ---------------------- | ---------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
-| All-vs-all synteny     | The blocks each pair of genomes shares               | the wfmash all-vs-all PAF; `odgi untangle`; `halSynteny` | [synteny track](/docs/config_guides/synteny_track)                 |
-| Pangenome variants     | Every difference the graph calls, across all samples | `pggb -V`; `cactus-pangenome --vcf`; `vg deconstruct`    | [multi-sample variant track](/docs/user_guides/multivariant_track) |
-| Whole-genome alignment | The multiple alignment, column by column             | `pggb -M`; `hal2maf` + `taffy`                           | [MAF track](/docs/user_guides/maf_track)                           |
+| Projection             | What it shows                                               | From the graph                                           | JBrowse track                                                      |
+| ---------------------- | ----------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
+| All-vs-all synteny     | The blocks each pair of genomes shares                      | the wfmash all-vs-all PAF; `odgi untangle`; `halSynteny` | [synteny track](/docs/config_guides/synteny_track)                 |
+| Pangenome variants     | Every difference the graph calls, across all samples        | `pggb -V`; `cactus-pangenome --vcf`; `vg deconstruct`    | [multi-sample variant track](/docs/user_guides/multivariant_track) |
+| Whole-genome alignment | The multiple alignment, column by column                    | `pggb -M`; `hal2maf` + `taffy`                           | [MAF track](/docs/user_guides/maf_track)                           |
+| Pangenome depth        | How many genomes cover each reference base (core/accessory) | `odgi depth`                                             | [quantitative track](/docs/config_guides/quantitative_track)       |
 
 This tutorial builds a four-strain _E. coli_ pangenome with pggb and loads all
-three projections. It uses the same four genomes as the
+four projections. It uses the same four genomes as the
 [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny), which builds
 the synteny projection alone from a plain minimap2 alignment — here that same
 projection falls out of the graph, alongside the variant and MAF projections a
@@ -56,9 +57,13 @@ and `-M` writes the multiple alignment as a MAF:
 
 ```bash
 docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
-  ghcr.io/pangenome/pggb:latest \
+  ghcr.io/pangenome/pggb:202603141454453ade6b \
   pggb -i /data/all.fa.gz -o /data/pggb -n 4 -p 90 -s 5000 -V K12 -M -t 16
 ```
+
+Pinning the image to a dated build tag (rather than `:latest`) keeps the graph
+reproducible; the same image also carries
+[odgi](https://github.com/pangenome/odgi), which projection 4 uses.
 
 `-n` is the number of haplotypes, `-p` the minimum alignment identity, `-s` the
 segment length — `-p 90 -s 5000` suits a bacterial pangenome. The `-w /data`
@@ -70,7 +75,8 @@ pggb runs [wfmash](https://github.com/waveygang/wfmash) (all-vs-all alignment),
 [seqwish](https://github.com/ekg/seqwish) (induces the graph), and
 [smoothxg](https://github.com/pangenome/smoothxg) (normalizes it), then the `-V`
 and `-M` steps. The output directory holds the graph (`*.smooth.final.gfa`), the
-all-vs-all PAF, the VCF, and the MAF — the three files the sections below load.
+all-vs-all PAF, the VCF, and the MAF — the outputs the sections below load
+(projection 4 reads the graph itself).
 
 ### Other builders
 
@@ -202,6 +208,61 @@ tree instead to draw the rows as a dendrogram. The
 per-row identity, and codon view — all derived from the alignment with no extra
 files.
 
+## Projection 4: pangenome depth (core vs accessory)
+
+The three projections above all show where the genomes _differ_. The one thing a
+pangenome is really about — how much of the graph is _shared_ — is depth:
+[`odgi depth`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_depth.html)
+counts how many paths traverse the graph nodes under each reference base. Where
+every strain is present the depth sits near the strain count (core sequence);
+where a stretch is K12-private it falls toward 1 (accessory sequence). odgi
+ships inside the pggb image, so no new tool is needed to run it.
+
+Tile the K12 path into windows, ask odgi for each window's mean depth, rename
+the PanSN path to the assembly's `chr`, and convert the result to bigWig (the
+[`bedGraphToBigWig`](https://genome.ucsc.edu/goldenPath/help/bigWig.html) UCSC
+tool):
+
+```bash
+# K12 length from the concatenated FASTA index, tiled into 500 bp windows
+reflen=$(awk '$1 == "K12#1#chr" {print $2}' all.fa.gz.fai)
+awk -v len="$reflen" 'BEGIN{for(s=0;s<len;s+=500){e=s+500; if(e>len)e=len; print "K12#1#chr\t"s"\t"e}}' \
+  > depth_windows.bed
+
+# resolve the graph on the host (a /data/*.gfa glob can't expand inside docker)
+gfa=$(ls pggb/*.smooth.final.gfa)
+docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
+  ghcr.io/pangenome/pggb:202603141454453ade6b \
+  odgi depth -i "/data/$gfa" -b /data/depth_windows.bed \
+  | awk -v OFS='\t' '$1 == "K12#1#chr" {print "chr", $2, $3, $4}' \
+  | sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
+
+printf 'chr\t%s\n' "$reflen" > chrom.sizes
+bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
+```
+
+Load it as a [`QuantitativeTrack`](/docs/config_guides/quantitative_track) on
+K12:
+
+```json
+{
+  "type": "QuantitativeTrack",
+  "trackId": "ecoli_pggb_depth",
+  "name": "pggb graph: pangenome depth (paths over K12)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "BigWigAdapter",
+    "bigWigLocation": { "uri": "ecoli_pggb_depth.bw" }
+  }
+}
+```
+
+Zoomed out, the track reads as the pangenome's core/accessory landscape along
+K12: a mostly-flat plateau near the strain count, dropping over the accessory
+stretches the variant and MAF projections zoom into. (Collapsed repeats can push
+a window above the strain count, so read the signal as relative, not an exact
+genome tally.)
+
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
@@ -213,13 +274,15 @@ npx --yes serve ecoli_pangenome_graph_build/jbrowse2
 ```
 
 It downloads the four RefSeq genomes, runs pggb, converts the wfmash PAF, VCF,
-and MAF into the three projections, downloads JBrowse, and writes a
-`config.json` with the four assemblies, per-strain gene tracks, the three
-graph-derived tracks, and a default session on the K12 reference. It needs
-`docker` (for the pggb image), the NCBI
+MAF, and `odgi depth` into the four projections, downloads JBrowse, and writes a
+`config.json` with the four assemblies, per-strain gene tracks, the four
+graph-derived tracks, and a default session (a stacked synteny view plus the K12
+reference lane). It needs `docker` (for the pggb image, which also carries
+odgi), the NCBI
 [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
 CLI, `samtools`, [`taffy`](https://github.com/ComparativeGenomicsToolkit/taffy),
-`python3`, htslib (`bgzip`, `tabix`), `unzip`, and `node`.
+`bedGraphToBigWig` (UCSC kentUtils), `python3`, htslib (`bgzip`, `tabix`),
+`unzip`, and `node`.
 
 ## See also
 

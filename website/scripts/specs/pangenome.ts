@@ -88,4 +88,43 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
+
+  // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, as a
+  // whole-chromosome overview so the shared plateau and the accessory dips read
+  // at a glance. NOTE: the ecoli_pggb_depth track only exists once the demo is
+  // rebuilt (build_ecoli_pangenome_graph.sh) and redeployed to S3 — regenerate
+  // this figure after that redeploy.
+  {
+    mode: 'url',
+    name: 'pangenome/depth',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1-4,641,652',
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            {
+              trackId: 'ecoli_pggb_depth',
+              type: 'LinearWiggleDisplay',
+              height: 160,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '4,000,000',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 420,
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [
+      // park the cursor over the inert app header so no overview-ruler position
+      // tooltip or feature hover lingers in the capture
+      { type: 'hover', from: { x: 950, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
 ]

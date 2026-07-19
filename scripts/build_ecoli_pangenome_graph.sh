@@ -2,22 +2,25 @@
 #
 # Reproducibly build the E. coli pangenome-graph demo shown in
 # website/docs/tutorials/pangenome.md: build a pggb graph from four strains and
-# load its three linear projections into a runnable JBrowse — the all-vs-all
-# synteny (wfmash PAF), the pangenome variants (`pggb -V`), and the whole-genome
-# multiple alignment (`pggb -M`, re-rooted on K12 as a MAF).
+# load its four linear projections into a runnable JBrowse — the all-vs-all
+# synteny (wfmash PAF), the pangenome variants (`pggb -V`), the whole-genome
+# multiple alignment (`pggb -M`, re-rooted on K12 as a MAF), and the pangenome
+# depth (`odgi depth`, core vs accessory over K12 as a bigWig).
 #
 # It downloads the same four RefSeq E. coli chromosomes as the all-vs-all synteny
 # tutorial, PanSN-names a concatenated copy, runs pggb, converts each output to
 # the format its JBrowse track type reads, and writes a config.json with the four
-# assemblies, per-strain gene tracks, the three graph-derived tracks, and a
-# default session on the K12 reference.
+# assemblies, per-strain gene tracks, the four graph-derived tracks, and a
+# default session (a stacked synteny view plus the K12 reference lane).
 #
-# Everything is pinned (fixed RefSeq accessions, fixed pggb parameters), so
-# re-running reproduces the same graph and views.
+# Everything is pinned (fixed RefSeq accessions, pinned pggb image + parameters),
+# so re-running reproduces the same graph and views.
 #
-# Requires: docker (pggb image), the NCBI `datasets` CLI, samtools, taffy (the
-#           Cactus/taffy toolkit), python3, bgzip/tabix (htslib), unzip, and node
-#           (JBrowse CLI, via npx unless `jbrowse` is on PATH).
+# Requires: docker (the pggb image, which also carries odgi for the depth
+#           projection), the NCBI `datasets` CLI, samtools, taffy (the
+#           Cactus/taffy toolkit), bedGraphToBigWig (UCSC kentUtils), python3,
+#           bgzip/tabix (htslib), unzip, and node (JBrowse CLI, via npx unless
+#           `jbrowse` is on PATH).
 # Usage:    bash scripts/build_ecoli_pangenome_graph.sh [outdir]
 #
 set -euo pipefail
@@ -29,6 +32,12 @@ cd "$OUTDIR"
 
 STRAINS="K12 Sakai CFT073 NCTC86"
 REF=K12   # the strain the VCF and MAF are projected onto
+
+# Pin the pggb image by tag (pggb's dated build tag, not :latest) so re-running
+# reproduces the same graph. Bump this to a newer tag deliberately, not silently.
+# odgi ships inside this image, so the depth projection below reuses it.
+PGGB_IMAGE=ghcr.io/pangenome/pggb:202603141454453ade6b
+in_pggb() { docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data "$PGGB_IMAGE" "$@"; }
 
 # ── Fetch each genome + annotation; keep only the chromosome, renamed `chr` ────
 while read -r strain acc; do
@@ -59,10 +68,10 @@ samtools faidx all.fa.gz
 # -w /data gives the mapped -u user a writable working directory; without it
 # seqwish cannot write its sdsl temp files (cwd defaults to `/`) and dies.
 if ! ls pggb/*.smooth.final.gfa >/dev/null 2>&1; then
-  docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
-    ghcr.io/pangenome/pggb:latest \
-    pggb -i /data/all.fa.gz -o /data/pggb -n 4 -t "$(nproc)" -p 90 -s 5000 -V "$REF" -M
+  in_pggb pggb -i /data/all.fa.gz -o /data/pggb -n 4 -t "$(nproc)" -p 90 -s 5000 -V "$REF" -M
 fi
+
+GFA=$(ls pggb/*.smooth.final.gfa)
 
 # ── Projection 1: all-vs-all synteny (the wfmash PAF pggb already produced) ───
 # make-pif tabix-indexes it so the whole-genome view stays a range query.
@@ -84,6 +93,23 @@ tabix -f -p vcf ecoli_pggb.vcf.gz
 python3 "$SCRIPT_DIR/reroot_maf.py" "$(ls pggb/*.smooth.maf)" ecoli_pggb.maf "${REF}#1#chr"
 taffy view -i ecoli_pggb.maf -o ecoli_pggb.taf.gz -c
 taffy index -i ecoli_pggb.taf.gz
+
+# ── Projection 4: pangenome depth (core vs accessory) as a bigWig ─────────────
+# odgi depth counts how many path-steps traverse the graph nodes under each REF
+# position: ~n where all strains are present (core), dropping toward 1 where the
+# stretch is REF-private (accessory). odgi ships in the pggb image, so reuse it.
+# Tile REF into 500 bp windows, ask odgi for each window's mean depth, rename the
+# PanSN path to the assembly refName, and convert to bigWig for a wiggle track.
+# (Repeats can push a window's depth above the strain count.)
+REFLEN=$(awk -v p="${REF}#1#chr" '$1 == p {print $2}' all.fa.gz.fai)
+awk -v p="${REF}#1#chr" -v len="$REFLEN" -v w=500 \
+  'BEGIN { for (s = 0; s < len; s += w) { e = s + w; if (e > len) e = len; print p "\t" s "\t" e } }' \
+  > depth_windows.bed
+in_pggb odgi depth -i "/data/$GFA" -b /data/depth_windows.bed \
+  | awk -v p="${REF}#1#chr" -v OFS='\t' '$1 == p { print "chr", $2, $3, $4 }' \
+  | sort -k1,1 -k2,2n > ecoli_pggb_depth.bedgraph
+printf 'chr\t%s\n' "$REFLEN" > chrom.sizes
+bedGraphToBigWig ecoli_pggb_depth.bedgraph chrom.sizes ecoli_pggb_depth.bw
 
 # ── Set up JBrowse (installed `jbrowse`, else the CLI via npx) ────────────────
 if command -v jbrowse >/dev/null 2>&1; then jb() { jbrowse "$@"; }; else jb() { npx -y @jbrowse/cli "$@"; }; fi
@@ -134,17 +160,37 @@ cat > maf_track.json <<'JSON'
 JSON
 jb add-track-json maf_track.json --out "$APP"
 
-# ── Default session: the two reference-projected tracks on K12 ────────────────
+# projection 4: pangenome depth (autodetected as a QuantitativeTrack bigWig)
+jb add-track ecoli_pggb_depth.bw --trackId ecoli_pggb_depth \
+  --name "pggb graph: pangenome depth (paths over K12)" -a K12 --load copy --force --out "$APP"
+
+# ── Default session: all four projections ─────────────────────────────────────
+# view 1 stacks the four strains for the synteny projection; view 2 is the K12
+# reference lane with the depth, variant, and MAF projections beneath the genes.
 cat > session.json <<'JSON'
 {
-  "name": "E. coli pangenome graph (K12 reference)",
+  "name": "E. coli pangenome graph",
   "views": [
+    {
+      "type": "LinearSyntenyView",
+      "init": {
+        "views": [
+          { "assembly": "K12" },
+          { "assembly": "Sakai" },
+          { "assembly": "CFT073" },
+          { "assembly": "NCTC86" }
+        ],
+        "tracks": [["ecoli_pggb_ava"], ["ecoli_pggb_ava"], ["ecoli_pggb_ava"]],
+        "drawCurves": false,
+        "minAlignmentLength": 10000
+      }
+    },
     {
       "type": "LinearGenomeView",
       "init": {
         "assembly": "K12",
         "loc": "chr:1,000,000-1,010,000",
-        "tracks": ["K12_genes", "ecoli_pggb_variants", "ecoli_pggb_maf"]
+        "tracks": ["K12_genes", "ecoli_pggb_depth", "ecoli_pggb_variants", "ecoli_pggb_maf"]
       }
     }
   ]
@@ -153,6 +199,6 @@ JSON
 jb set-default-session --session session.json --out "$APP"
 
 echo
-echo "Built $APP/config.json with the four assemblies, gene tracks, and the three"
-echo "pggb-graph projections (synteny, variants, MAF). Serve it, e.g.:"
+echo "Built $APP/config.json with the four assemblies, gene tracks, and the four"
+echo "pggb-graph projections (synteny, variants, MAF, depth). Serve it, e.g.:"
 echo "  npx serve $(pwd)/$APP"
