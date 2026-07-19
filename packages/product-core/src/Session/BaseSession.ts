@@ -326,7 +326,14 @@ export function BaseSessionModel<
         } else {
           forType[slot] = value
         }
-        map[displayType] = forType
+        // drop the whole display-type entry once its last slot is cleared, so
+        // clearing leaves no empty `{ [displayType]: {} }` cruft accumulating in
+        // the persisted localStorage blob
+        if (Object.keys(forType).length) {
+          map[displayType] = forType
+        } else {
+          delete map[displayType]
+        }
         self.preferencesOverrides = {
           ...self.preferencesOverrides,
           displayTypeDefaults: map,

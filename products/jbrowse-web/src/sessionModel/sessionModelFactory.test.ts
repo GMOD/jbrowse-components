@@ -197,6 +197,27 @@ describe('JBrowseWebSessionModel', () => {
       ).toBe(20)
     })
 
+    it('drops the display-type entry once its last slot is cleared', () => {
+      const session = createTestSession()
+      // start from a clean store (createTestSession reloads persisted prefs)
+      session.clearPreferenceOverrides()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        undefined,
+      )
+      // clearing the last slot must leave no empty `{ LinearBasicDisplay: {} }`
+      // cruft accumulating in the persisted localStorage blob
+      const store = session.preferencesOverrides.displayTypeDefaults as
+        Record<string, unknown> | undefined
+      expect(store?.LinearBasicDisplay).toBeUndefined()
+    })
+
     it('clearPreferenceOverrides drops every promoted default at once', () => {
       const session = createTestSession()
       session.setDisplayTypeDefault(
