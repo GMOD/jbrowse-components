@@ -704,6 +704,11 @@ export default function baseStateModelFactory(
          * #getter
          */
         get maxFeatureDensity() {
+          // Declarative force-load disables the density gate outright (and, being
+          // undefined, passes no density limit to the worker gate either).
+          if (readConfObject(self.conf, 'forceLoad')) {
+            return undefined
+          }
           // Skip density gating when the user has already force-loaded via byte estimate
           if (self.userByteSizeLimit !== undefined) {
             return undefined
@@ -952,6 +957,14 @@ export default function baseStateModelFactory(
          */
         get configuredFetchSizeLimit(): number {
           return readConfObject(self.conf, 'fetchSizeLimit')
+        },
+        /**
+         * #getter
+         * Declarative force-load (the `forceLoad` config slot) — feeds the shared
+         * mixin's verdict short-circuit and the worker byte/density gates below.
+         */
+        get configForceLoad(): boolean {
+          return readConfObject(self.conf, 'forceLoad')
         },
         /**
          * #getter
@@ -2189,7 +2202,9 @@ export default function baseStateModelFactory(
         // force-load) raises the budget so a forced fetch isn't re-blocked.
         byteSizeLimit(): number | undefined {
           const view = getView(self)
-          return view.visibleBp < AUTO_FORCE_LOAD_BP
+          // forceLoad → no worker byte gate (undefined = unlimited), matching the
+          // released banner so the forced fetch isn't re-blocked in the RPC.
+          return self.configForceLoad || view.visibleBp < AUTO_FORCE_LOAD_BP
             ? undefined
             : (self.userByteSizeLimit ?? self.configuredFetchSizeLimit)
         },

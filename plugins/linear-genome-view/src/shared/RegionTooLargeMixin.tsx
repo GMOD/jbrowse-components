@@ -100,6 +100,16 @@ export default function RegionTooLargeMixin() {
       get densityTooLargeForDerivedGate(): boolean {
         return false
       },
+      /**
+       * #getter
+       * Declarative force-load: when true the display always renders regardless
+       * of region size / feature density (the config-driven equivalent of the
+       * force-load button). The mixin owns no `configuration`, so a display
+       * overrides this with `getConf(self, 'forceLoad')`.
+       */
+      get configForceLoad(): boolean {
+        return false
+      },
     }))
     .views(self => ({
       /**
@@ -151,8 +161,11 @@ export default function RegionTooLargeMixin() {
               // screen resolution) never gate. None of the currently gated
               // adapters set it (BigMaf explicitly does NOT), but honoring it
               // here keeps the derived gate matching evaluateRegionTooLarge's
-              // contract if one ever does.
-              alwaysRender: self.featureDensityStats?.alwaysRender,
+              // contract if one ever does. `configForceLoad` folds in here too:
+              // the declarative force-load short-circuits the verdict exactly as
+              // a self-summarizing adapter would.
+              alwaysRender:
+                self.featureDensityStats?.alwaysRender || self.configForceLoad,
             })
           : { tooLarge: false, reason: '' }
       },

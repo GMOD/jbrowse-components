@@ -3115,6 +3115,17 @@ export default function stateModelFactory(
         get configuredFetchSizeLimit(): number {
           return getConf(self, 'fetchSizeLimit')
         },
+        /**
+         * #getter
+         * Declarative force-load (the `forceLoad` config slot): releases the
+         * byte gate so the region always renders. Alignments has no worker-side
+         * byte re-gate (the render RPC isn't passed a limit), so the shared
+         * mixin's verdict short-circuit is enough — no fetch-budget override
+         * needed here.
+         */
+        get configForceLoad(): boolean {
+          return getConf(self, 'forceLoad')
+        },
       }))
       .actions(self => ({
         /**
