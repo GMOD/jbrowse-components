@@ -12,10 +12,9 @@ RNA-seq differ. Every screenshot has a live link, built from JBrowse's
 [session-spec URL format](/docs/urlparams#session-spec), so you can open the
 same view yourself.
 
-Analyzing expression in a notebook? The
-[Jupyter differential-expression example](/docs/jbrowse_jupyter) takes a DE
-table straight to a gene track colored by call, and opens in Colab with one
-click.
+The [Jupyter differential-expression example](/docs/jbrowse_jupyter) takes a DE
+table straight to a gene track colored by call, and is available as a Colab
+notebook.
 
 ## What RNA-seq looks like in the genome browser
 

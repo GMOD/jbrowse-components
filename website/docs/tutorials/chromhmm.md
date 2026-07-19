@@ -17,8 +17,8 @@ per-cell-type segmentation BEDs into a single multi-row BED, and how to
 configure the multi-row feature display so the file draws as one color-coded row
 per cell type.
 
-Working in a notebook? Turning a table of colored intervals into a feature track
-is the DataFrame-to-track pattern shown in the
+Turning a table of colored intervals into a feature track is the
+DataFrame-to-track pattern shown in the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [JBrowseR](/docs/jbrowser) in R): build the BED in pandas or an R data frame,
 color each feature by its state, and load it with no file written. The multi-row

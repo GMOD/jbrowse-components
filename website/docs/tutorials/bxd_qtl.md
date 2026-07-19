@@ -24,9 +24,8 @@ This tutorial builds two JBrowse tracks from the same BXD panel, on mm10:
 Stack them in one view and you see the trait peak on top with the B/D blocks
 that drive it directly underneath.
 
-Working in a notebook? The GWAS/Manhattan and multi-row feature tracks shown
-here also render inline through the
-[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+The GWAS/Manhattan and multi-row feature tracks shown here also render inline
+through the [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [JBrowseR](/docs/jbrowser) in R), so you can run the scan and view the peak in
 one Python or R session.
 

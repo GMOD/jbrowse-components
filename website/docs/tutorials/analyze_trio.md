@@ -15,8 +15,7 @@ Kinh-Vietnamese trio HG02024, chr1 only:
 - [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
 - [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
 
-Working in a notebook? The phased multi-sample variant display below renders
-inline through the
+The phased multi-sample variant display below renders inline through the
 [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [JBrowseR](/docs/jbrowser) in R), and the hap-ibd and ancestry paintings are the
 DataFrame-to-track pattern — compute a per-segment call, color a BED by it, no

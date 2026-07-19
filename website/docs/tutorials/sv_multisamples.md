@@ -17,10 +17,9 @@ For SNP-level trio analysis (phased genotypes, IBD blocks, and crossing-over
 visualization) see the companion
 [Phased trio analysis](/docs/tutorials/analyze_trio) tutorial.
 
-Prefer a notebook? The
-[Jupyter multi-sample variants example](/docs/jbrowse_jupyter) shows the same
-per-sample band and genotype-matrix displays from a VCF, and opens in Colab with
-one click.
+The [Jupyter multi-sample variants example](/docs/jbrowse_jupyter) shows the
+same per-sample band and genotype-matrix displays from a VCF, and is available
+as a Colab notebook.
 
 ## Dataset
 

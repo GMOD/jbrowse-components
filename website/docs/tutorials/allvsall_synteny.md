@@ -14,11 +14,10 @@ builds a four-strain _E. coli_ pangenome view from one such file.
 Every figure below links to the live session that produced it. Open the finished
 stacked view from its caption to explore it yourself.
 
-Working in a notebook? This same four-strain view builds in Python or R: a
-`synteny_view` inside `JBrowseApp`
-([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or `JBrowseRApp`
-([JBrowseR](/docs/jbrowser)) stacks the strains from one all-vs-all PAF, using
-the same hosted data as this tutorial.
+This same four-strain view also builds in Python or R: a `synteny_view` inside
+`JBrowseApp` ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or
+`JBrowseRApp` ([JBrowseR](/docs/jbrowser)) stacks the strains from one
+all-vs-all PAF, using the same hosted data as this tutorial.
 
 For cross-species comparisons built from gene-level ortholog tables instead, see
 [Synteny from ortholog tables](/docs/tutorials/multiway_synteny).

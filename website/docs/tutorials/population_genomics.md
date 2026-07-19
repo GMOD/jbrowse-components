@@ -17,10 +17,9 @@ Tajima's D together. Stacking them on a shared genomic axis lets you see where
 the signals line up, which is what points to a selective sweep, an inversion, or
 gene flow.
 
-Working in a notebook? The
-[Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
+The [Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
 compute-then-view loop in Python (a windowed Fst scan loaded straight from a
-DataFrame) and opens in Colab with one click.
+DataFrame) and is available as a Colab notebook.
 
 JBrowse does no population-genetic inference itself — it just draws the windowed
 statistic your tool produced. Everything below is a reproducible pipeline: each

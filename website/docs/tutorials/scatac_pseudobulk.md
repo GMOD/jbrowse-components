@@ -19,9 +19,9 @@ track. It assumes you already have clustered scATAC data (a fragments file or a
 BAM plus a per-barcode cell-type label) from a tool like 10x Cell Ranger ATAC,
 ArchR, Signac, or SnapATAC2.
 
-Working in a notebook? If you pseudobulk with SnapATAC2 (Python) or ArchR (R),
-you can compute these BigWigs and view them inline in the same session through
-the [JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+If you pseudobulk with SnapATAC2 (Python) or ArchR (R), you can compute these
+BigWigs and view them inline in the same session through the
+[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
 [JBrowseR](/docs/jbrowser)).
 
 ## The pseudobulk idea
