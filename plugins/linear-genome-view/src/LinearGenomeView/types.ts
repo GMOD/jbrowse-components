@@ -69,6 +69,10 @@ export type TrackInit =
 // LinearGenomeViewLaunchProps (LaunchView forwards it automatically).
 export interface InitState {
   loc?: string
+  // fractional zoom-out applied around `loc` for context (passed to
+  // navToLocString's `grow`), e.g. 0.2 pads a region by 20% on each side.
+  // Ignored without `loc`.
+  grow?: number
   assembly: string
   // restrict a whole-genome view to these assembly refNames (whole
   // chromosomes), in the order given — e.g. the main chromosomes without the

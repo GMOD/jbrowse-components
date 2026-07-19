@@ -1,7 +1,7 @@
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export function locationLinkClick({
+export async function locationLinkClick({
   assemblyName,
   session,
   locString,
@@ -13,10 +13,19 @@ export function locationLinkClick({
   spreadsheetViewId: string
 }) {
   const newViewId = `${spreadsheetViewId}_${assemblyName}`
-  let view = session.views.find(v => v.id === newViewId) as
-    LinearGenomeViewModel | undefined
-  view ??= session.addView('LinearGenomeView', {
-    id: newViewId,
-  }) as LinearGenomeViewModel
-  return view.navToLocString(locString, assemblyName)
+  const view = session.views.find(v => v.id === newViewId) as
+    | LinearGenomeViewModel
+    | undefined
+  if (view) {
+    // reuse an already-open view by navigating it directly
+    await view.navToLocString(locString, assemblyName)
+  } else {
+    // for a brand-new view launch it declaratively via `init` so it shows a
+    // loading spinner (not a flash of the import form) while the assembly
+    // loads, then self-navigates
+    session.addView('LinearGenomeView', {
+      id: newViewId,
+      init: { assembly: assemblyName, loc: locString },
+    })
+  }
 }

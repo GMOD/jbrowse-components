@@ -57,16 +57,19 @@ export async function navToBookmark(
       ) as MaybeLGV
     }
 
-    // if no view is opened of the selectedAssembly, open a new
-    // view with that assembly
-    if (!view) {
-      const newViewId = `${model.id}_${assembly}`
-      view = session.addView('LinearGenomeView', {
-        id: newViewId,
-      }) as LGV
+    // slightly zoom out (grow 0.2) so the bookmarked region has context on
+    // either side
+    if (view) {
+      await view.navToLocString(locString, assembly, 0.2)
+    } else {
+      // no view open for this assembly: launch a new one declaratively via
+      // `init` so it shows a loading spinner (not a flash of the import form)
+      // while the assembly loads, then self-navigates with the same grow
+      session.addView('LinearGenomeView', {
+        id: `${model.id}_${assembly}`,
+        init: { assembly, loc: locString, grow: 0.2 },
+      })
     }
-    // slightly zoom out so the bookmarked region has context on either side
-    await view.navToLocString(locString, assembly, 0.2)
   } catch (e) {
     console.error(e)
     session.notifyError(`${e}`, e)

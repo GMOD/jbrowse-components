@@ -19,6 +19,7 @@ import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
 // here is a compile error rather than a key that silently warns as "unknown".
 const knownInitKeyMap: Record<keyof InitState, true> = {
   loc: true,
+  grow: true,
   assembly: true,
   displayedRegionNames: true,
   tracks: true,
@@ -104,7 +105,7 @@ async function navigateInit(
       // navToLocString waits for the assembly itself, and this autorun only
       // runs once `initialized` confirms init.assembly has loaded regions, so
       // no explicit waitForAssembly is needed here
-      await self.navToLocString(init.loc, init.assembly)
+      await self.navToLocString(init.loc, init.assembly, init.grow)
     } else if (!self.hasDisplayedRegions) {
       // a highlight-only init (no loc) must not clobber a defaultSession's
       // existing navigation, so only auto-navigate when nothing is shown yet
