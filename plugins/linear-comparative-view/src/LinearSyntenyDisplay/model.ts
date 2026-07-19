@@ -260,6 +260,39 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * Summed genomic length (axis 0) of every loaded alignment block. Zoom-
+       * independent, so it recomputes only when featureData changes;
+       * alignmentCoverageFraction derives the on-screen density from it.
+       */
+      get totalAlignmentBp() {
+        const { featureData } = self
+        if (!featureData) {
+          return 0
+        }
+        const { starts, ends } = featureData
+        let total = 0
+        for (let i = 0; i < starts.length; i++) {
+          total += Math.abs(ends[i]! - starts[i]!)
+        }
+        return total
+      },
+      /**
+       * #getter
+       * How many viewport-widths of ribbon this display paints on axis 0 — the
+       * summed on-screen block width over the view width. A sparse scatter of
+       * sub-pixel slivers stays well under 1; a whole-genome hairball whose
+       * blocks over-cover the screen runs past it. Drives the view's 'auto'
+       * fade-thin decision. 0 until a fetch lands and both views connect.
+       */
+      get alignmentCoverageFraction() {
+        const connected = this.connectedViews
+        const width = connected?.v0.width ?? 0
+        return connected && width > 0
+          ? this.totalAlignmentBp / connected.v0.bpPerPx / width
+          : 0
+      },
+      /**
+       * #getter
        * Which CIGAR indel ops are actually painted in the current geometry.
        * The worker only emits an indel instance for an op wide enough to draw
        * (sub-pixel indels are dropped), so a set bit means a visible-width op

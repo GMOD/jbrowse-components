@@ -67,4 +67,20 @@ describe('LinearSyntenyViewInit type', () => {
     expect(init.views.length).toBe(3)
     expect(init.tracks?.[0]?.length).toBe(2)
   })
+
+  test('init type accepts fadeThinAlignmentsMode', () => {
+    const init: LinearSyntenyViewInit = {
+      views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
+      fadeThinAlignmentsMode: 'auto',
+    }
+    expect(init.fadeThinAlignmentsMode).toBe('auto')
+  })
+
+  test('init type still accepts the legacy fadeThinAlignments boolean', () => {
+    const init: LinearSyntenyViewInit = {
+      views: [{ assembly: 'hg38' }, { assembly: 'mm39' }],
+      fadeThinAlignments: false,
+    }
+    expect(init.fadeThinAlignments).toBe(false)
+  })
 })

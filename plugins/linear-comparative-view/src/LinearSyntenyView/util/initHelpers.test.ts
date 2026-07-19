@@ -26,8 +26,8 @@ function makeModel() {
     setAlpha: (v: number) => {
       calls.alpha = v
     },
-    setFadeThinAlignments: (v: boolean) => {
-      calls.fadeThinAlignments = v
+    setFadeThinAlignmentsMode: (v: string) => {
+      calls.fadeThinAlignmentsMode = v
     },
     levels: [],
   }
@@ -71,6 +71,34 @@ describe('applyInitSettings', () => {
     const model = makeModel()
     applyInitSettings(model as unknown as LinearSyntenyViewModel, { views: [] })
     expect('cigarMode' in model.calls).toBe(false)
+  })
+
+  test('applies fadeThinAlignmentsMode when set', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+      views: [],
+      fadeThinAlignmentsMode: 'off',
+    })
+    expect(model.calls.fadeThinAlignmentsMode).toBe('off')
+  })
+
+  test('maps legacy fadeThinAlignments boolean onto the mode', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+      views: [],
+      fadeThinAlignments: false,
+    })
+    expect(model.calls.fadeThinAlignmentsMode).toBe('off')
+  })
+
+  test('fadeThinAlignmentsMode wins over the legacy boolean', () => {
+    const model = makeModel()
+    applyInitSettings(model as unknown as LinearSyntenyViewModel, {
+      views: [],
+      fadeThinAlignmentsMode: 'auto',
+      fadeThinAlignments: false,
+    })
+    expect(model.calls.fadeThinAlignmentsMode).toBe('auto')
   })
 })
 

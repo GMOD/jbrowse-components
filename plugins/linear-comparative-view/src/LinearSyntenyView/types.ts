@@ -37,10 +37,13 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // unfiltered hairballs; whole-genome views with minAlignmentLength set
   // can use a higher value (~0.4) for stronger color.
   alpha?: number
-  // Fade sub-pixel-thin ribbons by their on-screen width (default true).
-  // Turn off for a genuinely sparse whole-genome comparison (e.g. distant
-  // species) where every real alignment is sub-pixel and the fade would
-  // wash the view out instead of decluttering it.
+  // Fade sub-pixel-thin ribbons by their on-screen width. 'auto' (default)
+  // fades only once the view is dense enough to tangle; a sparse whole-genome
+  // comparison (e.g. distant species, every alignment sub-pixel) stays unfaded
+  // so the fade doesn't wash it out. 'on'/'off' pin it.
+  fadeThinAlignmentsMode?: 'auto' | 'on' | 'off'
+  // Deprecated: legacy boolean form of fadeThinAlignmentsMode (true -> 'on',
+  // false -> 'off'). Prefer fadeThinAlignmentsMode.
   fadeThinAlignments?: boolean
 }
 

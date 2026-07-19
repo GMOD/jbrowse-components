@@ -29,6 +29,13 @@ import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 const DEFAULT_OVERDRAW_PX = 1000
 
+// 'auto' fade-thin turns the fade on once any synteny display's alignment
+// blocks over-cover the viewport by this many screen-widths (see
+// LinearSyntenyDisplay.alignmentCoverageFraction). Below it the view is sparse
+// enough that fading sub-pixel ribbons would erase them rather than declutter,
+// so auto leaves the fade off. Tunable.
+const FADE_AUTO_COVERAGE_THRESHOLD = 1
+
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const DiagonalizationProgressDialog = lazy(
@@ -127,15 +134,19 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         opacityByIdentity: types.stripDefault(types.boolean, false),
         /**
          * #property
-         * Fade a sub-pixel-thin ribbon's opacity by its on-screen width (see
-         * WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered
-         * whole-genome view doesn't read as a hard full-opacity hairball. Off
-         * restores full per-ribbon alpha regardless of width — needed for
-         * genuinely sparse comparisons (e.g. distant-species synteny) where
-         * every real alignment is sub-pixel at whole-genome zoom and the fade
-         * would wash the view out instead of decluttering it.
+         * Whether to fade a sub-pixel-thin ribbon's opacity by its on-screen
+         * width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered
+         * whole-genome view doesn't read as a hard full-opacity hairball.
+         * 'auto' enables the fade only once the view is dense enough to tangle
+         * (see FADE_AUTO_COVERAGE_THRESHOLD); a genuinely sparse comparison
+         * (e.g. distant-species synteny, every real alignment sub-pixel at
+         * whole-genome zoom) keeps full alpha so the fade doesn't wash it out.
+         * 'on'/'off' pin it. Resolved by the `fadeThinAlignments` getter.
          */
-        fadeThinAlignments: types.stripDefault(types.boolean, true),
+        fadeThinAlignmentsMode: types.stripDefault(
+          types.enumeration('FadeThinMode', ['auto', 'on', 'off']),
+          'auto',
+        ),
         /**
          * #property
          * used for initializing the view from a session snapshot. tracks is
@@ -269,6 +280,25 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return self.levels
           .flatMap(l => l.linearSyntenyDisplays)
           .reduce((mask, d) => mask | d.presentCigarKinds, 0)
+      },
+      /**
+       * #getter
+       * Resolved fade-thin flag that renderParams reads. In 'auto' mode the
+       * fade turns on once any loaded synteny display's alignment blocks
+       * over-cover the viewport past FADE_AUTO_COVERAGE_THRESHOLD (a dense
+       * tangle that benefits from decluttering); a sparse view stays unfaded so
+       * its sub-pixel ribbons keep full alpha. 'on'/'off' pin it.
+       */
+      get fadeThinAlignments(): boolean {
+        const { fadeThinAlignmentsMode } = self
+        return fadeThinAlignmentsMode === 'auto'
+          ? self.levels
+              .flatMap(l => l.linearSyntenyDisplays)
+              .some(
+                d =>
+                  d.alignmentCoverageFraction > FADE_AUTO_COVERAGE_THRESHOLD,
+              )
+          : fadeThinAlignmentsMode === 'on'
       },
       /**
        * #getter
@@ -415,8 +445,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setFadeThinAlignments(arg: boolean) {
-        self.fadeThinAlignments = arg
+      setFadeThinAlignmentsMode(arg: 'auto' | 'on' | 'off') {
+        self.fadeThinAlignmentsMode = arg
       },
       /**
        * #action
@@ -850,6 +880,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .preProcessSnapshot<
+      | ({ fadeThinAlignments?: boolean } & Record<string, unknown>)
+      | undefined
+    >(snap => {
+      // Legacy: fadeThinAlignments was a boolean (stripDefault true, so only an
+      // explicit `false` reached the snapshot). Map it onto the tri-state mode
+      // so pre-'auto' sessions that had the fade turned off stay off.
+      const { fadeThinAlignments, ...rest } = snap || {}
+      return fadeThinAlignments === false
+        ? { ...rest, fadeThinAlignmentsMode: 'off' }
+        : rest
+    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

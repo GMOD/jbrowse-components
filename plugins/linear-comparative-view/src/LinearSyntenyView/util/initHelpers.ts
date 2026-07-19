@@ -40,8 +40,10 @@ export function applyInitSettings(
   if (init.alpha !== undefined) {
     self.setAlpha(init.alpha)
   }
-  if (init.fadeThinAlignments !== undefined) {
-    self.setFadeThinAlignments(init.fadeThinAlignments)
+  if (init.fadeThinAlignmentsMode !== undefined) {
+    self.setFadeThinAlignmentsMode(init.fadeThinAlignmentsMode)
+  } else if (init.fadeThinAlignments !== undefined) {
+    self.setFadeThinAlignmentsMode(init.fadeThinAlignments ? 'on' : 'off')
   }
   if (init.levelHeights) {
     for (const [i, h] of init.levelHeights.entries()) {
