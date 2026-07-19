@@ -39,15 +39,15 @@ minimap2 -cx asm5 --eqx reference.fa query.fa > alignment.paf
 ```
 
 The `-x asm5` preset is tuned for whole-genome assembly comparison at up to ~5%
-divergence; step up to `asm10` or `asm20` for more divergent genomes (the
-_H. pylori_ strains this tutorial's demo uses are aligned with `asm20`, since
+divergence; step up to `asm10` or `asm20` for more divergent genomes (the _H.
+pylori_ strains this tutorial's demo uses are aligned with `asm20`, since
 same-species bacterial strains can still diverge well past 5%). `-c` emits the
 base-level CIGAR that the linear synteny view needs to draw alignments at base
-resolution. The `--eqx` flag tells minimap2 to distinguish matches (`=`)
-from mismatches (`X`) in the CIGAR, which lets JBrowse compute per-alignment
-identity and offer the **Color by → Identity** mode described below. If you'd
-rather use [MUMmer](https://github.com/mummer4/mummer), convert its `.delta`
-output to PAF with `delta2paf` from
+resolution. The `--eqx` flag tells minimap2 to distinguish matches (`=`) from
+mismatches (`X`) in the CIGAR, which lets JBrowse compute per-alignment identity
+and offer the **Color by → Identity** mode described below. If you'd rather use
+[MUMmer](https://github.com/mummer4/mummer), convert its `.delta` output to PAF
+with `delta2paf` from
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
 convert UCSC chain files with `chain2paf` from the same toolkit. For small files
 you can even load `.delta` or `.chain` directly into JBrowse without converting.
@@ -163,11 +163,11 @@ color in every panel — and a gene's synteny becomes legible by color alone.
 
 ## Troubleshooting
 
-| Problem                                          | Possible cause                                  | Solution                                                                                                                |
-| ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| The dotplot or synteny view is blank             | Assemblies or track names don't match           | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands                                     |
+| Problem                                          | Possible cause                                  | Solution                                                                                                                                                                    |
+| ------------------------------------------------ | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The dotplot or synteny view is blank             | Assemblies or track names don't match           | Verify assembly names match your `jbrowse add-assembly` and `add-track -a` commands                                                                                         |
 | Lines don't appear, or appear scattered randomly | The PAF was generated with wrong parameters     | Ensure you passed `-c --eqx` and a preset matching your divergence (`asm5` up to ~5%, `asm10`/`asm20` for more divergent genomes, including divergent same-species strains) |
-| Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`                                               |
+| Alignments are reversed or flipped               | The PAF was generated in the opposite direction | Try swapping the order of input genomes: `minimap2 query.fa reference.fa`                                                                                                   |
 
 ## Using PIF for large genomes
 
