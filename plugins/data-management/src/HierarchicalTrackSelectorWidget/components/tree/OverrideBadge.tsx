@@ -70,7 +70,9 @@ const OverrideBadge = observer(function OverrideBadge({
 
   const edited = changes.length > 0
   const affectedByDefault = displayTypeDefaults.length > 0
-  if (!edited && !affectedByDefault) {
+  // Only badge a track that's currently shown: a closed track has no open
+  // display, so its edited/default state isn't visible anywhere to act on.
+  if (displays.length === 0 || (!edited && !affectedByDefault)) {
     return null
   }
   // Prefer the "edited" pencil when a real per-track edit exists; otherwise the
