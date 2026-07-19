@@ -12,7 +12,9 @@ Auto-generated config schema for the current JBrowse release — see the
 
 ### TrixTextSearchAdapter - Pre-processor / simplified config
 
-preprocessor to allow minimal config, assumes file.ixx also exists:
+preprocessor to allow minimal config: `uri` points at the `.ix` file and the
+sibling `.ixx` and `_meta.json` are derived from it (the `jbrowse text-index`
+naming convention):
 
 ```json
 {
@@ -27,6 +29,9 @@ preprocessor to allow minimal config, assumes file.ixx also exists:
 
 Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a required
 top-level field that identifies it (not one of the config slots below).
+
+auto-generated when omitted, so a minimal config need not supply one; an
+explicit `textSearchAdapterId` is still honored
 
 ## Config slots
 
