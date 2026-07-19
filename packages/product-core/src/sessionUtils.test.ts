@@ -352,6 +352,20 @@ test('planWebExport preserves a prior trackConfigDeltas entry alongside an edit'
   })
 })
 
+test('planWebExport dedupes a track carried by both prior session and snapshot', () => {
+  const prior = { trackId: 'user-track', name: 'Old' }
+  const current = { trackId: 'user-track', name: 'New' }
+  const plan = planWebExport({
+    assemblies: [{ name: 'hg38' }],
+    tracks: [current],
+    defaultSession: { name: 'session', views: [], sessionTracks: [prior] },
+  })
+  // self-contained (no base): a shared trackId must ship once, snapshot wins,
+  // or it collides as an MST identifier on load
+  expect(plan.strategy).toBe('selfContained')
+  expect(plan.session.sessionTracks).toEqual([current])
+})
+
 test('planWebExport falls back to self-contained without a source config', () => {
   const t1 = { trackId: 't1', name: 'remote' }
   const plan = planWebExport({

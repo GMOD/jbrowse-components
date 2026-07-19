@@ -315,6 +315,24 @@ function asArray(v: unknown): unknown[] {
   return Array.isArray(v) ? v : []
 }
 
+// Concatenate session-track lists, keeping the last entry per trackId so a track
+// carried by both the prior session and the current snapshot ships once (a
+// duplicate trackId is an MST identifier collision on load). Entries without a
+// readable trackId are kept as-is, in order.
+function concatTracksByTrackId(...lists: unknown[][]): unknown[] {
+  const byId = new Map<string, unknown>()
+  const out: unknown[] = []
+  for (const t of lists.flat()) {
+    const id = readTrackId(t)
+    if (id === undefined) {
+      out.push(t)
+    } else {
+      byId.set(id, t)
+    }
+  }
+  return [...out, ...byId.values()]
+}
+
 // The user tracks (not an assembly's own structural sequence/alias files) that
 // reference a local file: their trackIds, to drop from the export, and display
 // names, to report to the user. Assembly-owned files can't be dropped by
@@ -431,7 +449,10 @@ export function planWebExport(
       strategy: 'hostedConfigBase',
       configUrl: sourceConfigUrl,
       session: withDeltas(
-        { ...defaultSession, sessionTracks: [...priorSessionTracks, ...addedTracks] },
+        {
+          ...defaultSession,
+          sessionTracks: concatTracksByTrackId(priorSessionTracks, addedTracks),
+        },
         editDeltas,
       ),
       report,
@@ -446,7 +467,7 @@ export function planWebExport(
     session: {
       ...defaultSession,
       sessionAssemblies: [...priorSessionAssemblies, ...assemblies],
-      sessionTracks: [...priorSessionTracks, ...tracks],
+      sessionTracks: concatTracksByTrackId(priorSessionTracks, tracks),
     },
     report,
     droppedTracks: dropped.names,
