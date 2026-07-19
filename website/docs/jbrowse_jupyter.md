@@ -81,21 +81,22 @@ Each opens in Colab and runs top-to-bottom.
 | Notebook                                                                                                                                              | What it shows                                                                                     |
 | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | [Quickstart](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/01_quickstart.ipynb)                                  | An assembly, a track by URL, two-way location sync                                                |
-| [DataFrame → track](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/02_dataframe_analysis.ipynb)                   | A pandas DataFrame becomes a track; color by a computed value                                     |
+| [bioframe → track](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/02_dataframe_analysis.ipynb)                    | A bioframe result (real UCSC CpG islands → their shores) becomes a track                          |
 | [GPU alignments](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/03_alignments.ipynb)                              | A BAM/CRAM pileup, colored by pair orientation                                                    |
 | [Multi-sample variants](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/04_multisample_variants.ipynb)             | A multi-sample VCF as a per-sample band and a genotype matrix                                     |
-| [Call CNVs → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/05_cnv_calling.ipynb)                           | Segment binned depth into gain/loss calls (ERBB2 amplification)                                   |
+| [Read depth from a BAM](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/05_bam_coverage.ipynb)                     | Real 1000G NA12878 exome coverage over _BRCA1_, computed with pysam                               |
 | [Selection scan → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/06_popgen_selection.ipynb)                 | Windowed Fst between two _Drosophila_ populations; the sweep lands over _Cyp6g1_ (real DEST data) |
-| [Differential expression → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/07_differential_expression.ipynb) | Counts → log2FC / t-test → a gene track colored by call                                           |
+| [Differential expression → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/07_differential_expression.ipynb) | Counts → log2FC, Welch t-test (scipy) + BH-FDR (statsmodels) → a colored gene track               |
 | [Hosted assembly hub](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/08_hosted_assembly_hub.ipynb)                | `fetch_hub` for easy human data; navigate by gene name                                            |
 | [Interactive controls](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/09_interactive_controls.ipynb)              | An `ipywidgets` slider re-runs the analysis and repaints the track                                |
-| [Region-reactive](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/10_region_reactive.ipynb)                        | Compute a per-base score only over the window in view, adapting to zoom                           |
+| [Region-reactive](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/10_region_reactive.ipynb)                        | Recompute pysam coverage only over the window in view, adapting to zoom                           |
 | [Compare genomes (synteny)](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/11_synteny_ecoli.ipynb)                | Four _E. coli_ strains in a linear synteny view from one all-vs-all PAF                           |
 
 Notebooks 05–07 are the core loop: **run an analysis in Python, load the result
-onto the genome**, with everything computed in the notebook. Notebooks 09–10
-close the loop the other way — a widget control or a pan in the view drives
-Python to **recompute and repaint** live.
+onto the genome** — using the tools scientists already reach for (pysam,
+bioframe, scipy/statsmodels) on real data. Notebooks 09–10 close the loop the
+other way — a widget control or a pan in the view drives Python to **recompute
+and repaint** live.
 
 ## See also
 
