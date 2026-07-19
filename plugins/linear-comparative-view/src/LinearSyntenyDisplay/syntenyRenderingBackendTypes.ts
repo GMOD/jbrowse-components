@@ -11,6 +11,10 @@ export interface SyntenyTrackRenderParams {
   minAlignmentLength: number
   hoveredFeatureId: number
   clickedFeatureId: number
+  /** Instance index of the single tile under the cursor (< 0 = none). Outlines
+   * just that tile on hover, independent of the whole-feature fill highlight
+   * `hoveredFeatureId` drives. */
+  hoveredInstanceId: number
   /** LGV pan offsets (CSS px). Each backend converts to its own viewBp form
    * internally — the GPU path splits `offsetPx * bpPerPx` into hi/lo Float32
    * for hp-math precision; the Canvas2D path uses Float64 directly. */

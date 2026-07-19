@@ -22,6 +22,7 @@ export const UNIFORM_OFFSET_F32 = {
   clickedFeatureId: 11,
   yTop: 12,
   fadeThinAlignments: 13,
+  hoveredInstanceId: 14,
 } as const
 
 
@@ -47,6 +48,7 @@ export interface Uniforms {
   clickedFeatureId: number
   yTop: number
   fadeThinAlignments: number
+  hoveredInstanceId: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -65,6 +67,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.clickedFeatureId
   f32[12] = uniforms.yTop
   f32[13] = uniforms.fadeThinAlignments
+  f32[14] = uniforms.hoveredInstanceId
 }
 
 export const INSTANCE_STRIDE_BYTES = 32

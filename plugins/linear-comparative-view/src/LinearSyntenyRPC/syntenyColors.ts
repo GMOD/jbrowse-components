@@ -18,6 +18,9 @@ import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 // non-CIGAR kinds, with KIND_CIGAR_MATCH as the boundary.
 export const KIND_BASE = 0
 export const KIND_MARKER = 2
+// Boundary constant only — the `isCigar = kind >= KIND_CIGAR_MATCH` threshold.
+// Never emitted as an instance kind: buildSyntenyGeometry paints matches as
+// KIND_BASE (transparent mode) or leaves them to the pass-1 base (colored mode).
 export const KIND_CIGAR_MATCH = 3
 export const KIND_CIGAR_I = 4
 export const KIND_CIGAR_D = 5

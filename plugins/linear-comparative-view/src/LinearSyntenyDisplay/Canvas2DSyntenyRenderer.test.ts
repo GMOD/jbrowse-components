@@ -84,6 +84,7 @@ function makeParams(
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
+    hoveredInstanceId: -1,
     offsetPx0: 0,
     offsetPx1: 0,
     bpPerPx0: 1,
@@ -264,6 +265,42 @@ describe('Canvas2DSyntenyRenderer', () => {
       'lineTo(110.0,100.0)',
     ])
     expect(outline).not.toContain('closePath')
+  })
+
+  test('hover outlines only the tile under the cursor (specific instance)', () => {
+    const { canvas, ctx, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    // Two overlapping tiles; hovering instance 1 brackets only that tile, not
+    // its sibling. (The whole-feature fill highlight is a separate channel —
+    // hoveredFeatureId — not exercised here.)
+    renderer.uploadGeometry(0, makeInstanceData(2))
+    renderer.render(makeState([[0, makeParams({ hoveredInstanceId: 1 })]]))
+
+    // Exactly one instance stroked (index 1); its sibling (index 0) is not.
+    expect(ctx.stroke).toHaveBeenCalledTimes(1)
+    // Same two-side-edge outline the click path draws (GPU edge-pass parity).
+    const outline = pathOps.slice(pathOps.lastIndexOf('fill') + 1)
+    expect(outline).toEqual([
+      'beginPath',
+      'moveTo(10.0,0.0)',
+      'lineTo(20.0,100.0)',
+      'moveTo(100.0,0.0)',
+      'lineTo(110.0,100.0)',
+    ])
+  })
+
+  test('no hover and no click draws no outline stroke', () => {
+    const { canvas, ctx } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams()]])) // hoveredInstanceId: -1
+    expect(ctx.stroke).not.toHaveBeenCalled()
   })
 
   test('sub-pixel BASE ribbon fades its stroke alpha by on-screen width', () => {

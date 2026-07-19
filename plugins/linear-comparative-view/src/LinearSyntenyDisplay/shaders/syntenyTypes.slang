@@ -34,11 +34,11 @@ public struct Instance {
   public float kind              : ATTR7;
 };
 
-// First CIGAR kind. Kinds 0..2 are whole-feature (KIND_BASE/BASE_HIDDEN/MARKER);
-// kinds >= 3 are per-CIGAR tiles (KIND_CIGAR_MATCH/I/D/N/HIDDEN). The shaders
-// only need the BASE-vs-CIGAR split, not the exact kind.
-// SYNC: mirrors KIND_CIGAR_MATCH (=3) in LinearSyntenyRPC/syntenyColors.ts; the
-// whole CIGAR range must stay contiguous and above the non-CIGAR kinds.
+// First CIGAR kind. Emitted kinds are KIND_BASE (0), KIND_MARKER (2), and the
+// per-CIGAR indel tiles KIND_CIGAR_I/D/N (4/5/6); KIND_CIGAR_MATCH (=3) is only
+// this boundary, never an emitted instance. The shaders need just the
+// BASE-vs-CIGAR split (kind >= 3), not the exact kind. SYNC: mirrors
+// KIND_CIGAR_MATCH (=3) in syntenyColors.ts; CIGAR kinds stay contiguous above.
 public static const float KIND_CIGAR_MIN = 3.0;
 
 // Distinguishes indel tiles from whole-feature BASE instances for shading only
@@ -80,6 +80,10 @@ public struct Uniforms {
   public float  clickedFeatureId;
   public float  yTop;
   public float  fadeThinAlignments;
+  // Instance index (SV_InstanceID) of the single tile under the cursor, or < 0
+  // for none. Drives the hover OUTLINE (edge passes) around just that tile —
+  // orthogonal to hoveredFeatureId, which darkens the whole feature's fill.
+  public float  hoveredInstanceId;
 };
 
 public struct Corners {

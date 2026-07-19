@@ -19,15 +19,23 @@ struct VsOut {
 };
 
 [shader("vertex")]
-VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
+VsOut vs_main(Instance inst, uint vid : SV_VertexID, uint iid : SV_InstanceID) {
   VsOut o;
   o.dist = 0.0;
 
-  // Only outline the clicked feature's BASE silhouette — never per-CIGAR-tile
-  // instances (kind >= 3.0, would outline every M/I/D/N tile) nor KIND_MARKER
-  // context ticks (interior lines, not part of the silhouette).
-  bool isClicked = u.clickedFeatureId > 0.0 && abs(inst.featureId - u.clickedFeatureId) < 0.5;
-  if (!isClicked || isCigarKind(inst.kind) || isMarkerKind(inst.kind)) {
+  // Two independent outline sources:
+  //   click — the clicked feature's BASE silhouette (skip its CIGAR tiles so we
+  //           trace the outer outline, not every M/I/D/N tile), and
+  //   hover — the single tile under the cursor (any kind: base OR indel), keyed
+  //           on SV_InstanceID so it isolates one instance, not the whole feature.
+  // KIND_MARKER context ticks are zero-width interior lines, never pickable and
+  // never part of a silhouette — excluded from both.
+  bool clickedSilhouette = u.clickedFeatureId > 0.0
+    && abs(inst.featureId - u.clickedFeatureId) < 0.5
+    && !isCigarKind(inst.kind);
+  bool hoveredTile = u.hoveredInstanceId >= 0.0
+    && abs(float(iid) - u.hoveredInstanceId) < 0.5;
+  if (isMarkerKind(inst.kind) || (!clickedSilhouette && !hoveredTile)) {
     o.position = float4(0.0);
     return o;
   }

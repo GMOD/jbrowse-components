@@ -80,18 +80,22 @@ function resolveInstanceFill(
 function drawInstances(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
+  params: SyntenyTrackRenderParams,
   transform: ComputedTransform,
-  alpha: number,
-  height: number,
-  minAlignmentLength: number,
-  hoveredFeatureId: number,
-  clickedFeatureId: number,
-  drawCurves: boolean,
   leftLimit: number,
   rightLimit: number,
-  yTop: number,
-  fadeThinAlignments: boolean,
 ) {
+  const {
+    yTop,
+    height,
+    alpha,
+    minAlignmentLength,
+    hoveredFeatureId,
+    clickedFeatureId,
+    hoveredInstanceId,
+    drawCurves,
+    fadeThinAlignments,
+  } = params
   for (let i = 0; i < data.instanceCount; i++) {
     if (data.alignmentLengths[i]! < minAlignmentLength) {
       continue
@@ -165,7 +169,10 @@ function drawInstances(
       ctx.fillStyle = rgba(r, g, b, fa)
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
-      if (isClicked && !isCigar) {
+      // Outline the clicked feature's BASE silhouette (skip its CIGAR tiles) OR
+      // the single tile under the cursor (any kind). Mirrors the two conditions
+      // in the GPU edge passes; markers never reach here (non-pickable).
+      if ((isClicked && !isCigar) || i === hoveredInstanceId) {
         ctx.strokeStyle = 'rgba(0,0,0,0.4)'
         ctx.lineWidth = 1
         strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
@@ -185,36 +192,8 @@ export function drawSyntenyTrack(
   logicalW: number,
   overdrawPx: number,
 ) {
-  const {
-    yTop,
-    height,
-    alpha,
-    minAlignmentLength,
-    hoveredFeatureId,
-    clickedFeatureId,
-    drawCurves,
-    fadeThinAlignments,
-  } = params
-
   const transform = computeTransform(params)
-  const leftLimit = -overdrawPx
-  const rightLimit = logicalW + overdrawPx
-
-  drawInstances(
-    ctx,
-    data,
-    transform,
-    alpha,
-    height,
-    minAlignmentLength,
-    hoveredFeatureId,
-    clickedFeatureId,
-    drawCurves,
-    leftLimit,
-    rightLimit,
-    yTop,
-    fadeThinAlignments,
-  )
+  drawInstances(ctx, data, params, transform, -overdrawPx, logicalW + overdrawPx)
 }
 
 export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {

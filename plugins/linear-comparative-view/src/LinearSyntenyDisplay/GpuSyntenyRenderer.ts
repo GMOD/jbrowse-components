@@ -131,10 +131,10 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
       this.ensureUploaded(key, fillPass, data)
       this.writeUniforms(params, state.overdrawPx, data)
       this.hal.drawPass(fillPass, key)
-      if (params.clickedFeatureId > 0) {
-        // Edge pass only outlines the clicked feature's BASE silhouette
-        // (CIGAR tiles are culled in-shader via the `kind >= 3.0` check);
-        // it reads the active fill pass's instance buffer.
+      if (params.clickedFeatureId > 0 || params.hoveredInstanceId >= 0) {
+        // Edge pass outlines the clicked feature's BASE silhouette and/or the
+        // single hovered tile (see the two in-shader conditions); it reads the
+        // active fill pass's instance buffer.
         const edgePass = params.drawCurves
           ? PASS_EDGE_CURVE
           : PASS_EDGE_STRAIGHT
@@ -238,6 +238,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     u[U.clickedFeatureId] = p.clickedFeatureId
     u[U.yTop] = p.yTop
     u[U.fadeThinAlignments] = p.fadeThinAlignments ? 1 : 0
+    u[U.hoveredInstanceId] = p.hoveredInstanceId
     this.hal.writeUniforms(this.uniformData)
   }
 }

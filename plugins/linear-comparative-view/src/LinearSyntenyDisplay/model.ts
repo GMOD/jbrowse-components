@@ -574,6 +574,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           minAlignmentLength: view.minAlignmentLength,
           hoveredFeatureId: toFeatureId(hoveredFeatureIdx),
           clickedFeatureId: toFeatureId(clickedFeatureIdx),
+          // Raw picked instance index (not collapsed to the parent feature id):
+          // the whole feature's fill darkens via hoveredFeatureId, but the
+          // outline keys on this to bracket only the tile under the cursor.
+          hoveredInstanceId: hoveredFeatureIdx,
           offsetPx0: v0.offsetPx,
           offsetPx1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,
