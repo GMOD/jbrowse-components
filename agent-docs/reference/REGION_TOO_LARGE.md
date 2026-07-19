@@ -51,8 +51,9 @@ estimate exists. Tabix adapters report an index-byte estimate alongside a
 adopting it as `userByteSizeLimit` would install a ceiling *below* the
 config/adapter default and wrongly gate later, larger-byte regions. This decision
 is single-sourced in `resolveForceLoadLimits` (`featureDensityUtils.ts`), shared
-by both dual-axis gates (canvas `LinearBasicDisplay` inline + `CanvasFeatureGate
-Mixin`): only adopt the raised byte limit when it exceeds the baseline
+by every canvas dual-axis gate through `CanvasFeatureGateMixin`
+(`LinearBasicDisplay`/`LinearVariantDisplay` and `LinearMultiRowFeatureDisplay`):
+only adopt the raised byte limit when it exceeds the baseline
 `resolveByteLimit` (i.e. the byte gate was really the blocker); otherwise raise
 the density axis. Both `userByteSizeLimit` and `userFeatureDensityLimit` are
 **volatile**, not persisted — a force-load is a transient "show me this now"

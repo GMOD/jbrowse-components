@@ -93,13 +93,8 @@ export interface LinearBasicDisplayModel {
   geneGlyphMode: GeneGlyphMode
   setGeneGlyphMode: (value: GeneGlyphMode) => void
   dismissGeneGlyphNotice: () => void
-  featureDensityStats?: { bytes?: number }
   statusMessage: string | undefined
   setScrollTop: (n: number) => void
-  setFeatureDensityStatsLimit: (s?: {
-    bytes?: number
-    fetchSizeLimit?: number
-  }) => void
   forceLoad: () => void
   reload: () => void
   clearHover: () => void
@@ -529,7 +524,7 @@ const FeatureBody = observer(function FeatureBody({
   // the menu's target), so this needs no guard of its own — unlike
   // handleMouseMove, whose early return also skips the hit test.
   const onLabelMouseOver = useCallback(
-    (item: FlatbushItem, displayedRegionIndex: number, e: React.MouseEvent) => {
+    (item: FlatbushItem, _displayedRegionIndex: number, e: React.MouseEvent) => {
       setClientXY([e.clientX, e.clientY])
       model.setHover(item.featureId, null, item.tooltip)
     },
