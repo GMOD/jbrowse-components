@@ -171,7 +171,10 @@ function withAliasesCytobands(
   }
   if (cytobands) {
     assembly.cytobands = {
-      adapter: { type: 'CytobandAdapter', location: makeLocation(cytobands) },
+      adapter: {
+        type: 'CytobandAdapter',
+        cytobandLocation: makeLocation(cytobands),
+      },
     }
   }
   return assembly

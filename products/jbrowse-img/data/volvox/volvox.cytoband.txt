@@ -1,0 +1,7 @@
+ctgA	0	10000	p11	gneg
+ctgA	10000	20000	p10	gpos25
+ctgA	20000	25000	cen	acen
+ctgA	25000	35000	q10	gpos75
+ctgA	35000	50001	q11	gneg
+ctgB	0	3000	p1	gneg
+ctgB	3000	6079	q1	gpos50

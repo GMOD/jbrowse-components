@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const volvox = path.join(__dirname, '../data/volvox')
 const fasta = path.join(volvox, 'volvox.fa')
 const bam = path.join(volvox, 'volvox-sorted.bam')
+const cytobands = path.join(volvox, 'volvox.cytoband.txt')
 
 const { setupEnv, renderRegion } = await import('../src/index.ts')
 setupEnv()
@@ -49,4 +50,20 @@ test('--showGridlines adds coordinate gridlines', async () => {
   const withGrid = await render({ noRasterize: true, showGridlines: true })
   assert.ok(!/gridline-clip/.test(without), 'no gridlines without the flag')
   assert.match(withGrid, /gridline-clip/, 'gridlines should add a clip group')
+})
+
+// --cytobands shows the "you are here" overview: a cytoband ideogram plus the
+// OverviewScalebarPolygon trapezoid (a makeStyles component). That styled
+// component crashed in the node/jsdom export because emotion had no cache in
+// context — renderToStaticMarkup now provides one. This exercises the whole
+// path: cytobands load (regression for the CytobandAdapter `cytobandLocation`
+// slot), the overview renders, and the trapezoid gets its tertiary fill.
+test('--cytobands renders the overview scalebar polygon', async () => {
+  const svg = await render({ noRasterize: true, cytobands })
+  assert.match(svg, /<polygon/, 'overview trapezoid should render')
+  assert.match(
+    svg,
+    /fill="#42777f"/,
+    'trapezoid is filled with the tertiary palette color',
+  )
 })

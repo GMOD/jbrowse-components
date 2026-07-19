@@ -86,7 +86,7 @@ describe('makeFastaAssembly', () => {
     const a = makeFastaAssembly('g.fa', undefined, 'cyto.bed', 'rs')
     expect(a.cytobands?.adapter).toMatchObject({
       type: 'CytobandAdapter',
-      location: { localPath: 'cyto.bed' },
+      cytobandLocation: { localPath: 'cyto.bed' },
     })
   })
 
@@ -126,7 +126,7 @@ describe('makeChromSizesAssembly', () => {
       location: { localPath: 'al.txt' },
     })
     expect(a.cytobands?.adapter).toMatchObject({
-      location: { localPath: 'cyto.bed' },
+      cytobandLocation: { localPath: 'cyto.bed' },
     })
   })
 })
