@@ -469,36 +469,11 @@ export default function MultiSampleVariantBaseModelF(
           return VARIANT_FEATURE_WIDGET
         },
       }))
-      // Opt into RegionTooLargeMixin's shared derived byte gate: the too-large
-      // banner becomes a pure function of the cached estimate scaled to the
-      // current viewport (self-releases on zoom-in, no flicker on pan). The
-      // mixin's pre-flight (getByteEstimateConfig) still captures the estimate
-      // and short-circuits the download server-side; afterAttach clears the
-      // estimate on chromosome nav. Byte-only — no density axis.
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get derivedRegionTooLargeEnabled() {
-          return true
-        },
-        /**
-         * #getter
-         */
-        get configuredFetchSizeLimit(): number {
-          return getConf(self, 'fetchSizeLimit')
-        },
-        /**
-         * #getter
-         * Declarative force-load: honor the `forceLoad` config slot so a
-         * `{ forceLoad: true }` display config clears the too-large gate, matching
-         * the interactive Force-load button. The mixin owns no `configuration`, so
-         * each opt-in display wires this.
-         */
-        get configForceLoad(): boolean {
-          return getConf(self, 'forceLoad')
-        },
-      }))
+      // The derived, self-releasing too-large banner is opt-in via
+      // MultiRegionDisplayMixin: it's enabled automatically because
+      // getByteEstimateConfig() below returns a config (the pre-flight captures
+      // the estimate and short-circuits the download server-side; afterAttach
+      // clears the estimate on chromosome nav). Byte-only — no density axis.
       .actions(self => {
         // VCF-header field descriptions (INFO/FORMAT) are static per adapter, so
         // fetch once and reuse the promise — every feature-widget open otherwise

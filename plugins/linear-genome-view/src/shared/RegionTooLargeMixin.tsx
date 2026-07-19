@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -10,7 +11,16 @@ import {
 } from './featureDensityUtils.ts'
 
 import type { LinearGenomeViewModel } from '../LinearGenomeView/model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
+
+// The mixin declares no `configuration`, but every display that composes it has
+// one (BaseDisplay via MultiRegionDisplayMixin, or the SVG arc displays
+// directly). Cast once so the config-slot defaults below read it type-safely —
+// the same pattern CanvasFeatureGateMixin uses.
+function host(self: unknown) {
+  return self as { configuration: AnyConfigurationModel }
+}
 
 /**
  * Shared mixin owning "region too large" state and force-load UI.
@@ -74,7 +84,7 @@ export default function RegionTooLargeMixin() {
        */
       byteEstimateVisibleBp: undefined as number | undefined,
     }))
-    .views(() => ({
+    .views(self => ({
       /**
        * #getter
        * Opt-in switch: a byte-gated display flips this true to enable the derived,
@@ -88,13 +98,15 @@ export default function RegionTooLargeMixin() {
       },
       /**
        * #getter
-       * The composing display's configured `fetchSizeLimit`. This mixin owns no
-       * `configuration`, so a derived display overrides this with
-       * `getConf(self, 'fetchSizeLimit')`. Only read when the derived gate is
-       * enabled; the default matches the BaseLinearDisplay slot default.
+       * The composing display's configured `fetchSizeLimit`, read straight from
+       * its config. Only evaluated when the derived gate is enabled (guarded by
+       * `derivedRegionTooLargeEnabled`), and every derived display extends
+       * `baseLinearDisplayConfigSchema`, which owns the slot — so the read is
+       * always valid where it fires. A display with a bespoke source can still
+       * override it.
        */
       get configuredFetchSizeLimit(): number {
-        return 1_000_000
+        return getConf(host(self), 'fetchSizeLimit')
       },
       /**
        * #getter
@@ -109,11 +121,13 @@ export default function RegionTooLargeMixin() {
        * #getter
        * Declarative force-load: when true the display always renders regardless
        * of region size / feature density (the config-driven equivalent of the
-       * force-load button). The mixin owns no `configuration`, so a display
-       * overrides this with `getConf(self, 'forceLoad')`.
+       * force-load button). Read straight from the `forceLoad` config slot on
+       * `baseLinearDisplayConfigSchema` (same guard/ownership as
+       * `configuredFetchSizeLimit`), so every opt-in display honors it without
+       * per-display wiring.
        */
       get configForceLoad(): boolean {
-        return false
+        return getConf(host(self), 'forceLoad')
       },
     }))
     .views(self => ({

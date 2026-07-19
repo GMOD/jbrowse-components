@@ -277,6 +277,26 @@ export default function MultiRegionDisplayMixin() {
        */
       onRegionTooLarge() {},
     }))
+    .views(self => ({
+      /**
+       * #getter
+       * Derived opt-in for the region-too-large gate: a display that declares a
+       * pre-flight byte estimate (`getByteEstimateConfig`) gates on it — the two
+       * are one decision, so they can't desync (this replaces the old dev-time
+       * "config set but gate off" console.error). Displays that capture the
+       * estimate through a custom fetch (LD, arc) or fold the byte check into
+       * their feature RPC (canvas) leave `getByteEstimateConfig` null and flip
+       * this true themselves.
+       *
+       * Guarded on `view.initialized`: `getByteEstimateConfig` reads `visibleBp`
+       * (which throws pre-init), and this getter is read from menu code before
+       * first paint. Pre-init the banner never shows anyway, so `false` is right.
+       */
+      get derivedRegionTooLargeEnabled() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view.initialized && self.getByteEstimateConfig() !== null
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -292,18 +312,6 @@ export default function MultiRegionDisplayMixin() {
         await self.runFetch(async ctx => {
           const byteEstimateConfig = self.getByteEstimateConfig()
           if (byteEstimateConfig) {
-            // A display returning a byte-estimate config MUST enable the derived
-            // gate, or the estimate is captured but `regionTooLarge` stays false
-            // and the download proceeds unblocked (silent). Catch the
-            // misconfiguration in dev.
-            if (
-              process.env.NODE_ENV !== 'production' &&
-              !self.derivedRegionTooLargeEnabled
-            ) {
-              console.error(
-                'getByteEstimateConfig() returned a config but derivedRegionTooLargeEnabled is false — the byte estimate is captured but the too-large gate never trips, so the download proceeds unblocked. Override derivedRegionTooLargeEnabled → true.',
-              )
-            }
             const session = getSession(self)
             const stats = await checkByteEstimate(
               session.rpcManager,

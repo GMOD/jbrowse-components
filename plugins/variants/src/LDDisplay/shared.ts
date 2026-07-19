@@ -139,31 +139,17 @@ export default function sharedModelFactory(
       }))
       // Opt into RegionTooLargeMixin's shared derived byte gate: the too-large
       // banner becomes a pure function of the cached estimate scaled to the
-      // current viewport (self-releases on zoom-in, no flicker on pan).
-      // performLDFetch captures the estimate; afterAttach clears it on chromosome
-      // nav. Byte-only — no density axis.
-      .views(self => ({
+      // current viewport (self-releases on zoom-in, no flicker on pan). Set
+      // explicitly (not derived from getByteEstimateConfig like the
+      // MultiRegionDisplayMixin displays) because LD captures the estimate in its
+      // own performLDFetch; afterAttach clears it on chromosome nav. Byte-only —
+      // no density axis.
+      .views(() => ({
         /**
          * #getter
          */
         get derivedRegionTooLargeEnabled() {
           return true
-        },
-        /**
-         * #getter
-         */
-        get configuredFetchSizeLimit(): number {
-          return getConf(self, 'fetchSizeLimit')
-        },
-        /**
-         * #getter
-         * Declarative force-load: honor the `forceLoad` config slot so a
-         * `{ forceLoad: true }` display config clears the too-large gate, matching
-         * the interactive Force-load button. The mixin owns no `configuration`, so
-         * each opt-in display wires this.
-         */
-        get configForceLoad(): boolean {
-          return getConf(self, 'forceLoad')
         },
       }))
       .views(self => ({

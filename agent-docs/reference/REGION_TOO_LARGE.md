@@ -80,14 +80,26 @@ banner from it (see DISPLAYCHROME.md).
 
 ## The derived gate: opt-in hooks
 
-A byte-gated display opts in by overriding hooks on `RegionTooLargeMixin`:
+A byte-gated display opts in through hooks on `RegionTooLargeMixin`. In practice
+most displays override none of them:
 
-- `derivedRegionTooLargeEnabled` → `true`. Left false (wiggle, Manhattan,
-  sequence, synteny, HiC), `regionTooLarge` is a literal `false` and the LGV-only
-  `tooLargeStatus` getters below are never evaluated — so a non-byte or non-LGV
-  consumer of the mixin never reads `view.visibleBp`.
-- `configuredFetchSizeLimit` → `getConf(self, 'fetchSizeLimit')` (the mixin owns
-  no `configuration`).
+- `derivedRegionTooLargeEnabled` → `true`. `MultiRegionDisplayMixin` derives this
+  from `getByteEstimateConfig() !== null`, so a pre-flight display (alignments,
+  maf, multi-sample-variant) is gated automatically by the same config that
+  declares its estimate — the two can't desync (this replaced a dev-time
+  "config set but gate off" `console.error`). Displays that capture the estimate
+  outside the pre-flight set it explicitly: LD (its own `performLDFetch`), arc
+  (`fetchArcFeatures`, via `ArcFetchModel`), and canvas (folds the byte check into
+  its feature RPC, via `CanvasFeatureGateMixin` / `LinearBasicDisplay`). Left
+  false (wiggle, Manhattan, sequence, synteny, HiC), `regionTooLarge` is a literal
+  `false` and the LGV-only `tooLargeStatus` getters below are never evaluated — so
+  a non-byte or non-LGV consumer of the mixin never reads `view.visibleBp`.
+- `configuredFetchSizeLimit` / `configForceLoad` default to
+  `getConf(self, 'fetchSizeLimit')` / `getConf(self, 'forceLoad')` — the mixin
+  reads its own budget and declarative-force-load off the config (both slots live
+  on `baseLinearDisplayConfigSchema`, which every derived display extends, and
+  they're only read once `derivedRegionTooLargeEnabled` is true). A display with a
+  bespoke source can still override them, but none currently do.
 - `densityTooLargeForDerivedGate` → a second gating axis, if any. Canvas folds
   its feature-density gate in here; byte-only displays (alignments, maf, LD, arc,
   multi-sample-variant) leave it false.

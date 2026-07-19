@@ -3095,38 +3095,12 @@ export default function stateModelFactory(
           return getContextMenuItems(self)
         },
       }))
-      // Opt into RegionTooLargeMixin's shared derived byte gate: the too-large
-      // banner becomes a pure function of the cached estimate scaled to the
-      // current viewport (self-releases on zoom-in, no flicker on pan). The
-      // mixin's pre-flight (getByteEstimateConfig) still captures the estimate
-      // and short-circuits the download server-side; afterAttach clears the
-      // estimate on chromosome nav, and onRegionTooLarge clears the hover.
+      // The derived, self-releasing too-large banner is opt-in via
+      // MultiRegionDisplayMixin: it's enabled automatically because
+      // getByteEstimateConfig() returns a config (the pre-flight captures the
+      // estimate and short-circuits the download server-side; afterAttach clears
+      // the estimate on chromosome nav, and onRegionTooLarge clears the hover).
       // Byte-only — no density axis.
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get derivedRegionTooLargeEnabled() {
-          return true
-        },
-        /**
-         * #getter
-         */
-        get configuredFetchSizeLimit(): number {
-          return getConf(self, 'fetchSizeLimit')
-        },
-        /**
-         * #getter
-         * Declarative force-load (the `forceLoad` config slot): releases the
-         * byte gate so the region always renders. Alignments has no worker-side
-         * byte re-gate (the render RPC isn't passed a limit), so the shared
-         * mixin's verdict short-circuit is enough — no fetch-budget override
-         * needed here.
-         */
-        get configForceLoad(): boolean {
-          return getConf(self, 'forceLoad')
-        },
-      }))
       .actions(self => ({
         /**
          * #action
