@@ -3812,8 +3812,8 @@ packages:
     resolution: {integrity: sha512-uQQSlOiJnqRkTL1wlEBAxe90nVN/Fc/hEmk0bqpKk8nKjV1if/tXLHKUPePtv9Xsx90PtZU8aidx5lAiOpjkQQ==}
     engines: {node: '>= 22.12.0'}
 
-  '@electron/osx-sign@2.5.0':
-    resolution: {integrity: sha512-o4+Yq1WQGO+ewJJ0sL0ofWCo5rEZ1omLX7X8Q22rEotQzhZbwcWuXXBOu4/5xrWzyBALNCPAxDkY3Dfo5536Lg==}
+  '@electron/osx-sign@2.6.0':
+    resolution: {integrity: sha512-XiJHXekSfeQpk11d9uWZ9PtDm4ADIWvcrSTRJocaDgA46t1okxrQ1keL8rthURJX6AP3DDFnzrouiP6Q5qoHYA==}
     engines: {node: '>=22.12.0'}
     hasBin: true
 
@@ -6801,8 +6801,8 @@ packages:
   electron-localshortcut@3.2.1:
     resolution: {integrity: sha512-DWvhKv36GsdXKnaFFhEiK8kZZA+24/yFLgtTwJJHc7AFgDjNRIBJZ/jq62Y/dWv9E4ypYwrVWN2bVrCYw1uv7Q==}
 
-  electron-to-chromium@1.5.392:
-    resolution: {integrity: sha512-1yQq3VQCZRwsnYc67Oc+1fge6Lwtn0hzi6zmEVkB61Zx21kTbwJAW4dFLadl5Rc1tKhG/kSpYXnfiAhu0f0a1g==}
+  electron-to-chromium@1.5.393:
+    resolution: {integrity: sha512-kiDJdIUawuEIcp9XoICKp1iTYDEbgguIPq526N1Q7jIQDeQ3CqoMx71025PI/7E48Ddtw2HuWsVjY7afEgNxmg==}
 
   electron-updater@6.8.9:
     resolution: {integrity: sha512-ZhVxM9iGONUpZGI1FxdMRgJjUFXi7AYGVa5PwKlO1tV1/4zDxQmfKpXOHVztKrd6L9rLcFjERvi1Mf2vxyTkig==}
@@ -11644,7 +11644,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@electron/osx-sign@2.5.0':
+  '@electron/osx-sign@2.6.0':
     dependencies:
       debug: 4.4.3
       isbinaryfile: 4.0.10
@@ -11659,7 +11659,7 @@ snapshots:
       '@electron/asar': 4.2.0
       '@electron/get': 5.0.0
       '@electron/notarize': 3.1.1
-      '@electron/osx-sign': 2.5.0
+      '@electron/osx-sign': 2.6.0
       '@electron/universal': 3.0.6
       '@electron/windows-sign': 2.0.6
       '@malept/cross-spawn-promise': 2.0.0
@@ -14191,7 +14191,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.10.43
       caniuse-lite: 1.0.30001806
-      electron-to-chromium: 1.5.392
+      electron-to-chromium: 1.5.393
       node-releases: 2.0.51
       update-browserslist-db: 1.2.3(browserslist@4.28.6)
 
@@ -14778,7 +14778,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron-to-chromium@1.5.392: {}
+  electron-to-chromium@1.5.393: {}
 
   electron-updater@6.8.9:
     dependencies:
