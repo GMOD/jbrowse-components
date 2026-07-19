@@ -8,6 +8,7 @@ import {
   markdownTable,
   normalizeMarkerWhitespace,
   parsePipeTags,
+  parseSourceFileSyntactic,
   runMarkerScript,
 } from './util.ts'
 
@@ -38,18 +39,6 @@ interface Row {
   value: string
 }
 
-// Syntactic-only parse (no type checker / program) — we only read JSDoc text
-// and string-literal initializers, which keeps this independent of theme.ts's
-// heavy MUI imports.
-function parseFile(file: string) {
-  return ts.createSourceFile(
-    file,
-    fs.readFileSync(file, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-  )
-}
-
 // Every `#color <group> | <label> | <description>` tag in one comment. A color
 // used in more than one context (e.g. the inter-chromosomal mate color appears
 // in both the pair-orientation and insert-size legends) carries one tag per
@@ -73,7 +62,7 @@ function collectColors(file: string, groups: Record<string, Row[]>) {
       })
     }
   }
-  parseFile(file).forEachChild(node => {
+  parseSourceFileSyntactic(file).forEachChild(node => {
     if (ts.isVariableStatement(node)) {
       const stmtDoc = jsDocText(node)
       for (const d of node.declarationList.declarations) {

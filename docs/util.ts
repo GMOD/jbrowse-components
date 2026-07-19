@@ -117,8 +117,8 @@ export function extractWithComment(
       // #config, so helper files with their own .actions() chains or internal
       // ConfigurationSchema calls don't contribute spurious members/gaps.
       const text = sourceFile.getFullText()
-      const isStateModel = hasTag(text, 'stateModel')
-      const isConfig = hasTag(text, 'config')
+      const isStateModel = containsTag(text, 'stateModel')
+      const isConfig = containsTag(text, 'config')
       ts.forEachChild(sourceFile, node => visit(node, isStateModel, isConfig))
     }
   }
@@ -134,7 +134,7 @@ export function extractWithComment(
       collectUntaggedSlots(node, slotGaps)
     }
     const comment = getOwnJSDocText(node)
-    const tags = comment ? TAG_TYPES.filter(t => hasTag(comment, t)) : []
+    const tags = comment ? TAG_TYPES.filter(t => containsTag(comment, t)) : []
     if (tags.length) {
       const { name, signature, declId } = describeSymbol(checker, node)
       const base = {
@@ -294,7 +294,7 @@ function isUndocumentedLocal(
   const symbol = checker.getShorthandAssignmentValueSymbol(node)
   const decl = symbol?.valueDeclaration ?? symbol?.declarations?.[0]
   const doc = decl ? getOwnJSDocText(decl) : ''
-  return !MEMBER_TAGS.some(t => hasTag(doc, t))
+  return !MEMBER_TAGS.some(t => containsTag(doc, t))
 }
 
 function reportBlindSpots(blindSpots: BlindSpot[]) {
@@ -689,13 +689,9 @@ function stringPropValue(obj: ts.ObjectLiteralExpression, key: string) {
 // True when `text` contains the JSDoc tag `#name` as a whole token, i.e. not as
 // a prefix of a longer word — so `#getter` does not match `#getterById`, nor
 // `#category` match `#categoryManagement`. Used both for the whole-comment tag
-// scan (hasTag) and the per-line parse in parseTaggedComment.
+// scan and the per-line parse in parseTaggedComment.
 function containsTag(text: string, name: string) {
   return new RegExp(`#${name}(?![A-Za-z0-9_])`).test(text)
-}
-
-function hasTag(comment: string, tag: TagType) {
-  return containsTag(comment, tag)
 }
 
 function getNameNode(node: ts.Node): ts.Node | undefined {
@@ -943,6 +939,19 @@ export function removeComments(string: string) {
     }
   }
   return out.trim()
+}
+
+// Parse a source file syntactically (no type checker / program), for the
+// marker-block generators (color/jexl) that only read JSDoc text and
+// string-literal initializers — keeping them independent of the file's heavy
+// runtime imports (e.g. theme.ts's MUI).
+export function parseSourceFileSyntactic(file: string) {
+  return ts.createSourceFile(
+    file,
+    fs.readFileSync(file, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+  )
 }
 
 // Transitive closure of a node's documented parents — model composition or

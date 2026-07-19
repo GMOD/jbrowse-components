@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
-import { rewriteMarkerBlock, runMarkerScript } from './util.ts'
+import { markdownTable, rewriteMarkerBlock, runMarkerScript } from './util.ts'
 
 // Render a completeness index of every extension point into the hand-written
 // extension_points guide, sourced from the actual registration/fire sites so the
@@ -77,14 +77,10 @@ function collectExtensionPoints(): ExtensionPoint[] {
 }
 
 function renderTable(points: ExtensionPoint[]) {
-  const body = points
-    .map(p => `| \`${p.id}\` | ${p.kind} | ${p.description} |`)
-    .join('\n')
-  return [
-    '| Extension point | Type | Description |',
-    '| --- | --- | --- |',
-    body,
-  ].join('\n')
+  return markdownTable(
+    ['Extension point', 'Type', 'Description'],
+    points.map(p => `| \`${p.id}\` | ${p.kind} | ${p.description} |`),
+  )
 }
 
 // In `check` mode, report which docs have a stale index instead of rewriting —

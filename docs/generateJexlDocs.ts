@@ -1,10 +1,9 @@
-import fs from 'fs'
-
 import * as ts from 'typescript'
 
 import {
   jsDocText,
   parsePipeTags,
+  parseSourceFileSyntactic,
   rewriteMarkerBlock,
   runMarkerScript,
 } from './util.ts'
@@ -37,17 +36,6 @@ interface Entry {
   result: string
 }
 
-// Syntactic-only parse (no type checker / program) — we only read JSDoc text off
-// the statements wrapping each registration, mirroring generateColorDocs.ts.
-function parseFile(file: string) {
-  return ts.createSourceFile(
-    file,
-    fs.readFileSync(file, 'utf8'),
-    ts.ScriptTarget.Latest,
-    true,
-  )
-}
-
 // Every `#jexlFunction <category> | <example> | <result>` tag in one comment, in
 // source order.
 function parseJexlTags(comment: string | undefined, where: string): Entry[] {
@@ -74,7 +62,7 @@ function collectFunctions(file: string) {
     }
     node.forEachChild(visit)
   }
-  visit(parseFile(file))
+  visit(parseSourceFileSyntactic(file))
   return groups
 }
 

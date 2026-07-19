@@ -16,7 +16,7 @@ This updates website/docs/models, website/docs/config, and website/docs/api
 generators share a single TypeScript program load (the dominant cost — see
 `generate.ts`), so they always run together.
 
-You will have to manually do this
+This is not part of the build — run it manually and commit the result.
 
 It looks for comments named
 
@@ -48,11 +48,12 @@ declaration. The extractor reads JSDoc that's attached to the declaration via
 TypeScript's parser, so make sure there is no blank line between the JSDoc and
 the declaration it documents.
 
-Only one config/statemodel per file can be used currently
-
-It uses the typescript compiler which spiders over many files when processing a
-single file, and it is otherwise hard to keep track of which config/statemodel
-is processed unless we keep it to one config/statemodel at a time.
+Only one `#config`/`#stateModel` per file is supported. The generator runs the
+TypeScript compiler (which spiders across many files to resolve a single one),
+and keying each documented entity by its filename is what keeps track of which
+config/model is being processed — so a second one in the same file would
+silently overwrite the first (`assertSingleHeader` in `util.ts` turns that into
+a hard error instead).
 
 Unlike config/statemodel, **many `#api` exports per file** are allowed. Each
 `#api` tag documents one exported function or const. The text after the tag is
@@ -198,3 +199,33 @@ heading to stay subordinate.
 | `#slot`                           | After the slot's code block (`**Example:**`)    |
 | `#getter` / `#method` / `#action` | After the member's code block (`**Example:**`)  |
 | `#api`                            | After the type signature (`#### Example usage`) |
+
+## Marker-block generators
+
+Three more generators inject tables/catalogs into the **hand-written** guides
+(rather than writing whole pages like config/model/api). Each reads a JSDoc tag
+at the definition site so the docs can't drift from the code, and rewrites only
+the region between a `<!-- MARKER START -->` / `<!-- MARKER END -->` pair — a
+guide opts in by dropping that pair, and editing between the markers is
+pointless since regen overwrites it. All three run inside `pnpm gendocs`, and
+each is also a standalone script with a `--check` mode CI uses to fail when a
+tag changed but the docs weren't regenerated.
+
+| Tag               | Source scanned                      | Marker                   | Renders                                        |
+| ----------------- | ----------------------------------- | ------------------------ | ---------------------------------------------- |
+| `#color`          | `packages/core/src/ui/theme.ts`     | `COLOR_TABLE <group>`    | A color-swatch table per group                 |
+| `#jexlFunction`   | `packages/core/src/util/jexl.ts`    | `JEXL_CATALOG`           | The jexl function catalog, grouped by category |
+| `#extensionPoint` | all `plugins`/`packages`/`products` | `EXTENSION_POINTS_INDEX` | A completeness index of every extension point  |
+
+Tag forms (all pipe-delimited, parsed by `parsePipeTags` in `util.ts`):
+
+```js
+/** #color alignments-indicators | Insertion | Reads carry an insertion */
+/** #jexlFunction String functions | charAt('abc', 2) | c */
+/** #extensionPoint Core-extendSession | sync | Extend the session model */
+```
+
+`#color` supports multiple groups per color (one tag each) so a color documents
+itself in every legend it appears in. `#extensionPoint` is scanned by regex
+across the whole tree (not the TS program), and a point tagged inconsistently in
+two places fails the run.
