@@ -1,5 +1,6 @@
 Quantitative data — coverage, signal, microarray intensities — loads as a
-`QuantitativeTrack` backed by a
+[QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack/)
+backed by a
 [BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter/). The track
 renders through a
 [LinearWiggleDisplay](https://jbrowse.org/jb2/docs/config/linearwiggledisplay/),
