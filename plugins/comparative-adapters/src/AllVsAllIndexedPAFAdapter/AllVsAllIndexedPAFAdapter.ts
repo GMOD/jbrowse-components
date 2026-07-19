@@ -7,6 +7,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { panSNContig, panSNSample } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
+  hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
   parsePifLine,
   resolveCoarseTier,
@@ -68,9 +69,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
   }
 
   private async hasCoarseTier(opts?: BaseOptions) {
-    return (await this.refSeqNames(opts)).some(
-      n => n.startsWith('T') || n.startsWith('Q'),
-    )
+    return hasCoarseTierPrefix(await this.refSeqNames(opts))
   }
 
   async getRefNames(opts: BaseOptions = {}) {

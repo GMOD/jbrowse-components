@@ -158,28 +158,25 @@ describe('splitCigarOnLargeGaps', () => {
       splitGap: 0,
     })
     expect(segs).toHaveLength(1)
+    // = counts as a residue match, X does not; both add to block length
     expect(segs[0]).toMatchObject({
       numMatches: 90,
       blockLen: 100,
     })
-    // 10 mismatches, 0 gap events -> 10 / 100
-    expect(segs[0]!.divergence).toBeCloseTo(0.1, 6)
   })
 
-  test('divergence counts an indel as one gap event, not per base', () => {
+  test('block length includes small indel bases; matches exclude them', () => {
     const segs = call({
       cigar: '50=5D45=',
       qend: 95,
       splitGap: 0,
     })
     expect(segs).toHaveLength(1)
-    // gap-compressed: 95 matches, 0 mismatches, 1 gap event -> 1 / 96.
-    // The per-base proxy 1 - numMatches/blockLen would report 0.05 (5x larger).
-    expect(segs[0]!.divergence).toBeCloseTo(1 / 96, 6)
-  })
-
-  test('divergence is 0 for an all-M gapless CIGAR', () => {
-    expect(call({ cigar: '100M', splitGap: 0 })[0]!.divergence).toBe(0)
+    // 95 residue matches, block length 100 (includes the 5bp deletion)
+    expect(segs[0]).toMatchObject({
+      numMatches: 95,
+      blockLen: 100,
+    })
   })
 
   test('missing cigar returns a single passthrough record', () => {

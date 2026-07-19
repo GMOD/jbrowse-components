@@ -160,6 +160,14 @@ export function parsePifLine(line: string) {
   }
 }
 
+// A file carries the coarse tier only if make-pif emitted at least one
+// uppercase-prefixed (T/Q) seqid. The tier letter is always the first char, so
+// a sample whose PanSN name itself starts with T/Q can't false-positive (its
+// fine seqid is `t`/`q` + name). Shared by the two indexed PIF adapters.
+export function hasCoarseTierPrefix(refSeqNames: string[]) {
+  return refSeqNames.some(n => n.startsWith('T') || n.startsWith('Q'))
+}
+
 // The coarse (uppercase T/Q) tier is a no-CIGAR summary served when zoomed out;
 // the fine (lowercase t/q) tier carries per-row CIGARs. A file only has the
 // coarse tier if make-pif emitted it. In 'auto' mode it is used past the

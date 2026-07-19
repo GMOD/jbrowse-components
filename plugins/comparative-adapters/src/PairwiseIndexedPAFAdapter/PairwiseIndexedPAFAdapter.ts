@@ -6,6 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import {
   getAssemblyNamesFromConf,
+  hasCoarseTierPrefix,
   makeIndexedSyntenyFeature,
   parsePifLine,
   resolveCoarseTier,
@@ -113,9 +114,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
   }
 
   private async hasCoarseTier(opts?: BaseOptions) {
-    return (await this.refSeqNames(opts)).some(
-      n => n.startsWith('T') || n.startsWith('Q'),
-    )
+    return hasCoarseTierPrefix(await this.refSeqNames(opts))
   }
 
   getFeatures(query: Region, opts: BaseOptions = {}) {

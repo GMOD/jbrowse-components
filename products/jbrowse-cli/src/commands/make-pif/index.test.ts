@@ -184,6 +184,45 @@ test('coarse tier keeps the aligner de:f: tag for a plain M CIGAR', async () => 
   })
 })
 
+test('coarse identity matches fine for a cg CIGAR with no de:f: tag', async () => {
+  await runInTmpDir(async ({ dir }) => {
+    const pafPath = path.join(dir, 'nodetag.paf')
+    // A cg:Z:100M CIGAR folds substitutions into M, and there is NO de:f: tag.
+    // The row's own num_matches/block_len columns (90/100) are the only honest
+    // identity signal. A CIGAR recompute would report 0 divergence (100%
+    // identity) — the coarse tier must instead reuse 1 - 90/100 = 0.1 so it
+    // colors identically to the fine tier across the LOD switch.
+    fs.writeFileSync(
+      pafPath,
+      `${[
+        'q1',
+        '100',
+        '0',
+        '100',
+        '+',
+        't1',
+        '100',
+        '0',
+        '100',
+        '90',
+        '100',
+        '60',
+        'cg:Z:100M',
+      ].join('\t')}\n`,
+    )
+    const fn = 'nodetag.pif.gz'
+    await runCommand(['make-pif', pafPath, '--out', fn])
+    const lines = gunzipSync(fs.readFileSync(fn))
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+    const coarseT = lines.find(l => l.startsWith('T'))!
+    const coarseQ = lines.find(l => l.startsWith('Q'))!
+    expect(coarseT).toContain('de:f:0.100000')
+    expect(coarseQ).toContain('de:f:0.100000')
+  })
+})
+
 test('detects a plain-named PAF as pairwise (no PanSN samples)', async () => {
   const { samples } = await createPIF(simplePaf, sink())
   expect(samples.size).toBe(0)

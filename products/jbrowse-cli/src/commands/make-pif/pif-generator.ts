@@ -76,8 +76,6 @@ function processLine(
     return tRow + qRow
   }
 
-  // With no CIGAR the only divergence signal is the PAF's own num_matches /
-  // block_len summary, so the single passthrough segment carries that.
   const numMatches = +rest[0]!
   const blockLen = +rest[1]!
   const segments = cigarStr
@@ -97,19 +95,21 @@ function processLine(
           qend: +e1!,
           numMatches,
           blockLen,
-          divergence: blockLen > 0 ? 1 - numMatches / blockLen : 0,
         },
       ]
   const mapq = rest[2]
-  // The aligner's own de:f: tag (minimap2 gap-compressed divergence) is the most
-  // accurate identity we have, so it wins for every coarse piece of the row when
-  // present — this keeps split and un-split rows coloring identically and avoids
-  // the fine↔coarse jump a per-base recompute would cause. Only when a row
-  // carries no tag do we fall back to the segment's own gap-compressed estimate.
+  // Coarse identity must match the fine tier so coloring is continuous across the
+  // LOD switch. The row's own de:f: tag (minimap2 gap-compressed divergence) wins
+  // for every coarse piece; without one, derive divergence from the PAF's
+  // num_matches/block_len columns — the SAME source pafIdentity uses for the fine
+  // tier. A CIGAR recompute is deliberately NOT used as the fallback: a cg
+  // (M-style) CIGAR folds mismatches into M, so it would report ~0 divergence
+  // (spurious 100% identity) for a divergent alignment, disagreeing with fine.
   const pafDe = rest.find(f => f.startsWith('de:f:'))?.slice(5)
+  const de =
+    pafDe ?? (blockLen > 0 ? ((blockLen - numMatches) / blockLen).toFixed(6) : '0')
   let coarseRows = ''
   for (const seg of segments) {
-    const de = pafDe ?? seg.divergence.toFixed(6)
     coarseRows += `${[
       `T${c2}`,
       l2,

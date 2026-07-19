@@ -31,7 +31,7 @@ export async function run(args?: string[]) {
     coarse: {
       type: 'string',
       description:
-        'Minimum insertion/deletion length (bp) at which a coarse-tier row is split into multiple pieces so each row stays tight — 0 strips CIGAR with no splitting. Defaults to 10000. The no-CIGAR coarse tier (prefix T/Q) is emitted by default so whole-genome synteny views can auto-switch to it; pass --no-coarse to omit it.',
+        'Minimum insertion/deletion length (bp) at which a coarse-tier row is split into multiple pieces so each row stays tight — 0 emits an unsplit coarse tier. Defaults to 10000. The no-CIGAR coarse tier (prefix T/Q) is emitted alongside the per-row CIGAR fine tier by default so whole-genome synteny views can auto-switch to it; pass --no-coarse to omit it.',
     },
     'no-coarse': {
       type: 'boolean',
@@ -57,7 +57,7 @@ export async function run(args?: string[]) {
     '# use a CSI index for assemblies with chromosomes longer than ~512 Mb',
     '$ jbrowse make-pif input.paf --csi',
     '',
-    '# strip CIGAR and emit only the coarse whole-genome tier',
+    '# emit an unsplit coarse tier (alongside the fine tier)',
     '$ jbrowse make-pif input.paf --coarse 0',
     '',
     '# emit only the per-row CIGAR fine tier, skipping the coarse tier',
