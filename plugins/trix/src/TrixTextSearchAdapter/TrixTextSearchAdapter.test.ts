@@ -7,12 +7,13 @@ import configSchema, { normalizeSnapshot } from './configSchema.ts'
 
 describe('normalizeSnapshot uri shorthand', () => {
   it('derives ixx and _meta.json siblings from the .ix uri', () => {
-    expect(normalizeSnapshot({ type: 'TrixTextSearchAdapter', uri: 'x.ix' }))
-      .toMatchObject({
-        ixFilePath: { uri: 'x.ix' },
-        ixxFilePath: { uri: 'x.ixx' },
-        metaFilePath: { uri: 'x_meta.json' },
-      })
+    expect(
+      normalizeSnapshot({ type: 'TrixTextSearchAdapter', uri: 'x.ix' }),
+    ).toMatchObject({
+      ixFilePath: { uri: 'x.ix' },
+      ixxFilePath: { uri: 'x.ixx' },
+      metaFilePath: { uri: 'x_meta.json' },
+    })
   })
 
   it('leaves explicit file paths untouched when no uri given', () => {

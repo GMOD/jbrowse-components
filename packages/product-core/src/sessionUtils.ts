@@ -474,7 +474,9 @@ export function planWebExport(
     // self-contained ships the assemblies, so their local files (and any other
     // non-track local file) block the session from loading on the web
     blockingFiles: distinctNames(
-      report.nonPortable.filter(l => !l.trackId || assemblyTrackIds.has(l.trackId)),
+      report.nonPortable.filter(
+        l => !l.trackId || assemblyTrackIds.has(l.trackId),
+      ),
     ),
   }
 }

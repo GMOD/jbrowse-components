@@ -10,7 +10,13 @@ const assembly = {
     adapter: {
       type: 'FromConfigSequenceAdapter',
       features: [
-        { refName: 'ctgA', uniqueId: 'firstId', start: 0, end: 10, seq: 'cattgttgcg' },
+        {
+          refName: 'ctgA',
+          uniqueId: 'firstId',
+          start: 0,
+          end: 10,
+          seq: 'cattgttgcg',
+        },
       ],
     },
   },
