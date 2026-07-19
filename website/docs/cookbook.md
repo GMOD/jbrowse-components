@@ -123,8 +123,9 @@ index, or an index whose name doesn't follow `file + .bai/.crai/.tbi`:
 }
 ```
 
-A location is a `{ "uri": "..." }` object. `"locationType": "UriLocation"` is
-only needed for local desktop paths. See
+A location is a `{ "uri": "..." }` object. You almost never need the
+`"locationType"` field, which JBrowse infers (local desktop files use
+`{ "localPath": "..." }` instead). See
 [supported file types](/docs/config_guides/file_types) for every format's `uri`
 shorthand.
 
@@ -311,7 +312,7 @@ strand**; the table after it shows just the line to swap for everything else:
 }
 ```
 
-<Figure caption="The volvox genes track with this recipe applied: + strand genes blue, - strand genes red." src="/img/cookbook_color_by_strand.png"/>
+<Figure caption="NCBI RefSeq genes on hg38 with this recipe applied: + strand genes blue, - strand genes red." src="/img/cookbook_color_by_strand.png"/>
 
 ### More ways to set `color`
 
@@ -639,7 +640,7 @@ you need to hide reads by their SAM flags, add a `filterBy`, e.g.
 }
 ```
 
-The
+`multiline` overlays every signal as a line in one plot. The
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
 slot also accepts `multirowxy` (one stacked row per signal), `multirowdensity`,
 and `multixyplot` (all signals overlaid in one plot).
@@ -877,8 +878,8 @@ tracks and settings and only changes the location (and you can drop
 ### Setting a track's color (or height) in the link
 
 Everything above turns tracks _on_. To control how a track _looks_ from the link
-too, the same settings you'd put in `displayDefaults`, list it as an object with
-a `displaySnapshot` instead of a plain `"genes"`:
+too, list it as an object with a `displaySnapshot` (the same settings you'd put
+in `displayDefaults`) instead of a plain `"genes"`:
 
 ```
 &session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-50000","tracks":[{"trackId":"genes","displaySnapshot":{"color":"green"}}]}]}
