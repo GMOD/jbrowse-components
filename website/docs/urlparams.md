@@ -268,6 +268,25 @@ The `views` array accepts multiple views opened simultaneously. Each can specify
 the whole genome. Different view types accept different params: dotplot, for
 example, takes two assemblies.
 
+When `loc` is omitted, `displayedRegionNames` restricts the whole-genome
+overview to a subset of the assembly's chromosomes, in the order given (handy
+for dropping unplaced/alt contigs, or reordering). Names resolve through the
+assembly's aliases, and it is ignored when `loc` is set. This opens volvox
+showing only its two contigs, order reversed:
+
+```json live config=test_data/volvox/config.json
+{
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "displayedRegionNames": ["ctgB", "ctgA"],
+      "tracks": ["gff3tabix_genes"]
+    }
+  ]
+}
+```
+
 A `LinearGenomeView` view object accepts the same fields as the simple params
 above: `nav`, `tracklist`, `highlight`, plus `showCenterLine`, `colorByCDS`, and
 `trackLabels` (`"overlapping"`, `"offset"`, or `"hidden"`).
