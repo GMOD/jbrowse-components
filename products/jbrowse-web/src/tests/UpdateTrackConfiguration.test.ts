@@ -28,6 +28,8 @@ interface TestSession {
   resetTrackConfiguration: (trackId: string) => void
   isTrackOverride: (trackId: string) => boolean
   getTrackActions: (config: AnyConfigurationModel) => { label?: string }[]
+  addTrackConf: (conf: PlainConfig) => AnyConfigurationModel | undefined
+  getTrackById: (id: string) => AnyConfigurationModel | undefined
 }
 
 beforeEach(() => {
@@ -175,6 +177,27 @@ test("an admin's edit clears a shared session's delta for that track", () => {
   expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
   const after = session.tracks.find(t => t.trackId === TRACK_ID)!
   expect(readConfObject(after, 'name')).toBe('AdminName')
+})
+
+// Re-adding a config already in the catalog (jbrowse.tracks) must not push a
+// full shadow into sessionTracks -- that silently demotes a catalog track to a
+// session track and drops its delta-override semantics. addTrackConf dedupes
+// against everything getTrackById resolves, not just sessionTracks.
+test('addTrackConf does not shadow an existing catalog track into sessionTracks', () => {
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
+
+  const returned = session.addTrackConf({ ...base, name: 'Re-added' })
+
+  // nothing pushed into sessionTracks; the catalog stays the source of truth
+  expect(session.sessionTracks.some(t => t.trackId === TRACK_ID)).toBe(false)
+  // returns the already-resolvable config rather than a fresh shadow
+  expect(returned).toBe(session.getTrackById(TRACK_ID))
+  // and the catalog config is unchanged (the re-add's edited name is ignored)
+  expect(readConfObject(session.getTrackById(TRACK_ID)!, 'name')).toBe(
+    base.name,
+  )
 })
 
 test('isTrackOverride distinguishes a delta from a plain config track', () => {

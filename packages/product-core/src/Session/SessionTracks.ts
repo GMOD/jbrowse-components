@@ -330,9 +330,15 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           if (!type) {
             throw new Error(`track type not specified for "${trackId}"`)
           }
-          const track = self.sessionTracks.find(t => t.trackId === trackId)
-          if (track) {
-            return track
+          // Dedupe against everything the session can already resolve — config
+          // catalog (jbrowse.tracks), assembly sequences, connection tracks and
+          // prior sessionTracks — not just sessionTracks. Re-adding a config
+          // already in the catalog would otherwise push a full shadow into
+          // sessionTracks, silently demoting a catalog track to a session track
+          // and dropping its trackConfigDeltas override semantics.
+          const existing = self.getTrackById(trackId)
+          if (existing) {
+            return existing
           }
           // sessionTracks is a typed MST array (unlike the frozen
           // jbrowse.tracks), so an invalid config throws on push. Surface it as
@@ -439,6 +445,12 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         deleteTrackConf(trackConf: AnyConfigurationModel) {
           superDeleteTrackConf(trackConf)
           const { trackId } = trackConf
+          // A delta only outlives its base if the base is gone, so drop it here
+          // rather than strand it. Reachable only programmatically (the UI offers
+          // a non-admin Reset, not Delete, for a delta-bearing base track).
+          if (trackId in self.trackConfigDeltas) {
+            writeDelta(trackId, undefined)
+          }
           const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
           if (idx === -1) {
             return undefined
