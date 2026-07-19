@@ -17,7 +17,6 @@ import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
@@ -769,10 +768,9 @@ export default function stateModelFactory(
         // afterAttachAutoChain.test.ts). An explicit call would double-install
         // its fetch autoruns.
         async afterAttach() {
-          // Drop the cached byte/density estimate on chromosome navigation —
-          // displayedRegion indices get reused, so a stale estimate would gate
-          // the new region against the wrong stats (CanvasFeatureGateMixin).
-          onDisplayedRegionsChange(self, () => { self.clearFeatureGateStats() })
+          // The byte/density gate clears its own stale per-region stats on
+          // chromosome nav (CanvasFeatureGateMixin.afterAttach) — nothing to
+          // wire up here.
 
           // Light autorun (mobx-only, already bundled): install synchronously.
           // The two below genuinely code-split heavy d3/clustering code.

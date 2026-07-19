@@ -69,16 +69,19 @@ Canvas feature displays that fold the byte/density check into their own fetch RP
 `observedMaxDensity`, `densityTooLarge` → `densityTooLargeForDerivedGate`), the
 worker budgets (`byteSizeLimit()`, `maxFeatureDensity`), and the dual-axis
 `setFeatureDensityStatsLimit`. A display opts in by composing it and calling
-`commitFeatureGateStats` from its fetch + `clearFeatureGateStats` on chromosome
-nav (and overriding `isCacheValid` to require committed data — a too-large region
-is marked loaded but stores none — so the region refetches when the gate
-releases). Both canvas feature displays compose it: `LinearBasicDisplay` /
+`commitFeatureGateStats` from its fetch (and overriding `isCacheValid` to require
+committed data — a too-large region is marked loaded but stores none — so the
+region refetches when the gate releases). The stale-stats cleanup on chromosome
+nav is the mixin's own — its `afterAttach` wires `onDisplayedRegionsChange` →
+`clearFeatureGateStats` (auto-chained ahead of the display's `afterAttach`), so a
+composing display can't forget it and mis-gate a reused `displayedRegionIndex`.
+Both canvas feature displays compose it: `LinearBasicDisplay` /
 `LinearVariantDisplay` (via the shared `baseModel`) and
 `LinearMultiRowFeatureDisplay`. `baseModel` keeps only the parts genuinely its
 own — the per-region `RenderFeatureData` fetch/`applyFetchResults`, its
 peptide-aware `isCacheValid`, and `pruneRpcDataMapToVisible` (which trims the
 mixin's `densityStatsPerRegion` alongside `rpcDataMap`) — and calls
-`commitFeatureGateStats` / `clearFeatureGateStats` for everything else. This mixin
+`commitFeatureGateStats` for everything else. This mixin
 is the model-side sibling of `DisplayChrome` (the view-side chrome): the mixin
 decides `regionTooLarge`, `DisplayChrome`'s `computeDisplayPhase` renders the
 banner from it (see DISPLAYCHROME.md).

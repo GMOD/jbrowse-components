@@ -3,6 +3,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
+  onDisplayedRegionsChange,
   resolveByteLimit,
   resolveForceLoadLimits,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -58,11 +59,13 @@ export interface FeatureGateRegionResult {
  * Composes on top of `RegionTooLargeMixin` (via `MultiRegionDisplayMixin`) to add
  * the *density* axis and the worker-facing budgets, so a display that folds the
  * byte/density check into its own fetch RPC (canvas-style, no pre-flight) opts in
- * by composing this mixin and calling `commitFeatureGateStats` from its fetch and
- * `clearFeatureGateStats` on chromosome nav. Every gating decision routes through
- * the shared pure helpers in `featureDensityUtils` (`resolveByteLimit`,
- * `resolveForceLoadLimits`, `evaluateRegionTooLarge` via the base mixin) so this
- * and the inline `LinearBasicDisplay` gate can't drift.
+ * by composing this mixin and calling `commitFeatureGateStats` from its fetch. The
+ * mixin clears its own stale per-region stats on chromosome nav (its `afterAttach`,
+ * so a composing display can't forget the cleanup and silently mis-gate a reused
+ * `displayedRegionIndex`). Every gating decision routes through the shared pure
+ * helpers in `featureDensityUtils` (`resolveByteLimit`, `resolveForceLoadLimits`,
+ * `evaluateRegionTooLarge` via the base mixin) so both canvas feature displays
+ * decide identically.
  *
  * This is the **model-side** counterpart to `DisplayChrome`: the gate's whole job
  * is to feed one signal — `regionTooLarge` (on `RegionTooLargeMixin`) — which
@@ -208,7 +211,8 @@ export default function CanvasFeatureGateMixin() {
        * #action
        * Drop the whole cached estimate on chromosome navigation (displayedRegion
        * indices get reused, so a stale entry would gate the new region against the
-       * wrong stats). Call from the display's `onDisplayedRegionsChange`.
+       * wrong stats). Driven by the mixin's own `afterAttach` below — no composing
+       * display has to wire it up.
        */
       clearFeatureGateStats() {
         self.densityStatsPerRegion.clear()
@@ -269,6 +273,23 @@ export default function CanvasFeatureGateMixin() {
         })
         host(self).userByteSizeLimit = limits.userByteSizeLimit
         self.userFeatureDensityLimit = limits.userFeatureDensityLimit
+      },
+    }))
+    .actions(self => ({
+      // The fork auto-chains afterAttach, so this runs ahead of the composing
+      // display's own afterAttach without either calling super. Owning the
+      // chromosome-nav cleanup here — rather than leaving each display to wire
+      // onDisplayedRegionsChange itself — makes composing the mixin the whole
+      // opt-in: a new canvas feature display can't forget it and silently gate a
+      // reused displayedRegionIndex against a prior chromosome's stats.
+      afterAttach() {
+        onDisplayedRegionsChange(
+          self,
+          () => {
+            self.clearFeatureGateStats()
+          },
+          'CanvasFeatureGateClearOnNav',
+        )
       },
     }))
 }

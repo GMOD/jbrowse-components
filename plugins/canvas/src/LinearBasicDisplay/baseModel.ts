@@ -2241,26 +2241,17 @@ export default function baseStateModelFactory(
               ),
             )
 
-            // Drop density-derived state when displayedRegions change
-            // (chromosome navigation). Both maps are keyed by
-            // displayedRegionIndex which gets reused across chromosomes —
-            // stale entries would otherwise gate the derived regionTooLarge
-            // banner against the wrong region's stats and block refetch.
-            // densityStatsPerRegion + featureDensityStats intentionally
-            // survive viewport-change clearAllRpcData calls so the banner
-            // doesn't flicker; this hook is the one path that does clear
-            // them, scoped to actual region-list mutation.
+            // Reset scroll to the top on an actual region-list change
+            // (chromosome navigation) — not on same-region zoom/pan, which must
+            // keep the user's scroll position (see clearDisplaySpecificData). The
+            // gate's own stale-stats cleanup on nav lives in
+            // CanvasFeatureGateMixin.afterAttach, not here.
             onDisplayedRegionsChange(
               self,
               () => {
-                self.clearFeatureGateStats()
-                // Reset scroll to the top only on an actual region-list change
-                // (chromosome navigation) — not on same-region zoom/pan, which
-                // must keep the user's scroll position (see
-                // clearDisplaySpecificData).
                 self.setScrollTop(0)
               },
-              'CanvasClearDensityOnDisplayedRegions',
+              'CanvasResetScrollOnDisplayedRegions',
             )
 
             // Keep the hit-test indexes observed, which is the only reason MobX
