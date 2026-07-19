@@ -7,12 +7,7 @@ export default function WithAggregateTextSearching() {
   const state = useCreateViewState({
     assembly: {
       name: 'volvox',
-      sequence: {
-        adapter: {
-          type: 'TwoBitAdapter',
-          uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-        },
-      },
+      uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
     },
     aggregateTextSearchAdapters: [
       {

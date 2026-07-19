@@ -8,12 +8,7 @@ export default function WithInitAdvanced() {
     <LinearGenomeView
       assembly={{
         name: 'hg38',
-        sequence: {
-          adapter: {
-            type: 'BgzipFastaAdapter',
-            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-          },
-        },
+        uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
         refNameAliases: {
           adapter: {
             type: 'RefNameAliasAdapter',

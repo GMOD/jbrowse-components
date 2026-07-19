@@ -14,12 +14,7 @@ export default function WithWebWorker() {
     const s = createViewState({
       assembly: {
         name: 'volvox',
-        sequence: {
-          adapter: {
-            type: 'TwoBitAdapter',
-            uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-          },
-        },
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
       },
       tracks: [
         {

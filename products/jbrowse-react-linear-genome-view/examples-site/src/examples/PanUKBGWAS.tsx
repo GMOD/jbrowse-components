@@ -58,12 +58,7 @@ function popOptions(p: Phenotype) {
 const assembly = {
   name: 'hg38',
   aliases: ['GRCh38'],
-  sequence: {
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-    },
-  },
+  uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
   refNameAliases: {
     adapter: {
       type: 'RefNameAliasAdapter',

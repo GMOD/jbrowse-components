@@ -6,12 +6,7 @@ export default function WithMultiSampleVariantDisplay() {
     <LinearGenomeView
       assembly={{
         name: 'volvox',
-        sequence: {
-          adapter: {
-            type: 'TwoBitAdapter',
-            uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-          },
-        },
+        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
       }}
       // A multi-sample VCF (one genotype column per sample) plus a samples TSV
       // that maps each sample to metadata. The TSV's first column is the sample

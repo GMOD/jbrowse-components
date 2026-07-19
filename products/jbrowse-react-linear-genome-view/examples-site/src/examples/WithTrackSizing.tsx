@@ -6,12 +6,7 @@ import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 const assembly = {
   name: 'hg19',
   aliases: ['GRCh37'],
-  sequence: {
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
-    },
-  },
+  uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
   refNameAliases: {
     adapter: {
       type: 'RefNameAliasAdapter',

@@ -11,12 +11,7 @@ const FTO_LOC = 'chr16:53,700,000..53,900,000'
 const assembly = {
   name: 'hg19',
   aliases: ['GRCh37'],
-  sequence: {
-    adapter: {
-      type: 'BgzipFastaAdapter',
-      uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
-    },
-  },
+  uri: 'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
   refNameAliases: {
     adapter: {
       type: 'RefNameAliasAdapter',

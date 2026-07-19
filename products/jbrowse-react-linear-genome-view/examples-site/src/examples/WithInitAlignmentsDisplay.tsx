@@ -22,12 +22,7 @@ export default function WithInitAlignmentsDisplay() {
       assembly={{
         name: 'GRCh38',
         aliases: ['hg38'],
-        sequence: {
-          adapter: {
-            type: 'BgzipFastaAdapter',
-            uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
-          },
-        },
+        uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/fasta/GRCh38.fa.gz',
         refNameAliases: {
           adapter: {
             type: 'RefNameAliasAdapter',
