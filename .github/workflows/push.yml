@@ -330,6 +330,9 @@ jobs:
   # circular-dependency init-order errors that webpack tolerates), then loads
   # every page in headless Chrome. The web-worker examples assert an RPC worker
   # actually spawns — the guard for the TextSearchManager-class of TDZ crashes.
+  # It also dead-link-checks each built site: internal links and anchors via
+  # untitaker/hyperlink, plus the jbrowse.org/jb2/docs reference links via
+  # check-links.
   # See products/jbrowse-react-linear-genome-view/examples-site/MIGRATION.md.
   examples_site_smoke:
     name: Smoke-test ${{ matrix.site }} examples-site
@@ -338,7 +341,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        site: [lgv-examples-site, app-examples-site, cgv-examples-site]
+        include:
+          - site: lgv-examples-site
+            dir: jbrowse-react-linear-genome-view
+            prefix: lgv
+          - site: app-examples-site
+            dir: jbrowse-react-app
+            prefix: app
+          - site: cgv-examples-site
+            dir: jbrowse-react-circular-genome-view
+            prefix: cgv
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -348,6 +360,28 @@ jobs:
         run: pnpm --filter ${{ matrix.site }} typecheck
       - name: Build examples-site
         run: pnpm --filter ${{ matrix.site }} build
+      # Validate the absolute jbrowse.org/jb2/docs/* reference links in the
+      # prose against the local website/docs tree. A renamed or removed
+      # generated doc page fails here.
+      - name: Check doc-reference links resolve
+        run: pnpm --filter ${{ matrix.site }} check-links
+      # Dead-link + anchor check over the built HTML with untitaker/hyperlink
+      # (same tool the website job uses). It crawls a directory as the site root
+      # and only checks internal links, so external URLs stay untested and there
+      # is no network flakiness. The built site's links are prefixed with its
+      # astro `base` (/storybook/<prefix>), so mirror that layout under a crawl
+      # root first, exactly like the website job stages dist into testing/jb2.
+      # dist is copied, not moved, so the smoke step below still finds it.
+      - name: Stage built site under its base path
+        run: |
+          rm -rf link-check
+          mkdir -p link-check/storybook
+          cp -r products/${{ matrix.dir }}/examples-site/dist \
+            link-check/storybook/${{ matrix.prefix }}
+      - name: Check examples-site links
+        uses: untitaker/hyperlink@9375bc4063712ad490d5eb3d54df0b6aade15e54 # 0.3.2
+        with:
+          args: link-check/ --check-anchors
       - name: Smoke-test examples-site
         run: pnpm --filter ${{ matrix.site }} smoke
 
