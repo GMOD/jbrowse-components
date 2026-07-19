@@ -41,7 +41,7 @@ const useStyles = makeStyles()({
   },
 })
 
-function RadioSelector({
+function RadioSelector<T extends string>({
   legend,
   ariaLabel,
   name,
@@ -52,9 +52,9 @@ function RadioSelector({
   legend?: string
   ariaLabel: string
   name: string
-  value: string
-  options: readonly { value: string; label: string }[]
-  onChange: (value: string) => void
+  value: T
+  options: readonly { value: T; label: string }[]
+  onChange: (value: T) => void
 }) {
   return (
     <FormControl component="fieldset">
@@ -65,7 +65,7 @@ function RadioSelector({
         name={name}
         value={value}
         onChange={event => {
-          onChange(event.target.value)
+          onChange(event.target.value as T)
         }}
       >
         {options.map(({ value, label }) => (
@@ -110,8 +110,7 @@ const ImportWizard = observer(function ImportWizard({
             name="source"
             value={selectorType}
             options={selectorTypes}
-            onChange={val => {
-              const next = val as SelectorType
+            onChange={next => {
               setSelectorType(next)
               if (next === 'existing' && selectedAssembly) {
                 importWizard.selectDefaultTrack(selectedAssembly)

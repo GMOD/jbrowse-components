@@ -259,11 +259,16 @@ export default function stateModelFactory() {
         assemblyName: string,
       ): Promise<SpreadsheetSnapshot | undefined> {
         let result: SpreadsheetSnapshot | undefined
-        if (self.fileSource) {
+        const src = self.fileSource
+        // guard on isReadyToOpen, not just src existence: a source like
+        // { uri: undefined } is a truthy object but has no usable location, so
+        // a bare launch lands on the import form instead of feeding an empty
+        // location into openLocation (which throws a spurious error)
+        if (src && self.isReadyToOpen) {
           self.selectedAssemblyName = assemblyName
           const typeParser = await fileTypeParsers[self.fileType]()
           const { pluginManager } = getEnv(self)
-          const filehandle = openLocation(self.fileSource, pluginManager)
+          const filehandle = openLocation(src, pluginManager)
           self.setLoading(true)
           try {
             let stat: { size: number } | undefined
@@ -280,8 +285,8 @@ export default function stateModelFactory() {
                 ).toLocaleString()}kb.`,
               )
             } else {
-              if ('uri' in self.fileSource) {
-                self.setCachedFileHandle(self.fileSource)
+              if ('uri' in src) {
+                self.setCachedFileHandle(src)
               }
               const data = await fetchAndMaybeUnzip(filehandle)
               result = {
