@@ -5,15 +5,21 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
+  return typeof snap.uri === 'string'
     ? {
         ...snap,
+        // `uri` points at the `.ix` file; `.ixx` and `_meta.json` sit beside it
+        // (the `jbrowse text-index` naming convention), so derive all three
         ixFilePath: {
           uri: snap.uri,
           baseUri: snap.baseUri,
         },
         ixxFilePath: {
           uri: `${snap.uri}x`,
+          baseUri: snap.baseUri,
+        },
+        metaFilePath: {
+          uri: `${snap.uri.replace(/\.ix$/, '')}_meta.json`,
           baseUri: snap.baseUri,
         },
       }
@@ -74,14 +80,18 @@ const TrixTextSearchAdapter = ConfigurationSchema(
     explicitlyTyped: true,
     /**
      * #identifier
+     * auto-generated when omitted, so a minimal config need not supply one; an
+     * explicit `textSearchAdapterId` is still honored
      */
-    explicitIdentifier: 'textSearchAdapterId',
+    implicitIdentifier: 'textSearchAdapterId',
 
     /**
      * #preProcessSnapshot
      *
      *
-     * preprocessor to allow minimal config, assumes file.ixx also exists:
+     * preprocessor to allow minimal config: `uri` points at the `.ix` file and
+     * the sibling `.ixx` and `_meta.json` are derived from it (the
+     * `jbrowse text-index` naming convention):
      * ```json
      * {
      *   "type": "TrixTextSearchAdapter",

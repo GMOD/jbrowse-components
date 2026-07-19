@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import {
-  JBrowseLinearGenomeView,
-  useCreateViewState,
-} from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
 // Pan-UKBB per-phenotype flat files (tabix-indexed TSV, GRCh37/hg38-aliased)
 const BASE = 'https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_flat_files'
@@ -92,16 +89,12 @@ const NCBI_REFSEQ_TRACK = {
     uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
     csi: true,
   },
-  displays: [
-    {
-      type: 'LinearBasicDisplay',
-      displayId: 'ncbi_refseq_hg38-LinearBasicDisplay',
-      height: 200,
-      labels: {
-        name: "jexl:get(feature,'gene_id') || get(feature,'name') || get(feature,'id')",
-      },
+  displayDefaults: {
+    height: 200,
+    labels: {
+      name: "jexl:get(feature,'gene_id') || get(feature,'name') || get(feature,'id')",
     },
-  ],
+  },
 }
 
 function makeTrack(p: Phenotype, scoreColumn: string, label: string) {
@@ -114,16 +107,9 @@ function makeTrack(p: Phenotype, scoreColumn: string, label: string) {
       type: 'GWASAdapter',
       // Pan-UKBB neglog10_pval_* columns are already -log10(p), so no transform
       scoreColumn,
-      bedGzLocation: { uri: `${BASE}/${p.id}.tsv.bgz` },
-      index: { location: { uri: `${BASE}/${p.id}.tsv.bgz.tbi` } },
+      uri: `${BASE}/${p.id}.tsv.bgz`,
     },
-    displays: [
-      {
-        type: 'LinearManhattanDisplay',
-        displayId: 'panukb_gwas-LinearManhattanDisplay',
-        height: 250,
-      },
-    ],
+    displayDefaults: { height: 250 },
   }
 }
 
@@ -136,22 +122,16 @@ function GenomeView({
   scoreColumn: string
   label: string
 }) {
-  const state = useCreateViewState({
-    assembly,
-    tracks: [makeTrack(phenotype, scoreColumn, label), NCBI_REFSEQ_TRACK],
-    defaultSession: {
-      name: 'Pan-UKB GWAS',
-      view: {
-        type: 'LinearGenomeView',
-        init: {
-          assembly: 'hg38',
-          loc: FEATURED[phenotype.id] ?? 'chr1',
-          tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
-        },
-      },
-    },
-  })
-  return <JBrowseLinearGenomeView viewState={state} />
+  return (
+    <LinearGenomeView
+      assembly={assembly}
+      tracks={[makeTrack(phenotype, scoreColumn, label), NCBI_REFSEQ_TRACK]}
+      init={{
+        loc: FEATURED[phenotype.id] ?? 'chr1',
+        tracks: ['panukb_gwas', 'ncbi_refseq_hg38'],
+      }}
+    />
+  )
 }
 
 export default function PanUKBGWAS() {

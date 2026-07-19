@@ -17,25 +17,16 @@ export default function WithAggregateTextSearching() {
     aggregateTextSearchAdapters: [
       {
         type: 'TrixTextSearchAdapter',
-        textSearchAdapterId: 'volvox-index',
-        ixFilePath: {
-          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/volvox.ix',
-        },
-        ixxFilePath: {
-          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/volvox.ixx',
-        },
-        metaFilePath: {
-          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/volvox_meta.json',
-        },
+        // point `uri` at the `.ix`; the `.ixx` and `_meta.json` are derived
+        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/volvox.ix',
         assemblyNames: ['volvox'],
       },
     ],
     tracks: [
       {
         type: 'FeatureTrack',
-        // trackId matches the `--fileId` baked into the index, so search hits
-        // (e.g. type "EDEN" in the location box) both navigate and open the
-        // right track
+        // trackId matches the id baked into the index, so a search hit (type
+        // "EDEN" in the location box) both navigates and opens this track
         trackId: 'gff3tabix_genes',
         name: 'Volvox genes',
         assemblyNames: ['volvox'],

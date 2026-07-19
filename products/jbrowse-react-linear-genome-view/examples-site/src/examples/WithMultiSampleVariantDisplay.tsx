@@ -35,18 +35,9 @@ export default function WithMultiSampleVariantDisplay() {
               type: 'LinearMultiSampleVariantDisplay',
               displayId:
                 'volvox_multisample_sv-LinearMultiSampleVariantDisplay',
-              // colorBy names a samples-TSV column. On initial track load the
-              // samples are grouped and colored by this attribute (here,
-              // population).
-              //
-              // colorBy / renderingMode / minorAlleleFrequencyFilter are config
-              // slots (SharedVariantConfigSchema): set them directly here to
-              // change a display's default. Swap `type` to
-              // 'LinearMultiSampleVariantMatrixDisplay' for the matrix view, and
-              // set renderingMode: 'phased' (phased VCFs only) for haplotype
-              // rows. To preset these on a saved session's display *instance*
-              // instead, put them as flat keys on that display's snapshot (e.g.
-              // renderingMode: 'phased' directly in the display object).
+              // colorBy names a samples-TSV column to group/color by. Swap
+              // `type` to 'LinearMultiSampleVariantMatrixDisplay' for the matrix
+              // view, or add renderingMode: 'phased' (phased VCFs) for haplotypes
               colorBy: 'population',
             },
           ],
@@ -54,8 +45,6 @@ export default function WithMultiSampleVariantDisplay() {
       ]}
       init={{
         loc: 'ctgA:1..50,000',
-        // opening by trackId auto-selects displays[0] from the track config
-        // (LinearMultiSampleVariantDisplay), so no displaySnapshot is needed
         tracks: ['volvox_multisample_sv'],
       }}
     />

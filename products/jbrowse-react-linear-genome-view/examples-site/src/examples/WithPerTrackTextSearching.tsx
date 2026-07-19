@@ -27,16 +27,8 @@ export default function WithPerTrackTextSearching() {
         textSearching: {
           textSearchAdapter: {
             type: 'TrixTextSearchAdapter',
-            textSearchAdapterId: 'gff3tabix_genes-index',
-            ixFilePath: {
-              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/gff3tabix_genes.ix',
-            },
-            ixxFilePath: {
-              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/gff3tabix_genes.ixx',
-            },
-            metaFilePath: {
-              uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/gff3tabix_genes_meta.json',
-            },
+            // point `uri` at the `.ix`; the `.ixx` and `_meta.json` are derived
+            uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/storybook_data/gff3tabix_genes.ix',
             assemblyNames: ['volvox'],
           },
         },

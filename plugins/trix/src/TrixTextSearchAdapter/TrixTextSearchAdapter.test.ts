@@ -3,7 +3,23 @@ import path from 'node:path'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
 import Adapter, { shorten } from './TrixTextSearchAdapter.ts'
-import configSchema from './configSchema.ts'
+import configSchema, { normalizeSnapshot } from './configSchema.ts'
+
+describe('normalizeSnapshot uri shorthand', () => {
+  it('derives ixx and _meta.json siblings from the .ix uri', () => {
+    expect(normalizeSnapshot({ type: 'TrixTextSearchAdapter', uri: 'x.ix' }))
+      .toMatchObject({
+        ixFilePath: { uri: 'x.ix' },
+        ixxFilePath: { uri: 'x.ixx' },
+        metaFilePath: { uri: 'x_meta.json' },
+      })
+  })
+
+  it('leaves explicit file paths untouched when no uri given', () => {
+    const snap = { type: 'TrixTextSearchAdapter', ixFilePath: { uri: 'a.ix' } }
+    expect(normalizeSnapshot(snap)).toBe(snap)
+  })
+})
 
 describe('shorten', () => {
   it('returns string as-is when shorter than 40 chars', () => {
