@@ -7,6 +7,10 @@ and Canvas2D fallbacks). Worker output is **absolute genomic uint32** — no
 regionStart-relative arithmetic crosses the worker boundary. See
 `agent-docs/ARCHITECTURE.md`.
 
+**Agent front door: [`agent-docs/README.md`](agent-docs/README.md)** — invariants,
+definition of done, and pointers to the ADRs, reference notes, and guides under
+`agent-docs/`. Start there before non-trivial work on the rendering pipeline.
+
 ## GPU rendering (`plugins/canvas`, `packages/render-core`)
 
 - **Never hand-edit `*.generated.ts` shader files.** Edit `.slang` source and
