@@ -11,6 +11,7 @@ import { entrySlug } from '../../../lib/docs-sidebar.ts'
 // even before it is categorized.
 const CATEGORY_ORDER = [
   'Getting started',
+  'Configuration & embedding',
   'Synteny & comparative genomics',
   'Structural variation',
   'Population genomics',
@@ -24,11 +25,12 @@ const FALLBACK = 'More tutorials'
 const GETTING_STARTED_DOCS = ['quickstart_web', 'quickstart_desktop']
 
 // Curated order within each section. Sorting alphabetically floated niche pages
-// to the top (the CLI config walkthrough led Getting started); instead lead with
-// the most representative / beginner-friendly page. Getting started opens with
-// the two quickstarts; display settings is a more advanced topic and the
-// CLI/Desktop config walkthrough is niche (it needs a Node.js install), so both
-// sink below them. Anything unlisted falls after, alphabetically.
+// to the top (the CLI config walkthrough once led Getting started); instead lead
+// with the most representative / beginner-friendly page. Getting started opens
+// with the two quickstarts, then the more advanced display-settings page; the
+// developer/admin-oriented embedding and CLI-config walkthroughs live in their
+// own Configuration & embedding section. Anything unlisted falls after,
+// alphabetically.
 const ORDER = [
   'quickstart_web',
   'quickstart_desktop',

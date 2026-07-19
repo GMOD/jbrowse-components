@@ -2,7 +2,7 @@
 title: Embedding JBrowse
 description: Embed the linear genome view component in a custom web page
 guide_category: Tutorials
-tutorial_category: Getting started
+tutorial_category: Configuration & embedding
 ---
 
 This tutorial embeds a single JBrowse linear genome view into a web page using a

@@ -3,7 +3,7 @@ title: Building a config with the CLI for Desktop
 description:
   Assemble a config.json with the jbrowse CLI and open it in JBrowse Desktop
 guide_category: Tutorials
-tutorial_category: Getting started
+tutorial_category: Configuration & embedding
 ---
 
 The [`@jbrowse/cli`](/docs/cli) lets you build a JBrowse configuration from the
