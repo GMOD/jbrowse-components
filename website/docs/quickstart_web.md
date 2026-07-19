@@ -1,5 +1,7 @@
 ---
 title: JBrowse web quick start
+description:
+  Set up a self-hosted JBrowse Web instance and add an assembly and tracks
 ---
 
 This guide sets up a self-hosted JBrowse web instance: you'll use the

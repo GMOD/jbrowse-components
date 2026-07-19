@@ -9,35 +9,96 @@ import { entrySlug } from '../../../lib/docs-sidebar.ts'
 // `tutorial_category` frontmatter field; anything missing or unlisted falls
 // into a trailing "More tutorials" bucket, so a new tutorial always appears
 // even before it is categorized.
-const CATEGORY_ORDER = new Set([
+const CATEGORY_ORDER = [
   'Getting started',
   'Synteny & comparative genomics',
   'Structural variation',
   'Population genomics',
   'Epigenomics & single cell',
   'Transcriptomics & proteins',
-])
+]
 const FALLBACK = 'More tutorials'
 
-const tutorials = (await getCollection('docs'))
-  .filter(entry => entry.id.startsWith('tutorials/'))
-  .map(entry => ({
-    href: `${baseUrl}/docs/${entrySlug(entry.id)}/`,
-    title: entry.data.title,
-    category: entry.data.tutorial_category ?? FALLBACK,
-  }))
-  .sort((a, b) => a.title.localeCompare(b.title))
+// The quickstarts live outside tutorials/ but are, in practice, the first
+// tutorials a new user follows, so surface them at the top of Getting started.
+const GETTING_STARTED_DOCS = ['quickstart_web', 'quickstart_desktop']
+
+// Curated order within each section. Sorting alphabetically floated niche pages
+// to the top (the CLI config walkthrough led Getting started); instead lead with
+// the most representative / beginner-friendly page. Getting started opens with
+// the two quickstarts; display settings is a more advanced topic and the
+// CLI/Desktop config walkthrough is niche (it needs a Node.js install), so both
+// sink below them. Anything unlisted falls after, alphabetically.
+const ORDER = [
+  'quickstart_web',
+  'quickstart_desktop',
+  'display_settings',
+  'embed_linear_genome_view',
+  'cli_desktop',
+  'synteny_visualization',
+  'multiway_synteny',
+  'allvsall_synteny',
+  'pangenome',
+  'sv_visualization_cgiab',
+  'sv_multisamples',
+  'readpair_heatmap',
+  'population_genomics',
+  'analyze_trio',
+  'linkage_disequilibrium',
+  'bxd_qtl',
+  'methylation',
+  'bisulfite',
+  'chromhmm',
+  'scatac_pseudobulk',
+  'rnaseq',
+  'protein_structure',
+]
+const rank = (key: string) => {
+  const i = ORDER.indexOf(key)
+  return i === -1 ? ORDER.length : i
+}
+
+// A doc id ("tutorials/rnaseq", "quickstart_web") maps to a thumbnail at
+// static/img/tutorial-thumbs/<key>.webp illustrating what the page produces. A
+// page with no thumbnail (e.g. the text-only CLI walkthrough) renders a compact
+// chromeless card instead.
+const key = (id: string) =>
+  id.startsWith('tutorials/') ? id.slice('tutorials/'.length) : id
+
+const docs = await getCollection('docs')
+const cardFrom = (entry: (typeof docs)[number], category: string) => ({
+  key: key(entry.id),
+  href: `${baseUrl}/docs/${entrySlug(entry.id)}/`,
+  title: entry.data.title,
+  description: entry.data.description,
+  category,
+})
+
+const tutorials = [
+  ...docs
+    .filter(entry => GETTING_STARTED_DOCS.includes(entry.id))
+    .map(entry => cardFrom(entry, 'Getting started')),
+  ...docs
+    .filter(entry => entry.id.startsWith('tutorials/'))
+    .map(entry => cardFrom(entry, entry.data.tutorial_category ?? FALLBACK)),
+].sort((a, b) => rank(a.key) - rank(b.key) || a.title.localeCompare(b.title))
 
 const grouped = [...CATEGORY_ORDER, FALLBACK]
   .map(category => ({
     category,
     items: tutorials.filter(t =>
-      CATEGORY_ORDER.has(t.category)
+      CATEGORY_ORDER.includes(t.category)
         ? t.category === category
         : category === FALLBACK,
     ),
   }))
   .filter(group => group.items.length > 0)
+
+// Pages that have a generated thumbnail (everything but the text-only CLI
+// walkthrough). Keep in sync with static/img/tutorial-thumbs/.
+const HAS_THUMB = new Set(
+  tutorials.map(t => t.key).filter(k => k !== 'cli_desktop'),
+)
 ---
 
 <DocsLayout
@@ -53,13 +114,29 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
     grouped.map(group => (
       <section class="tut-section">
         <h2 class="tut-heading">{group.category}</h2>
-        <ul class="tut-list">
+        <div class="tut-grid">
           {group.items.map(tutorial => (
-            <li>
-              <a href={tutorial.href}>{tutorial.title}</a>
-            </li>
+            <a class="tut-card" href={tutorial.href}>
+              {HAS_THUMB.has(tutorial.key) ? (
+                <img
+                  class="tut-thumb"
+                  src={`${baseUrl}/img/tutorial-thumbs/${tutorial.key}.webp`}
+                  loading="lazy"
+                  decoding="async"
+                  alt={`Screenshot from the ${tutorial.title} tutorial`}
+                />
+              ) : (
+                <span class="tut-thumb tut-thumb-empty">$ jbrowse</span>
+              )}
+              <span class="tut-card-body">
+                <span class="tut-card-title">{tutorial.title}</span>
+                {tutorial.description && (
+                  <span class="tut-card-desc">{tutorial.description}</span>
+                )}
+              </span>
+            </a>
           ))}
-        </ul>
+        </div>
       </section>
     ))
   }
@@ -72,21 +149,69 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
     margin: 0 0 1.5rem;
   }
   .tut-section {
-    margin: 0 0 1.75rem;
+    margin: 0 0 2rem;
   }
   .tut-heading {
     font-size: 1.15rem;
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.75rem;
     padding-bottom: 0.35rem;
     border-bottom: 1px solid var(--color-border);
   }
-  .tut-list {
-    margin: 0;
-    padding-left: 1.25rem;
+  .tut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 1rem;
   }
-  .tut-list li {
-    margin: 0.35rem 0;
-    line-height: 1.5;
+  .tut-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--color-surface);
+    text-decoration: none;
+    color: inherit;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      transform 0.15s ease;
+  }
+  .tut-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+  .tut-thumb {
+    width: 100%;
+    aspect-ratio: 5 / 3;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    border-bottom: 1px solid var(--color-border);
+    background: #fff;
+  }
+  .tut-thumb-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    background: var(--color-blockquote-bg);
+  }
+  .tut-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.7rem 0.8rem 0.85rem;
+  }
+  .tut-card-title {
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .tut-card-desc {
+    font-size: 0.85rem;
+    line-height: 1.4;
     color: var(--color-text-muted);
   }
 </style>
