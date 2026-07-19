@@ -127,4 +127,44 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
+
+  // Projection 4b: per-strain presence from `odgi pav` as a MultiQuantitativeTrack
+  // — one bigWig subtrack per non-K12 strain, whole-chromosome so each strain's
+  // accessory dips read at a glance beside the aggregate depth curve. NOTE: the
+  // ecoli_pggb_pav track (and its per-strain bigWigs) only exist once the demo is
+  // rebuilt (build_ecoli_pangenome_graph.sh) and redeployed to S3 — regenerate
+  // this figure after that redeploy.
+  {
+    mode: 'url',
+    name: 'pangenome/pav',
+    url: sessionSpec(CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'K12',
+          loc: 'chr:1-4,641,652',
+          tracks: [
+            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
+            {
+              trackId: 'ecoli_pggb_pav',
+              type: 'MultiLinearWiggleDisplay',
+              height: 200,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '4,000,000',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 460,
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [
+      // park the cursor over the inert app header so no overview-ruler position
+      // tooltip or feature hover lingers in the capture
+      { type: 'hover', from: { x: 950, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
 ]

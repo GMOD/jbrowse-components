@@ -58,7 +58,7 @@ and `-M` writes the multiple alignment as a MAF:
 ```bash
 docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
   ghcr.io/pangenome/pggb:202603141454453ade6b \
-  pggb -i /data/all.fa.gz -o /data/pggb -n 4 -p 90 -s 5000 -V K12 -M -t 16
+  pggb -i /data/all.fa.gz -o /data/pggb -n 4 -c 3 -p 90 -s 5000 -V K12 -M -t 16
 ```
 
 Pinning the image to a dated build tag (rather than `:latest`) keeps the graph
@@ -66,10 +66,15 @@ reproducible; the same image also carries
 [odgi](https://github.com/pangenome/odgi), which projection 4 uses.
 
 `-n` is the number of haplotypes, `-p` the minimum alignment identity, `-s` the
-segment length — `-p 90 -s 5000` suits a bacterial pangenome. The `-w /data`
-flag is not optional when running the container as your own user (`-u`): it
-gives that user a writable working directory, without which seqwish cannot write
-its temporary files and the run dies mid-graph.
+segment length — `-p 90 -s 5000` suits a bacterial pangenome. `-c 3` is the one
+easy flag to miss: pggb's separate `-c, --n-mappings` defaults to `1`, so `-n 4`
+alone keeps only each segment's single best match (one other genome), which
+builds an under-connected all-vs-all graph that crashes smoothxg during graph
+prep. Set `-c` to the number of haplotypes minus one so every segment maps to
+every other genome. The `-w /data` flag is not optional when running the
+container as your own user (`-u`): it gives that user a writable working
+directory, without which seqwish cannot write its temporary files and the run
+dies mid-graph.
 
 pggb runs [wfmash](https://github.com/waveygang/wfmash) (all-vs-all alignment),
 [seqwish](https://github.com/ekg/seqwish) (induces the graph), and
@@ -263,6 +268,81 @@ stretches the variant and MAF projections zoom into. (Collapsed repeats can push
 a window above the strain count, so read the signal as relative, not an exact
 genome tally.)
 
+### Per-strain presence
+
+The depth track sums every path into one curve.
+[`odgi pav`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_pav.html)
+splits that number per strain: over the same K12 windows it reports, for each
+strain, the fraction of the window that strain's path traverses — 1 where the
+strain is fully present, dropping toward 0 where the window is accessory in that
+strain. Slice each strain's rows out of pav's table into its own bigWig and load
+the set as one
+[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track), a subtrack
+per strain:
+
+```bash
+odgi pav -i "$gfa" -b depth_windows.bed > pav.tsv   # cols: chrom start end name group pav
+for strain in Sakai CFT073 NCTC86; do
+  awk -v OFS='\t' -v g="$strain#1#chr" '$5 == g && $6 + 0 == $6 { print "chr", $2, $3, $6 }' \
+    pav.tsv | sort -k1,1 -k2,2n > "pav_$strain.bedgraph"
+  bedGraphToBigWig "pav_$strain.bedgraph" chrom.sizes "pav_$strain.bw"
+done
+```
+
+```json
+{
+  "type": "MultiQuantitativeTrack",
+  "trackId": "ecoli_pggb_pav",
+  "name": "pggb graph: per-strain presence (odgi pav, vs K12)",
+  "assemblyNames": ["K12"],
+  "adapter": {
+    "type": "MultiWiggleAdapter",
+    "subadapters": [
+      { "type": "BigWigAdapter", "name": "Sakai", "bigWigLocation": { "uri": "ecoli_pggb_pav_Sakai.bw" } },
+      { "type": "BigWigAdapter", "name": "CFT073", "bigWigLocation": { "uri": "ecoli_pggb_pav_CFT073.bw" } },
+      { "type": "BigWigAdapter", "name": "NCTC86", "bigWigLocation": { "uri": "ecoli_pggb_pav_NCTC86.bw" } }
+    ]
+  }
+}
+```
+
+Where the aggregate depth curve dips, this track shows _which_ strain is missing:
+one row falls to 0 over its own accessory stretch while the others hold at 1. It
+is the per-genome read of the same core/accessory signal the depth curve
+summarizes.
+
+## Compared to `odgi viz`
+
+odgi ships its own one-line renderer,
+[`odgi viz`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_viz.html)
+(`odgi viz -i graph.gfa -o graph.png`), and it is worth understanding next to the
+four projections above — because it draws the graph the way the graph is stored,
+which is exactly what makes a pangenome graph hard to read at first.
+
+<Figure caption="The same four-strain graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not (accessory sequence), over a thin band of the graph's links (its topology). The horizontal axis is graph node order — the pangenome sequence — not any genome's coordinates, so nothing here lines up with a gene or a chromosome position. The four JBrowse projections re-plot this same presence/absence and structure on K12's coordinates instead." src="/img/pangenome/graph.png" />
+
+`odgi viz` gives one row per strain, as the MAF and per-strain-presence tracks
+do. But its horizontal axis is not any genome's coordinates: it is the graph's
+node order — the "pangenome sequence", the order odgi lays the nodes out in.
+Sequence every strain walks appears as a filled column across all rows; accessory
+sequence appears as a gap in the rows that skip it. That is the real structure of
+the graph, but you cannot point at a gene on that axis, because no gene — and no
+genome — is numbered in node order, and a locus can even sit in a different
+left-to-right position than it occupies on any chromosome.
+
+The four JBrowse projections keep the one-row-per-strain idea and throw the
+node-order axis away, re-drawing everything on K12's actual coordinates:
+
+- the **depth** track is `odgi viz`'s column coverage, summed into one curve;
+- the **per-strain presence** track is its filled-vs-gap rows, windowed;
+- the **MAF** track is those same rows at single-base resolution, colored by
+  mismatch;
+- the **variant matrix** is the points where the rows branch, one column each.
+
+So `odgi viz` answers "what does the graph look like"; JBrowse answers "what does
+the graph say about this reference, here, beside the genes." The node-order axis
+is what you trade away, and a real reference coordinate is what you get for it.
+
 ## Reproduce it end to end
 
 [`build_ecoli_pangenome_graph.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_ecoli_pangenome_graph.sh)
@@ -274,15 +354,22 @@ npx --yes serve ecoli_pangenome_graph_build/jbrowse2
 ```
 
 It downloads the four RefSeq genomes, runs pggb, converts the wfmash PAF, VCF,
-MAF, and `odgi depth` into the four projections, downloads JBrowse, and writes a
-`config.json` with the four assemblies, per-strain gene tracks, the four
-graph-derived tracks, and a default session (a stacked synteny view plus the K12
-reference lane). It needs `docker` (for the pggb image, which also carries
-odgi), the NCBI
+MAF, `odgi depth`, and `odgi pav` into the projections above, downloads JBrowse,
+and writes a `config.json` with the four assemblies, per-strain gene tracks, the
+five graph-derived tracks (synteny, variants, MAF, depth, per-strain presence),
+and a default session (a stacked synteny view plus the K12 reference lane). It
+also writes the `odgi viz` graph raster (`ecoli_pggb_graph.png`). It needs
+`docker` (for the pggb image, which also carries odgi), the NCBI
 [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
 CLI, `samtools`, [`taffy`](https://github.com/ComparativeGenomicsToolkit/taffy),
 `bedGraphToBigWig` (UCSC kentUtils), `python3`, htslib (`bgzip`, `tabix`),
 `unzip`, and `node`.
+
+The all-vs-all PAF sort and bigWig conversion spill large temp files; the
+default `/tmp` is often a small in-memory tmpfs that they overflow, failing the
+run mid-way. The script routes `TMPDIR` to a `tmp/` directory inside the build
+output (on real disk) so a fresh run works out of the box — export your own
+`TMPDIR` before running to override it.
 
 ## See also
 
