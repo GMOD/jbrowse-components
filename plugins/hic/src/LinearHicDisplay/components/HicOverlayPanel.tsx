@@ -64,9 +64,6 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     justifyContent: 'space-between',
   },
-  normLabel: {
-    color: theme.palette.text.secondary,
-  },
 }))
 
 // A juicebox-style binsize dropdown. The list is pure binsizes (no "Auto"
@@ -115,36 +112,6 @@ const ResolutionRow = observer(function ResolutionRow({
   )
 })
 
-// Normalization was previously a read-only readout that pointed users at the
-// track menu; the model already exposes the list and the setter, so it's the
-// same one-click control as the resolution row.
-const NormalizationRow = observer(function NormalizationRow({
-  model,
-}: {
-  model: LinearHicDisplayModel
-}) {
-  const { classes } = useStyles()
-  const { activeNormalization, availableNormalizations } = model
-  return (
-    <div className={classes.row}>
-      <span className={classes.normLabel}>Norm:</span>
-      <select
-        className={classes.select}
-        value={activeNormalization}
-        onChange={event => {
-          model.setActiveNormalization(event.target.value)
-        }}
-      >
-        {availableNormalizations?.map(norm => (
-          <option key={norm} value={norm}>
-            {norm}
-          </option>
-        ))}
-      </select>
-    </div>
-  )
-})
-
 const HicOverlayPanel = observer(function HicOverlayPanel({
   model,
 }: {
@@ -159,13 +126,11 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     hasLegendData,
     showResolutionControls,
     availableResolutions,
-    availableNormalizations,
   } = model
 
   const showLegendArea = showLegend && hasLegendData
   const showResArea = showResolutionControls && !!availableResolutions?.length
-  const showNormArea = (availableNormalizations?.length ?? 0) > 1
-  if (!showLegendArea && !showResArea && !showNormArea) {
+  if (!showLegendArea && !showResArea) {
     return null
   }
 
@@ -203,7 +168,6 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
             </div>
           </>
         ) : null}
-        {showNormArea ? <NormalizationRow model={model} /> : null}
       </div>
     </TrackOverlayPortal>
   )

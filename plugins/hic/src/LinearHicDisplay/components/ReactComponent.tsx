@@ -137,16 +137,24 @@ const HicCanvas = observer(function HicCanvas({
         overflow: 'hidden',
       }}
       onMouseMove={event => {
-        const rect = event.currentTarget.getBoundingClientRect()
-        const localX = event.clientX - rect.left
-        const localY = event.clientY - rect.top
-        setHover({
-          item: model.hitTest(localX, localY),
-          clientX: event.clientX,
-          clientY: event.clientY,
-          localX,
-          localY,
-        })
+        // The overlay panel (resolution dropdown, legend) is portaled out of
+        // this div, so its React events still bubble here even though its DOM
+        // node isn't a descendant. Suppress the guide/tooltip while over it.
+        const { target } = event
+        if (target instanceof Node && event.currentTarget.contains(target)) {
+          const rect = event.currentTarget.getBoundingClientRect()
+          const localX = event.clientX - rect.left
+          const localY = event.clientY - rect.top
+          setHover({
+            item: model.hitTest(localX, localY),
+            clientX: event.clientX,
+            clientY: event.clientY,
+            localX,
+            localY,
+          })
+        } else {
+          setHover(undefined)
+        }
       }}
       onMouseLeave={() => {
         setHover(undefined)
