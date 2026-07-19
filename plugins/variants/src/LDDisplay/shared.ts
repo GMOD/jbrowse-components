@@ -256,6 +256,17 @@ export default function sharedModelFactory(
             })
           )
         },
+        /**
+         * #getter
+         * Override of the `GlobalDataDisplayMixin` hook that gates the initial
+         * pre-first-paint loading scrim. With the triangle toggled off the
+         * display renders an EmptyState (no canvas, so `canvasDrawn` never
+         * flips); returning false here keeps the scrim from sitting permanently
+         * over it.
+         */
+        get wantsData(): boolean {
+          return getConf(self, 'showLDTriangle')
+        },
         get isPrecomputedLD() {
           return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
             self.adapterConfig?.type,

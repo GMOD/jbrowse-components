@@ -474,6 +474,30 @@ already true but stale data is still on screen (separate getter for tracking
 reasons — see BaseLinearDisplay/CLAUDE.md). `stopRenderingBackend` resets
 `canvasDrawn` so the overlay recovers after WebGL context loss.
 
+`GlobalDataDisplayMixin`'s `loading` term is
+`isLoading || fetchCanceled || (wantsData && !canvasDrawn)`. The last clause is
+the global-display equivalent of MultiRegion's `!isReady`, covering the window
+between component mount and `isLoading` flipping true. On HiC that window is real:
+the fetch can't start until `CoreGetInfo` resolves the file's resolution list
+(that RPC is also what makes the resolution/norm overlay panel appear before
+anything else), so `isLoading` is false with nothing painted for the length of
+that round-trip — without `!canvasDrawn` the track reads as blank there. It does
+NOT fold in a `dataLoaded`/`viewportWithinLoadedData` staleness axis the way
+MultiRegion does — global displays keep the last frame up during a refetch
+(StaleViewportRescaleMixin rescales it), so a pan/zoom shows no scrim beyond the
+existing `isLoading` window. `wantsData` (default true) gates the clause so a
+display that renders nothing on purpose (LD with `showLDTriangle` off →
+EmptyState, no canvas) doesn't sit permanently under the scrim.
+
+`installGlobalFetchAutorun` schedules **leading-edge**: the first fetch fires
+immediately, and only subsequent (zoom/pan/settings) refetches debounce by
+`delay`. MobX's built-in `{ delay }` is trailing-only — it defers even the
+initial run via `setTimeout`, so on cold open the first data (and `isLoading`)
+would wait a full `delay` for no interaction to coalesce, stacking on top of the
+`CoreGetInfo` RTT. A `primed` flag (flipped once a fetch actually runs) drives a
+custom `scheduler` that runs immediately until then; matters for cold-open
+latency and render benchmarks.
+
 All backend-specific plumbing lives in the plugin; all reactivity plumbing lives
 in the mixin.
 

@@ -48,3 +48,38 @@ test('svgReady is true in the terminal error state with no data', () => {
   expect(model.dataLoaded).toBe(false)
   expect(model.svgReady).toBe(true)
 })
+
+test('displayPhase is loading on initial open before the first paint', () => {
+  const model = testModel()
+  // The fetch trigger is a debounced autorun, so isLoading is still false here,
+  // yet nothing has painted (canvasDrawn false). The scrim must show now, not
+  // only once runFetch flips isLoading a debounce interval later.
+  expect(model.isLoading).toBe(false)
+  expect(model.canvasDrawn).toBe(false)
+  expect(model.displayPhase).toBe('loading')
+})
+
+test('displayPhase leaves loading once the first frame paints', () => {
+  const model = testModel()
+  model.markCanvasDrawn()
+  expect(model.displayPhase).toBe('ready')
+})
+
+test('displayPhase is not loading pre-paint when wantsData is false', () => {
+  const model = types
+    .compose(
+      'TestNoDataDisplay',
+      GlobalDataDisplayMixin(),
+      types.model({ type: types.literal('TestNoDataDisplay') }),
+    )
+    .views(() => ({
+      get wantsData() {
+        return false
+      },
+    }))
+    .create({ type: 'TestNoDataDisplay' })
+  // A display that renders nothing on purpose never paints a canvas, so the
+  // pre-paint scrim must not sit permanently over it.
+  expect(model.canvasDrawn).toBe(false)
+  expect(model.displayPhase).toBe('ready')
+})
