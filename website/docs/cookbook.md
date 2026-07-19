@@ -497,8 +497,8 @@ unlike `color`, filter expressions **leave off the `jexl:` prefix**.
 ```
 
 The same `jexlFilters` works on variant and alignments tracks. To hide reads by
-their SAM flags instead, reach for the alignments `filterBy` slot
-([below](#alignments-tracks)).
+their SAM flags instead, reach for the alignments `filterBy` slot (see
+[alignments tracks](/docs/config_guides/alignments_track)).
 
 ### Inline data (no files)
 
@@ -572,9 +572,7 @@ their `HP` tag:
 }
 ```
 
-`groupBy` also takes `{ "type": "strand" }` to split the pileup by strand. If
-you need to hide reads by their SAM flags, add a `filterBy`, e.g.
-`"filterBy": { "flagExclude": 3844 }` to show primary alignments only.
+`groupBy` also takes `{ "type": "strand" }` to split the pileup by strand.
 
 ### Limit how much data is fetched
 
