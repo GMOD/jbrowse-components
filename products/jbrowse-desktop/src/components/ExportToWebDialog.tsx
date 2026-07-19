@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { encodeSessionParam, fetchJson, useFetch } from '@jbrowse/core/util'
+import { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 import {
   DEFAULT_WEB_BASE_URL,
   bakePromotedDefaultsIntoSnapshot,
@@ -52,6 +53,13 @@ async function buildExport(
         return undefined
       })
     : undefined
+  if (baseConfig && sourceConfigUrl) {
+    // Stamp baseUri onto the base's relative-URI locations the same way desktop
+    // did when it first loaded this config (see fetchConfig), so planWebExport's
+    // per-track diff against the base doesn't read every relative-URI location as
+    // an edit.
+    addRelativeUris(baseConfig, new URL(sourceConfigUrl))
+  }
   const plan = planWebExport(snapshot, baseConfig)
   // Flatten the live promotable-default cascade into concrete track values, the
   // same as jbrowse-web's ShareDialog — a self-contained track is baked into its
@@ -107,7 +115,10 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
   shareURL: string
   session: AbstractSessionModel
 }) {
-  const [mode, setMode] = useState<SessionShareMode>('short')
+  // Default to 'long' — a fully local, inline link. 'short' uploads the (open)
+  // session to the remote share store, so make that an explicit choice rather
+  // than something merely opening this dialog does before the user acts.
+  const [mode, setMode] = useState<SessionShareMode>('long')
   const [infoDialogOpen, setInfoDialogOpen] = useState(false)
   const [showReadableJson, setShowReadableJson] = useState(false)
   const {

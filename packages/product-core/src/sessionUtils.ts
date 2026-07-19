@@ -1,3 +1,4 @@
+import { diffTrackConfig, flattenTrackConfigDelta } from '@jbrowse/core/util'
 import {
   getChildType,
   getPropertyMembers,
@@ -224,20 +225,31 @@ export function analyzeWebPortability(snapshot: unknown): WebPortabilityReport {
   return { nonPortable, portable: nonPortable.length === 0 }
 }
 
+// A track config snapshot, loosely typed. planWebExport reads `trackId` and, in
+// the hosted-base strategy, diffs the whole object against its base track.
+export interface TrackSnapshot {
+  trackId: string
+  [key: string]: unknown
+}
+
 // A jbrowse-desktop save snapshot (`{...jbrowse, defaultSession}`), narrowed to
 // the fields planWebExport reads.
 export interface WebExportInput {
   assemblies?: { name: string }[]
-  tracks?: { trackId: string }[]
+  tracks?: TrackSnapshot[]
   configuration?: { sourceConfigUrl?: string }
   defaultSession?: Record<string, unknown>
 }
 
 // The hosted config a session was bootstrapped from, fetched fresh so the delta
-// reflects the live hub (assemblies/tracks it already provides).
+// reflects the live hub (assemblies/tracks it already provides). The caller must
+// run `addRelativeUris` on it first so its track locations carry the same
+// `baseUri` the desktop session stored at load — otherwise a track diff flags
+// every relative-URI location as an edit.
 export interface HostedBaseConfig {
   assemblies?: { name: string }[]
-  tracks?: { trackId: string }[]
+  tracks?: TrackSnapshot[]
+  [key: string]: unknown
 }
 
 export interface WebExportPlan {
@@ -291,18 +303,89 @@ function distinctNames(locations: NonPortableLocation[]): string[] {
 
 // Reads a `trackId` off a loosely-typed session-track snapshot, or undefined.
 function readTrackId(track: unknown): string | undefined {
-  const id =
-    typeof track === 'object' && track !== null
-      ? (track as Record<string, unknown>).trackId
-      : undefined
+  const id = isRecord(track) ? track.trackId : undefined
   return typeof id === 'string' ? id : undefined
+}
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
+
+function asArray(v: unknown): unknown[] {
+  return Array.isArray(v) ? v : []
+}
+
+// The user tracks (not an assembly's own structural sequence/alias files) that
+// reference a local file: their trackIds, to drop from the export, and display
+// names, to report to the user. Assembly-owned files can't be dropped by
+// removing a track, so they're excluded here and surface as blockingFiles.
+function nonPortableUserTracks(
+  report: WebPortabilityReport,
+  assemblyTrackIds: Set<string>,
+) {
+  const locs = report.nonPortable.flatMap(l =>
+    l.trackId && !assemblyTrackIds.has(l.trackId)
+      ? [{ trackId: l.trackId, name: l.trackName ?? l.trackId }]
+      : [],
+  )
+  return {
+    ids: new Set(locs.map(l => l.trackId)),
+    names: [...new Set(locs.map(l => l.name))],
+  }
+}
+
+// Splits the portable tracks against the hosted base. A track with no base entry
+// is user-added and ships whole in `addedTracks` (→ sessionTracks). A track that
+// matches a base entry but was edited on desktop (desktop edits jbrowse.tracks in
+// place, keeping the base trackId) becomes an `editDeltas` entry — the same
+// channel the web session uses — so the recipient's base is overlaid with the
+// sender's edits. An unedited base track produces neither and resolves from the
+// base.
+function splitTracksAgainstBase(
+  tracks: TrackSnapshot[],
+  baseTracks: TrackSnapshot[],
+) {
+  const baseById = new Map(baseTracks.map(t => [t.trackId, t]))
+  const addedTracks = tracks.filter(t => !baseById.has(t.trackId))
+  const editDeltas = Object.fromEntries(
+    tracks.flatMap((track): [string, Record<string, unknown>][] => {
+      const base = baseById.get(track.trackId)
+      if (!base) {
+        return []
+      }
+      const delta = diffTrackConfig(base, track)
+      // gate on real slot changes, not the identity keys / injected display
+      // stubs a raw diff carries (matches the web session's "is edited" test)
+      return flattenTrackConfigDelta(base, delta).length > 0
+        ? [[track.trackId, delta]]
+        : []
+    }),
+  )
+  return { addedTracks, editDeltas }
+}
+
+// Overlays edited-track deltas onto the session's trackConfigDeltas, preserving
+// any the base session already carried. A no-op (returns the session unchanged)
+// when there are no edits, so the exported snapshot stays minimal.
+function withDeltas(
+  session: Record<string, unknown>,
+  editDeltas: Record<string, unknown>,
+): Record<string, unknown> {
+  if (Object.keys(editDeltas).length === 0) {
+    return session
+  }
+  const prior = isRecord(session.trackConfigDeltas)
+    ? session.trackConfigDeltas
+    : {}
+  return { ...session, trackConfigDeltas: { ...prior, ...editDeltas } }
 }
 
 // Decides how to hand a desktop session to jbrowse-web. When the session was
 // launched from a hosted hub config (sourceConfigUrl) that still covers all of
-// its assemblies, that config is reused as the base and only user-added tracks
-// ride along; otherwise the session is made self-contained. `baseConfig` is the
-// fetched hub config, used to tell hub tracks from user-added ones.
+// its assemblies, that config is reused as the base and only user-added/edited
+// tracks ride along; otherwise the session is made self-contained. `baseConfig`
+// is the fetched hub config (already rebased with addRelativeUris by the caller),
+// used to tell hub tracks from user-added ones and to diff edited hub tracks.
 export function planWebExport(
   snapshot: WebExportInput,
   baseConfig?: HostedBaseConfig,
@@ -311,49 +394,25 @@ export function planWebExport(
   const sourceConfigUrl = snapshot.configuration?.sourceConfigUrl
   const assemblies = snapshot.assemblies ?? []
   const defaultSession = snapshot.defaultSession ?? {}
-  const priorSessionAssemblies = Array.isArray(defaultSession.sessionAssemblies)
-    ? (defaultSession.sessionAssemblies as unknown[])
-    : []
+  const priorSessionAssemblies = asArray(defaultSession.sessionAssemblies)
 
   // An assembly's sequence config owns a trackId (`<name>-ReferenceSequenceTrack`),
   // so a local sequence/alias file shows up in the report tagged with that
   // trackId even though it's structural, not a droppable track. Collect the
-  // trackIds owned by shipped assemblies so those files are classified as
-  // blocking (they break the whole session) rather than as dropped tracks.
+  // trackIds owned by shipped assemblies so those files count as blocking (they
+  // break the whole session) rather than as dropped tracks.
   const assemblyTrackIds = collectTrackIds([
     ...assemblies,
     ...priorSessionAssemblies,
   ])
 
-  // trackIds of real user tracks that reference a local file: these can never
-  // load on the web, so they're dropped from the exported session rather than
-  // shipped broken. Assembly-owned trackIds are excluded — dropping them isn't
-  // possible; they surface as blockingFiles instead.
-  const nonPortableTrackIds = new Set(
-    report.nonPortable.flatMap(l =>
-      l.trackId && !assemblyTrackIds.has(l.trackId) ? [l.trackId] : [],
-    ),
-  )
-  const droppedTracks = [
-    ...new Set(
-      report.nonPortable.flatMap(l =>
-        l.trackId && !assemblyTrackIds.has(l.trackId)
-          ? [l.trackName ?? l.trackId]
-          : [],
-      ),
-    ),
-  ]
-  const tracks = (snapshot.tracks ?? []).filter(
-    t => !nonPortableTrackIds.has(t.trackId),
-  )
-  const priorSessionTracks = (
-    Array.isArray(defaultSession.sessionTracks)
-      ? (defaultSession.sessionTracks as unknown[])
-      : []
-  ).filter(t => {
+  const dropped = nonPortableUserTracks(report, assemblyTrackIds)
+  const keep = (t: unknown) => {
     const id = readTrackId(t)
-    return !id || !nonPortableTrackIds.has(id)
-  })
+    return !id || !dropped.ids.has(id)
+  }
+  const tracks = (snapshot.tracks ?? []).filter(keep)
+  const priorSessionTracks = asArray(defaultSession.sessionTracks).filter(keep)
 
   const baseAssemblyNames = new Set(
     (baseConfig?.assemblies ?? []).map(a => a.name),
@@ -364,32 +423,24 @@ export function planWebExport(
     assemblies.every(a => baseAssemblyNames.has(a.name))
 
   if (coveredByBase) {
-    // assemblies come from the hosted config, so their local files aren't
-    // shipped and can't block; only stray non-track local files remain
-    const blockingFiles = distinctNames(
-      report.nonPortable.filter(l => !l.trackId),
+    const { addedTracks, editDeltas } = splitTracksAgainstBase(
+      tracks,
+      baseConfig.tracks ?? [],
     )
-    const baseTrackIds = new Set((baseConfig.tracks ?? []).map(t => t.trackId))
-    const addedTracks = tracks.filter(t => !baseTrackIds.has(t.trackId))
     return {
       strategy: 'hostedConfigBase',
       configUrl: sourceConfigUrl,
-      session: {
-        ...defaultSession,
-        sessionTracks: [...priorSessionTracks, ...addedTracks],
-      },
+      session: withDeltas(
+        { ...defaultSession, sessionTracks: [...priorSessionTracks, ...addedTracks] },
+        editDeltas,
+      ),
       report,
-      droppedTracks,
-      blockingFiles,
+      droppedTracks: dropped.names,
+      // assemblies come from the hosted config, so their local files aren't
+      // shipped and can't block; only stray non-track local files remain
+      blockingFiles: distinctNames(report.nonPortable.filter(l => !l.trackId)),
     }
   }
-  // self-contained ships the assemblies, so their local files (and any other
-  // non-track local file) block the session from loading on the web
-  const blockingFiles = distinctNames(
-    report.nonPortable.filter(
-      l => !l.trackId || assemblyTrackIds.has(l.trackId),
-    ),
-  )
   return {
     strategy: 'selfContained',
     session: {
@@ -398,8 +449,12 @@ export function planWebExport(
       sessionTracks: [...priorSessionTracks, ...tracks],
     },
     report,
-    droppedTracks,
-    blockingFiles,
+    droppedTracks: dropped.names,
+    // self-contained ships the assemblies, so their local files (and any other
+    // non-track local file) block the session from loading on the web
+    blockingFiles: distinctNames(
+      report.nonPortable.filter(l => !l.trackId || assemblyTrackIds.has(l.trackId)),
+    ),
   }
 }
 

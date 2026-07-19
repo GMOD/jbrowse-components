@@ -302,6 +302,54 @@ test('planWebExport reuses the hosted base, carrying only user-added tracks', ()
   expect(plan.configUrl).toBe('https://jbrowse.org/ucsc/hg38/config.json')
   expect(plan.session.sessionTracks).toEqual([userTrack])
   expect(plan.session).not.toHaveProperty('sessionAssemblies')
+  // an unedited hub track ships nothing — no delta, resolves from the base
+  expect(plan.session).not.toHaveProperty('trackConfigDeltas')
+})
+
+test('planWebExport ships an edited hub track as a trackConfigDeltas entry', () => {
+  const base = { trackId: 'hub-track', name: 'Hub track', color: 'red' }
+  const edited = { trackId: 'hub-track', name: 'Hub track', color: 'blue' }
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [edited],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: { name: 'session', views: [] },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [base] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  // the edit rides along as a minimal delta, not a full sessionTracks shadow
+  expect(plan.session.sessionTracks).toEqual([])
+  expect(plan.session.trackConfigDeltas).toEqual({
+    'hub-track': { trackId: 'hub-track', color: 'blue' },
+  })
+})
+
+test('planWebExport preserves a prior trackConfigDeltas entry alongside an edit', () => {
+  const base = { trackId: 'hub-track', name: 'Hub track', color: 'red' }
+  const edited = { trackId: 'hub-track', name: 'Hub track', color: 'blue' }
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [edited],
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
+      defaultSession: {
+        name: 'session',
+        views: [],
+        trackConfigDeltas: { other: { trackId: 'other', height: 200 } },
+      },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [base] },
+  )
+  expect(plan.session.trackConfigDeltas).toEqual({
+    other: { trackId: 'other', height: 200 },
+    'hub-track': { trackId: 'hub-track', color: 'blue' },
+  })
 })
 
 test('planWebExport falls back to self-contained without a source config', () => {
@@ -359,7 +407,7 @@ test('planWebExport carries the portability report through', () => {
             localPath: '/data/a.bam',
           },
         },
-      } as { trackId: string },
+      },
     ],
     defaultSession: { name: 'session' },
   })
@@ -467,7 +515,7 @@ test('planWebExport keeps a remote assembly and drops only the local user track'
             localPath: '/data/a.bam',
           },
         },
-      } as { trackId: string },
+      },
     ],
     defaultSession: { name: 'session' },
   })
