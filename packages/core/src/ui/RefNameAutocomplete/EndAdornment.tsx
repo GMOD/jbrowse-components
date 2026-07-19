@@ -1,5 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 
+import Help from '@mui/icons-material/Help'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import SearchIcon from '@mui/icons-material/Search'
 import { InputAdornment } from '@mui/material'
@@ -25,9 +26,9 @@ export default function EndAdornment({
     ...menuItems,
     ...(showHelp
       ? [
-          ...(menuItems.length ? [{ type: 'divider' as const }] : []),
           {
             label: 'Search box help',
+            icon: Help,
             onClick: () => {
               setHelpDialogOpen(true)
             },
