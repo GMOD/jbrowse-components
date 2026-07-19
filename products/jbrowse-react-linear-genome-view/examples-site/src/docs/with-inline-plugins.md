@@ -3,8 +3,7 @@ renderers, view types, and menu items. They're passed to `createViewState` as
 the `plugins` option and integrated into the view's plugin manager at startup.
 
 The simplest pattern: define a `Plugin` subclass in your own source and pass it
-directly. This example registers a plugin that adds a "console.log the selected
-region" action to the rubber-band menu.
+directly.
 
 ```js
 const state = createViewState({

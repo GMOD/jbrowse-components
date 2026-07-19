@@ -1,8 +1,7 @@
 A `ref` on `<LinearGenomeView>` gives you the live `LinearGenomeViewModel`. Its
 `.session.view` can be read, mutated, and have its actions called from
 components outside the view tree, which is how you wire up "jump to this gene"
-buttons, search-result lists, or programmatic tours. This example drives one
-view two ways.
+buttons, search-result lists, or programmatic tours.
 
 [`navToLocString`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-navtolocstring)
 takes a JBrowse-style locstring like `ctgA:1-5,000` or `chr1:1m-2m`. It's async,

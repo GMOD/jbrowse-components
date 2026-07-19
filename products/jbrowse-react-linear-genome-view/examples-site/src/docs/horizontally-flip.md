@@ -1,6 +1,6 @@
 Regions can be rendered reversed (3'→5'), which is essential for viewing genes
 on the negative strand or for laying out synteny-style comparisons. There are
-two ways in, shown here on two views.
+two ways in.
 
 **Imperatively**, the view exposes a
 [`horizontallyFlip()`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-horizontallyflip)

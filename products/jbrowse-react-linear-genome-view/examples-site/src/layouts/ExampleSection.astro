@@ -5,19 +5,22 @@ import { demoFillHeight } from '../siteMeta.ts'
 
 import type { MarkdownInstance } from 'astro'
 
-// One live demo within an example page: optional heading + description (only
-// shown when a page stacks several sections), the hand-written doc from
-// src/docs/<slug>.md, the live demo (slotted in), and its source. The source is
-// the real, runnable file for the demo above, so it's open by default rather
-// than hidden behind a collapsed toggle.
+// One live demo within an example page: an optional heading (only shown when a
+// page stacks several sections), the hand-written doc from src/docs/<slug>.md,
+// the live demo (slotted in), and its source. The source is the real, runnable
+// file for the demo above, so it's open by default rather than hidden behind a
+// collapsed toggle. Section-level descriptions from examples.ts are authoring
+// notes only, not rendered here, so the doc carries the prose.
 interface Props {
   slug: string
   title?: string
+  // pages pass whole section objects via {...section}, so `description` still
+  // arrives here. It is intentionally not rendered (the doc carries the prose).
   description?: string
   code: string
 }
 
-const { slug, title, description, code } = Astro.props
+const { slug, title, code } = Astro.props
 
 const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
   '../docs/*.md',
@@ -29,7 +32,6 @@ const Doc = doc?.Content
 
 <section id={slug} class="example-section">
   {title && <h2>{title}</h2>}
-  {description && <p class="lead">{description}</p>}
   {Doc && <div class="doc"><Doc /></div>}
   <div class:list={['demo', { fill: demoFillHeight }]}><slot /></div>
   <details class="source" open>

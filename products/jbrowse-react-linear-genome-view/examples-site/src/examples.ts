@@ -16,7 +16,7 @@ export const pages: ExamplePage[] = [
         slug: 'one-linear-genome-view',
         title: 'The simplest example',
         description:
-          'An assembly, tracks, a starting location, and an onChange handler — the whole component in one declarative call.',
+          'The whole component in one declarative call: an assembly, tracks, a starting location, and an onChange handler.',
       },
       {
         slug: 'with-init',
@@ -144,7 +144,7 @@ export const pages: ExamplePage[] = [
     slug: 'feature-colors-and-labels',
     title: 'Colors & labels',
     description:
-      'Color and label features — dynamically with jexl callbacks, or quickly with the displayDefaults color shorthand.',
+      'Color and label features dynamically with jexl callbacks, or quickly with the displayDefaults color shorthand.',
     group: 'Track display & coloring',
     sections: [
       {
@@ -168,8 +168,8 @@ export const pages: ExamplePage[] = [
       'Open an alignments (BAM/CRAM) track with a chosen display, group reads by a SAM tag, and configure the full LinearAlignmentsDisplay options up front on real HG002 haplotagged data.',
     group: 'Track display & coloring',
     // the display-options section uses real HG002 nanopore reads (long,
-    // modification-tagged) — a heavy remote fetch, and modification rendering is
-    // a GPU path CI's headless software-WebGL can choke on; ships in a real
+    // modification-tagged), a heavy remote fetch, and modification rendering is
+    // a GPU path CI's headless software-WebGL can choke on. Ships in a real
     // browser
     skipSmoke: true,
     sections: [
@@ -188,7 +188,7 @@ export const pages: ExamplePage[] = [
         slug: 'alignments-track-options',
         title: 'Custom alignments display options',
         description:
-          'Configure a LinearAlignmentsDisplay up front — color and group reads by haplotype (HP tag) — on real HG002 haplotagged nanopore data, with links to the full option reference.',
+          'Configure a LinearAlignmentsDisplay up front (color and group reads by haplotype, the HP tag) on real HG002 haplotagged nanopore data, with links to the full option reference.',
       },
     ],
   },
@@ -310,7 +310,7 @@ export const pages: ExamplePage[] = [
     slug: 'text-searching',
     title: 'Text search',
     description:
-      'Search by gene name or ID — across all tracks with an aggregate adapter, or per-track.',
+      'Search by gene name or ID, across all tracks with an aggregate adapter, or per-track.',
     group: 'Text searching',
     sections: [
       {
@@ -378,7 +378,7 @@ export const pages: ExamplePage[] = [
     slug: 'nextstrain-pathogens',
     title: 'Nextstrain pathogens',
     description:
-      'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A — pick a pathogen from the dropdown.',
+      'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A. Pick a pathogen from the dropdown.',
     group: 'Real-world demos',
     // the genotype-matrix GPU render crashes CI's headless software-WebGL
     skipSmoke: true,
@@ -387,7 +387,7 @@ export const pages: ExamplePage[] = [
         slug: 'nextstrain-pathogens',
         title: 'Nextstrain pathogens',
         description:
-          'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A — pick a pathogen from the dropdown.',
+          'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A. Pick a pathogen from the dropdown.',
       },
     ],
   },

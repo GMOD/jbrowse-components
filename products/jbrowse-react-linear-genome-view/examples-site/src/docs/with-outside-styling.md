@@ -1,6 +1,6 @@
 The embedded view inherits CSS from its host. There's no shadow-DOM isolation in
 the default rendering path, so wrapping the component in a styled container
-composes normally. Borders, margins, and backgrounds all work as you'd expect:
+composes normally:
 
 ```jsx
 <div style={{ border: '4px solid blue', padding: 16 }}>

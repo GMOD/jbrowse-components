@@ -2,8 +2,7 @@ The view model is a [MobX-state-tree](https://mobx-state-tree.js.org) node, so
 anything outside the LGV can subscribe to its state with `mobx-react`'s
 `observer` HOC and re-render when relevant fields change. This is how you build
 companion panels (coordinate readouts, feature inspectors, summary tables)
-that stay in sync with the view without manual event wiring. This example shows
-both a region readout and a feature table under one view.
+that stay in sync with the view without manual event wiring.
 
 **Reading the visible regions is synchronous.** An `observer` reading
 `view.dynamicBlocks` (updated on every pan/zoom) or its debounced variant

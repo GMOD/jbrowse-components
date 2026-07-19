@@ -9,10 +9,9 @@ init: {
 }
 ```
 
-This example pairs that with an external **Flip** button that toggles
-orientation via `view.horizontallyFlip()`. An `observer`-wrapped component reads
-`view.displayedRegions[0].reversed` to label the button, so the UI stays in sync
-with the view's actual state. Multi-region views are the building block for
+An external **Flip** button toggles orientation via `view.horizontallyFlip()`,
+and an `observer`-wrapped component reads `view.displayedRegions[0].reversed` to
+keep its label in sync. Multi-region views are the building block for
 gene-centric layouts and synteny ribbons.
 
 See [horizontally flip the view](../flipping-regions/#horizontally-flip) for the

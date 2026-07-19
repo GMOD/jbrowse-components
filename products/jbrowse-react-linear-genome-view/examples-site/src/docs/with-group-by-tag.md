@@ -21,9 +21,8 @@ init: {
 }
 ```
 
-The demo pairs `groupBy` with a matching `colorBy` so each haplotype lane
-(`HP:0`, `HP:1`, and the unassigned reads) is also colored distinctly. Both are
-part of the
+Pairing `colorBy` on the same tag colors each haplotype lane (`HP:0`, `HP:1`,
+and the unassigned reads) distinctly. Both are part of the
 [LinearAlignmentsDisplay](https://jbrowse.org/jb2/docs/config/linearalignmentsdisplay/)
 config. See
 [initializing an alignments display](../alignments-tracks/#with-init-alignments-display)
