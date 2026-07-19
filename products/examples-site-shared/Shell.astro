@@ -8,6 +8,7 @@ interface ExampleMeta {
   slug: string
   title: string
   group: string
+  dividerBefore?: boolean
 }
 
 interface Props {
@@ -19,7 +20,6 @@ interface Props {
 
 const { title, componentLabel, examples, mainMaxWidth = '920px' } = Astro.props
 const base = import.meta.env.BASE_URL
-const groups = [...new Set(examples.map(e => e.group))]
 const docsHref = 'https://jbrowse.org/jb2/docs/embedded_components/'
 
 // highlight the current example in the sidebar by matching the URL, so pages
@@ -27,11 +27,6 @@ const docsHref = 'https://jbrowse.org/jb2/docs/embedded_components/'
 const trimSlash = (s: string) => s.replace(/\/+$/, '')
 const here = trimSlash(Astro.url.pathname)
 const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
-
-// collapse every sidebar group by default and open only the one holding the
-// current example, so long lists don't overwhelm. On the index (no active
-// example) all groups stay collapsed — the gallery grid shows everything.
-const activeGroup = examples.find(e => isActive(e.slug))?.group
 ---
 
 <html lang="en">
@@ -184,35 +179,28 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
         border-right: 1px solid var(--border);
         padding: 16px 12px 48px;
       }
-      aside.sidebar .group-title {
-        cursor: pointer;
-        font-size: 0.72em;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: var(--muted);
-        margin: 12px 8px 6px;
-      }
       aside.sidebar ul {
         list-style: none;
         margin: 0;
         padding: 0;
       }
+      aside.sidebar li.section-start {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--rule);
+      }
       aside.sidebar a {
         display: block;
-        padding: 4px 8px;
-        border-radius: 4px;
+        padding: 2px 8px;
+        color: inherit;
         text-decoration: none;
-        color: var(--fg-soft);
-        font-size: 0.9em;
       }
       aside.sidebar a:hover {
-        background: var(--hover);
+        text-decoration: underline;
       }
       aside.sidebar a[aria-current='page'] {
-        background: var(--accent);
-        color: var(--accent-fg);
-        font-weight: 600;
+        color: var(--accent);
+        font-weight: bold;
       }
       main {
         flex: 1 1 auto;
@@ -410,27 +398,20 @@ const activeGroup = examples.find(e => isActive(e.slug))?.group
       <input type="checkbox" id="nav-toggle" class="nav-toggle-cb" />
       <label class="nav-toggle-label" for="nav-toggle">☰ Examples menu</label>
       <aside class="sidebar">
-        {
-          groups.map(group => (
-            <details open={group === activeGroup}>
-              <summary class="group-title">{group}</summary>
-              <ul>
-                {examples
-                  .filter(e => e.group === group)
-                  .map(e => (
-                    <li>
-                      <a
-                        href={`${base}${e.slug}/`}
-                        aria-current={isActive(e.slug) ? 'page' : undefined}
-                      >
-                        {e.title}
-                      </a>
-                    </li>
-                  ))}
-              </ul>
-            </details>
-          ))
-        }
+        <ul>
+          {
+            examples.map(e => (
+              <li class={e.dividerBefore ? 'section-start' : undefined}>
+                <a
+                  href={`${base}${e.slug}/`}
+                  aria-current={isActive(e.slug) ? 'page' : undefined}
+                >
+                  {e.title}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </aside>
       <main style={`max-width:${mainMaxWidth}`}>
         <slot />

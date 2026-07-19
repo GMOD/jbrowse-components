@@ -3,6 +3,8 @@ import WithInitAlignmentsDisplay from "../examples/WithInitAlignmentsDisplay.tsx
 import WithInitAlignmentsDisplayCode from "../examples/WithInitAlignmentsDisplay.tsx?raw"
 import WithGroupByTag from "../examples/WithGroupByTag.tsx"
 import WithGroupByTagCode from "../examples/WithGroupByTag.tsx?raw"
+import WithAlignmentsDisplayOptions from "../examples/WithAlignmentsDisplayOptions.tsx"
+import WithAlignmentsDisplayOptionsCode from "../examples/WithAlignmentsDisplayOptions.tsx?raw"
 import { pages, section } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
 import Section from "../layouts/ExampleSection.astro"
@@ -10,6 +12,7 @@ import Section from "../layouts/ExampleSection.astro"
 const page = pages.find(p => p.slug === "alignments-tracks")!
 const sec0 = section(page, "with-init-alignments-display")
 const sec1 = section(page, "with-group-by-tag")
+const sec2 = section(page, "alignments-track-options")
 ---
 
 <Layout page={page}>
@@ -18,5 +21,8 @@ const sec1 = section(page, "with-group-by-tag")
   </Section>
   <Section {...sec1} code={WithGroupByTagCode}>
     <WithGroupByTag client:only="react" />
+  </Section>
+  <Section {...sec2} code={WithAlignmentsDisplayOptionsCode}>
+    <WithAlignmentsDisplayOptions client:only="react" />
   </Section>
 </Layout>

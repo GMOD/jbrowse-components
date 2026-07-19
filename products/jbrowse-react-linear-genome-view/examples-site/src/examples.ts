@@ -7,7 +7,7 @@ export const pages: ExamplePage[] = [
   // --- Getting started ---
   {
     slug: 'setting-up-the-view',
-    title: 'Setting up the view',
+    title: 'View setup',
     description:
       'The core ways to render the component and give it a starting state: the declarative props, the createViewState hook, and the minimal end-to-end example.',
     group: 'Getting started',
@@ -34,7 +34,7 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'default-session',
-    title: 'Default session, embeds & the drawer',
+    title: 'Session & drawer',
     description:
       'Open on a predefined session snapshot, hide editing UI for a locked-down embed, and show widgets (track selector, feature details) in a side drawer.',
     group: 'Getting started',
@@ -62,9 +62,9 @@ export const pages: ExamplePage[] = [
   // --- Navigation ---
   {
     slug: 'navigate-to-location',
-    title: 'Navigating to a location',
+    title: 'Navigate & control',
     description:
-      'Drive the view to a region from your own UI with a location string or a {refName, start, end} object.',
+      'Drive the view from your own UI: navigate to a region, lock down zoom and pan, and toggle tracks on from your own code.',
     group: 'Navigation',
     sections: [
       {
@@ -73,11 +73,21 @@ export const pages: ExamplePage[] = [
         description:
           'Drive the view from your own UI with navToLocString (a location string) or navToLocations (a {refName, start, end} object).',
       },
+      {
+        slug: 'with-disable-zoom-and-side-scroll',
+        title: 'Disable zoom and side scroll',
+        description: 'Lock the view so users cannot zoom or pan.',
+      },
+      {
+        slug: 'with-show-track',
+        title: 'Show a track programmatically',
+        description: 'Turn a track on from code via showTrack.',
+      },
     ],
   },
   {
     slug: 'flipping-regions',
-    title: 'Flipping regions',
+    title: 'Flip regions',
     description:
       'Reverse-complement the whole view, or mix orientations across multiple displayed regions.',
     group: 'Navigation',
@@ -96,32 +106,13 @@ export const pages: ExamplePage[] = [
       },
     ],
   },
-  {
-    slug: 'controlling-the-view',
-    title: 'Controlling the view',
-    description:
-      'Lock down interaction, or toggle tracks on from your own code.',
-    group: 'Navigation',
-    sections: [
-      {
-        slug: 'with-disable-zoom-and-side-scroll',
-        title: 'Disable zoom and side scroll',
-        description: 'Lock the view so users cannot zoom or pan.',
-      },
-      {
-        slug: 'with-show-track',
-        title: 'Show a track programmatically',
-        description: 'Turn a track on from code via showTrack.',
-      },
-    ],
-  },
 
   // --- Styling & theming ---
   {
     slug: 'theming',
-    title: 'Theming',
+    title: 'Theming & styling',
     description:
-      'Apply a custom Material UI theme, or switch on the built-in dark theme.',
+      'Apply a custom Material UI theme or the built-in dark theme, style the embed from your surrounding page, or isolate it inside a Shadow DOM.',
     group: 'Styling & theming',
     sections: [
       {
@@ -134,15 +125,6 @@ export const pages: ExamplePage[] = [
         title: 'Dark theme',
         description: 'Use the built-in dark theme.',
       },
-    ],
-  },
-  {
-    slug: 'style-isolation',
-    title: 'Styling & isolation',
-    description:
-      'Style the embed from your surrounding page, or isolate it entirely inside a Shadow DOM.',
-    group: 'Styling & theming',
-    sections: [
       {
         slug: 'with-outside-styling',
         title: 'Styling from outside the component',
@@ -160,7 +142,7 @@ export const pages: ExamplePage[] = [
   // --- Track display & coloring ---
   {
     slug: 'feature-colors-and-labels',
-    title: 'Feature colors & labels',
+    title: 'Colors & labels',
     description:
       'Color and label features — dynamically with jexl callbacks, or quickly with the displayDefaults color shorthand.',
     group: 'Track display & coloring',
@@ -181,10 +163,15 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'alignments-tracks',
-    title: 'Alignments tracks',
+    title: 'Alignments',
     description:
-      'Open an alignments (BAM/CRAM) track with a chosen display, and group reads by a SAM tag.',
+      'Open an alignments (BAM/CRAM) track with a chosen display, group reads by a SAM tag, and configure the full LinearAlignmentsDisplay options up front on real HG002 haplotagged data.',
     group: 'Track display & coloring',
+    // the display-options section uses real HG002 nanopore reads (long,
+    // modification-tagged) — a heavy remote fetch, and modification rendering is
+    // a GPU path CI's headless software-WebGL can choke on; ships in a real
+    // browser
+    skipSmoke: true,
     sections: [
       {
         slug: 'with-init-alignments-display',
@@ -197,30 +184,17 @@ export const pages: ExamplePage[] = [
         title: 'Group alignments by tag',
         description: 'Group reads in an alignments track by a SAM tag.',
       },
-    ],
-  },
-  {
-    slug: 'alignments-track-options',
-    title: 'Custom alignments display options',
-    description:
-      'Configure a LinearAlignmentsDisplay up front — color by modifications, group by haplotype, filter by SAM flags — on real HG002 methylation data, with links to the full option reference.',
-    group: 'Track display & coloring',
-    // real HG002 nanopore reads (long, modification-tagged) are a heavy remote
-    // fetch and modification rendering is a GPU path that CI's headless
-    // software-WebGL can choke on; the page ships and works in a real browser
-    skipSmoke: true,
-    sections: [
       {
         slug: 'alignments-track-options',
         title: 'Custom alignments display options',
         description:
-          'Configure a LinearAlignmentsDisplay up front — color by modifications, group by haplotype, filter by SAM flags — on real HG002 methylation data, with links to the full option reference.',
+          'Configure a LinearAlignmentsDisplay up front — color and group reads by haplotype (HP tag) — on real HG002 haplotagged nanopore data, with links to the full option reference.',
       },
     ],
   },
   {
     slug: 'specialized-track-types',
-    title: 'Quantitative, gene & variant tracks',
+    title: 'Signal, gene, variant',
     description:
       'Load specific data types: quantitative signal from a BigWig, gene models from a GTF, and a multi-sample VCF as a matrix.',
     group: 'Track display & coloring',
@@ -246,7 +220,7 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'track-sizing',
-    title: 'Track sizing: grow & fit',
+    title: 'Track sizing',
     description:
       'Choose what a feature track does when it has more rows than fit: grow the track to show them all, or squeeze the rows into a fixed height.',
     group: 'Track display & coloring',
@@ -263,7 +237,7 @@ export const pages: ExamplePage[] = [
   // --- Sessions & state ---
   {
     slug: 'session-setup',
-    title: 'Advanced init, highlights & persistence',
+    title: 'Init & persistence',
     description:
       'Use the advanced init blob for a richer initial view, add highlighted regions to the session, and persist the live session to localStorage and restore it on reload.',
     group: 'Sessions & state',
@@ -289,7 +263,7 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'multiple-views',
-    title: 'Observing & multiple views',
+    title: 'Multiple views',
     description:
       'React to the regions and features currently visible from your own companion panels, and render several independent views on one page.',
     group: 'Sessions & state',
@@ -309,7 +283,7 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'export-and-errors',
-    title: 'Export & error handling',
+    title: 'Export & errors',
     description:
       'Render the whole view to a vector SVG (or rasterized PNG), and catch and render view errors with your own UI.',
     group: 'Sessions & state',
@@ -334,7 +308,7 @@ export const pages: ExamplePage[] = [
   // --- Text searching ---
   {
     slug: 'text-searching',
-    title: 'Text searching',
+    title: 'Text search',
     description:
       'Search by gene name or ID — across all tracks with an aggregate adapter, or per-track.',
     group: 'Text searching',
@@ -356,9 +330,9 @@ export const pages: ExamplePage[] = [
   // --- Plugins & accounts ---
   {
     slug: 'plugins',
-    title: 'Plugins',
+    title: 'Plugins & accounts',
     description:
-      'Extend the view with plugins — loaded at runtime from a URL, or defined inline in your own code.',
+      'Extend the view with plugins loaded at runtime or defined inline, access authenticated data via internet accounts, and offload parsing/rendering to a web worker.',
     group: 'Plugins & accounts',
     sections: [
       {
@@ -371,15 +345,6 @@ export const pages: ExamplePage[] = [
         title: 'Inline plugins',
         description: 'Register a plugin defined inline in your own code.',
       },
-    ],
-  },
-  {
-    slug: 'accounts-and-workers',
-    title: 'Internet accounts & web workers',
-    description:
-      'Access authenticated data sources via internet accounts, and offload data parsing/rendering to a web worker.',
-    group: 'Plugins & accounts',
-    sections: [
       {
         slug: 'with-internet-accounts',
         title: 'Internet accounts (authentication)',
@@ -396,9 +361,11 @@ export const pages: ExamplePage[] = [
   // --- Real-world demos ---
   {
     slug: 'human-exome-example',
-    title: 'Human exome example',
+    title: 'Human exome',
     description: 'A human exome sequencing dataset on hg38.',
     group: 'Real-world demos',
+    // section break: how-to examples above, real-data demos below
+    dividerBefore: true,
     sections: [
       {
         slug: 'human-exome-example',
@@ -426,7 +393,7 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'nextstrain-msa',
-    title: 'Nextstrain MSA + tree',
+    title: 'Nextstrain MSA',
     description:
       'The Nextstrain tree + reconstructed reference-coordinate MSA, embedded with react-msaview.',
     group: 'Real-world demos',

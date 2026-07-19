@@ -1,15 +1,28 @@
 ---
 import ExternalNavigate from "../examples/ExternalNavigate.tsx"
-import code from "../examples/ExternalNavigate.tsx?raw"
-import { pages } from "../examples.ts"
+import ExternalNavigateCode from "../examples/ExternalNavigate.tsx?raw"
+import WithDisableZoomAndSideScroll from "../examples/WithDisableZoomAndSideScroll.tsx"
+import WithDisableZoomAndSideScrollCode from "../examples/WithDisableZoomAndSideScroll.tsx?raw"
+import WithShowTrack from "../examples/WithShowTrack.tsx"
+import WithShowTrackCode from "../examples/WithShowTrack.tsx?raw"
+import { pages, section } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
 import Section from "../layouts/ExampleSection.astro"
 
 const page = pages.find(p => p.slug === "navigate-to-location")!
+const sec0 = section(page, "external-navigate")
+const sec1 = section(page, "with-disable-zoom-and-side-scroll")
+const sec2 = section(page, "with-show-track")
 ---
 
 <Layout page={page}>
-  <Section slug="external-navigate" code={code}>
+  <Section {...sec0} code={ExternalNavigateCode}>
     <ExternalNavigate client:only="react" />
+  </Section>
+  <Section {...sec1} code={WithDisableZoomAndSideScrollCode}>
+    <WithDisableZoomAndSideScroll client:only="react" />
+  </Section>
+  <Section {...sec2} code={WithShowTrackCode}>
+    <WithShowTrack client:only="react" />
   </Section>
 </Layout>

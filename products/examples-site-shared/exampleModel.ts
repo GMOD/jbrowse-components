@@ -24,6 +24,9 @@ export interface ExamplePage {
   // still ships and works in a real browser; it's only skipped in CI's headless
   // software-WebGL (swiftshader), where some renders crash the renderer.
   skipSmoke?: boolean
+  // draw a hairline divider above this page in the flat sidebar, marking a
+  // deliberate section break (e.g. how-to examples vs real-data demos)
+  dividerBefore?: boolean
   sections: ExampleSection[]
 }
 
@@ -41,11 +44,14 @@ export function section(page: ExamplePage, slug: string): ExampleSection {
 // the build smoke test, which only need {slug, title, description, group} (plus
 // skipSmoke, honored by the linear-genome-view smoke script)
 export function flattenExamples(pages: ExamplePage[]) {
-  return pages.map(({ slug, title, description, group, skipSmoke }) => ({
-    slug,
-    title,
-    description,
-    group,
-    skipSmoke,
-  }))
+  return pages.map(
+    ({ slug, title, description, group, skipSmoke, dividerBefore }) => ({
+      slug,
+      title,
+      description,
+      group,
+      skipSmoke,
+      dividerBefore,
+    }),
+  )
 }

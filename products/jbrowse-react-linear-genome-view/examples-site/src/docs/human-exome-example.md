@@ -10,4 +10,4 @@ from S3; no server-side component is required. For the config slots, see
 [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack/).
 
 On large alignments datasets like this, consider enabling the
-[web worker RPC](../accounts-and-workers/#with-web-worker) to keep parsing off the main thread.
+[web worker RPC](../plugins/#with-web-worker) to keep parsing off the main thread.

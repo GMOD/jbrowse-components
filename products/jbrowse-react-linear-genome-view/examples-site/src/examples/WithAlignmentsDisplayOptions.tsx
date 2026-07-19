@@ -45,21 +45,15 @@ export default function WithAlignmentsDisplayOptions() {
           {
             trackId: 'hg002_snrpn_5mc',
             // Every key in displaySnapshot below is a LinearAlignmentsDisplay
-            // config slot. Coloring by 5mC modifications and grouping reads by
-            // their HP (haplotype) tag reveals the allele-specific methylation
-            // that marks the imprinted SNRPN DMR. See the config/model docs
+            // config slot. Coloring and grouping reads by their HP (haplotype)
+            // tag stacks the two alleles at the imprinted SNRPN locus into
+            // separate, distinctly-colored groups. See the config/model docs
             // linked from the writeup for the full option set.
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 500,
-              colorBy: {
-                type: 'modifications',
-                modifications: { fillUnmarked: true },
-              },
+              colorBy: { type: 'tag', tag: 'HP' },
               groupBy: { type: 'tag', tag: 'HP' },
-              // exclude secondary/supplementary/duplicate/QC-fail reads
-              // (0x4 | 0x100 | 0x200 | 0x400 | 0x800)
-              filterBy: { flagInclude: 0, flagExclude: 3844 },
             },
           },
         ],
