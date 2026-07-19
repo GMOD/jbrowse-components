@@ -42,15 +42,15 @@ export default function GlobalDataDisplayMixin() {
     .views(() => ({
       /**
        * #getter
-       * Whether this display intends to load and paint its one dataset in the
-       * current configuration. Default true. Gates the initial-load term of
-       * `displayPhase` below, so a display that can be toggled to render nothing
-       * (LD with `showLDTriangle` off shows an EmptyState, never a canvas)
-       * overrides this to false in that state — otherwise the pre-first-paint
-       * scrim would sit permanently over the empty state, since `canvasDrawn`
-       * never flips without a canvas.
+       * Whether this display paints a canvas in its current configuration.
+       * Default true. Gates the pre-first-paint term of `displayPhase` below
+       * (`rendersCanvas && !canvasDrawn`), so a display that can be toggled to
+       * show a static non-canvas placeholder instead (LD with `showLDTriangle`
+       * off renders an EmptyState, never a canvas) overrides this to false in
+       * that state — otherwise the scrim would sit permanently over the
+       * placeholder, since `canvasDrawn` never flips without a canvas.
        */
-      get wantsData(): boolean {
+      get rendersCanvas(): boolean {
         return true
       },
     }))
@@ -59,18 +59,17 @@ export default function GlobalDataDisplayMixin() {
        * #getter
        * Same precedence as MultiRegionDisplayMixin (single-sourced in
        * `computeDisplayPhase`). A global display has no per-region staleness
-       * axis, but it does have a pre-first-paint window: the fetch trigger is a
-       * debounced `afterAttach` autorun (and HiC first round-trips `CoreGetInfo`
-       * for its resolutions), so on initial open `isLoading` stays false for up
-       * to a second before `runFetch` starts. Mirror MultiRegion's `!isReady`
+       * axis, but it does have a pre-first-paint window: between component mount
+       * and `isLoading` flipping true (on HiC that means the `CoreGetInfo`
+       * round-trip its first fetch waits on). Mirror MultiRegion's `!isReady`
        * term with `!canvasDrawn` so the loading scrim shows immediately on open
-       * instead of after that gap — gated by `wantsData` so a display rendering
-       * nothing on purpose isn't stuck under it. Once painted, `canvasDrawn`
-       * stays true through viewport/setting changes (StaleViewportRescaleMixin
-       * keeps the last frame up during refetch), so this adds no scrim on pan or
-       * zoom — those keep the existing `isLoading` behavior. Reads `renderError`
-       * (RenderLifecycleMixin), which is why it lives here, not in
-       * GlobalFetchMixin.
+       * instead of after that gap — gated by `rendersCanvas` so a display
+       * showing a static non-canvas placeholder isn't stuck under it. Once
+       * painted, `canvasDrawn` stays true through viewport/setting changes
+       * (StaleViewportRescaleMixin keeps the last frame up during refetch), so
+       * this adds no scrim on pan or zoom — those keep the existing `isLoading`
+       * behavior. Reads `renderError` (RenderLifecycleMixin), which is why it
+       * lives here, not in GlobalFetchMixin.
        */
       get displayPhase(): DisplayPhase {
         // fetchCanceled keeps the overlay up (showing its retry affordance)
@@ -80,7 +79,7 @@ export default function GlobalDataDisplayMixin() {
           () =>
             self.isLoading ||
             self.fetchCanceled ||
-            (self.wantsData && !self.canvasDrawn),
+            (self.rendersCanvas && !self.canvasDrawn),
         )
       },
     }))

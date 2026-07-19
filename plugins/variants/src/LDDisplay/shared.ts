@@ -264,7 +264,7 @@ export default function sharedModelFactory(
          * flips); returning false here keeps the scrim from sitting permanently
          * over it.
          */
-        get wantsData(): boolean {
+        get rendersCanvas(): boolean {
           return getConf(self, 'showLDTriangle')
         },
         get isPrecomputedLD() {

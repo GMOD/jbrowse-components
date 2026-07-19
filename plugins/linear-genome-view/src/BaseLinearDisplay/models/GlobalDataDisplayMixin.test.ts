@@ -65,21 +65,21 @@ test('displayPhase leaves loading once the first frame paints', () => {
   expect(model.displayPhase).toBe('ready')
 })
 
-test('displayPhase is not loading pre-paint when wantsData is false', () => {
+test('displayPhase is not loading pre-paint when rendersCanvas is false', () => {
   const model = types
     .compose(
-      'TestNoDataDisplay',
+      'TestNoCanvasDisplay',
       GlobalDataDisplayMixin(),
-      types.model({ type: types.literal('TestNoDataDisplay') }),
+      types.model({ type: types.literal('TestNoCanvasDisplay') }),
     )
     .views(() => ({
-      get wantsData() {
+      get rendersCanvas() {
         return false
       },
     }))
-    .create({ type: 'TestNoDataDisplay' })
-  // A display that renders nothing on purpose never paints a canvas, so the
-  // pre-paint scrim must not sit permanently over it.
+    .create({ type: 'TestNoCanvasDisplay' })
+  // A display showing a static non-canvas placeholder never paints a canvas, so
+  // the pre-paint scrim must not sit permanently over it.
   expect(model.canvasDrawn).toBe(false)
   expect(model.displayPhase).toBe('ready')
 })
