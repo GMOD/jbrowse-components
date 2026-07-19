@@ -200,6 +200,56 @@ export function buildSidebar(
   )
 }
 
+function flattenLinks(entry: SidebarEntry): SidebarLink[] {
+  return entry.type === 'link' ? [entry] : entry.items.flatMap(flattenLinks)
+}
+
+// Flattens the sidebar into ordered `## <section>` buckets for the LLM surfaces
+// (/llms.txt and /llms-full.txt). Each top-level group becomes a section;
+// standalone top-level links (Introduction, Cookbook, CLI, FAQ) collapse into a
+// single "General" section at their first position — without this they each emit
+// their own duplicate "## General" heading. `has` filters to slugs that have an
+// emitted page, and a slug is listed only in its first section.
+export function sidebarSections(
+  sidebar: SidebarEntry[],
+  has: (slug: string) => boolean,
+): { label: string; links: SidebarLink[] }[] {
+  const seen = new Set<string>()
+  const fresh = (links: SidebarLink[]) =>
+    links.filter(link => {
+      const ok = has(link.slug) && !seen.has(link.slug)
+      if (ok) {
+        seen.add(link.slug)
+      }
+      return ok
+    })
+
+  const sections: { label: string; links: SidebarLink[] }[] = []
+  const general: SidebarLink[] = []
+  let generalIdx = -1
+  for (const entry of sidebar) {
+    if (entry.type === 'group') {
+      const links = fresh(flattenLinks(entry))
+      if (links.length) {
+        sections.push({ label: entry.label, links })
+      }
+    } else {
+      if (generalIdx === -1) {
+        generalIdx = sections.length
+        sections.push({ label: 'General', links: [] })
+      }
+      general.push(entry)
+    }
+  }
+  if (generalIdx !== -1) {
+    sections[generalIdx]!.links = fresh(general)
+    if (!sections[generalIdx]!.links.length) {
+      sections.splice(generalIdx, 1)
+    }
+  }
+  return sections
+}
+
 // The "showcase" pages (Features / Plugins / Gallery / Demos) hang off the same
 // sidebar as the docs, so navigation is identical everywhere on the site.
 // They're grouped under one "Showcase" category rather than sitting as four

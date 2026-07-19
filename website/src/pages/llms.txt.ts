@@ -1,17 +1,12 @@
 import { base, site } from 'astro:config/client'
 import { getCollection } from 'astro:content'
 
-import { buildSidebar, entrySlug } from '../lib/docs-sidebar.ts'
-
-import type { SidebarEntry, SidebarLink } from '../lib/docs-sidebar.ts'
+import { buildSidebar, entrySlug, sidebarSections } from '../lib/docs-sidebar.ts'
 
 // Emits an `/llms.txt` index (https://llmstxt.org) listing every doc page,
 // grouped by its top-level sidebar section and linked to the page's raw
-// `/docs/<slug>.md` endpoint.
-function flattenLinks(entry: SidebarEntry): SidebarLink[] {
-  return entry.type === 'link' ? [entry] : entry.items.flatMap(flattenLinks)
-}
-
+// `/docs/<slug>.md` endpoint. An assistant reads this index, then fetches only
+// the raw pages it needs — no pre-concatenated full-text dump.
 export async function GET() {
   const baseUrl = base.replace(/\/$/, '')
   const origin = `${site ?? ''}${baseUrl}`
@@ -23,21 +18,12 @@ export async function GET() {
   // restrict to real doc slugs.
   const docSlugs = new Set(docs.map(d => entrySlug(d.id)))
   const sidebar = buildSidebar(docs, baseUrl)
-  const seen = new Set<string>()
-  const sections = sidebar
-    .map(entry => {
-      const label = entry.type === 'group' ? entry.label : 'General'
-      const bullets = flattenLinks(entry)
-        .filter(link => docSlugs.has(link.slug))
-        .filter(link => {
-          const fresh = !seen.has(link.slug)
-          seen.add(link.slug)
-          return fresh
-        })
+  const sections = sidebarSections(sidebar, slug => docSlugs.has(slug)).map(
+    section =>
+      `## ${section.label}\n\n${section.links
         .map(link => `- [${link.label}](${mdUrl(link.slug)})`)
-      return bullets.length ? `## ${label}\n\n${bullets.join('\n')}` : ''
-    })
-    .filter(Boolean)
+        .join('\n')}`,
+  )
 
   const header = [
     '# JBrowse 2 Documentation',
