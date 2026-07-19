@@ -2026,3 +2026,5 @@ natively before the waterfill ever compresses anything.
   Cheapest de-risk: prototype the `allocations` computed behind an opt-in
   `viewHeight`, wire `trackHeight()` to it, and watch whether the async settling
   behaves before investing further.
+
+Bigger item, only if there's real demand: making @jbrowse/shader-tools a true third-party CLI (ADR-030) — lifting the hardcoded REPO_ROOT/SHARED_INCLUDE into args. That's a project, not a cleanup, and only pays off if an external plugin repo actually needs to compile its own .slang.
