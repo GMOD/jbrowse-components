@@ -53,8 +53,8 @@ You will need:
   - [Python 3](https://www.python.org/) (preinstalled on most Linux), for the
     log2-ratio computation
 
-A script with all of the data-preparation commands below is available as a
-[gist](https://gist.github.com/cmdcolin/4f2ccf037b4c3315d6eb36b0a4ec123d).
+All of the data-preparation commands below are also collected into one
+reproducible script - see [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## Install JBrowse 2 with Apache 2
 
@@ -426,6 +426,29 @@ with `-a HG008T.hap1,GRCh38_GIABv3` (query then target). See the
 [synteny track config guide](/docs/config_guides/synteny_track) for the adapter
 options and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
+
+## Reproduce it end to end
+
+[`build_sv_visualization_cgiab.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_sv_visualization_cgiab.sh)
+runs the whole data-preparation pipeline above in one shot:
+
+```bash
+bash scripts/build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
+npx --yes serve cgiab_build/jbrowse2
+```
+
+It grabs the C-GIAB GRCh38 build and the V0.4 HG008-T benchmark calls, turns the
+tumor and normal HiFi BAMs into CRAMs, and builds the derived CNV tracks:
+megadepth coverage, the log2 tumor/normal ratio, the per-SNP BAF, and the
+per-base CDKN2A slice. It also aligns both haplotypes of the verkko tumor
+assembly to GRCh38 with minimap2 for the synteny and dotplot views, then
+downloads JBrowse and writes a `config.json` with everything loaded.
+
+You will need `samtools`, `bcftools`, `mosdepth`, `minimap2`, the UCSC
+`bedGraphToBigWig`, `python3`, and `node`. Be warned that it pulls down more
+than 200 GB, wants roughly 1.5 TB of free disk and 32 GB of RAM, and the
+alignment and pileup steps take hours. It skips the optional Wakhan step, since
+the figures use the raw per-SNP BAF anyway.
 
 ## Walkthroughs
 
