@@ -405,6 +405,10 @@ Each track object supports the following properties:
   - `color`: Feature color for feature/wiggle tracks (a CSS color, or a `jexl:`
     expression for per-feature coloring)
   - `minScore`, `maxScore`: Score range for quantitative tracks
+  - `forceLoad`: render even when the region trips the "too much data" gate —
+    the declarative equivalent of the "Force load" button, which matters here
+    because a URL/session has no one to click it (see
+    [BaseLinearDisplay](/docs/config/baselineardisplay/#slot-forceload))
   - Other display-specific settings
 - `trackSnapshot` (optional): Initial track state such as `pinned: true`
 

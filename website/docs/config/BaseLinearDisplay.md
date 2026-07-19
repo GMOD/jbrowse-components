@@ -33,12 +33,13 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [jexlFilters](#slot-jexlfilters) | `stringArray` | config jexlFilters are deferred evaluated so they are prepended with jexl at runtime rather than being stored with jexl in the config |
 
 <details>
-<summary>Advanced slots (2)</summary>
+<summary>Advanced slots (3)</summary>
 
-| Slot                                                     | Type     | Description                                                                                                            |
-| -------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------- |
-| [maxFeatureScreenDensity](#slot-maxfeaturescreendensity) | `number` | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available |
-| [fetchSizeLimit](#slot-fetchsizelimit)                   | `number` | maximum data to attempt to download for a given track, used if adapter doesn't specify one                             |
+| Slot                                                     | Type      | Description                                                                                                                                                            |
+| -------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [maxFeatureScreenDensity](#slot-maxfeaturescreendensity) | `number`  | maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available                                                 |
+| [fetchSizeLimit](#slot-fetchsizelimit)                   | `number`  | maximum data to attempt to download for a given track, used if adapter doesn't specify one                                                                             |
+| [forceLoad](#slot-forceload)                             | `boolean` | Declarative equivalent of the "Force load" button on the "too much data" banner: when true the display always renders, however large the region or dense the features. |
 
 </details>
 
@@ -60,6 +61,17 @@ specify one
 
 **Type:** [`number`](/docs/config_guides/slot_types#number) · **Default:**
 `1_000_000` · _advanced_
+
+#### slot: forceLoad
+
+Declarative equivalent of the "Force load" button on the "too much data" banner:
+when true the display always renders, however large the region or dense the
+features. Off by default (the gate guards against huge downloads). Set it on a
+view no one can interact with — an embedded / notebook view, or a screenshot —
+where the region is known and you want it drawn without a click.
+
+**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
+`false` · _advanced_
 
 #### slot: height
 
