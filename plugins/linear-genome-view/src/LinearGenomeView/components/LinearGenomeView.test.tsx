@@ -60,3 +60,20 @@ test('renders setup wizard', async () => {
     },
   )
 }, 15000)
+
+test('import form renders before the view width is measured', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf(assemblyConf)
+  session.addView('LinearGenomeView', { id: 'lgv' })
+  const model = session.views[0]
+  // deliberately do NOT setWidth. In the import-form state model.initialized
+  // reduces to "has a width been measured", but the form does not depend on
+  // width; previously the whole form was gated on model.initialized and stayed
+  // blank until the container measured a width
+  const { findByText } = render(<LGV model={model} />)
+  expect(model.initialized).toBe(false)
+
+  // the assembly selector and Open button render regardless
+  await findByText('Open', {}, { timeout: 10000 })
+  await findByText('Show all regions in assembly')
+}, 15000)
