@@ -36,6 +36,7 @@ const ORDER = [
   'quickstart_desktop',
   'display_settings',
   'embed_linear_genome_view',
+  'embedding_examples',
   'cli_desktop',
   'synteny_visualization',
   'multiway_synteny',
@@ -74,7 +75,23 @@ const cardFrom = (entry: (typeof docs)[number], category: string) => ({
   title: entry.data.title,
   description: entry.data.description,
   category,
+  external: false,
 })
+
+// Live example sites linked straight from the section, so readers who want to
+// embed can jump to runnable examples rather than only the prose tutorial. Its
+// thumbnail is a capture of the examples site itself.
+const EXTERNAL_CARDS = [
+  {
+    key: 'embedding_examples',
+    href: 'https://jbrowse.org/storybook/lgv/',
+    title: 'Embedded component examples',
+    description:
+      'Live, copy-paste examples for the embeddable React components: themes, per-feature colors, sessions, text search, and more.',
+    category: 'Configuration & embedding',
+    external: true,
+  },
+]
 
 const tutorials = [
   ...docs
@@ -83,6 +100,7 @@ const tutorials = [
   ...docs
     .filter(entry => entry.id.startsWith('tutorials/'))
     .map(entry => cardFrom(entry, entry.data.tutorial_category ?? FALLBACK)),
+  ...EXTERNAL_CARDS,
 ].sort((a, b) => rank(a.key) - rank(b.key) || a.title.localeCompare(b.title))
 
 const grouped = [...CATEGORY_ORDER, FALLBACK]
@@ -118,20 +136,28 @@ const HAS_THUMB = new Set(
         <h2 class="tut-heading">{group.category}</h2>
         <div class="tut-grid">
           {group.items.map(tutorial => (
-            <a class="tut-card" href={tutorial.href}>
+            <a
+              class="tut-card"
+              href={tutorial.href}
+              target={tutorial.external ? '_blank' : undefined}
+              rel={tutorial.external ? 'noopener' : undefined}
+            >
               {HAS_THUMB.has(tutorial.key) ? (
                 <img
                   class="tut-thumb"
                   src={`${baseUrl}/img/tutorial-thumbs/${tutorial.key}.webp`}
                   loading="lazy"
                   decoding="async"
-                  alt={`Screenshot from the ${tutorial.title} tutorial`}
+                  alt={`Preview of ${tutorial.title}`}
                 />
               ) : (
                 <span class="tut-thumb tut-thumb-empty">$ jbrowse</span>
               )}
               <span class="tut-card-body">
-                <span class="tut-card-title">{tutorial.title}</span>
+                <span class="tut-card-title">
+                  {tutorial.title}
+                  {tutorial.external && <span class="tut-ext"> ↗</span>}
+                </span>
                 {tutorial.description && (
                   <span class="tut-card-desc">{tutorial.description}</span>
                 )}
@@ -210,6 +236,10 @@ const HAS_THUMB = new Set(
   .tut-card-title {
     font-weight: 600;
     line-height: 1.3;
+  }
+  .tut-ext {
+    color: var(--color-text-muted);
+    font-weight: 400;
   }
   .tut-card-desc {
     font-size: 0.85rem;
