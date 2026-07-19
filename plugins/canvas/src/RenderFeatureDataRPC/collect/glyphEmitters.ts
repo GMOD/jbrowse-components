@@ -121,7 +121,9 @@ function processTranscriptLayout(
     const transcriptStart = transcriptFeature.get('start')
     const transcriptEnd = transcriptFeature.get('end')
     const transcriptType = transcriptFeature.get('type')
-    const transcriptName = getFeatureName(transcriptFeature)
+    // Config-jexl name (falling back to plain name/id) so a custom `labels.name`
+    // drives transcript labels too, matching the mature-protein/repeat subparts.
+    const transcriptName = resolveSubfeatureLabel(transcriptFeature, ctx)
 
     collector.subfeatureInfos.push({
       kind: 'subfeature',

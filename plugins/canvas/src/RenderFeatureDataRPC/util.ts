@@ -53,9 +53,12 @@ export function truncateToWidth(
   return `${text.slice(0, i)}…`
 }
 
-// True when the string contains at least one non-whitespace character.
-export function hasVisibleText(text: string) {
-  return /\S/.test(text)
+// True when the value is a string with at least one non-whitespace character.
+// Accepts undefined (treated as no text) and narrows to `string`, so callers can
+// use it directly as a guard. A bare `/\S/.test(undefined)` would coerce to the
+// string "undefined" and wrongly report visible text, so nullish is handled here.
+export function hasVisibleText(text: string | undefined): text is string {
+  return text !== undefined && /\S/.test(text)
 }
 
 // Feature type as a plain string, never undefined — the single place the

@@ -231,11 +231,7 @@ export function emitSubfeatureLabel(
 ) {
   const { config } = ctx
   const { featureId, displayLabel, featureHeight, minX, maxX, topY } = args
-  if (
-    config.subfeatureLabels !== 'none' &&
-    displayLabel &&
-    hasVisibleText(displayLabel)
-  ) {
+  if (config.subfeatureLabels !== 'none' && hasVisibleText(displayLabel)) {
     const result = createTranscriptFloatingLabel({
       displayLabel,
       featureHeight,
