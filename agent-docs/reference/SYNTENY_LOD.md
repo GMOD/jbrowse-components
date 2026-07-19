@@ -52,43 +52,63 @@ Synthetic human-vs-mouse-scale PIF (short blocks over 20 chromosome-scale
 contigs), whole-genome fetch of one perspective, phases mirroring
 `LinearSyntenyRPC/executeSyntenyFeaturesAndPositions`:
 
-| phase                                   | 100k    | 300k    |
-| --------------------------------------- | ------- | ------- |
-| adapter fetch + parse + `new SyntenyFeature` | **86.8%** | **78.2%** |
-| dedupe (Map over N string ids)          | 6.5%    | 14.2%   |
-| decorate (`Feature.get` ×6)             | 2.9%    | 4.3%    |
-| sort (length/pos/mate/id comparator)    | 1.7%    | 1.1%    |
-| projection (`bpToCumBp` + typed arrays) | 2.1%    | 2.2%    |
+A first profile lumped fetch + parse + construct into one bucket (~78-87% at
+100k-300k). A follow-up broke that bucket apart with real tabix reads (300k
+rows, whole-genome one perspective), because whether read-time binning is worth
+building hinges on the split — binning removes construction and everything
+downstream, but it must still **read and parse every line to bin it**:
 
-The dominant cost is **per-row fetch + `parsePifLine` + `new SyntenyFeature`**;
-dedupe is the growing #2; the `O(n log n)` sort is negligible (it runs on cached
-primitives, so compares are cheap). N is genuinely unbounded at whole-genome
-zoom: `syntenyFetchRegions` buffers by `panBufferPx·bpPerPx`, which at
-`bpPerPx≈10000` exceeds the region, collapsing the fetch window to the whole
+| phase                                   | 300k ms | share |
+| --------------------------------------- | ------- | ----- |
+| tabix fetch + decompress + line split   | 355     | 28%   |
+| `parsePifLine`                          | 480     | 38%   |
+| `new SyntenyFeature`                    | 217     | 17%   |
+| downstream dedupe + decorate + sort     | 210     | 17%   |
+| **unavoidable at read-time (fetch+parse)** | **835** | **66%** |
+| **removable by binning (construct+downstream)** | **427** | **34%** |
+
+So the earlier "the cost is building all N features" framing is wrong: only ~1/3
+is feature construction + downstream. The dominant ~2/3 is **reading and parsing
+N lines**, which read-time binning cannot touch. N is genuinely unbounded at
+whole-genome zoom: `syntenyFetchRegions` buffers by `panBufferPx·bpPerPx`, which
+at `bpPerPx≈10000` exceeds the region, collapsing the fetch window to the whole
 genome. Fetch scoping does not rescue coarse zoom.
 
 To reproduce: build a PIF of N short alignments (fine tier `t`/`q` lines, one
-indel CIGAR each), `sort -t$'\t' -k1,1 -k3,3n | bgzip` + `tabix -s1 -b3 -e4 -0`,
-construct `PairwiseIndexedPAFAdapter`, `getFeatures` per contig over the whole
-genome, and time the fetch vs the dedupe/decorate/sort/projection phases.
+indel CIGAR each), `sort -k1,1 -k3,3n | bgzip` + `tabix -s1 -b3 -e4 -0`, open a
+`TabixIndexedFile`, and `getLines` per contig over the whole genome three times
+with a noop / `parsePifLine` / `parsePifLine`+`makeIndexedSyntenyFeature`
+callback, then time dedupe + decorate + sort on the result.
 
 ## Density: the layer that matters
 
-Because the cost is incurred **building all N features**, reduction must happen
-**before feature construction**:
+Two things reduce cost, at different ceilings:
 
+- **Adapter read-time binning** (bin inside the `getLines` lineCallback, before
+  `makeIndexedSyntenyFeature`) — builds only M features; everything from
+  construction onward (including projection + `buildSyntenyGeometry` + GPU
+  instances, not just the phases timed above) scales with M. **Works on existing
+  PIF files, no regeneration.** But it still reads + parses all N lines, so the
+  measured compute ceiling is ~1.5× (the removable 34%). Its real payoff is the
+  GPU-instance collapse at whole-genome zoom, and even that is now largely
+  covered by the shipped visual-density mechanisms (see below).
+- **`make-pif` precomputed binned tier** — reads M lines instead of N, so it is
+  the **only** option that cuts the dominant fetch + parse cost, and it also cuts
+  bytes-over-the-wire. This is the higher-leverage change for the dense
+  "many short alignments" whole-genome regime. Cost: a format change requiring
+  users to re-run `make-pif`.
 - **Worker, post-adapter** (bin the `Feature[]` the RPC gets back) — too late; N
-  is already built.
-- **Adapter read-time** (bin inside the `getLines` lineCallback, before
-  `makeIndexedSyntenyFeature`) — builds only M features; everything downstream
-  scales with M. **Works on existing PIF files, no regeneration.** This is the
-  recommended first step.
-- **`make-pif` precomputed binned tier** — same rendered result and additionally
-  cuts bytes-over-the-wire (download M not N), but a format change requiring
-  users to re-run `make-pif`. Second step, only if wire-bytes on large hosted
-  files prove to be the pain.
+  is already read, parsed, and built. Not worth it.
 
-Recommended binning: fixed **absolute-genomic** grid (query-bin × target-bin),
+Note the visual hairball is already handled without binning: the
+`fillCoverage` shader floor (sub-pixel ribbons fade to true proportional
+coverage) and the `auto` fade-thin mode (coverage-fraction density signal). So
+binning is a **compute/instance-count** optimization, not a rendering fix — weigh
+it against that ~1.5× read-time ceiling before adding config + accumulation
+complexity.
+
+Recommended binning scheme (applies to whichever layer does it): fixed
+**absolute-genomic** grid (query-bin × target-bin),
 gated on zoomed-out LOD + a per-window count cap; emit one aggregate quad per
 occupied cell with mean identity. Absolute bins are window-stable and preserve
 the diagonal synteny signal. This **composes with** the coarse tier (read coarse
