@@ -23,6 +23,23 @@ export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
   return max
 }
 
+// Like max() but skips NaN/Infinity entries rather than propagating them (a
+// single NaN poisons Math.max). Used where an array can legitimately carry gaps,
+// e.g. unmeasured recombination pairs from a thresholded pre-computed LD file.
+export function maxFinite(
+  arr: ArrayLike<number>,
+  init = Number.NEGATIVE_INFINITY,
+) {
+  let max = init
+  for (let i = 0; i < arr.length; i++) {
+    const v = arr[i]!
+    if (Number.isFinite(v) && v > max) {
+      max = v
+    }
+  }
+  return max
+}
+
 export function min(arr: ArrayLike<number>, init = Number.POSITIVE_INFINITY) {
   let min = init
   for (let i = 0; i < arr.length; i++) {

@@ -1,5 +1,7 @@
 import { observer } from 'mobx-react'
 
+import { LD_FILTER_CATEGORIES } from '../../shared/ldFilterCategories.ts'
+
 import type { SharedLDModel } from '../shared.ts'
 
 // Compact readout of how many variants survived filtering, so an empty or
@@ -15,13 +17,7 @@ const LDStatusBar = observer(function LDStatusBar({
     return null
   }
   const { totalVariants, passedVariants } = filterStats
-  const dropped = [
-    ['MAF', filterStats.filteredByMaf],
-    ['multiallelic', filterStats.filteredByMultiallelic],
-    ['HWE', filterStats.filteredByHwe],
-    ['call rate', filterStats.filteredByCallRate],
-    ['length', filterStats.filteredByLength],
-  ].filter(([, n]) => (n as number) > 0)
+  const dropped = LD_FILTER_CATEGORIES.filter(c => filterStats[c.key] > 0)
   // Name the estimator so an approximate (composite) matrix isn't mistaken for
   // exact haplotypic LD.
   const methodLabel =
@@ -47,7 +43,7 @@ const LDStatusBar = observer(function LDStatusBar({
     >
       {passedVariants} / {totalVariants} variants shown
       {dropped.length > 0
-        ? ` (${dropped.map(([label, n]) => `${n} ${label}`).join(', ')})`
+        ? ` (${dropped.map(c => `${filterStats[c.key]} ${c.label}`).join(', ')})`
         : ''}
       {methodLabel ? ` · LD: ${methodLabel}` : ''}
     </div>

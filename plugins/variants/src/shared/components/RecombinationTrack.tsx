@@ -1,4 +1,4 @@
-import { getFillProps, getStrokeProps, max } from '@jbrowse/core/util'
+import { getFillProps, getStrokeProps, maxFinite } from '@jbrowse/core/util'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -49,7 +49,9 @@ const RecombinationTrack = observer(function RecombinationTrack({
   const topPadding = YSCALEBAR_LABEL_OFFSET
   const bottomPadding = YSCALEBAR_LABEL_OFFSET
   const plotHeight = trackHeight - topPadding - bottomPadding
-  const maxValue = max(recombination.values, 0.1)
+  // Absent adjacent pairs from a thresholded pre-computed LD file are NaN
+  // (unmeasured); maxFinite ignores them so one gap can't blow up the scale.
+  const maxValue = maxFinite(recombination.values, 0.1)
 
   // Build SVG path for the recombination line
   const points: string[] = []
@@ -60,6 +62,11 @@ const RecombinationTrack = observer(function RecombinationTrack({
 
   for (let i = 0; i < recombination.values.length; i++) {
     const value = recombination.values[i]!
+    // Skip unmeasured (NaN) pairs: the line bridges the gap rather than drawing a
+    // spurious spike, and the index-based x still aligns with the SNP columns.
+    if (!Number.isFinite(value)) {
+      continue
+    }
     let x: number
     if (useGenomicPositions && regionStart !== undefined && bpPerPx) {
       // positions[i] is already the midpoint between SNP i and SNP i+1

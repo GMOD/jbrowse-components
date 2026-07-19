@@ -14,6 +14,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { LD_FILTER_CATEGORIES } from '../ldFilterCategories.ts'
+
 import type { FilterStats } from '../../VariantRPC/getLDMatrix.ts'
 
 interface LDFilterModel {
@@ -71,22 +73,12 @@ export default observer(function LDFilterDialog({
             <Box component="ul" sx={{ margin: 0, paddingLeft: 2 }}>
               <li>Total variants in region: {filterStats.totalVariants}</li>
               <li>Passed all filters: {filterStats.passedVariants}</li>
-              {filterStats.filteredByMaf > 0 && (
-                <li>Filtered by MAF: {filterStats.filteredByMaf}</li>
-              )}
-              {filterStats.filteredByLength > 0 && (
-                <li>Filtered by length: {filterStats.filteredByLength}</li>
-              )}
-              {filterStats.filteredByMultiallelic > 0 && (
-                <li>
-                  Filtered by multiallelic: {filterStats.filteredByMultiallelic}
-                </li>
-              )}
-              {filterStats.filteredByHwe > 0 && (
-                <li>Filtered by HWE: {filterStats.filteredByHwe}</li>
-              )}
-              {filterStats.filteredByCallRate > 0 && (
-                <li>Filtered by call rate: {filterStats.filteredByCallRate}</li>
+              {LD_FILTER_CATEGORIES.filter(c => filterStats[c.key] > 0).map(
+                c => (
+                  <li key={c.key}>
+                    Filtered by {c.label}: {filterStats[c.key]}
+                  </li>
+                ),
               )}
             </Box>
           </Alert>

@@ -16,3 +16,8 @@ export type {
 } from './calculateLDStatsPhased.ts'
 export { isLDRecordSource } from './ldRecordSource.ts'
 export type { LDRecordSource } from './ldRecordSource.ts'
+export {
+  getChiSquareCritical,
+  normalInverseCDF,
+  passesHweFilter,
+} from './hweFilter.ts'

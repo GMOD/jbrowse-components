@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { getContainingView, max } from '@jbrowse/core/util'
+import { getContainingView, maxFinite } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
   SvgChrome,
@@ -147,7 +147,7 @@ function LdSvgBody({
             />
             <RecombinationYScaleBar
               height={recombTrackHeight}
-              maxValue={max(rpcData.recombination.values, 0.1)}
+              maxValue={maxFinite(rpcData.recombination.values, 0.1)}
               exportSVG
             />
           </g>

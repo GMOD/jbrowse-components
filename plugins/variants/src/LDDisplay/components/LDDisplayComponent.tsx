@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getBpDisplayStr, getContainingView, max } from '@jbrowse/core/util'
+import { getBpDisplayStr, getContainingView, maxFinite } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
@@ -112,7 +112,7 @@ const RecombinationOverlay = observer(function RecombinationOverlay({
       />
       <RecombinationYScaleBar
         height={recombHeight}
-        maxValue={max(model.recombination!.values, 0.1)}
+        maxValue={maxFinite(model.recombination!.values, 0.1)}
       />
     </div>
   )

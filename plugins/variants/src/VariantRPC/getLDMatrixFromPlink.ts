@@ -64,15 +64,23 @@ function collectSortedSnps(records: PlinkLDRecord[]): LDSnp[] {
 }
 
 // Recombination evidence (1 - r²) plotted at the midpoint between each pair of
-// adjacent SNPs. Always r²-based, independent of the displayed metric.
-function buildRecombination(
+// adjacent SNPs. Always r²-based, independent of the displayed metric. A
+// thresholded PLINK file (`--ld-window-r2`) omits low-LD pairs, so an adjacent
+// pair with no record is *unmeasured*, not r²=0 — emitting it as 1 - 0 = 1 would
+// paint a spurious maximum-recombination spike, and "adjacent in the sorted
+// list" can be two genomically distant SNPs (intervening ones thresholded out),
+// so the spike would land at a meaningless midpoint. Mark absent pairs NaN so the
+// track leaves a gap; the arrays stay full length (one entry per adjacent pair)
+// so index-based (uniform) x-positions still line up with the SNP columns.
+export function buildRecombination(
   snps: LDSnp[],
   adjacentR2: Float32Array,
+  adjacentPresent: Uint8Array,
 ): RecombinationData {
   const values = new Float32Array(adjacentR2.length)
   const positions: number[] = []
   for (let i = 0; i < adjacentR2.length; i++) {
-    values[i] = 1 - adjacentR2[i]!
+    values[i] = adjacentPresent[i] ? 1 - adjacentR2[i]! : Number.NaN
     positions.push((snps[i]!.start + snps[i + 1]!.start) / 2)
   }
   return { values, positions }
@@ -135,7 +143,10 @@ export async function getLDMatrixFromPlink({
 
   // r² of each adjacent pair (i, i+1). Captured separately from ldValues, which
   // holds D' when ldMetric === 'dprime', because recombination is always 1 - r².
+  // `adjacentPresent` records which adjacent pairs the file actually named, so
+  // buildRecombination can distinguish an unmeasured pair from a real r²=0.
   const adjacentR2 = new Float32Array(Math.max(0, n - 1))
+  const adjacentPresent = new Uint8Array(Math.max(0, n - 1))
 
   for (const record of allRecords) {
     const i = indexByKey.get(snpKey(record.chrA, record.bpA))
@@ -144,6 +155,7 @@ export async function getLDMatrixFromPlink({
       ldValues[lowerTriIndex(i, j)] = metricValue(record, metric)
       if (Math.abs(i - j) === 1) {
         adjacentR2[Math.min(i, j)] = finiteOrZero(record.r2)
+        adjacentPresent[Math.min(i, j)] = 1
       }
     }
   }
@@ -157,6 +169,7 @@ export async function getLDMatrixFromPlink({
     filteredByLength: 0,
     filteredByMultiallelic: 0,
     filteredByHwe: 0,
+    filteredByJexl: 0,
   }
 
   return {
@@ -166,6 +179,6 @@ export async function getLDMatrixFromPlink({
     hasDprime,
     method: 'precomputed',
     filterStats,
-    recombination: buildRecombination(snps, adjacentR2),
+    recombination: buildRecombination(snps, adjacentR2, adjacentPresent),
   }
 }

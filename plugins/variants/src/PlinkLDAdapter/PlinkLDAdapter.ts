@@ -1,30 +1,23 @@
-import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { parsePlinkLDLine, resolvePlinkLDHeader } from '@jbrowse/ld-core'
 
-import { filterRecordsInRegion } from './filterRecordsInRegion.ts'
+import { PlinkLDAdapterBase } from './PlinkLDAdapterBase.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import type {
-  LDRecordSource,
-  PlinkLDHeader,
-  PlinkLDRecord,
-} from '@jbrowse/ld-core'
+import type { PlinkLDHeader, PlinkLDRecord } from '@jbrowse/ld-core'
 
-export default class PlinkLDAdapter
-  extends BaseAdapter
-  implements LDRecordSource
-{
-  private configured?: Promise<{
-    records: PlinkLDRecord[]
-    header: PlinkLDHeader
-    refNames: string[]
-  }>
-  private configureReady = false
+interface Config {
+  records: PlinkLDRecord[]
+  header: PlinkLDHeader
+  refNames: string[]
+}
 
-  private async configurePre(opts?: BaseOptions) {
+export default class PlinkLDAdapter extends PlinkLDAdapterBase<Config> {
+  protected statusLabel = 'Downloading LD data'
+
+  protected async loadConfig(opts?: BaseOptions): Promise<Config> {
     const ldLocation = this.getConf('ldLocation')
     const text = await fetchAndMaybeUnzipText(
       openLocation(ldLocation, this.pluginManager),
@@ -55,45 +48,11 @@ export default class PlinkLDAdapter
     return { records, header, refNames }
   }
 
-  protected async configurePre2(opts?: BaseOptions) {
-    this.configured ??= this.configurePre(opts)
-      .then(result => {
-        this.configureReady = true
-        return result
-      })
-      .catch((e: unknown) => {
-        this.configured = undefined
-        throw e
-      })
-    return this.configured
-  }
-
-  // Show "Downloading LD data" only while the file is genuinely loading. Once
-  // configured, callers await the cached promise silently rather than
-  // re-flashing the label on pan/zoom.
-  async configure(opts?: BaseOptions) {
-    const { statusCallback = () => {} } = opts ?? {}
-    return this.configureReady
-      ? this.configurePre2(opts)
-      : updateStatus('Downloading LD data', statusCallback, () =>
-          this.configurePre2(opts),
-        )
-  }
-
   public async getRefNames(opts: BaseOptions = {}) {
     const { refNames } = await this.configure(opts)
     return refNames
   }
 
-  async getHeader(opts?: BaseOptions) {
-    const { header } = await this.configure(opts)
-    return header
-  }
-
-  /**
-   * Get LD records where the first SNP (A) falls within the query region.
-   * Caller should additionally filter for snpB being in region if needed.
-   */
   public async getLDRecords(
     query: NoAssemblyRegion,
     opts: BaseOptions = {},
@@ -103,16 +62,5 @@ export default class PlinkLDAdapter
     return records.filter(
       r => r.chrA === refName && r.bpA >= start && r.bpA <= end,
     )
-  }
-
-  /**
-   * Get LD records where BOTH SNPs fall within the query region.
-   * This is what's needed for the LD triangle display.
-   */
-  public async getLDRecordsInRegion(
-    query: NoAssemblyRegion,
-    opts: BaseOptions = {},
-  ): Promise<PlinkLDRecord[]> {
-    return filterRecordsInRegion(await this.getLDRecords(query, opts), query)
   }
 }
