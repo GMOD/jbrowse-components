@@ -1,4 +1,4 @@
-The view can paint highlighted regions over the genome — useful for calling out
+The view can paint highlighted regions over the genome, useful for calling out
 a region of interest, a search hit, or a variant locus. Highlights live on the
 session, so they round-trip through saved sessions.
 

@@ -1,6 +1,6 @@
 A multi-sample VCF (one genotype column per sample) can render each sample as a
 row, grouped and colored by sample metadata. Provide the metadata via a samples
-TSV on the adapter — its first column is the sample name, and the remaining
+TSV on the adapter. Its first column is the sample name, and the remaining
 columns (`population`, `phenotype`, …) become groupable attributes:
 
 ```js
@@ -13,7 +13,7 @@ adapter: {
 ```
 
 Set `colorBy` on the display **configuration** (not a session
-[`displaySnapshot`](../session-setup/#with-init-advanced) — `colorBy` is a
+[`displaySnapshot`](../session-setup/#with-init-advanced), `colorBy` is a
 config slot, read once when sources load) and list
 `LinearMultiSampleVariantDisplay` first in the track's `displays` array. A track
 opens its first configured display by default, so opening it by `trackId` shows

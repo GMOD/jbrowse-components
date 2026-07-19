@@ -1,5 +1,5 @@
 Register additional tracks on a running view by calling `addTrackConf` and
-`showTrack` from an event handler — not during render:
+`showTrack` from an event handler, not during render:
 
 ```js
 state.jbrowse.addTrackConf({

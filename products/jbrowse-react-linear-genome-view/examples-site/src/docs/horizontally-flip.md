@@ -4,7 +4,7 @@ two ways in, shown here on two views.
 
 **Imperatively**, the view exposes a
 [`horizontallyFlip()`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-horizontallyflip)
-action on `session.view`, reachable via a `ref` on `<LinearGenomeView>` — useful
+action on `session.view`, reachable via a `ref` on `<LinearGenomeView>`. Useful
 for custom toolbar buttons or keyboard shortcuts:
 
 ```js
@@ -12,7 +12,7 @@ ref.current?.session.view.horizontallyFlip()
 ```
 
 **Declaratively**, append `[rev]` to a locstring passed to `navToLocString` (or
-to `init.loc`) to open already flipped; the flip happens as part of navigation:
+to `init.loc`) to open already flipped. The flip happens as part of navigation:
 
 ```js
 init={{ loc: 'ctgA:1,000..5,000[rev]' }}

@@ -1,4 +1,4 @@
-A linear genome view can show several regions at once — pass a space-separated
+A linear genome view can show several regions at once. Pass a space-separated
 multi-region locstring to `init.loc`:
 
 ```js

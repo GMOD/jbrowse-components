@@ -1,5 +1,5 @@
 A **per-track** index attaches to a single track config rather than the
-top-level view config, and is opened only when that track is loaded — best when
+top-level view config, and is opened only when that track is loaded, best when
 tracks are added and removed dynamically. Add a `textSearching` block to the
 track:
 

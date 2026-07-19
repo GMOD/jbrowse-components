@@ -1,4 +1,4 @@
-A `ref` on `<LinearGenomeView>` gives you the live `LinearGenomeViewModel` — its
+A `ref` on `<LinearGenomeView>` gives you the live `LinearGenomeViewModel`. Its
 `.session.view` can be read, mutated, and have its actions called from
 components outside the view tree, which is how you wire up "jump to this gene"
 buttons, search-result lists, or programmatic tours. This example drives one
@@ -18,7 +18,7 @@ ref.current?.session.view
 [`navToLocations`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-navtolocations)
 takes an array of `{ refName, start, end, assemblyName? }` objects, plus an
 optional second `assemblyName` default. Use it when you already have numeric
-coordinates — e.g. bridging from a backend search service — to skip the string
+coordinates (e.g. bridging from a backend search service) to skip the string
 formatting and parsing round-trip. Pass multiple regions to land in a
 multi-region view:
 
@@ -31,9 +31,9 @@ ref.current?.session.view
 There's also a lower-level
 [`navTo(query)`](https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-navto)
 that only navigates if the target lies **inside the currently displayed
-regions** — it won't re-set them, so `navToLocations`/`navToLocString` are
+regions**. It won't re-set them, so `navToLocations`/`navToLocString` are
 almost always what you want for external navigation. The full set of navigation
 actions (`zoomTo`, `centerAt`, `showAllRegions`, `moveTo`, …) is enumerated in
 the
-[LinearGenomeView state model docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/)
-— anything marked `#action` there is callable on `ref.current.session.view`.
+[LinearGenomeView state model docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/).
+Anything marked `#action` there is callable on `ref.current.session.view`.

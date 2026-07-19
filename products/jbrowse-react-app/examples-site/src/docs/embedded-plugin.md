@@ -16,12 +16,13 @@ class MyPlugin extends Plugin {
 ```
 
 This example registers a plugin that adds a "console.log the selected region"
-item to the linear genome view's rubber-band menu — click and drag on the ruler
+item to the linear genome view's rubber-band menu. Click and drag on the ruler
 to see it. NPM-published plugins look identical from your app's perspective:
 `import` the class and pass it the same way.
 
 Plugins can also be [loaded from a URL](../plugins/#with-external-plugin) at
 runtime. See the
 [plugin development guide](https://jbrowse.org/jb2/docs/developer_guide/) for
-authoring. Note: if you enable the [web worker RPC](../customizing-the-app/#with-web-worker),
-plugins must be registered in **both** the main thread and the worker.
+authoring. Note: if you enable the
+[web worker RPC](../customizing-the-app/#with-web-worker), plugins must be
+registered in **both** the main thread and the worker.

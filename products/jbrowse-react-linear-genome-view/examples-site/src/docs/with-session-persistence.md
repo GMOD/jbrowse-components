@@ -1,4 +1,4 @@
-A [`defaultSession`](../default-session/) restores state on first paint; to keep
+A [`defaultSession`](../default-session/) restores state on first paint. To keep
 it up to date, mirror the live session back out as the user interacts. The
 session is a [MobX-state-tree](https://mobx-state-tree.js.org) node, so
 `onSnapshot` gives you a serializable snapshot after every change:
@@ -11,10 +11,12 @@ const state = createViewState({
   tracks,
   defaultSession: JSON.parse(localStorage.getItem(KEY)) ?? freshSession,
 })
-onSnapshot(state.session, snap => localStorage.setItem(KEY, JSON.stringify(snap)))
+onSnapshot(state.session, snap =>
+  localStorage.setItem(KEY, JSON.stringify(snap)),
+)
 ```
 
 The snapshot references tracks by `trackId` and the assembly by name, so it
-restores against the same `assembly`/`tracks` config you pass on every load —
-swap `localStorage` for a server call to persist per-user views. `getSnapshot`
+restores against the same `assembly`/`tracks` config you pass on every load.
+Swap `localStorage` for a server call to persist per-user views. `getSnapshot`
 is also how you export the current session on demand (e.g. a "share" button).

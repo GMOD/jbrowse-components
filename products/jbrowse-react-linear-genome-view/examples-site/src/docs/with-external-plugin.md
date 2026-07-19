@@ -1,6 +1,6 @@
-Plugins can be loaded at runtime from a URL — the model JBrowse Web uses for
-community-published plugins. Fetch the bundle(s) with `loadPlugins`, then pass
-the resolved plugin classes to `createViewState` via the normal `plugins`
+Plugins can be loaded at runtime from a URL. This is the model JBrowse Web uses
+for community-published plugins. Fetch the bundle(s) with `loadPlugins`, then
+pass the resolved plugin classes to `createViewState` via the normal `plugins`
 option:
 
 ```js
@@ -25,5 +25,5 @@ const state = createViewState({
 
 Because `loadPlugins` is async, run it in an effect and render the view only
 once the state resolves. For plugins you author or `npm install` yourself, pass
-the class directly — see [inline plugins](../plugins/#with-inline-plugins). The
+the class directly. See [inline plugins](../plugins/#with-inline-plugins). The
 [plugin store](https://jbrowse.org/jb2/plugin_store/) lists published plugins.

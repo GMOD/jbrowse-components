@@ -1,5 +1,5 @@
-If the config lives on a server — or differs per environment, per user, or per
-route — fetch it before constructing `createViewState`. Wrap `viewState` in
+If the config lives on a server (or differs per environment, per user, or per
+route), fetch it before constructing `createViewState`. Wrap `viewState` in
 `useState`/`useEffect` so React renders once the fetch resolves:
 
 ```jsx

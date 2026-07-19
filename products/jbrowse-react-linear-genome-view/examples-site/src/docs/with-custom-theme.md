@@ -1,6 +1,6 @@
 The embedded view accepts a Material-UI-style theme on its `configuration`
-block. JBrowse defines four named palette colors — `primary`, `secondary`,
-`tertiary`, and `quaternary` — that drive most of the chrome (toolbars, buttons,
+block. JBrowse defines four named palette colors (`primary`, `secondary`,
+`tertiary`, `quaternary`) that drive most of the chrome (toolbars, buttons,
 highlights). The DNA-base colors used in the sequence display are configurable
 separately.
 

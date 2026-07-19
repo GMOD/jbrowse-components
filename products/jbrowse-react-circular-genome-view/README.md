@@ -33,7 +33,7 @@ function View() {
 ```
 
 The component uses [Roboto](https://fonts.google.com/specimen/Roboto) when
-available — add
+available. Add
 [`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) to pull
 it in.
 

@@ -1,8 +1,8 @@
-An `init.tracks` entry can be an object carrying a `displaySnapshot` — initial
+An `init.tracks` entry can be an object carrying a `displaySnapshot`, the initial
 display state read once at startup. This is most useful on alignments tracks,
 where the display has a large configuration surface. Here a CRAM track opens
 colored by pair orientation, with soft-clipping revealed and an enlarged height,
-all declaratively — no post-mount imperative calls:
+all declaratively, with no post-mount imperative calls:
 
 ```js
 init: {

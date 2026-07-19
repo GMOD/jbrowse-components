@@ -1,5 +1,5 @@
 JBrowse Web auto-loads a `config.json` from the current directory (or the
-`?config=` URL parameter). The embedded `react-app2` component does **not** — it
+`?config=` URL parameter). The embedded `react-app2` component does **not**. It
 makes no assumptions about URLs and lets you control how and when the config is
 loaded.
 

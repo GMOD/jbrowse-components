@@ -1,5 +1,5 @@
 `DotplotView` compares two assemblies as a 2D dotplot. `init.views` lists the
-two assemblies; `tracks` lists the synteny tracks. Self-vs-self is allowed:
+two assemblies, and `tracks` lists the synteny tracks. Self-vs-self is allowed:
 
 ```js
 {
@@ -11,7 +11,7 @@ two assemblies; `tracks` lists the synteny tracks. Self-vs-self is allowed:
 }
 ```
 
-Like every view type, this is declared as a `defaultSession.views` entry — see
+Like every view type, this is declared as a `defaultSession.views` entry (see
 [Linear synteny view](../synteny-views/#synteny-example) for the general
-pattern. The fields `init` accepts come from the
+pattern). The fields `init` accepts come from the
 [DotplotView model docs](https://jbrowse.org/jb2/docs/models/dotplotview/).

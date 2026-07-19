@@ -1,4 +1,4 @@
-Alignments tracks can group reads by a SAM tag — haplotype (`HP`), cell barcode,
+Alignments tracks can group reads by a SAM tag: haplotype (`HP`), cell barcode,
 or any other tag your BAM/CRAM carries. Grouping splits the pileup into labeled
 lanes, each drawn independently. Set it on the display via `groupBy`, as a
 `displaySnapshot` on an `init.tracks` entry:

@@ -1,4 +1,4 @@
-A _session_ is JBrowse's runtime representation of "what's open" — which views,
+A _session_ is JBrowse's runtime representation of "what's open": which views,
 which tracks, which display settings. Passing `defaultSession` to
 `createViewState` restores that state on first paint.
 

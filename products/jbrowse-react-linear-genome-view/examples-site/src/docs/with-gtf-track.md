@@ -31,7 +31,7 @@ adapter: {
 ```
 
 For large files, prepare a tabix-indexed GTF and use the `GtfTabixAdapter`.
-`jbrowse sort-gff` works on GTF too — it shares GFF's refName/start column
+`jbrowse sort-gff` works on GTF too, since it shares GFF's refName/start column
 layout:
 
 ```bash

@@ -23,13 +23,13 @@ routes through this account, which prompts the user for a token and adds an
 `Authorization: Bearer <token>` header to each request.
 
 **OAuth note:** `DropboxOAuthInternetAccount` and
-`GoogleDriveOAuthInternetAccount` are **not** supported in the embedded LGV —
-they need app-level control over redirects and popups that only full JBrowse Web
+`GoogleDriveOAuthInternetAccount` are **not** supported in the embedded LGV.
+They need app-level control over redirects and popups that only full JBrowse Web
 provides. Run the OAuth flow in your host app and pass the resulting token to
 `ExternalTokenInternetAccount`.
 
 Although the name suggests external services, internet accounts are a general
-`fetch` override — a custom account type can rewrite URLs, add caching, or proxy
+`fetch` override. A custom account type can rewrite URLs, add caching, or proxy
 through your own backend. Config slots:
 [ExternalTokenInternetAccount](https://jbrowse.org/jb2/docs/config/externaltokeninternetaccount/),
 [HTTPBasicInternetAccount](https://jbrowse.org/jb2/docs/config/httpbasicinternetaccount/).

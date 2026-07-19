@@ -1,10 +1,10 @@
-Five viral genomes — SARS-CoV-2, Zika, Ebola, measles, and RSV-A — each built
-from a single config object bundled with the app. The **Pathogen** dropdown just
-swaps which committed config the view is built from; everything else is
-identical. Gene annotations are inline (a `FromConfigAdapter` `FeatureTrack`),
-while the two bulky pieces — the reference sequence and the per-position
-diversity track — are small standard flatfiles hosted on `jbrowse.org/demos`, so
-each committed config stays a few KB instead of megabytes of inlined data:
+Five viral genomes (SARS-CoV-2, Zika, Ebola, measles, and RSV-A), each built
+from a single config object bundled with the app. The **Pathogen** dropdown
+swaps which committed config the view is built from, and everything else is
+identical. Gene annotations are inline (a `FromConfigAdapter` `FeatureTrack`).
+The two bulky pieces, the reference sequence and the per-position diversity
+track, are small standard flatfiles hosted on `jbrowse.org/demos`, so each
+committed config stays a few KB instead of megabytes of inlined data:
 
 - reference: `IndexedFastaAdapter` (e.g. `covid.fa` + `.fai`)
 - diversity (Shannon-entropy): `BigWigAdapter` (e.g. `covid_entropy.bw`)
@@ -23,8 +23,8 @@ reconstructs each phylogeny tip's genotype at every variable site (walking the
 tree's nucleotide mutations root→tip) and writes a bgzipped/tabixed VCF plus a
 `samplesTsv` of each tip's metadata. JBrowse's
 `LinearMultiSampleVariantMatrixDisplay` renders it as samples × sites, colored
-by region — the genotype table behind the Nextstrain tree, in genome
-coordinates. The Zika and measles configs additionally carry a `CramAdapter`
+by region. It is the genotype table behind the Nextstrain tree, in genome
+coordinates. The Zika and measles configs also carry a `CramAdapter`
 **Published genomes** track (every genome NCBI publishes, aligned to the hosted
 reference with `minimap2`).
 

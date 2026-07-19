@@ -1,15 +1,14 @@
-Quantitative data — coverage, signal, microarray intensities — loads as a
+Quantitative data (coverage, signal, microarray intensities) loads as a
 [QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack/)
-backed by a
-[BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter/). The track
-renders through a
+backed by a [BigWigAdapter](https://jbrowse.org/jb2/docs/config/bigwigadapter/).
+The track renders through a
 [LinearWiggleDisplay](https://jbrowse.org/jb2/docs/config/linearwiggledisplay/),
 which offers several renderers (`xyplot`, `density`, `line`) and an autoscaling
 score axis.
 
 The
 [`displayDefaults` object shorthand](../feature-colors-and-labels/#with-track-color-shorthand)
-is the easiest way to configure all of this up front — JBrowse routes each key
+is the easiest way to configure all of this up front. JBrowse routes each key
 to the wiggle display:
 
 ```js
@@ -22,8 +21,8 @@ displayDefaults: {
 }
 ```
 
-Every available slot — `scaleType` (linear/log), `summaryScoreMode`, bicolor
-pivots, and more — is listed in the
+Every available slot, including `scaleType` (linear/log), `summaryScoreMode` and
+bicolor pivots, is listed in the
 [LinearWiggleDisplay config docs](https://jbrowse.org/jb2/docs/config/linearwiggledisplay/),
 and the runtime state (the fields you can set via a `displaySnapshot` in
 [`init`](../session-setup/#with-init-advanced)) is documented in the

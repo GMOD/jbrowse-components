@@ -1,13 +1,14 @@
-`@jbrowse/react-app2` embeds the **full JBrowse 2 application** — menu bar, view
-manager, drawer widgets, and every view type — inside a React component tree. If
+`@jbrowse/react-app2` embeds the **full JBrowse 2 application** (menu bar, view
+manager, drawer widgets, and every view type) inside a React component tree. If
 you only need a single linear track view without the app chrome, the lighter
 [`@jbrowse/react-linear-genome-view2`](https://jbrowse.org/storybook/lgv/)
 component is a better fit.
 
 ## A minimal embed
 
-Pass `assemblies`, `tracks`, and a `views` list straight to `<JBrowse>` as props
-— no `createViewState` call or nested `config` object to hand-assemble. Each
+Pass `assemblies`, `tracks`, and a `views` list straight to `<JBrowse>` as
+props, with no `createViewState` call or nested `config` object to
+hand-assemble. Each
 entry in `views` carries its own view-type `init` blob:
 
 ```jsx
@@ -31,29 +32,29 @@ import { JBrowse } from '@jbrowse/react-app2'
 />
 ```
 
-The stylesheet import is required — without it the view manager's tabs render
+The stylesheet import is required. Without it the view manager's tabs render
 unstyled. Import it once, anywhere in your app. It ships as a plain CSS file, so
 a build without a CSS loader can instead link
 `node_modules/@jbrowse/react-app2/dist/styles.css` directly.
 
-The props are **initial values** — read once on mount. `assemblies` and `tracks`
+The props are **initial values**, read once on mount. `assemblies` and `tracks`
 use the same format as a JBrowse Web `config.json`, so configs round-trip
 between the two. Unlike JBrowse Web, the embedded component does **not**
-auto-fetch a `config.json` from a URL parameter — you control how and when the
+auto-fetch a `config.json` from a URL parameter. You control how and when the
 config is loaded (see
 [Import a config.json](../loading-config/#with-import-config-json)).
 
 `<JBrowse>` also accepts:
 
-- `plugins` — inline or imported [plugin](../plugins/#embedded-plugin) classes
-- `makeWorkerInstance` — a [web worker](../customizing-the-app/#with-web-worker) factory for the
-  WebWorker RPC
-- `onChange` — an [observer](../customizing-the-app/#with-on-change) called on
+- `plugins`: inline or imported [plugin](../plugins/#embedded-plugin) classes
+- `makeWorkerInstance`: a [web worker](../customizing-the-app/#with-web-worker)
+  factory for the WebWorker RPC
+- `onChange`: an [observer](../customizing-the-app/#with-on-change) called on
   every MST patch
-- `ref` — to reach the underlying model imperatively after launch. For that, or
+- `ref`: to reach the underlying model imperatively after launch. For that, or
   when you need to read/drive the model from outside, use the unmanaged
-  `createViewState` + `<JBrowseApp>` flow instead — see
-  [Add tracks programmatically](../loading-config/#add-tracks-programmatically)
+  `createViewState` + `<JBrowseApp>` flow instead (see
+  [Add tracks programmatically](../loading-config/#add-tracks-programmatically))
 
 ## Configuration reference
 
