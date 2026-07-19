@@ -71,6 +71,17 @@ if (deadLinks.length > 0) {
   )
 }
 
+// Section headings must be unique — standalone top-level pages once each emitted
+// their own duplicate "## General" (sidebarSections now merges them).
+const headings = [...llms.matchAll(/^## (.+)$/gm)].map(match => match[1]!)
+const dupeHeadings = headings.filter((h, i) => headings.indexOf(h) !== i)
+if (dupeHeadings.length > 0) {
+  problems.push(
+    `${dupeHeadings.length} duplicate llms.txt section heading(s): ${[...new Set(dupeHeadings)].join(', ')}`,
+    '',
+  )
+}
+
 // Every doc page advertises its raw markdown via <link rel="alternate"
 // type="text/markdown" href="…/docs/<slug>.md"> (BaseLayout). Confirm each of
 // those hrefs resolves to an emitted file.
