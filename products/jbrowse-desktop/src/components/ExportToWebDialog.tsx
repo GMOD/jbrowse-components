@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { DEFAULT_SHARE_URL } from '@jbrowse/app-core'
 import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import { encodeSessionParam, fetchJson, useFetch } from '@jbrowse/core/util'
@@ -39,7 +40,6 @@ import type {
 
 async function buildExport(
   snapshot: WebExportInput,
-  shareURL: string,
   mode: SessionShareMode,
   session: AbstractSessionModel,
 ) {
@@ -66,10 +66,15 @@ async function buildExport(
   // sessionTracks config, a hosted-base track into a trackConfigDeltas entry the
   // web recipient merges — so the exported session shows what the sender saw.
   const bakedSession = bakePromotedDefaultsIntoSnapshot(session, plan.session)
+  // A short link uploads to the share server that the export TARGET
+  // (DEFAULT_WEB_BASE_URL) reads back from, which is DEFAULT_SHARE_URL — not this
+  // desktop instance's own shareURL config. Desktop never reads share links, so
+  // its own share server is irrelevant here; uploading there would just produce a
+  // link the target web instance can't resolve. The two defaults are a pair.
   const { sessionParam, password, plaintext } = await encodeSessionParam(
     mode,
     bakedSession,
-    { shareURL, referer: DEFAULT_WEB_BASE_URL },
+    { shareURL: DEFAULT_SHARE_URL, referer: DEFAULT_WEB_BASE_URL },
   )
   return {
     plan,
@@ -107,12 +112,10 @@ function PortabilityWarning({ plan }: { plan: WebExportPlan }) {
 const ExportToWebDialog = observer(function ExportToWebDialog({
   handleClose,
   snapshot,
-  shareURL,
   session,
 }: {
   handleClose: () => void
   snapshot: WebExportInput
-  shareURL: string
   session: AbstractSessionModel
 }) {
   // Default to 'long' — a fully local, inline link. 'short' uploads the (open)
@@ -127,7 +130,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
     isLoading: loading,
     mutate,
   } = useFetch(['exportToWeb', mode], () =>
-    buildExport(snapshot, shareURL, mode, session),
+    buildExport(snapshot, mode, session),
   )
   const url = data?.url ?? ''
   const plaintext = data?.plaintext

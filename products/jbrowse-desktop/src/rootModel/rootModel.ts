@@ -6,7 +6,6 @@ import {
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
-import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
@@ -312,10 +311,6 @@ export default function rootModelFactory({
                               ExportToWebDialog,
                               {
                                 snapshot: getSaveSession(self),
-                                shareURL: readConfObject(
-                                  self.jbrowse.configuration,
-                                  'shareURL',
-                                ),
                                 session,
                                 handleClose: () => {
                                   doneCallback()
