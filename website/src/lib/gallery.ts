@@ -255,8 +255,8 @@ export const gallerySections: readonly GallerySection[] = [
     ],
   },
   {
-    id: 'quantitative',
-    title: 'Coverage, copy number, and epigenomics',
+    id: 'copynumber',
+    title: 'Coverage and copy number',
     items: [
       {
         label: 'CNV track (COLO829 tumor/normal)',
@@ -272,6 +272,12 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'Copy-number profiles for many 1000 Genomes individuals as a multi-row density heatmap. The in-app "Cluster by score" workflow reorders rows by signal similarity.',
       },
+    ],
+  },
+  {
+    id: 'hic',
+    title: 'Hi-C contact maps',
+    items: [
       {
         label: 'Hi-C contact matrix',
         spec: 'hic_track',
@@ -279,6 +285,12 @@ export const gallerySections: readonly GallerySection[] = [
         description:
           'A Hi-C contact matrix from a .hic file (Juicebox format) over ~11 Mb of chr8, with the RefSeq gene track above.',
       },
+    ],
+  },
+  {
+    id: 'epigenomics',
+    title: 'Epigenomics and chromatin state',
+    items: [
       {
         label: 'ChromHMM state painting',
         spec: 'chromhmm',
