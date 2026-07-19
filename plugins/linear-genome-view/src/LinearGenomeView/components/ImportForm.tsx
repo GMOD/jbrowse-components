@@ -5,22 +5,17 @@ import {
   AssemblySelector,
   ErrorBanner,
   RefNameAutocomplete,
+  RefNameAutocompleteEndAdornment,
   useAssemblySelection,
   useRecentLocations,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import {
-  Button,
-  Chip,
-  CircularProgress,
-  Container,
-  Grid,
-  Typography,
-} from '@mui/material'
+import { Button, CircularProgress, Container, Grid } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { recentLocationsMenu } from './recentLocationsMenu.ts'
 import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -31,14 +26,6 @@ const useStyles = makeStyles()(theme => ({
   },
   button: {
     margin: theme.spacing(2),
-  },
-  recent: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: theme.spacing(1),
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: theme.spacing(2),
   },
 }))
 
@@ -70,7 +57,18 @@ const LinearGenomeViewImportForm = observer(
     const value = inputText ?? regions?.[0]?.refName ?? ''
     const displayError = assemblyError ?? viewError
 
-    async function navigate(loc: string, option?: BaseResult) {
+    async function navigate({
+      loc,
+      option,
+      record,
+    }: {
+      loc: string
+      option?: BaseResult
+      // only remember locations the user actually typed or picked; skip the
+      // default first-refname that pre-fills the box, so a plain "Open" of the
+      // starting chromosome doesn't clutter the recent list
+      record: boolean
+    }) {
       model.setError(undefined)
       if (loc && selectedAsm) {
         try {
@@ -79,7 +77,9 @@ const LinearGenomeViewImportForm = observer(
             model,
             assemblyName: selectedAsm,
           })
-          addRecentLocation(loc)
+          if (record) {
+            addRecentLocation(loc)
+          }
         } catch (e) {
           console.error(e)
           session.notify(`${e}`, 'warning')
@@ -87,13 +87,25 @@ const LinearGenomeViewImportForm = observer(
       }
     }
 
+    const recentMenuItems = recentLocationsMenu({
+      recentLocations,
+      onNavigate: loc => {
+        navigate({ loc, record: true }).catch(() => {})
+      },
+      onClear: clearRecentLocations,
+    })
+
     return (
       <Container className={classes.importFormContainer}>
         {displayError ? <ErrorBanner error={displayError} /> : null}
         <form
           onSubmit={async event => {
             event.preventDefault()
-            await navigate(value, selectedOption)
+            await navigate({
+              loc: value,
+              option: selectedOption,
+              record: inputText !== undefined,
+            })
           }}
         >
           <Grid
@@ -135,6 +147,11 @@ const LinearGenomeViewImportForm = observer(
                     setSelectedOption(opt)
                     setInputText(opt.getDisplayString())
                   }}
+                  endAdornment={
+                    <RefNameAutocompleteEndAdornment
+                      menuItems={recentMenuItems}
+                    />
+                  }
                   helperText="Enter sequence name, feature name, or location"
                 />
               ) : (
@@ -164,24 +181,6 @@ const LinearGenomeViewImportForm = observer(
             </Button>
           </Grid>
         </form>
-        {recentLocations.length ? (
-          <div className={classes.recent}>
-            <Typography variant="caption" color="textSecondary">
-              Recent
-            </Typography>
-            {recentLocations.map(loc => (
-              <Chip
-                key={loc}
-                label={loc}
-                size="small"
-                onClick={() => navigate(loc)}
-              />
-            ))}
-            <Button size="small" onClick={clearRecentLocations}>
-              Clear
-            </Button>
-          </div>
-        ) : null}
       </Container>
     )
   },

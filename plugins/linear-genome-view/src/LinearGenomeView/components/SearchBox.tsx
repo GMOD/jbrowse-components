@@ -18,9 +18,9 @@ import {
   navigateToSelectedOption,
 } from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
+import { recentLocationsMenu } from './recentLocationsMenu.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
-import type { MenuItem } from '@jbrowse/core/ui'
 
 const defaultStyle = { margin: SPACING }
 
@@ -60,19 +60,13 @@ const SearchBox = observer(function SearchBox({
     }
   }
 
-  const recentMenuItems: MenuItem[] = recentLocations.length
-    ? [
-        { type: 'subHeader', label: 'Recent' },
-        ...recentLocations.map(loc => ({
-          label: loc,
-          onClick: () => {
-            navigate(new BaseResult({ label: loc })).catch(() => {})
-          },
-        })),
-        { type: 'divider' },
-        { label: 'Clear recent locations', onClick: clearRecentLocations },
-      ]
-    : []
+  const recentMenuItems = recentLocationsMenu({
+    recentLocations,
+    onNavigate: loc => {
+      navigate(new BaseResult({ label: loc })).catch(() => {})
+    },
+    onClear: clearRecentLocations,
+  })
 
   return (
     <RefNameAutocomplete
