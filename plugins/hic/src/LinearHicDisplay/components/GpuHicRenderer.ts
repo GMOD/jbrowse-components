@@ -14,6 +14,7 @@ const PASS_MAIN = 'main'
 const REGION_KEY = 0
 const UNIFORMS_SIZE_BYTES = hicShader.UNIFORMS_SIZE_BYTES
 const U = hicShader.UNIFORM_OFFSET_F32
+const UU = hicShader.UNIFORM_OFFSET_U32
 const F = hicShader.FIELD_OFFSET_F32
 const STRIDE = hicShader.INSTANCE_STRIDE_F32
 const STRIDE_BYTES = hicShader.INSTANCE_STRIDE_BYTES
@@ -84,7 +85,7 @@ export class GpuHicRenderer
       this.uniformF32[U.colorMaxScore] = state.colorMaxScore
       this.uniformF32[U.viewScale] = state.viewScale
       this.uniformF32[U.viewOffsetX] = state.viewOffsetX
-      this.uniformU32[U.useLogScale] = state.useLogScale ? 1 : 0
+      this.uniformU32[UU.useLogScale] = state.useLogScale ? 1 : 0
 
       this.hal.writeUniforms(this.uniformData)
       this.hal.drawPass(PASS_MAIN, REGION_KEY)

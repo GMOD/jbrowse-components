@@ -262,18 +262,40 @@ export function emitInterface(inputs: CodegenInputs) {
   if (cb) {
     const u = cb.elementType
     const totalBytes = cb.elementVarLayout.binding.size
-    lines.push(
-      `export const UNIFORMS_SIZE_BYTES = ${totalBytes}`,
-      '',
-      '// Indices into a Float32Array / Uint32Array view over the uniform buffer.',
-      'export const UNIFORM_OFFSET_F32 = {',
+    lines.push(`export const UNIFORMS_SIZE_BYTES = ${totalBytes}`, '')
+
+    // Per-view offset maps. Each uniform field appears only under the map
+    // whose typed-array view matches its Slang scalar type
+    // (`UNIFORM_OFFSET_F32` for float, `_I32` for int, `_U32` for uint), so
+    // writing a field through the wrong view (`f32[U.someIntField]`) is a
+    // compile error instead of silent value corruption. The word offset is
+    // identical across views — the split only constrains which fields each
+    // view may address. Empty maps aren't emitted (a float-only shader has no
+    // `_I32` / `_U32`).
+    const viewOf = (t: SlangType) =>
+      isUintField(t) ? 'u32' : isIntField(t) ? 'i32' : 'f32'
+    const uniformOffsets = u.fields.flatMap(f =>
+      f.binding?.kind === 'uniform'
+        ? [{ name: f.name, word: f.binding.offset / 4, view: viewOf(f.type) }]
+        : [],
     )
-    for (const f of u.fields) {
-      if (f.binding?.kind === 'uniform') {
-        lines.push(`  ${f.name}: ${f.binding.offset / 4},`)
+    for (const { view, suffix, arrayName } of [
+      { view: 'f32', suffix: 'F32', arrayName: 'Float32Array' },
+      { view: 'i32', suffix: 'I32', arrayName: 'Int32Array' },
+      { view: 'u32', suffix: 'U32', arrayName: 'Uint32Array' },
+    ] as const) {
+      const fields = uniformOffsets.filter(o => o.view === view)
+      if (fields.length > 0) {
+        lines.push(
+          `// Word indices into a ${arrayName} view over the uniform buffer.`,
+          `export const UNIFORM_OFFSET_${suffix} = {`,
+        )
+        for (const o of fields) {
+          lines.push(`  ${o.name}: ${o.word},`)
+        }
+        lines.push('} as const', '')
       }
     }
-    lines.push('} as const', '')
 
     // Auto-detect palette groups: fields with a shared prefix and consecutive
     // integer suffixes starting at 0 (e.g. arcColor0..7, arcLineColor0..1).

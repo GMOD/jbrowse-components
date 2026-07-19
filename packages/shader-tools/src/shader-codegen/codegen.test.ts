@@ -79,13 +79,19 @@ const reflection = {
 describe('emitInterface uniforms', () => {
   const out = emitInterface({ baseName: 'test', reflection })
 
-  test('emits total size and word offsets', () => {
+  test('splits word offsets into per-view maps by scalar type', () => {
     expect(out).toContain('export const UNIFORMS_SIZE_BYTES = 48')
-    expect(out).toContain('flag: 0,')
-    expect(out).toContain('level: 1,')
+    // float fields (incl. the vec palette) address the buffer through a
+    // Float32Array, so they land in the F32 map.
+    expect(out).toContain('export const UNIFORM_OFFSET_F32 = {')
     expect(out).toContain('scale: 2,')
     expect(out).toContain('arcColor0: 4,')
     expect(out).toContain('arcColor1: 8,')
+    // int / uint fields get their own maps so `f32[U.flag]` can't compile.
+    expect(out).toContain('export const UNIFORM_OFFSET_U32 = {')
+    expect(out).toContain('flag: 0,')
+    expect(out).toContain('export const UNIFORM_OFFSET_I32 = {')
+    expect(out).toContain('level: 1,')
   })
 
   test('auto-detects the palette slot-array group', () => {

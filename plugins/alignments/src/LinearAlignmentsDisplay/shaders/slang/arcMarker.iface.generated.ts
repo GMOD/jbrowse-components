@@ -11,7 +11,7 @@ export const ARC_MARKER_HEIGHT_MARGIN = 8
 
 export const UNIFORMS_SIZE_BYTES = 336
 
-// Indices into a Float32Array / Uint32Array view over the uniform buffer.
+// Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   bpHi: 0,
   bpLo: 1,
@@ -39,6 +39,13 @@ export const UNIFORM_OFFSET_F32 = {
   pairedArcsDown: 23,
   arcsYDomainBp: 24,
   arcsYLog: 25,
+  reversed: 33,
+  pxPerBp: 79,
+  arcBandH: 83,
+} as const
+
+// Word indices into a Int32Array view over the uniform buffer.
+export const UNIFORM_OFFSET_I32 = {
   colorScheme: 26,
   chainMode: 27,
   showStroke: 28,
@@ -46,7 +53,11 @@ export const UNIFORM_OFFSET_F32 = {
   coverageScaleType: 30,
   filterMismatchesByFrequency: 31,
   mismatchAlpha: 32,
-  reversed: 33,
+  colorSuppChains: 80,
+} as const
+
+// Word indices into a Uint32Array view over the uniform buffer.
+export const UNIFORM_OFFSET_U32 = {
   colorFwd: 34,
   colorRev: 35,
   colorNostrand: 36,
@@ -92,11 +103,8 @@ export const UNIFORM_OFFSET_F32 = {
   linkedReadColor5: 76,
   linkedReadColor6: 77,
   linkedReadColor7: 78,
-  pxPerBp: 79,
-  colorSuppChains: 80,
   colorSplitInversion: 81,
   arcColor8: 82,
-  arcBandH: 83,
 } as const
 
 

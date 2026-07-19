@@ -128,6 +128,8 @@ import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 // UNIFORMS_SIZE_BYTES. Keep one shared ArrayBuffer for the UBO.
 const UNIFORMS_SIZE_BYTES = readShader.UNIFORMS_SIZE_BYTES
 const U = readShader.UNIFORM_OFFSET_F32
+const UI = readShader.UNIFORM_OFFSET_I32
+const UU = readShader.UNIFORM_OFFSET_U32
 const USLOTS = readShader.UNIFORM_SLOT_ARRAYS
 
 // Pass IDs not yet hosted by a feature folder. Per-feature PASS_* constants
@@ -173,9 +175,9 @@ function fillFrameUniforms(
       ? region.maxDepth / domainMax
       : 1
   f[U.depthDomainMax] = domainMax ?? 0
-  i[U.coverageScaleType] = state.coverageIsLog ? 1 : 0
-  i[U.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
-  i[U.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
+  i[UI.coverageScaleType] = state.coverageIsLog ? 1 : 0
+  i[UI.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
+  i[UI.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
   f[U.binSize] = region.binSize
   // Scale clip/insertion bars to half the coverage drawing height (matches
   // origin/main + the Canvas2D path in drawInterbaseSegments). The worker bakes
@@ -190,14 +192,14 @@ function fillFrameUniforms(
       : 0
   f[U.insertUpper] = region.insertSizeStats?.upper ?? NO_INSERT_UPPER
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
-  i[U.colorScheme] = state.colorScheme
+  i[UI.colorScheme] = state.colorScheme
   // Chain layout drives read-coloring (supplementary colors, strand flipping,
   // mate-unmapped coloring, chevrons). The bezier connection overlay is
   // orthogonal and does not switch coloring into chain mode.
-  i[U.chainMode] = state.linkedReads === 'normal' ? 1 : 0
-  i[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
-  i[U.flipStrandLongRead] = state.flipStrandLongReadChains ? 1 : 0
-  i[U.colorSuppChains] = state.colorSupplementaryChains ? 1 : 0
+  i[UI.chainMode] = state.linkedReads === 'normal' ? 1 : 0
+  i[UI.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
+  i[UI.flipStrandLongRead] = state.flipStrandLongReadChains ? 1 : 0
+  i[UI.colorSuppChains] = state.colorSupplementaryChains ? 1 : 0
   f[U.reversed] = frame.reversed ? 1 : 0
 }
 
@@ -267,36 +269,36 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
 // the given u32 view only, no rendering side effects.
 function writePaletteToUbo(u: Uint32Array, c: ColorPalette) {
   const pack = (rgb: RGBColor) => normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
-  u[U.colorFwd] = pack(c.colorFwdStrand)
-  u[U.colorRev] = pack(c.colorRevStrand)
-  u[U.colorNostrand] = pack(c.colorNostrand)
-  u[U.colorPairLR] = pack(c.colorPairLR)
-  u[U.colorPairRL] = pack(c.colorPairRL)
-  u[U.colorPairRR] = pack(c.colorPairRR)
-  u[U.colorPairLL] = pack(c.colorPairLL)
-  u[U.colorBaseA] = pack(c.colorBaseA)
-  u[U.colorBaseC] = pack(c.colorBaseC)
-  u[U.colorBaseG] = pack(c.colorBaseG)
-  u[U.colorBaseT] = pack(c.colorBaseT)
-  u[U.colorBaseN] = pack(c.colorBaseN)
-  u[U.colorInsertion] = pack(c.colorInsertion)
-  u[U.colorDeletion] = pack(c.colorDeletion)
-  u[U.colorSkip] = pack(c.colorSkip)
-  u[U.colorSoftclip] = pack(c.colorSoftclip)
-  u[U.colorHardclip] = pack(c.colorHardclip)
-  u[U.colorInsertionIndicator] = pack(c.colorInsertionIndicator)
-  u[U.colorSoftclipIndicator] = pack(c.colorSoftclipIndicator)
-  u[U.colorHardclipIndicator] = pack(c.colorHardclipIndicator)
-  u[U.colorCoverage] = pack(c.colorCoverage)
-  u[U.colorModFwd] = pack(c.colorModificationFwd)
-  u[U.colorModRev] = pack(c.colorModificationRev)
-  u[U.colorLongInsert] = pack(c.colorLongInsert)
-  u[U.colorShortInsert] = pack(c.colorShortInsert)
-  u[U.colorSupplementary] = pack(c.colorSupplementary)
-  u[U.colorSplitInversion] = pack(c.colorSplitInversion)
-  u[U.colorUnmappedMate] = pack(c.colorUnmappedMate)
-  u[U.colorInterchrom] = pack(c.colorInterchrom)
-  u[U.colorMutedSnpBase] = pack(c.colorMutedSnpBase)
+  u[UU.colorFwd] = pack(c.colorFwdStrand)
+  u[UU.colorRev] = pack(c.colorRevStrand)
+  u[UU.colorNostrand] = pack(c.colorNostrand)
+  u[UU.colorPairLR] = pack(c.colorPairLR)
+  u[UU.colorPairRL] = pack(c.colorPairRL)
+  u[UU.colorPairRR] = pack(c.colorPairRR)
+  u[UU.colorPairLL] = pack(c.colorPairLL)
+  u[UU.colorBaseA] = pack(c.colorBaseA)
+  u[UU.colorBaseC] = pack(c.colorBaseC)
+  u[UU.colorBaseG] = pack(c.colorBaseG)
+  u[UU.colorBaseT] = pack(c.colorBaseT)
+  u[UU.colorBaseN] = pack(c.colorBaseN)
+  u[UU.colorInsertion] = pack(c.colorInsertion)
+  u[UU.colorDeletion] = pack(c.colorDeletion)
+  u[UU.colorSkip] = pack(c.colorSkip)
+  u[UU.colorSoftclip] = pack(c.colorSoftclip)
+  u[UU.colorHardclip] = pack(c.colorHardclip)
+  u[UU.colorInsertionIndicator] = pack(c.colorInsertionIndicator)
+  u[UU.colorSoftclipIndicator] = pack(c.colorSoftclipIndicator)
+  u[UU.colorHardclipIndicator] = pack(c.colorHardclipIndicator)
+  u[UU.colorCoverage] = pack(c.colorCoverage)
+  u[UU.colorModFwd] = pack(c.colorModificationFwd)
+  u[UU.colorModRev] = pack(c.colorModificationRev)
+  u[UU.colorLongInsert] = pack(c.colorLongInsert)
+  u[UU.colorShortInsert] = pack(c.colorShortInsert)
+  u[UU.colorSupplementary] = pack(c.colorSupplementary)
+  u[UU.colorSplitInversion] = pack(c.colorSplitInversion)
+  u[UU.colorUnmappedMate] = pack(c.colorUnmappedMate)
+  u[UU.colorInterchrom] = pack(c.colorInterchrom)
+  u[UU.colorMutedSnpBase] = pack(c.colorMutedSnpBase)
   for (let i = 0; i < arcColorPalette.length; i++) {
     u[USLOTS.arcColor[i]!] = pack(arcColorPalette[i]!)
   }
@@ -699,11 +701,11 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       // features/mismatch/baseColors.ts — keep in sync when changing this.
       const m = state.colors.colorMutedSnpBase
       const grey = normalizedRgbToABGR(m[0], m[1], m[2])
-      this.uU32[U.colorBaseA] = grey
-      this.uU32[U.colorBaseC] = grey
-      this.uU32[U.colorBaseG] = grey
-      this.uU32[U.colorBaseT] = grey
-      this.uU32[U.colorBaseN] = grey
+      this.uU32[UU.colorBaseA] = grey
+      this.uU32[UU.colorBaseC] = grey
+      this.uU32[UU.colorBaseG] = grey
+      this.uU32[UU.colorBaseT] = grey
+      this.uU32[UU.colorBaseN] = grey
     }
     this.hal.writeUniforms(this.uData)
   }

@@ -7,8 +7,8 @@ export const WORKGROUP_SIZE_X = 64
 
 export const UNIFORMS_SIZE_BYTES = 32
 
-// Indices into a Float32Array / Uint32Array view over the uniform buffer.
-export const UNIFORM_OFFSET_F32 = {
+// Word indices into a Uint32Array view over the uniform buffer.
+export const UNIFORM_OFFSET_U32 = {
   numSnps: 0,
   numWords: 1,
   ldMetric: 2,

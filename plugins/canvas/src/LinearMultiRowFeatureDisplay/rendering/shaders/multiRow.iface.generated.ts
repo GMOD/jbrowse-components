@@ -7,7 +7,7 @@ export const VERTS_PER_INSTANCE = 6
 
 export const UNIFORMS_SIZE_BYTES = 32
 
-// Indices into a Float32Array / Uint32Array view over the uniform buffer.
+// Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
   bpRangeX: 0,
   canvasHeight: 3,

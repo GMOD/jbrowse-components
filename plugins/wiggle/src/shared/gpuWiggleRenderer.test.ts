@@ -5,6 +5,7 @@ import {
   FIELD_OFFSET_F32 as F,
   INSTANCE_STRIDE_F32 as INSTANCE_STRIDE,
   UNIFORM_OFFSET_F32 as U,
+  UNIFORM_OFFSET_I32 as UI,
 } from './shaders/wiggle.generated.ts'
 import {
   RENDERING_TYPE_LINE,
@@ -161,8 +162,8 @@ describe('GpuWiggleRenderer', () => {
     const i32 = hal.getLastUniformsI32()!
 
     expect(f32[U.canvasHeight]).toBe(400)
-    expect(i32[U.scaleType]).toBe(SCALE_TYPE_LINEAR)
-    expect(i32[U.renderingType]).toBe(RENDERING_TYPE_XYPLOT)
+    expect(i32[UI.scaleType]).toBe(SCALE_TYPE_LINEAR)
+    expect(i32[UI.renderingType]).toBe(RENDERING_TYPE_XYPLOT)
     expect(f32[U.domainYMin]).toBe(0)
     expect(f32[U.domainYMax]).toBe(20)
     // zero MUST be 0.0 for hp-math precision
@@ -366,6 +367,6 @@ describe('GpuWiggleRenderer', () => {
     })
 
     const i32 = hal.getLastUniformsI32()!
-    expect(i32[U.scaleType]).toBe(SCALE_TYPE_LOG)
+    expect(i32[UI.scaleType]).toBe(SCALE_TYPE_LOG)
   })
 })

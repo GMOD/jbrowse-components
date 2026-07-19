@@ -23,6 +23,7 @@ const STRIDE_BYTES = ldGenomicShader.INSTANCE_STRIDE_BYTES
 // module) — either module's offsets are authoritative.
 const UNIFORMS_SIZE_BYTES = ldGenomicShader.UNIFORMS_SIZE_BYTES
 const U = ldGenomicShader.UNIFORM_OFFSET_F32
+const UU = ldGenomicShader.UNIFORM_OFFSET_U32
 
 const BLEND_PREMUL = {
   srcFactor: 'one',
@@ -124,7 +125,7 @@ export class GpuLDRenderer
       this.uniformF32[U.yScalar] = state.yScalar
       this.uniformF32[U.viewScale] = state.viewScale
       this.uniformF32[U.viewOffsetX] = state.viewOffsetX
-      this.uniformU32[U.signedLd] = state.signedLD ? 1 : 0
+      this.uniformU32[UU.signedLd] = state.signedLD ? 1 : 0
       this.uniformF32[U.uniformW] = state.uniformW
 
       this.hal.writeUniforms(this.uniformData)

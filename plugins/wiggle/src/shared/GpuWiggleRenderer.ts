@@ -23,6 +23,7 @@ const PASS_LINE = 'line'
 const PASS_LINE_CENTER = 'lineCenter'
 
 const U = wiggleShader.UNIFORM_OFFSET_F32
+const UI = wiggleShader.UNIFORM_OFFSET_I32
 
 // One shader, three triangle-list passes sharing the same vertex buffer.
 // PASS_FILL draws xyplot / density / scatter as 6-vert quads; PASS_LINE draws
@@ -100,8 +101,8 @@ export class GpuWiggleRenderer
 
     writeBpRangeUniforms(this.uniformF32, U.bpRangeX, clip, block.reversed)
     this.uniformF32[U.canvasHeight] = state.canvasHeight
-    this.uniformI32[U.scaleType] = state.scaleType
-    this.uniformI32[U.renderingType] = state.renderingType
+    this.uniformI32[UI.scaleType] = state.scaleType
+    this.uniformI32[UI.renderingType] = state.renderingType
     this.uniformF32[U.numRows] = state.numRows
     this.uniformF32[U.domainYMin] = state.domainY[0]
     this.uniformF32[U.domainYMax] = state.domainY[1]
