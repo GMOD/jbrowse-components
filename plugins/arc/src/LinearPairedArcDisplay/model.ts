@@ -97,6 +97,14 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * honors the declarative `forceLoad` config slot (matches the interactive
+       * Force-load button) — `ArcFetchModel`'s derived gate reads it via the mixin
+       */
+      get configForceLoad(): boolean {
+        return getConf(self, 'forceLoad')
+      },
+      /**
+       * #getter
        * arc stroke width in px, from the promotable `lineWidth` slot (track-menu
        * slider writes it); flat across all arcs
        */

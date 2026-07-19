@@ -5,6 +5,7 @@ import {
   evaluateRegionTooLarge,
   raiseLimitPast,
   resolveByteLimit,
+  resolveForceLoadLimits,
   scaleByteEstimate,
   scaledForceLoadByteLimit,
 } from './featureDensityUtils.ts'
@@ -51,6 +52,62 @@ describe('scaledForceLoadByteLimit', () => {
     expect(
       scaledForceLoadByteLimit({ scaledEstimate: undefined, rawBytes: 900 }),
     ).toBe(raiseLimitPast(900))
+  })
+})
+
+describe('resolveForceLoadLimits', () => {
+  const base = {
+    baselineByteLimit: 5_000_000,
+    densityGateActive: true,
+    observedMaxDensity: 4,
+    configuredMaxDensity: 1,
+  }
+
+  it('raises the byte axis when the estimate genuinely exceeds the baseline', () => {
+    const { userByteSizeLimit, userFeatureDensityLimit } =
+      resolveForceLoadLimits({
+        ...base,
+        estimatedVisibleBytes: 8_000_000,
+        rawBytes: 8_000_000,
+      })
+    expect(userByteSizeLimit).toBe(raiseLimitPast(8_000_000))
+    expect(userFeatureDensityLimit).toBeUndefined()
+  })
+
+  // The core "don't lower the ceiling" guard: a density-gated tabix region
+  // carries a small byte estimate under the baseline. Raising the byte ceiling
+  // to 1.5× that would install a limit BELOW the baseline and gate later,
+  // larger-byte regions — so the byte axis is skipped and density is raised.
+  it('raises density (not bytes) when the byte estimate is under the baseline', () => {
+    const { userByteSizeLimit, userFeatureDensityLimit } =
+      resolveForceLoadLimits({
+        ...base,
+        estimatedVisibleBytes: 100_000,
+        rawBytes: 100_000,
+      })
+    expect(userByteSizeLimit).toBeUndefined()
+    expect(userFeatureDensityLimit).toBe(raiseLimitPast(4)) // past observedMax
+  })
+
+  it('raises past the configured density when nothing is observed yet', () => {
+    const { userFeatureDensityLimit } = resolveForceLoadLimits({
+      ...base,
+      observedMaxDensity: 0,
+      estimatedVisibleBytes: undefined,
+      rawBytes: undefined,
+    })
+    expect(userFeatureDensityLimit).toBe(raiseLimitPast(1)) // configuredMaxDensity
+  })
+
+  it('raises nothing when neither axis is gating (no bytes, density inactive)', () => {
+    expect(
+      resolveForceLoadLimits({
+        ...base,
+        densityGateActive: false,
+        estimatedVisibleBytes: undefined,
+        rawBytes: undefined,
+      }),
+    ).toEqual({})
   })
 })
 

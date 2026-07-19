@@ -44,6 +44,40 @@ the force-load zone) — so an adapter-declared `fetchSizeLimit` (e.g. on a
 `VcfTabixAdapter` feature track) is honored here exactly as it is on the
 pre-flight path, rather than being overridden by the display config.
 
+A dual-axis display's force-load has to pick which axis to raise — byte or
+density — and it must do so by which gate actually tripped, NOT by whether a byte
+estimate exists. Tabix adapters report an index-byte estimate alongside a
+*density* rejection, so a dense-but-byte-small region carries a small `bytes`;
+adopting it as `userByteSizeLimit` would install a ceiling *below* the
+config/adapter default and wrongly gate later, larger-byte regions. This decision
+is single-sourced in `resolveForceLoadLimits` (`featureDensityUtils.ts`), shared
+by both dual-axis gates (canvas `LinearBasicDisplay` inline + `CanvasFeatureGate
+Mixin`): only adopt the raised byte limit when it exceeds the baseline
+`resolveByteLimit` (i.e. the byte gate was really the blocker); otherwise raise
+the density axis. Both `userByteSizeLimit` and `userFeatureDensityLimit` are
+**volatile**, not persisted — a force-load is a transient "show me this now"
+action and must not leak a raised/disabled gate into a saved or shared session
+(the declarative `forceLoad` config slot is the durable escape hatch).
+
+## The shared dual-axis gate: `CanvasFeatureGateMixin`
+
+Canvas feature displays that fold the byte/density check into their own fetch RPC
+(no pre-flight) share the whole model-side gate via `CanvasFeatureGateMixin`
+(`plugins/canvas/src/shared/CanvasFeatureGateMixin.ts`) — composed on top of
+`RegionTooLargeMixin` to add the density axis (`densityStatsPerRegion`,
+`observedMaxDensity`, `densityTooLarge` → `densityTooLargeForDerivedGate`), the
+worker budgets (`byteSizeLimit()`, `maxFeatureDensity`), and the dual-axis
+`setFeatureDensityStatsLimit`. A display opts in by composing it and calling
+`commitFeatureGateStats` from its fetch + `clearFeatureGateStats` on chromosome
+nav (and, because a too-large region is marked loaded but stores no data,
+overriding `isCacheValid` to require committed data so the region refetches when
+the gate releases). `LinearMultiRowFeatureDisplay` uses it; the older
+`LinearBasicDisplay` base still carries an equivalent inline gate (same shared
+helpers, so no drift) and is a candidate to migrate onto the mixin. This mixin is
+the model-side sibling of `DisplayChrome` (the view-side chrome): the mixin
+decides `regionTooLarge`, `DisplayChrome`'s `computeDisplayPhase` renders the
+banner from it (see DISPLAYCHROME.md).
+
 ## The derived gate: opt-in hooks
 
 A byte-gated display opts in by overriding hooks on `RegionTooLargeMixin`:

@@ -524,6 +524,16 @@ export default function stateModelFactory(
         get configuredFetchSizeLimit(): number {
           return getConf(self, 'fetchSizeLimit')
         },
+        /**
+         * #getter
+         * Declarative force-load: honor the `forceLoad` config slot so a
+         * `{ forceLoad: true }` display config clears the too-large gate, matching
+         * the interactive Force-load button. The mixin owns no `configuration`, so
+         * each opt-in display wires this.
+         */
+        get configForceLoad(): boolean {
+          return getConf(self, 'forceLoad')
+        },
       }))
       .views(self => ({
         /**

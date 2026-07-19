@@ -48,14 +48,19 @@ import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapte
  */
 export default function RegionTooLargeMixin() {
   return types
-    .model('RegionTooLargeMixin', {
-      /**
-       * #property
-       * user-confirmed byte limit after a force-load, disabling the gate
-       */
-      userByteSizeLimit: types.maybe(types.number),
-    })
+    .model('RegionTooLargeMixin', {})
     .volatile(() => ({
+      /**
+       * #volatile
+       * user-confirmed byte limit after a force-load, disabling the gate.
+       * Volatile, not persisted: a force-load is a transient "show me this now"
+       * action and must not leak a raised/disabled gate into a saved or shared
+       * session — the declarative `forceLoad` config slot is the durable escape
+       * hatch. An old snapshot that still carries this (it used to be a
+       * `#property`) has it silently ignored on load, dropping the stale
+       * force-load, which is the intended migration.
+       */
+      userByteSizeLimit: undefined as number | undefined,
       /**
        * #volatile
        */

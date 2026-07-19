@@ -17,6 +17,7 @@ import {
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
@@ -31,6 +32,7 @@ import { observable } from 'mobx'
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
+import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import {
   buildColorLegend,
   resolveConfiguredLegend,
@@ -97,6 +99,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      CanvasFeatureGateMixin(),
       TreeSidebarMixin<MultiRowSource>(),
       types.model({
         /**
@@ -742,6 +745,16 @@ export default function stateModelFactory(
         return fetchMultiRowFeatures(self, needed)
       },
       /**
+       * #method
+       * A region is cache-valid only once its features are committed. A too-large
+       * region is marked loaded (so the fetch autorun doesn't spin) but stores no
+       * rpcData, so this returns false and the region refetches the moment the
+       * gate releases (zoom-in or force-load).
+       */
+      isCacheValid(displayedRegionIndex: number) {
+        return self.rpcDataMap.has(displayedRegionIndex)
+      },
+      /**
        * #action
        */
       async renderSvg(opts: ExportSvgDisplayOptions): Promise<React.ReactNode> {
@@ -756,6 +769,11 @@ export default function stateModelFactory(
         // afterAttachAutoChain.test.ts). An explicit call would double-install
         // its fetch autoruns.
         async afterAttach() {
+          // Drop the cached byte/density estimate on chromosome navigation —
+          // displayedRegion indices get reused, so a stale estimate would gate
+          // the new region against the wrong stats (CanvasFeatureGateMixin).
+          onDisplayedRegionsChange(self, () => { self.clearFeatureGateStats() })
+
           // Light autorun (mobx-only, already bundled): install synchronously.
           // The two below genuinely code-split heavy d3/clustering code.
           getMultiRowSortAutorun(self)

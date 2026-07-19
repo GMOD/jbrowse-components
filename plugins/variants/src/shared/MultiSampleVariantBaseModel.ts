@@ -488,6 +488,16 @@ export default function MultiSampleVariantBaseModelF(
         get configuredFetchSizeLimit(): number {
           return getConf(self, 'fetchSizeLimit')
         },
+        /**
+         * #getter
+         * Declarative force-load: honor the `forceLoad` config slot so a
+         * `{ forceLoad: true }` display config clears the too-large gate, matching
+         * the interactive Force-load button. The mixin owns no `configuration`, so
+         * each opt-in display wires this.
+         */
+        get configForceLoad(): boolean {
+          return getConf(self, 'forceLoad')
+        },
       }))
       .actions(self => {
         // VCF-header field descriptions (INFO/FORMAT) are static per adapter, so

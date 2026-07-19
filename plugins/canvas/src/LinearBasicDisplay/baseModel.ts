@@ -33,9 +33,8 @@ import {
   heightModeMenuItems,
   installGrowExitBake,
   onDisplayedRegionsChange,
-  raiseLimitPast,
   resolveByteLimit,
-  scaledForceLoadByteLimit,
+  resolveForceLoadLimits,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -1716,37 +1715,30 @@ export default function baseStateModelFactory(
           bytes?: number
           fetchSizeLimit?: number
         }) {
-          // Clear both gates first: force-loads alternate between byte and
-          // density limits depending on which gate tripped, and leaving a
-          // stale value behind disables the other code path forever (the
-          // maxFeatureDensity getter short-circuits when userByteSizeLimit
-          // is set, and densityTooLarge ignores its stats when no max is set).
+          // Clear both gates first so maxFeatureDensity (which short-circuits to
+          // undefined when userByteSizeLimit is set) re-evaluates for the density
+          // branch, then let the shared decision pick which single axis to raise
+          // (byte vs density) — one source with the canvas multi-row gate so the
+          // "don't lower the ceiling" guard can't drift.
           self.userByteSizeLimit = undefined
           self.userFeatureDensityLimit = undefined
-          const byteLimit = scaledForceLoadByteLimit({
-            // Raise the gate past the estimate scaled to the *current* view, not
-            // the raw captured bytes — the gate compares against
-            // estimatedVisibleBytes, so basing the limit on the same scaled value
-            // keeps force-load reliable even if the view zoomed between the
-            // estimate and the click (mirrors the density branch below, which
-            // uses density observed at the current bpPerPx). Shared with LD.
-            scaledEstimate: self.estimatedVisibleBytes,
+          const limits = resolveForceLoadLimits({
+            estimatedVisibleBytes: self.estimatedVisibleBytes,
             rawBytes: stats?.bytes,
+            baselineByteLimit: resolveByteLimit({
+              userByteSizeLimit: undefined,
+              adapterFetchSizeLimit: self.adapterFetchSizeLimit,
+              configFetchSizeLimit: self.configuredFetchSizeLimit,
+            }),
+            densityGateActive: self.maxFeatureDensity !== undefined,
+            observedMaxDensity: self.observedMaxDensity(getView(self).bpPerPx),
+            configuredMaxDensity: readConfObject(
+              self.conf,
+              'maxFeatureScreenDensity',
+            ),
           })
-          if (byteLimit !== undefined) {
-            self.userByteSizeLimit = byteLimit
-          } else if (self.maxFeatureDensity !== undefined) {
-            // Push the gate past the highest observed density across visible
-            // regions, not past the current `maxFeatureDensity`. The latter
-            // already includes any prior force-load, so basing on it
-            // multiplied force-load attempts exponentially.
-            const observedMax = self.observedMaxDensity(getView(self).bpPerPx)
-            const baseline =
-              observedMax > 0
-                ? observedMax
-                : readConfObject(self.conf, 'maxFeatureScreenDensity')
-            self.userFeatureDensityLimit = raiseLimitPast(baseline)
-          }
+          self.userByteSizeLimit = limits.userByteSizeLimit
+          self.userFeatureDensityLimit = limits.userFeatureDensityLimit
           // Derived regionTooLarge recomputes once the limit changes — no
           // imperative flag to clear.
         },

@@ -11,6 +11,16 @@ export interface MultiRowGetFeaturesArgs {
     end: number
     assemblyName: string
   }
+  // current zoom, so the byte/density gate can extrapolate a sampled density to
+  // screen resolution the same way the feature-render RPC does
+  bpPerPx: number
+  // compressed-byte budget; a region whose index-only estimate exceeds it
+  // short-circuits before any feature download. Undefined = no byte gate (below
+  // the force-load zone, or force-loaded).
+  byteSizeLimit?: number
+  // max features-per-pixel; over it the region is too dense to render. Undefined
+  // = no density gate (below the force-load zone, or force-loaded).
+  maxFeatureDensity?: number
   // feature attribute whose value assigns each feature to a row
   partitionField: string
   // raw `color` config slot (a CSS color or `jexl:...`), evaluated per feature
@@ -37,13 +47,26 @@ export interface MultiRowGetFeaturesResult {
   // The main thread reads this to suppress the per-row palette, which would
   // otherwise paint over the colors the BED explicitly asked for.
   usedItemRgb: boolean
+  // index-only byte estimate for the region (absent when the adapter has none),
+  // and the fetched feature count — the main-thread gate maxes/re-derives both.
+  bytes?: number
+  featureCount?: number
+}
+
+// The region-too-large short-circuit: returned instead of the packed features
+// when the byte or density gate trips, so no feature payload is downloaded/packed
+// for a region the banner will replace. Mirrors the feature-render RPC.
+export interface MultiRowRegionTooLargeResult {
+  regionTooLarge: true
+  bytes?: number
+  featureCount?: number
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiRowGetFeatures: {
       args: MultiRowGetFeaturesArgs
-      return: MultiRowGetFeaturesResult
+      return: MultiRowGetFeaturesResult | MultiRowRegionTooLargeResult
     }
   }
 }

@@ -953,8 +953,11 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
       expect(display.densityStatsPerRegion.size).toBe(1)
     })
 
-    // First: bytes force-load — sets userByteSizeLimit.
-    display.setFeatureDensityStatsLimit({ bytes: 1_000_000 })
+    // First: bytes force-load. The byte estimate must exceed the config
+    // fetchSizeLimit (5MB) to represent a real byte-gate trip — only then does
+    // raising the ceiling past it actually lift the limit; a value under the
+    // baseline is a density trip in disguise and stays on the density branch.
+    display.setFeatureDensityStatsLimit({ bytes: 10_000_000 })
     expect(display.userByteSizeLimit).toBeDefined()
 
     // Then: density force-load. The pre-fix bug was that userByteSizeLimit
@@ -983,9 +986,84 @@ describe('setFeatureDensityStatsLimit gate toggling', () => {
     display.setFeatureDensityStatsLimit()
     expect(display.userFeatureDensityLimit).toBeDefined()
 
-    display.setFeatureDensityStatsLimit({ bytes: 1_000_000 })
+    // Byte estimate over the 5MB config baseline → a real byte-gate trip that
+    // raises the byte ceiling and clears the stale density limit.
+    display.setFeatureDensityStatsLimit({ bytes: 10_000_000 })
     expect(display.userFeatureDensityLimit).toBeUndefined()
     expect(display.userByteSizeLimit).toBeDefined()
+  })
+})
+
+// Regression: a *density*-gated force-load on a tabix-style adapter must not
+// lower the byte ceiling. The worker returns an index-byte estimate alongside a
+// density rejection (VCF/BAM/CRAM always report one), and production forceLoad()
+// passes the stored featureDensityStats — bytes included — to the override. The
+// pre-fix code adopted `scaledForceLoadByteLimit` whenever `bytes` was truthy,
+// installing a userByteSizeLimit BELOW the config default (a dense-but-byte-small
+// region), which then wrongly gated later, larger-byte regions. Earlier tests
+// missed this because they seeded a density result with no `bytes` and called
+// setFeatureDensityStatsLimit() bare rather than driving forceLoad().
+describe('density force-load with a byte estimate present', () => {
+  it('raises the density limit and leaves the byte ceiling at the config default', async () => {
+    const { display, mockRpcCall } = createLargeDisplay()
+
+    // Density-too-large AND a small index-byte estimate (100KB, well under the
+    // 1MB config) — exactly what a dense VCF/BAM region returns.
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 1500,
+      bytes: 100_000,
+    })
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+    // sanity: the stored estimate really does carry the (small) byte count
+    expect(display.featureDensityStats?.bytes).toBe(100_000)
+    const configLimit = display.configuredFetchSizeLimit
+
+    // Production path: the banner button calls forceLoad(), which forwards
+    // featureDensityStats (bytes: 100_000) to the canvas override.
+    display.forceLoad()
+
+    // Density axis was raised; the byte ceiling stays at the config default so
+    // a later, larger-byte region still gates correctly.
+    expect(display.userByteSizeLimit).toBeUndefined()
+    expect(display.userFeatureDensityLimit).toBeDefined()
+    expect(display.byteSizeLimit()).toBe(configLimit)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  // The production VcfTabix case: adapter declares a 50MB fetchSizeLimit, a
+  // dense region (small on disk) trips density. Force-load must keep the 50MB
+  // adapter ceiling, never replace it with a small userByteSizeLimit.
+  it('keeps the adapter ceiling, not the small byte estimate', async () => {
+    const { display, mockRpcCall } = createLargeDisplay(
+      createTestEnvironment({ adapterFetchSizeLimit: 50_000_000 }),
+    )
+    expect(display.byteSizeLimit()).toBe(50_000_000)
+
+    mockRpcCall.mockResolvedValue({
+      regionTooLarge: true,
+      featureCount: 1500,
+      bytes: 100_000,
+    })
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+
+    await waitFor(() => {
+      expect(display.regionTooLarge).toBe(true)
+    })
+
+    display.forceLoad()
+
+    expect(display.userByteSizeLimit).toBeUndefined()
+    expect(display.userFeatureDensityLimit).toBeDefined()
+    // ceiling still the adapter's 50MB — a later 40MB region would still load
+    expect(display.byteSizeLimit()).toBe(50_000_000)
+    expect(display.regionTooLarge).toBe(false)
   })
 })
 

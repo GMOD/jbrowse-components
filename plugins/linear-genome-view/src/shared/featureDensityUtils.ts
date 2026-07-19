@@ -101,6 +101,57 @@ export function scaleByteEstimate({
   return captureBp ? (bytes * visibleBp) / captureBp : bytes
 }
 
+/**
+ * The dual-axis force-load decision, shared by every canvas feature display with
+ * both a byte and a density gate (LinearBasicDisplay/LinearVariantDisplay base,
+ * LinearMultiRowFeatureDisplay) so the two can't drift. Given a cleared
+ * force-load state, decides which single axis to raise:
+ *
+ * - Raise the BYTE ceiling only when doing so actually LIFTS the baseline
+ *   (`raisedByteLimit > baselineByteLimit`). A tabix adapter reports an index-byte
+ *   estimate alongside a *density* rejection, so a dense-but-byte-small region
+ *   carries a small `bytes`; adopting it as `userByteSizeLimit` would install a
+ *   ceiling BELOW the config/adapter default and wrongly gate later, larger-byte
+ *   regions. When the byte gate wasn't the blocker, fall through to density.
+ * - Otherwise, if a density gate is active, raise past the highest observed
+ *   density (not the current `maxFeatureDensity`, which already folds in any prior
+ *   force-load — basing on it would multiply attempts exponentially).
+ *
+ * Returns at most one defined field; both are assigned by the caller each call so
+ * the other axis's stale value is always cleared.
+ */
+export function resolveForceLoadLimits({
+  estimatedVisibleBytes,
+  rawBytes,
+  baselineByteLimit,
+  densityGateActive,
+  observedMaxDensity,
+  configuredMaxDensity,
+}: {
+  estimatedVisibleBytes?: number
+  rawBytes?: number
+  baselineByteLimit: number
+  densityGateActive: boolean
+  observedMaxDensity: number
+  configuredMaxDensity: number
+}): { userByteSizeLimit?: number; userFeatureDensityLimit?: number } {
+  const raisedByteLimit = scaledForceLoadByteLimit({
+    scaledEstimate: estimatedVisibleBytes,
+    rawBytes,
+  })
+  if (raisedByteLimit !== undefined && raisedByteLimit > baselineByteLimit) {
+    return { userByteSizeLimit: raisedByteLimit }
+  }
+  if (densityGateActive) {
+    return {
+      userFeatureDensityLimit: raiseLimitPast(
+        observedMaxDensity > 0 ? observedMaxDensity : configuredMaxDensity,
+      ),
+    }
+  }
+  return {}
+}
+
 export interface RegionTooLargeStatus {
   tooLarge: boolean
   reason: string

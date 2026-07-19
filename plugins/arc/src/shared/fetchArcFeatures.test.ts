@@ -197,6 +197,18 @@ describe('arc derived regionTooLarge', () => {
     display.setFeatureDensityStatsLimit(display.featureDensityStats)
     expect(display.regionTooLarge).toBe(false)
   })
+
+  it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(2000)
+    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    expect(display.regionTooLarge).toBe(true)
+
+    // the declarative equivalent of clicking "Force load"
+    display.configuration.setSlot('forceLoad', true)
+    expect(display.configForceLoad).toBe(true)
+    expect(display.regionTooLarge).toBe(false)
+  })
 })
 
 // The fetchArcFeatures flow (density probe → commit → derived gate → feature

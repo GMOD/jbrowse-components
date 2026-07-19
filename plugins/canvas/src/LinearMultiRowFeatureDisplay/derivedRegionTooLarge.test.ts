@@ -16,28 +16,26 @@ import LinearGenomeViewPlugin, {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import configSchemaF from './configSchema.ts'
-import stateModelFactory from './stateModel.ts'
+import stateModelFactory from './model.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// Headless harness for the MAF display: registers a MafTrack + LinearMafDisplay
-// and a minimal session/assemblyManager so the real state model's derived
-// regionTooLarge can be exercised across zoom/pan/navigation without a worker.
-// Modeled on LD's derivedRegionTooLarge.test.ts + maf's emptyRegionLoading.test.
-function createTestEnvironment() {
+// Headless harness for the multi-row display, modeled on maf/LD's
+// derivedRegionTooLarge harness. Exercises the CanvasFeatureGateMixin gate (byte
+// + density) through the real state model without a worker: drive
+// setFeatureDensityStats / setDensityStats and read the derived regionTooLarge.
+function createTestEnvironment(opts?: { adapterFetchSizeLimit?: number }) {
   console.warn = jest.fn()
   console.error = jest.fn()
-  // MAF's configSchema reads baseLinearDisplayConfigSchema off the installed
-  // LinearGenomeViewPlugin's exports, so the real plugin must be registered.
   const pluginManager = new PluginManager([new LinearGenomeViewPlugin()])
 
   pluginManager.addAdapterType(
     () =>
       new AdapterType({
-        name: 'MafTabixAdapter',
+        name: 'TestFeatureAdapter',
         configSchema: ConfigurationSchema(
-          'MafTabixAdapter',
-          {},
+          'TestFeatureAdapter',
+          { fetchSizeLimit: { type: 'number', defaultValue: 0 } },
           { explicitlyTyped: true },
         ),
         getAdapterClass: () => Promise.resolve(class extends BaseAdapter {}),
@@ -48,7 +46,7 @@ function createTestEnvironment() {
 
   pluginManager.addTrackType(() => {
     const trackConfigSchema = ConfigurationSchema(
-      'MafTrack',
+      'FeatureTrack',
       {},
       {
         baseConfiguration: createBaseTrackConfig(pluginManager),
@@ -56,41 +54,43 @@ function createTestEnvironment() {
       },
     )
     return new TrackType({
-      name: 'MafTrack',
+      name: 'FeatureTrack',
       configSchema: trackConfigSchema,
       stateModel: createBaseTrackModel(
         pluginManager,
-        'MafTrack',
+        'FeatureTrack',
         trackConfigSchema,
       ),
     })
   })
 
-  pluginManager.addDisplayType(() => {
-    return new DisplayType({
-      name: 'LinearMafDisplay',
-      configSchema,
-      stateModel: stateModelFactory(configSchema),
-      trackType: 'MafTrack',
-      viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
-    })
-  })
+  pluginManager.addDisplayType(
+    () =>
+      new DisplayType({
+        name: 'LinearMultiRowFeatureDisplay',
+        configSchema,
+        stateModel: stateModelFactory(configSchema),
+        trackType: 'FeatureTrack',
+        viewType: 'LinearGenomeView',
+        ReactComponent: BaseLinearDisplayComponent,
+      }),
+  )
 
   pluginManager.createPluggableElements()
   pluginManager.configure()
 
   const mockRpcCall = jest.fn()
-
   const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
-
   const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
   const trackConfig = trackConfigSchema.create(
     {
-      type: 'MafTrack',
+      type: 'FeatureTrack',
       trackId: 'test_track',
       assemblyNames: ['volvox'],
-      adapter: { type: 'MafTabixAdapter' },
+      adapter: {
+        type: 'TestFeatureAdapter',
+        fetchSizeLimit: opts?.adapterFetchSizeLimit ?? 0,
+      },
     },
     { pluginManager },
   )
@@ -141,9 +141,9 @@ function createTestEnvironment() {
         type: 'LinearGenomeView',
         tracks: [
           {
-            type: 'MafTrack',
+            type: 'FeatureTrack',
             configuration: 'test_track',
-            displays: [{ type: 'LinearMafDisplay' }],
+            displays: [{ type: 'LinearMultiRowFeatureDisplay' }],
           },
         ],
       }),
@@ -159,20 +159,16 @@ function createTestEnvironment() {
   return { createDisplay, mockRpcCall }
 }
 
-// Derived regionTooLarge: a pure function of the cached byte estimate scaled to
-// the current viewport. These lock in the self-releasing behavior — a banner
-// that clears on zoom-in (not stuck), doesn't flicker on pan, and a force-load
-// that stays cleared even after a zoom-out (the invariant that once bit LD).
-describe('MAF derived regionTooLarge', () => {
+describe('multi-row derived regionTooLarge (byte axis)', () => {
   it('is false with no estimate yet', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(display.regionTooLarge).toBe(false)
   })
 
-  it('trips when the captured estimate exceeds the fetch cap at wide zoom', () => {
+  it('trips when the captured byte estimate exceeds the fetch cap at wide zoom', () => {
     const { display, view } = createTestEnvironment().createDisplay()
-    view.zoomTo(100) // visibleBp ≈ 80_000 > AUTO_FORCE_LOAD_BP
-    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    view.zoomTo(100) // visibleBp > AUTO_FORCE_LOAD_BP
+    display.setFeatureDensityStats({ bytes: 8_000_000 }) // over the 5MB config
     expect(view.visibleBp).toBeGreaterThan(20_000)
     expect(display.regionTooLarge).toBe(true)
   })
@@ -180,80 +176,93 @@ describe('MAF derived regionTooLarge', () => {
   it('self-releases on zoom-in via scaling, without an imperative clear', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    display.setFeatureDensityStats({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
-    // half the span → scaled estimate ~750kB < 1MB cap, still above the floor:
-    // clears via the derived scaling, not the AUTO_FORCE_LOAD_BP shortcut.
-    view.zoomTo(50)
-    expect(view.visibleBp).toBeGreaterThan(20_000)
+    view.zoomTo(20)
     expect(display.regionTooLarge).toBe(false)
   })
 
-  it('does not flicker on pan: estimate survives a viewport shift that stays too large', () => {
-    const { display, view } = createTestEnvironment().createDisplay()
+  it('honors an adapter-declared fetchSizeLimit over the display config', () => {
+    const { display, view } = createTestEnvironment({
+      adapterFetchSizeLimit: 50_000_000,
+    }).createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 1_500_000 })
-    expect(display.regionTooLarge).toBe(true)
-
-    // pan (same zoom) keeps it too large; the estimate is not cleared
-    view.scrollTo(view.offsetPx + 200)
-    expect(display.featureDensityStats).toBeDefined()
-    expect(display.regionTooLarge).toBe(true)
+    // 8MB is over the 5MB display config but under the 50MB adapter limit
+    display.setFeatureDensityStats({ bytes: 8_000_000, fetchSizeLimit: 50_000_000 })
+    expect(display.byteSizeLimit()).toBe(50_000_000)
+    expect(display.regionTooLarge).toBe(false)
   })
 
   it('force-load raises the limit and clears the banner', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    display.setFeatureDensityStats({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
-    display.setFeatureDensityStatsLimit(display.featureDensityStats)
+    display.forceLoad()
+    expect(display.userByteSizeLimit).toBeDefined()
     expect(display.regionTooLarge).toBe(false)
   })
 
   it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    display.setFeatureDensityStats({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
-    // the declarative equivalent of clicking "Force load"
     display.configuration.setSlot('forceLoad', true)
     expect(display.configForceLoad).toBe(true)
     expect(display.regionTooLarge).toBe(false)
+    // and the worker gate goes unlimited so the forced fetch isn't re-blocked
+    expect(display.byteSizeLimit()).toBeUndefined()
   })
 
-  it('force-load clears the banner even after zooming out past the capture', () => {
+  it('clears the cached estimate on region navigation', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    display.setFeatureDensityStats({ bytes: 8_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
-    // zoom out: the scaled estimate grows past the raw captured bytes, so a
-    // limit raised only past the raw bytes would leave the banner up
-    view.zoomTo(400)
-    expect(display.regionTooLarge).toBe(true)
-
-    display.setFeatureDensityStatsLimit(display.featureDensityStats)
+    display.clearFeatureGateStats()
+    expect(display.featureDensityStats).toBeUndefined()
     expect(display.regionTooLarge).toBe(false)
   })
+})
 
-  // afterAttach installs the onDisplayedRegionsChange autorun that drops the
-  // cached estimate on chromosome navigation. Without it, a previous region's
-  // estimate would gate the new region against the wrong stats and, because
-  // FetchVisibleRegions gates on !regionTooLarge, wedge the banner permanently.
-  it('clears the cached estimate on region navigation so it cannot wedge', () => {
+describe('multi-row derived regionTooLarge (density axis)', () => {
+  // Density is a live max over visible regions at coarseBpPerPx, so settle the
+  // debounced coarse blocks the gate reads after each zoom.
+  function settle(view: { dynamicBlocks: unknown; bpPerPx: number }) {
+    ;(
+      view as unknown as {
+        setCoarseDynamicBlocks: (b: unknown, bp: number) => void
+      }
+    ).setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
+  }
+
+  it('trips when the observed feature density exceeds maxFeatureScreenDensity', () => {
     const { display, view } = createTestEnvironment().createDisplay()
-
     view.zoomTo(100)
-    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    settle(view)
+    // a dense region: many features over its width → density well over the
+    // default maxFeatureScreenDensity of 1
+    display.setDensityStats(0, { featureCount: 500_000, regionWidthBp: 10_000_000 })
+    expect(display.densityTooLarge).toBe(true)
+    expect(display.regionTooLarge).toBe(true)
+    expect(display.regionTooLargeReason).toBe('Too many features')
+  })
+
+  it('force-load raises the density ceiling (not the byte one) and clears it', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    settle(view)
+    display.setDensityStats(0, { featureCount: 500_000, regionWidthBp: 10_000_000 })
     expect(display.regionTooLarge).toBe(true)
 
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 8_000_000, refName: 'ctgA' },
-    ])
-    expect(display.featureDensityStats).toBeUndefined()
+    display.forceLoad()
+    expect(display.userFeatureDensityLimit).toBeDefined()
+    expect(display.userByteSizeLimit).toBeUndefined()
     expect(display.regionTooLarge).toBe(false)
   })
 })

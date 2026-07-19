@@ -94,6 +94,14 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       get configuredFetchSizeLimit() {
         return getConf(self, 'fetchSizeLimit')
       },
+      /**
+       * #getter
+       * honors the declarative `forceLoad` config slot (matches the interactive
+       * Force-load button) — `ArcFetchModel`'s derived gate reads it via the mixin
+       */
+      get configForceLoad(): boolean {
+        return getConf(self, 'forceLoad')
+      },
     }))
     .views(self => ({
       /**

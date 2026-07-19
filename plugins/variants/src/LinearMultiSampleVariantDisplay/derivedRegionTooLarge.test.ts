@@ -185,6 +185,18 @@ describe('MultiSampleVariant derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
+  it('forceLoad config keeps the banner cleared regardless of the estimate', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    display.setFeatureDensityStats({ bytes: 1_500_000 })
+    expect(display.regionTooLarge).toBe(true)
+
+    // the declarative equivalent of clicking "Force load"
+    display.configuration.setSlot('forceLoad', true)
+    expect(display.configForceLoad).toBe(true)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
   it('force-load clears the banner even after zooming out past the capture', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)

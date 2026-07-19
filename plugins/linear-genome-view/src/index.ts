@@ -119,6 +119,7 @@ export {
   onDisplayedRegionsChange,
   raiseLimitPast,
   resolveByteLimit,
+  resolveForceLoadLimits,
   scaleByteEstimate,
   scaledForceLoadByteLimit,
   viewportMatchesLastDrawn,

@@ -76,6 +76,7 @@ export {
   getDisplayStr,
   raiseLimitPast,
   resolveByteLimit,
+  resolveForceLoadLimits,
   scaleByteEstimate,
   scaledForceLoadByteLimit,
 } from '../shared/featureDensityUtils.ts'
