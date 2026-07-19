@@ -98,7 +98,7 @@ const HicTrackConfigFactory = () => {
        */
       useColorPercentile: {
         type: 'boolean',
-        defaultValue: false,
+        defaultValue: true,
         description: 'saturate color at the 95th percentile of counts',
       },
       /**
