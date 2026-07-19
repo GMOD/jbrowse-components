@@ -19,6 +19,15 @@ methylation, million-point scatters), move to the GPU path in
 the same model shape, the same fetch chain, and the same lifecycle (only the
 renderer differs), so starting on Canvas2D never boxes you in.
 
+This is a **build-step plugin** path: it bundles `@jbrowse/render-core` and
+composes mixins from `@jbrowse/plugin-linear-genome-view`, neither of which a
+[no-build plugin](/docs/developer_guides/no_build_plugin) can pull in. You're
+building against those two packages' exported APIs — a larger, faster-moving
+surface than
+[`@jbrowse/core`](/docs/developer_guides/imports_and_reexports) — so pin the
+versions you develop against and expect the occasional rename across minor
+releases.
+
 ## The mental model
 
 Rendering splits across two threads:
