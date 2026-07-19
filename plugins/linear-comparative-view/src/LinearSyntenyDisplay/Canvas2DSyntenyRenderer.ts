@@ -92,7 +92,6 @@ function drawInstances(
     minAlignmentLength,
     hoveredFeatureId,
     clickedFeatureId,
-    hoveredInstanceId,
     drawCurves,
     fadeThinAlignments,
   } = params
@@ -169,10 +168,7 @@ function drawInstances(
       ctx.fillStyle = rgba(r, g, b, fa)
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
-      // Outline the clicked feature's BASE silhouette (skip its CIGAR tiles) OR
-      // the single tile under the cursor (any kind). Mirrors the two conditions
-      // in the GPU edge passes; markers never reach here (non-pickable).
-      if ((isClicked && !isCigar) || i === hoveredInstanceId) {
+      if (isClicked && !isCigar) {
         ctx.strokeStyle = 'rgba(0,0,0,0.4)'
         ctx.lineWidth = 1
         strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)

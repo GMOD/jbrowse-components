@@ -80,10 +80,6 @@ public struct Uniforms {
   public float  clickedFeatureId;
   public float  yTop;
   public float  fadeThinAlignments;
-  // Instance index (SV_InstanceID) of the single tile under the cursor, or < 0
-  // for none. Drives the hover OUTLINE (edge passes) around just that tile —
-  // orthogonal to hoveredFeatureId, which darkens the whole feature's fill.
-  public float  hoveredInstanceId;
 };
 
 public struct Corners {

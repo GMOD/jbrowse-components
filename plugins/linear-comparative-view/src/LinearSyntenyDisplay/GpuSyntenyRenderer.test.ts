@@ -42,7 +42,6 @@ function makeParams(
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
-    hoveredInstanceId: -1,
     offsetPx0: 0,
     offsetPx1: 0,
     bpPerPx0: 1,
