@@ -1,26 +1,12 @@
-The smallest end-to-end example: pass an `assembly`, a list of `tracks`, an
-`init` for the starting location, and an `onChange` handler straight to
-`<LinearGenomeView>` as props — no `createViewState` call needed.
+Everything is passed to `<LinearGenomeView>` as props — no `createViewState`
+call needed. The full, runnable file is below.
 
-`onChange` fires with a JSON patch every time the view state mutates (pan, zoom,
-track toggles), which is the hook you'd use to persist the session or sync it to
-a URL.
+`onChange` fires with a JSON patch on every state mutation (pan, zoom, track
+toggle) — the hook you'd use to persist the session or sync it to a URL.
 
-```tsx
-<LinearGenomeView
-  assembly={assembly}
-  tracks={tracks}
-  init={{ loc: 'ctgA:1105..1221' }}
-  onChange={patch => {
-    // called on every state mutation
-  }}
-/>
-```
-
-`init.loc` only takes a locstring; to reach a `{refName, start, end}` object
-instead, call `navToLocations` through a `ref` — see
-[external navigation](../navigate-to-location/#external-navigate). That same
-`ref` is how you drive the view imperatively (e.g. from an outside button).
-For the lower-level, fully imperative form (`createViewState` +
-`<JBrowseLinearGenomeView>`), see the
+`init.loc` takes a locstring only. To navigate by a `{refName, start, end}`
+object, or to drive the view imperatively from an outside button, go through a
+`ref` and call `navToLocations` — see
+[external navigation](../navigate-to-location/#external-navigate). For the
+lower-level `createViewState` + `<JBrowseLinearGenomeView>` form, see the
 [embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/).

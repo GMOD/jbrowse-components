@@ -7,7 +7,9 @@ import type { MarkdownInstance } from 'astro'
 
 // One live demo within an example page: optional heading + description (only
 // shown when a page stacks several sections), the hand-written doc from
-// src/docs/<slug>.md, the live demo (slotted in), and its collapsible source.
+// src/docs/<slug>.md, the live demo (slotted in), and its source. The source is
+// the real, runnable file for the demo above, so it's open by default rather
+// than hidden behind a collapsed toggle.
 interface Props {
   slug: string
   title?: string
@@ -30,7 +32,7 @@ const Doc = doc?.Content
   {description && <p class="lead">{description}</p>}
   {Doc && <div class="doc"><Doc /></div>}
   <div class:list={['demo', { fill: demoFillHeight }]}><slot /></div>
-  <details class="source">
+  <details class="source" open>
     <summary>View source</summary>
     <Code code={code} lang="tsx" />
   </details>

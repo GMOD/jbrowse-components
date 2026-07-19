@@ -3,17 +3,6 @@ component's `init` prop. Give it a starting locstring and the trackIds you want
 open on first paint — JBrowse fills in the rest, no separate view-state setup
 needed.
 
-```tsx
-<LinearGenomeView
-  assembly={assembly}
-  tracks={tracks}
-  init={{
-    loc: 'chr7:155,799,529..155,812,871',
-    tracks: ['hg38-ncbi-refseq-curated'],
-  }}
-/>
-```
-
 `init.loc` accepts any locstring, including space-separated multi-region strings
 (e.g. `'chr1:100-200 chr1:500-600'`). `init.tracks` is a plain list of trackIds
 to open. This is the same `init` shape JBrowse Web serializes into its

@@ -16,7 +16,7 @@ export const pages: ExamplePage[] = [
         slug: 'one-linear-genome-view',
         title: 'The simplest example',
         description:
-          'The simplest example: an assembly, tracks, an initial location, and an onChange handler.',
+          'An assembly, tracks, a starting location, and an onChange handler — the whole component in one declarative call.',
       },
       {
         slug: 'with-init',

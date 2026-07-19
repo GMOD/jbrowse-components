@@ -1,14 +1,6 @@
-By default users can add their own tracks through the UI. Pass
-`disableAddTracks` to hide the **+ Add track** button for a locked-down embed:
-
-```jsx
-<LinearGenomeView
-  assembly={assembly}
-  tracks={tracks}
-  init={{ loc: 'ctgA:1,000..5,000' }}
-  disableAddTracks
-/>
-```
+By default users can add their own tracks through the UI. Pass the
+`disableAddTracks` prop to hide the **+ Add track** button for a locked-down
+embed.
 
 This also disables on-the-fly track-creation features that depend on the
 add-track flow, such as sequence-search tracks and multi-wiggle tracks. Users
