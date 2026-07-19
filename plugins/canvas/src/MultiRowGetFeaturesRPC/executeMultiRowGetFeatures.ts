@@ -35,7 +35,7 @@ export async function executeMultiRowGetFeatures({
     adapterConfig,
   })
 
-  const features = await updateStatus('Fetching features', statusCallback, () =>
+  const features = await updateStatus('Downloading features', statusCallback, () =>
     dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
   checkStopToken2(stopTokenCheck)

@@ -132,7 +132,7 @@ export async function executeGetManhattanData({
     adapterConfig,
   })
 
-  const features = await updateStatus('Loading GWAS data', statusCallback, () =>
+  const features = await updateStatus('Downloading GWAS data', statusCallback, () =>
     dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
 
@@ -153,7 +153,7 @@ export async function executeGetManhattanData({
         `Adapter type "${ldAdapterConfig.type}" cannot supply LD records for coloring`,
       )
     }
-    const ld = await updateStatus('Loading LD data', statusCallback, () =>
+    const ld = await updateStatus('Downloading LD data', statusCallback, () =>
       buildLdToIndex({ adapter: ldAdapter, region, indexSnp }),
     )
     checkStopToken2(stopTokenCheck)

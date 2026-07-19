@@ -420,7 +420,7 @@ export async function getLDMatrix({
   const splitCache: Record<string, string[]> = {}
 
   const rawFeatures = await updateStatus(
-    'Loading features',
+    'Downloading features',
     statusCallback,
     () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
   )

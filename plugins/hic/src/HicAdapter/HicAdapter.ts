@@ -64,6 +64,7 @@ interface HicParser {
 
 export default class HicAdapter extends BaseFeatureDataAdapter {
   private hic: HicParser
+  private metadataP: Promise<HicMetadata> | undefined
 
   public constructor(
     config: AnyConfigurationModel,
@@ -78,12 +79,22 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
 
   private async setup(opts?: BaseOptions) {
     const { statusCallback = () => {}, stopToken } = opts ?? {}
-    return updateStatus(
-      'Downloading .hic header',
+    // Only surface the "Downloading header" status on the genuine first
+    // fetch: hic-straw memoizes the parsed header, so every later call (e.g. on
+    // each zoom-level change) resolves from memory and shouldn't re-flash a
+    // download message for work that isn't happening. Memoize the promise, and
+    // clear it on failure (like hicFile's initPromise) so a failed load retries
+    // rather than caching a rejected promise forever.
+    this.metadataP ??= updateStatus(
+      'Downloading header',
       statusCallback,
       () => this.hic.getMetaData(),
       stopToken,
-    )
+    ).catch((e: unknown) => {
+      this.metadataP = undefined
+      throw e
+    })
+    return this.metadataP
   }
 
   public async getHeader(opts?: BaseOptions) {
@@ -136,7 +147,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
     )
 
     await updateStatus(
-      'Downloading .hic data',
+      'Downloading data',
       statusCallback,
       async () => {
         for (let i = 0; i < regions.length; i++) {

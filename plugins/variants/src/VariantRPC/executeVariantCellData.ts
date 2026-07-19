@@ -284,7 +284,7 @@ export async function executeVariantCellData({
   })
 
   const rawFeatures = await updateStatus(
-    'Loading features',
+    'Downloading features',
     statusCallback,
     () => adapter.getFeaturesInMultipleRegionsArray(regions, args),
   )

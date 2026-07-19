@@ -22,6 +22,7 @@ export default class PlinkLDAdapter
     header: PlinkLDHeader
     refNames: string[]
   }>
+  private configureReady = false
 
   private async configurePre(opts?: BaseOptions) {
     const ldLocation = this.getConf('ldLocation')
@@ -55,18 +56,28 @@ export default class PlinkLDAdapter
   }
 
   protected async configurePre2(opts?: BaseOptions) {
-    this.configured ??= this.configurePre(opts).catch((e: unknown) => {
-      this.configured = undefined
-      throw e
-    })
+    this.configured ??= this.configurePre(opts)
+      .then(result => {
+        this.configureReady = true
+        return result
+      })
+      .catch((e: unknown) => {
+        this.configured = undefined
+        throw e
+      })
     return this.configured
   }
 
+  // Show "Downloading LD data" only while the file is genuinely loading. Once
+  // configured, callers await the cached promise silently rather than
+  // re-flashing the label on pan/zoom.
   async configure(opts?: BaseOptions) {
     const { statusCallback = () => {} } = opts ?? {}
-    return updateStatus('Loading LD data', statusCallback, () =>
-      this.configurePre2(opts),
-    )
+    return this.configureReady
+      ? this.configurePre2(opts)
+      : updateStatus('Downloading LD data', statusCallback, () =>
+          this.configurePre2(opts),
+        )
   }
 
   public async getRefNames(opts: BaseOptions = {}) {

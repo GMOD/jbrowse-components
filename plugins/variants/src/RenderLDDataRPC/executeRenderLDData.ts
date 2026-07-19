@@ -59,7 +59,7 @@ export async function executeRenderLDData({
     adapterConfig.type,
   )
   const ldData = await (isPrecomputed
-    ? updateStatus('Loading LD data', statusCallback, () =>
+    ? updateStatus('Downloading LD data', statusCallback, () =>
         getLDMatrixFromPlink({
           pluginManager,
           args: {

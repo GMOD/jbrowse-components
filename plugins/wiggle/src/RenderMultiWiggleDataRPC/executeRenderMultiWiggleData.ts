@@ -122,7 +122,7 @@ export async function executeRenderMultiWiggleData({
 
   const isMulti = isMultiSource(dataAdapter)
   const perSource = await updateStatus(
-    'Loading wiggle data',
+    'Downloading wiggle data',
     statusCallback,
     () => {
       const opts = { bpPerPx, resolution, sources: sourcesArg, stopToken }

@@ -113,11 +113,11 @@ export async function executeRenderFeatureData({
   }
 
   // pass statusCallback + stopToken so the adapter's own determinate download/
-  // processing progress reaches the display (overriding the "Fetching features"
+  // processing progress reaches the display (overriding the "Downloading features"
   // fallback label) and so a long fetch is interruptible mid-flight, not just at
   // the checkStopToken2 below
   const featuresArray = await updateStatus(
-    'Fetching features',
+    'Downloading features',
     statusCallback,
     () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
@@ -191,7 +191,7 @@ export async function executeRenderFeatureData({
     shouldRenderPeptideBackground(requestedBpPerPx)
   ) {
     peptideDataMap = await updateStatus(
-      'Fetching peptide data',
+      'Downloading peptide data',
       statusCallback,
       async () =>
         fetchPeptideData(

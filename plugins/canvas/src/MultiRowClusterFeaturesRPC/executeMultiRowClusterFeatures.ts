@@ -43,7 +43,7 @@ export async function executeMultiRowClusterFeatures({
   const featureColor = makeFeatureColorResolver(colorConfig, pluginManager.jexl)
   const features: MatrixFeature[] = []
   for (const [regionIndex, region] of regions.entries()) {
-    const feats = await updateStatus('Fetching features', statusCallback, () =>
+    const feats = await updateStatus('Downloading features', statusCallback, () =>
       dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
     )
     checkStopToken2(stopTokenCheck)

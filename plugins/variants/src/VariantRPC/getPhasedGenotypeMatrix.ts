@@ -62,7 +62,7 @@ export async function getPhasedGenotypeMatrix({
   }))
 
   const rawFeatures = await updateStatus(
-    'Loading features',
+    'Downloading features',
     statusCallback,
     () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
   )

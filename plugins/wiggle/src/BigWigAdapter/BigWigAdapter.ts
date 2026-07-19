@@ -110,7 +110,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     return {
       bigwig,
       header: await updateStatus(
-        'Downloading bigwig header',
+        'Downloading header',
         statusCallback,
         () => bigwig.getHeader(opts),
       ),
@@ -158,7 +158,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     const { bigwig } = await this.setup(opts)
 
     const arrays = await downloadStatus(
-      'Downloading bigwig data',
+      'Downloading wiggle data',
       statusCallback,
       onProgress =>
         bigwig.getFeaturesAsArrays(refName, start, end, {
@@ -205,7 +205,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     const { bigwig } = await this.setup(opts)
 
     const res = await downloadStatus(
-      'Downloading bigwig data',
+      'Downloading wiggle data',
       statusCallback,
       onProgress =>
         bigwig.getFeaturesAsArraysMulti(
