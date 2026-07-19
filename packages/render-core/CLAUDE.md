@@ -74,11 +74,21 @@ package_.
   **object-packer** `shader.writeUniforms(buf, { …every field… })` when it sets
   all fields each frame (rect/`GpuCanvasFeatureRenderer`), or **offset-pokes**
   `const U = shader.UNIFORM_OFFSET_F32; f32[U.field] = …` when writes are
-  incremental/conditional (hic, dotplot, wiggle, most others). The one write
-  every genome-mapped shader shares — the hp-math `bpRangeX` triple — goes
-  through `writeBpRangeUniforms(f32, U.bpRangeX, clip, reversed)` in either
-  pattern; don't hand-roll the `f32[U.bpRangeX + n] = …` triple (the
-  reversed-block pivot is easy to get subtly wrong per copy).
+  incremental/conditional (hic, dotplot, wiggle, most others). The offset maps
+  are **split by scalar type** — `UNIFORM_OFFSET_F32` (float fields only),
+  `_I32` (int), `_U32` (uint) — so a field only appears under the map whose
+  typed-array view it may be written through, and `i32[U.someFloatField]` fails
+  at tsc instead of silently corrupting. Alias each view you touch
+  (`const U = …_F32, UI = …_I32, UU = …_U32`) and poke `f32[U.x]` / `i32[UI.y]`
+  / `u32[UU.z]`; the codegen emits only the maps a shader actually needs (a
+  float-only shader has no `_I32` / `_U32`). The one write every genome-mapped
+  shader shares — the hp-math `bpRangeX` triple (a float3, so it lives in the
+  F32 map) — goes through
+  `writeBpRangeUniforms(f32, U.bpRangeX, clip, reversed)` in either pattern;
+  don't hand-roll the `f32[U.bpRangeX + n] = …` triple (the reversed-block pivot
+  is easy to get subtly wrong per copy). Instance `FIELD_OFFSET_F32` stays a
+  single flat map — structured instance data has the type-safe `packInstances`
+  packer, and multi-source interleavers pack through one map.
 - **Per-base Canvas2D cells go through `makeCellLeftMapper`, never
   `makeBpMapper` directly.** `makeBpMapper(bp)` is the cell's left edge only on
   a forward block: reversed runs bp leftward, so it returns the _right_ edge and
