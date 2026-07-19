@@ -25,16 +25,7 @@ is a variation on one of these blocks.
 
 ```json
 {
-  "assemblies": [
-    {
-      "name": "volvox",
-      "sequence": {
-        "type": "ReferenceSequenceTrack",
-        "trackId": "volvox_refseq",
-        "adapter": { "type": "TwoBitAdapter", "uri": "volvox.2bit" }
-      }
-    }
-  ],
+  "assemblies": [{ "name": "volvox", "uri": "volvox.2bit" }],
   "tracks": [
     {
       "type": "FeatureTrack",
@@ -84,7 +75,7 @@ why. The floor is even smaller than this: one assembly plus one track (no
 
 ## How config shorthand works {#how-config-shorthand-works}
 
-JBrowse expands two kinds of **shorthand** at load time (a config
+JBrowse expands a few kinds of **shorthand** at load time (a config
 `preProcessSnapshot` step), so you only write the parts that matter.
 
 ### Adapter `uri` shorthand
@@ -128,6 +119,48 @@ A location is a `{ "uri": "..." }` object. You almost never need the
 `{ "localPath": "..." }` instead). See
 [supported file types](/docs/config_guides/file_types) for every format's `uri`
 shorthand.
+
+### Assembly `{ name, uri }` shorthand
+
+An assembly is, at its flattest, just a `name` and a sequence-file `uri`:
+
+```json
+{ "name": "volvox", "uri": "volvox.2bit" }
+```
+
+expands to the full assembly. JBrowse picks the adapter from the file extension
+(`.2bit` → `TwoBitAdapter`, `.fa.gz` → `BgzipFastaAdapter`, `.fa` →
+`IndexedFastaAdapter`), derives the `.fai`/`.gzi` index siblings, and fills in
+the `ReferenceSequenceTrack`:
+
+```json
+{
+  "name": "volvox",
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "volvox-ReferenceSequenceTrack",
+    "adapter": { "type": "TwoBitAdapter", "uri": "volvox.2bit" }
+  }
+}
+```
+
+`refNameAliases` and `cytobands` take the same bare `{ "uri": "..." }`:
+
+```json
+{
+  "name": "hg38",
+  "uri": "hg38.fa.gz",
+  "refNameAliases": { "uri": "hg38.aliases.txt" },
+  "cytobands": { "uri": "hg38.cytoBand.txt" }
+}
+```
+
+Keep the `uri` _key_ (rather than a bare string) so relative uris still resolve
+against the config's location. If you only want to drop the `type`/`trackId`
+boilerplate but need extra adapter fields (a `chromSizesLocation` for a 2bit, a
+non-sibling `.fai`), write the adapter out and let its own `uri` shorthand fill
+in the rest: `"sequence": { "adapter": { "uri": "volvox.2bit" } }`. See the
+[`BaseAssembly` config](/docs/config/BaseAssembly) for every form.
 
 ### `displayDefaults` shorthand
 
@@ -245,7 +278,17 @@ recommended for large genomes.
 ### Refname aliases (chr1 vs 1 vs NC_000001)
 
 Map alternative chromosome names so tracks that use different conventions line
-up. Point at a two-column file (chromAliases) or list them inline:
+up. Point at a two-column file (chromAliases) with the `uri` shorthand:
+
+```json
+{
+  "name": "volvox",
+  "uri": "volvox.2bit",
+  "refNameAliases": { "uri": "volvox.chromAliases.txt" }
+}
+```
+
+or list them inline with a `FromConfigAdapter`:
 
 ```json
 {

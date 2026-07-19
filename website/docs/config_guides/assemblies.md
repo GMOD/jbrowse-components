@@ -8,7 +8,23 @@ guide_category: Core configuration
 An assembly configuration has a `name`, optional `aliases` (e.g. GRCh37/hg19),
 and a `sequence` containing a reference sequence track config.
 
-Here is a complete config.json file containing only the hg19 assembly:
+At its flattest, an assembly is just a `name` and a sequence-file `uri`:
+
+```json
+{
+  "assemblies": [{ "name": "hg19", "uri": "hg19.fa.gz" }]
+}
+```
+
+JBrowse picks the adapter from the file extension (`.2bit` → `TwoBitAdapter`,
+`.fa.gz` → `BgzipFastaAdapter`, `.fa` → `IndexedFastaAdapter`), derives the
+`.fai`/`.gzi` index siblings, and fills in the `ReferenceSequenceTrack`.
+`refNameAliases` and `cytobands` take the same bare `{ "uri": "..." }`
+shorthand. Keep the `uri` _key_ (not a bare string) so relative uris resolve
+against the config's location.
+
+The full form spells out everything the shorthand fills in. Here is a complete
+config.json file containing only the hg19 assembly:
 
 ```json
 {
