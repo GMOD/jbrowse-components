@@ -78,55 +78,6 @@ const galleryPreview: GalleryCard[] = [
   </div>
 </div>
 
-<!-- Genome Hubs -->
-<div class="outer-box">
-  <div class="hubs-band">
-    <div class="hubs-text">
-      <h2 class="section-title hubs-title">
-        Thousands of preconfigured genomes
-      </h2>
-      <p class="body-text">
-        JBrowse Genome Hubs hosts genome browsers for thousands of species on
-        the web. The same assemblies are built into JBrowse Desktop's genome
-        picker, so you can open one without configuring any data.
-      </p>
-      <ul class="hubs-list">
-        <li>Human and mouse assemblies (hg19, hg38, T2T hs1, mm10, mm39)</li>
-        <li>
-          The UCSC GenArk collection of plant, animal, and microbial genomes
-        </li>
-        <li>The Human Pangenome (HPRC) set of 232 diploid assemblies</li>
-        <li>VGP, CCGP, and BRC collections</li>
-      </ul>
-      <div class="btn-row hubs-btn-row">
-        <a
-          class:list={[btn.btn, btn.btnAccent]}
-          href="https://genomes.jbrowse.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Open Genome Hubs
-          <Icon name="mdi:open-in-new" width="18" height="18" />
-        </a>
-        <a class:list={[btn.btn, btn.btnPrimary]} href={`${baseUrl}/download/`}>
-          <Icon name="mdi:tray-arrow-down" width="18" height="18" />
-          Get JBrowse Desktop
-        </a>
-      </div>
-    </div>
-    <div class="hubs-image">
-      <img
-        src={`${baseUrl}/img/desktop-available-genomes.webp`}
-        width="1400"
-        height="764"
-        loading="lazy"
-        decoding="async"
-        alt="JBrowse Desktop 'Available genomes' picker, a searchable list of human, mouse, and other assemblies each with a one-click launch link"
-      />
-    </div>
-  </div>
-</div>
-
 <div class="outer-box">
   <!-- Gallery preview -->
   <div class="section-box">
@@ -168,6 +119,46 @@ const galleryPreview: GalleryCard[] = [
       >
         Follow a tutorial
       </a>
+    </div>
+  </div>
+
+  <!-- Genome Hubs -->
+  <div class="section-box">
+    <h2 class="section-title">Ready-made genome browsers</h2>
+    <div class="hubs-row">
+      <div class="hubs-text">
+        <p class="body-text">
+          JBrowse Genome Hubs has browsers for thousands of species on the web,
+          and the same assemblies are built into the <a
+            href={`${baseUrl}/download/`}>JBrowse Desktop</a
+          > genome picker.
+        </p>
+        <ul class="hubs-list">
+          <li>Human and mouse (hg19, hg38, T2T hs1, mm10, mm39)</li>
+          <li>
+            UCSC GenArk: thousands of plant, animal, and microbial assemblies
+          </li>
+          <li>Human Pangenome (HPRC): 232 diploid assemblies</li>
+          <li>VGP, CCGP, and BRC collections</li>
+        </ul>
+        <p class="body-text">
+          <a
+            href="https://genomes.jbrowse.org"
+            target="_blank"
+            rel="noopener noreferrer">genomes.jbrowse.org ↗</a
+          >
+        </p>
+      </div>
+      <div class="hubs-image">
+        <img
+          src={`${baseUrl}/img/desktop-available-genomes.webp`}
+          width="1400"
+          height="764"
+          loading="lazy"
+          decoding="async"
+          alt="JBrowse Desktop 'Available genomes' picker, a searchable list of human, mouse, and other assemblies each with a one-click launch link"
+        />
+      </div>
     </div>
   </div>
 
@@ -343,37 +334,24 @@ const galleryPreview: GalleryCard[] = [
     color: var(--color-text-muted);
     margin: 0 0 8px;
   }
-  .hubs-band {
+  .hubs-row {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: clamp(1.25rem, 3vw, 2rem);
-    border-radius: 12px;
-    border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
-    background: color-mix(in srgb, var(--color-accent) 7%, white);
+    gap: 1rem;
   }
   .hubs-text {
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
-  .hubs-title {
-    border-bottom: none;
-    padding-bottom: 0;
-    color: var(--color-accent-dark);
-  }
   .hubs-list {
     margin: 0;
     padding-left: 1.2rem;
     line-height: 1.6;
   }
-  .btn-row.hubs-btn-row {
-    justify-content: flex-start;
-  }
   .hubs-image img {
     border-radius: 8px;
     border: 1px solid var(--color-border);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     height: auto;
     width: 100%;
     display: block;
@@ -504,15 +482,15 @@ const galleryPreview: GalleryCard[] = [
     .btn-row {
       margin: 16px;
     }
-    .hubs-band {
+    .hubs-row {
       flex-direction: row;
       align-items: center;
     }
     .hubs-text {
-      flex: 45%;
+      flex: 50%;
     }
     .hubs-image {
-      flex: 55%;
+      flex: 50%;
     }
   }
 </style>
