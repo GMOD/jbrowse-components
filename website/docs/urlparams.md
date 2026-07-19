@@ -6,8 +6,8 @@ sidebar_label: URL parameters
 JBrowse Web supports URL parameters for initializing a session.
 
 Embedded components like @jbrowse/react-linear-genome-view2 make no assumptions
-about URL parameters. That logic must be implemented by the consuming
-application.
+about URL parameters. The consuming application must implement that logic
+itself.
 
 ## Linear genome view (simple)
 
@@ -15,7 +15,10 @@ A simplified URL format for launching a single linear genome view:
 
 `http://host/jbrowse2/?config=test_data/config.json&loc=chr1:6000-7000&assembly=hg19&tracks=gene_track,vcf_track`
 
-Allowed query parameters:
+The allowed query parameters are listed below. `&assembly=`, `&loc=`, `&nav=`,
+`&tracks=`, `&tracklist=`, and `&highlight=` apply only to this single linear
+genome view launch. `?config=`, `&sessionName=`, `&hubURL=`, and `&session=`
+work for any launch type.
 
 ### ?config=
 
@@ -39,7 +42,7 @@ Example
 `&assembly=hg19`
 
 `&assembly=` refers to the `name` field of an entry in the `assemblies` array of
-config.json. Only used when launching a single linear genome view.
+config.json.
 
 ### &loc=
 
@@ -47,8 +50,7 @@ Example
 
 `&loc=chr1:6000-7000`
 
-Navigates to this region on load. Accepts the formats shown below. This is only
-used for launching a single linear genome view.
+Navigates to this region on load. Accepts the formats shown below.
 
 Example strings
 
@@ -130,8 +132,7 @@ Example
 
 `&nav=false`
 
-Turns off the navigation bar of the linear genome view. Default true. This is
-only used for launching a single linear genome view.
+Turns off the navigation bar of the linear genome view. Default true.
 
 ### &tracks=
 
@@ -140,8 +141,8 @@ Example
 `&tracks=gene_track,vcf_track`
 
 This is a comma-separated list of trackIds. You can find your trackIds in the
-config.json. Note, you can also refer to a trackId added by &sessionTracks=
-here. This is only used for launching a single linear genome view.
+config.json. Note that you can also refer to a trackId added by
+`&sessionTracks=` here.
 
 ### &sessionTracks=
 
@@ -304,7 +305,7 @@ simple URL:
 A top-level `sessionAssemblies` array registers assemblies into the session, the
 counterpart to `sessionTracks`. Assemblies are added _before_ the tracks and
 views, so `sessionTracks` and each view's `assembly` can reference them by name.
-This makes a spec fully self-contained, a novel assembly, its tracks, and the
+This makes a spec fully self-contained: a novel assembly, its tracks, and the
 views over them, with nothing baked into the served config (pair it with
 `?config=none`):
 
@@ -965,7 +966,7 @@ IndexedDB.
 
 ### &session=share-
 
-If you click the "Share button" in the header bar, it will generate a "shareable
+If you click the "Share" button in the header bar, it will generate a "shareable
 link" that you can give to other users
 
 https://host/jbrowse2/?session=share-HShsEcnq3i&password=nYzTU
