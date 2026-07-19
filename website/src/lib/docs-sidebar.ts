@@ -204,12 +204,11 @@ function flattenLinks(entry: SidebarEntry): SidebarLink[] {
   return entry.type === 'link' ? [entry] : entry.items.flatMap(flattenLinks)
 }
 
-// Flattens the sidebar into ordered `## <section>` buckets for the LLM surfaces
-// (/llms.txt and /llms-full.txt). Each top-level group becomes a section;
-// standalone top-level links (Introduction, Cookbook, CLI, FAQ) collapse into a
-// single "General" section at their first position — without this they each emit
-// their own duplicate "## General" heading. `has` filters to slugs that have an
-// emitted page, and a slug is listed only in its first section.
+// Flattens the sidebar into ordered `## <section>` buckets for /llms.txt. Each
+// top-level group is a section; standalone top-level links (Introduction,
+// Cookbook, CLI, FAQ) merge into one "General" section (else each emits a
+// duplicate "## General"). `has` filters to slugs with an emitted page; a slug
+// appears in its first section only.
 export function sidebarSections(
   sidebar: SidebarEntry[],
   has: (slug: string) => boolean,

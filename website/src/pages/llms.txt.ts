@@ -3,21 +3,17 @@ import { getCollection } from 'astro:content'
 
 import { buildSidebar, entrySlug, sidebarSections } from '../lib/docs-sidebar.ts'
 
-// Emits an `/llms.txt` index (https://llmstxt.org) listing every doc page,
-// grouped by its top-level sidebar section and linked to the page's raw
-// `/docs/<slug>.md` endpoint. An assistant reads this index, then fetches only
-// the raw pages it needs — no pre-concatenated full-text dump.
+// Emits an `/llms.txt` index (https://llmstxt.org): every doc page grouped by
+// top-level sidebar section, linked to its raw `/docs/<slug>.md`. An assistant
+// reads the index and fetches only the pages it needs.
 
-// One-line orientation printed under a section heading, keyed by the section's
-// sidebar label. Purely additive: a section with no entry here (or a renamed
-// one) just prints its bullets, so this can't leave a dead link — it only ever
-// understates. Config is where readers most need the map: concepts live under
-// "Configuration", the exhaustive per-type slot reference under "API reference".
+// One-line orientation under a section heading, keyed by sidebar label.
+// Additive: an absent or renamed key just prints its bullets, never a dead link.
 const sectionNotes: Record<string, string> = {
   Configuration:
-    'How a config.json is structured — assemblies, then tracks, each with an adapter (data) and one or more display types, wired with JEXL callbacks. Read these for the model; look up an exact type in "API reference".',
+    'The config model: assemblies, then tracks; each track = one adapter (data) + display type(s), wired with JEXL. Per-type slots are under "API reference".',
   'API reference':
-    'Auto-generated config-slot reference for every adapter, track, and display type (e.g. BamAdapter, LinearWiggleDisplay). Fetch the one page for the type you are configuring to see its available slots.',
+    'Generated config-slot reference per adapter/track/display type (BamAdapter, LinearWiggleDisplay, ...). Fetch the page for the type you are configuring.',
 }
 
 export async function GET() {
