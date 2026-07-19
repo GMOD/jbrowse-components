@@ -26,6 +26,10 @@ const baseLinearDisplayConfigSchema = ConfigurationSchema(
     /**
      * #slot
      */
+    // Conservative 1MB floor for the base display; the byte gate prefers an
+    // adapter-declared fetchSizeLimit over this (resolveByteLimit), so it only
+    // bites adapters that declare none. LinearBasicDisplay raises it to 5MB for
+    // feature tracks.
     fetchSizeLimit: {
       type: 'number',
       defaultValue: 1_000_000,

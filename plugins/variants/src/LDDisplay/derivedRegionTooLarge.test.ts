@@ -209,6 +209,31 @@ describe('LD derived regionTooLarge', () => {
     expect(display.regionTooLarge).toBe(false)
   })
 
+  // The pre-flight path carries the adapter's fetchSizeLimit in the stats
+  // (getMultiRegionFeatureDensityStats -> setFeatureDensityStats); the derived
+  // gate must prefer it over the display config via resolveByteLimit, else an
+  // adapter-declared limit is silently ignored (the bug the canvas path had).
+  // LD's config cap is the 1MB baseLinearDisplay floor.
+  it('honors an adapter fetchSizeLimit in the stats, over the display config', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    // 3MB estimate: over the 1MB display config, under the 50MB adapter limit
+    display.setFeatureDensityStats({
+      bytes: 3_000_000,
+      fetchSizeLimit: 50_000_000,
+    })
+    expect(view.visibleBp).toBeGreaterThan(20_000)
+    expect(display.regionTooLarge).toBe(false)
+  })
+
+  it('gates on the display config when the stats carry no fetchSizeLimit', () => {
+    const { display, view } = createTestEnvironment().createDisplay()
+    view.zoomTo(100)
+    // same 3MB estimate, no adapter limit → the 1MB config floor gates it
+    display.setFeatureDensityStats({ bytes: 3_000_000 })
+    expect(display.regionTooLarge).toBe(true)
+  })
+
   // afterAttach installs the onDisplayedRegionsChange autorun that drops the
   // cached estimate on chromosome navigation. Without it, a previous region's
   // estimate would gate the new region against the wrong stats and, because the
