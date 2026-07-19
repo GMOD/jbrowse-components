@@ -9,7 +9,7 @@ export const pages: ExamplePage[] = [
     slug: 'setting-up-the-view',
     title: 'View setup',
     description:
-      'The core ways to render the component and give it a starting state: the declarative props, the createViewState hook, and the minimal end-to-end example.',
+      'The core ways to render the component and give it a starting state: the simplest declarative call, the same declarative form with a real-world assembly config, and the useCreateViewState hook for when the view state must survive parent re-renders.',
     group: 'Getting started',
     sections: [
       {
