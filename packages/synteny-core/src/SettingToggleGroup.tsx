@@ -8,16 +8,19 @@ export default function SettingToggleGroup<T extends string>({
   value,
   options,
   onChange,
+  ariaLabel,
 }: {
   value: T
   options: readonly { value: T; label: string }[]
   onChange: (value: T) => void
+  ariaLabel: string
 }) {
   return (
     <ToggleButtonGroup
       exclusive
       fullWidth
       size="small"
+      aria-label={ariaLabel}
       value={value}
       onChange={(_event, next: T | null) => {
         if (next !== null) {

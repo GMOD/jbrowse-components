@@ -79,6 +79,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
         help="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
       >
         <SettingToggleGroup
+          ariaLabel="Identity fade"
           value={opacityByIdentity ? 'on' : 'off'}
           options={ON_OFF}
           onChange={v => {
@@ -91,6 +92,7 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
         help="Fades sub-pixel-thin ribbons by their on-screen width, so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. Auto enables it only when the view is dense enough to tangle; a genuinely sparse comparison (e.g. distant species, every alignment sub-pixel) stays unfaded so the fade doesn't wash it out. On/Off pin it."
       >
         <SettingToggleGroup
+          ariaLabel="Thin fade"
           value={fadeThinAlignmentsMode}
           options={FADE_MODES}
           onChange={v => {
