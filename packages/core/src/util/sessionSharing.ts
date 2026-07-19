@@ -155,6 +155,11 @@ export async function readSessionFromDynamo(
     throw new Error(getErrorMsg(await response.text()))
   }
 
-  const json = await response.json()
+  const json = (await response.json()) as { session?: string }
+  if (typeof json.session !== 'string') {
+    throw new Error(
+      'Shared session not found — the link may have expired or the id is wrong',
+    )
+  }
   return aesDecrypt(json.session, password)
 }

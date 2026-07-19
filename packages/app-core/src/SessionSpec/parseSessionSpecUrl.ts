@@ -25,6 +25,16 @@ export interface ParsedSessionSpec {
   sessionName?: string
 }
 
+// jbrowse-web keeps its URL params in the hash fragment XOR the query string
+// (the inline `encoded-`/`json-`/`spec-` sessions live in the hash to dodge the
+// server request-line limit; short `share-` links stay in the query). Read from
+// whichever the link uses so a pasted hash-form link parses the same as a
+// query-form one, instead of tripping the "no session in it" error below.
+function linkParams(url: URL): URLSearchParams {
+  const hash = url.hash.slice(1)
+  return new URLSearchParams(hash.includes('=') ? hash : url.search)
+}
+
 export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
   let url: URL
   try {
@@ -33,7 +43,8 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
     throw new Error(`Not a URL: ${input}`)
   }
 
-  const session = url.searchParams.get('session')
+  const params = linkParams(url)
+  const session = params.get('session')
   if (!session) {
     throw new Error(
       'That link has no session in it. Copy a JBrowse Web link that contains "&session=spec-...".',
@@ -68,13 +79,13 @@ export function parseSessionSpecUrl(input: string): ParsedSessionSpec {
     )
   }
 
-  const config = url.searchParams.get('config')
+  const config = params.get('config')
   return {
     // a relative config (e.g. `test_data/volvox/config.json`) is served by the
     // instance the link points at, so resolve it there rather than handing back
     // a path nothing outside that instance could fetch
     configUrl: config ? new URL(config, url.href).href : undefined,
     spec,
-    sessionName: url.searchParams.get('sessionName') ?? undefined,
+    sessionName: params.get('sessionName') ?? undefined,
   }
 }

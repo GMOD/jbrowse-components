@@ -31,6 +31,25 @@ test('a spec with no config is allowed (self-contained sessionAssemblies)', () =
   expect(spec).toEqual(SPEC)
 })
 
+test('parses a hash-form link (jbrowse-web puts inline sessions in the hash)', () => {
+  const { configUrl, spec, sessionName } = parseSessionSpecUrl(
+    `https://jbrowse.org/code/jb2/main/#config=test_data/volvox/config.json&session=${encoded}&sessionName=Fig`,
+  )
+  expect(spec).toEqual(SPEC)
+  expect(sessionName).toBe('Fig')
+  expect(configUrl).toBe(
+    'https://jbrowse.org/code/jb2/main/test_data/volvox/config.json',
+  )
+})
+
+test('explains that a hash-form share link cannot be opened elsewhere', () => {
+  expect(() =>
+    parseSessionSpecUrl(
+      'https://jbrowse.org/code/jb2/main/#session=encoded-abc123',
+    ),
+  ).toThrow(/only the JBrowse Web instance that created it/)
+})
+
 test('explains that a share link cannot be opened elsewhere', () => {
   expect(() =>
     parseSessionSpecUrl(

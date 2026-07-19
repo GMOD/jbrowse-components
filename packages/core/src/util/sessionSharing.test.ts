@@ -49,6 +49,15 @@ describe('readSessionFromDynamo', () => {
     })
   })
 
+  describe('missing session field', () => {
+    it('throws a clear error when the response has no session', async () => {
+      fetchMock.mockResponse(JSON.stringify({}))
+      await expect(
+        readSessionFromDynamo('https://api.example.com/', 'share-gone', 'pass'),
+      ).rejects.toThrow(/may have expired/)
+    })
+  })
+
   describe('error message extraction', () => {
     it('uses message field from JSON error body', async () => {
       fetchMock.mockResponse(JSON.stringify({ message: 'session not found' }), {
