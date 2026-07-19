@@ -35,10 +35,9 @@ explore real hosted genomes at [Genome Hubs](https://genomes.jbrowse.org/).
 
 ## Tutorials
 
-Hands-on walkthroughs of common workflows, each built around a real dataset. See
-the [full tutorials list](/docs/tutorials) for all of them.
-
-<!-- doclist:tutorials nodesc -->
+Hands-on walkthroughs of common workflows, from first setup to advanced
+analysis. Browse them all, grouped by topic with a preview of each, on the
+[tutorials page](/docs/tutorials).
 
 ## Developers
 
