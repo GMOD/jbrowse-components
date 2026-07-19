@@ -75,7 +75,7 @@ Example
 
 `&highlight=chr1:6000-7000`
 
-This will create a highlight over the specified region when combined with
+Creates a highlight over the specified region when combined with
 [&assembly=](#assembly) and [&loc=](#loc).
 
 Multiple highlight locations can be specified by delimiting locations with a
@@ -83,13 +83,12 @@ space (URL-encoded as `%20`):
 
 `&highlight=chr1:6000-7000%20chr1:7100-7200`
 
-Note: always pass `&assembly=` alongside `&highlight=`. The highlight is stored
-with the assembly name so downstream features (e.g. bookmarking the highlighted
-region from the chip menu) can resolve it. Without an assembly, the highlight
-still renders in a single-assembly view when the refName matches a displayed
-region, but it is not portable across assemblies and may fail in actions that
-need a fully-qualified region. The same applies when authoring `view.highlight`
-directly in a session JSON: include `assemblyName` on each entry.
+Note: always pass `&assembly=` alongside `&highlight=`. Highlights are stored by
+assembly name so downstream features (e.g. bookmarking from the chip menu) can
+resolve them. Without one, a highlight still renders when its refName matches a
+displayed region, but it is not portable across assemblies and may break actions
+that need a fully-qualified region. The same applies to `view.highlight` in a
+session JSON: include `assemblyName` on each entry.
 
 `view.highlight` entries also accept optional `color` and `label` fields, both
 when authoring a session JSON directly and via the URL by passing a JSON object
@@ -114,9 +113,8 @@ tooltip. URL form (URL-encode the JSON):
 &highlight={"refName":"11","start":32200274,"end":32203877,"color":"rgba(240,128,128,0.3)","label":"R2_intron"}
 ```
 
-Multiple JSON highlights can be combined with space delimiters (`%20` after
-URL-encoding), and loc strings and JSON objects can be mixed in the same
-`&highlight=` value.
+JSON highlights use the same `%20` space delimiter, and loc strings and JSON
+objects can be mixed in one `&highlight=` value.
 
 ### &tracklist=
 
@@ -146,11 +144,9 @@ config.json. Note that you can also refer to a trackId added by
 
 ### &sessionTracks=
 
-If you want to dynamically add a track to the session, you can do so with
-`&sessionTracks=`
-
-You can also use this method to add a `FromConfigAdapter` track, which lets you
-specify features in JSON format, so you can e.g. add BLAST hits via the URL bar.
+`&sessionTracks=` dynamically adds a track to the session. It can also add a
+`FromConfigAdapter` track, specifying features inline as JSON, so you can e.g.
+add BLAST hits from the URL bar.
 
 Example
 
@@ -160,10 +156,9 @@ https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:
 
 [Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&loc=ctgA:1-800&assembly=volvox&tracks=gff3tabix_genes,volvox_filtered_vcf,volvox_microarray,volvox_cram,url_track&sessionTracks=[{"type":"FeatureTrack","trackId":"url_track","name":"URL%20track","assemblyNames":["volvox"],"adapter":{"type":"FromConfigAdapter","features":[{"uniqueId":"one","refName":"ctgA","start":100,"end":200,"name":"Boris"}]}}])
 
-This creates a track dynamically that has a single feature at `ctgA:100-200`.
+This creates a track with a single feature at `ctgA:100-200`.
 
-The data to supply to `&sessionTracks=` is an array of track configs, and in the
-above URL, looks like this when pretty-printed
+The value is an array of track configs. Pretty-printed, the one above is:
 
 ```json
 [
@@ -241,7 +236,7 @@ onto the default session. Use a full [session spec](#session-spec) for that.
 ### Linear genome view
 
 A "session spec" encodes a session as JSON in the URL. Each view object is the
-serialized form of a view's declarative `init` field; the embedded
+serialized form of a view's declarative `init` field. The embedded
 `@jbrowse/react-linear-genome-view2` component accepts the same shape directly
 via `defaultSession.view.init` (it does not parse URLs itself).
 
@@ -683,10 +678,10 @@ ribbons and stronger opacity:
 
 Supported init fields:
 
-- `colorBy`: one of `default`, `strand`, `query`, `target`, `identity`,
-  `identityDiverging`, `meanQueryIdentity`, `meanQueryMappingQuality`,
-  `mappingQuality`. `query`/`target` paint ribbons by source/target chromosome,
-  useful for whole-genome views where the default grey blends ribbons into mud.
+- `colorBy`: one of `default`, `strand`, `query`, `target`, `reference`,
+  `identity`, `meanQueryIdentity`, `mappingQuality`. `query`/`target` paint
+  ribbons by source/target chromosome, useful for whole-genome views where the
+  default grey blends ribbons into mud.
 - `drawCurves`: render ribbons as bezier curves rather than straight chords.
   Reads better at whole-genome scale where straight crossings stack into noise.
 - `alpha`: per-feature opacity in `[0,1]` (default `0.2`, tuned for dense
@@ -939,18 +934,16 @@ This loads a session with an extra plugin loaded.
 
 ### &session=encoded-
 
-This is similar to JSON sessions but uses a URL encoding (base64+gzip)
-
-Example
+Similar to JSON sessions but uses a URL encoding (base64+gzip), so the URLs look
+like:
 
 ```
-https://jbrowse.org/code/jb2/latest/?session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6NdfjvXcCiZpq23-Dt2923u-_2DCPmsevHMn0ePT2umMEEz4GgGWx7C1AKC9EzzQv7wupbpkGfntX3HKt3-YW4OZcJCub1DRZJvgW5xEinzBuMbINtELaKeT_2bY98E0ym_PvdR8rTu7LuMUUBXH4CUeTwjdgUKeJYgZ6_MM-yLWtsGiwo5yBrwBkO3w9dx3b7I3fsuI5FTVGVGd9BdAcJCW27SYhn7QxDKqg0l7pRCIJkmM7YHIxcd2AQbwNSAYExzxQYjCsFeZDtDtlpYo5ZdU9qJQ-fTiZxxrPVYGrf-sdJroHrtQS_ZhIaFiLGZC25JlUUFmGAD0kcPzQ1O90nNQe72dU0eC716vV6rrjC8EObQLEUMElpINu0_tHn3R_yq_t6oBQjuAEegexmP0JfaSv16bpQM_4CMgh1If1WWooguQxTDHnGDpQpDyCjkVhBFTJeliiS-gBpsZ2A0CBrPV3VBt7pIuAiUgvQumZ7Wq6hVrjFKAFNxfZnrfxTKXWw2d3bjG6VN29Rlk2j5mQZaW7ssK8MFmNGin14oVUz1pr5zMQVkXiocQPL_9L6l1jVHFLQD13xsyDHihBqb9AiVPsE_d8WPEKTLuUcv2xdjK8qzLM1PdUDlqPAHH-eeL99vvNC4cFKsrFZ9QuCGmjL
+https://jbrowse.org/code/jb2/latest/?session=encoded-eJyNU2FzmkAQ_SvOfaaNIKDyLbFN0xlrTWRqnU4mc8ACm8BB7k6Ndfj...
 ```
 
-Note that the "Share" button has a gear icon that lets you select "Long URL"
-that produces these URLs. The encoded share links can be used without the
-central session sharing system in place, as the entire session is encoded in the
-URL.
+The "Share" button's gear icon has a "Long URL" option that produces these.
+Because the entire session is encoded in the URL, they work without the central
+session-sharing system in place.
 
 ### &session=local-
 
@@ -961,7 +954,7 @@ https://host/jbrowse2/?session=local-Fjphq8kjY
 By default, after a session is loaded, it is stored into sessionStorage and
 IndexedDB, and then the URL bar uses the ?session=local- format to reflect the
 session ID. Pasting the URL in the same browser tab restores from
-sessionStorage; pasting it into a new tab on the same machine restores from
+sessionStorage. Pasting it into a new tab on the same machine restores from
 IndexedDB.
 
 ### &session=share-
