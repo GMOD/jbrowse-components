@@ -1,22 +1,15 @@
 ---
 import ExternalNavigate from "../examples/ExternalNavigate.tsx"
-import ExternalNavigateCode from "../examples/ExternalNavigate.tsx?raw"
-import UsingLocObject from "../examples/UsingLocObject.tsx"
-import UsingLocObjectCode from "../examples/UsingLocObject.tsx?raw"
-import { pages, section } from "../examples.ts"
+import code from "../examples/ExternalNavigate.tsx?raw"
+import { pages } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
 import Section from "../layouts/ExampleSection.astro"
 
 const page = pages.find(p => p.slug === "navigate-to-location")!
-const sec0 = section(page, "external-navigate")
-const sec1 = section(page, "using-loc-object")
 ---
 
 <Layout page={page}>
-  <Section {...sec0} code={ExternalNavigateCode}>
+  <Section slug="external-navigate" code={code}>
     <ExternalNavigate client:only="react" />
-  </Section>
-  <Section {...sec1} code={UsingLocObjectCode}>
-    <UsingLocObject client:only="react" />
   </Section>
 </Layout>

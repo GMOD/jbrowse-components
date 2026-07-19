@@ -64,7 +64,7 @@ export const pages: ExamplePage[] = [
     slug: 'navigate-to-location',
     title: 'Navigating to a location',
     description:
-      'Drive the view to a region from your own UI, or with a {refName, start, end} location object.',
+      'Drive the view to a region from your own UI with a location string or a {refName, start, end} object.',
     group: 'Navigation',
     sections: [
       {
@@ -72,12 +72,6 @@ export const pages: ExamplePage[] = [
         title: 'External navigation',
         description:
           'Drive the view from your own UI with navToLocString (a location string) or navToLocations (a {refName, start, end} object).',
-      },
-      {
-        slug: 'using-loc-object',
-        title: 'Using a location object',
-        description:
-          'Initialize the starting location with a {refName, start, end} object.',
       },
     ],
   },
