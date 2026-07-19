@@ -59,6 +59,10 @@ const useStyles = makeStyles()(theme => ({
     width: 100,
     height: 10,
     border: `1px solid ${theme.palette.divider}`,
+    // clip the gradient to the padding box so it doesn't paint under the
+    // translucent divider border — otherwise the border composites over the
+    // gradient's red end and the left edge renders a dark-red sliver at 0
+    backgroundClip: 'padding-box',
   },
   labels: {
     display: 'flex',
@@ -160,7 +164,10 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
             </div>
             <div
               className={classes.gradientBar}
-              style={{ background: getLegendCssGradient(colorScheme) }}
+              // backgroundImage (longhand), not the `background` shorthand: the
+              // shorthand resets background-clip back to border-box, undoing the
+              // padding-box clip and re-introducing the dark-red sliver at 0
+              style={{ backgroundImage: getLegendCssGradient(colorScheme) }}
             />
             <div className={classes.labels}>
               <span>{minLabel}</span>
