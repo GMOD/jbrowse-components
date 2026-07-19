@@ -206,6 +206,25 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
+    slug: 'alignments-track-options',
+    title: 'Custom alignments display options',
+    description:
+      'Configure a LinearAlignmentsDisplay up front — color by modifications, group by haplotype, filter by SAM flags — on real HG002 methylation data, with links to the full option reference.',
+    group: 'Track display & coloring',
+    // real HG002 nanopore reads (long, modification-tagged) are a heavy remote
+    // fetch and modification rendering is a GPU path that CI's headless
+    // software-WebGL can choke on; the page ships and works in a real browser
+    skipSmoke: true,
+    sections: [
+      {
+        slug: 'alignments-track-options',
+        title: 'Custom alignments display options',
+        description:
+          'Configure a LinearAlignmentsDisplay up front — color by modifications, group by haplotype, filter by SAM flags — on real HG002 methylation data, with links to the full option reference.',
+      },
+    ],
+  },
+  {
     slug: 'specialized-track-types',
     title: 'Quantitative, gene & variant tracks',
     description:
@@ -228,6 +247,21 @@ export const pages: ExamplePage[] = [
         slug: 'with-multi-sample-variant-display',
         title: 'Multi-sample variant display',
         description: 'Show a multi-sample VCF as a matrix display.',
+      },
+    ],
+  },
+  {
+    slug: 'track-sizing',
+    title: 'Track sizing: grow & fit',
+    description:
+      'Choose what a feature track does when it has more rows than fit: grow the track to show them all, or squeeze the rows into a fixed height.',
+    group: 'Track display & coloring',
+    sections: [
+      {
+        slug: 'track-sizing',
+        title: 'Track sizing: grow & fit',
+        description:
+          'Choose what a feature track does when it has more rows than fit: grow the track to show them all, or squeeze the rows into a fixed height.',
       },
     ],
   },

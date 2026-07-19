@@ -1,0 +1,15 @@
+---
+import WithTrackSizing from "../examples/WithTrackSizing.tsx"
+import code from "../examples/WithTrackSizing.tsx?raw"
+import { pages } from "../examples.ts"
+import Layout from "../layouts/ExampleLayout.astro"
+import Section from "../layouts/ExampleSection.astro"
+
+const page = pages.find(p => p.slug === "track-sizing")!
+---
+
+<Layout page={page}>
+  <Section slug="track-sizing" code={code}>
+    <WithTrackSizing client:only="react" />
+  </Section>
+</Layout>
