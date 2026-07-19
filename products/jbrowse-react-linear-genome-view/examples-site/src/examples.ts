@@ -34,9 +34,9 @@ export const pages: ExamplePage[] = [
   },
   {
     slug: 'default-session',
-    title: 'Default session & locked-down embeds',
+    title: 'Default session, embeds & the drawer',
     description:
-      'Open on a predefined session snapshot, and hide editing UI for a locked-down embed.',
+      'Open on a predefined session snapshot, hide editing UI for a locked-down embed, and show widgets (track selector, feature details) in a side drawer.',
     group: 'Getting started',
     sections: [
       {
@@ -49,6 +49,12 @@ export const pages: ExamplePage[] = [
         slug: 'disable-add-track',
         title: 'Disable the add-track UI',
         description: 'Hide the "add track" UI for a locked-down embed.',
+      },
+      {
+        slug: 'with-drawer-widget',
+        title: 'Widgets in a side drawer',
+        description:
+          'Render widgets (track selector, feature details) in a resizable side drawer via drawerViewHeight.',
       },
     ],
   },
@@ -229,9 +235,9 @@ export const pages: ExamplePage[] = [
   // --- Sessions & state ---
   {
     slug: 'session-setup',
-    title: 'Advanced init & session highlights',
+    title: 'Advanced init, highlights & persistence',
     description:
-      'Use the advanced init blob for a richer initial view, and add highlighted regions to the session.',
+      'Use the advanced init blob for a richer initial view, add highlighted regions to the session, and persist the live session to localStorage and restore it on reload.',
     group: 'Sessions & state',
     sections: [
       {
@@ -245,43 +251,6 @@ export const pages: ExamplePage[] = [
         title: 'Session highlights',
         description: 'Add highlighted regions to the session.',
       },
-    ],
-  },
-  {
-    slug: 'observe-visible',
-    title: 'Observe the visible view',
-    description:
-      'React to the regions and features currently visible in the view from your own companion panels.',
-    group: 'Sessions & state',
-    sections: [
-      {
-        slug: 'observe-visible',
-        title: 'Observe the visible view',
-        description:
-          'React to the regions and features currently visible in the view from your own companion panels.',
-      },
-    ],
-  },
-  {
-    slug: 'with-two-linear-genome-views',
-    title: 'Two linear genome views',
-    description: 'Render two independent views on one page.',
-    group: 'Sessions & state',
-    sections: [
-      {
-        slug: 'with-two-linear-genome-views',
-        title: 'Two linear genome views',
-        description: 'Render two independent views on one page.',
-      },
-    ],
-  },
-  {
-    slug: 'with-session-persistence',
-    title: 'Persist & restore the session',
-    description:
-      'Mirror the live session to localStorage with onSnapshot, and restore it as defaultSession on reload.',
-    group: 'Sessions & state',
-    sections: [
       {
         slug: 'with-session-persistence',
         title: 'Persist & restore the session',
@@ -291,10 +260,30 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
-    slug: 'export-svg',
-    title: 'Export the view (SVG/PNG)',
+    slug: 'multiple-views',
+    title: 'Observing & multiple views',
     description:
-      'Render the whole view to a vector SVG (or rasterized PNG) with the exportSvg action.',
+      'React to the regions and features currently visible from your own companion panels, and render several independent views on one page.',
+    group: 'Sessions & state',
+    sections: [
+      {
+        slug: 'observe-visible',
+        title: 'Observe the visible view',
+        description:
+          'React to the regions and features currently visible in the view from your own companion panels.',
+      },
+      {
+        slug: 'with-two-linear-genome-views',
+        title: 'Two linear genome views',
+        description: 'Render two independent views on one page.',
+      },
+    ],
+  },
+  {
+    slug: 'export-and-errors',
+    title: 'Export & error handling',
+    description:
+      'Render the whole view to a vector SVG (or rasterized PNG), and catch and render view errors with your own UI.',
     group: 'Sessions & state',
     // exportSvg re-renders every track's GPU layer through the SVG path, which
     // crashes CI's headless software-WebGL
@@ -306,14 +295,6 @@ export const pages: ExamplePage[] = [
         description:
           'Render the whole view to a vector SVG (or rasterized PNG) with the exportSvg action.',
       },
-    ],
-  },
-  {
-    slug: 'with-error-handler',
-    title: 'Custom error handling',
-    description: 'Catch and render view errors with your own UI.',
-    group: 'Sessions & state',
-    sections: [
       {
         slug: 'with-error-handler',
         title: 'Custom error handling',
@@ -365,9 +346,10 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
-    slug: 'with-internet-accounts',
-    title: 'Internet accounts (authentication)',
-    description: 'Access authenticated data sources via internet accounts.',
+    slug: 'accounts-and-workers',
+    title: 'Internet accounts & web workers',
+    description:
+      'Access authenticated data sources via internet accounts, and offload data parsing/rendering to a web worker.',
     group: 'Plugins & accounts',
     sections: [
       {
@@ -375,31 +357,10 @@ export const pages: ExamplePage[] = [
         title: 'Internet accounts (authentication)',
         description: 'Access authenticated data sources via internet accounts.',
       },
-    ],
-  },
-  {
-    slug: 'with-web-worker',
-    title: 'Web worker RPC',
-    description: 'Offload data parsing/rendering to a web worker.',
-    group: 'Plugins & accounts',
-    sections: [
       {
         slug: 'with-web-worker',
         title: 'Web worker RPC',
         description: 'Offload data parsing/rendering to a web worker.',
-      },
-    ],
-  },
-  {
-    slug: 'with-drawer-widget',
-    title: 'Drawer widget',
-    description: 'Show feature details and other widgets in the drawer.',
-    group: 'Plugins & accounts',
-    sections: [
-      {
-        slug: 'with-drawer-widget',
-        title: 'Drawer widget',
-        description: 'Show feature details and other widgets in the drawer.',
       },
     ],
   },
