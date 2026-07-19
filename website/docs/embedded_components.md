@@ -40,9 +40,9 @@ Not sure if you want an embedded view or the full app? See the
   highlight, tracks) these components accept at launch
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - a worked
   example using the `<script>` tag approach
-- [JBrowse Jupyter](/docs/jbrowse_jupyter) - Python/Dash wrapper for embedding
-  these components in notebooks
-- [JBrowseR](/docs/jbrowser) - R/htmlwidget wrapper for embedding these
-  components in Shiny apps and R Markdown
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) - Python anywidget for embedding
+  these components in notebooks (Jupyter, Colab, VS Code, marimo)
+- [JBrowseR](/docs/jbrowser) - R htmlwidget for embedding these components in
+  Shiny apps and R Markdown
 - [FAQ: embedded views vs. full app](/docs/faq#embedded-views-versus-full-jbrowse-app) -
   help choosing between these packages and the complete app

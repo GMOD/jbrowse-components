@@ -22,7 +22,7 @@ const desktopDownloads = [
 
 <BaseLayout
   title="Download JBrowse 2"
-  description="Download JBrowse Desktop or JBrowse Web, install the JBrowse CLI tools, or embed JBrowse as a React component, Jupyter widget, Dash app, or R/Shiny widget."
+  description="Download JBrowse Desktop or JBrowse Web, install the JBrowse CLI tools, or embed JBrowse as a React component, Jupyter widget, or R/Shiny widget."
 >
   <div class={page.content}>
     <h1>Download JBrowse 2</h1>
@@ -138,17 +138,13 @@ const desktopDownloads = [
     <h2>Other language bindings</h2>
     <ul>
       <li>
-        Python (Dash):{' '}
-        <a href="https://github.com/GMOD/dash_jbrowse">GMOD/dash_jbrowse</a>
-      </li>
-      <li>
         Python (Jupyter):{' '}
-        <a href="https://gmod.github.io/jbrowse-jupyter/docs/html/index.html"
-          >Documentation</a
-        >, <a href="https://github.com/GMOD/jbrowse-jupyter">source code</a>
+        <a href={`${baseUrl}/docs/jbrowse_jupyter/`}>Documentation</a>,{' '}
+        <a href="https://github.com/GMOD/jbrowse-anywidget">source code</a>
       </li>
       <li>
-        R/Shiny: <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a>{' '}
+        R/Shiny: <a href={`${baseUrl}/docs/jbrowser/`}>Documentation</a>,{' '}
+        <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a>{' '}
         — R package on CRAN
       </li>
     </ul>

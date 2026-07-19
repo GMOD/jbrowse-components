@@ -2,15 +2,20 @@
 title: JBrowse in a Jupyter notebook
 sidebar_label: Jupyter notebooks
 description:
-  Run a JBrowse 2 linear genome view in Jupyter, Colab, or VS Code as an
+  Run a JBrowse 2 genome view in Jupyter, Colab, VS Code, or marimo as an
   anywidget, with two-way sync between Python and the view
 ---
 
 [`jbrowse-anywidget`](https://github.com/GMOD/jbrowse-anywidget) renders a
 JBrowse 2 linear genome view as an [anywidget](https://anywidget.dev), drawn on
-the GPU. One bundle runs in Jupyter, JupyterLab, VS Code, and Google Colab, with
-two-way sync of the visible region between Python and the view: set
+the GPU. One bundle runs in Jupyter, JupyterLab, VS Code, marimo, and Google
+Colab, with two-way sync of the visible region between Python and the view: set
 `view.location` to navigate, read it back to get where the user panned.
+
+`LinearGenomeView` covers the common case. For comparative genomics,
+`JBrowseApp` drives the full app from a declarative `views` list, so a notebook
+can also hold a linear synteny view or a dotplot (`synteny_view`, `dotplot_view`
+build the specs) — see the E. coli example below.
 
 It is the modern replacement for the older Dash-based `jbrowse-jupyter` +
 `dash_jbrowse` stack: no Dash server, no component-generation step, just a
@@ -73,19 +78,24 @@ line up even when they name chromosomes differently (`chr17` vs `17`).
 
 Each opens in Colab and runs top-to-bottom.
 
-| Notebook                                                                                                                                              | What it shows                                                   |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| [Quickstart](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/01_quickstart.ipynb)                                  | An assembly, a track by URL, two-way location sync              |
-| [DataFrame → track](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/02_dataframe_analysis.ipynb)                   | A pandas DataFrame becomes a track; color by a computed value   |
-| [GPU alignments](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/03_alignments.ipynb)                              | A BAM/CRAM pileup, colored by pair orientation                  |
-| [Multi-sample variants](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/04_multisample_variants.ipynb)             | A multi-sample VCF as a per-sample band and a genotype matrix   |
-| [Call CNVs → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/05_cnv_calling.ipynb)                           | Segment binned depth into gain/loss calls (ERBB2 amplification) |
-| [Selection scan → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/06_popgen_selection.ipynb)                 | Windowed Fst; the sweep lands over _LCT_                        |
-| [Differential expression → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/07_differential_expression.ipynb) | Counts → log2FC / t-test → a gene track colored by call         |
-| [Hosted assembly hub](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/08_hosted_assembly_hub.ipynb)                | `fetch_hub` for easy human data; navigate by gene name          |
+| Notebook                                                                                                                                              | What it shows                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| [Quickstart](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/01_quickstart.ipynb)                                  | An assembly, a track by URL, two-way location sync                                                |
+| [DataFrame → track](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/02_dataframe_analysis.ipynb)                   | A pandas DataFrame becomes a track; color by a computed value                                     |
+| [GPU alignments](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/03_alignments.ipynb)                              | A BAM/CRAM pileup, colored by pair orientation                                                    |
+| [Multi-sample variants](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/04_multisample_variants.ipynb)             | A multi-sample VCF as a per-sample band and a genotype matrix                                     |
+| [Call CNVs → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/05_cnv_calling.ipynb)                           | Segment binned depth into gain/loss calls (ERBB2 amplification)                                   |
+| [Selection scan → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/06_popgen_selection.ipynb)                 | Windowed Fst between two _Drosophila_ populations; the sweep lands over _Cyp6g1_ (real DEST data) |
+| [Differential expression → view](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/07_differential_expression.ipynb) | Counts → log2FC / t-test → a gene track colored by call                                           |
+| [Hosted assembly hub](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/08_hosted_assembly_hub.ipynb)                | `fetch_hub` for easy human data; navigate by gene name                                            |
+| [Interactive controls](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/09_interactive_controls.ipynb)              | An `ipywidgets` slider re-runs the analysis and repaints the track                                |
+| [Region-reactive](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/10_region_reactive.ipynb)                        | Compute a per-base score only over the window in view, adapting to zoom                           |
+| [Compare genomes (synteny)](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/11_synteny_ecoli.ipynb)                | Four _E. coli_ strains in a linear synteny view from one all-vs-all PAF                           |
 
-The "→ view" notebooks are the core loop: **run an analysis in Python, load the
-result onto the genome**, with everything computed in the notebook.
+Notebooks 05–07 are the core loop: **run an analysis in Python, load the result
+onto the genome**, with everything computed in the notebook. Notebooks 09–10
+close the loop the other way — a widget control or a pan in the view drives
+Python to **recompute and repaint** live.
 
 ## See also
 

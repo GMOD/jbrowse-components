@@ -15,6 +15,14 @@ Kinh-Vietnamese trio HG02024, chr1 only:
 - [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
 - [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
 
+Working in a notebook? The phased multi-sample variant display below renders
+inline through the
+[JBrowse Jupyter / anywidget interface](/docs/jbrowse_jupyter) (or
+[JBrowseR](/docs/jbrowser) in R), and the hap-ibd and ancestry paintings are the
+DataFrame-to-track pattern — compute a per-segment call, color a BED by it, no
+file written — so the whole analysis and its view fit in one Python or R
+session.
+
 Everything here is on `hg38`, so set that assembly up first if you haven't (see
 the [assemblies guide](/docs/config_guides/assemblies)). Then add the VCF with
 `jbrowse add-track` or the in-app "Add track" workflow. The
@@ -232,7 +240,9 @@ haplotype gets a row:
       "ancestry"
     ],
     "bedGzLocation": { "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz" },
-    "index": { "location": { "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz.tbi" } }
+    "index": {
+      "location": { "uri": "NA19828_ASW_trio.chr1.ancestry.bed.gz.tbi" }
+    }
   },
   "displays": [
     {
@@ -306,6 +316,17 @@ bash scripts/build_khv_trio_hapibd.sh
 
 It needs java, python3, node, and htslib (`bgzip` and `tabix`). Serve the
 resulting `jbrowse2/` directory to open the finished view.
+
+The admixed-ancestry track (the ASW trio, from the FLARE section above) is a
+separate script,
+[`build_asw_trio_ancestry.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_asw_trio_ancestry.sh):
+
+```bash
+bash scripts/build_asw_trio_ancestry.sh
+```
+
+It needs `bcftools`, htslib (`bgzip`/`tabix`), Java 8+, `python3`, `curl`, and
+`unzip`.
 
 ## See also
 

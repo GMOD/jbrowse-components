@@ -33,7 +33,8 @@ any platform.
 You will need:
 
 - A Linux machine with HTTP access (either a public URL or `http://localhost`)
-- Approximately 1 TB of free disk space (the BAM/CRAM files are large)
+- Approximately 1 TB of free disk space for the interactive walkthrough, or ~1.5
+  TB to run the full reproduce pipeline below (the BAM/CRAM files are large)
 - At least 32 GB of RAM for the minimap2 alignment step (you can downsize the
   machine after data prep is done, and a 2 GB instance is sufficient to host the
   finished site)
@@ -444,11 +445,11 @@ per-base CDKN2A slice. It also aligns both haplotypes of the verkko tumor
 assembly to GRCh38 with minimap2 for the synteny and dotplot views, then
 downloads JBrowse and writes a `config.json` with everything loaded.
 
-You will need `samtools`, `bcftools`, `mosdepth`, `minimap2`, the UCSC
-`bedGraphToBigWig`, `python3`, and `node`. Be warned that it pulls down more
-than 200 GB, wants roughly 1.5 TB of free disk and 32 GB of RAM, and the
-alignment and pileup steps take hours. It skips the optional Wakhan step, since
-the figures use the raw per-SNP BAF anyway.
+You will need `samtools`, `bcftools`, `mosdepth`, `megadepth`, `minimap2`,
+`tabix`, the UCSC `bedGraphToBigWig`, `python3`, and `node`. Be warned that it
+pulls down more than 200 GB, wants roughly 1.5 TB of free disk and 32 GB of RAM,
+and the alignment and pileup steps take hours. It skips the optional Wakhan
+step, since the figures use the raw per-SNP BAF anyway.
 
 ## Walkthroughs
 

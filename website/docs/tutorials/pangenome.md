@@ -5,9 +5,9 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-A pangenome graph collapses many genomes into one structure: shared sequence is a
-single path that every sample walks, and where samples differ the path branches.
-[pggb](https://github.com/pangenome/pggb),
+A pangenome graph collapses many genomes into one structure: shared sequence is
+a single path that every sample walks, and where samples differ the path
+branches. [pggb](https://github.com/pangenome/pggb),
 [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md),
 and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
 build these graphs; [odgi](https://github.com/pangenome/odgi) manipulates them.
@@ -18,18 +18,23 @@ reference genome's coordinates, in three complementary views. Every builder can
 emit all three, so a graph built with any of these tools lands on three JBrowse
 track types you already have:
 
-| Projection | What it shows | From the graph | JBrowse track |
-| --- | --- | --- | --- |
-| All-vs-all synteny | The blocks each pair of genomes shares | the wfmash all-vs-all PAF; `odgi untangle`; `halSynteny` | [synteny track](/docs/config_guides/synteny_track) |
-| Pangenome variants | Every difference the graph calls, across all samples | `pggb -V`; `cactus-pangenome --vcf`; `vg deconstruct` | [multi-sample variant track](/docs/user_guides/multivariant_track) |
-| Whole-genome alignment | The multiple alignment, column by column | `pggb -M`; `hal2maf` + `taffy` | [MAF track](/docs/user_guides/maf_track) |
+| Projection             | What it shows                                        | From the graph                                           | JBrowse track                                                      |
+| ---------------------- | ---------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
+| All-vs-all synteny     | The blocks each pair of genomes shares               | the wfmash all-vs-all PAF; `odgi untangle`; `halSynteny` | [synteny track](/docs/config_guides/synteny_track)                 |
+| Pangenome variants     | Every difference the graph calls, across all samples | `pggb -V`; `cactus-pangenome --vcf`; `vg deconstruct`    | [multi-sample variant track](/docs/user_guides/multivariant_track) |
+| Whole-genome alignment | The multiple alignment, column by column             | `pggb -M`; `hal2maf` + `taffy`                           | [MAF track](/docs/user_guides/maf_track)                           |
 
 This tutorial builds a four-strain _E. coli_ pangenome with pggb and loads all
 three projections. It uses the same four genomes as the
-[all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny), which builds the
-synteny projection alone from a plain minimap2 alignment — here that same
+[all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny), which builds
+the synteny projection alone from a plain minimap2 alignment — here that same
 projection falls out of the graph, alongside the variant and MAF projections a
 graph additionally gives you.
+
+The synteny projection alone also builds in a notebook — a `synteny_view` in
+Python ([JBrowse Jupyter / anywidget](/docs/jbrowse_jupyter)) or R
+([JBrowseR](/docs/jbrowser)) stacks these same strains from the all-vs-all PAF;
+the variant and MAF projections load as ordinary file-based tracks the same way.
 
 ## Building the graph with pggb
 
@@ -46,8 +51,8 @@ bgzip all.fa
 samtools faidx all.fa.gz
 ```
 
-Then run pggb. `-V K12` decomposes the graph into a VCF against the K12 path, and
-`-M` writes the multiple alignment as a MAF:
+Then run pggb. `-V K12` decomposes the graph into a VCF against the K12 path,
+and `-M` writes the multiple alignment as a MAF:
 
 ```bash
 docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
@@ -57,9 +62,9 @@ docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
 
 `-n` is the number of haplotypes, `-p` the minimum alignment identity, `-s` the
 segment length — `-p 90 -s 5000` suits a bacterial pangenome. The `-w /data`
-flag is not optional when running the container as your own user (`-u`): it gives
-that user a writable working directory, without which seqwish cannot write its
-temporary files and the run dies mid-graph.
+flag is not optional when running the container as your own user (`-u`): it
+gives that user a writable working directory, without which seqwish cannot write
+its temporary files and the run dies mid-graph.
 
 pggb runs [wfmash](https://github.com/waveygang/wfmash) (all-vs-all alignment),
 [seqwish](https://github.com/ekg/seqwish) (induces the graph), and
@@ -80,8 +85,8 @@ graph to the synteny PAF with `odgi untangle -i graph.og -r <ref> -p`.
 pggb's first step is a wfmash all-vs-all PAF — exactly the input the
 [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny) loads. Index it
 once with `jbrowse make-pif` and load it with an
-[`AllVsAllIndexedPAFAdapter`](/docs/config/allvsallindexedpafadapter), so a range
-query fetches only the region in view:
+[`AllVsAllIndexedPAFAdapter`](/docs/config/allvsallindexedpafadapter), so a
+range query fetches only the region in view:
 
 ```bash
 cp pggb/*.alignments.wfmash.paf ecoli_pggb_ava.paf
@@ -122,7 +127,8 @@ tabix -p vcf ecoli_pggb.vcf.gz
 ```
 
 Load it as a [`VariantTrack`](/docs/config_guides/variant_track) on K12 and pick
-the matrix display, which lays out one column per variant and one row per sample:
+the matrix display, which lays out one column per variant and one row per
+sample:
 
 ```json
 {
@@ -149,9 +155,9 @@ clustering samples by genotype.
 
 `pggb -M` writes the multiple alignment as a MAF, which JBrowse reads as a
 [MAF track](/docs/config_guides/maf_track). One wrinkle: pggb orders each MAF
-block from its longest path, so the block's reference row is not consistently the
-same genome, whereas a MAF track projects onto a single reference. Re-root every
-block on K12 (drop blocks that lack it), and rename the PanSN names to
+block from its longest path, so the block's reference row is not consistently
+the same genome, whereas a MAF track projects onto a single reference. Re-root
+every block on K12 (drop blocks that lack it), and rename the PanSN names to
 `sample.chr` so the MAF display can split each row's species off on the `.`:
 
 ```bash
@@ -207,10 +213,10 @@ npx --yes serve ecoli_pangenome_graph_build/jbrowse2
 ```
 
 It downloads the four RefSeq genomes, runs pggb, converts the wfmash PAF, VCF,
-and MAF into the three projections, downloads JBrowse, and writes a `config.json`
-with the four assemblies, per-strain gene tracks, the three graph-derived tracks,
-and a default session on the K12 reference. It needs `docker` (for the pggb
-image), the NCBI
+and MAF into the three projections, downloads JBrowse, and writes a
+`config.json` with the four assemblies, per-strain gene tracks, the three
+graph-derived tracks, and a default session on the K12 reference. It needs
+`docker` (for the pggb image), the NCBI
 [`datasets`](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/download-and-install/)
 CLI, `samtools`, [`taffy`](https://github.com/ComparativeGenomicsToolkit/taffy),
 `python3`, htslib (`bgzip`, `tabix`), `unzip`, and `node`.

@@ -29,7 +29,7 @@ genomes from 2,504 individuals across 26 populations. The 2022 high-coverage
 re-analysis produced a comprehensive SV callset
 ([Byrska-Bishop et al., 2022](https://doi.org/10.1016/j.cell.2022.08.004)) that
 includes deletions, insertions, inversions, and translocations with per-sample
-genotypes across all 2,504 individuals.
+genotypes across all 3,202 individuals.
 
 For this tutorial we use a pre-configured JBrowse instance that already has the
 SV callset and trio alignment tracks loaded, so no data download is required. It
@@ -191,7 +191,7 @@ For more on navigating the breakpoint split view, see
 | Step                    | Tool                                   | What to look for                                             |
 | ----------------------- | -------------------------------------- | ------------------------------------------------------------ |
 | Population triage       | SV inspector table + circular view     | SV type counts, inter-chr translocations as chords           |
-| Per-sample genotypes    | Feature details → SAMPLES              | GT 0/0 / 0/1 / 1/1 across all 2,504 samples                  |
+| Per-sample genotypes    | Feature details → SAMPLES              | GT 0/0 / 0/1 / 1/1 across all 3,202 samples                  |
 | Genotype patterns       | Multi-sample display (regular)         | High-frequency vs private calls, row pattern per sample      |
 | Trio inheritance        | Trio BAM tracks + SAMPLES table        | De novo vs inherited, which parent contributed the alt       |
 | Inversion genotyping    | Cluster by genotype                    | Alt-genotype samples grouped into distinct rows              |

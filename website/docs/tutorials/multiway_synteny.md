@@ -187,12 +187,12 @@ default session that stacks the three genomes.
 
 ```bash
 bash scripts/build_grape_peach_cacao_synteny.sh
+npx --yes serve grape_peach_cacao_build/jbrowse2  # then open the printed URL
 ```
 
 It needs [jcvi](https://github.com/tanghaibao/jcvi) with the
 [LAST](https://gitlab.com/mcfrith/last) aligner, `samtools`, htslib's `bgzip`
-and `tabix`, `wget`, and node (for the JBrowse CLI). Serve the resulting
-`jbrowse2/` directory to open the finished view.
+and `tabix`, `wget`, and node (for the JBrowse CLI).
 
 ## See also
 

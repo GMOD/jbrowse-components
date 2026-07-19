@@ -178,11 +178,11 @@ python3 scripts/bxd_qtl_scan.py BXD.geno coat_color.pheno.csv bxd_gwas_coatcolor
 tabix -p bed bxd_gwas_coatcolor.tsv.gz
 ```
 
-A `GWASTrack`/`GWASAdapter` reads that column and renders the Manhattan plot.
-Its default [`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) is
-`neg_log_pvalue`, read as a pre-computed `-log10(p)`, so a file whose column is
-named that needs no extra slots. For a differently-named or raw-p-value column,
-set `scoreColumn` and
+A `GWASTrack`/`GWASAdapter` reads that column and renders the Manhattan plot. It
+expects a pre-computed `-log10(p)` value in the column named by
+[`scoreColumn`](/docs/config/gwasadapter/#slot-scorecolumn) (that slot page
+shows its default name), so a file matching it needs no extra slots. For a
+differently-named or raw-p-value column, set `scoreColumn` and
 [`scoreTransform`](/docs/config/gwasadapter/#slot-scoretransform); see the
 [GWAS track guide](/docs/config_guides/gwas_track).
 
@@ -246,8 +246,8 @@ It downloads JBrowse and the GeneNetwork/rqtl source files, builds the painting
 and both QTL scans next to it (coat color, trait `11280`, peaking on chr4; and
 brain weight, trait `10672`, the subtler chr19 peak), and writes a `config.json`
 that opens on mm10 chr4 with the coat-color scan over the painting. It needs
-`python3` (with `pandas`, `numpy`, `scipy`) and htslib (`bgzip`, `tabix`) on your
-`PATH`.
+`python3` (with `pandas`, `numpy`, `scipy`) and htslib (`bgzip`, `tabix`) on
+your `PATH`.
 
 ## See also
 

@@ -196,16 +196,16 @@ no web server. See the [desktop quickstart](/docs/quickstart_desktop).
 
 Open the alignments track and, from the track menu, choose **Color by →
 Bisulfite / EM-seq**, then pick a cytosine context (CpG, CHG, CHH, or all
-cytosines). Methylated cytosines paint red; tick **Show unmethylated (blue)** in
-the same menu to paint the converted sites too. It's reference-based and only
-makes sense for bisulfite/EM-seq libraries — no MM/ML tags are involved.
+cytosines). Methylated cytosines paint red, and the same submenu's **Show
+unmethylated (blue)** toggle adds the converted sites in blue. It's
+reference-based and only makes sense for bisulfite/EM-seq libraries — no MM/ML
+tags are involved.
 
-That same submenu has a **Show unmethylated (blue)** toggle; turning it off
-draws a methylated-only view (red marks only, unmethylated sites left blank).
-The figures below use that view, so methylation reads directly as the presence
-of red and the three contexts contrast cleanly without the blue.
+The figures below leave **Show unmethylated** off, for a methylated-only view
+(red marks only, unmethylated sites left blank), so methylation reads directly
+as the presence of red and the three contexts contrast cleanly without the blue.
 
-Type `NC_003070.9:4,398,000–4,412,000` into the location box to reach the window
+Type `NC_003070.9:4,398,000-4,412,000` into the location box to reach the window
 below (chromosome 1). It places two methylation regimes side by side. On the
 left, the expressed ARM-repeat gene AT1G12930 carries gene-body methylation,
 with cytosines methylated only in the CpG context. On the right, a silenced

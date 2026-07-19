@@ -54,9 +54,10 @@ the [full tutorials list](/docs/tutorials) for all of them.
 - [URL query parameter API](/docs/urlparams) - share or bookmark a specific
   session as a link
 - [@jbrowse/img](/docs/jbrowse-img) - command-line image generator
-- [JBrowseR](/docs/jbrowser) - R htmlwidget usable in Shiny apps
-- [JBrowse Jupyter](/docs/jbrowse_jupyter) - Python dash component usable in
-  Jupyter
+- [JBrowseR](/docs/jbrowser) - GPU genome view as an R htmlwidget, in Shiny, R
+  Markdown, or the R console
+- [JBrowse Jupyter](/docs/jbrowse_jupyter) - GPU genome view as a Python
+  anywidget, in Jupyter, Colab, VS Code, or marimo
 
 ## Other resources
 
