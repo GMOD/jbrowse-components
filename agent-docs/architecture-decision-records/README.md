@@ -46,3 +46,4 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [036](adr-036-delete-stranded-pluggable-glyph-registry.md) | Accepted | Delete the stranded pluggable glyph registry; glyph extensibility reopens worker-side or not at all |
 | [037](adr-037-two-collapse-mechanisms.md) | Accepted | Two "collapse" mechanisms stay distinct — automatic sub-pixel density-collapse vs. explicit `displayMode: 'collapsed'`; don't auto-select the preset for dense data |
 | [038](adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md) | Accepted | Desktop vets remote-config plugins at the `fetchConfig` funnel, not per caller; mitigation until contextIsolation |
+| [039](adr-039-synteny-no-read-time-binning.md) | Accepted | No read-time binning for synteny/PIF (optimizes the wrong end); the N→M lever is a deferred `make-pif` binned tier, not a region gate |
