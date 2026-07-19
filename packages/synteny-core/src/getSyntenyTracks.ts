@@ -11,6 +11,21 @@ function countByName(names: string[]) {
 }
 
 /**
+ * Whether two assembly lists name the same assemblies with the same
+ * multiplicity, ignoring order (a synteny track answers in either direction).
+ * Used to tell whether an uploaded track's baked `assemblyNames` still match
+ * the row pair it is attached to — position-indexed selections go stale when a
+ * row is removed or an assembly is changed under them.
+ */
+export function sameAssemblySet(a: string[], b: string[]) {
+  if (a.length !== b.length) {
+    return false
+  }
+  const counts = countByName(a)
+  return [...countByName(b)].every(([name, count]) => counts.get(name) === count)
+}
+
+/**
  * Synteny tracks in the session whose `assemblyNames` cover every one of the
  * given assemblies, counting multiplicity: a duplicated request like `[a, a]`
  * (a self-alignment row pair) only matches a track that references `a` twice,

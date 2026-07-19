@@ -66,6 +66,7 @@ export {
   getConnectedAssemblies,
   getSyntenyTracks,
   pickSyntenyTrackId,
+  sameAssemblySet,
 } from './getSyntenyTracks.ts'
 export {
   dotplotAxesFromRows,

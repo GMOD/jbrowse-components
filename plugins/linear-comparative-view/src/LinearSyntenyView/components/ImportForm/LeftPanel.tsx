@@ -6,6 +6,7 @@ import {
   getSyntenyTracks,
   pickSyntenyTrackId,
   planSyntenyChain,
+  sameAssemblySet,
 } from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
@@ -38,24 +39,34 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-// A row pair is configured if it has an explicit none/userOpened/specific
-// preConfigured selection. An untouched (tracklist-default) row is fine as long
-// as a synteny track exists for the pair, since doSubmit auto-picks the first.
+// Whether the row pair still needs the user's attention before launch.
+// - explicit "none": deliberately no track, fine.
+// - "New track" (userOpened): fine only once a file is chosen and its baked
+//   assemblies still match the pair; a pending or stranded upload is flagged.
+// - untouched / preConfigured: fine as long as a synteny track exists for the
+//   pair, since doSubmit auto-picks (the pick if still valid, else the first).
 function rowNeedsConfiguration(
   model: LinearSyntenyViewModel,
   session: AbstractSessionModel,
   selectedAssemblyNames: string[],
   idx: number,
 ) {
-  const selection = model.importFormSyntenyTrackSelections[idx]
-  const isExplicit =
-    selection?.type === 'none' || selection?.type === 'userOpened'
-  const picked = selection?.type === 'preConfigured' ? selection.value : ''
-  const tracks = getSyntenyTracks(session.tracks, [
+  const pairAssemblies = [
     selectedAssemblyNames[idx]!,
     selectedAssemblyNames[idx + 1]!,
-  ])
-  return !isExplicit && !pickSyntenyTrackId(picked, tracks)
+  ]
+  const selection = model.importFormSyntenyTrackSelections[idx]
+  if (selection?.type === 'userOpened') {
+    return (
+      !selection.value ||
+      !sameAssemblySet(selection.value.assemblyNames, pairAssemblies)
+    )
+  }
+  if (selection?.type === 'none') {
+    return false
+  }
+  const picked = selection?.type === 'preConfigured' ? selection.value : ''
+  return !pickSyntenyTrackId(picked, getSyntenyTracks(session.tracks, pairAssemblies))
 }
 
 const AssemblyRows = observer(function AssemblyRows({

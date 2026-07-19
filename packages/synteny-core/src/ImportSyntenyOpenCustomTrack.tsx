@@ -54,7 +54,9 @@ const ImportSyntenyOpenCustomTrack = observer(
           value={radioOption}
           onChange={event => {
             setRadioOption(event.target.value)
-            onSetTrack({ type: 'none' })
+            // format picked but no file yet: stay in the pending upload state so
+            // the row reads as unconfigured, not as an explicit "no track"
+            onSetTrack({ type: 'userOpened' })
           }}
         >
           <Grid container sx={{ justifyContent: 'center' }}>
@@ -93,7 +95,7 @@ const ImportSyntenyOpenCustomTrack = observer(
                       },
                     })
                   } else {
-                    onSetTrack({ type: 'none' })
+                    onSetTrack({ type: 'userOpened' })
                   }
                 }}
               />

@@ -39,12 +39,14 @@ export async function doSubmit({
     session.notify("Can't add tracks", 'warning')
   } else {
     for (let idx = 0; idx < selectedAssemblyNames.length - 1; idx++) {
+      const pairAssemblies = [
+        selectedAssemblyNames[idx]!,
+        selectedAssemblyNames[idx + 1]!,
+      ]
       const action = resolveRowTrackAction(
         model.importFormSyntenyTrackSelections[idx],
-        getSyntenyTracks(session.tracks, [
-          selectedAssemblyNames[idx]!,
-          selectedAssemblyNames[idx + 1]!,
-        ]),
+        getSyntenyTracks(session.tracks, pairAssemblies),
+        pairAssemblies,
       )
       if (action?.kind === 'open') {
         session.addTrackConf(toJS(action.conf))

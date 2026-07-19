@@ -66,11 +66,32 @@ describe('doSubmit', () => {
   })
 
   test('userOpened selection adds a track conf and toggles it on', () => {
-    const conf = { trackId: 'opened', name: 'x', assemblyNames: [], type: 'x' }
+    const conf = {
+      trackId: 'opened',
+      name: 'x',
+      assemblyNames: ['hg38', 'mm10'],
+      type: 'x',
+    }
     const { calls, model, session } = setup({ type: 'userOpened', value: conf })
     doSubmit({ model, session, assemblyX: 'hg38', assemblyY: 'mm10' })
     expect(calls.added).toEqual([conf])
     expect(calls.toggled).toEqual(['opened'])
+  })
+
+  test('userOpened whose assemblies no longer match is ignored', () => {
+    // assemblies changed after the file was chosen; do not open the upload
+    // against the wrong pair
+    const conf = {
+      trackId: 'opened',
+      name: 'x',
+      assemblyNames: ['hg38', 'mm10'],
+      type: 'x',
+    }
+    const { calls, model, session } = setup({ type: 'userOpened', value: conf })
+    doSubmit({ model, session, assemblyX: 'hg38', assemblyY: 'rn7' })
+    expect(calls.added).toEqual([])
+    expect(calls.toggled).toEqual([])
+    expect(calls.assemblyNames).toEqual(['hg38', 'rn7'])
   })
 
   test('none selection touches no tracks but still sets assemblies', () => {

@@ -49,6 +49,10 @@ const LinearSyntenyViewImportForm = observer(
     const session = getSession(model)
     const { assemblyNames } = session
     const defaultAssemblyName = assemblyNames[0] ?? ''
+    // second row defaults to a different assembly when one exists, so Manual
+    // mode doesn't open on a same-assembly pair (which is flagged as needing a
+    // self-alignment track)
+    const secondAssemblyName = assemblyNames[1] ?? defaultAssemblyName
     const quickTracks = quickStartSyntenyTracks(session.tracks)
     const [mode, setMode] = useState<ImportFormMode>(
       quickTracks.length ? 'quick' : 'manual',
@@ -62,7 +66,7 @@ const LinearSyntenyViewImportForm = observer(
     const [selectedRow, setSelectedRow] = useState(0)
     const [selectedAssemblyNames, setSelectedAssemblyNames] = useState([
       defaultAssemblyName,
-      defaultAssemblyName,
+      secondAssemblyName,
     ])
     const [error, setError] = useState<unknown>()
     const [submitting, setSubmitting] = useState(false)

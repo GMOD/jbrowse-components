@@ -8,7 +8,9 @@ type Conf = SnapshotIn<AnyConfigurationModel>
 
 export type ImportFormSyntenyTrack =
   | { type: 'preConfigured'; value: string }
-  | { type: 'userOpened'; value: Conf }
+  // value is undefined while "New track" is selected but the file hasn't been
+  // provided yet (the pending state), then filled once an adapter is chosen
+  | { type: 'userOpened'; value?: Conf }
   | { type: 'none' }
 
 /**

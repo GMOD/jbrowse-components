@@ -22,6 +22,7 @@ export function doSubmit({
       const action = resolveRowTrackAction(
         model.importFormSyntenyTrackSelections[0],
         getSyntenyTracks(session.tracks, [assemblyX, assemblyY]),
+        [assemblyX, assemblyY],
       )
       if (action?.kind === 'open') {
         session.addTrackConf(toJS(action.conf))
