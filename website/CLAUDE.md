@@ -45,6 +45,16 @@ a `__name` helper that breaks `page.evaluate`'d functions). Specs live in
 `scripts/screenshot-specs.ts`; the review log is
 `scripts/screenshot-review.json` (gitignored, local coordination only).
 
+**Display config in a session spec goes on the track, not the view display.**
+In an `encodeSessionSpec` session, a display's config slots (e.g. `showLegend`,
+`showLDTriangle`, `colorBy`, `height`) must be set inside the track's own
+`displays: [{ type, ...slots }]` array in `sessionTracks`; the view's
+`tracks: [{ trackId, type }]` entry only *selects* which display type to show —
+slots put there are dropped, so the display silently falls back to schema
+defaults (an LD track with the config in the wrong place renders its "Enable LD
+triangle" empty state). `displayId` is optional — it autogenerates from the
+track id and display type when omitted, so don't hand-write it.
+
 **Content-stable writes.** Rendering is deterministic (an unchanged spec
 re-renders byte-for-byte), so the generator only overwrites a committed PNG when
 the new capture differs by more than `--diff-threshold` of its pixels (default

@@ -224,6 +224,20 @@ variants. There are two ways to supply the data:
   cohorts where computing LD in the browser would be too slow, or when you want
   to publish a fixed LD matrix.
 
+Each cell of the triangle is the r² correlation between a pair of SNPs across
+the samples: **red = almost always inherited together, white = independent**.
+Physically close SNPs are usually correlated (red near the diagonal) and that
+correlation decays with distance — except where a whole segment is inherited as
+one unit, which shows up as a solid red block.
+
+<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus (LCT/MCM6), computed live from phased 1000 Genomes genotypes (exact r², common SNPs). The red block over the highlighted gene is the long haplotype left by recent positive selection for lactase persistence — its SNPs travel as a unit — and you can see LD decay into the lighter flanks on either side."/>
+
+The same picture explains why an **inversion** produces a block. Because the
+inverted and standard arrangements cannot recombine in a heterozygote, the whole
+inverted segment is inherited together, so its SNPs stay in strong LD:
+
+<Figure src="/img/ld/mapt_17q21_inversion.png" caption="LD across the common 17q21.31 inversion (human, 1000 Genomes). Red triangular blocks are haplotypes inherited as units; the blue recombination track on top (1 − r² between adjacent SNPs) peaks at the white gaps between them, marking where LD breaks down. The recombination-suppressed inverted segment reads as an extended block."/>
+
 ### Generating the PLINK file
 
 The `.ld` file is PLINK's `--r2` report (columns
@@ -293,8 +307,7 @@ needed. LD is computed from genotypes in the visible region:
   },
   "displays": [
     {
-      "type": "LDDisplay",
-      "displayId": "variants_ld-LDDisplay"
+      "type": "LDDisplay"
     }
   ]
 }

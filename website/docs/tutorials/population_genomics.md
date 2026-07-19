@@ -35,6 +35,9 @@ panel of 205 inbred lines from a single Raleigh, North Carolina population
   the whole inverted region of chromosome arm `2L`, because the inversion
   suppresses recombination there
   ([Corbett-Detig & Hartl 2012](https://doi.org/10.1371/journal.pgen.1003056)).
+  This megabase-scale signal is exactly what a windowed scan catches and a
+  pairwise [LD triangle](/docs/tutorials/linkage_disequilibrium) misses — see
+  that tutorial for why the two tools work at different scales.
 - Genome-wide nucleotide diversity (π): the diversity landscape, dropping in
   low-recombination regions near the centromeres and at loci under selection
   such as `Cyp6g1`, an insecticide-resistance gene
@@ -339,9 +342,8 @@ per-SNP matrix can't hold a ~13 Mb inversion on screen: zoom out far enough to
 see both breakpoints and the individual marker columns shrink to nothing. One SV
 call sidesteps that: the inversion is a single feature no matter how wide it is.
 
-First subset the panel to the karyotyped lines over `2L` (this biallelic-SNP
-subset also feeds the LD step below) and write a `samples.tsv` so the matrix can
-color rows by arrangement:
+First subset the panel to the karyotyped lines over `2L` and write a
+`samples.tsv` so the matrix can color rows by arrangement:
 
 ```bash
 # subset to the 180 karyotyped lines, 2L, biallelic SNPs

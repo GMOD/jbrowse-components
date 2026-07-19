@@ -14,6 +14,7 @@ import { hicSpecs } from './specs/hic.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
 import { pangenomeSpecs } from './specs/pangenome.ts'
+import { ldSpecs } from './specs/ld.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { qtlSpecs } from './specs/qtl.ts'
 import { svSpecs } from './specs/sv.ts'
@@ -34,6 +35,7 @@ export const specs: ScreenshotSpec[] = [
   ...featuresSpecs,
   ...uiSpecs,
   ...methylationSpecs,
+  ...ldSpecs,
   ...popgenSpecs,
   ...svSpecs,
   ...gwasSpecs,
