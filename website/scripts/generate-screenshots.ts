@@ -635,11 +635,11 @@ async function main() {
     `Generating ${filteredSpecs.length} screenshot(s)${filter ? ` (filter: ${filter})` : ''}`,
   )
 
+  // Only url-mode specs pointing at a relative path need the jbrowse-web server.
+  // embedded specs serve their own harness; cli specs bypass the browser; compose
+  // specs (and http-url specs) only read already-committed PNGs off disk.
   const needsLocalServer = filteredSpecs.some(
-    s =>
-      s.mode !== 'cli' &&
-      s.mode !== 'embedded' &&
-      (s.mode !== 'url' || !s.url.startsWith('http')),
+    s => s.mode === 'url' && !s.url.startsWith('http'),
   )
 
   let server: Server | undefined
@@ -862,7 +862,6 @@ async function main() {
           `• ${name}: ${(frac * 100).toFixed(3)}% drift between renders`,
       ),
     )
-    process.exit(1)
   }
   if (failures.length > 0) {
     printReport(
@@ -871,6 +870,10 @@ async function main() {
         ({ name, error }) => `\n• ${name}\n  ${error.replaceAll('\n', '\n  ')}`,
       ),
     )
+  }
+  // exit non-zero once, after both reports print — a --check run can be both
+  // flaky and have hard failures, and swallowing either report hides real work
+  if (flaky.length > 0 || failures.length > 0) {
     process.exit(1)
   }
 }
