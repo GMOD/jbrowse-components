@@ -6,11 +6,19 @@ import {
   ErrorBanner,
   RefNameAutocomplete,
   useAssemblySelection,
+  useRecentLocations,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
-import { Button, CircularProgress, Container, Grid } from '@mui/material'
+import {
+  Button,
+  Chip,
+  CircularProgress,
+  Container,
+  Grid,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
@@ -23,6 +31,14 @@ const useStyles = makeStyles()(theme => ({
   },
   button: {
     margin: theme.spacing(2),
+  },
+  recent: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: theme.spacing(2),
   },
 }))
 
@@ -43,6 +59,8 @@ const LinearGenomeViewImportForm = observer(
       assemblyError,
       regions,
     } = useAssemblySelection(session, 'lgv')
+    const { recentLocations, addRecentLocation, clearRecentLocations } =
+      useRecentLocations(selectedAsm)
 
     // the location the form will open; the input starts on the first refname
     // and is replaced by whatever the user types or picks
@@ -52,25 +70,30 @@ const LinearGenomeViewImportForm = observer(
     const value = inputText ?? regions?.[0]?.refName ?? ''
     const displayError = assemblyError ?? viewError
 
+    async function navigate(loc: string, option?: BaseResult) {
+      model.setError(undefined)
+      if (loc && selectedAsm) {
+        try {
+          await navigateToSelectedOption({
+            option: option ?? new BaseResult({ label: loc }),
+            model,
+            assemblyName: selectedAsm,
+          })
+          addRecentLocation(loc)
+        } catch (e) {
+          console.error(e)
+          session.notify(`${e}`, 'warning')
+        }
+      }
+    }
+
     return (
       <Container className={classes.importFormContainer}>
         {displayError ? <ErrorBanner error={displayError} /> : null}
         <form
           onSubmit={async event => {
             event.preventDefault()
-            model.setError(undefined)
-            if (value && selectedAsm) {
-              try {
-                await navigateToSelectedOption({
-                  option: selectedOption ?? new BaseResult({ label: value }),
-                  model,
-                  assemblyName: selectedAsm,
-                })
-              } catch (e) {
-                console.error(e)
-                session.notify(`${e}`, 'warning')
-              }
-            }
+            await navigate(value, selectedOption)
           }}
         >
           <Grid
@@ -141,6 +164,24 @@ const LinearGenomeViewImportForm = observer(
             </Button>
           </Grid>
         </form>
+        {recentLocations.length ? (
+          <div className={classes.recent}>
+            <Typography variant="caption" color="textSecondary">
+              Recent
+            </Typography>
+            {recentLocations.map(loc => (
+              <Chip
+                key={loc}
+                label={loc}
+                size="small"
+                onClick={() => navigate(loc)}
+              />
+            ))}
+            <Button size="small" onClick={clearRecentLocations}>
+              Clear
+            </Button>
+          </div>
+        ) : null}
       </Container>
     )
   },

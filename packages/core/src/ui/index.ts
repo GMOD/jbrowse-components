@@ -5,6 +5,7 @@ export { useExportSvgPreference } from './useExportSvgPreference.ts'
 export { LogoFull, Logomark } from './Logo.tsx'
 export { default as AssemblySelector } from './AssemblySelector.tsx'
 export { useAssemblySelection } from './useAssemblySelection.ts'
+export { useRecentLocations } from './useRecentLocations.ts'
 export {
   ADORNMENT_RESERVE_PX,
   HELP_BUTTON_RESERVE_PX,

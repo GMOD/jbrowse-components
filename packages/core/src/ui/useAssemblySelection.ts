@@ -2,15 +2,17 @@ import { useLocalStorage } from '../util/index.ts'
 
 import type { AbstractSessionModel } from '../util/index.ts'
 
-// remember the last assembly per host/path/config so reloads (and embedded
-// apps sharing a host) reopen on the same one
-function rememberedAssemblyKey(localStorageKey: string) {
+// scope a localStorage key to this host/path/config so reloads (and embedded
+// apps sharing a host) see their own value. Shared by the remembered-assembly
+// and recent-locations persistence
+export function instanceScopedKey(prefix: string, suffix: string) {
   const config = new URLSearchParams(window.location.search).get('config')
-  return `lastAssembly-${[
+  return [
+    prefix,
     window.location.host + window.location.pathname,
     config,
-    localStorageKey,
-  ].join('-')}`
+    suffix,
+  ].join('-')
 }
 
 /**
@@ -29,7 +31,7 @@ export function useAssemblySelection(
 ) {
   const { assemblyNames, assemblyManager } = session
   const [override, setOverride] = useLocalStorage<string | undefined>(
-    rememberedAssemblyKey(localStorageKey ?? ''),
+    instanceScopedKey('lastAssembly', localStorageKey ?? ''),
     undefined,
     typeof jest === 'undefined' && Boolean(localStorageKey),
   )
