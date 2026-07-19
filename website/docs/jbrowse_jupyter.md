@@ -15,7 +15,7 @@ Colab, with two-way sync of the visible region between Python and the view: set
 `LinearGenomeView` covers the common case. For comparative genomics,
 `JBrowseApp` drives the full app from a declarative `views` list, so a notebook
 can also hold a linear synteny view or a dotplot (`synteny_view`, `dotplot_view`
-build the specs) — see the E. coli example below.
+build the specs). See the E. coli example below.
 
 It is the modern replacement for the older Dash-based `jbrowse-jupyter` +
 `dash_jbrowse` stack: no Dash server, no component-generation step, just a
@@ -93,9 +93,9 @@ Each opens in Colab and runs top-to-bottom.
 | [Compare genomes (synteny)](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/11_synteny_ecoli.ipynb)                | Four _E. coli_ strains in a linear synteny view from one all-vs-all PAF                           |
 
 Notebooks 05–07 are the core loop: **run an analysis in Python, load the result
-onto the genome** — using the tools scientists already reach for (pysam,
+onto the genome**, using the tools scientists already reach for (pysam,
 bioframe, scipy/statsmodels) on real data. Notebooks 09–10 close the loop the
-other way — a widget control or a pan in the view drives Python to **recompute
+other way: a widget control or a pan in the view drives Python to **recompute
 and repaint** live.
 
 ## See also

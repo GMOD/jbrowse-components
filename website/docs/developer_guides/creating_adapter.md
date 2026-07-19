@@ -120,8 +120,8 @@ export default class MyAdapter extends BaseFeatureDataAdapter<MyAdapterConfig> {
 ```
 
 To wrap another adapter (e.g. a sequence adapter for a feature adapter that
-needs the reference), resolve it lazily with `this.getSubAdapter` — it is
-`async`, so never call it from a constructor:
+needs the reference), resolve it lazily with `this.getSubAdapter` (it is
+`async`, so never call it from a constructor):
 
 ```ts
 const sub = await this.getSubAdapter?.(this.getConf('sequenceAdapter'))

@@ -59,8 +59,8 @@ invariants.
 The simplest per-region streamed reference is
 `plugins/gwas/src/LinearManhattanDisplay/` (a scored scatter with both a GPU and
 a Canvas2D renderer behind one model). `plugins/canvas/src/LinearBasicDisplay/`
-is the fullest example — a generic feature display with four shader passes
-(rectangles, lines, chevrons, arrows) — but it uses the whole-map
+is the fullest example: a generic feature display with four shader passes
+(rectangles, lines, chevrons, arrows), but it uses the whole-map
 `laidOutDataMap` form for cross-region layout, so start from Manhattan when your
 regions are independent.
 
@@ -243,10 +243,9 @@ For a real, complete example of this shape see
 
 ## Step 4: Canvas2D renderer (required)
 
-Implement the same interface using `ctx.fillRect` etc. Canvas2D is not just an
-old-browser fallback: it is
-[the floor every display must ship](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator),
-because **SVG export runs the Canvas2D path** — the GPU shader is the optional
+Implement the same interface using `ctx.fillRect` etc. Canvas2D is
+[the floor every display must ship](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#canvas2d-is-the-floor-gpu-is-the-optional-accelerator):
+**SVG export runs the Canvas2D path**, and the GPU shader is the optional
 accelerator layered on top. This renderer also runs when WebGPU and WebGL2 are
 both unavailable:
 
@@ -324,8 +323,8 @@ Compose `MultiRegionDisplayMixin` (which includes `RenderLifecycleMixin` and the
 fetch autoruns), store the worker output in an `rpcDataMap`, and wire the render
 lifecycle with `installPerRegionLifecycle`. This is the **per-region streamed**
 upload pattern from the
-[architecture spec's three upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#three-upload-patterns)
-— the right shape when each region's data is independent (no cross-region layout
+[architecture spec's three upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#three-upload-patterns),
+the right shape when each region's data is independent (no cross-region layout
 coupling). It's identical in structure to the Canvas2D model in
 [Plotting features](/docs/developer_guides/plotting_features#step-3-the-mst-model);
 only the renderer differs.
@@ -421,24 +420,24 @@ alignments) need the whole-map `laidOutDataMap` form instead.
 
 The model omits `fetchNeeded` for brevity; add it exactly as on the Canvas2D
 path
-([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model))
-— it calls `fetchEachRegion` and writes each region through `setRpcData`. Full
+([Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model)):
+it calls `fetchEachRegion` and writes each region through `setRpcData`. Full
 detail: [the data fetching pipeline](/docs/developer_guides/data_fetching).
 
 Any change to `rpcProps()` triggers a full worker re-fetch (via
 `SettingsInvalidate`), so keep frequently-changing values (scroll, zoom) in
 `renderState`, not here. Settings that drive a main-thread buffer _re-encode_
-with no refetch (a color or scale change) go in a separate `gpuProps()` method —
-see the
-[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern).
+with no refetch (a color or scale change) go in a separate `gpuProps()` method
+(see the
+[`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)).
 
 ## Step 7: React component
 
-Render the canvas through the shared `DisplayChrome` — the wrapper that supplies
+Render the canvas through the shared `DisplayChrome` (the wrapper that supplies
 a display's _chrome_: the UI framing around your canvas (loading scrim, error
 bar, "region too large" banner, in the sense of "browser chrome") plus
-WebGL/WebGPU context-loss recovery. It is the **only** place
-`useRenderingBackend` is called — a display must not call the hook itself
+WebGL/WebGPU context-loss recovery). It is the **only** place
+`useRenderingBackend` is called. A display must not call the hook itself
 ([a hard invariant](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#the-api)).
 Its render-prop child makes it agnostic to how many canvases a display draws.
 
@@ -481,7 +480,7 @@ export default MyComponent
 the `canvasRef` to attach to your `<canvas>`. This is the same component the
 Canvas2D display in
 [Plotting features](/docs/developer_guides/plotting_features#step-5-the-react-component)
-uses — the two paths share it unchanged.
+uses. The two paths share it unchanged.
 
 ## Step 8: Register the display
 

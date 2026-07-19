@@ -311,9 +311,9 @@ haplotypes.
 - heterozygous small deletion in GIAB colored and sorted by HP tag
 
 Grouping by the `HP` tag from the track menu will split the track into separate
-sub-tracks per haplotype for an even clearer visual separation. Note that group
-by spawns new track instances dynamically, so sort and color is generally faster
-for initial exploration.
+sub-tracks per haplotype for an even clearer visual separation. Group by spawns
+new track instances dynamically, so sort and color is generally faster for
+initial exploration.
 
 See the [alignments track guide](/docs/user_guides/alignments_track) for more on
 sorting, coloring, and filtering by tag.

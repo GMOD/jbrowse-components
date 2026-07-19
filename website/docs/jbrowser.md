@@ -64,8 +64,8 @@ JBrowse `config.json` to `JBrowseR(config = ...)`.
 Where `JBrowseR()` shows a single linear genome view, `JBrowseRApp()` drives the
 full app from a declarative `views` list, where each entry can be a
 `linear_view()`, a `synteny_view()`, or a `dotplot_view()`. So a comparative
-figure — several genomes stacked with the blocks each pair shares drawn between
-the rows, or a whole-genome dotplot — is one call:
+figure (several genomes stacked with the blocks each pair shares drawn between
+the rows, or a whole-genome dotplot) is one call:
 
 ```r
 JBrowseRApp(
@@ -77,7 +77,7 @@ JBrowseRApp(
 
 The
 [comparative-synteny vignette](https://gmod.github.io/JBrowseR/articles/comparative-synteny.html)
-walks through four _E. coli_ strains from one all-vs-all alignment — the same
+walks through four _E. coli_ strains from one all-vs-all alignment, the same
 hosted data as the
 [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny).
 

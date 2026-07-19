@@ -70,8 +70,8 @@ data), **Color by → Modifications** paints them. It offers two modes:
 - **One color per modification type** draws a mark _only_ where the MM tag
   reports a modified base, each type in its own color, so an unmethylated region
   looks empty. Use the **Threshold** slider to raise the probability cutoff, or
-  **Modification types** to restrict to a single type such as 5mC — both sit
-  directly beneath the two mode radios.
+  **Modification types** to restrict to a single type such as 5mC (both sit
+  directly beneath the two mode radios).
 - **One color per type, plus low-probability & unmodified in blue** (IGV calls
   this "2-color") does everything the by-type view does and additionally paints
   the not-modified side blue: modified sites keep their per-type color, while
@@ -140,7 +140,7 @@ settings.
 The **Read height** submenu offers Normal, Compact, and Super-compact presets
 (plus a custom value) for how tall each read is drawn. Each preset's trailing ⋯
 control opens a dialog to make that height the session-wide default for
-alignments tracks — applied to future tracks and, optionally, to the ones
+alignments tracks, applied to future tracks and, optionally, to the ones
 already open.
 
 Read height is separate from the sibling **Track sizing** submenu, which

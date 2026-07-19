@@ -139,7 +139,7 @@ Example
 `&tracks=gene_track,vcf_track`
 
 This is a comma-separated list of trackIds. You can find your trackIds in the
-config.json. Note that you can also refer to a trackId added by
+config.json. You can also refer to a trackId added by
 `&sessionTracks=` here.
 
 ### &sessionTracks=
@@ -228,8 +228,8 @@ With `&extendSession=true`, `&loc=` (and `&tracks=`, `&highlight=`, `&nav=`,
 `defaultSession` instead of replacing it. The assembly comes from that view, so
 `&assembly=` isn't needed.
 
-Note that `&sessionTracks=` (dynamically-added track configs) is not layered
-onto the default session. Use a full [session spec](#session-spec) for that.
+`&sessionTracks=` (dynamically-added track configs) is not layered onto the
+default session. Use a full [session spec](#session-spec) for that.
 
 ## Session spec
 
@@ -405,7 +405,7 @@ Each track object supports the following properties:
   - `color`: Feature color for feature/wiggle tracks (a CSS color, or a `jexl:`
     expression for per-feature coloring)
   - `minScore`, `maxScore`: Score range for quantitative tracks
-  - `forceLoad`: render even when the region trips the "too much data" gate —
+  - `forceLoad`: render even when the region trips the "too much data" gate,
     the declarative equivalent of the "Force load" button, which matters here
     because a URL/session has no one to click it (see
     [BaseLinearDisplay](/docs/config/baselineardisplay/#slot-forceload))

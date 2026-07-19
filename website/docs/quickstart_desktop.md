@@ -175,8 +175,8 @@ The reverse direction works too, in JBrowse Desktop 5.0 and newer: **Open
 .jbrowse or config.json or link → Open JBrowse Web link...** on the start
 screen, or **File → Session → Open JBrowse Web link...** once a session is open.
 Either takes a JBrowse web URL containing a
-[session spec](/docs/urlparams/#session-spec) — such as the "Open this view in
-JBrowse" link under any figure in these docs — and rebuilds it here as a new
+[session spec](/docs/urlparams/#session-spec) (such as the "Open this view in
+JBrowse" link under any figure in these docs) and rebuilds it here as a new
 session. The config the link names is downloaded and saved alongside the
 session, so it reopens later like any other. Share links (`&session=share-...`)
 can't be opened this way: only the JBrowse web instance that created one can
@@ -187,7 +187,7 @@ which hands the view straight to Desktop through a `jbrowse://` link that the
 macOS and Windows installers register for you. **The Linux AppImage doesn't
 register anything by itself**, so that button generally won't work there unless
 you've integrated the AppImage with your desktop (e.g. with
-[AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)) — paste the
+[AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher)): paste the
 link instead, or pass it on the command line (below).
 
 ### Saving a genome to the quickstart list

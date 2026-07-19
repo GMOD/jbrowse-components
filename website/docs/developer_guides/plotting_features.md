@@ -390,7 +390,7 @@ export interface ScoreRenderState {
 
 ## Step 5: The React component
 
-`DisplayChrome` is the shared wrapper that supplies a display's _chrome_ — the
+`DisplayChrome` is the shared wrapper that supplies a display's _chrome_: the
 UI framing around your canvas (the loading scrim, the error bar, the "region too
 large" banner), the same sense as "browser chrome." It also wires the
 rendering-backend factory and WebGL/WebGPU context-loss recovery, so every

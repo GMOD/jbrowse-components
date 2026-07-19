@@ -60,8 +60,8 @@ Key technologies include:
 ### What is special about JBrowse 2
 
 JBrowse 2's plugin system supports custom view types (e.g. circular, dotplot)
-alongside the built-in ones, making it a platform for genomic visualization, not
-only a genome browser.
+alongside the built-in ones, making it a platform for genomic visualization
+rather than just a genome browser.
 
 ### What is the difference between JBrowse Web and JBrowse Desktop
 
@@ -117,7 +117,7 @@ data files from a separate server (Django's static resources folder won't serve
 them correctly). For some informal troubleshooting notes, see
 [these notes](https://github.com/cmdcolin/django-jbrowse2-nonworking-example).
 
-Note that the server that you use should support byte-range requests (e.g. the
+The server you use should support byte-range requests (e.g. the
 [Range HTTP header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Range))
 so that JBrowse can get small slices of large binary data files.
 

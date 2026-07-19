@@ -4,8 +4,8 @@ Static exports of JBrowse 2 rendering.
 
 ## Prerequisites
 
-You don't need JBrowse 2 installed — the tool renders from local or remote
-files. Requirements:
+You don't need JBrowse 2 installed: the tool renders from local or remote files.
+Requirements:
 
 - NodeJS v23+
 
@@ -23,10 +23,10 @@ If you are a developer and want to modify the code, see the
 
 ## Quickstart
 
-A multi-track human (hg19) view at the IFFO2 / ALDH4A1 locus — NCBI RefSeq
-genes, ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore
-reads — rendered straight from public files in a single command (`--aliases`
-reconciles the `1` / `chr1` / `NC_000001.10` refname styles across the files):
+A multi-track human (hg19) view at the IFFO2 / ALDH4A1 locus (NCBI RefSeq genes,
+ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore reads),
+rendered straight from public files in a single command (`--aliases` reconciles
+the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 
 ![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/1.png)
 
@@ -108,7 +108,7 @@ jb2export --hub hg19 \
 ```
 
 Hosted trackIds are all prefixed with the assembly name (`hg19-...`), so
-`--track` fills that in for you — `--track ncbiRefSeqCurated` resolves to
+`--track` fills that in for you: `--track ncbiRefSeqCurated` resolves to
 `hg19-ncbiRefSeqCurated`. Matching is also case-insensitive and works on a
 track's display name, and a token that doesn't match anything errors with the
 closest trackIds:
@@ -120,7 +120,7 @@ hg19-clinvarCnv, hg19-dbSnp155ClinVar, ...?
 ```
 
 Hosted configs also carry a gene text-search index, so `--loc` accepts a **gene
-name** and jumps to it — no need to look up coordinates:
+name** and jumps to it, no need to look up coordinates:
 
 ```bash
 jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --out out.svg
@@ -130,7 +130,7 @@ jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --out out.svg
 `1:1,000,000-1,100,000`, or `all`); a name that isn't a locstring is looked up
 in the index and the view jumps to the top hit.
 
-You don't have to leave the terminal to find hub names and trackIds — the `list`
+You don't have to leave the terminal to find hub names and trackIds. The `list`
 subcommand prints them:
 
 ```bash
@@ -213,7 +213,7 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
 ![A coverage histogram over a read pileup, with mismatches highlighted](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_pileup.png)
 
 Track modifiers color, sort, and group the reads. `sort:base` orders the pileup
-by the base each read carries at the center position — here, HG008-T PacBio HiFi
+by the base each read carries at the center position: here, HG008-T PacBio HiFi
 reads over the `CUZD1` gene, where the sort pulls every read carrying a ~1.8 kb
 somatic deletion into one contiguous band so the heterozygous deletion (and its
 coverage dip) pops out of the pileup:
@@ -228,7 +228,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:55 \
 
 `group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
 HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
-by the `HP` tag — the heterozygous deletion shows in one haplotype and not the
+by the `HP` tag: the heterozygous deletion shows in one haplotype and not the
 other:
 
 ```bash
@@ -241,7 +241,7 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 ![Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_haplotype.png)
 
 `color:methylation` paints per-base CpG methylation calls from a modified-base
-(`MM`/`ML`) BAM/CRAM — methylated cytosines red, unmethylated blue. This COLO829
+(`MM`/`ML`) BAM/CRAM: methylated cytosines red, unmethylated blue. This COLO829
 nanopore CRAM (hg38, streamed from the ONT open-data S3) with the UCSC
 CpG-island BED on top shows the methylated flanks giving way to the unmethylated
 island cores, read against the annotated island boundaries:
@@ -258,7 +258,7 @@ jb2export \
 ![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/methylation.png)
 
 `sashimi:auto` overlays splice-junction arcs on the coverage band, sized by the
-number of reads spanning each junction — the standard RNA-seq splice view.
+number of reads spanning each junction: the standard RNA-seq splice view.
 `coverageHeight:` makes the coverage/sashimi band tall so the arcs are legible.
 This strand-specific paired-end RNA-seq (hg19, public) over `B2M` shows the long
 first intron as one big arc and the closely-spaced downstream exons as smaller
@@ -332,7 +332,7 @@ jb2export --loc all \
 
 ![SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/skbr3_cov.png)
 
-The score scaling can also autoscale — here to "localsd" (mean plus/minus three
+The score scaling can also autoscale: here to "localsd" (mean plus/minus three
 standard deviations) on a linear scale:
 
 ```bash
@@ -347,9 +347,9 @@ jb2export --loc all \
 `--multiwig` aggregates many BigWig files into a single multi-row
 `MultiQuantitativeTrack`, where each subtrack shares one autoscale so the rows
 are directly comparable. Its argument is either a comma-separated list of BigWig
-files (local paths or URLs), or a `.json` file holding an array — of plain
-BigWig paths/URLs, or of _subadapter_ objects that give each row its own `name`,
-`color`, and `group`:
+files (local paths or URLs), or a `.json` file holding an array (of plain BigWig
+paths/URLs, or of _subadapter_ objects that give each row its own `name`,
+`color`, and `group`):
 
 ```bash
 ## quick shorthand: a comma-separated file list, one row per file
@@ -360,11 +360,11 @@ jb2export --hub hg38 --multiwig sources.json height:520 --loc GCG --out multi.pn
 ```
 
 This example renders the CATlas single-cell ATAC accessibility-by-cell-type data
-(Zhang et al 2021) — 16 human cell types, each a BigWig, wired up with per-row
+(Zhang et al 2021): 16 human cell types, each a BigWig, wired up with per-row
 labels/colors/groups in
-[`data/scatac_catlas.json`](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img/data/scatac_catlas.json)
-— over the `GCG` (glucagon) locus. The **Alpha (glucagon)** row — the pancreatic
-cell type that expresses GCG — shows strong open chromatin across the gene while
+[`data/scatac_catlas.json`](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img/data/scatac_catlas.json),
+over the `GCG` (glucagon) locus. The **Alpha (glucagon)** row (the pancreatic
+cell type that expresses GCG) shows strong open chromatin across the gene while
 the other 15 cell types stay quiet on the shared scale, a clean readout of
 cell-type-specific chromatin accessibility at a marker gene:
 
@@ -390,8 +390,8 @@ jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.
 
 ### Multi-sample variant matrix
 
-A VCF with many samples renders as a genotype matrix — one row per sample, each
-alt genotype painted over the reference background — with the
+A VCF with many samples renders as a genotype matrix (one row per sample, each
+alt genotype painted over the reference background) with the
 `display:multivariant` modifier (the `LinearMultiSampleVariantDisplay`);
 `display:multivariantmatrix` selects the index-spaced matrix variant. This
 example draws the 1000 Genomes phase 3 chr11 callset (2,504 samples) over the
@@ -426,7 +426,7 @@ jb2export --hub hg19 \
 
 Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`, or a hosted `--track`) render
 their glyphs with labels, and `--refseq` adds the assembly's reference-sequence
-track — which, zoomed to base level, shows the DNA bases and the six-frame
+track. Zoomed to base level, it shows the DNA bases and the six-frame
 translation (green start codons, red stops). This human example zooms into a
 `TP53` intron/CDS boundary so the gene track's structure reads at base level:
 the intron thins to a connector line, the coding exon begins as a solid CDS
@@ -443,7 +443,7 @@ jb2export --hub hg38 --track hg38-ncbiRefSeqCurated height:150 '{"showOnlyGenes"
 ### Themes
 
 `--themeName` selects a built-in theme: `default`, `lightStock`, `lightMinimal`,
-`darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names — use
+`darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names, use
 the keys above.)
 
 ```bash
@@ -453,7 +453,7 @@ jb2export --hub hg38 \
   --loc chr10:87,860,000-87,975,000 --themeName darkStock --width 1200 --out dark.png
 ```
 
-![The hg38 PTEN locus — NCBI RefSeq genes over phyloP conservation — rendered with the darkStock theme](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/dark_theme.png)
+![The hg38 PTEN locus: NCBI RefSeq genes over phyloP conservation, rendered with the darkStock theme](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/dark_theme.png)
 
 ## Track modifiers
 
@@ -545,7 +545,7 @@ Available `color:type` values:
 ### Raw display settings (JSON)
 
 Any track modifier that starts with `{` is parsed as JSON and merged into the
-display's settings — an escape hatch for settings without a dedicated modifier
+display's settings: an escape hatch for settings without a dedicated modifier
 above. Use compact JSON (a single shell token, no spaces):
 
 ```bash
@@ -566,7 +566,7 @@ the first assembly and the target side is the second.
 The examples below use the public yeast comparison (S. cerevisiae R64 vs the
 YJM1447 strain) and reproduce as-is with network access.
 
-A whole-genome dotplot — every query contig on x, every target contig on y.
+A whole-genome dotplot: every query contig on x, every target contig on y.
 `--autoDiagonalize` reorders the target contigs so the main alignment forms a
 clean diagonal instead of a staircase:
 
@@ -605,8 +605,8 @@ set is available via `--spec` (see the table below). Run
 Stack any number of assemblies straight from the command line: repeat the
 assembly flag for each one and place each alignment file between the two
 assemblies it compares. Assemblies stack top-to-bottom in the order written, and
-each synteny file becomes the ribbon for the gap it sits in — no config or spec
-JSON required.
+each synteny file becomes the ribbon for the gap it sits in. No config or spec
+JSON is required.
 
 Use `--chromSizes` instead of `--fasta` for a whole-genome comparison: it builds
 the assembly from a `chrom.sizes` file (two tab-separated columns,
@@ -639,13 +639,13 @@ flags:
 > **Query vs. target orientation.** PAF/BLAST list the query first, so the
 > assembly written _above_ the alignment is the query. A chain/delta liftover
 > maps target→query (a UCSC `targetToQuery.over.chain`), so there the assembly
-> above is the _target_. `jb2export` handles this per format automatically —
-> just write the assemblies in stacked order.
+> above is the _target_. `jb2export` handles this per format automatically: just
+> write the assemblies in stacked order.
 
 Alternatively, drive the view from a session-spec JSON with `--spec` (assemblies
 and comparison tracks supplied via `--config`). The spec is the same shape used
 by the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a
-browser URL works directly — see
+browser URL works directly: see
 [URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#linear-synteny-view-multi-way)
 for the full format. `tracks` is one sub-array per level (the gap between
 adjacent `views`); the subcommand is optional since the render mode comes from
@@ -669,7 +669,7 @@ jb2export synteny \
 
 ![Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/grape_peach_synteny.png)
 
-A mammalian-scale test — human (hs1/T2T) vs mouse (mm39) liftOver — where the
+A mammalian-scale test: human (hs1/T2T) vs mouse (mm39) liftOver, where the
 `--minAlignmentLength 500000` filter is what keeps the plot from turning into
 spaghetti. `--chromSizes` means no multi-GB sequence is downloaded (whole-genome
 synteny draws none); the chrom.sizes are committed and the liftOver chain
@@ -686,7 +686,7 @@ jb2export synteny \
 
 ![Mammalian-scale synteny, human (hs1) vs mouse (mm39)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hs1_mm39_synteny.png)
 
-A three-level stack — hg38, hs1 (T2T), and mm39 — with one ribbon per adjacent
+A three-level stack: hg38, hs1 (T2T), and mm39, with one ribbon per adjacent
 pair: the conserved hg38↔hs1 build liftover on top (near-vertical bands) and the
 diverged hs1↔mm39 human–mouse synteny below. Each UCSC liftOver `.chain` sits
 between the two assemblies it relates (`hg38ToHs1` between hg38 and hs1,
@@ -706,14 +706,14 @@ jb2export synteny \
 ![Three-level synteny stack: hg38, hs1, and mm39](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hg38_hs1_mm39_synteny.png)
 
 All the example images in this README (including the comparative ones above) are
-regenerated by `pnpm screenshots --filter jbrowse-img` from the repo root — see
+regenerated by `pnpm screenshots --filter jbrowse-img` from the repo root: see
 the `CliSpec` entries in
 [`website/scripts/screenshot-specs.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/screenshot-specs.ts).
 
 ### Circular view (chord plot)
 
-The `circular` subcommand renders one assembly's chord tracks — e.g. a VCF of
-structural variants — as a circular ideogram with chords drawn between the two
+The `circular` subcommand renders one assembly's chord tracks (e.g. a VCF of
+structural variants) as a circular ideogram with chords drawn between the two
 breakends of each rearrangement. It is single-assembly and shows the whole
 genome (no `--loc`); each track picks its chord display automatically.
 
@@ -722,7 +722,7 @@ jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out circular.svg
 ```
 
 This example uses SKBR3 (a breast-cancer cell line) long-read Sniffles SV calls
-on hg19 — each inter-chromosomal chord is a translocation, the classic dense
+on hg19: each inter-chromosomal chord is a translocation, the classic dense
 rearranged-cancer-genome view. `--fasta` reads only the `.fai` for chromosome
 names and lengths (the circular view fetches no sequence):
 
@@ -1100,11 +1100,11 @@ tabix -p vcf yourfile.vcf.gz   # -> yourfile.vcf.gz.tbi
 
 The refname in `--loc` doesn't match the FASTA. Use the name exactly as it
 appears in the FASTA, or pass `--aliases` to reconcile differing naming styles
-(e.g. `1` vs `chr1` vs `NC_000001.10`) across the assembly and track files — see
+(e.g. `1` vs `chr1` vs `NC_000001.10`) across the assembly and track files. See
 [Remote files](#remote-files).
 
 ### A track renders empty when zoomed far out
 
 Some track types (alignments, genes) refuse to render past a feature-density
-limit. Add `force:true` after the track to override it — see
+limit. Add `force:true` after the track to override it. See
 [Force render a large region](#force-render-a-large-region).
