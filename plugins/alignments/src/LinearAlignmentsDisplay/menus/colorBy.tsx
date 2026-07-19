@@ -6,7 +6,7 @@ import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
 import { ModificationThresholdSlider } from './ModificationThresholdSlider.tsx'
-import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
+import { checkboxItem, radioItems } from './menuHelpers.ts'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import {
   cytosineContextOptions,
@@ -473,13 +473,17 @@ function modificationsSection(
 function arcColorSection(arcColor: ColorByMenuOptions['arcColor']): MenuItem[] {
   return arcColor
     ? [
-        radioModeMenuItem(
-          'Arc color',
-          arcColorOptions,
-          arcColor.current,
-          arcColor.setColor,
-          'How paired-end arcs and the read cloud overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
-        ),
+        {
+          label: 'Arc color',
+          type: 'subMenu',
+          helpText:
+            'How paired-end arcs and the read cloud overlay are colored by insert size and/or pair orientation, to surface structural-variant signal (deletions, inversions, duplications, insertions).',
+          subMenu: radioItems(
+            arcColorOptions,
+            arcColor.current,
+            arcColor.setColor,
+          ),
+        },
       ]
     : []
 }

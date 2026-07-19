@@ -21,37 +21,13 @@ export function checkboxItem(
   label: string,
   checked: boolean,
   onToggle: () => void,
-  opts?: {
-    helpText?: string
-    icon?: CheckboxMenuItem['icon']
-    disabled?: boolean
-    disabledHelpText?: string
-  },
+  opts?: { helpText?: string },
 ): CheckboxMenuItem {
   return {
     label,
     type: 'checkbox',
     checked,
-    onClick: () => {
-      onToggle()
-    },
-    ...opts,
-  }
-}
-
-export function radioModeMenuItem<T extends string>(
-  label: string,
-  options: { value: T; label: string; subLabel?: string; helpText?: string }[],
-  current: T,
-  setMode: (m: T) => void,
-  helpText?: string,
-  opts?: { disabled?: boolean; disabledHelpText?: string },
-) {
-  return {
-    label,
-    helpText,
-    type: 'subMenu' as const,
-    subMenu: radioItems(options, current, setMode),
+    onClick: onToggle,
     ...opts,
   }
 }
