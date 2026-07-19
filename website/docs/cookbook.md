@@ -354,6 +354,8 @@ A few of these need more than the one line above:
   [customizing feature colors](/docs/config_guides/customizing_feature_colors)
   for the full plugin file.
 
+<Figure caption="The same NCBI RefSeq genes under the by-feature-type lookup recipe: CDS red, exon/UTR green, everything else gray." src="/img/cookbook_color_by_type.png"/>
+
 ### Debugging a color callback
 
 Two things catch most mistakes:
@@ -642,6 +644,8 @@ their `HP` tag:
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
 slot also accepts `multirowxy` (one stacked row per signal), `multirowdensity`,
 and `multixyplot` (all signals overlaid in one plot).
+
+<Figure caption="A three-sample MultiQuantitativeTrack (multirowxy) over the AMY1 amylase cluster: each 1000 Genomes individual's copy-number trace draws in its own color, and the copy number varies across this classic copy-number-variable locus." src="/img/cookbook_multiwig.png"/>
 
 ---
 
