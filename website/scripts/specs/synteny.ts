@@ -302,7 +302,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'K12',
-                loc: 'chr:1,050,000-1,072,000',
+                loc: 'chr:1,044,000-1,078,000',
                 tracks: [
                   {
                     trackId: 'K12_genes',
@@ -314,7 +314,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'Sakai',
-                loc: 'chr:1,232,000-1,278,000',
+                loc: 'chr:1,220,000-1,290,000',
                 tracks: [
                   {
                     trackId: 'Sakai_genes',

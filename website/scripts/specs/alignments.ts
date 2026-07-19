@@ -142,7 +142,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               coverageHeight: 100,
               readConnectionsHeight: 100,
               height: 600,
-              userByteSizeLimit: 500_000_000,
+              forceLoad: true,
             },
           ],
         },
@@ -497,7 +497,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               // lift the fetch-size gate so the CRAM auto-loads headless
               // instead of sitting on the force-load prompt (same mechanism
               // as the smalldel/multisv specs)
-              userByteSizeLimit: 500_000_000,
+              forceLoad: true,
             },
             {
               trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram',
@@ -508,7 +508,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
                 type: 'modifications',
                 modifications: { fillUnmarked: true },
               },
-              userByteSizeLimit: 500_000_000,
+              forceLoad: true,
             },
           ],
         },
@@ -572,7 +572,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // with the single end state: groupBy + colorBy HP splits the pileup into one
   // tinted section per haplotype, so the phased reads read at a glance. Same
   // built-in HP grouping the smalldel figure uses, on the same HG002 ultralong
-  // ONT track; userByteSizeLimit lifts the force-load gate, readySelector waits
+  // ONT track; forceLoad lifts the force-load gate, readySelector waits
   // for the pileup canvas to paint.
   {
     mode: 'url',
@@ -591,7 +591,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               trackId: 'hg002_nanopore_hp',
               type: 'LinearAlignmentsDisplay',
               height: 500,
-              userByteSizeLimit: 200_000_000,
+              forceLoad: true,
               groupBy: { type: 'tag', tag: 'HP' },
               colorBy: { type: 'tag', tag: 'HP' },
             },
@@ -609,7 +609,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // menu opened at "Group by..." with its submenu expanded (reviewer wanted a
   // separate figure for the menu path). Choosing "Group by..." opens a dialog
   // where the tag (e.g. HP) is entered. Same HG002 ONT track; reads load via
-  // userByteSizeLimit, then the menu is driven open and the entry boxed.
+  // forceLoad, then the menu is driven open and the entry boxed.
   {
     mode: 'url',
     name: 'alignments/haplotype_groupby',
@@ -625,7 +625,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
               trackId: 'hg002_nanopore_hp',
               type: 'LinearAlignmentsDisplay',
               height: 300,
-              userByteSizeLimit: 200_000_000,
+              forceLoad: true,
               // start ungrouped and uncolored: the figure demonstrates the
               // group-by mechanic itself, so the reads are plain until the
               // dialog is submitted (reviewer: initial state shouldn't already
@@ -654,36 +654,24 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           },
           { type: 'waitForText', text: 'Group by...' },
           { type: 'hover', text: 'Group by...' },
-          // submenu opened once its items render
-          { type: 'waitForText', text: 'Ungroup (this track)' },
+          // submenu opened once its items render: "None" is the ungroup radio at
+          // the top of the Group by submenu (present even when ungrouped)
+          { type: 'waitForText', text: 'None' },
           { type: 'delay', ms: 800 },
         ],
         annotations: [{ type: 'box', anchor: { text: 'Group by...' } }],
       },
       {
         actions: [
-          // both menu items read "Group by..."; the inner (dialog-opening) one
-          // renders later in the DOM, so target the last match by XPath
-          {
-            type: 'click',
-            selector:
-              '::-p-xpath((//li[@role="menuitem"][normalize-space(.)="Group by..."])[last()])',
-          },
+          // the Group by submenu is a radio list now; its "Tag..." entry opens
+          // the group-by-tag dialog (the common dimensions group directly, no
+          // dialog — only Tag needs a name entered)
+          { type: 'click', text: 'Tag...' },
           {
             type: 'waitForText',
             text: 'Renders the reads as stacked sections',
           },
           { type: 'delay', ms: 500 },
-          // open the dimension dropdown and pick the Tag option (label has parens
-          // /commas that break the text pseudo-selector, so match by XPath)
-          { type: 'click', selector: '[role="dialog"] [role="combobox"]' },
-          { type: 'delay', ms: 400 },
-          {
-            type: 'click',
-            selector:
-              '::-p-xpath(//li[@role="option"][starts-with(normalize-space(.),"Tag")])',
-          },
-          { type: 'delay', ms: 400 },
           {
             type: 'type',
             selector: '[data-testid="group-tag-name-input"]',
@@ -793,7 +781,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
   // state the track menu's Color by → Modifications → Type
   // applies — because driving that 3-level hover menu live is unreliable over the
   // COLO829 GPU display (its mod-data load keeps repainting the canvas, which
-  // closes the MUI menu mid-cascade). userByteSizeLimit auto-loads the reads.
+  // closes the MUI menu mid-cascade). forceLoad auto-loads the reads.
   {
     mode: 'url',
     name: 'alignments/modifications1',
@@ -808,7 +796,7 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
           // legend is opt-in now; this teaching figure explicitly shows
           // the 5mC/5hmC color key
           showLegend: true,
-          userByteSizeLimit: 100_000_000,
+          forceLoad: true,
         },
       ],
     }),

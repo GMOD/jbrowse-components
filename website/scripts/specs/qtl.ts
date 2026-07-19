@@ -40,6 +40,10 @@ const paintingSortPanel = (sorted: boolean) =>
         type: 'LinearMultiRowFeatureDisplay',
         height: 420,
         sortRowsBy: sorted ? TYRP1_PEAK : undefined,
+        // whole-chr4 painting: lift the byte gate so the multi-row track loads
+        // headless (density gating no longer applies to multi-row). Session-
+        // scoped force-load, not baked into the demo config.
+        forceLoad: true,
       },
     ],
   })
@@ -65,6 +69,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
           type: 'LinearMultiRowFeatureDisplay',
           height: 500,
           sortRowsBy: TYRP1_PEAK,
+          forceLoad: true,
         },
       ],
     }),
@@ -106,6 +111,7 @@ export const qtlSpecs: ScreenshotSpec[] = [
           type: 'LinearMultiRowFeatureDisplay',
           height: 460,
           sortRowsBy: TYRP1_PEAK,
+          forceLoad: true,
         },
       ],
     }),

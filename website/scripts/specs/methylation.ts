@@ -100,6 +100,39 @@ export const methylationSpecs: ScreenshotSpec[] = [
     settleMs: 20000,
     // genes + aggregate(3 rows) + 3 compact pileups + headers/ruler/overview
     viewportHeight: 900,
+    // larger red pill labels naming each context row (reviewer). The aggregate
+    // multiwiggle stacks CpG/CHG/CHH in one 170px container (row centers ~28/85/
+    // 142px, so each label is nudged ±57px off the container center), and the
+    // three per-read pileups each get the matching label anchored to their own
+    // track row. dx pulls the pill toward the left edge of the data.
+    annotations: [
+      ...(['CpG', 'CHG', 'CHH'] as const).map((text, i) => ({
+        type: 'text' as const,
+        anchor: {
+          selector:
+            '[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_methyldackel"]',
+        },
+        dx: -600,
+        dy: (i - 1) * 57,
+        fontSize: 22,
+        text,
+      })),
+      ...(
+        [
+          ['cg', 'CpG'],
+          ['chg', 'CHG'],
+          ['chh', 'CHH'],
+        ] as const
+      ).map(([ctx, text]) => ({
+        type: 'text' as const,
+        anchor: {
+          selector: `[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_wgbs_${ctx}"]`,
+        },
+        dx: -600,
+        fontSize: 22,
+        text,
+      })),
+    ],
   },
   // ONT HG002 fiber-seq (6mA) at the GAPDH promoter, modifications mode. The
   // enzyme-treated sample (PAY22766, top) carries 6mA (A+a) calls that the
@@ -198,8 +231,9 @@ export const methylationSpecs: ScreenshotSpec[] = [
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
       // SNRPN gene body + PWS-IC, wide enough to read the DMR against the CpG
-      // island and the gene's first exons
-      loc: 'chr15:24,952,000-24,958,000',
+      // island and the gene's first exons (reviewer: zoom out a little — was
+      // 24,952,000-24,958,000, a 6kb window, now 8kb around the same center)
+      loc: 'chr15:24,951,000-24,959,000',
       tracks: [
         // UCSC CpG-island annotation: the imprinting center overlaps a CpG
         // island, so the methylated/unmethylated split lands on it. Kept short —
@@ -275,7 +309,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
           trackId: 'HG002_snrpn_5mC_reads',
           type: 'LinearAlignmentsDisplay',
           height: 560,
-          userByteSizeLimit: 200_000_000,
+          forceLoad: true,
           groupBy: { type: 'tag', tag: 'HP' },
           colorBy: {
             type: 'modifications',
@@ -305,6 +339,22 @@ export const methylationSpecs: ScreenshotSpec[] = [
         fontSize: 20,
         text: 'reads tagged HP:2',
       },
+    ],
+  },
+
+  // Combine the two SNRPN allele-specific views into one figure (reviewer): the
+  // per-haplotype aggregate 5mC profiles on top, the per-read pileup that
+  // produces them below. Same assembly (hg38) and locus (chr15 PWS-IC, ~24.955
+  // Mb), so the aggregate/per-read pair reads top-to-bottom as summary → source.
+  // Each part stays its own openable figure; compose only stacks the committed
+  // PNGs. (The two windows differ in zoom — 8kb vs 14kb — so their x-scales are
+  // not pixel-aligned across the seam.)
+  {
+    mode: 'compose',
+    name: 'methylation/hg002_snrpn_combined',
+    parts: [
+      'methylation/hg002_snrpn_allele_specific',
+      'methylation/hg002_snrpn_reads',
     ],
   },
 ]

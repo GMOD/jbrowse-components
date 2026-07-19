@@ -671,7 +671,7 @@ export const jbrowseImgSpecs: CliSpec[] = [
     '--cram',
     'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram',
     '--loc',
-    '1:19,197,000-19,233,000',
+    '1:19,190,000-19,240,000',
     '--width',
     '1200',
   ]),

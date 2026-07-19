@@ -212,7 +212,7 @@ export const gallerySections: readonly GallerySection[] = [
         spec: 'gallery/nanopore_methylation',
         guide: 'tutorials/methylation',
         description:
-          'Human nanopore reads colored by base-modification (methylation) calls over a chr20 CpG island.',
+          'Human nanopore reads over a chr20 CpG island, each read colored per-CpG by its 5mC modification call — methylated cytosines red, unmethylated blue — so the hypomethylated island core stands out from the methylated flanks. Data: Oxford Nanopore Technologies (jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram).',
       },
       {
         label: 'Bisulfite methylation (Arabidopsis)',

@@ -220,10 +220,10 @@
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
-    "status": "bad",
-    "note": "compare against origin/main might have different alpha transparency for small alignments",
-    "reviewedAt": "2026-07-19T21:17:47.857Z",
-    "hash": "57e73de1bbb27c63271334775ac5ec8abf84068e"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:07:40.187Z",
+    "hash": "c06560edf6063d378114ffd03aed809e584f0aea"
   },
   "linear_synteny": {
     "name": "linear_synteny",
@@ -274,7 +274,7 @@
   "alignments/modifications1": {
     "name": "alignments/modifications1",
     "status": "bad",
-    "note": "might consider using the  'two color' rendering type for this screenshot",
+    "note": "might consider using the  'two color' rendering type for this screenshot  || AGENT-NEEDS-INPUT: JUDGMENT: \"two color\" for cytosine == fillUnmarked, which modifications2 already demonstrates; switching would duplicate it. Left as the per-type teaching figure. (Menu path fixed unrelatedly? no.)",
     "reviewedAt": "2026-07-16T20:43:56.103Z",
     "hash": "9f30826ead2af52810042b35b9326783fab9d24f"
   },
@@ -591,7 +591,7 @@
   "track_menu": {
     "name": "track_menu",
     "status": "bad",
-    "note": "unclear what the arrows are in screenshot 1, might remove arrows",
+    "note": "unclear what the arrows are in screenshot 1, might remove arrows  || AGENT-FIX: removed the ambiguous arrows (kept the two icon rings). regenerated.",
     "reviewedAt": "2026-07-19T21:19:14.799Z",
     "hash": "6080eb609d66b2c3df5affb77b129157638bbd05"
   },
@@ -854,9 +854,9 @@
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "bad",
-    "note": "this is capturing 'force load' regiontoolarge markers now, please fix and override. if possible using declarative foreceload. if it is unexpected for this error to trigger investigate it",
-    "reviewedAt": "2026-07-19T21:08:20.051Z",
-    "hash": "67c8885e688ef5f235b0759e83bbf599ecb0e9eb"
+    "note": "Please use the actual name of the colorby text descriptions, not just \"Plus...\"",
+    "reviewedAt": "2026-07-19T23:02:55.249Z",
+    "hash": "ffbfefe81a38d4f84a4eabe542be4f15c7ed09c3"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -930,8 +930,8 @@
     "name": "alignments/haplotype_groupby",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T03:47:29.792Z",
-    "hash": "7e1049ecd6e94665784aa05728e780fca8e52883"
+    "reviewedAt": "2026-07-19T23:02:33.637Z",
+    "hash": "08d2ac083cc777c3ba38edbd28508a1e3c7a8aee"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -982,9 +982,9 @@
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
     "status": "bad",
-    "note": "zoom out a little bit",
-    "reviewedAt": "2026-07-19T21:11:53.729Z",
-    "hash": "6508bfedea17cf7caeed7252f8e690dca57ed17f"
+    "note": "the 'brownish' looking negaitve panel is not super 'exciting'. any better color? the purple in clingen, if meaningful, might benefit from a showLegend:true",
+    "reviewedAt": "2026-07-19T23:03:39.759Z",
+    "hash": "ce4ceceb843bb9507a0c8e0860b0fbe43003f7a4"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
@@ -1004,8 +1004,8 @@
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:12:48.708Z",
-    "hash": "44bc3edcd3d5c5f136575ecb6882e67dcc94eaa4"
+    "reviewedAt": "2026-07-19T23:03:44.582Z",
+    "hash": "15e3baf97310bdf73cb0aecfa87839138ce85601"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
@@ -1018,15 +1018,15 @@
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:12:51.761Z",
-    "hash": "ca35094c657b70a690b1f5cd02ed252b1495b364"
+    "reviewedAt": "2026-07-19T23:03:46.384Z",
+    "hash": "9da0391be922e2325071208e4873a3f4c3c49edc"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
-    "status": "bad",
-    "note": "on origin/main it has more alpha transparency unclear why not alpha here. might be due to the 'fade small alignments' heuristics? origin/main screenshot is better though",
-    "reviewedAt": "2026-07-19T21:12:48.635Z",
-    "hash": "87ccb4f926af2ad8f6d325a6748e3f3be9f78cc0"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:03:44.546Z",
+    "hash": "34c356a7641d743c5a955fed6293c7e9c6627127"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
@@ -1120,10 +1120,10 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "bad",
-    "note": "this is triggering force load the multirow canvas display should not trigger too many features errors also only bytesize errors",
-    "reviewedAt": "2026-07-19T21:08:58.411Z",
-    "hash": "c216f6ef410e7c88f79da1978f21655b11d0bb7b"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:03:03.054Z",
+    "hash": "209bf3f26e38577c8568749319b0bcd207fd0e3e"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1191,9 +1191,9 @@
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
     "status": "bad",
-    "note": "might want to just highlight the kras gene (feature specific highlight functionality) instead of region",
-    "reviewedAt": "2026-07-19T21:17:25.620Z",
-    "hash": "6aa08d4ed865406e5a5746ca228d1844b11a0b9b"
+    "note": "might add red arrow pointing at the KRAS",
+    "reviewedAt": "2026-07-19T23:07:34.651Z",
+    "hash": "5c57b3627ca976a82c1ec35779187abeece2e9a5"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1218,10 +1218,10 @@
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
-    "status": "bad",
-    "note": "origin/main has more alpha transparency and is IMO a bit better please review, might be due to fade small alignments heuristic",
-    "reviewedAt": "2026-07-19T21:16:07.914Z",
-    "hash": "408020aecc402e76494f43581c0d16dbfe2153da"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:06:06.782Z",
+    "hash": "814b4fde1424ad5b25ef77830a5c914ca29d6e92"
   },
   "search_feature_highlight": {
     "name": "search_feature_highlight",
@@ -1252,10 +1252,10 @@
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
-    "status": "bad",
-    "note": "if you want you can make alignments track taller and browser taller",
-    "reviewedAt": "2026-07-19T21:10:39.533Z",
-    "hash": "31c56095979495751a61b1dc1cb84282d829db24"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:03:07.495Z",
+    "hash": "1cd1149e05b2d1a36025d3c93bbceea4be940c3f"
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
@@ -1287,7 +1287,7 @@
   "gallery/nanopore_methylation": {
     "name": "gallery/nanopore_methylation",
     "status": "bad",
-    "note": "link to source data in caption, elaborate a little more that it is a methylated and unmethylated cpg in caption",
+    "note": "link to source data in caption, elaborate a little more that it is a methylated and unmethylated cpg in caption  || AGENT-FIX: caption elaborated (5mC red / unmethylated blue + source). TODO: real source link maybe epi2me.nanoporetech.com.",
     "reviewedAt": "2026-07-19T21:11:02.154Z",
     "hash": "796c2c07cbe5c7986fa08cdddb13db90d8896cc7"
   },
@@ -1396,17 +1396,17 @@
   },
   "qtl/bxd_overview": {
     "name": "qtl/bxd_overview",
-    "status": "bad",
-    "note": "this is showing too many features but that should not ever be shown on multirow canvas display only byte size estimates, and we can force load this",
-    "reviewedAt": "2026-07-19T21:22:29.449Z",
-    "hash": "2ae75e87bca3749d32330625acf80e5e600f87da"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:06:52.154Z",
+    "hash": "e368bc3b031ea96ed0758ef41132e07a4f2bf3d8"
   },
   "qtl/bxd_tyrp1_locus": {
     "name": "qtl/bxd_tyrp1_locus",
-    "status": "bad",
-    "note": "this is showing too many features but that should not ever be shown on multirow canvas display only byte size estimates, and we can force load this",
-    "reviewedAt": "2026-07-19T21:21:59.852Z",
-    "hash": "cfbd5590ff2957223155e8a68fb6c6558fc4dfcc"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:07:01.325Z",
+    "hash": "c5498f232a9f25ba871976a6ecc11ce9339779a1"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1456,9 +1456,9 @@
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
     "status": "bad",
-    "note": "try to add larger 'red' annotation box labels for each row just saying \"CpG\" \"CHG\" \"CHH\" for each multiwiggle row and same for the alignments tracks",
-    "reviewedAt": "2026-07-19T21:14:55.009Z",
-    "hash": "570df7c4a2295a2494d2ade66fc44dbda4f482bb"
+    "note": "move text annotation boxes almost to far left",
+    "reviewedAt": "2026-07-19T23:05:15.782Z",
+    "hash": "5c01e766168f2770de30d8d76275eaa71886694d"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1484,14 +1484,14 @@
   "methylation/hg002_snrpn_allele_specific": {
     "name": "methylation/hg002_snrpn_allele_specific",
     "status": "bad",
-    "note": "zoom out a little see notes for methylation/hg002_snrpn_reads  also",
+    "note": "zoom out a little see notes for methylation/hg002_snrpn_reads  also  || AGENT-FIX: loc widened ~33%. regenerated.",
     "reviewedAt": "2026-07-19T21:15:43.458Z",
     "hash": "c4252a8985ab080b10253a9054d6039f7ec241b5"
   },
   "methylation/hg002_snrpn_reads": {
     "name": "methylation/hg002_snrpn_reads",
     "status": "bad",
-    "note": "might want to combine this figure and  methylation/hg002_snrpn_allele_specific ",
+    "note": "might want to combine this figure and  methylation/hg002_snrpn_allele_specific   || AGENT-FIX: added compose fig methylation/hg002_snrpn_combined (stacks reads over allele_specific). regenerated.",
     "reviewedAt": "2026-07-19T21:15:33.950Z",
     "hash": "f12b5e4ec948f34bb638d744b5428b02823011ed"
   },
@@ -1531,17 +1531,17 @@
   },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
-    "status": "bad",
-    "note": "this is showing too many features but that should not ever be shown on multirow canvas display only byte size estimates, and we can force load this",
-    "reviewedAt": "2026-07-19T21:22:22.402Z",
-    "hash": "11f834d4235df47c1fe6fa0643d70e1a993c0527"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:06:53.484Z",
+    "hash": "dddd6708b648b13a8cfa0a2f6bb36bd010e7b8bc"
   },
   "qtl/bxd_sort_before_after": {
     "name": "qtl/bxd_sort_before_after",
-    "status": "bad",
-    "note": "this is showing too many features but that should not ever be shown on multirow canvas display only byte size estimates, and we can force load this. weirdly only the second screenshot had the force load also",
-    "reviewedAt": "2026-07-19T21:22:18.445Z",
-    "hash": "446e3d19fad37105dd0bbb2b0ac406ff44171d04"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:06:57.010Z",
+    "hash": "d66968de3bad9fc27d2426120c734ba025c1acbc"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1560,9 +1560,9 @@
   "trio-ancestry": {
     "name": "trio-ancestry",
     "status": "bad",
-    "note": "unclear a little bit what this 'means' is this expected? if needed highlight boxes on the screen using annotation red text boxes",
-    "reviewedAt": "2026-07-19T21:19:09.172Z",
-    "hash": "d9220bc0fa89b91612203cf8e3705260f2710d10"
+    "note": "the text annotation overlaps the data visualization too much, need to make browser taller, so there is blank space below the lgv, and then put text annotations there. be very brief",
+    "reviewedAt": "2026-07-19T23:08:22.897Z",
+    "hash": "4c3ffd7d3c9786181142c83c3efe1b5ee279b223"
   },
   "methylation/arabidopsis_wgbs_cpg": {
     "name": "methylation/arabidopsis_wgbs_cpg",
@@ -1601,37 +1601,37 @@
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
     "status": "bad",
-    "note": "zoom out a bit more please",
-    "reviewedAt": "2026-07-16T20:42:05.324Z",
-    "hash": "df56566c699b7752a74d7f84ae436df52499c583"
+    "note": "zoom out a bit more still",
+    "reviewedAt": "2026-07-19T23:05:55.878Z",
+    "hash": "b4d37ec72552bc01b618efc28de2ff2693ad6351"
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
     "status": "bad",
-    "note": "there is not much 'type' variety here. anything better",
+    "note": "there is not much 'type' variety here. anything better  || AGENT-NEEDS-INPUT: NEEDS DECISION: \"not much type variety\" is a data issue - pick a locus/track richer in feature types. Not guessed.",
     "reviewedAt": "2026-07-19T21:09:18.646Z",
     "hash": "db28783ae00c22d35d5ab93e74f128cdb7f49b81"
   },
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
     "status": "bad",
-    "note": "hard to interpret what is going on here. would need like orthogonal MAF, VCF, and/or all vs all paf to confirm",
+    "note": "hard to interpret what is going on here. would need like orthogonal MAF, VCF, and/or all vs all paf to confirm  || AGENT-NEEDS-INPUT: NEEDS DECISION: hard to interpret; reviewer wants orthogonal MAF/VCF/all-vs-all paf to corroborate. Data/design change, not a spec tweak.",
     "reviewedAt": "2026-07-19T21:09:50.636Z",
     "hash": "7956a70e65074d8465264b3ac0c8806196942b6e"
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
     "status": "bad",
-    "note": "unclear what i should be looking at in terms of the ld track. what does it mean? remove the highlight 'label' also and if needed add annotation  overlay text red box",
-    "reviewedAt": "2026-07-19T21:13:28.451Z",
-    "hash": "c757b9a4c3be37f4d9ec084c2efc1e51ecd50b14"
+    "note": "move the text annotation, it overlaps the highlight. also, what is the meaning of this block, why would a layperson care? make it easy to understand",
+    "reviewedAt": "2026-07-19T23:04:37.725Z",
+    "hash": "11b5072e45f4a56963c5bd48dc3c75b9431a6428"
   },
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
     "status": "bad",
-    "note": "need gene track if we are trying to show something gene reltaed and also  unclear what i should be looking at in terms of the ld track. what does it mean? remove the highlight 'label' also and if needed add annotation  overlay text red box",
-    "reviewedAt": "2026-07-19T21:13:49.340Z",
-    "hash": "055627613a53ac92ef279e31429ab21a303f1353"
+    "note": "how do we know there is a inversion? if needed, add a 1kg SV track",
+    "reviewedAt": "2026-07-19T23:04:58.894Z",
+    "hash": "74c5d9b96925eafaabc92578116bbd5d73e0705f"
   },
   "pangenome/maf": {
     "name": "pangenome/maf",
@@ -1643,9 +1643,9 @@
   "pangenome/variant_matrix": {
     "name": "pangenome/variant_matrix",
     "status": "bad",
-    "note": "zoom out more",
-    "reviewedAt": "2026-07-19T21:16:27.980Z",
-    "hash": "f57c629b09f360dad5c23c530a473addc9e85584"
+    "note": "if needed, turn off the 'matrix mode' or show both the matrix and non-matrix modes just to exemplify for user. also, show complementary tracks like the MAF and paf tracks if it helps. ",
+    "reviewedAt": "2026-07-19T23:06:46.612Z",
+    "hash": "7149c860367a99cceb3fb541efcdb853242a1ee9"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
@@ -1657,8 +1657,15 @@
   "readpair_heatmap_translocation": {
     "name": "readpair_heatmap_translocation",
     "status": "bad",
-    "note": "there is a very small 'contact' blip but it would be interesting to show a more complex pattern. the https://github.com/PopicLab/cue shows very nice tapestry figures,. we can cross reference their source code if it helps",
+    "note": "there is a very small 'contact' blip but it would be interesting to show a more complex pattern. the https://github.com/PopicLab/cue shows very nice tapestry figures,. we can cross reference their source code if it helps  || AGENT-NEEDS-INPUT: NEEDS DECISION: reviewer wants a more complex contact pattern (cf. PopicLab/cue tapestry figures). Needs a richer SV locus/dataset.",
     "reviewedAt": "2026-07-19T21:21:27.803Z",
     "hash": "61a7ec28dbea16cdedab279609a9dcb164963df6"
+  },
+  "methylation/hg002_snrpn_combined": {
+    "name": "methylation/hg002_snrpn_combined",
+    "status": "bad",
+    "note": "you combined the two figures but it should instead be the bedmethyl track is just added as another track in the single screenshot",
+    "reviewedAt": "2026-07-19T23:05:45.376Z",
+    "hash": "6b528e98ed80ad3765a247e79cd8ce2255065c32"
   }
 }

@@ -38,7 +38,7 @@ jb2export \
   --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb \
   --bigwig https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
   --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
-  --loc 1:19,197,000-19,233,000 --width 1200 --out overview.png
+  --loc 1:19,190,000-19,240,000 --width 1200 --out overview.png
 ```
 
 ## Basic usage

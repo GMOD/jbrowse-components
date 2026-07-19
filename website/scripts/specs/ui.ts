@@ -260,7 +260,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   // wide band; after the sort, carrier samples cluster to the top so the band
   // splits cleanly. Rebuilt from a share link as a declarative sessionSpec. The
   // right-click lands at x~1130 (genomic ~46.55Mb), an inversion-only gap where no
-  // other SV overlaps, so the sort reliably targets the inversion. userByteSizeLimit
+  // other SV overlaps, so the sort reliably targets the inversion. forceLoad
   // lifts the 1MB tabix fetch gate so the 5Mb window auto-loads headless instead of
   // showing a force-load prompt. Remote 1000genomes data, so allow a long ready/settle.
   {
@@ -276,7 +276,7 @@ export const uiSpecs: ScreenshotSpec[] = [
             {
               trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
               type: 'LinearMultiSampleVariantDisplay',
-              userByteSizeLimit: 100_000_000,
+              forceLoad: true,
               // shorter multi-sample display (~400px)
               height: 400,
             },
@@ -860,21 +860,8 @@ export const uiSpecs: ScreenshotSpec[] = [
                 '[data-testid="htsTrackEntryMenu-Tracks,volvox_sv_test"]',
             },
           },
-          // arrows from the empty band below each panel point up at the two
-          // ringed menu icons (reviewer: add arrows pointing at the circles)
-          {
-            type: 'arrow',
-            from: { x: 340, y: 610 },
-            anchor: { selector: '[data-testid="track_menu_icon"]' },
-          },
-          {
-            type: 'arrow',
-            from: { x: 880, y: 600 },
-            anchor: {
-              selector:
-                '[data-testid="htsTrackEntryMenu-Tracks,volvox_sv_test"]',
-            },
-          },
+          // the two rings alone mark the menu icons; the arrows from the empty
+          // band below read as ambiguous, so they were dropped (reviewer)
         ],
       },
       {

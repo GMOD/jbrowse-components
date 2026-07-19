@@ -26,7 +26,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'K12',
-          loc: 'chr:1,000,000-1,010,000',
+          loc: 'chr:995,000-1,015,000',
           tracks: [
             { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
@@ -38,7 +38,9 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    readyText: '1,010,000',
+    // interior ruler tick (the window end 1,015,000 lands at the edge and isn't
+    // rendered as a tick label; ticks fall on 4kb multiples at this zoom)
+    readyText: '1,000,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 540,

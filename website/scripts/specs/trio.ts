@@ -155,6 +155,19 @@ export const trioSpecs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 12000,
+    viewportHeight: 320,
+    // the painting reads as abstract without saying what a row/color is
+    // (reviewer: "unclear what this means"): one red callout naming the axes.
+    annotations: [
+      {
+        type: 'text',
+        x: 20,
+        y: 250,
+        maxWidth: 720,
+        fontSize: 15,
+        text: 'Each row is one haplotype of the ASW trio (child, mother, father) painted by FLARE local ancestry across chr1: AFR (orange) vs EUR (blue). The two-way admixed haplotypes read as ancestry mosaics, and the child’s two haplotypes recombine the blocks it inherited from each parent.',
+      },
+    ],
   },
 
   // The hap-ibd painting stacked above the same trio VCF in the phased

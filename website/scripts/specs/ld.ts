@@ -100,7 +100,6 @@ export const ldSpecs: ScreenshotSpec[] = [
               start: 136_545_410,
               end: 136_634_000,
               assemblyName: 'hg19',
-              label: 'LCT / MCM6',
             },
           ],
           tracks: [
@@ -120,6 +119,16 @@ export const ldSpecs: ScreenshotSpec[] = [
     // gene(90) + ld(460) + 2 headers + ruler/overview
     viewportHeight: 700,
     settleMs: 14000,
+    annotations: [
+      {
+        type: 'text',
+        x: 320,
+        y: 250,
+        maxWidth: 420,
+        fontSize: 16,
+        text: 'The solid triangle of high r² over LCT/MCM6 is one long haplotype in strong linkage disequilibrium — the swept lactase-persistence block.',
+      },
+    ],
   },
   {
     mode: 'url',
@@ -131,14 +140,32 @@ export const ldSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: 'chr17:43,700,000-44,300,000',
-          tracks: [{ trackId: 'kgp_chr17_ld', type: 'LDDisplay' }],
+          tracks: [
+            {
+              trackId: 'hg19-ncbiRefSeqCurated',
+              type: 'LinearBasicDisplay',
+              height: 90,
+              showOnlyGenes: true,
+            },
+            { trackId: 'kgp_chr17_ld', type: 'LDDisplay' },
+          ],
         },
       ],
     })}&sessionName=Screenshot`,
     readyText: 'variants shown',
     readyTimeout: 180000,
-    // ld(460) + recombination zone + header + ruler/overview
-    viewportHeight: 680,
+    // gene(90) + ld(460) + recombination zone + 2 headers + ruler/overview
+    viewportHeight: 790,
     settleMs: 14000,
+    annotations: [
+      {
+        type: 'text',
+        x: 320,
+        y: 260,
+        maxWidth: 440,
+        fontSize: 16,
+        text: 'The solid triangle of high r² spans MAPT across the 17q21.31 inversion — the inverted segment is inherited as one non-recombining haplotype block.',
+      },
+    ],
   },
 ]

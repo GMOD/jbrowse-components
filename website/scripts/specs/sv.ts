@@ -251,7 +251,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // grouping — no manually-filtered duplicate session tracks). The heterozygous
   // deletion concentrates in a single haplotype, so it shows in one group and
   // not the other — a cleaner read than a colored+sorted single pileup. The HG002
-  // GIAB consensus SV VCF (the DEL call) sits on top. userByteSizeLimit lifts the
+  // GIAB consensus SV VCF (the DEL call) sits on top. forceLoad lifts the
   // force-load byte gate so the reads auto-load instead of sitting on "Loading";
   // readySelector waits for the pileup canvas to actually paint before capture.
   //
@@ -277,7 +277,7 @@ export const svSpecs: ScreenshotSpec[] = [
               trackId: 'hg002_nanopore_hp',
               type: 'LinearAlignmentsDisplay',
               height: 400,
-              userByteSizeLimit: 200_000_000,
+              forceLoad: true,
               groupBy: { type: 'tag', tag: 'HP' },
               colorBy: { type: 'tag', tag: 'HP' },
             },
@@ -590,7 +590,7 @@ export const svSpecs: ScreenshotSpec[] = [
   // black splines between reads that map partially to each side of the junction.
   // The PacBio BAM is the full 118 GB NCBI ftp-trace file (no rehosted slice
   // exists for this locus), so the ~26 MB BAI index downloads on every fresh-tab
-  // capture — hence the long readyTimeout. userByteSizeLimit lifts the fetch-size
+  // capture — hence the long readyTimeout. forceLoad lifts the fetch-size
   // gate so the reads auto-load headless instead of sitting on a force-load
   // prompt.
   {
@@ -623,7 +623,7 @@ export const svSpecs: ScreenshotSpec[] = [
                   featureHeight: 1,
                   featureSpacing: 0,
                   height: 250,
-                  userByteSizeLimit: 500_000_000,
+                  forceLoad: true,
                 },
               ],
             },
@@ -643,7 +643,7 @@ export const svSpecs: ScreenshotSpec[] = [
                   featureHeight: 1,
                   featureSpacing: 0,
                   height: 250,
-                  userByteSizeLimit: 500_000_000,
+                  forceLoad: true,
                 },
               ],
             },
@@ -1221,17 +1221,25 @@ export const svSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr12:23,000,000-27,500,000',
-          // highlight band over the KRAS locus so the eye lands on the oncogene
-          // within the ~4.5Mb gained arm even though the gene is tiny at this
-          // scale ("can't see KRAS gene ... interesting if highlighted")
-          highlight: ['chr12:25,205,246-25,250,936'],
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
               // normal (not compact) height so the KRAS gene row + label read
-              // where they land under the highlight band (taller track)
+              // where they land (taller track)
               type: 'LinearBasicDisplay',
               height: 150,
+              // feature-specific highlight: box the KRAS gene glyph itself rather
+              // than a fixed region band, so the eye lands on the oncogene within
+              // the ~4.5Mb gained arm even though it's tiny at this scale. The
+              // name rescues the box if the RefSeq gene span drifts by a base.
+              featureHighlights: [
+                {
+                  refName: 'chr12',
+                  start: 25205245,
+                  end: 25250936,
+                  name: 'KRAS',
+                },
+              ],
             },
             {
               trackId: 'hg008_log2ratio',

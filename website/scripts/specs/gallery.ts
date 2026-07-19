@@ -112,6 +112,8 @@ export const gallerySpecs: ScreenshotSpec[] = [
             {
               trackId: 'PAY22766-nanopore',
               type: 'LinearAlignmentsDisplay',
+              // taller than the 250 default so the deep fiber-seq pileup reads
+              height: 450,
               // fiber-seq is a 6mA (code 'a') assay — allow-list only 6mA so
               // the incidental 5mC/5hmC calls the caller also emits are never
               // drawn and the legend shows only 6mA
@@ -128,7 +130,7 @@ export const gallerySpecs: ScreenshotSpec[] = [
     }),
     readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 900,
+    viewportHeight: 1150,
   },
   {
     mode: 'url',
