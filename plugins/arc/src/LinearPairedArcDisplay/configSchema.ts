@@ -3,9 +3,9 @@ import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-vie
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// default arc stroke width in px, shared by the config-slot default and the
-// track-menu slider's reset/is-default check so they can't drift
-export const defaultArcLineWidth = 3
+// default arc stroke width in px; the promotable slot's `promotedBase` (the
+// track-menu slider reads/resets via isSlotCustomized, not this constant)
+const defaultArcLineWidth = 3
 
 /**
  * #config LinearPairedArcDisplay

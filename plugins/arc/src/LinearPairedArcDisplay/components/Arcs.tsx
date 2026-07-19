@@ -5,6 +5,7 @@ import {
   getSession,
   getStrokeProps,
 } from '@jbrowse/core/util'
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { makeSummary } from './util.ts'
@@ -33,6 +34,7 @@ const Arc = observer(function Arc({
   lineWidth: number
   exportSVG?: boolean
 }) {
+  const theme = useTheme()
   const [mouseOvered, setMouseOvered] = useState(false)
   const { feature, alt, color, k1, k2 } = style
   const ra1 = assembly.getCanonicalRefName(k1.refName) || k1.refName
@@ -59,9 +61,10 @@ const Arc = observer(function Arc({
   }
 
   const destY = Math.min(model.height, absrad)
-  const col = mouseOvered ? 'black' : color
+  // hover emphasis: contrast against the track background in either theme
+  const col = mouseOvered ? theme.palette.text.primary : color
   const events = {
-    onMouseOut: () => {
+    onMouseLeave: () => {
       setMouseOvered(false)
     },
     onMouseOver: () => {
