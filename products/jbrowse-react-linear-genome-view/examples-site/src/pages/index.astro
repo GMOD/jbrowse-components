@@ -81,6 +81,32 @@ const pmCommands = {
       For the full embedding guide, see the{' '}
       <a href="https://jbrowse.org/jb2/docs/embedded_components/">embedded components docs</a>.
     </p>
+
+    <h2>Framework integration (SSR)</h2>
+    <p>
+      The view uses browser-only APIs (canvas, WebGL, <code>window</code>), so it
+      must render on the client. In a purely client-rendered app (Vite, Create
+      React App) it just works. In a server-rendered framework (Next.js, Remix,
+      Gatsby) render it client-side only:
+    </p>
+    <ul>
+      <li>
+        <b>Next.js</b>: load it with{' '}
+        <a href="https://nextjs.org/docs/app/api-reference/functions/dynamic"><code>next/dynamic</code></a>{' '}
+        and <code>{'{ ssr: false }'}</code>, or put your view in a{' '}
+        <code>'use client'</code> component that only renders after mount.
+      </li>
+      <li>
+        <b>Other SSR frameworks</b>: gate rendering on a mounted flag (render{' '}
+        <code>null</code> on the server, the view once{' '}
+        <code>useEffect</code> has run), or use the framework's client-only
+        wrapper.
+      </li>
+    </ul>
+    <p>
+      This site does the same thing — every demo above is an Astro island marked{' '}
+      <code>client:only="react"</code>.
+    </p>
   </div>
 
   <h2>Live demo</h2>

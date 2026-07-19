@@ -19,6 +19,13 @@ const SelectedFeature = observer(function SelectedFeature({ viewState }) {
 `session.selection` from a component
 wrapped in `observer` — the same [reactive pattern](../multiple-views/#observe-visible)
 used to watch the visible region — rather than polling; MobX handles the
-subscription. To style the click itself (feature detail formatting, custom
-widgets), see
-[customizing feature details](https://jbrowse.org/jb2/docs/config_guides/customizing_feature_details/).
+subscription.
+
+To change what the details panel shows when a feature is clicked (add or
+reformat rows with jexl), pass a `formatDetails` block to `createViewState`'s
+`configuration` option — the same global-config object used for the
+[custom theme](../theming/#with-custom-theme). Its slots (`formatDetails`,
+`formatAbout`, `hierarchical`, `preferences`, `theme`, `rpc`) are listed in the
+[root configuration reference](https://jbrowse.org/jb2/docs/config/jbrowseconfiguration/);
+[customizing feature details](https://jbrowse.org/jb2/docs/config_guides/customizing_feature_details/)
+walks through the callbacks.
