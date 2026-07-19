@@ -2,17 +2,21 @@ import { SingleSlider } from '@jbrowse/core/ui'
 import {
   MinLengthSlider,
   OpacitySlider,
-  SettingCheckbox,
   SettingRow,
+  SettingToggleGroup,
   SettingsPopover,
 } from '@jbrowse/synteny-core'
-import { MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 
 const FADE_MODES = [
   { value: 'auto', label: 'Auto' },
+  { value: 'on', label: 'On' },
+  { value: 'off', label: 'Off' },
+] as const
+
+const ON_OFF = [
   { value: 'on', label: 'On' },
   { value: 'off', label: 'Off' },
 ] as const
@@ -31,7 +35,10 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
   } = model
   return (
     <SettingsPopover title="Synteny display settings">
-      <SettingRow label="Opacity:">
+      <SettingRow
+        label="Opacity:"
+        help="Overall opacity of all synteny ribbons. Lower values let dense overlapping alignments show through each other."
+      >
         <OpacitySlider
           value={alpha}
           onChange={v => {
@@ -67,35 +74,29 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
           valueLabelFormat={(val: number) => `${val}px`}
         />
       </SettingRow>
-      <SettingCheckbox
-        label="Fade by identity"
-        help="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
-        checked={opacityByIdentity}
-        onChange={() => {
-          model.setOpacityByIdentity(!opacityByIdentity)
-        }}
-      />
       <SettingRow
-        label="Fade thin:"
+        label="Identity fade:"
+        help="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
+      >
+        <SettingToggleGroup
+          value={opacityByIdentity ? 'on' : 'off'}
+          options={ON_OFF}
+          onChange={v => {
+            model.setOpacityByIdentity(v === 'on')
+          }}
+        />
+      </SettingRow>
+      <SettingRow
+        label="Thin fade:"
         help="Fades sub-pixel-thin ribbons by their on-screen width, so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. Auto enables it only when the view is dense enough to tangle; a genuinely sparse comparison (e.g. distant species, every alignment sub-pixel) stays unfaded so the fade doesn't wash it out. On/Off pin it."
       >
-        <TextField
-          select
-          size="small"
+        <SettingToggleGroup
           value={fadeThinAlignmentsMode}
-          onChange={event => {
-            const mode = FADE_MODES.find(m => m.value === event.target.value)
-            if (mode) {
-              model.setFadeThinAlignmentsMode(mode.value)
-            }
+          options={FADE_MODES}
+          onChange={v => {
+            model.setFadeThinAlignmentsMode(v)
           }}
-        >
-          {FADE_MODES.map(m => (
-            <MenuItem key={m.value} value={m.value}>
-              {m.label}
-            </MenuItem>
-          ))}
-        </TextField>
+        />
       </SettingRow>
     </SettingsPopover>
   )

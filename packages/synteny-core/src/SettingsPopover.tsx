@@ -31,7 +31,17 @@ export default function SettingsPopover({
         }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
       >
-        {children}
+        <div
+          style={{
+            padding: 16,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+            width: 280,
+          }}
+        >
+          {children}
+        </div>
       </Popover>
     </>
   )

@@ -1,8 +1,10 @@
-import HelpIcon from '@mui/icons-material/Help'
-import { Checkbox, FormControlLabel, Tooltip, Typography } from '@mui/material'
+import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 
-// Checkbox row used inside synteny/dotplot settings popovers. Optional help
-// tooltip renders an inline help icon next to the label.
+import HelpTooltip from './HelpTooltip.tsx'
+
+// Checkbox row of a synteny/dotplot settings popover. Uses the same 3-column
+// grid as SettingRow: the checkbox+label span the label/control columns and the
+// help icon lands in the shared trailing column, aligned with other rows.
 export default function SettingCheckbox({
   label,
   help,
@@ -15,26 +17,29 @@ export default function SettingCheckbox({
   onChange: () => void
 }) {
   return (
-    <FormControlLabel
-      control={
-        <Checkbox
-          checked={checked}
-          onChange={() => {
-            onChange()
-          }}
-          size="small"
-        />
-      }
-      label={
-        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-          <Typography variant="body2">{label}</Typography>
-          {help ? (
-            <Tooltip title={help} arrow>
-              <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
-            </Tooltip>
-          ) : null}
-        </span>
-      }
-    />
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '96px 1fr auto',
+        alignItems: 'center',
+        columnGap: 8,
+        minHeight: 28,
+      }}
+    >
+      <FormControlLabel
+        style={{ gridColumn: '1 / 3', margin: 0 }}
+        control={
+          <Checkbox
+            checked={checked}
+            onChange={() => {
+              onChange()
+            }}
+            size="small"
+          />
+        }
+        label={<Typography variant="body2">{label}</Typography>}
+      />
+      <HelpTooltip help={help} />
+    </div>
   )
 }

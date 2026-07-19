@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
 
-import HelpIcon from '@mui/icons-material/Help'
-import { Tooltip, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 
-// Label-on-left row used inside synteny/dotplot settings popovers. Optional
-// help tooltip renders an inline help icon next to the label.
+import HelpTooltip from './HelpTooltip.tsx'
+
+// One row of a synteny/dotplot settings popover. Shares a fixed 3-column grid
+// (label | control | help) with every other row so controls all start at the
+// same x and help icons line up in a consistent trailing column.
 export default function SettingRow({
   label,
   help,
@@ -15,19 +17,20 @@ export default function SettingRow({
   children: ReactNode
 }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <Typography
-        variant="body2"
-        style={{ whiteSpace: 'nowrap', minWidth: 80 }}
-      >
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '96px 1fr auto',
+        alignItems: 'center',
+        columnGap: 8,
+        minHeight: 28,
+      }}
+    >
+      <Typography variant="body2" style={{ whiteSpace: 'nowrap' }}>
         {label}
-        {help ? (
-          <Tooltip title={help} arrow>
-            <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
-          </Tooltip>
-        ) : null}
       </Typography>
-      {children}
+      <div style={{ display: 'flex', minWidth: 0 }}>{children}</div>
+      <HelpTooltip help={help} />
     </div>
   )
 }
