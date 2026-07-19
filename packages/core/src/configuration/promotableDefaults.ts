@@ -332,10 +332,10 @@ export function isPromotableDefault(
  * Set (`on`) or clear (`!on`) this value combination as the session default for
  * the display type. Non-destructive: tracks that follow the default inherit it
  * via `getConfResolved`; tracks the user has customized keep their own value.
- * Module-internal (exercised by promotableDefaults.test.ts); not part of the
- * public barrel — plugins promote a value through the control builders below.
+ * Module-private — reached only through `applyDefaultToggle` below (which the
+ * control builders drive); plugins promote a value through those builders.
  */
-export function setPromotableDefault(
+function setPromotableDefault(
   self: PromotableDisplay,
   entries: PromotableEntry[],
   on: boolean,
