@@ -160,7 +160,7 @@ against the config's location. If you only want to drop the `type`/`trackId`
 boilerplate but need extra adapter fields (a `chromSizesLocation` for a 2bit, a
 non-sibling `.fai`), write the adapter out and let its own `uri` shorthand fill
 in the rest: `"sequence": { "adapter": { "uri": "volvox.2bit" } }`. See the
-[`BaseAssembly` config](/docs/config/BaseAssembly) for every form.
+[`BaseAssembly` config](/docs/config/baseassembly) for every form.
 
 ### `displayDefaults` shorthand
 
@@ -527,10 +527,14 @@ each accepting a `jexl:` expression:
 ]
 ```
 
+See the [`LinearArcDisplay` config](/docs/config/lineararcdisplay) for every arc
+slot.
+
 ### Showing only some features (filtering) {#showing-only-some-features-filtering}
 
 `jexlFilters` shows only features that pass every expression listed. One gotcha:
-unlike `color`, filter expressions **leave off the `jexl:` prefix**.
+unlike `color`, filter expressions **leave off the `jexl:` prefix** (they use a
+deferred-evaluation convention).
 
 ```json
 "displayDefaults": {
@@ -648,6 +652,10 @@ their `HP` tag:
 "displayDefaults": { "scaleType": "log", "minScore": 0, "maxScore": 100 }
 ```
 
+See the [`LinearWiggleDisplay` config](/docs/config/linearwiggledisplay) for
+`scaleType`, `minScore`/`maxScore`, and the other scale slots, and the
+[quantitative track guide](/docs/config_guides/quantitative_track) for concepts.
+
 ### Multiple signals on one track, each its own color
 
 ```json
@@ -696,9 +704,9 @@ and `multixyplot` (all signals overlaid in one plot).
 
 ### Filter which variants are shown
 
-Apply `jexl` filters so only matching features render. Note `jexlFilters`
-entries omit the `jexl:` prefix (they use a deferred-evaluation convention),
-while `color` keeps it:
+Apply `jexl` filters so only matching features render (as in
+[filtering](#showing-only-some-features-filtering), `jexlFilters` entries omit
+the `jexl:` prefix while `color` keeps it):
 
 ```json
 "displayDefaults": {

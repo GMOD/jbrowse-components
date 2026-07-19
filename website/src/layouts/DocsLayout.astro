@@ -77,6 +77,31 @@ const mdHref = isRealDoc
     }
   })
 
+  // Copy a recipe code block (session spec JSON, Desktop link, notebook
+  // snippet). The text comes from the block's own <code>, decoded from the
+  // figure's link, so it can't drift from the image.
+  document.addEventListener('click', async event => {
+    const target = event.target
+    if (target instanceof HTMLElement) {
+      const button = target.closest('.spec-copy')
+      if (button instanceof HTMLElement) {
+        const code = button.parentElement?.querySelector('code')
+        let ok = true
+        try {
+          await navigator.clipboard.writeText(code?.textContent ?? '')
+        } catch {
+          ok = false
+        }
+        button.textContent = ok ? 'Copied!' : 'Copy failed'
+        button.classList.toggle('copied', ok)
+        setTimeout(() => {
+          button.textContent = 'Copy'
+          button.classList.remove('copied')
+        }, 1500)
+      }
+    }
+  })
+
   // Light-dismiss: close when a click both starts and ends on the backdrop
   // (outside the dialog's own box); the ::backdrop reports the dialog element
   // itself as the target. Requiring the press to *start* on the backdrop stops
@@ -457,6 +482,31 @@ const mdHref = isRealDoc
     background: var(--color-code-bg);
     color: var(--color-code-text);
     font-size: 0.8rem;
+  }
+  .docs-content :global(.spec-copywrap) {
+    position: relative;
+  }
+  /* leave room so the button never sits over the first line of code */
+  .docs-content :global(.spec-copywrap pre) {
+    padding-top: 1.9rem;
+  }
+  .docs-content :global(.spec-copy) {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .docs-content :global(.spec-copy:hover),
+  .docs-content :global(.spec-copy.copied) {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
   }
   .docs-content :global(.spec-config) {
     margin-top: 0.6rem;

@@ -102,7 +102,12 @@ the link to paste into Desktop's **Open JBrowse Web link...**, the session-spec
 JSON, and (for `LinearGenomeView` figures only) a jbrowse-anywidget snippet. All
 of it comes from the link that produced the image, so it can't drift from the
 figure. `panels()` in `spec-recipe/html.ts` is the list; adding one needs a
-matching `nth-of-type` rule in `DocsLayout.astro` or its tab renders blank.
+matching `nth-of-type` rule in `DocsLayout.astro` or its tab renders blank. The
+session-spec JSON, Desktop link, and notebook snippet each render via
+`copyableBlock()` with a **Copy** button; it copies the block's own `<code>`
+text (decoded from the same link), so what a reader copies can't drift from the
+image. The button's click handler is delegated in `DocsLayout.astro` (the dialog
+is emitted as an HTML string, not hydrated).
 Track names and file types are resolved by reading the referenced `test_data/`
 config from the repo; figures on a hosted config (`jbrowse.org/demos/…`) fall
 back to generic wording rather than fetching during the build.

@@ -22,6 +22,19 @@ function renderTitle(title: string): string {
   return escapeHtml(title).replaceAll(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
 }
 
+// A code block with a Copy button. The button copies the block's own
+// `<code>` text — decoded straight from the figure's link, so what a reader
+// copies is exactly what produced the image above and cannot drift from it.
+// The copy handler is delegated in DocsLayout (the dialog is not hydrated).
+function copyableBlock(text: string, className: string): string {
+  return [
+    '<div class="spec-copywrap">',
+    '<button type="button" class="spec-copy">Copy</button>',
+    `<pre class="${className}"><code>${escapeHtml(text)}</code></pre>`,
+    '</div>',
+  ].join('')
+}
+
 function renderStep(step: RecipeStep): string {
   return [
     '<li>',
@@ -59,7 +72,7 @@ function panels(recipe: Recipe): Panel[] {
       body: [
         `<p class="spec-desktop-open"><a href="${escapeHtml(recipe.desktopUrl)}">Open this view in JBrowse Desktop ↗</a></p>`,
         `<p class="spec-intro">Opens an installed JBrowse Desktop straight at this view (your browser will ask permission the first time), in <strong>${DESKTOP_LINK_MIN_VERSION} and newer</strong>. If nothing happens — Desktop isn't installed, the link is blocked, or you run the Linux AppImage, which doesn't register links unless you've integrated it with your desktop — copy the link below and paste it into Desktop's <strong>Open .jbrowse or config.json or link → Open JBrowse Web link...</strong>, on the start screen beside the recent sessions (or <strong>File → Session → Open JBrowse Web link...</strong> once a session is open). Either always works.</p>`,
-        `<pre class="spec-json"><code>${escapeHtml(recipe.desktopWebUrl)}</code></pre>`,
+        copyableBlock(recipe.desktopWebUrl, 'spec-json'),
         '<p class="spec-config">Desktop downloads this config and saves the result as a session on your machine, so you can reopen it later — swap in your own files afterwards, or follow the steps in the first tab to build it from scratch.</p>',
       ].join(''),
     },
@@ -67,7 +80,7 @@ function panels(recipe: Recipe): Panel[] {
       label: 'Session spec',
       body: [
         '<p class="spec-intro">The link above encodes this <a href="/docs/urlparams/#session-spec">session spec</a>. Paste it after <code>&amp;session=spec-</code> on any JBrowse Web instance, or adapt it with your own <code>trackId</code>s.</p>',
-        `<pre class="spec-json"><code>${escapeHtml(recipe.specJson)}</code></pre>`,
+        copyableBlock(recipe.specJson, 'spec-json'),
         `<p class="spec-config">Loaded against config: <code>${escapeHtml(recipe.config)}</code></p>`,
       ].join(''),
     },
@@ -77,7 +90,7 @@ function panels(recipe: Recipe): Panel[] {
             label: 'In a notebook',
             body: [
               '<p class="spec-intro">The same view in a notebook with <a href="/docs/jbrowse_jupyter/">jbrowse-anywidget</a>. Point the adapter at your own file.</p>',
-              `<pre class="spec-python"><code>${escapeHtml(recipe.python)}</code></pre>`,
+              copyableBlock(recipe.python, 'spec-python'),
             ].join(''),
           },
         ]
