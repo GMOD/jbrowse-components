@@ -265,7 +265,7 @@ export const pages: ExamplePage[] = [
     slug: 'multiple-views',
     title: 'Multiple views',
     description:
-      'React to the regions and features currently visible from your own companion panels, and render several independent views on one page.',
+      'React to the regions, features, and selection in the view from your own companion panels, and render several independent views on one page.',
     group: 'Sessions & state',
     sections: [
       {
@@ -273,6 +273,12 @@ export const pages: ExamplePage[] = [
         title: 'Observe the visible view',
         description:
           'React to the regions and features currently visible in the view from your own companion panels.',
+      },
+      {
+        slug: 'observe-selection',
+        title: 'Observe the selected feature',
+        description:
+          'Mirror the clicked feature (session.selection) into a companion panel with an observer, no click handler required.',
       },
       {
         slug: 'with-two-linear-genome-views',

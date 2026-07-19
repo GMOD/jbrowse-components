@@ -1,4 +1,6 @@
 ---
+import ObserveSelection from "../examples/ObserveSelection.tsx"
+import ObserveSelectionCode from "../examples/ObserveSelection.tsx?raw"
 import ObserveVisible from "../examples/ObserveVisible.tsx"
 import ObserveVisibleCode from "../examples/ObserveVisible.tsx?raw"
 import WithTwoLinearGenomeViews from "../examples/WithTwoLinearGenomeViews.tsx"
@@ -9,14 +11,18 @@ import Section from "../layouts/ExampleSection.astro"
 
 const page = pages.find(p => p.slug === "multiple-views")!
 const sec0 = section(page, "observe-visible")
-const sec1 = section(page, "with-two-linear-genome-views")
+const sec1 = section(page, "observe-selection")
+const sec2 = section(page, "with-two-linear-genome-views")
 ---
 
 <Layout page={page}>
   <Section {...sec0} code={ObserveVisibleCode}>
     <ObserveVisible client:only="react" />
   </Section>
-  <Section {...sec1} code={WithTwoLinearGenomeViewsCode}>
+  <Section {...sec1} code={ObserveSelectionCode}>
+    <ObserveSelection client:only="react" />
+  </Section>
+  <Section {...sec2} code={WithTwoLinearGenomeViewsCode}>
     <WithTwoLinearGenomeViews client:only="react" />
   </Section>
 </Layout>
