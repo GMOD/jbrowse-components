@@ -47,9 +47,6 @@ main:    model.rpcDataMap              (MST node, observable)
          SVG export reuses the same Canvas2D draw fn — never the shader.
 ```
 
-That inversion — the worker ships coordinates, not rendered images — is the whole
-point of the GPU pipeline.
-
 ## Vocabulary
 
 Terms used throughout this doc:
@@ -166,111 +163,20 @@ The `error`/`fetchCanceled` reads in `ClearBlockingStateOnViewportChange` are
 `untracked` for correctness — tracking either would let `set…` re-fire the
 autorun and wipe the flag before any viewport change.
 
-### The byte gate, and why canvas folds it into the fetch
-
-**Canvas opts out of the pre-flight** (`getByteEstimateConfig` returns `null`).
-A second estimate RPC racing the per-region feature fetch is exactly the
-two-call coordination we avoid. Instead canvas folds the byte check into the
-feature-fetch RPC: `executeRenderFeatureData` calls the adapter's
-`getRegionByteSize` (an index-only estimate, no feature download — default
-`undefined` on `BaseFeatureDataAdapter`, overridden by tabix adapters) and
-short-circuits an over-budget region *before* `getFeaturesArray`, returning
-`{ regionTooLarge, bytes }`.
-
-This makes the byte gate symmetric with the density gate, which already
-short-circuits in-RPC returning `{ regionTooLarge, featureCount }`. A
-whole-genome fan-out then costs one cheap index read per chromosome instead of
-downloading every chromosome's features.
-
-`applyFetchResults` records the per-region `bytes` **max**, not the sum, into
-`featureDensityStats`. Each region is gated against the same per-region budget,
-so a multi-region view where every region individually fits is never blanked just
-because the cross-region total exceeds one region's budget. The budget comes from
-the display's `byteSizeLimit()` (`userByteSizeLimit ?? fetchSizeLimit`, only in
-the force-load zone).
-
-### The derived region-too-large gate
+### The region-too-large gate (summary)
 
 `regionTooLarge` raises the "region too large" banner and holds off the fetch.
 It's a **derived** getter on `RegionTooLargeMixin` — a pure function of the
-cached byte estimate scaled to the current viewport — so it self-releases on
-zoom-in without an imperative clear and doesn't flicker on pan. The old
-`setRegionTooLarge` volatile-flag path was removed once every byte-gated display
-went derived; the mixin now owns the whole gate, and displays opt in through
-hooks rather than shadowing the getter per display.
+cached byte estimate rescaled to the current viewport — so it self-releases on
+zoom-in with no imperative clear and doesn't flicker on pan. Displays opt in by
+overriding hooks (`derivedRegionTooLargeEnabled`, `configuredFetchSizeLimit`,
+`densityTooLargeForDerivedGate`) rather than shadowing the getter. Canvas folds
+its byte check into the feature-fetch RPC instead of a separate pre-flight
+estimate; the shared verdict/threshold/banner-text primitives live in
+`shared/featureDensityUtils.ts` so the two paths can't drift.
 
-A byte-gated display opts in by overriding hooks on `RegionTooLargeMixin`:
-
-- `derivedRegionTooLargeEnabled` → `true`. Left false (wiggle, Manhattan,
-  sequence, synteny, HiC), `regionTooLarge` is a literal `false` and the LGV-only
-  `tooLargeStatus` getters below are never evaluated — so a non-byte or non-LGV
-  consumer of the mixin never reads `view.visibleBp`.
-- `configuredFetchSizeLimit` → `getConf(self, 'fetchSizeLimit')` (the mixin owns
-  no `configuration`).
-- `densityTooLargeForDerivedGate` → a second gating axis, if any. Canvas folds
-  its feature-density gate in here; byte-only displays (alignments, maf, LD, arc,
-  multi-sample-variant) leave it false.
-
-How the verdict is built (all in `RegionTooLargeMixin`):
-
-- `setFeatureDensityStats(stats)` commits the estimate AND records the span it was
-  measured at (`byteEstimateVisibleBp = view.visibleBp`). The estimate arrives
-  from the `fetchRegions` pre-flight (maf/alignments/multi-sample-variant, via
-  `getByteEstimateConfig` → `checkByteEstimate`) or, for canvas, from
-  `applyFetchResults` folding the byte check into the feature RPC (per-region
-  `bytes` **max**, not sum, so a multi-region view where each region fits isn't
-  blanked by the cross-region total).
-- `estimatedVisibleBytes` rescales the captured estimate to the current span
-  (`bytes × view.visibleBp / byteEstimateVisibleBp`), so the byte gate is a pure
-  function of the view and self-releases on zoom-in. Gate on this, never raw
-  `bytes` — a raw read never shrinks on zoom-in, so the banner would never clear.
-  Guarded on `view.initialized`: a bare getter must never throw, and `visibleBp`
-  reads `view.width`, which throws pre-init.
-- `tooLargeStatus` feeds the scaled estimate + `densityTooLargeForDerivedGate` to
-  the shared `evaluateRegionTooLarge` verdict; `regionTooLarge` /
-  `regionTooLargeReason` read it.
-- `fetchRegions` short-circuits on `self.regionTooLarge` immediately after
-  `setFeatureDensityStats` — the capture span *is* the current viewport, so the
-  derived verdict already reflects the just-captured estimate. No imperative flag,
-  and `FetchVisibleRegions` re-fires (it reads `regionTooLarge`) the moment a
-  zoom-in flips it false, opening the gate.
-
-The estimate survives `clearAllRpcData()` (it isn't in `clearDisplaySpecificData`),
-so a viewport-change clear doesn't flicker the banner — `ClearBlockingStateOnViewportChange`
-no longer touches `regionTooLarge` at all (self-release replaces it). Only
-chromosome navigation drops the estimate, via each display's
-`onDisplayedRegionsChange(self, () => self.setFeatureDensityStats(undefined))` —
-`displayedRegionIndex` is reused across chromosomes, so a stale estimate would
-gate the new region against the wrong stats. (Canvas also clears its
-`densityStatsPerRegion` there; `laidOutDataMap` returns empty while
-`regionTooLarge`, so the GPU upload pushes nothing — no stale-feature flash.)
-
-`regionTooLarge` becoming true fires the overridable `onRegionTooLarge()` hook
-(via the `ClearHoverOnRegionTooLarge` autorun); alignments overrides it to clear
-its hover, since the banner replaces the pileup.
-`regionCannotBeRenderedText()` reads through `self.regionTooLarge`, so the banner
-UI and SVG-export text stay in agreement.
-
-### Shared decision primitives
-
-The derived gate and canvas's in-RPC byte short-circuit diverge only in *how*
-they measure bytes/density. The verdict, threshold, and banner text are unified
-in `shared/featureDensityUtils.ts` so they can't drift:
-
-- `resolveByteLimit({ userByteSizeLimit, adapterFetchSizeLimit, configFetchSizeLimit })`
-  — the one byte-budget resolution. A non-positive adapter limit means "no
-  opinion" and is skipped (guards both `0` and a negative sentinel).
-- `bytesTooLargeReason(bytes)` / `TOO_MANY_FEATURES_REASON` — the one source for
-  the two banner strings.
-- `evaluateRegionTooLarge({ visibleBp, bytes, byteLimit, densityTooLarge, alwaysRender })`
-  — the canonical verdict + reason. An `alwaysRender` adapter never gates
-  (checked first); below `AUTO_FORCE_LOAD_BP` nothing gates; else bytes-over-limit
-  takes precedence over density. `densityTooLarge` is **opt-in**, so byte-only
-  displays (alignments, LD) pass only bytes and never gate on density.
-  `alwaysRender` is the self-summarizing-adapter escape hatch: adapters that cap
-  returned data at screen resolution (BigWig, HiC, BigMaf, MultiWiggle) report
-  `{ alwaysRender: true }` from `getMultiRegionFeatureDensityStats`, so no region is ever too
-  large no matter how wide the view.
+Full detail — the byte gate, the opt-in hooks, how the verdict is built, and the
+shared decision primitives: [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md).
 
 Variants are monolithic: `MultiSampleVariantGetCellData` returns one batched
 payload covering all visible regions, so variants' `fetchNeeded` expands `needed`
@@ -750,13 +656,12 @@ O(N²) total GPU uploads when N regions arrive sequentially.
 
 **The fix lives in `@jbrowse/render-core/installPerRegionLifecycle`** and is used
 by wiggle, multi-wiggle, manhattan, MAF, sequence, and canvas's
-`LinearMultiRowFeatureDisplay` — **not** the canvas plugin's other display,
-`LinearBasicDisplay`, whose whole-map Y-layout keeps it on the computed-map form
-described below. ("canvas" in this doc names the plugin; its two displays sit on
-opposite upload strategies, so they're always spelled out where they diverge.)
-(The multi-variant displays are per-region
-streamed too but hand-roll their upload loop.) Each plugin's
-`startRenderingBackend` collapses to a single call:
+`LinearMultiRowFeatureDisplay`. It does **not** apply to the canvas plugin's other
+display, `LinearBasicDisplay`, whose whole-map Y-layout keeps it on the
+computed-map form described below. (The canvas plugin's two displays sit on
+opposite upload strategies, so they're always spelled out where they diverge. The
+multi-variant displays are per-region streamed too, but hand-roll their upload
+loop.) Each plugin's `startRenderingBackend` collapses to a single call:
 
 ```ts
 startRenderingBackend(backend: XxxRenderingBackend) {
@@ -789,43 +694,24 @@ passes it to the render callback — wiggle's renderer reads from this map becau
 its renderer is stateless; other callers ignore the arg and read `rpcDataMap`
 directly. Cleanup is automatic via `addDisposer(self, …)`.
 
-**Why the helper doesn't apply to `LinearBasicDisplay` / alignments:** Wiggle
-uploads each chromosome independently. `LinearBasicDisplay` and alignments lay out
-features into Y-rows across all loaded regions together (so a gene spanning two
-adjacent regions ends
-up on the same row in both). Any new arrival could in principle change the layout
-of everything already loaded, so those paths route through a whole-map MobX
-computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates whenever any
-`rpcDataMap` entry changes. Per-key autoruns can't help: reading
-`laidOutDataMap.get(key)` in a per-key autorun still tracks the whole-map computed
-as a dependency, so all per-key autoruns re-fire on every arrival. (Cross-region
-coupling is load-bearing: collapsed-intron views split one chromosome into many
-small displayed regions, and a long gene spanning those chunks must hold the same
-Y row in each. That's also why layout runs on the main thread — row assignment
-needs the union of all visible regions' features, which only the main thread
-sees.)
+**Why the helper doesn't apply to `LinearBasicDisplay` / alignments:** those lay
+out features into Y-rows across all loaded regions together (a gene spanning two
+adjacent regions lands on the same row in both), so any new arrival can in
+principle change the layout of everything already loaded. They route through a
+whole-map MobX computed (`laidOutDataMap` / `laidOutPileupMap`) that invalidates
+on any `rpcDataMap` change; per-key autoruns can't help, because reading
+`laidOutDataMap.get(key)` still tracks the whole-map computed. This cross-region
+coupling is load-bearing (collapsed-intron views split one chromosome into many
+displayed regions, and a long gene must hold the same Y row in each) and is why
+layout runs on the main thread — row assignment needs the union of all visible
+regions' features.
 
-- **`LinearBasicDisplay`** is commonly a whole-genome gene track with N=24
-  chromosomes (many more in collapsed-intron views), so the naive form is O(N²).
-  This is fixed:
-  `createIncrementalLayout` (`plugins/canvas/src/LinearBasicDisplay/layout.ts`)
-  memoizes the pure `computeLaidOutData` **per ref-group** (`assembly:refName`).
-  Layout is independent across chromosomes, so when one chromosome's data arrives
-  only its group relays out; unchanged groups return their previous output objects
-  *by reference*. The upload autorun compares each region's reference against a
-  per-region `uploaded` map and re-uploads only the changed ones (still pruning
-  against the full active set, resetting on backend swap so context-loss recovery
-  re-uploads everything). Net: O(N) layout + GPU uploads as N chromosomes stream
-  in. The memo is a per-instance volatile; mutating its internal cache is invisible
-  to MobX, so reading it inside the `laidOutDataMap` computed stays pure. The
-  stability unit is the ref-group, not the region, because collapsed-intron views
-  split one chromosome into many displayed regions.
-- **Alignments/synteny** keep the whole-map form. They are never shown at
-  whole-genome scale (data density forces gene-level zoom, or synteny is
-  pairwise), so N is typically 4–8 buffered regions. The same per-group memo would
-  apply if the perceived cost grew; the extra wrinkle there is `laidOutPileupMap`'s
-  cross-region chain-mode coupling (connecting lines / Flatbush), which would need
-  to participate in the group-signature.
+`LinearBasicDisplay` recovers O(N) anyway via `createIncrementalLayout`
+(`plugins/canvas/src/LinearBasicDisplay/layout.ts`), which memoizes the pure
+layout **per ref-group** so unchanged chromosomes return prior output by reference
+and only changed regions re-upload. Alignments/synteny keep the plain whole-map
+form (N is only 4–8 buffered regions at their gene-level zoom). Full derivation of
+the incremental-layout memo and its chain-mode wrinkle: ADR-017, ADR-011.
 
 ### SVG export
 
@@ -1152,6 +1038,9 @@ up):
 - [reference/PROGRESS_REPORTING.md](reference/PROGRESS_REPORTING.md) — the
   worker→UI status channel, determinate bars, concurrent-fetch aggregation,
   cancel.
+- [reference/REGION_TOO_LARGE.md](reference/REGION_TOO_LARGE.md) — the byte/density
+  gate: the derived `regionTooLarge` getter, the opt-in hooks, and the shared
+  verdict primitives.
 - [reference/HISTORICAL.md](reference/HISTORICAL.md) — the old server-side block
   system, bugs that shaped the current design, corrections to old writeups.
 - [reference/GPU_GLOSSARY.md](reference/GPU_GLOSSARY.md) — plain-language GPU
