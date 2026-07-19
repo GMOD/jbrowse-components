@@ -24,6 +24,18 @@ function makeByteGatedRender(bytesPerBp: number) {
   }
 }
 
+// A display zoomed so visibleBp = 62.5 * 800 = 50,000 > AUTO_FORCE_LOAD_BP
+// (20,000), i.e. inside the force-load zone where the byte/density gate engages.
+// Pass a custom env to exercise adapter-config-dependent behavior.
+function createLargeDisplay(env = createTestEnvironment()) {
+  const { display, view, mockRpcCall } = env.createDisplay()
+  view.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
+  ])
+  view.zoomTo(62.5)
+  return { display, view, mockRpcCall }
+}
+
 beforeEach(() => {
   jest.useFakeTimers()
 })
@@ -447,17 +459,6 @@ describe('SettingsInvalidate autorun', () => {
 
 // AUTO_FORCE_LOAD_BP is 20,000 — use a 50,000 bp region to trigger getByteEstimateConfig
 describe('byte estimate pre-check', () => {
-  function createLargeDisplay() {
-    const env = createTestEnvironment()
-    const { display, view } = env.createDisplay()
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
-    ])
-    // Zoom to 62.5 bpPerPx so visibleBp = 62.5 * 800 = 50,000 > AUTO_FORCE_LOAD_BP (20,000)
-    view.zoomTo(62.5)
-    return { display, view, mockRpcCall: env.mockRpcCall }
-  }
-
   // bytesPerBp=200 over the 50kb region → ~10MB estimate, past the 5MB limit.
   it('sets regionTooLarge from the byte short-circuit (no features loaded)', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
@@ -587,26 +588,17 @@ describe('byte estimate pre-check', () => {
 // (alignments/LD/wiggle). Regression: canvas used to gate on the display config
 // alone, so a VcfTabixAdapter.fetchSizeLimit was a silent no-op in feature mode.
 describe('adapter fetchSizeLimit in the byte gate', () => {
-  function makeLargeView(env: ReturnType<typeof createTestEnvironment>) {
-    const { display, view } = env.createDisplay()
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
-    ])
-    // visibleBp = 62.5 * 800 = 50,000 > AUTO_FORCE_LOAD_BP (20,000)
-    view.zoomTo(62.5)
-    return { display, view }
-  }
-
   // 200 bytes/bp × 50kb ≈ 10MB: over the 5MB display config, under a 50MB adapter
   // limit → the adapter limit must let it through.
   it('lets a region through that fits the adapter limit but not the display config', async () => {
-    const env = createTestEnvironment({ adapterFetchSizeLimit: 50_000_000 })
-    const { display } = makeLargeView(env)
+    const { display, mockRpcCall } = createLargeDisplay(
+      createTestEnvironment({ adapterFetchSizeLimit: 50_000_000 }),
+    )
 
     expect(display.adapterFetchSizeLimit).toBe(50_000_000)
     expect(display.byteSizeLimit()).toBe(50_000_000)
 
-    env.mockRpcCall.mockImplementation(makeByteGatedRender(200))
+    mockRpcCall.mockImplementation(makeByteGatedRender(200))
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -614,21 +606,20 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
       expect(display.regionTooLarge).toBe(false)
       expect(display.loadedRegions.size).toBe(1)
     })
-    // the stored estimate carries the adapter limit, so the banner's
-    // resolveByteLimit agrees with the worker gate
+    // the stored estimate carries the adapter limit, so the banner and worker
+    // gate agree
     expect(display.featureDensityStats?.fetchSizeLimit).toBe(50_000_000)
   })
 
   // Control: no adapter limit → the display config (5MB) gates, so the same
   // ~10MB region is too large.
   it('falls back to the display config when the adapter declares no limit', async () => {
-    const env = createTestEnvironment()
-    const { display } = makeLargeView(env)
+    const { display, mockRpcCall } = createLargeDisplay()
 
     expect(display.adapterFetchSizeLimit).toBeUndefined()
     expect(display.byteSizeLimit()).toBe(display.configuredFetchSizeLimit)
 
-    env.mockRpcCall.mockImplementation(makeByteGatedRender(200))
+    mockRpcCall.mockImplementation(makeByteGatedRender(200))
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
 
@@ -647,16 +638,6 @@ describe('adapter fetchSizeLimit in the byte gate', () => {
 // (sum of visible region span clipped to viewport). AUTO_FORCE_LOAD_BP=20_000
 // → density gate engages above bpPerPx ≈ 50. maxFeatureScreenDensity default=1.
 describe('derived regionTooLarge', () => {
-  function createLargeDisplay() {
-    const env = createTestEnvironment()
-    const { display, view } = env.createDisplay()
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
-    ])
-    view.zoomTo(62.5)
-    return { display, view, mockRpcCall: env.mockRpcCall }
-  }
-
   it('stays true on small zoom while density still trips threshold', async () => {
     const { display, view, mockRpcCall } = createLargeDisplay()
 
@@ -958,16 +939,6 @@ describe('derived regionTooLarge', () => {
 //   - A leftover userFeatureDensityLimit keeps relaxing density gating after
 //     the user has switched to a byte-driven force-load.
 describe('setFeatureDensityStatsLimit gate toggling', () => {
-  function createLargeDisplay() {
-    const env = createTestEnvironment()
-    const { display, view } = env.createDisplay()
-    view.setDisplayedRegions([
-      { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
-    ])
-    view.zoomTo(62.5)
-    return { display, view, mockRpcCall: env.mockRpcCall }
-  }
-
   it('byte → density toggle clears stale userByteSizeLimit', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
