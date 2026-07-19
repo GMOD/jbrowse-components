@@ -46,7 +46,7 @@ config is loaded (see
 `<JBrowse>` also accepts:
 
 - `plugins` — inline or imported [plugin](../plugins/#embedded-plugin) classes
-- `makeWorkerInstance` — a [web worker](../with-web-worker/) factory for the
+- `makeWorkerInstance` — a [web worker](../customizing-the-app/#with-web-worker) factory for the
   WebWorker RPC
 - `onChange` — an [observer](../customizing-the-app/#with-on-change) called on
   every MST patch

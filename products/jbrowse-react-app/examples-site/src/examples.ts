@@ -24,7 +24,7 @@ export const pages: ExamplePage[] = [
     slug: 'customizing-the-app',
     title: 'Customizing the app',
     description:
-      'Small tweaks to the managed app: switch to the dark theme, observe state changes, or fit it into a sized container.',
+      'Small tweaks to the managed app: switch to the dark theme, observe state changes, fit it into a sized container, or offload data parsing to a web worker.',
     group: 'Getting started',
     sections: [
       {
@@ -44,6 +44,12 @@ export const pages: ExamplePage[] = [
         title: 'Fit the app to a container',
         description:
           'By default the app fills the viewport (100vh). Set the --jbrowse-app-height CSS variable to make it fit a sized container instead — e.g. below your own header bar.',
+      },
+      {
+        slug: 'with-web-worker',
+        title: 'Web worker RPC',
+        description:
+          'Pass makeWorkerInstance to createViewState to offload data parsing/rendering to a web worker.',
       },
     ],
   },
@@ -220,19 +226,6 @@ export const pages: ExamplePage[] = [
         slug: 'with-external-plugin',
         title: 'External plugin',
         description: 'Load a plugin at runtime from a URL with loadPlugins.',
-      },
-    ],
-  },
-  {
-    slug: 'with-web-worker',
-    title: 'Web worker RPC',
-    description: 'Offload data parsing/rendering to a web worker.',
-    group: 'Plugins',
-    sections: [
-      {
-        slug: 'with-web-worker',
-        title: 'Web worker RPC',
-        description: 'Offload data parsing/rendering to a web worker.',
       },
     ],
   },

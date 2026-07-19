@@ -6,8 +6,9 @@ CFT073, NCTC86) — the pangenome demo from the all-vs-all synteny tutorial.
 With N rows there are N−1 bands, so `tracks` is an array _per band_: `tracks[i]`
 holds the track(s) connecting `views[i]` and `views[i+1]`. Because a single
 **all-vs-all** PAF aligns every strain to every other, one
+[SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack/) using an
 [AllVsAllPAFAdapter](https://jbrowse.org/jb2/docs/config/allvsallpafadapter/)
-track (whose `assemblyNames` lists all four strains) backs all three bands:
+(whose `assemblyNames` lists all four strains) backs all three bands:
 
 ```js
 {
