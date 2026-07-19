@@ -29,13 +29,6 @@ import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 const DEFAULT_OVERDRAW_PX = 1000
 
-// 'auto' fade-thin turns the fade on once any synteny display's alignment
-// blocks over-cover the viewport by this many screen-widths (see
-// LinearSyntenyDisplay.alignmentCoverageFraction). Below it the view is sparse
-// enough that fading sub-pixel ribbons would erase them rather than declutter,
-// so auto leaves the fade off. Tunable.
-const FADE_AUTO_COVERAGE_THRESHOLD = 1
-
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 const DiagonalizationProgressDialog = lazy(
@@ -137,11 +130,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * Whether to fade a sub-pixel-thin ribbon's opacity by its on-screen
          * width (see WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered
          * whole-genome view doesn't read as a hard full-opacity hairball.
-         * 'auto' enables the fade only once the view is dense enough to tangle
-         * (see FADE_AUTO_COVERAGE_THRESHOLD); a genuinely sparse comparison
-         * (e.g. distant-species synteny, every real alignment sub-pixel at
-         * whole-genome zoom) keeps full alpha so the fade doesn't wash it out.
-         * 'on'/'off' pin it. Resolved by the `fadeThinAlignments` getter.
+         * 'auto' enables the fade once a display is dominated by sub-pixel
+         * ribbons (see LinearSyntenyDisplay.autoFadeThinAlignments); a genuinely
+         * sparse comparison (only a handful of ribbons) keeps full alpha so the
+         * fade doesn't wash it out. 'on'/'off' pin it. Resolved by the
+         * `fadeThinAlignments` getter.
          */
         fadeThinAlignmentsMode: types.stripDefault(
           types.enumeration('FadeThinMode', ['auto', 'on', 'off']),
@@ -283,21 +276,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Resolved fade-thin flag that renderParams reads. In 'auto' mode the
-       * fade turns on once any loaded synteny display's alignment blocks
-       * over-cover the viewport past FADE_AUTO_COVERAGE_THRESHOLD (a dense
-       * tangle that benefits from decluttering); a sparse view stays unfaded so
-       * its sub-pixel ribbons keep full alpha. 'on'/'off' pin it.
+       * Resolved fade-thin flag that renderParams reads. In 'auto' mode the fade
+       * turns on once any loaded synteny display is dominated by sub-pixel
+       * ribbons (`autoFadeThinAlignments` — a thin hairball that benefits from
+       * decluttering); a sparse view keeps its few ribbons at full alpha.
+       * 'on'/'off' pin it.
        */
       get fadeThinAlignments(): boolean {
         const { fadeThinAlignmentsMode } = self
         return fadeThinAlignmentsMode === 'auto'
           ? self.levels
               .flatMap(l => l.linearSyntenyDisplays)
-              .some(
-                d =>
-                  d.alignmentCoverageFraction > FADE_AUTO_COVERAGE_THRESHOLD,
-              )
+              .some(d => d.autoFadeThinAlignments)
           : fadeThinAlignmentsMode === 'on'
       },
       /**

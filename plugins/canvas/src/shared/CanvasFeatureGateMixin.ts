@@ -107,6 +107,17 @@ export default function CanvasFeatureGateMixin() {
       },
       /**
        * #getter
+       * Turns off the density (features-per-pixel) axis, leaving only the byte
+       * budget. Byte-only displays override this to `true`: e.g.
+       * `LinearMultiRowFeatureDisplay` paints features into fixed lanes, so a high
+       * total feature count is not a per-glyph render cost — only the download
+       * (byte) budget should gate it.
+       */
+      get densityGateDisabled() {
+        return false
+      },
+      /**
+       * #getter
        */
       get configuredFetchSizeLimit(): number {
         return getConf(host(self), 'fetchSizeLimit')
@@ -157,7 +168,8 @@ export default function CanvasFeatureGateMixin() {
        * AUTO_FORCE_LOAD_BP; otherwise the density force-load ceiling or the config.
        */
       get maxFeatureDensity(): number | undefined {
-        return self.configForceLoad ||
+        return self.densityGateDisabled ||
+          self.configForceLoad ||
           host(self).userByteSizeLimit !== undefined ||
           gateView(self).visibleBp < AUTO_FORCE_LOAD_BP
           ? undefined

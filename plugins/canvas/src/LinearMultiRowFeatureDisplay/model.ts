@@ -173,6 +173,17 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * Multi-row paints features into fixed lanes, so a high total feature count
+       * (e.g. a whole-chromosome haplotype painting with many segments per row)
+       * is not a per-glyph render cost — only the byte/download budget should
+       * gate it. Disable the density axis of CanvasFeatureGateMixin so the
+       * "too many features" banner never shows here.
+       */
+      get densityGateDisabled() {
+        return true
+      },
+      /**
+       * #getter
        */
       get showLegend(): boolean {
         return getConf(self, 'showLegend')

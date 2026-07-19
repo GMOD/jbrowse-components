@@ -63,12 +63,11 @@ export default function RegionTooLargeMixin() {
       /**
        * #volatile
        * user-confirmed byte limit after a force-load, disabling the gate.
-       * Volatile, not persisted: a force-load is a transient "show me this now"
-       * action and must not leak a raised/disabled gate into a saved or shared
-       * session — the declarative `forceLoad` config slot is the durable escape
-       * hatch. An old snapshot that still carries this (it used to be a
-       * `#property`) has it silently ignored on load, dropping the stale
-       * force-load, which is the intended migration.
+       * Volatile, not persisted: the interactive force-load button is a transient
+       * "show me this now" action and must not leak a raised gate into a saved or
+       * shared session. The declarative, session-scoped escape hatch is instead
+       * the `forceLoad` config slot (set per-session via a session spec, or baked
+       * into a track config for embedded/notebook views).
        */
       userByteSizeLimit: undefined as number | undefined,
       /**

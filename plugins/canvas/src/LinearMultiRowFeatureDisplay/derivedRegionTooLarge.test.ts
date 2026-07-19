@@ -241,28 +241,18 @@ describe('multi-row derived regionTooLarge (density axis)', () => {
     ).setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
   }
 
-  it('trips when the observed feature density exceeds maxFeatureScreenDensity', () => {
+  // Multi-row disables the density axis (densityGateDisabled): it paints features
+  // into fixed lanes, so a high total feature count is not a per-glyph render
+  // cost — only the byte/download budget gates it. The "Too many features"
+  // banner must never show here regardless of density.
+  it('never trips on density even at an extreme feature count', () => {
     const { display, view } = createTestEnvironment().createDisplay()
     view.zoomTo(100)
     settle(view)
-    // a dense region: many features over its width → density well over the
-    // default maxFeatureScreenDensity of 1
+    // a dense region that would trip the default maxFeatureScreenDensity of 1
     display.setDensityStats(0, { featureCount: 500_000, regionWidthBp: 10_000_000 })
-    expect(display.densityTooLarge).toBe(true)
-    expect(display.regionTooLarge).toBe(true)
-    expect(display.regionTooLargeReason).toBe('Too many features')
-  })
-
-  it('force-load raises the density ceiling (not the byte one) and clears it', () => {
-    const { display, view } = createTestEnvironment().createDisplay()
-    view.zoomTo(100)
-    settle(view)
-    display.setDensityStats(0, { featureCount: 500_000, regionWidthBp: 10_000_000 })
-    expect(display.regionTooLarge).toBe(true)
-
-    display.forceLoad()
-    expect(display.userFeatureDensityLimit).toBeDefined()
-    expect(display.userByteSizeLimit).toBeUndefined()
+    expect(display.maxFeatureDensity).toBeUndefined()
+    expect(display.densityTooLarge).toBe(false)
     expect(display.regionTooLarge).toBe(false)
   })
 })

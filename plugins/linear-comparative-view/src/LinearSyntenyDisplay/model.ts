@@ -21,6 +21,15 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'
 
+// 'auto' fade-thin (see autoFadeThinAlignments): fade on when the mean on-screen
+// alignment-block width is below this many pixels — i.e. thin ribbons dominate,
+// which is precisely when width-proportional fade declutters. Matches the
+// perpW < 1 sub-pixel boundary the renderer fades at.
+const FADE_AUTO_SUBPIXEL_PX = 1
+// ...and only once there are at least this many blocks, so a lone thin ribbon in
+// a sparse view keeps full alpha instead of being faded toward invisibility.
+const FADE_AUTO_MIN_FEATURES = 10
+
 export interface SyntenyFeatureData {
   strands: Int8Array
   starts: Uint32Array
@@ -278,18 +287,36 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * How many viewport-widths of ribbon this display paints on axis 0 — the
-       * summed on-screen block width over the view width. A sparse scatter of
-       * sub-pixel slivers stays well under 1; a whole-genome hairball whose
-       * blocks over-cover the screen runs past it. Drives the view's 'auto'
-       * fade-thin decision. 0 until a fetch lands and both views connect.
+       * Mean on-screen width (px, axis 0) of this display's alignment blocks, or
+       * 0 until a fetch lands and both views connect. The fade only affects
+       * sub-pixel ribbons (perpW < 1), so a mean well under 1 means the view is
+       * dominated by thin ribbons — exactly what width-proportional fade
+       * declutters. Zoom-dependent (recomputes as bpPerPx changes), but each term
+       * is O(1) given the memoized `totalAlignmentBp`.
        */
-      get alignmentCoverageFraction() {
+      get meanAlignmentPx() {
         const connected = this.connectedViews
         const width = connected?.v0.width ?? 0
-        return connected && width > 0
-          ? this.totalAlignmentBp / connected.v0.bpPerPx / width
+        return connected && width > 0 && this.numFeats > 0
+          ? this.totalAlignmentBp / this.numFeats / connected.v0.bpPerPx
           : 0
+      },
+      /**
+       * #getter
+       * 'auto' fade-thin signal for this display: on when the ribbons are
+       * predominantly sub-pixel (`meanAlignmentPx` < 1) and there are enough of
+       * them to form a hairball. Many sub-pixel ribbons stacked at full alpha
+       * read as false-dark fans; fading them width-proportionally declutters into
+       * clean blocks (the historical default-on look). A sparse handful stays
+       * unfaded so a lone thin ribbon keeps full alpha, and the whole thing
+       * relaxes automatically on zoom-in as ribbons widen past 1px.
+       */
+      get autoFadeThinAlignments() {
+        return (
+          this.numFeats >= FADE_AUTO_MIN_FEATURES &&
+          this.meanAlignmentPx > 0 &&
+          this.meanAlignmentPx < FADE_AUTO_SUBPIXEL_PX
+        )
       },
       /**
        * #getter
