@@ -392,7 +392,11 @@ function renderConfig(
     identifier &&
       section(
         `### ${header.name} - Identifier`,
-        `Every ${header.name} has a unique \`${identifierField(identifier)}\`, a required top-level field that identifies it (not one of the config slots below).`,
+        // an `implicitIdentifier` auto-generates when omitted; only an
+        // `explicitIdentifier` is a required caller-supplied field
+        identifier.code.trimStart().startsWith('implicitIdentifier')
+          ? `Every ${header.name} has a unique \`${identifierField(identifier)}\`, a top-level field (not one of the config slots below) that identifies it; it is auto-generated when omitted.`
+          : `Every ${header.name} has a unique \`${identifierField(identifier)}\`, a required top-level field that identifies it (not one of the config slots below).`,
         identifier.docs,
       ),
   )

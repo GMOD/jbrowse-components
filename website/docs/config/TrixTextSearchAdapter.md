@@ -27,11 +27,11 @@ naming convention):
 
 ### TrixTextSearchAdapter - Identifier
 
-Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a required
-top-level field that identifies it (not one of the config slots below).
+Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a top-level
+field (not one of the config slots below) that identifies it; it is
+auto-generated when omitted.
 
-auto-generated when omitted, so a minimal config need not supply one; an
-explicit `textSearchAdapterId` is still honored
+an explicit `textSearchAdapterId` is still honored when given
 
 ## Config slots
 

@@ -80,8 +80,7 @@ const TrixTextSearchAdapter = ConfigurationSchema(
     explicitlyTyped: true,
     /**
      * #identifier
-     * auto-generated when omitted, so a minimal config need not supply one; an
-     * explicit `textSearchAdapterId` is still honored
+     * an explicit `textSearchAdapterId` is still honored when given
      */
     implicitIdentifier: 'textSearchAdapterId',
 
