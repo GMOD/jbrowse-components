@@ -26,7 +26,6 @@ import ViewType from '../pluggableElementTypes/ViewType.ts'
 import WidgetType from '../pluggableElementTypes/WidgetType.ts'
 import * as pluggableElementTypes from '../pluggableElementTypes/index.ts'
 import * as pluggableElementTypeModels from '../pluggableElementTypes/models/index.ts'
-import * as RendererType from '../pluggableElementTypes/renderers/RendererType.tsx'
 import * as coreUi from '../ui/index.ts'
 import * as coreTheme from '../ui/theme.ts'
 import Base1DView from '../util/Base1DViewModel.ts'
@@ -112,7 +111,6 @@ const libs = {
   },
 
   '@jbrowse/core/Plugin': Plugin,
-  '@jbrowse/core/pluggableElementTypes/renderers/RendererType': RendererType,
   '@jbrowse/core/configuration': Configuration,
   '@jbrowse/core/util/types/mst': mstTypes,
   '@jbrowse/core/ui': coreUi,

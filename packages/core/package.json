@@ -62,7 +62,6 @@
     "./pluggableElementTypes/models/BaseViewModel": "./src/pluggableElementTypes/models/BaseViewModel.ts",
     "./pluggableElementTypes/models/HighlightsMixin": "./src/pluggableElementTypes/models/HighlightsMixin.ts",
     "./pluggableElementTypes/models/baseConnectionConfig": "./src/pluggableElementTypes/models/baseConnectionConfig.ts",
-    "./pluggableElementTypes/renderers/RendererType": "./src/pluggableElementTypes/renderers/RendererType.tsx",
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
@@ -377,10 +376,6 @@
       "./pluggableElementTypes/models/baseConnectionConfig": {
         "types": "./esm/pluggableElementTypes/models/baseConnectionConfig.d.ts",
         "import": "./esm/pluggableElementTypes/models/baseConnectionConfig.js"
-      },
-      "./pluggableElementTypes/renderers/RendererType": {
-        "types": "./esm/pluggableElementTypes/renderers/RendererType.d.ts",
-        "import": "./esm/pluggableElementTypes/renderers/RendererType.js"
       },
       "./pluggableElementTypes/renderers/util/serializableFilterChain": {
         "types": "./esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts",
@@ -898,9 +893,6 @@
         ],
         "pluggableElementTypes/models/baseConnectionConfig": [
           "esm/pluggableElementTypes/models/baseConnectionConfig.d.ts"
-        ],
-        "pluggableElementTypes/renderers/RendererType": [
-          "esm/pluggableElementTypes/renderers/RendererType.d.ts"
         ],
         "pluggableElementTypes/renderers/util/serializableFilterChain": [
           "esm/pluggableElementTypes/renderers/util/serializableFilterChain.d.ts"

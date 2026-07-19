@@ -167,7 +167,6 @@ export default [
   '@jbrowse/core/pluggableElementTypes/TrackType',
   '@jbrowse/core/pluggableElementTypes/WidgetType',
   '@jbrowse/core/pluggableElementTypes/models',
-  '@jbrowse/core/pluggableElementTypes/renderers/RendererType',
   '@jbrowse/core/configuration',
   '@jbrowse/core/util/types/mst',
   '@jbrowse/core/ui',

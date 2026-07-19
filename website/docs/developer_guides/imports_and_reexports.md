@@ -52,7 +52,6 @@ It changes over time, so treat that file as the source of truth. The categories:
   | `@jbrowse/core/Plugin`                              | The base `Plugin` class your plugin extends                                                   |
   | `@jbrowse/core/pluggableElementTypes`               | `ViewType`, `AdapterType`, `DisplayType`, `TrackType`, `WidgetType` (registered in `install`) |
   | `@jbrowse/core/pluggableElementTypes/models`        | Base MST models for tracks/displays to compose with                                           |
-  | `@jbrowse/core/pluggableElementTypes/renderers/*`   | The `RendererType` base and shared render utilities (e.g. `util/serializableFilterChain`)     |
   | `@jbrowse/core/configuration`                       | `ConfigurationSchema`, `ConfigurationReference`, `readConfObject`, `getConf`                  |
   | `@jbrowse/core/util`                                | Core helpers: `getSession`, `getContainingView`, `Feature`, region/coordinate utilities       |
   | `@jbrowse/core/util/types/mst`                      | Reusable MST types like `ElementId`, `Region`                                                 |

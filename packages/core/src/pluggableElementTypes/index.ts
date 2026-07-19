@@ -8,15 +8,12 @@ import type TextSearchAdapterType from './TextSearchAdapterType.ts'
 import type TrackType from './TrackType.ts'
 import type ViewType from './ViewType.ts'
 import type WidgetType from './WidgetType.ts'
-import type RendererType from './renderers/RendererType.tsx'
 
-export * from './renderers/index.ts'
 export * from './models/index.ts'
 
 export type PluggableElementType =
   | AdapterType
   | ConnectionType
-  | RendererType
   | WidgetType
   | TrackType
   | DisplayType
