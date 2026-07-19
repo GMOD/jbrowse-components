@@ -28,6 +28,8 @@ surface than
 versions you develop against and expect the occasional rename across minor
 releases.
 
+<Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and plots them per block on the main thread. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
+
 ## The mental model
 
 Rendering splits across two threads:

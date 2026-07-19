@@ -446,6 +446,7 @@
     "liveUrl": "https://jbrowse.org/code/jb2/latest/?config=test_data/config_gwas.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%222%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%22gwas_track%22%2C%22type%22%3A%22LinearManhattanDisplay%22%2C%22height%22%3A250%7D%5D%7D%5D%7D&sessionName=Screenshot",
     "docs": [
       "docs/config_guides/gwas_track.md",
+      "docs/developer_guides/plotting_features.md",
       "docs/user_guides/gwas_track.md"
     ]
   },
