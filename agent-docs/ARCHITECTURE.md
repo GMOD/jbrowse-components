@@ -489,6 +489,16 @@ existing `isLoading` window. `rendersCanvas` (default true) gates the clause so 
 display showing a static non-canvas placeholder (LD with `showLDTriangle` off →
 EmptyState, no canvas) doesn't sit permanently under the scrim.
 
+`rendersCanvas` is an overridable hook, not inlined, on purpose: the pre-paint
+scrim needs both "nothing painted yet" (`!canvasDrawn`) and "not a deliberate
+empty placeholder", and only the display knows the second. The one alternative
+that removes the hook — render LD's placeholder *outside* `DisplayChrome`, so
+there is no scrim to gate — was rejected because it disposes/re-inits the GPU
+backend on every triangle toggle and moves a render path out of the shared chrome
+(ADR-026). So LD's `rendersCanvas` override is the single override by design;
+deleting it as "dead single-use code" regresses a stuck spinner over the
+triangle-off placeholder.
+
 `installGlobalFetchAutorun` schedules **leading-edge**: the first fetch fires
 immediately, and only subsequent (zoom/pan/settings) refetches debounce by
 `delay`. MobX's built-in `{ delay }` is trailing-only — it defers even the

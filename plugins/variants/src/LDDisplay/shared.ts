@@ -259,10 +259,14 @@ export default function sharedModelFactory(
         /**
          * #getter
          * Override of the `GlobalDataDisplayMixin` hook that gates the initial
-         * pre-first-paint loading scrim. With the triangle toggled off the
-         * display renders an EmptyState (no canvas, so `canvasDrawn` never
-         * flips); returning false here keeps the scrim from sitting permanently
-         * over it.
+         * pre-first-paint loading scrim (`rendersCanvas && !canvasDrawn`). With
+         * the triangle toggled off, `LDDisplayComponent` renders an EmptyState
+         * ("Enable LD triangle…") instead of a canvas, so `canvasDrawn` never
+         * flips. Returning false here keeps the scrim from sitting permanently
+         * over that placeholder. This is the *only* override of the hook — do not
+         * remove it as dead-looking single-use code: without it the LD track
+         * shows a stuck loading spinner whenever the triangle is disabled. If the
+         * EmptyState is ever moved outside `DisplayChrome`, revisit together.
          */
         get rendersCanvas(): boolean {
           return getConf(self, 'showLDTriangle')

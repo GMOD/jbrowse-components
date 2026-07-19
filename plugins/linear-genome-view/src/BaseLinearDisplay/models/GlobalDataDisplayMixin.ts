@@ -49,6 +49,18 @@ export default function GlobalDataDisplayMixin() {
        * off renders an EmptyState, never a canvas) overrides this to false in
        * that state — otherwise the scrim would sit permanently over the
        * placeholder, since `canvasDrawn` never flips without a canvas.
+       *
+       * Why this is a hook and not inlined away: the pre-paint scrim decision
+       * needs TWO facts — "nothing painted yet" (`!canvasDrawn`, on the model)
+       * AND "this isn't a deliberate empty placeholder" — and only the display
+       * knows the second. The alternative (render the placeholder OUTSIDE
+       * `DisplayChrome` so there's no scrim to gate) was considered and rejected:
+       * it would dispose/re-init the GPU backend on every toggle and move a
+       * render path out of the shared chrome (see ADR-026). So the hook is
+       * irreducible given LD's design — a future reader tempted to delete this
+       * "single-override" getter must first move LD's EmptyState, or the scrim
+       * regresses over the placeholder. Default lives here so the common case
+       * (HiC, always a canvas) needs no override.
        */
       get rendersCanvas(): boolean {
         return true
