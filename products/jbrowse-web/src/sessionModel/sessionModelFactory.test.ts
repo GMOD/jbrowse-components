@@ -1,5 +1,6 @@
 import PluginManager from '@jbrowse/core/PluginManager'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { reaction } from 'mobx'
 
 import sessionModelFactory from './index.ts'
 import { createTestSession } from '../rootModel/index.ts'
@@ -213,7 +214,7 @@ describe('JBrowseWebSessionModel', () => {
       )
       // clearing the last slot must leave no empty `{ LinearBasicDisplay: {} }`
       // cruft accumulating in the persisted localStorage blob
-      const store = session.preferencesOverrides.displayTypeDefaults as
+      const store = session.preferencesOverrides.get('displayTypeDefaults') as
         Record<string, unknown> | undefined
       expect(store?.LinearBasicDisplay).toBeUndefined()
     })
@@ -238,6 +239,41 @@ describe('JBrowseWebSessionModel', () => {
       ).toBeUndefined()
       // a plain override falls back to its config default too
       expect(session.animationMode).toBe('enabled')
+    })
+
+    it('a reader of one preference is not invalidated by writing another', () => {
+      // regression: preferencesOverrides is a per-key observable.map, so
+      // toggling scrollZoom must not wake getDisplayTypeDefault (which is read
+      // in a display's rpcProps -> would re-fetch every track). A single
+      // spread-replaced object made every write invalidate every reader.
+      const session = createTestSession()
+      session.clearPreferenceOverrides()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      let fired = 0
+      const dispose = reaction(
+        () => session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+        () => {
+          fired += 1
+        },
+      )
+
+      session.setScrollZoom(true)
+      session.setScrollZoom(false)
+      session.setPreferenceOverride('animationMode', 'disabled')
+      expect(fired).toBe(0)
+
+      // sanity: a change to the observed key still propagates
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'normal',
+      )
+      expect(fired).toBe(1)
+      dispose()
     })
   })
 

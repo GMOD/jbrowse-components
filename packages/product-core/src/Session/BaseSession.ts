@@ -2,6 +2,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import { observable } from 'mobx'
 
 import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -91,9 +92,14 @@ export function BaseSessionModel<
        * Empty here (config-only); products that let users edit preferences load
        * and persist these via localStorage. A runtime override map layered over
        * config defaults, kept off the snapshot since prefs are local UI.
+       *
+       * An `observable.map` (not a plain object reassigned wholesale) so each
+       * preference is its own tracked key: writing one (`setScrollZoom`) can't
+       * invalidate a reader of another (`getDisplayTypeDefault` in a track's
+       * `rpcProps`). A single spread-replaced object made every setter wake
+       * every reader, so toggling scroll-to-zoom re-fetched every track.
        */
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-      preferencesOverrides: {} as Record<string, unknown>,
+      preferencesOverrides: observable.map<string, unknown>(),
     }))
     .views(self => ({
       /**
@@ -164,7 +170,7 @@ export function BaseSessionModel<
        * The override map is empty unless the product loads it (web/desktop).
        */
       getPreference(key: string): unknown {
-        const override = self.preferencesOverrides[key]
+        const override = self.preferencesOverrides.get(key)
         return override === undefined
           ? getConf(self, ['preferences', key])
           : override
@@ -175,7 +181,7 @@ export function BaseSessionModel<
        * (see `setDisplayTypeDefault`); undefined when nothing was promoted.
        */
       getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        const all = self.preferencesOverrides.displayTypeDefaults
+        const all = self.preferencesOverrides.get('displayTypeDefaults')
         const forType = isRecord(all) ? all[displayType] : undefined
         return isRecord(forType) ? forType[slot] : undefined
       },
@@ -192,7 +198,7 @@ export function BaseSessionModel<
        */
       getPreferenceChanges(): TrackConfigChange[] {
         const changes: TrackConfigChange[] = []
-        for (const [key, value] of Object.entries(self.preferencesOverrides)) {
+        for (const [key, value] of self.preferencesOverrides.entries()) {
           if (key === 'displayTypeDefaults') {
             const byType = isRecord(value) ? value : {}
             for (const [displayType, slots] of Object.entries(byType)) {
@@ -273,10 +279,7 @@ export function BaseSessionModel<
        * volatile state; products persist these to localStorage.
        */
       setPreferenceOverride(key: string, value: unknown) {
-        self.preferencesOverrides = {
-          ...self.preferencesOverrides,
-          [key]: value,
-        }
+        self.preferencesOverrides.set(key, value)
       },
       /**
        * #action
@@ -286,7 +289,7 @@ export function BaseSessionModel<
        * default. Backs the Preferences dialog "Reset to defaults" button.
        */
       clearPreferenceOverrides() {
-        self.preferencesOverrides = {}
+        self.preferencesOverrides.clear()
       },
       /**
        * #action
@@ -295,18 +298,14 @@ export function BaseSessionModel<
        * Preferences dialog "Reset to defaults" confirmation.
        */
       clearPreferenceOverride(key: string) {
-        const { [key]: _dropped, ...rest } = self.preferencesOverrides
-        self.preferencesOverrides = rest
+        self.preferencesOverrides.delete(key)
       },
       /**
        * #action
        * set the global scroll-to-zoom preference (see the `scrollZoom` getter)
        */
       setScrollZoom(flag: boolean) {
-        self.preferencesOverrides = {
-          ...self.preferencesOverrides,
-          scrollZoom: flag,
-        }
+        self.preferencesOverrides.set('scrollZoom', flag)
       },
       /**
        * #action
@@ -315,7 +314,7 @@ export function BaseSessionModel<
        * PreferencesSessionMixin persists it to localStorage like other prefs.
        */
       setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        const all = self.preferencesOverrides.displayTypeDefaults
+        const all = self.preferencesOverrides.get('displayTypeDefaults')
         const map: Record<string, unknown> = isRecord(all) ? { ...all } : {}
         const prev = map[displayType]
         const forType: Record<string, unknown> = isRecord(prev)
@@ -334,9 +333,12 @@ export function BaseSessionModel<
         } else {
           delete map[displayType]
         }
-        self.preferencesOverrides = {
-          ...self.preferencesOverrides,
-          displayTypeDefaults: map,
+        // likewise drop the whole key once no display type has a promoted slot,
+        // so an emptied store persists as absent rather than `{}`
+        if (Object.keys(map).length) {
+          self.preferencesOverrides.set('displayTypeDefaults', map)
+        } else {
+          self.preferencesOverrides.delete('displayTypeDefaults')
         }
       },
       /**

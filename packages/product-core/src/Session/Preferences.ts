@@ -37,14 +37,17 @@ export function PreferencesSessionMixin(pluginManager: PluginManager) {
     .compose(BaseSessionModel(pluginManager), types.model({}))
     .actions(self => ({
       afterAttach() {
-        self.preferencesOverrides = loadStoredPreferences()
+        self.preferencesOverrides.replace(loadStoredPreferences())
         addDisposer(
           self,
           autorun(
             function persistPreferences() {
+              // observable.map doesn't JSON-serialize to an object on its own;
+              // fromEntries also reads every key so the autorun re-persists on
+              // any per-key change
               localStorageSetItem(
                 PREFS_KEY,
-                JSON.stringify(self.preferencesOverrides),
+                JSON.stringify(Object.fromEntries(self.preferencesOverrides)),
               )
             },
             { name: 'PreferencesOverrides' },
