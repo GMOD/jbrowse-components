@@ -66,7 +66,10 @@ function rowNeedsConfiguration(
     return false
   }
   const picked = selection?.type === 'preConfigured' ? selection.value : ''
-  return !pickSyntenyTrackId(picked, getSyntenyTracks(session.tracks, pairAssemblies))
+  return !pickSyntenyTrackId(
+    picked,
+    getSyntenyTracks(session.tracks, pairAssemblies),
+  )
 }
 
 const AssemblyRows = observer(function AssemblyRows({

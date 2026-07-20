@@ -26,9 +26,9 @@ import RpcWorker from '@jbrowse/react-app2/esm/rpcWorker?worker'
 - **Vite and other ESM bundlers**: the worker is constructed via
   `new Worker(new URL(...), { type: 'module' })`, which Vite handles natively.
 
-The worker is off by default because of these bundler requirements,
-but we recommend enabling it whenever your toolchain supports it. If you also
-load [plugins](../plugins/#embedded-plugin), they must be registered in **both**
-the main thread and the worker. The `rpc` config block (driver, worker count,
+The worker is off by default because of these bundler requirements, but we
+recommend enabling it whenever your toolchain supports it. If you also load
+[plugins](../plugins/#embedded-plugin), they must be registered in **both** the
+main thread and the worker. The `rpc` config block (driver, worker count,
 timeouts) is documented in
 [RpcOptions](https://jbrowse.org/jb2/docs/config/rpcoptions/).

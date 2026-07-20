@@ -175,7 +175,12 @@ function whiskerBandSide(
       j++
     }
   }
-  return { featurePositions: positions, featureScores: scores, numFeatures: count, color }
+  return {
+    featurePositions: positions,
+    featureScores: scores,
+    numFeatures: count,
+    color,
+  }
 }
 
 // The min/avg/max whisker layers for one source. Each band is bicolor: colored
@@ -234,20 +239,42 @@ export function makeWhiskersLayers({
     // Each band's positive and negative tints, ordered max..avg..min. Lightest at
     // the extreme (max above the pivot, min below), darkening toward the pivot.
     const bands = [
-      { scores: data.featureMaxScores, pos: lighten(posColor), neg: darken(negColor) },
+      {
+        scores: data.featureMaxScores,
+        pos: lighten(posColor),
+        neg: darken(negColor),
+      },
       { scores: data.featureScores, pos: posColor, neg: negColor },
-      { scores: data.featureMinScores, pos: darken(posColor), neg: lighten(negColor) },
+      {
+        scores: data.featureMinScores,
+        pos: darken(posColor),
+        neg: lighten(negColor),
+      },
     ]
     // Positive side back-to-front: max (light, tallest) painted first, min (dark)
     // on top near the pivot. Negative side reverses: min (light, deepest) first,
     // max (dark) on top near the pivot.
     const posSide = bands.map(b =>
-      whiskerBandSide(featurePositions, b.scores, numFeatures, pivot, true, b.pos),
+      whiskerBandSide(
+        featurePositions,
+        b.scores,
+        numFeatures,
+        pivot,
+        true,
+        b.pos,
+      ),
     )
     const negSide = [...bands]
       .reverse()
       .map(b =>
-        whiskerBandSide(featurePositions, b.scores, numFeatures, pivot, false, b.neg),
+        whiskerBandSide(
+          featurePositions,
+          b.scores,
+          numFeatures,
+          pivot,
+          false,
+          b.neg,
+        ),
       )
     return [...posSide, ...negSide].filter(l => l !== undefined)
   }

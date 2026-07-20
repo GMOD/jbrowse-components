@@ -1,7 +1,11 @@
 import { base, site } from 'astro:config/client'
 import { getCollection } from 'astro:content'
 
-import { buildSidebar, entrySlug, sidebarSections } from '../lib/docs-sidebar.ts'
+import {
+  buildSidebar,
+  entrySlug,
+  sidebarSections,
+} from '../lib/docs-sidebar.ts'
 
 // Emits an `/llms.txt` index (https://llmstxt.org): every doc page grouped by
 // top-level sidebar section, linked to its raw `/docs/<slug>.md`. An assistant

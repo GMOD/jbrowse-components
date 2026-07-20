@@ -45,11 +45,11 @@ a `__name` helper that breaks `page.evaluate`'d functions). Specs live in
 `scripts/screenshot-specs.ts`; the review log is
 `scripts/screenshot-review.json` (gitignored, local coordination only).
 
-**Display config in a session spec goes on the track, not the view display.**
-In an `encodeSessionSpec` session, a display's config slots (e.g. `showLegend`,
+**Display config in a session spec goes on the track, not the view display.** In
+an `encodeSessionSpec` session, a display's config slots (e.g. `showLegend`,
 `showLDTriangle`, `colorBy`, `height`) must be set inside the track's own
 `displays: [{ type, ...slots }]` array in `sessionTracks`; the view's
-`tracks: [{ trackId, type }]` entry only *selects* which display type to show —
+`tracks: [{ trackId, type }]` entry only _selects_ which display type to show —
 slots put there are dropped, so the display silently falls back to schema
 defaults (an LD track with the config in the wrong place renders its "Enable LD
 triangle" empty state). `displayId` is optional — it autogenerates from the
@@ -114,10 +114,10 @@ session-spec JSON, Desktop link, and notebook snippet each render via
 `copyableBlock()` with a **Copy** button; it copies the block's own `<code>`
 text (decoded from the same link), so what a reader copies can't drift from the
 image. The button's click handler is delegated in `DocsLayout.astro` (the dialog
-is emitted as an HTML string, not hydrated).
-Track names and file types are resolved by reading the referenced `test_data/`
-config from the repo; figures on a hosted config (`jbrowse.org/demos/…`) fall
-back to generic wording rather than fetching during the build.
+is emitted as an HTML string, not hydrated). Track names and file types are
+resolved by reading the referenced `test_data/` config from the repo; figures on
+a hosted config (`jbrowse.org/demos/…`) fall back to generic wording rather than
+fetching during the build.
 
 Rules for `spec-recipe/fields.ts`, which maps a spec field to a click-path:
 

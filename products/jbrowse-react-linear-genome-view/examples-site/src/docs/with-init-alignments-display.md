@@ -1,6 +1,6 @@
-An `init.tracks` entry can be an object carrying a `displaySnapshot`, the initial
-display state read once at startup. This is most useful on alignments tracks,
-where the display has a large configuration surface:
+An `init.tracks` entry can be an object carrying a `displaySnapshot`, the
+initial display state read once at startup. This is most useful on alignments
+tracks, where the display has a large configuration surface:
 
 ```js
 init: {

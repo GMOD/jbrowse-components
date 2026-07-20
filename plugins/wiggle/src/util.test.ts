@@ -167,10 +167,7 @@ describe('computeAutoscaleDomain', () => {
     // small accelerated tail). A single combined 1st-percentile min lands >= 0
     // and flattens the negatives; each side must clip independently so the
     // negative extent survives.
-    const scores = [
-      ...Array.from({ length: 95 }, () => 3),
-      -1, -2, -3, -4, -5,
-    ]
+    const scores = [...Array.from({ length: 95 }, () => 3), -1, -2, -3, -4, -5]
     const data = makeFeatureArrays(scores)
     const entries = [{ data, visStart: 0, visEnd: 100 * scores.length }]
     const result = computeAutoscaleDomain(

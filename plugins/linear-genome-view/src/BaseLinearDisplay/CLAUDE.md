@@ -89,8 +89,8 @@ estimate (the old imperative `setRegionTooLarge` flag path was removed). A
 pre-flight display gets the derived, self-releasing banner for free — this mixin
 derives `derivedRegionTooLargeEnabled` from `getByteEstimateConfig() !== null`,
 and the mixin reads `fetchSizeLimit` / `forceLoad` straight off the config — so
-declaring a byte estimate is the whole opt-in. Displays that capture the estimate
-outside the pre-flight (LD, arc, canvas fold-into-fetch) set
+declaring a byte estimate is the whole opt-in. Displays that capture the
+estimate outside the pre-flight (LD, arc, canvas fold-into-fetch) set
 `derivedRegionTooLargeEnabled` → true themselves, and canvas adds
 `densityTooLargeForDerivedGate` for its second axis. See that mixin's header
 comment.

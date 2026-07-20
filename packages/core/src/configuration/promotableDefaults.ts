@@ -310,7 +310,12 @@ export function resetSlotsToInherit(
       const def = getSlotDefinition(display.configuration, slot)
       // raw read (see resolveSlot): comparing the track's own stored value to
       // the default to decide whether it needs resetting.
-      if (!deepEqual(readConfObject(display.configuration, slot), def.defaultValue)) {
+      if (
+        !deepEqual(
+          readConfObject(display.configuration, slot),
+          def.defaultValue,
+        )
+      ) {
         display.configuration.setSlot(slot, def.defaultValue)
       }
     }

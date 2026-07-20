@@ -16,8 +16,8 @@ URL), grab a `ref` and call its navigation actions instead — see
 Adapters accept a plain `uri` shorthand: JBrowse derives the standard index file
 (e.g. [`.bam.bai`](https://jbrowse.org/jb2/docs/config/bamadapter/),
 [`.gff3.gz.tbi`](https://jbrowse.org/jb2/docs/config/gff3tabixadapter/))
-automatically, so you rarely spell out the nested `bamLocation`/`index` form. The
-full config shape is in the
+automatically, so you rarely spell out the nested `bamLocation`/`index` form.
+The full config shape is in the
 [config guide](https://jbrowse.org/jb2/docs/config_guide/).
 
 See [Advanced init](../session-setup/#with-init-advanced) for per-track display

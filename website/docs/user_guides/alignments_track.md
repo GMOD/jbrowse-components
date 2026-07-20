@@ -139,8 +139,8 @@ settings.
 The **Read height** submenu offers Normal, Compact, and Super-compact presets
 (plus a custom value) for how tall each read is drawn. Each preset's trailing ⋯
 control opens a dialog to make that height the session-wide default for
-alignments tracks, applied to future tracks and, optionally, to the ones
-already open.
+alignments tracks, applied to future tracks and, optionally, to the ones already
+open.
 
 Read height is separate from the sibling **Track sizing** submenu, which
 controls what the track does when there are more reads than fit: _scroll_ (fixed

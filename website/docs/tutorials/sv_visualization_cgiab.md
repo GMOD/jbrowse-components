@@ -481,10 +481,11 @@ connecting the two chromosomes.
 <Figure caption="Clicking the chord joining chr3 and chr13 opens a breakpoint split view. Black splines connect tumor PacBio HiFi reads that partially map to each chromosome, suggesting a fusion or translocation." src="/img/sv_cgiab/translocation_breakpoint_split.png" />
 
 The same junction can be read as a contact heatmap. Binning the tumor Illumina
-read pairs into a `.hic` file turns each rearrangement into an off-diagonal spot,
-Hi-C style; here the chr3↔chr13 fusion pairs pile up into one bright inter-
-chromosomal block. See the
-[read-pair heatmaps tutorial](/docs/tutorials/readpair_heatmap) for the pipeline.
+read pairs into a `.hic` file turns each rearrangement into an off-diagonal
+spot, Hi-C style; here the chr3↔chr13 fusion pairs pile up into one bright
+inter- chromosomal block. See the
+[read-pair heatmaps tutorial](/docs/tutorials/readpair_heatmap) for the
+pipeline.
 
 <Figure caption="The chr3↔chr13 translocation as a read-pair contact heatmap: a chr3 window (left) beside a chr13 window (right), with the read pairs spanning the fusion collecting into one bright off-diagonal spot linking the two chromosomes." src="/img/readpair_heatmap_translocation.png" />
 

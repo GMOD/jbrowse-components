@@ -8,8 +8,8 @@ score axis.
 
 The
 [`displayDefaults` object shorthand](../feature-colors-and-labels/#with-track-color-shorthand)
-is the easiest way to configure all of this up front. JBrowse routes each key
-to the wiggle display:
+is the easiest way to configure all of this up front. JBrowse routes each key to
+the wiggle display:
 
 ```js
 displayDefaults: {

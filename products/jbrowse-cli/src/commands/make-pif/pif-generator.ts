@@ -107,7 +107,8 @@ function processLine(
   // (spurious 100% identity) for a divergent alignment, disagreeing with fine.
   const pafDe = rest.find(f => f.startsWith('de:f:'))?.slice(5)
   const de =
-    pafDe ?? (blockLen > 0 ? ((blockLen - numMatches) / blockLen).toFixed(6) : '0')
+    pafDe ??
+    (blockLen > 0 ? ((blockLen - numMatches) / blockLen).toFixed(6) : '0')
   let coarseRows = ''
   for (const seg of segments) {
     coarseRows += `${[

@@ -256,7 +256,8 @@ describe('JBrowseWebSessionModel', () => {
       )
       let fired = 0
       const dispose = reaction(
-        () => session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+        () =>
+          session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
         () => {
           fired += 1
         },

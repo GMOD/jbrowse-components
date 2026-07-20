@@ -8,5 +8,5 @@ composes normally:
 </div>
 ```
 
-If you need the opposite (guaranteed isolation from a host page's global styles),
-render the view inside a [Shadow DOM](../theming/#shadow-dom) instead.
+If you need the opposite (guaranteed isolation from a host page's global
+styles), render the view inside a [Shadow DOM](../theming/#shadow-dom) instead.

@@ -19,8 +19,7 @@ const SelectedFeature = observer(function SelectedFeature({
   return isFeature(selection) ? (
     <p>
       Selected <b>{selection.get('name') || selection.id()}</b> at{' '}
-      {selection.get('refName')}:{selection.get('start')}-
-      {selection.get('end')}
+      {selection.get('refName')}:{selection.get('start')}-{selection.get('end')}
     </p>
   ) : (
     <p>Click a feature to select it.</p>

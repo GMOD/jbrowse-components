@@ -109,10 +109,8 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     })
     return {
       bigwig,
-      header: await updateStatus(
-        'Downloading header',
-        statusCallback,
-        () => bigwig.getHeader(opts),
+      header: await updateStatus('Downloading header', statusCallback, () =>
+        bigwig.getHeader(opts),
       ),
     }
   }

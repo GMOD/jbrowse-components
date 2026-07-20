@@ -24,9 +24,9 @@ tree's nucleotide mutations root→tip) and writes a bgzipped/tabixed VCF plus a
 `samplesTsv` of each tip's metadata. JBrowse's
 `LinearMultiSampleVariantMatrixDisplay` renders it as samples × sites, colored
 by region. It is the genotype table behind the Nextstrain tree, in genome
-coordinates. The Zika and measles configs also carry a `CramAdapter`
-**Published genomes** track (every genome NCBI publishes, aligned to the hosted
-reference with `minimap2`).
+coordinates. The Zika and measles configs also carry a `CramAdapter` **Published
+genomes** track (every genome NCBI publishes, aligned to the hosted reference
+with `minimap2`).
 
 Because each config is a plain JS object, it can be imported, generated, or
 templated by your own code. See

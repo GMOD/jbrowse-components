@@ -14,8 +14,8 @@ they are independent.** The triangle shows you where a chunk of chromosome moves
 as a unit.
 
 This tutorial reads two real examples from the 1000 Genomes Project, both
-computed live in the browser from phased genotypes (no precomputed LD file), then
-covers the one thing people most often get wrong about LD: its scale.
+computed live in the browser from phased genotypes (no precomputed LD file),
+then covers the one thing people most often get wrong about LD: its scale.
 
 ## A selective sweep leaves a long haplotype
 
@@ -47,9 +47,9 @@ break it up, which is the signature of a recent selective sweep.
 An inversion produces a block for a different reason. Because the inverted and
 standard arrangements cannot recombine in a heterozygote, the whole inverted
 segment is inherited as one unit, so its SNPs stay correlated across the entire
-region. The common 17q21.31 inversion (around the _MAPT_ gene) is the
-textbook example: short-read SV callers miss the inversion itself, because
-segmental duplications flank it, so the LD block is how you see it at all.
+region. The common 17q21.31 inversion (around the _MAPT_ gene) is the textbook
+example: short-read SV callers miss the inversion itself, because segmental
+duplications flank it, so the LD block is how you see it at all.
 
 Turn on the LD display's recombination track (`showRecombination`) to make block
 boundaries explicit: the 1 − r² curve between adjacent SNPs peaks in the white
@@ -58,9 +58,9 @@ gaps (LD breaking down) and dips inside the red blocks (SNPs locked together).
 ## LD is a local tool — mind the scale
 
 The single most useful thing to know about the LD triangle is what it _cannot_
-show. It is a **local, kb-scale** view: it plots pairwise correlation between the
-SNPs currently on screen, and pairwise r² decays with distance. It is excellent
-for a haplotype block a few kb to a few hundred kb wide.
+show. It is a **local, kb-scale** view: it plots pairwise correlation between
+the SNPs currently on screen, and pairwise r² decays with distance. It is
+excellent for a haplotype block a few kb to a few hundred kb wide.
 
 It is the wrong tool for a large, low-frequency structural variant. A megabase
 inversion segregating at ~10% frequency — like the _Drosophila_ `In(2L)t`
@@ -70,12 +70,12 @@ registers in a pairwise LD triangle: within any local window the SNPs recombine
 normally, only the sparse arrangement-diagnostic SNPs carry the long-range
 signal, and they are diluted to invisibility by the common SNPs around them.
 
-That inversion is obvious to a **windowed scan** (Fst between arrangements spikes
-across the whole inverted region) precisely because a scan integrates one
+That inversion is obvious to a **windowed scan** (Fst between arrangements
+spikes across the whole inverted region) precisely because a scan integrates one
 statistic over a large window rather than measuring SNP-pair correlation. LD
 triangles and windowed scans (Fst, π, Tajima's D) are complementary: reach for
-the triangle at the kb scale of a haplotype block, and for a windowed scan at the
-Mb scale of a structural variant or a broad sweep.
+the triangle at the kb scale of a haplotype block, and for a windowed scan at
+the Mb scale of a structural variant or a broad sweep.
 
 ## Making an LD track from your own data
 
@@ -87,8 +87,8 @@ Two ways to supply the data, covered in full in the
   extra files are needed, and phased genotypes give exact haplotypic r². This is
   what both figures above use.
 - **Precomputed with PLINK** — for large cohorts, or to publish a fixed matrix,
-  point an `LDTrack` at PLINK `--r2` output. This is the authoritative route when
-  you want LD numbers that match a published analysis.
+  point an `LDTrack` at PLINK `--r2` output. This is the authoritative route
+  when you want LD numbers that match a published analysis.
 
 Two display settings did most of the work in the figures above: the minor allele
 frequency filter (raised to thin the dense 1000 Genomes SNPs to the common,

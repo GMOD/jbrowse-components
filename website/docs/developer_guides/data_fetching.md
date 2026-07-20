@@ -52,11 +52,11 @@ trigger a new fetch.
 
 `fetchNeeded` is the hook you override in your display to make RPC calls. The
 mixin's primitive is `fetchRegions(needed, work)`, which handles cancellation,
-stop tokens, and byte estimation. But most displays don't call it directly:
-they use the `fetchEachRegion` wrapper, which runs one RPC per region in
-parallel and applies the two `ctx.isStale()` guards for you. Forgetting either
-guard is a stale-data write, so the wrapper is a correctness primitive, not just
-a convenience. Prefer it:
+stop tokens, and byte estimation. But most displays don't call it directly: they
+use the `fetchEachRegion` wrapper, which runs one RPC per region in parallel and
+applies the two `ctx.isStale()` guards for you. Forgetting either guard is a
+stale-data write, so the wrapper is a correctness primitive, not just a
+convenience. Prefer it:
 
 ```ts
 import { getRpcSessionId, getSession } from '@jbrowse/core/util'

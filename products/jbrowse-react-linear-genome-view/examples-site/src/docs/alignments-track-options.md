@@ -59,8 +59,8 @@ Some of the most useful slots:
   clipped bases, the coverage band, and quality-faded mismatches.
 - **`height`**, **`featureHeight`**, **`heightMode`**: track sizing (see
   [Track sizing: grow & fit](../track-sizing/)).
-- **`linkedReads`**, **`readConnections`**: long-read / paired-read chaining
-  and connection arcs.
+- **`linkedReads`**, **`readConnections`**: long-read / paired-read chaining and
+  connection arcs.
 
 For the complete, always-current list, see the generated
 [LinearAlignmentsDisplay config](https://jbrowse.org/jb2/docs/config/linearalignmentsdisplay/)

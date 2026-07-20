@@ -1,17 +1,17 @@
 The embedded view does not ship with a built-in error boundary, so catching
 errors is the host application's responsibility. There are two classes of error:
 
-- **Construction errors**: `createViewState` validates the configuration and
-  can throw a (sometimes verbose) `@jbrowse/mobx-state-tree` error. Wrap the
-  call in try/catch.
+- **Construction errors**: `createViewState` validates the configuration and can
+  throw a (sometimes verbose) `@jbrowse/mobx-state-tree` error. Wrap the call in
+  try/catch.
 - **Runtime errors**: observable on `viewState.session.view.error`. An
   `observer` component can render an error UI when this becomes truthy.
 
 For both cases we recommend the `ErrorBanner` component from `@jbrowse/core/ui`
-(an error _display_, not a React error boundary). It formats JBrowse errors
-with a stack-trace button and, for `createViewState`
-validation failures, the offending config snapshot. Its plainer sibling
-`ErrorMessage` renders just the message text.
+(an error _display_, not a React error boundary). It formats JBrowse errors with
+a stack-trace button and, for `createViewState` validation failures, the
+offending config snapshot. Its plainer sibling `ErrorMessage` renders just the
+message text.
 
 This example wraps
 [`createViewState`](../setting-up-the-view/#use-create-view-state) in a

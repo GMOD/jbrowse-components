@@ -97,7 +97,10 @@ export default function stateModelFactory(
           return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
         }
         if (this.colorsBySvType) {
-          return PREDEFINED_SV_TYPES.map(t => ({ color: t.color, label: t.label }))
+          return PREDEFINED_SV_TYPES.map(t => ({
+            color: t.color,
+            label: t.label,
+          }))
         }
         return []
       },

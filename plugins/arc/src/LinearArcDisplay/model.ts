@@ -111,7 +111,10 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
           thickness: getConf(self, 'thickness', { feature }),
           label: readConfObject(self.conf, 'label', { feature }),
           caption: readConfObject(self.conf, 'caption', { feature }),
-          arcHeight: Math.min(getConf(self, 'arcHeight', { feature }), self.height),
+          arcHeight: Math.min(
+            getConf(self, 'arcHeight', { feature }),
+            self.height,
+          ),
         }))
       },
       /**

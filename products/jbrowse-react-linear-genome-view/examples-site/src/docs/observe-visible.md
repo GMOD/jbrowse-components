@@ -1,8 +1,8 @@
 The view model is a [MobX-state-tree](https://mobx-state-tree.js.org) node, so
 anything outside the LGV can subscribe to its state with `mobx-react`'s
 `observer` HOC and re-render when relevant fields change. This is how you build
-companion panels (coordinate readouts, feature inspectors, summary tables)
-that stay in sync with the view without manual event wiring.
+companion panels (coordinate readouts, feature inspectors, summary tables) that
+stay in sync with the view without manual event wiring.
 
 **Reading the visible regions is synchronous.** An `observer` reading
 `view.dynamicBlocks` (updated on every pan/zoom) or its debounced variant
@@ -28,7 +28,8 @@ Anything marked `#getter` or `#property` is reactive and safe to read.
 `createViewState` also takes an `onChange(patch, reversePatch)` callback that
 fires a raw MST JSON patch on every state change — handy for a change log or
 undo/redo, since you get the reverse patch too. For keeping UI in sync, though,
-prefer the `observer` approach above: it re-renders only the components that read
-the fields that changed, whereas `onChange` hands you every patch to route
-yourself. For persisting state, [`onSnapshot`](../session-setup/#with-session-persistence)
-gives whole snapshots rather than patches.
+prefer the `observer` approach above: it re-renders only the components that
+read the fields that changed, whereas `onChange` hands you every patch to route
+yourself. For persisting state,
+[`onSnapshot`](../session-setup/#with-session-persistence) gives whole snapshots
+rather than patches.

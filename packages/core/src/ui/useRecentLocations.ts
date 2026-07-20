@@ -1,7 +1,6 @@
 import { instanceScopedKey } from './useAssemblySelection.ts'
 import { useLocalStorage } from '../util/index.ts'
 
-
 // keep the list short so it reads as "jump back to somewhere recent" rather
 // than a full history
 const MAX_RECENT_LOCATIONS = 6

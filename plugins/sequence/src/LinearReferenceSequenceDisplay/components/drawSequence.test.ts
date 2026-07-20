@@ -82,7 +82,11 @@ function state(): DrawSequenceState {
     isDna: true,
     rowHeight: 10,
     palette: palette(),
-    textColors: { baseContrast: new Map(), startContrast: '', stopContrast: '' },
+    textColors: {
+      baseContrast: new Map(),
+      startContrast: '',
+      stopContrast: '',
+    },
     canvasWidth: BLOCK_WIDTH,
     canvasHeight: 100,
   }

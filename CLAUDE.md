@@ -7,9 +7,10 @@ and Canvas2D fallbacks). Worker output is **absolute genomic uint32** — no
 regionStart-relative arithmetic crosses the worker boundary. See
 `agent-docs/ARCHITECTURE.md`.
 
-**Agent front door: [`agent-docs/README.md`](agent-docs/README.md)** — invariants,
-definition of done, and pointers to the ADRs, reference notes, and guides under
-`agent-docs/`. Start there before non-trivial work on the rendering pipeline.
+**Agent front door: [`agent-docs/README.md`](agent-docs/README.md)** —
+invariants, definition of done, and pointers to the ADRs, reference notes, and
+guides under `agent-docs/`. Start there before non-trivial work on the rendering
+pipeline.
 
 ## GPU rendering (`plugins/canvas`, `packages/render-core`)
 
@@ -28,9 +29,9 @@ definition of done, and pointers to the ADRs, reference notes, and guides under
   be extracted.
 - To override a config-slot default, write the slot directly (`setSlot`) and
   read it back via `getConf`; the old `<name>Override` shadow-property system
-  was removed. For a default that must resolve across tiers at read time
-  (config → display-type/session default → instance pin), use promotable slots
-  / `getConfResolved` (`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`).
+  was removed. For a default that must resolve across tiers at read time (config
+  → display-type/session default → instance pin), use promotable slots /
+  `getConfResolved` (`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`).
 - A bare getter must return a resolved value, never `undefined`. When a bespoke
   (non-config) MST prop encodes a sentinel (e.g. `rowHeight === 0` =
   fit-to-height), expose the resolved value under a distinct getter

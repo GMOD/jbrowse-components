@@ -237,7 +237,6 @@ inverted and standard arrangements cannot recombine in a heterozygote, the whole
 inverted segment is inherited together, so its SNPs stay in strong LD across the
 entire inverted region.
 
-
 ### Generating the PLINK file
 
 The `.ld` file is PLINK's `--r2` report (columns

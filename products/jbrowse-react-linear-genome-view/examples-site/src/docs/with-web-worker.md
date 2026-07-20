@@ -27,6 +27,6 @@ const state = createViewState({
   `new Worker(new URL(...), { type: 'module' })`, which Vite handles natively.
 
 The worker is off by default because of these bundler requirements, but we
-recommend enabling it whenever your toolchain supports it. If you also
-load [plugins](../plugins/#with-inline-plugins), they must be registered in
-**both** the main thread and the worker.
+recommend enabling it whenever your toolchain supports it. If you also load
+[plugins](../plugins/#with-inline-plugins), they must be registered in **both**
+the main thread and the worker.

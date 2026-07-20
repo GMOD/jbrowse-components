@@ -189,7 +189,10 @@ describe('multi-row derived regionTooLarge (byte axis)', () => {
     }).createDisplay()
     view.zoomTo(100)
     // 8MB is over the 5MB display config but under the 50MB adapter limit
-    display.setFeatureDensityStats({ bytes: 8_000_000, fetchSizeLimit: 50_000_000 })
+    display.setFeatureDensityStats({
+      bytes: 8_000_000,
+      fetchSizeLimit: 50_000_000,
+    })
     expect(display.byteSizeLimit()).toBe(50_000_000)
     expect(display.regionTooLarge).toBe(false)
   })
@@ -250,7 +253,10 @@ describe('multi-row derived regionTooLarge (density axis)', () => {
     view.zoomTo(100)
     settle(view)
     // a dense region that would trip the default maxFeatureScreenDensity of 1
-    display.setDensityStats(0, { featureCount: 500_000, regionWidthBp: 10_000_000 })
+    display.setDensityStats(0, {
+      featureCount: 500_000,
+      regionWidthBp: 10_000_000,
+    })
     expect(display.maxFeatureDensity).toBeUndefined()
     expect(display.densityTooLarge).toBe(false)
     expect(display.regionTooLarge).toBe(false)

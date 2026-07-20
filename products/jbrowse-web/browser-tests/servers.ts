@@ -66,7 +66,9 @@ export function startOAuthServer(
   }
 
   const authenticate: RequestHandler = (req, res, next) => {
-    const presented = /^Bearer (\S+)$/.exec(req.headers.authorization ?? '')?.[1]
+    const presented = /^Bearer (\S+)$/.exec(
+      req.headers.authorization ?? '',
+    )?.[1]
     const valid =
       token !== undefined &&
       presented === token.accessToken &&

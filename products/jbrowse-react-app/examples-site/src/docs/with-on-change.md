@@ -19,8 +19,8 @@ external UI:
 A common use is autosaving the session to `localStorage` so a reload restores
 where the user left off. That needs a full snapshot rather than just the patch,
 and restoring a saved session on mount needs a `config.defaultSession` you
-control directly. Both call for the unmanaged `createViewState` +
-`<JBrowseApp>` flow instead of the managed component:
+control directly. Both call for the unmanaged `createViewState` + `<JBrowseApp>`
+flow instead of the managed component:
 
 ```js
 // @jbrowse/mobx-state-tree is JBrowse's bundled MST fork

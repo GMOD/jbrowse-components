@@ -871,8 +871,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .preProcessSnapshot<
-      | ({ fadeThinAlignments?: boolean } & Record<string, unknown>)
-      | undefined
+      ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
     >(snap => {
       // Legacy: fadeThinAlignments was a boolean (stripDefault true, so only an
       // explicit `false` reached the snapshot). Map it onto the tri-state mode

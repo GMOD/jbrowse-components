@@ -90,6 +90,10 @@ test('userOpened with no value resolves to nothing (upload selected but not comp
 test('userOpened with no value ignores available tracks (does not fall through to preConfigured logic)', () => {
   // Must not fall through to the preConfigured branch and auto-pick a track.
   expect(
-    resolveRowTrackAction({ type: 'userOpened' }, [track('a'), track('b')], pair),
+    resolveRowTrackAction(
+      { type: 'userOpened' },
+      [track('a'), track('b')],
+      pair,
+    ),
   ).toBeUndefined()
 })

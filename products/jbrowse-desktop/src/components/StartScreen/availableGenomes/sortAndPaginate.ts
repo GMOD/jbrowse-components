@@ -24,7 +24,9 @@ export function sortAndPaginate({
   pageIndex: number
   pageSize: number
 }) {
-  const sortingCol = sorting ? columns.find(c => c.id === sorting.id) : undefined
+  const sortingCol = sorting
+    ? columns.find(c => c.id === sorting.id)
+    : undefined
   const dir = sorting?.desc ? -1 : 1
   const sortedData = sortingCol
     ? [...data].sort((a, b) => dir * defaultSort(a, b, sortingCol))

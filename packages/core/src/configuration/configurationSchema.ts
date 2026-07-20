@@ -504,16 +504,15 @@ type ConfigReferenceInstance<SCHEMA extends AnyConfigurationSchemaType> =
  * plain `Type` keeps the single brand. See
  * `agent-docs/guides/CONFIG_TYPE_NARROWING.md`.
  */
-export type IConfigurationReference<
-  SCHEMA extends AnyConfigurationSchemaType,
-> = Omit<
-  IType<
-    ReferenceIdentifier | SnapshotIn<SCHEMA>,
-    ReferenceIdentifier | SnapshotOut<SCHEMA>,
-    ConfigReferenceInstance<SCHEMA>
-  >,
-  'Type'
-> & { readonly Type: ConfigReferenceInstance<SCHEMA> }
+export type IConfigurationReference<SCHEMA extends AnyConfigurationSchemaType> =
+  Omit<
+    IType<
+      ReferenceIdentifier | SnapshotIn<SCHEMA>,
+      ReferenceIdentifier | SnapshotOut<SCHEMA>,
+      ConfigReferenceInstance<SCHEMA>
+    >,
+    'Type'
+  > & { readonly Type: ConfigReferenceInstance<SCHEMA> }
 
 /**
  * Dispatch by the schema's identifier: `trackId` → track-ref (resolves through

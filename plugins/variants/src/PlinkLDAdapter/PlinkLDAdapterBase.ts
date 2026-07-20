@@ -20,8 +20,8 @@ import type {
  * is byte-for-byte identical between them.
  */
 export abstract class PlinkLDAdapterBase<
-    Config extends { header: PlinkLDHeader },
-  >
+  Config extends { header: PlinkLDHeader },
+>
   extends BaseAdapter
   implements LDRecordSource
 {

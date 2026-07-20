@@ -26,4 +26,5 @@ state.session.view.showTrack(trackConf.trackId)
 
 `addTrackConf` takes the same config shape as the `tracks` prop, dedupes by
 `trackId`, and is the path the built-in "add track" form uses. Session-added
-tracks round-trip through [saved sessions](../session-setup/#with-session-persistence).
+tracks round-trip through
+[saved sessions](../session-setup/#with-session-persistence).

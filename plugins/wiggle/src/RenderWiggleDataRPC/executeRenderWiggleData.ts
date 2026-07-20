@@ -112,8 +112,10 @@ export async function executeRenderWiggleData({
   // statusCallback/stopToken let the adapter report determinate download progress
   // (e.g. BigWig block fetches) and stay interruptible mid-fetch
   const fetchOpts = { bpPerPx, resolution, statusCallback, stopToken }
-  const raws = await updateStatus('Downloading wiggle data', statusCallback, () =>
-    fetchRaws(dataAdapter, regions, fetchOpts),
+  const raws = await updateStatus(
+    'Downloading wiggle data',
+    statusCallback,
+    () => fetchRaws(dataAdapter, regions, fetchOpts),
   )
 
   checkStopToken2(stopTokenCheck)

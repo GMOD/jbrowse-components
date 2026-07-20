@@ -9,7 +9,7 @@ import { entrySlug } from '../../../lib/docs-sidebar.ts'
 // `tutorial_category` frontmatter field; anything missing or unlisted falls
 // into a trailing "More tutorials" bucket, so a new tutorial always appears
 // even before it is categorized.
-const CATEGORY_ORDER = [
+const CATEGORY_ORDER = new Set([
   'Getting started',
   'Configuration & embedding',
   'Synteny & comparative genomics',
@@ -17,12 +17,12 @@ const CATEGORY_ORDER = [
   'Population genomics',
   'Epigenomics & single cell',
   'Transcriptomics & proteins',
-]
+])
 const FALLBACK = 'More tutorials'
 
 // The quickstarts live outside tutorials/ but are, in practice, the first
 // tutorials a new user follows, so surface them at the top of Getting started.
-const GETTING_STARTED_DOCS = ['quickstart_web', 'quickstart_desktop']
+const GETTING_STARTED_DOCS = new Set(['quickstart_web', 'quickstart_desktop'])
 
 // Curated order within each section. Sorting alphabetically floated niche pages
 // to the top (the CLI config walkthrough once led Getting started); instead lead
@@ -95,7 +95,7 @@ const EXTERNAL_CARDS = [
 
 const tutorials = [
   ...docs
-    .filter(entry => GETTING_STARTED_DOCS.includes(entry.id))
+    .filter(entry => GETTING_STARTED_DOCS.has(entry.id))
     .map(entry => cardFrom(entry, 'Getting started')),
   ...docs
     .filter(entry => entry.id.startsWith('tutorials/'))
@@ -107,7 +107,7 @@ const grouped = [...CATEGORY_ORDER, FALLBACK]
   .map(category => ({
     category,
     items: tutorials.filter(t =>
-      CATEGORY_ORDER.includes(t.category)
+      CATEGORY_ORDER.has(t.category)
         ? t.category === category
         : category === FALLBACK,
     ),

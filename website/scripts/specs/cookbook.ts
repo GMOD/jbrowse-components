@@ -131,7 +131,9 @@ export const cookbookSpecs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr17:45,700,000-45,750,000',
-          tracks: [{ trackId: 'cookbook_rmsk', height: 380, color: RMSK_CLASS_COLOR }],
+          tracks: [
+            { trackId: 'cookbook_rmsk', height: 380, color: RMSK_CLASS_COLOR },
+          ],
         },
       ],
     }),

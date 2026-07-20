@@ -8,8 +8,7 @@ component is a better fit.
 
 Pass `assemblies`, `tracks`, and a `views` list straight to `<JBrowse>` as
 props, with no `createViewState` call or nested `config` object to
-hand-assemble. Each
-entry in `views` carries its own view-type `init` blob:
+hand-assemble. Each entry in `views` carries its own view-type `init` blob:
 
 ```jsx
 import '@jbrowse/react-app2/styles.css'

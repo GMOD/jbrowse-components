@@ -218,12 +218,22 @@ function percentileDomainFromHistogram(
   // Mirror computeStats' array selection: whiskers spreads the bounds across the
   // min/max summary arrays; every other mode draws both from one scalar.
   const highScoresFor = (data: FeatureArrays) =>
-    useWhiskers ? data.featureMaxScores : getEffectiveScores(data, summaryScoreMode)
+    useWhiskers
+      ? data.featureMaxScores
+      : getEffectiveScores(data, summaryScoreMode)
   const lowScoresFor = (data: FeatureArrays) =>
-    useWhiskers ? data.featureMinScores : getEffectiveScores(data, summaryScoreMode)
+    useWhiskers
+      ? data.featureMinScores
+      : getEffectiveScores(data, summaryScoreMode)
   const high =
     scoreMax > 0
-      ? sideMagnitudePercentile(datasets, highScoresFor, true, scoreMax, quantile)
+      ? sideMagnitudePercentile(
+          datasets,
+          highScoresFor,
+          true,
+          scoreMax,
+          quantile,
+        )
       : 0
   const negExtent =
     scoreMin < 0

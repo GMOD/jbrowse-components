@@ -1,7 +1,7 @@
 Everything else on this site drives the [`<JBrowse>`](../basic-example/) React
 component. The same package exposes the same engine a different way:
-`createApp(element, options)`, a framework-agnostic **imperative** mount with
-no React in its signature. It's the multi-view counterpart to
+`createApp(element, options)`, a framework-agnostic **imperative** mount with no
+React in its signature. It's the multi-view counterpart to
 `@jbrowse/react-linear-genome-view2`'s `createLinearGenomeView`, and the
 primitive that non-React hosts (Jupyter anywidgets, R htmlwidgets, plain
 `<script>` pages) wrap. You still install `react` and `react-dom` as peers.

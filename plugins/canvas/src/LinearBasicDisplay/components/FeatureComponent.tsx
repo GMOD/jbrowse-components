@@ -524,7 +524,11 @@ const FeatureBody = observer(function FeatureBody({
   // the menu's target), so this needs no guard of its own — unlike
   // handleMouseMove, whose early return also skips the hit test.
   const onLabelMouseOver = useCallback(
-    (item: FlatbushItem, _displayedRegionIndex: number, e: React.MouseEvent) => {
+    (
+      item: FlatbushItem,
+      _displayedRegionIndex: number,
+      e: React.MouseEvent,
+    ) => {
       setClientXY([e.clientX, e.clientY])
       model.setHover(item.featureId, null, item.tooltip)
     },

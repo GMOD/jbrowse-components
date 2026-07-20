@@ -54,7 +54,7 @@ samtools view -q 20 -f 65 -F 2316 chr3q.bam \
 ```
 
 `-f 65` keeps one record per pair (paired, first-in-pair) and `-F 2316` drops
-unmapped, mate-unmapped, secondary, and supplementary reads. This keeps *every*
+unmapped, mate-unmapped, secondary, and supplementary reads. This keeps _every_
 pair, which produces the Hi-C-like insert-size diagonal plus off-diagonal SV
 signal. Cue instead emphasises the discordant channels, and it helps here too:
 keeping only pairs with an abnormal insert size, wrong orientation, or a mate on
@@ -98,7 +98,8 @@ different chromosomes.
 A `.hic` matrix stores a single count per bin pair, so one heatmap can't tell a
 deletion from an inversion the way Cue's multi-channel images can: Cue puts read
 depth, pair orientation (same-strand LL/RR vs outward-facing RL), and split-read
-support in separate channels. Two JBrowse-native ways recover that channel sense:
+support in separate channels. Two JBrowse-native ways recover that channel
+sense:
 
 **One `.hic` per orientation, loaded as separate tracks.** Split the discordant
 pairs by the signature they carry and build a `.hic` from each. The strand of
@@ -125,11 +126,11 @@ analogue to Cue's stacked channels.
 
 ## What this is and isn't
 
-Because only discordant pairs contribute, the map is sparse: an isolated event is
-one spot, not the dense fill of a true Hi-C experiment. Scanning a whole
-chromosome this way turns each rearrangement into one such spot, so it is a fast,
-caller-free way to see rearrangement structure at a glance; it complements,
-rather than replaces, a dedicated SV caller.
+Because only discordant pairs contribute, the map is sparse: an isolated event
+is one spot, not the dense fill of a true Hi-C experiment. Scanning a whole
+chromosome this way turns each rearrangement into one such spot, so it is a
+fast, caller-free way to see rearrangement structure at a glance; it
+complements, rather than replaces, a dedicated SV caller.
 
 ## Reproduce it end to end
 

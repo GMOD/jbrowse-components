@@ -1,6 +1,6 @@
-`@jbrowse/react-linear-genome-view2` can be mounted inside a Shadow DOM. This is useful
-when embedding into a host page that has its own conflicting global styles, or
-when packaging the view as a custom element.
+`@jbrowse/react-linear-genome-view2` can be mounted inside a Shadow DOM. This is
+useful when embedding into a host page that has its own conflicting global
+styles, or when packaging the view as a custom element.
 
 The component itself needs no special configuration. The key is giving
 Material-UI's emotion cache and the MUI portal containers (menus, tooltips,

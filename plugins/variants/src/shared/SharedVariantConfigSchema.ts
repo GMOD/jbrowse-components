@@ -139,4 +139,6 @@ export default function sharedVariantConfigFactory() {
   )
 }
 
-export type SharedVariantConfigModel = ReturnType<typeof sharedVariantConfigFactory>
+export type SharedVariantConfigModel = ReturnType<
+  typeof sharedVariantConfigFactory
+>

@@ -37,8 +37,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     // Status lives inside configurePre (the memoized part) so "Downloading
     // header" flashes only on the genuine first fetch; every later getFeatures
     // resolves from cachedP with no re-flash.
-    const header = await updateStatus('Downloading header', statusCallback, () =>
-      bigbed.getHeader(opts),
+    const header = await updateStatus(
+      'Downloading header',
+      statusCallback,
+      () => bigbed.getHeader(opts),
     )
     const parser = new BED({
       autoSql: header.autoSql,

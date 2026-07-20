@@ -2106,7 +2106,12 @@ export default function baseStateModelFactory(
         }
 
         function applyFetchResults(fetches: RegionFetch[]) {
-          for (const { displayedRegionIndex, region, bpPerPx, result } of fetches) {
+          for (const {
+            displayedRegionIndex,
+            region,
+            bpPerPx,
+            result,
+          } of fetches) {
             if (!('regionTooLarge' in result)) {
               self.setRpcData(displayedRegionIndex, result, bpPerPx, region)
             }

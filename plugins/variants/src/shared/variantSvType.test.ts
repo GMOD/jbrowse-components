@@ -9,7 +9,13 @@ import {
 } from './variantSvType.ts'
 
 function feat(data: Record<string, unknown>) {
-  return new SimpleFeature({ uniqueId: 'x', refName: 'ctgA', start: 0, end: 1, ...data })
+  return new SimpleFeature({
+    uniqueId: 'x',
+    refName: 'ctgA',
+    start: 0,
+    end: 1,
+    ...data,
+  })
 }
 
 describe('getVariantSvType', () => {
@@ -25,18 +31,28 @@ describe('getVariantSvType', () => {
     expect(getVariantSvType(feat({ ALT: ['<CN0>'] }))).toBe('CN0')
     expect(getVariantSvType(feat({ ALT: ['<CN3>'] }))).toBe('CN3')
     // ALT wins over a generic SVTYPE=CNV so the copy number survives
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['CNV'] }, ALT: ['<CN3>'] }))).toBe('CN3')
+    expect(
+      getVariantSvType(feat({ INFO: { SVTYPE: ['CNV'] }, ALT: ['<CN3>'] })),
+    ).toBe('CN3')
   })
 
   it('falls back to SVTYPE only when the ALT is uninformative', () => {
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['ACGT'] }))).toBe('DEL')
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['.'] }, ALT: ['A'] }))).toBe('')
+    expect(
+      getVariantSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['ACGT'] })),
+    ).toBe('DEL')
+    expect(
+      getVariantSvType(feat({ INFO: { SVTYPE: ['.'] }, ALT: ['A'] })),
+    ).toBe('')
   })
 
   it('flags a multi-class multiallelic site as MIXED', () => {
     expect(getVariantSvType(feat({ ALT: ['<DEL>', '<DUP>'] }))).toBe('MIXED')
     // MIXED wins even when SVTYPE names one class
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>', '<DUP>'] }))).toBe('MIXED')
+    expect(
+      getVariantSvType(
+        feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>', '<DUP>'] }),
+      ),
+    ).toBe('MIXED')
   })
 
   it('collapses a multi-copy-number site to the generic CNV bucket, not MIXED', () => {
@@ -54,7 +70,9 @@ describe('getVariantSvTypeColor (single-variant fixed-color jexl)', () => {
     expect(getVariantSvTypeColor(feat({ ALT: ['<DEL>'] }))).toBe('#e41a1c')
   })
   it('returns the copy-number rainbow color for a CN state', () => {
-    expect(getVariantSvTypeColor(feat({ ALT: ['<CN0>'] }))).toBe('hsl(240, 70%, 50%)')
+    expect(getVariantSvTypeColor(feat({ ALT: ['<CN0>'] }))).toBe(
+      'hsl(240, 70%, 50%)',
+    )
   })
   it('returns neutral grey for a non-SV or unrecognized token', () => {
     expect(getVariantSvTypeColor(feat({ ALT: ['A'] }))).toBe('#808080') // SNV
@@ -64,7 +82,9 @@ describe('getVariantSvTypeColor (single-variant fixed-color jexl)', () => {
 
 describe('featureHasSvType', () => {
   it('true for an SV, false for a plain SNV', () => {
-    expect(featureHasSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>'] }))).toBe(true)
+    expect(
+      featureHasSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>'] })),
+    ).toBe(true)
     expect(featureHasSvType(feat({ ALT: ['A'] }))).toBe(false)
   })
 })

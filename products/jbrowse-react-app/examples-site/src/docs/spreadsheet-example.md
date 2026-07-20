@@ -1,6 +1,6 @@
 `SpreadsheetView` opens a tabular file (e.g. a VCF) as a sortable, filterable
-spreadsheet. `init` takes the `assembly` and a `uri` to the file. Note that `uri` is
-on `init`, not in a track config:
+spreadsheet. `init` takes the `assembly` and a `uri` to the file. Note that
+`uri` is on `init`, not in a track config:
 
 ```js
 {

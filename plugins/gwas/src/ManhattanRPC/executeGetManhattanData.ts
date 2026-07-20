@@ -132,8 +132,10 @@ export async function executeGetManhattanData({
     adapterConfig,
   })
 
-  const features = await updateStatus('Downloading GWAS data', statusCallback, () =>
-    dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
+  const features = await updateStatus(
+    'Downloading GWAS data',
+    statusCallback,
+    () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
 
   checkStopToken2(stopTokenCheck)

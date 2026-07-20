@@ -43,8 +43,10 @@ export async function executeMultiRowClusterFeatures({
   const featureColor = makeFeatureColorResolver(colorConfig, pluginManager.jexl)
   const features: MatrixFeature[] = []
   for (const [regionIndex, region] of regions.entries()) {
-    const feats = await updateStatus('Downloading features', statusCallback, () =>
-      dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
+    const feats = await updateStatus(
+      'Downloading features',
+      statusCallback,
+      () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
     )
     checkStopToken2(stopTokenCheck)
     // dedup by feature id (mirrors the get-features RPC): a duplicate would

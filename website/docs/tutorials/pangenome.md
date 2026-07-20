@@ -284,8 +284,8 @@ strain, the fraction of the window that strain's path traverses — 1 where the
 strain is fully present, dropping toward 0 where the window is accessory in that
 strain. Slice each strain's rows out of pav's table into its own bigWig and load
 the set as one
-[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track), a subtrack
-per strain:
+[`MultiQuantitativeTrack`](/docs/user_guides/multiquantitative_track), a
+subtrack per strain:
 
 ```bash
 odgi pav -i "$gfa" -b depth_windows.bed > pav.tsv   # cols: chrom start end name group pav
@@ -305,18 +305,30 @@ done
   "adapter": {
     "type": "MultiWiggleAdapter",
     "subadapters": [
-      { "type": "BigWigAdapter", "name": "Sakai", "bigWigLocation": { "uri": "ecoli_pggb_pav_Sakai.bw" } },
-      { "type": "BigWigAdapter", "name": "CFT073", "bigWigLocation": { "uri": "ecoli_pggb_pav_CFT073.bw" } },
-      { "type": "BigWigAdapter", "name": "NCTC86", "bigWigLocation": { "uri": "ecoli_pggb_pav_NCTC86.bw" } }
+      {
+        "type": "BigWigAdapter",
+        "name": "Sakai",
+        "bigWigLocation": { "uri": "ecoli_pggb_pav_Sakai.bw" }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "CFT073",
+        "bigWigLocation": { "uri": "ecoli_pggb_pav_CFT073.bw" }
+      },
+      {
+        "type": "BigWigAdapter",
+        "name": "NCTC86",
+        "bigWigLocation": { "uri": "ecoli_pggb_pav_NCTC86.bw" }
+      }
     ]
   }
 }
 ```
 
-Where the aggregate depth curve dips, this track shows _which_ strain is missing:
-one row falls to 0 over its own accessory stretch while the others hold at 1. It
-is the per-genome read of the same core/accessory signal the depth curve
-summarizes.
+Where the aggregate depth curve dips, this track shows _which_ strain is
+missing: one row falls to 0 over its own accessory stretch while the others hold
+at 1. It is the per-genome read of the same core/accessory signal the depth
+curve summarizes.
 
 <Figure caption="odgi pav over the same K12 windows, one row per non-K12 strain. Each row holds near 1 where that strain is present and drops to 0 over its own accessory stretches, and the gap patterns differ per strain — so a single dip in the aggregate depth curve resolves here into which strain accounts for it. These are odgi viz's filled-vs-gap rows, windowed onto K12 coordinates." src="/img/pangenome/pav.png" />
 
@@ -324,20 +336,20 @@ summarizes.
 
 odgi ships its own one-line renderer,
 [`odgi viz`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_viz.html)
-(`odgi viz -i graph.gfa -o graph.png`), and it is worth understanding next to the
-four projections above — because it draws the graph the way the graph is stored,
-which is exactly what makes a pangenome graph hard to read at first.
+(`odgi viz -i graph.gfa -o graph.png`), and it is worth understanding next to
+the four projections above — because it draws the graph the way the graph is
+stored, which is exactly what makes a pangenome graph hard to read at first.
 
 <Figure caption="The same four-strain graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not (accessory sequence), over a thin band of the graph's links (its topology). Its rows are the per-strain presence figure above read a different way — the white gaps here are the same accessory stretches that drop to 0 in the pav track — but ordered by graph node order (the pangenome sequence) rather than K12 position, so nothing lines up with a gene or a chromosome coordinate. The four JBrowse projections re-plot this same presence/absence and structure on K12's coordinates instead." src="/img/pangenome/graph.png" />
 
 `odgi viz` gives one row per strain, as the MAF and per-strain-presence tracks
 do. But its horizontal axis is not any genome's coordinates: it is the graph's
 node order — the "pangenome sequence", the order odgi lays the nodes out in.
-Sequence every strain walks appears as a filled column across all rows; accessory
-sequence appears as a gap in the rows that skip it. That is the real structure of
-the graph, but you cannot point at a gene on that axis, because no gene — and no
-genome — is numbered in node order, and a locus can even sit in a different
-left-to-right position than it occupies on any chromosome.
+Sequence every strain walks appears as a filled column across all rows;
+accessory sequence appears as a gap in the rows that skip it. That is the real
+structure of the graph, but you cannot point at a gene on that axis, because no
+gene — and no genome — is numbered in node order, and a locus can even sit in a
+different left-to-right position than it occupies on any chromosome.
 
 The four JBrowse projections keep the one-row-per-strain idea and throw the
 node-order axis away, re-drawing everything on K12's actual coordinates:
@@ -348,9 +360,10 @@ node-order axis away, re-drawing everything on K12's actual coordinates:
   mismatch;
 - the **variant matrix** is the points where the rows branch, one column each.
 
-So `odgi viz` answers "what does the graph look like"; JBrowse answers "what does
-the graph say about this reference, here, beside the genes." The node-order axis
-is what you trade away, and a real reference coordinate is what you get for it.
+So `odgi viz` answers "what does the graph look like"; JBrowse answers "what
+does the graph say about this reference, here, beside the genes." The node-order
+axis is what you trade away, and a real reference coordinate is what you get for
+it.
 
 ## Reproduce it end to end
 

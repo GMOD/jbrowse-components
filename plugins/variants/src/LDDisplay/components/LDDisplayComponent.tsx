@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getBpDisplayStr, getContainingView, maxFinite } from '@jbrowse/core/util'
+import {
+  getBpDisplayStr,
+  getContainingView,
+  maxFinite,
+} from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 

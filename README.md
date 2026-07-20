@@ -17,18 +17,23 @@ TypeScript, and @jbrowse/mobx-state-tree.
 
 - Desktop app: [downloads](https://jbrowse.org/jb2/download/)
 - Web app: [web quickstart](https://jbrowse.org/jb2/docs/quickstart_web/)
-- Embedded React components: [embed a Linear Genome View](https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/)
+- Embedded React components:
+  [embed a Linear Genome View](https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/)
 
 ## Documentation
 
-- [Documentation home](https://jbrowse.org/jb2/docs/) — user guide, config guide, developer guide, and CLI reference
-- [Tutorials](https://jbrowse.org/jb2/docs/tutorials/) — step-by-step guides grouped by topic (synteny, structural variants, methylation, RNA-seq, and more)
+- [Documentation home](https://jbrowse.org/jb2/docs/) — user guide, config
+  guide, developer guide, and CLI reference
+- [Tutorials](https://jbrowse.org/jb2/docs/tutorials/) — step-by-step guides
+  grouped by topic (synteny, structural variants, methylation, RNA-seq, and
+  more)
 - [FAQ](https://jbrowse.org/jb2/docs/faq/)
 
 ## Examples
 
 - [Live demos](https://jbrowse.org/jb2/demos/) — hosted, interactive instances
-- [Gallery](https://jbrowse.org/jb2/gallery/) — screenshots of the views and track types
+- [Gallery](https://jbrowse.org/jb2/gallery/) — screenshots of the views and
+  track types
 - [Feature list](https://jbrowse.org/jb2/features/)
 
 ## Contact
@@ -51,5 +56,6 @@ TypeScript, and @jbrowse/mobx-state-tree.
 
 ## Contributing
 
-See [CONTRIBUTING.md](/CONTRIBUTING.md) to get set up. `agent-docs/ARCHITECTURE.md`
-describes the rendering pipeline and core architecture.
+See [CONTRIBUTING.md](/CONTRIBUTING.md) to get set up.
+`agent-docs/ARCHITECTURE.md` describes the rendering pipeline and core
+architecture.

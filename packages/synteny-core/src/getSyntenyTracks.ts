@@ -22,7 +22,9 @@ export function sameAssemblySet(a: string[], b: string[]) {
     return false
   }
   const counts = countByName(a)
-  return [...countByName(b)].every(([name, count]) => counts.get(name) === count)
+  return [...countByName(b)].every(
+    ([name, count]) => counts.get(name) === count,
+  )
 }
 
 /**

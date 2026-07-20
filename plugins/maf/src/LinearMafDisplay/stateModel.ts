@@ -700,7 +700,7 @@ export default function stateModelFactory(
          */
         get fitTargetHeight(): number {
           return (
-            (getConf(self, 'height')) ??
+            getConf(self, 'height') ??
             self.nrow * DEFAULTS.rowHeight + self.rowsTopOffset
           )
         },

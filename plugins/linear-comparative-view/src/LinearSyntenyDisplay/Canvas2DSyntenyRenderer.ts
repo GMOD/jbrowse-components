@@ -189,7 +189,14 @@ export function drawSyntenyTrack(
   overdrawPx: number,
 ) {
   const transform = computeTransform(params)
-  drawInstances(ctx, data, params, transform, -overdrawPx, logicalW + overdrawPx)
+  drawInstances(
+    ctx,
+    data,
+    params,
+    transform,
+    -overdrawPx,
+    logicalW + overdrawPx,
+  )
 }
 
 export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {

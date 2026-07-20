@@ -37,7 +37,11 @@ const ZoomButton = observer(function ZoomButton({
             model.zoom(out ? model.bpPerPx * 2 : model.bpPerPx / 2)
           }}
         >
-          {out ? <ZoomOut fontSize={fontSize} /> : <ZoomIn fontSize={fontSize} />}
+          {out ? (
+            <ZoomOut fontSize={fontSize} />
+          ) : (
+            <ZoomIn fontSize={fontSize} />
+          )}
         </IconButton>
       </span>
     </Tooltip>

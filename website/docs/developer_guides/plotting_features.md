@@ -23,10 +23,9 @@ This is a **build-step plugin** path: it bundles `@jbrowse/render-core` and
 composes mixins from `@jbrowse/plugin-linear-genome-view`, neither of which a
 [no-build plugin](/docs/developer_guides/no_build_plugin) can pull in. You're
 building against those two packages' exported APIs — a larger, faster-moving
-surface than
-[`@jbrowse/core`](/docs/developer_guides/imports_and_reexports) — so pin the
-versions you develop against and expect the occasional rename across minor
-releases.
+surface than [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports) —
+so pin the versions you develop against and expect the occasional rename across
+minor releases.
 
 <Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and plots them per block on the main thread. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
 
@@ -401,8 +400,8 @@ export interface ScoreRenderState {
 
 ## Step 5: The React component
 
-`DisplayChrome` is the shared wrapper that supplies a display's _chrome_: the
-UI framing around your canvas (the loading scrim, the error bar, the "region too
+`DisplayChrome` is the shared wrapper that supplies a display's _chrome_: the UI
+framing around your canvas (the loading scrim, the error bar, the "region too
 large" banner), the same sense as "browser chrome." It also wires the
 rendering-backend factory and WebGL/WebGPU context-loss recovery, so every
 display gets identical status behavior. You give it your factory and render the

@@ -100,9 +100,7 @@ export async function createFinalConfig(
   return finalConfig
 }
 
-export async function fetchConfigFile(
-  location: FileLocation,
-): Promise<Config> {
+export async function fetchConfigFile(location: FileLocation): Promise<Config> {
   const result = await openLocation(location).readFile('utf8')
   if (isUriLocation(location)) {
     return parseJb1(result, location.uri)

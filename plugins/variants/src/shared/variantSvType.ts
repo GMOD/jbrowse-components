@@ -142,7 +142,9 @@ export function getVariantSvType(feature: Feature) {
   const info = feature.get('INFO') as Record<string, unknown> | undefined
   const svtype = info?.SVTYPE
   const raw = Array.isArray(svtype) ? svtype[0] : svtype
-  return typeof raw === 'string' && raw && raw !== '.' ? normalizeRawToken(raw) : ''
+  return typeof raw === 'string' && raw && raw !== '.'
+    ? normalizeRawToken(raw)
+    : ''
 }
 
 /**

@@ -243,8 +243,12 @@ export default function CanvasFeatureGateMixin() {
        */
       commitFeatureGateStats(results: FeatureGateRegionResult[]) {
         let maxBytes = 0
-        for (const { displayedRegionIndex, regionWidthBp, bytes, featureCount }
-          of results) {
+        for (const {
+          displayedRegionIndex,
+          regionWidthBp,
+          bytes,
+          featureCount,
+        } of results) {
           maxBytes = Math.max(maxBytes, bytes ?? 0)
           if (featureCount !== undefined) {
             self.setDensityStats(displayedRegionIndex, {
