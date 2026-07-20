@@ -396,7 +396,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         if (bp && !bp.oob) {
           const data = self.sequenceData.get(bp.index)
           const idx = data ? bp.coord0 - data.start : -1
-          if (data && idx >= 0 && idx < data.seq.length) {
+          if (data && idx >= 0 && idx < data.seq.length && self.numRows > 0) {
             const row = rowLayout({
               showForward: self.showForward,
               showReverse: self.effectiveShowReverse,

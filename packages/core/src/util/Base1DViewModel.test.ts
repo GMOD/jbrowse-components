@@ -16,6 +16,20 @@ test('create Base1DView and set displayedRegions', () => {
   expect(model.displayedRegions).toBeTruthy()
 })
 
+test('displayedRegionsTotalPx is 0 (not Infinity/NaN) before width is measured', () => {
+  // bpPerPx defaults to 0 (the not-yet-measured sentinel); dividing totalBp by
+  // it must not leak Infinity/NaN into offset/scroll getters (regression: the
+  // guard existed only on the LinearGenomeView override, not this base getter)
+  const model = Base1DView.create({ bpPerPx: 0, offsetPx: 0 })
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 40000 },
+  ])
+  expect(model.bpPerPx).toBe(0)
+  expect(model.displayedRegionsTotalPx).toBe(0)
+  expect(Number.isFinite(model.maxOffset)).toBe(true)
+  expect(Number.isFinite(model.minOffset)).toBe(true)
+})
+
 test('Able to set bpPerPx, width and calculate widths', () => {
   const model = Base1DView.create({
     bpPerPx: 0,

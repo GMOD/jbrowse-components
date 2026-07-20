@@ -22,7 +22,7 @@ export default function SubsequenceContextMenu({
   model,
   view,
   samples,
-  rowHeight,
+  effectiveRowHeight,
   rowsTopOffset,
   scrollTop,
   contextCoord,
@@ -32,7 +32,8 @@ export default function SubsequenceContextMenu({
   model: LinearMafDisplayModel
   view: LinearGenomeViewModel
   samples: Sample[] | undefined
-  rowHeight: number
+  // resolved row height (never the raw 0/fit sentinel) — divided into below
+  effectiveRowHeight: number
   // Y offset of the rows area within the outer display container. The drag
   // rect's startY/endY are outer-container coords; the coverage band above the
   // rows shifts row 0 down by this much.
@@ -91,11 +92,15 @@ export default function SubsequenceContextMenu({
               const maxY = Math.max(contextCoord.startY, contextCoord.endY)
               const startRow = Math.max(
                 0,
-                Math.floor((minY + scrollTop - rowsTopOffset) / rowHeight),
+                Math.floor(
+                  (minY + scrollTop - rowsTopOffset) / effectiveRowHeight,
+                ),
               )
               const endRow = Math.max(
                 0,
-                Math.ceil((maxY + scrollTop - rowsTopOffset) / rowHeight),
+                Math.ceil(
+                  (maxY + scrollTop - rowsTopOffset) / effectiveRowHeight,
+                ),
               )
               openSubsequenceWidget(
                 session,

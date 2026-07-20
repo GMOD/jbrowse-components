@@ -92,7 +92,11 @@ const Base1DView = types
      * #getter
      */
     get displayedRegionsTotalPx() {
-      return this.totalBp / self.bpPerPx
+      // bpPerPx defaults to 0 (the not-yet-measured sentinel) until setWidth
+      // runs, so guard the division — otherwise offset/scroll getters that
+      // consume this (e.g. dotplot's centeredOffset/minOffset) go Infinity/NaN
+      // in the pre-measure window. LinearGenomeView carries the same guard.
+      return self.bpPerPx === 0 ? 0 : this.totalBp / self.bpPerPx
     },
 
     /**

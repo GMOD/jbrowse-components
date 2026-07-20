@@ -26,12 +26,11 @@ definition of done, and pointers to the ADRs, reference notes, and guides under
 - Keep the main model chain in one file (e.g. `LinearGenomeView/model.ts`);
   don't split `.views()`/`.actions()` across files. Small mixins/utilities can
   be extracted.
-- To override a config-slot default, write the slot directly
-  (`self.configuration.setSlot(name, value)`) and read it back via `getConf`;
-  the old `<name>Override` shadow-property system was removed. For a default
-  that must resolve across tiers (config default → display-type/session default
-  → instance pin) at read time, use the promotable-slot mechanism /
-  `getConfResolved`.
+- To override a config-slot default, write the slot directly (`setSlot`) and
+  read it back via `getConf`; the old `<name>Override` shadow-property system
+  was removed. For a default that must resolve across tiers at read time
+  (config → display-type/session default → instance pin), use promotable slots
+  / `getConfResolved` (`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`).
 - A bare getter must return a resolved value, never `undefined`. When a bespoke
   (non-config) MST prop encodes a sentinel (e.g. `rowHeight === 0` =
   fit-to-height), expose the resolved value under a distinct getter
@@ -45,17 +44,12 @@ definition of done, and pointers to the ADRs, reference notes, and guides under
 `babel-plugin-react-compiler` does NOT compile inline `observer(function(){})` /
 `observer(()=>…)` — always write observers that way, so MobX drives their
 reactivity. The `function F(){}; observer(F)` form DOES get compiled and can
-stale a MobX read (it memoizes on stable identity); avoid it, or add
-`'use no memo'` (as `DisplayChrome` does). See
-`agent-docs/COMPILER_TERNARY_FINDING.md`.
+stale a MobX read (memoizes on stable identity); avoid it, or add
+`'use no memo'`. See `agent-docs/COMPILER_TERNARY_FINDING.md`.
 
 ## Tooling
 
 - Run `pnpm test <directory>`, not the full suite.
-- The ambient `typescript` devDependency stays on 6.x because
-  `@typescript-eslint`/`ts-api-utils` haven't shipped TypeScript 7 support (peer
-  range `<6.1.0`) — bumping it breaks `pnpm lint`. `pnpm typecheck` gets TS7's
-  speed via an aliased `typescript7` devDependency (`npm:typescript@7`), invoked
-  by path in the root `typecheck` script. `tsc --build` in individual package
-  `build:esm` scripts still runs on the ambient 6.x. Once typescript-eslint
-  ships TS7 support, drop the alias and bump `typescript` itself to 7.
+- Two TypeScript versions on purpose: `typescript` stays on 6.x (lint needs it),
+  `pnpm typecheck` uses the aliased `typescript7`. Don't unify them —
+  `agent-docs/guides/TOOLCHAIN.md`.
