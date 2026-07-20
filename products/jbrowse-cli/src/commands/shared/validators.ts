@@ -1,6 +1,5 @@
+import { execFileSync } from 'node:child_process'
 import { accessSync, constants, statSync } from 'node:fs'
-
-import { sync as commandExistsSync } from 'command-exists'
 
 export function validateFileArgument(
   file: string | undefined,
@@ -27,6 +26,25 @@ export function validateFileArgument(
         `Usage: jbrowse ${commandName} <file>\n` +
         `       OR pipe data via stdin: cat file.${fileType} | jbrowse ${commandName}`,
     )
+  }
+}
+
+// Replaces command-exists: is `command` runnable? On POSIX, `command -v` (a
+// shell builtin, so invoked via `sh`) resolves builtins, PATH entries, and
+// absolute paths; on Windows, `where` does the same. The name is passed as an
+// argv item, never interpolated into the shell, so it can't be injected.
+function commandExistsSync(command: string): boolean {
+  try {
+    if (process.platform === 'win32') {
+      execFileSync('where', [command], { stdio: 'ignore' })
+    } else {
+      execFileSync('sh', ['-c', 'command -v "$1"', 'sh', command], {
+        stdio: 'ignore',
+      })
+    }
+    return true
+  } catch {
+    return false
   }
 }
 
