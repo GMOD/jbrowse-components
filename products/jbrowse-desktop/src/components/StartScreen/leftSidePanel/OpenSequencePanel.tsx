@@ -30,7 +30,8 @@ export default function OpenSequencePanel({
 }) {
   const { classes } = useStyles()
   const [sequenceDialogOpen, setSequenceDialogOpen] = useState(false)
-  const [showAll, setShowAll] = useState(false)
+  const [availableGenomesDialogOpen, setAvailableGenomesDialogOpen] =
+    useState(false)
 
   return (
     <div>
@@ -48,7 +49,7 @@ export default function OpenSequencePanel({
         variant="contained"
         className={classes.button}
         onClick={() => {
-          setShowAll(true)
+          setAvailableGenomesDialogOpen(true)
         }}
       >
         Show all available genomes
@@ -72,13 +73,13 @@ export default function OpenSequencePanel({
         />
       ) : null}
 
-      {showAll ? (
+      {availableGenomesDialogOpen ? (
         <AvailableGenomesDialog
           favorites={favorites}
           setFavorites={setFavorites}
           launch={launch}
           onClose={() => {
-            setShowAll(false)
+            setAvailableGenomesDialogOpen(false)
           }}
         />
       ) : null}

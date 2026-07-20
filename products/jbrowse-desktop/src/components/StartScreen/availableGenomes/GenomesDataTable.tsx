@@ -1,54 +1,31 @@
 import { useRef, useState } from 'react'
 
-import { CascadingMenuButton } from '@jbrowse/core/ui'
-import { notEmpty, useLocalStorage } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import Help from '@mui/icons-material/Help'
-import MoreVert from '@mui/icons-material/MoreVert'
-import { Button, IconButton } from '@mui/material'
 
 import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
-import CategorySelector from './CategorySelector.tsx'
-import CladeSelector from './CladeSelector.tsx'
 import GenomesTable from './GenomesTable.tsx'
+import GenomesTableToolbar from './GenomesTableToolbar.tsx'
 import MoreInfoDialog from './MoreInfoDialog.tsx'
-import SearchField from './SearchField.tsx'
 import SkeletonLoader from './SkeletonLoader.tsx'
 import TablePagination from './TablePagination.tsx'
 import { getColumnDefinitions } from './getColumnDefinitions.tsx'
-import { getTableMenuItems } from './getTableMenuItems.ts'
+import { sortAndPaginate } from './sortAndPaginate.ts'
 import useCategories from './useCategories.ts'
 import { useGenomesData } from './useGenomesData.ts'
+import { useGenomesTableState } from './useGenomesTableState.ts'
 import { useSearchHighlight } from './useSearchHighlight.ts'
 import useTaxonomyClades from './useTaxonomyClades.ts'
 
-import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
+import type { Entry } from './getColumnDefinitions.tsx'
 import type { Fav, LaunchCallback } from '../types.ts'
-import type { FilterOption } from './useGenomesData.ts'
 
 const useStyles = makeStyles()({
-  span: {
-    gap: 10,
-    display: 'flex',
-    marginBottom: 20,
-    marginTop: 20,
-  },
   panel: {
     minWidth: 1000,
     minHeight: 500,
     position: 'relative',
   },
 })
-
-// numeric:true so columns containing numbers (e.g. taxonomy IDs, accessions)
-// order naturally (2 before 10) rather than lexically (10 before 2)
-function defaultSort(a: Entry, b: Entry, col: GenomeColumn) {
-  return col.sortFn
-    ? col.sortFn(a, b)
-    : (col.value?.(a) ?? '').localeCompare(col.value?.(b) ?? '', undefined, {
-        numeric: true,
-      })
-}
 
 function rowToFav(row: Entry): Fav {
   return {
@@ -72,47 +49,30 @@ export default function GenomesDataTable({
   setFavorites: (arg: Fav[]) => void
   launch: LaunchCallback
 }) {
-  const [selected, setSelected] = useState(() => new Set<string>())
-  const [showOnlyFavs, setShowOnlyFavs] = useState(false)
-  const [filterOption, setFilterOption] = useState<FilterOption>('all')
+  const { classes } = useStyles()
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
-  const [multipleSelection, setMultipleSelection] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [clade, setClade] = useState('')
-  const [pageIndex, setPageIndex] = useState(0)
-  const [pageSize, setPageSize] = useState(50)
-  const [sorting, setSorting] = useState<{ id: string; desc: boolean }>()
-  const [typeOption, setTypeOption] = useLocalStorage(
-    'startScreen-genArkChoice',
-    'ucsc',
-  )
-  const [showAllColumns, setShowAllColumns] = useState(false)
+  const state = useGenomesTableState()
+  const {
+    typeOption,
+    searchQuery,
+    showOnlyFavs,
+    filterOption,
+    clade,
+    sorting,
+    toggleSort,
+    selected,
+    setSelected,
+    multipleSelection,
+    showAllColumns,
+    pageIndex,
+    setPageIndex,
+    pageSize,
+    setPageSize,
+  } = state
 
-  // Reset to first page whenever the result set changes so we don't land on an empty page
-  const setSearchQueryAndReset = (q: string) => {
-    setSearchQuery(q)
-    setPageIndex(0)
-  }
-  const setFilterOptionAndReset = (f: FilterOption) => {
-    setFilterOption(f)
-    setPageIndex(0)
-  }
-  const setCladeAndReset = (c: string) => {
-    setClade(c)
-    setPageIndex(0)
-  }
-  const setTypeOptionAndReset = (t: string) => {
-    setTypeOption(t)
-    setFilterOption('all')
-    setPageIndex(0)
-    // selection is keyed by row id; ids from the previous group don't exist in
-    // the new dataset, so carrying them over would leave "Go" enabled with a
-    // selection that launches nothing
-    setSelected(new Set())
-  }
   const tableRef = useRef<HTMLDivElement>(null)
   useSearchHighlight(tableRef, searchQuery)
-  const { classes } = useStyles()
+
   const {
     categories,
     isLoading: categoriesLoading,
@@ -140,6 +100,7 @@ export default function GenomesDataTable({
 
   const {
     data,
+    allData,
     error,
     isLoading: genomesLoading,
   } = useGenomesData({
@@ -164,108 +125,31 @@ export default function GenomesDataTable({
     showAllColumns,
   })
 
-  const sortingCol =
-    sorting !== undefined ? columns.find(c => c.id === sorting.id) : undefined
-  const dir = sorting?.desc ? -1 : 1
-  const sortedData = sortingCol
-    ? [...data].sort((a, b) => dir * defaultSort(a, b, sortingCol))
-    : data
-
-  // Clamp during render so shrinking the result set (e.g. removing favorites,
-  // resetting the favorites list) can never leave us stranded on an empty page,
-  // independent of which handlers remember to reset pageIndex.
-  const pageCount = Math.max(1, Math.ceil(sortedData.length / pageSize))
-  const currentPage = Math.min(pageIndex, pageCount - 1)
-  const pageRows = sortedData.slice(
-    currentPage * pageSize,
-    currentPage * pageSize + pageSize,
-  )
-
-  const toggleSort = (colId: string) => {
-    setPageIndex(0)
-    if (sorting?.id === colId) {
-      if (sorting.desc) {
-        setSorting(undefined)
-      } else {
-        setSorting({ id: colId, desc: true })
-      }
-    } else {
-      setSorting({ id: colId, desc: false })
-    }
-  }
+  const { pageRows, currentPage, totalRows } = sortAndPaginate({
+    data,
+    columns,
+    sorting,
+    pageIndex,
+    pageSize,
+  })
 
   return (
     <div className={classes.panel}>
-      <div className={classes.span}>
-        {multipleSelection ? (
-          <Button
-            variant="contained"
-            disabled={selected.size === 0}
-            onClick={() => {
-              const selectedRows = [...selected]
-                .map(id => data.find(row => row.id === id))
-                .filter(notEmpty)
-                .map(r => ({
-                  jbrowseConfig: r.jbrowseConfig,
-                  shortName: r.accession,
-                }))
-
-              launch(selectedRows)
-              onClose()
-            }}
-          >
-            Go
-          </Button>
-        ) : null}
-
-        <SearchField
-          searchQuery={searchQuery}
-          onChange={setSearchQueryAndReset}
-        />
-
-        <CategorySelector
-          categories={categories}
-          typeOption={activeTypeOption}
-          categoriesLoading={categoriesLoading}
-          categoriesError={categoriesError}
-          onChange={setTypeOptionAndReset}
-        />
-        <CladeSelector
-          clades={clades}
-          clade={clade}
-          onChange={setCladeAndReset}
-        />
-        <CascadingMenuButton
-          menuItems={() =>
-            getTableMenuItems({
-              typeOption: activeTypeOption,
-              multipleSelection,
-              showOnlyFavs,
-              showAllColumns,
-              filterOption,
-              setMultipleSelection,
-              setSelected,
-              setShowOnlyFavs,
-              setShowAllColumns,
-              setPageIndex,
-              setFilterOptionAndReset,
-              setFavorites,
-            })
-          }
-        >
-          <MoreVert />
-        </CascadingMenuButton>
-
-        <IconButton
-          size="small"
-          title="More information"
-          onClick={() => {
-            setMoreInfoDialogOpen(true)
-          }}
-        >
-          <Help />
-        </IconButton>
-      </div>
+      <GenomesTableToolbar
+        state={state}
+        activeTypeOption={activeTypeOption}
+        allData={allData}
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        categoriesError={categoriesError}
+        clades={clades}
+        setFavorites={setFavorites}
+        launch={launch}
+        onClose={onClose}
+        onMoreInfo={() => {
+          setMoreInfoDialogOpen(true)
+        }}
+      />
 
       {loadError ? <NetworkErrorMessage error={loadError} /> : null}
 
@@ -286,12 +170,9 @@ export default function GenomesDataTable({
           <TablePagination
             pageIndex={currentPage}
             pageSize={pageSize}
-            totalRows={sortedData.length}
+            totalRows={totalRows}
             onPageChange={setPageIndex}
-            onPageSizeChange={size => {
-              setPageSize(size)
-              setPageIndex(0)
-            }}
+            onPageSizeChange={setPageSize}
           />
         </div>
       )}

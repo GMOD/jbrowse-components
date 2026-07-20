@@ -72,14 +72,24 @@ export function useGenomesData({
   favorites: Fav[]
   url?: string
   cladeTaxonIds?: Set<number>
-}): { data: RawEntry[]; error: unknown; isLoading: boolean } {
+}): {
+  data: RawEntry[]
+  allData: RawEntry[]
+  error: unknown
+  isLoading: boolean
+} {
   const { data, error, isLoading } = useFetch<RawData>(url, (u: string) =>
     fetchJson<RawData>(u),
   )
 
   const query = searchQuery.toLowerCase().trim()
   const favSet = new Set(favorites.map(r => r.id))
-  const result = applyFilter(normalizeEntries(data ?? []), filterOption)
+  // allData is the full normalized group (all row ids valid for launching);
+  // data is what the current search/clade/status/favorites filters leave
+  // visible. A persisted multi-selection is resolved against allData so rows
+  // hidden by the current filter still launch.
+  const allData = normalizeEntries(data ?? [])
+  const result = applyFilter(allData, filterOption)
     .sort(byOrderKey)
     .filter(
       row =>
@@ -88,5 +98,5 @@ export function useGenomesData({
         (!showOnlyFavs || favSet.has(row.id)),
     )
 
-  return { data: result, error, isLoading }
+  return { data: result, allData, error, isLoading }
 }

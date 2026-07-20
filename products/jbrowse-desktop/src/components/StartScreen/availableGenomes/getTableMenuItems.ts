@@ -14,8 +14,7 @@ export function getTableMenuItems({
   setSelected,
   setShowOnlyFavs,
   setShowAllColumns,
-  setPageIndex,
-  setFilterOptionAndReset,
+  setFilterOption,
   setFavorites,
 }: {
   typeOption: string
@@ -27,8 +26,7 @@ export function getTableMenuItems({
   setSelected: (arg: Set<string>) => void
   setShowOnlyFavs: (arg: boolean) => void
   setShowAllColumns: (arg: boolean) => void
-  setPageIndex: (arg: number) => void
-  setFilterOptionAndReset: (arg: FilterOption) => void
+  setFilterOption: (arg: FilterOption) => void
   setFavorites: (arg: Fav[]) => void
 }): MenuItem[] {
   return [
@@ -47,7 +45,6 @@ export function getTableMenuItems({
       type: 'checkbox',
       onClick: () => {
         setShowOnlyFavs(!showOnlyFavs)
-        setPageIndex(0)
       },
     },
     ...(typeOption !== 'ucsc'
@@ -69,7 +66,7 @@ export function getTableMenuItems({
                 type: 'radio',
                 checked: filterOption === 'all',
                 onClick: () => {
-                  setFilterOptionAndReset('all')
+                  setFilterOption('all')
                 },
               },
               {
@@ -77,7 +74,7 @@ export function getTableMenuItems({
                 type: 'radio',
                 checked: filterOption === 'refseq',
                 onClick: () => {
-                  setFilterOptionAndReset('refseq')
+                  setFilterOption('refseq')
                 },
               },
               {
@@ -85,7 +82,7 @@ export function getTableMenuItems({
                 type: 'radio',
                 checked: filterOption === 'genbank',
                 onClick: () => {
-                  setFilterOptionAndReset('genbank')
+                  setFilterOption('genbank')
                 },
               },
               {
@@ -93,7 +90,7 @@ export function getTableMenuItems({
                 type: 'radio',
                 checked: filterOption === 'designatedReference',
                 onClick: () => {
-                  setFilterOptionAndReset('designatedReference')
+                  setFilterOption('designatedReference')
                 },
               },
             ],
