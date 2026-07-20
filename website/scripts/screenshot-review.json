@@ -1560,7 +1560,7 @@
   "trio-ancestry": {
     "name": "trio-ancestry",
     "status": "bad",
-    "note": "this data visualization isn't really 'outstandingly obvious'. it just looks like there are lots of small rectangles and i dont really get it. any clearer examples we could make? I also dont really like the race science implications",
+    "note": "this data visualization isn't really 'outstandingly obvious'. it just looks like there are lots of small rectangles and i dont really get it. any clearer examples we could make? I also dont really like the race science implications || REFRAME DONE (committed 76198d52e0): rewrote the caption, in-figure annotation, and analyze_trio.md prose to foreground recombination/inheritance (child's two rows are mosaics recombined from the parents, block boundaries = crossovers) and to frame local ancestry as a per-segment statistical inference over reference panels, explicitly NOT a label on people. That addresses the race-science concern. STILL BAD for the clarity half: a whole-chromosome painting is inherently 'lots of rectangles'. A clearer/more-obvious locus or example needs new data the user is sourcing (per this session's direction: option reframe + maybe find clearer example). Not fabricating data.",
     "reviewedAt": "2026-07-19T23:24:10.902Z",
     "hash": "bbd7b11485c847c5215397b1b094905a390935b3"
   },
