@@ -104,6 +104,44 @@ Set it declaratively in the display configuration with the built-in
 The same slot backs a plain CSS color or a custom expression referencing
 `feature` attributes, same as the single-sample `color` slot.
 
+## Coloring by SV type
+
+Structural variants can be colored by their class instead of by genotype: each
+alt-carrying cell takes the color of its variant's structural-variant type. From
+the track menu, open **Color cells by** and choose **SV type** (like the
+consequence option, it only appears once the track detects structural variants
+in the loaded data).
+
+The common classes get fixed colors, so the legend reads the same across tracks:
+deletion (red), duplication (blue), insertion (green), inversion (orange), copy
+number (purple), and breakend (brown). Any other `SVTYPE` token gets an
+auto-assigned color and shows its raw token in the legend, and a record whose
+alleles span more than one class is flagged **Mixed** (grey). The legend lists
+only the classes actually present in the loaded region.
+
+Copy-number alleles written as `<CN0>`, `<CN1>`, `<CN3>`, ... are colored on an
+absolute rainbow by copy number (low copy blue, ascending to red) rather than a
+single flat color, so different copy states read apart. It is a plain ascending
+spectrum, not centered on any assumed baseline copy number.
+
+The class is read from the ALT allele (`<DEL>`, `<CN3>`, breakend notation),
+falling back to `INFO/SVTYPE` when the ALT is a plain sequence.
+
+<Figure caption="1000 Genomes SV ensemble callset (3202 samples) on chr19 colored by SV type. Each alt-carrying cell takes its variant's structural-variant class color; the large inversion is the orange band. The legend names every class present, including the callset's complex (CPX) events." src="/img/multisv_svtype.png" />
+
+Set it declaratively with the `svType` value on `featureColor`:
+
+```json
+{
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "featureColor": "svType"
+    }
+  ]
+}
+```
+
 ## Coloring and grouping by sample metadata
 
 Samples can be grouped and colored by metadata: population, phenotype, sex, or
