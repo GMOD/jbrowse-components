@@ -25,22 +25,22 @@ long stretch of correlated SNPs. The classic human example is lactase
 persistence: a regulatory variant upstream of the _LCT_ (lactase) gene swept
 recently in dairying populations, dragging a long haplotype with it.
 
-<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus (LCT/MCM6), computed live from phased 1000 Genomes genotypes (exact r², common SNPs). The red block over the highlighted gene is the long haplotype left by recent positive selection for lactase persistence — its SNPs travel as a unit — and you can see LD decay into the lighter flanks on either side."/>
+<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235 (LACTASE PERSISTENCE) — the −13910 C>T enhancer variant in an MCM6 intron that keeps LCT switched on into adulthood. Below it, exact haplotypic r² computed live from phased 1000 Genomes genotypes: the solid red block sits directly under that variant and fades into paler flanks on both sides. One variant swept, and the whole block of neighbouring SNPs went with it."/>
 
-Read it as a block: the SNPs inside the red triangle are correlated with each
-other, and that correlation fades as you move into the paler flanks, where
-recombination has had time to break the haplotype apart.
+Read the figure top to bottom and it makes one argument:
 
-The triangle summarizes those correlations; you can also look at the haplotypes
-themselves. Load the same phased genotypes as a multi-sample variant matrix and
-turn on genotype clustering, and the samples reorder so co-inherited haplotypes
-group into contiguous bands:
+1. **A causal variant.** ClinVar names rs4988235 as the lactase-persistence
+   allele — an independent annotation, not something derived from the genotypes
+   below it.
+2. **The block it dragged along.** The red triangle beneath it is the stretch of
+   SNPs correlated with each other, all inherited as a unit.
+3. **Where the block ends.** The correlation fades into the paler flanks, where
+   recombination has had time to break the haplotype apart.
 
-<Figure src="/img/ld/lct_haplotype_matrix.png" caption="The haplotypes behind the LCT block: the same phased 1000 Genomes slice drawn as a multi-sample variant matrix (one column per variant, one row per each of the 2504 samples), with rows clustered by genotype similarity. Co-inherited haplotypes fall into contiguous horizontal bands rather than scattering row to row, and the large shared block of alternate alleles (dark blue) is the swept lactase-persistence haplotype that the r² triangle renders as a solid corner. Gene models (LCT, MCM6) sit above for context."/>
-
-Each band is a set of samples carrying the same stretch of alleles. The big
-block is the lactase-persistence haplotype: the same unit the r² triangle shows
-as correlation, here shown as the actual shared sequence across people.
+That bounded shape is the point. Neutral variation doesn't build a block this
+long at this frequency — recombination erodes it. A long, common, sharply
+bounded haplotype means it rose to frequency faster than recombination could
+break it up, which is the signature of a recent selective sweep.
 
 ## An inversion suppresses recombination
 

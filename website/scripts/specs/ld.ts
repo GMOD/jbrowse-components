@@ -44,133 +44,7 @@ const LCT_TRACK = {
   ],
 }
 
-// The haplotypes behind the LCT LD block, shown directly: the SAME phased 1000G
-// slice as the LD triangle, but as a multi-sample variant MATRIX with genotype
-// clustering on. Each column is a variant, each row one of the 2504 samples,
-// reordered by genotype similarity so co-inherited haplotypes group into
-// contiguous bands. The swept lactase-persistence haplotype reads as a large
-// block of samples sharing the same alleles — the concrete "why the SNPs travel
-// together" companion to the abstract r² triangle. runClustering runs the real
-// clustering RPC declaratively (readySelector waits on the dendrogram, so the
-// figure is correct however long clustering the callset takes); the window is
-// kept to the ~200 kb core block so the variant count stays tractable.
-//
-// Rows are colored by 1000 Genomes superpopulation, which is what makes the
-// SELECTION visible rather than just the haplotype: the swept block is
-// overwhelmingly EUR while AFR/EAS samples sit outside it. A haplotype that
-// long, that common, and that population-restricted is the signature of recent
-// positive selection — drift alone doesn't build it. Metadata is the release's
-// own panel file (sample / pop / super_pop / gender, tab-separated, so it drops
-// straight into samplesTsvLocation), served CORS-open from the EBI mirror.
-const KGP_PANEL =
-  'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel'
-
-const LCT_MATRIX_TRACK = {
-  type: 'VariantTrack',
-  trackId: 'kgp_lct_matrix',
-  name: 'LCT haplotypes (1000 Genomes, clustered by genotype, colored by population)',
-  assemblyNames: ['hg19'],
-  adapter: {
-    type: 'VcfTabixAdapter',
-    uri: KGP_CHR2,
-    fetchSizeLimit: 500_000_000,
-    samplesTsvLocation: { uri: KGP_PANEL, locationType: 'UriLocation' },
-  },
-  displays: [
-    {
-      type: 'LinearMultiSampleVariantMatrixDisplay',
-      minorAlleleFrequencyFilter: 0.35,
-      colorBy: 'super_pop',
-      height: 500,
-    },
-  ],
-}
-
 export const ldSpecs: ScreenshotSpec[] = [
-  {
-    mode: 'url',
-    name: 'ld/lct_haplotype_matrix',
-    // The two halves of the same story stacked over one 800 kb window (reviewer:
-    // "combine with an LD diagram"): the abstract r² triangle on top and the
-    // concrete phased haplotypes below, so the reader sees the block AND the
-    // samples that carry it in one frame. Same slice, same MAF filter. The
-    // banded LCT/MCM6 locus lines up down all three tracks.
-    url: `${HG19_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [LCT_TRACK, LCT_MATRIX_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          // wide enough that the swept block reads as a bounded red triangle
-          // against lower-LD flanks (a solid fill with no edge doesn't say
-          // "block") — same window as the standalone LD figure
-          loc: 'chr2:136,200,000-137,000,000',
-          highlight: [
-            {
-              refName: 'chr2',
-              start: 136_545_410,
-              end: 136_634_000,
-              assemblyName: 'hg19',
-            },
-          ],
-          assembly: 'hg19',
-          tracks: [
-            {
-              trackId: 'hg19-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
-              height: 60,
-              showOnlyGenes: true,
-            },
-            // The causal variant, from an independent source: ClinVar's
-            // LACTASE PERSISTENCE records sit at chr2:136,608,642–136,608,745
-            // — rs4988235, the -13910 C>T enhancer variant in MCM6 intron 13
-            // that keeps LCT transcribed into adulthood. ClinVar has ~79
-            // records in this window, nearly all unrelated VUS, so filter to
-            // the lactase phenotype: one labeled variant anchoring the block
-            // instead of a wall of clinical noise.
-            {
-              trackId: 'hg19-clinvarMain',
-              type: 'LinearBasicDisplay',
-              height: 70,
-              jexlFiltersSetting: [
-                "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
-              ],
-            },
-            { trackId: 'kgp_lct_ld', type: 'LDDisplay', height: 300 },
-            {
-              trackId: 'kgp_lct_matrix',
-              type: 'LinearMultiSampleVariantMatrixDisplay',
-              runClustering: true,
-              // Clustered by genotype, not grouped by population (groupBy is
-              // supported and was tried here): over an 800 kb window the matrix
-              // is ~1500 columns in ~1300 px, so population grouping only moves
-              // rows around inside an unreadable field, while clustering pulls
-              // the shared-haplotype samples into visible contiguous bands.
-              // The population read stays on the colorBy strip beside the tree.
-              treeAreaWidth: 150,
-              height: 400,
-            },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readyText: 'chr2',
-    // clustering (the dendrogram) is the slowest step; the LD triangle above
-    // paints well before it, so waiting on the dendrogram gates both
-    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
-    readyTimeout: 180000,
-    viewportHeight: 1180,
-    settleMs: 5000,
-    annotations: [
-      {
-        type: 'text',
-        x: 40,
-        y: 250,
-        maxWidth: 290,
-        fontSize: 15,
-        text: 'One swept haplotype: rs4988235 → LD block → its carriers',
-      },
-    ],
-  },
   {
     mode: 'url',
     name: 'ld/lct_lactase',
@@ -199,8 +73,23 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg19-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
-              height: 90,
+              height: 60,
               showOnlyGenes: true,
+            },
+            // The causal variant, from a source independent of the genotypes
+            // the r² is computed from: ClinVar's LACTASE PERSISTENCE records at
+            // chr2:136,608,642–136,608,745 — rs4988235, the -13910 C>T enhancer
+            // variant in an MCM6 intron that keeps LCT transcribed into
+            // adulthood. ClinVar has ~79 records in this window, nearly all
+            // unrelated VUS, so filter to the lactase phenotype: one labeled
+            // variant anchoring the block rather than a wall of clinical noise.
+            {
+              trackId: 'hg19-clinvarMain',
+              type: 'LinearBasicDisplay',
+              height: 70,
+              jexlFiltersSetting: [
+                "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
+              ],
             },
             { trackId: 'kgp_lct_ld', type: 'LDDisplay' },
           ],
@@ -209,19 +98,21 @@ export const ldSpecs: ScreenshotSpec[] = [
     })}&sessionName=Screenshot`,
     readyText: 'variants shown',
     readyTimeout: 180000,
-    // gene(90) + ld(460) + 2 headers + ruler/overview
-    viewportHeight: 700,
+    // gene(60) + clinvar(70) + ld(460) + 3 headers + ruler/overview, with room
+    // for the triangle to reach its base
+    viewportHeight: 900,
     settleMs: 14000,
     annotations: [
       {
         type: 'text',
-        // kept left of the banded LCT/MCM6 locus (highlight starts ~x=650) so
-        // the callout no longer sits on top of the highlight (reviewer)
+        // bottom-left, in the triangle's empty long-range corner: clear of the
+        // banded LCT/MCM6 locus (highlight starts ~x=650) and, unlike the old
+        // y=245, clear of the ClinVar track header it used to cover
         x: 40,
-        y: 245,
-        maxWidth: 380,
+        y: 700,
+        maxWidth: 300,
         fontSize: 16,
-        text: 'A variant near LCT keeps the milk-digesting enzyme lactase switched on into adulthood. It spread so fast under natural selection that a long block of neighboring SNPs was carried along with it — that block is the solid red triangle, all inherited together (high r²).',
+        text: 'rs4988235 swept — and dragged this whole block with it',
       },
     ],
   },
