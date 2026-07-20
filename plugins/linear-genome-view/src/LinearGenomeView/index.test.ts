@@ -12,6 +12,7 @@ import {
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
 
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
@@ -853,6 +854,72 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   model.setError(new Error('pxToBp failed to map to a region'))
   expect(`${model.error}`).toEqual('Error: pxToBp failed to map to a region')
 })
+
+// The reversed-region audit (agent-docs/guides/REVERSED_REGION_AUDIT.md, item 5)
+// noted that every renderer-level reversed test hands `reversed: true` straight
+// to the render path — nothing proved the *model* actually delivers it. The
+// wiring is `displayedRegion.reversed` → `dynamicBlocks.contentBlocks` →
+// `view.visibleRegions` → `buildRenderBlocks` (the shared getter every GPU
+// display's render call reads via MultiRegionDisplayMixin.renderBlocks). This
+// pins that whole chain, so a display can't silently render a flipped region
+// forward.
+describe('displayedRegion.reversed → buildRenderBlocks wiring', () => {
+  function renderBlocksFor(reversed: boolean) {
+    const { Session, LinearGenomeModel } = initialize()
+    const model = Session.create({ configuration: {} }).setView(
+      LinearGenomeModel.create({
+        id: `renderblock-wiring-${reversed}`,
+        type: 'LinearGenomeView',
+        tracks: [{ name: 'foo', type: 'BasicTrack' }],
+      }),
+    )
+    model.setWidth(800)
+    model.setDisplayedRegions([
+      {
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: 1000,
+        end: 2000,
+        reversed,
+      },
+    ])
+    return buildRenderBlocks(model.visibleRegions)
+  }
+
+  it('a forward displayedRegion delivers reversed:false blocks', () => {
+    const blocks = renderBlocksFor(false)
+    expect(blocks.length).toBeGreaterThan(0)
+    // reversed is `reversed?: boolean` on the input but resolved (always
+    // present) on a RenderBlock — the render path branches on it directly.
+    expect(blocks.every(b => !b.reversed)).toBe(true)
+  })
+
+  it('a reversed displayedRegion delivers reversed:true blocks', () => {
+    const blocks = renderBlocksFor(true)
+    expect(blocks.length).toBeGreaterThan(0)
+    expect(blocks.every(b => b.reversed)).toBe(true)
+  })
+
+  it('flipping changes only orientation: same pixel rect, same bp width', () => {
+    // A flip must not resize the block or move the pixel rect it paints into —
+    // it only mirrors the bp→x mapping (and, at the default view, anchors on the
+    // region's other end, so the visible sub-span differs but its *width* can't).
+    // If flipping also changed the rect or the bp-width, a downstream cull /
+    // mapper would be fed inconsistent inputs.
+    const fwd = renderBlocksFor(false)
+    const rev = renderBlocksFor(true)
+    expect(rev.length).toBe(fwd.length)
+    fwd.forEach((f, i) => {
+      const r = rev[i]!
+      expect(r.screenStartPx).toBe(f.screenStartPx)
+      expect(r.screenEndPx).toBe(f.screenEndPx)
+      expect(r.end - r.start).toBe(f.end - f.start)
+      expect(r.displayedRegionIndex).toBe(f.displayedRegionIndex)
+      expect(r.reversed).toBe(!f.reversed)
+    })
+  })
+})
+
 // determined objectively by looking at
 // http://localhost:3000/?config=test_data%2Fconfig_demo.json&session=share-Se2K5q_Jog&password=qT9on
 //

@@ -114,6 +114,24 @@ Clean (verified this session):
   `makeCellLeftMapper`.
 - **wiggle** and **variants** — both hit this bug historically and both carry a
   reversed cell-geometry regression test (see above).
+- **alignments soft-clip bases + insertions** — now in the mirror fixture
+  (`renderers/reversedMirror.test.ts`): `pileupData()` populates
+  `softclipBasePositions`/`interbasePositions` and a dedicated guard asserts both
+  layers draw non-vacuously (was item 6 below).
+- **alignments reversed selection-box SVG export** — same file's "reversed
+  selection box SVG export" block drives the real `SvgCanvas` path via
+  `drawAlignmentsToCtx`, asserting a positive-width mirror-edge rect (never
+  `width="-…"`), by property not snapshot (was the acute half of item 4).
+- **the wiring above the renderer** (was item 5). Two levels, both by property:
+  `products/jbrowse-web/src/tests/ReversedAlignmentsBlocks.test.tsx` (committed
+  `36a646340d`) navs a real `ctgA:1..4000[rev]` and asserts the alignments
+  display's `renderBlocks` — the exact array `startRenderingBackend` and
+  `renderSvg.tsx` consume — carries `reversed: true` (and `false` forward, so it
+  tracks the region). `LinearGenomeView/index.test.ts`
+  ("displayedRegion.reversed → buildRenderBlocks wiring") pins the generic seam
+  every display shares — `view.visibleRegions → buildRenderBlocks` — at the unit
+  level, and checks a flip changes only orientation, not the pixel rect or
+  bp-width. Both mutation-verified.
 - hit-testing — `canvasXToGenomicPos` is the exact continuous inverse of
   `bpToScreenX` and round-trips in both orientations; `hitTestModification`
   applies its half-base shift in genomic space, where base B centers at B+0.5
@@ -153,15 +171,15 @@ Roughly highest value first:
    class. See TODO.md; copy hic's upstream mirror. (The rest of the cell-geometry
    read-the-assertion pass is done — maf/canvas/sequence carry reversed
    cell-geometry tests; dotplot/synteny/gwas are span/point classes, not cells.)
-4. **Reversed SVG export for alignments.** The only reversed *integration* tests
-   are `ReversedRegionLabels.test.tsx` (gene labels) and `LaunchSynteny.test.tsx`
-   (three flipped-synteny views) — neither touches a pileup. Copy the former and
-   swap the track. Assert a property, not a snapshot — a snapshot of a reversed
-   pileup would have recorded both of this session's bugs as expected output.
-5. **The wiring above the renderer.** `reversedMirror.test.ts` hands
-   `reversed: true` straight to `renderBlocks`; nothing asserts the model
-   delivers it (displayedRegion → `renderBlocks` → `renderState`).
-6. **Soft-clip bases and insertions** aren't reached by the mirror fixture.
+4. **Broad reversed pileup SVG export pixels.** Increasingly narrow. The acute
+   case (selection box → negative-width rect) is covered in
+   `reversedMirror.test.ts`, and `drawAlignmentsToCtx` is backend-agnostic — it
+   makes the same calls into a recording ctx (mirror-tested) and into `SvgCanvas`
+   (selection-box-tested), so the remaining gap is only an `SvgCanvas`-specific
+   transform bug on a *non-selected* pileup mark. Whether a full display-level
+   SVG-export integration test earns its flakiness is a judgment call; if you
+   write one, copy `ReversedRegionLabels.test.tsx`, swap the track, assert a
+   property not a snapshot.
 
 ## Writing the test
 
