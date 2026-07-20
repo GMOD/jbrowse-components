@@ -72,6 +72,7 @@ const galleryPreview: GalleryCard[] = [
         src={`${baseUrl}/img/screenshot.webp`}
         width="1362"
         height="731"
+        fetchpriority="high"
         alt="JBrowse linear genome view showing read alignments, coverage, and gene annotations"
       />
     </div>
@@ -304,10 +305,10 @@ const galleryPreview: GalleryCard[] = [
   }
 
   .outer-box {
-    margin: clamp(0.75rem, 4vw, 3rem);
     max-width: 1600px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: clamp(0.75rem, 4vw, 3rem) auto;
+    padding-left: clamp(1rem, 4vw, 3rem);
+    padding-right: clamp(1rem, 4vw, 3rem);
   }
 
   .hero-row {
@@ -466,6 +467,17 @@ const galleryPreview: GalleryCard[] = [
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-card,
+    .card {
+      transition: none;
+    }
+    .gallery-card:hover,
+    .card:hover {
+      transform: none;
+    }
   }
 
   @media (min-width: 900px) {
