@@ -26,6 +26,7 @@ interface ScaleModel {
   rowHeight: number
   isDensityMode: boolean
   domain: [number, number] | undefined
+  dataRange: [number, number] | undefined
   scaleType: string
   ticks?: YScaleTicks
   rowHeightTooSmallForScalebar: boolean
@@ -49,6 +50,7 @@ export default observer(function MultiWiggleSvgScales({
     rowHeight,
     isDensityMode,
     domain,
+    dataRange,
     scaleType,
     ticks,
     rowHeightTooSmallForScalebar,
@@ -67,6 +69,7 @@ export default observer(function MultiWiggleSvgScales({
   const scoreLegend = domain ? (
     <ScoreLegend
       domain={domain}
+      dataRange={dataRange}
       scaleType={scaleType}
       canvasWidth={canvasWidth}
     />

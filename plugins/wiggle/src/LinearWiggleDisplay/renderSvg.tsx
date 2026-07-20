@@ -41,6 +41,7 @@ export async function renderSvg(
         model.domain ? (
           <ScoreLegend
             domain={model.domain}
+            dataRange={model.dataRange}
             scaleType={model.scaleType}
             canvasWidth={canvasWidth}
           />

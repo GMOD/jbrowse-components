@@ -10,7 +10,39 @@ import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleComponentUtils.ts'
 
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type { ObservableMap } from 'mobx'
+
+// The visible per-source feature arrays that feed autoscale, clipped to the
+// coarse (500ms debounced) blocks so the domain doesn't recompute on every
+// animation frame during zoom. `undefined` until the view + data are ready.
+// Shared by visibleScoreRange (clipped domain) and dataRange (true extent) so
+// they can't diverge; a free function rather than a getter to keep the mixin's
+// `.views` layering shallow enough for MST's compose type inference.
+function visibleEntries(
+  self: IAnyStateTreeNode & {
+    rpcDataMap: ObservableMap<number, WiggleDataResult>
+    autoscaleSourceNames: Set<string> | undefined
+  },
+) {
+  const view = getContainingView(self) as LinearGenomeViewModel
+  if (!view.initialized || self.rpcDataMap.size === 0) {
+    return undefined
+  }
+  const names = self.autoscaleSourceNames
+  return view.coarseDynamicBlocks.flatMap(block => {
+    const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
+    if (!regionData) {
+      return []
+    }
+    const visStart = Math.floor(block.start)
+    const visEnd = Math.ceil(block.end)
+    return regionData.sources
+      .filter(source => !names || names.has(source.name))
+      .map(source => ({ visStart, visEnd, data: source }))
+  })
+}
 
 /**
  * #stateModel WiggleCommonMixin
@@ -49,40 +81,9 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
-       * The visible per-source feature arrays that feed autoscale, clipped to
-       * the coarse (500ms debounced) blocks so the domain doesn't recompute on
-       * every animation frame during zoom. `undefined` until the view + data
-       * are ready.
-       */
-      get visibleEntries() {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized || self.rpcDataMap.size === 0) {
-          return undefined
-        }
-        const names = self.autoscaleSourceNames
-        return view.coarseDynamicBlocks.flatMap(block => {
-          const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
-          if (!regionData) {
-            return []
-          }
-          const visStart = Math.floor(block.start)
-          const visEnd = Math.ceil(block.end)
-          return regionData.sources
-            .filter(source => !names || names.has(source.name))
-            .map(source => ({
-              visStart,
-              visEnd,
-              data: source,
-            }))
-        })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        */
       get visibleScoreRange() {
-        const entries = self.visibleEntries
+        const entries = visibleEntries(self)
         return entries
           ? computeAutoscaleDomain(
               self.autoscaleType,
@@ -100,7 +101,7 @@ export function WiggleCommonMixin() {
        * score legend compares the two to flag clipped signal.
        */
       get dataRange() {
-        const entries = self.visibleEntries
+        const entries = visibleEntries(self)
         return entries
           ? computeScoreExtent(self.summaryScoreMode, entries)
           : undefined
