@@ -12,20 +12,24 @@ function feat(data: Record<string, unknown>) {
 }
 
 describe('getVariantSvType', () => {
-  it('reads INFO.SVTYPE (array) as the canonical bucket', () => {
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>'] }))).toBe('DEL')
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['TRA'] }, ALT: ['<TRA>'] }))).toBe('BND')
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['DUP:TANDEM'] }, ALT: ['<DUP:TANDEM>'] }))).toBe('DUP')
-  })
-
-  it('passes through an unrecognized SVTYPE token uppercased', () => {
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['invdup'] }, ALT: ['<INVDUP>'] }))).toBe('INVDUP')
-  })
-
-  it('derives from a symbolic/breakend ALT when SVTYPE is absent', () => {
+  it('derives the class from a symbolic/breakend ALT, normalizing tokens', () => {
     expect(getVariantSvType(feat({ ALT: ['<DEL>'] }))).toBe('DEL')
-    expect(getVariantSvType(feat({ ALT: ['G[ctgA:200['] }))).toBe('BND')
-    expect(getVariantSvType(feat({ ALT: ['<CN0>'] }))).toBe('CNV')
+    expect(getVariantSvType(feat({ ALT: ['<TRA>'] }))).toBe('BND') // TRA -> BND
+    expect(getVariantSvType(feat({ ALT: ['<DUP:TANDEM>'] }))).toBe('DUP') // strip :sub
+    expect(getVariantSvType(feat({ ALT: ['G[ctgA:200['] }))).toBe('BND') // breakend
+    expect(getVariantSvType(feat({ ALT: ['<INVDUP>'] }))).toBe('INVDUP') // passthrough
+  })
+
+  it('keeps the specific copy number from a <CNx> ALT', () => {
+    expect(getVariantSvType(feat({ ALT: ['<CN0>'] }))).toBe('CN0')
+    expect(getVariantSvType(feat({ ALT: ['<CN3>'] }))).toBe('CN3')
+    // ALT wins over a generic SVTYPE=CNV so the copy number survives
+    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['CNV'] }, ALT: ['<CN3>'] }))).toBe('CN3')
+  })
+
+  it('falls back to SVTYPE only when the ALT is uninformative', () => {
+    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['ACGT'] }))).toBe('DEL')
+    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['.'] }, ALT: ['A'] }))).toBe('')
   })
 
   it('flags a multi-class multiallelic site as MIXED', () => {
@@ -34,17 +38,13 @@ describe('getVariantSvType', () => {
     expect(getVariantSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>', '<DUP>'] }))).toBe('MIXED')
   })
 
-  it('does not flag a same-class multiallelic site (e.g. CNV copy states)', () => {
+  it('collapses a multi-copy-number site to the generic CNV bucket, not MIXED', () => {
     expect(getVariantSvType(feat({ ALT: ['<CN0>', '<CN3>'] }))).toBe('CNV')
   })
 
   it('is empty for plain (non-symbolic) SNVs and indels', () => {
     expect(getVariantSvType(feat({ ALT: ['A'] }))).toBe('')
     expect(getVariantSvType(feat({ ALT: ['ACGT'] }))).toBe('')
-  })
-
-  it('ignores a missing-value SVTYPE and falls back to ALT', () => {
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['.'] }, ALT: ['A'] }))).toBe('')
   })
 })
 
@@ -69,6 +69,21 @@ describe('assignSvTypeColors', () => {
     // predefined color for DEL, palette colors for the rest, none colliding
     const values = Object.values(colors)
     expect(new Set(values).size).toBe(values.length)
+  })
+
+  it('colors copy-number states with an absolute rainbow, ordered ascending', () => {
+    const colors = assignSvTypeColors(['CN3', 'CN0', 'DEL'])
+    // known bucket first, then copy numbers ascending
+    expect(Object.keys(colors)).toEqual(['DEL', 'CN0', 'CN3'])
+    // absolute mapping: CN0 is the blue end of the spectrum
+    expect(colors.CN0).toBe('hsl(240, 70%, 50%)')
+    expect(colors.CN3).not.toBe(colors.CN0)
+  })
+
+  it('gives a copy number a stable color regardless of the present set', () => {
+    const a = assignSvTypeColors(['CN3', 'CN5'])
+    const b = assignSvTypeColors(['CN0', 'CN3', 'CN9'])
+    expect(a.CN3).toBe(b.CN3) // absolute, not rank-based
   })
 
   it('does not reuse a predefined class color for an unknown token', () => {
