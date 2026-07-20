@@ -11,11 +11,11 @@ Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.
 ### computeAutoscaleDomain
 
 Computes a score domain from the visible feature arrays for the `local` /
-`localsd` autoscale types.
+`localsd` / `localpercentile` autoscale types.
 
 ```js
 // type signature
-(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[]) => [number, number] | undefined
+(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], numQuantile?: number) => [...] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
@@ -74,7 +74,7 @@ The axis-origin baseline: `1` for log, `0` otherwise.
 
 ```js
 // type signature
-(scaleType: string) => 1 | 0
+(scaleType: string) => 0 | 1
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)

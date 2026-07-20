@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
-    "@fontsource/roboto": "^5.2.10",
+    "@fontsource/roboto": "^5.3.0",
     "@gmod/faidx": "^2.0.0",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
