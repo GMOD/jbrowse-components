@@ -1,32 +1,40 @@
+# JBrowse 2
+
 [![Build Status](https://img.shields.io/github/actions/workflow/status/GMOD/jbrowse-components/push.yml?branch=main&logo=github&style=for-the-badge)](https://github.com/GMOD/jbrowse-components/actions)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQiIGhlaWdodD0iMTQiIHZpZXdCb3g9IjAgMCAyNTYgMjU2IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPjx0aXRsZT5Db250cmlidXRvciBDb3ZlbmFudCBMb2dvPC90aXRsZT48ZyBpZD0iQ2FudmFzIj48ZyBpZD0iR3JvdXAiPjxnIGlkPSJTdWJ0cmFjdCI+PHVzZSB4bGluazpocmVmPSIjcGF0aDBfZmlsbCIgZmlsbD0iIzVFMEQ3MyIvPjwvZz48ZyBpZD0iU3VidHJhY3QiPjx1c2UgeGxpbms6aHJlZj0iI3BhdGgxX2ZpbGwiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDU4IDI0KSIgZmlsbD0iIzVFMEQ3MyIvPjwvZz48L2c+PC9nPjxkZWZzPjxwYXRoIGlkPSJwYXRoMF9maWxsIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0gMTgyLjc4NyAxMi4yODQ2QyAxNzMuMDA1IDkuNDk0MDggMTYyLjY3NyA4IDE1MiA4QyA5MC4xNDQxIDggNDAgNTguMTQ0MSA0MCAxMjBDIDQwIDE4MS44NTYgOTAuMTQ0MSAyMzIgMTUyIDIzMkMgMTg4LjQ2NCAyMzIgMjIwLjg1NyAyMTQuNTc1IDI0MS4zMDggMTg3LjU5OEMgMjE5Ljg3IDIyOC4yNzIgMTc3LjE3MyAyNTYgMTI4IDI1NkMgNTcuMzA3NSAyNTYgMCAxOTguNjkyIDAgMTI4QyAwIDU3LjMwNzUgNTcuMzA3NSAwIDEyOCAwQyAxNDcuNjA0IDAgMTY2LjE3OSA0LjQwNzA5IDE4Mi43ODcgMTIuMjg0NloiLz48cGF0aCBpZD0icGF0aDFfZmlsbCIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNIDEzNy4wOSA5LjIxMzQyQyAxMjkuNzU0IDcuMTIwNTYgMTIyLjAwOCA2IDExNCA2QyA2Ny42MDgxIDYgMzAgNDMuNjA4MSAzMCA5MEMgMzAgMTM2LjM5MiA2Ny42MDgxIDE3NCAxMTQgMTc0QyAxNDEuMzQ4IDE3NCAxNjUuNjQzIDE2MC45MzEgMTgwLjk4MSAxNDAuNjk4QyAxNjQuOTAzIDE3MS4yMDQgMTMyLjg4IDE5MiA5NiAxOTJDIDQyLjk4MDcgMTkyIDAgMTQ5LjAxOSAwIDk2QyAwIDQyLjk4MDcgNDIuOTgwNyAwIDk2IDBDIDExMC43MDMgMCAxMjQuNjM0IDMuMzA1MzEgMTM3LjA5IDkuMjEzNDJaIi8+PC9kZWZzPjwvc3ZnPg==)](CODE_OF_CONDUCT.md)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-adopted-ff69b4.svg?style=for-the-badge)](CODE_OF_CONDUCT.md)
 
-JBrowse 2 is a modern genome browser with features such as...
+JBrowse 2 is a pluggable, open-source genome browser. It runs as a web app, a
+desktop app (Mac, Windows, Linux), and as embeddable React components, and
+supports linear, circular, dotplot, synteny, and spreadsheet views, with track
+types for alignments (BAM/CRAM), variants and structural variants,
+quantitative/coverage, and more.
 
-- synteny visualization between different genomes
-- advanced BAM, CRAM, and structural variant visualization features
-- and much more
+The web app is "static-site compatible" — it is pure client-side JS, CSS, and
+HTML, so it can be hosted anywhere with no server. The stack is React,
+TypeScript, and @jbrowse/mobx-state-tree.
 
-JBrowse 2 can be installed as a desktop app on Mac, Windows, or Linux, or it can
-be deployed on websites.
+## Installing and running
 
-JBrowse 2 is also "static website compatible" meaning it only uses client-side
-JS, CSS, and HTML.
+- Desktop app: [downloads](https://jbrowse.org/jb2/download/)
+- Web app: [web quickstart](https://jbrowse.org/jb2/docs/quickstart_web/)
+- Embedded React components: [embed a Linear Genome View](https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/)
 
-The core technology stack includes React, Typescript, and
-@jbrowse/mobx-state-tree
+## Documentation
 
-## Quick-start guide
+- [Documentation home](https://jbrowse.org/jb2/docs/) — user guide, config guide, developer guide, and CLI reference
+- [Tutorials](https://jbrowse.org/jb2/docs/tutorials/) — step-by-step guides grouped by topic (synteny, structural variants, methylation, RNA-seq, and more)
+- [FAQ](https://jbrowse.org/jb2/docs/faq/)
 
-- For desktop users, downloads page here https://jbrowse.org/jb2/download/
-- For web developers, please see https://jbrowse.org/jb2/docs/quickstart_web/
+## Examples
 
-## Other links
+- [Live demos](https://jbrowse.org/jb2/demos/) — hosted, interactive instances
+- [Gallery](https://jbrowse.org/jb2/gallery/) — screenshots of the views and track types
+- [Feature list](https://jbrowse.org/jb2/features/)
 
-- Homepage https://jbrowse.org/jb2
-- Gallery https://jbrowse.org/jb2/gallery
-- Docs http://jbrowse.org/jb2/docs/
-- Contact and office hours - https://jbrowse.org/jb2/contact
+## Contact
+
+- [Homepage](https://jbrowse.org/jb2/)
+- [Contact and office hours](https://jbrowse.org/jb2/contact/)
 
 ## Publications
 
@@ -41,6 +49,7 @@ The core technology stack includes React, Typescript, and
   Structures With Nucleotide-level Evidence in JBrowse 2_ (2026)
   https://www.sciencedirect.com/science/article/abs/pii/S0022283626000185
 
-## Contributing to the codebase
+## Contributing
 
-See [CONTRIBUTING.md](/CONTRIBUTING.md) for more info
+See [CONTRIBUTING.md](/CONTRIBUTING.md) to get set up. `agent-docs/ARCHITECTURE.md`
+describes the rendering pipeline and core architecture.
