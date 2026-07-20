@@ -1,4 +1,4 @@
-import { category10 } from '@jbrowse/core/ui/colors'
+import { set1 } from '@jbrowse/core/ui/colors'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -14,8 +14,11 @@ export const SV_TYPE_COLOR = 'svType'
 export const MIXED_SV_TYPE = 'MIXED'
 
 // Canonical SV-type buckets in legend order, with their predefined colors and
-// human-readable labels. Any type not listed here is an unrecognized token that
-// gets an auto-assigned palette color and shows its raw token as the label.
+// human-readable labels. Colors are all `set1` entries — the same palette
+// unrecognized tokens draw from — so a predefined class and an auto-assigned
+// token can't land on two near-identical shades from different palettes. Any
+// type not listed here gets an auto-assigned palette color and shows its raw
+// token as the label.
 export const PREDEFINED_SV_TYPES = [
   { type: 'DEL', label: 'Deletion', color: '#e41a1c' },
   { type: 'DUP', label: 'Duplication', color: '#377eb8' },
@@ -23,7 +26,7 @@ export const PREDEFINED_SV_TYPES = [
   { type: 'INV', label: 'Inversion', color: '#ff7f00' },
   { type: 'CNV', label: 'Copy number', color: '#984ea3' },
   { type: 'BND', label: 'Breakend', color: '#a65628' },
-  { type: MIXED_SV_TYPE, label: 'Mixed', color: '#607d8b' },
+  { type: MIXED_SV_TYPE, label: 'Mixed', color: '#999999' },
 ] as const
 
 const PREDEFINED_COLOR: Record<string, string> = Object.fromEntries(
@@ -132,14 +135,19 @@ export function assignSvTypeColors(types: string[]): Record<string, string> {
   const unknown = types.filter(t => !(t in CANONICAL_ORDER)).sort()
 
   const result: Record<string, string> = {}
+  const used = new Set<string>()
   for (const type of known) {
-    result[type] = PREDEFINED_COLOR[type]!
+    const color = PREDEFINED_COLOR[type]!
+    result[type] = color
+    used.add(color)
   }
-  // category10 shares no colors with the predefined set1 palette, so cycling it
-  // for unrecognized tokens can't collide with a predefined swatch (it only
-  // repeats among unknowns past 10 distinct types, which real VCFs don't hit).
+  // Draw unrecognized tokens from the same set1 palette, skipping colors a
+  // predefined class already took — so e.g. a CPX token can't land on the same
+  // blue as Duplication. Falls back to cycling the full palette only if a VCF
+  // has more distinct SV types than set1 has colors (real callsets don't).
+  const free = set1.filter(c => !used.has(c))
   unknown.forEach((type, i) => {
-    result[type] = category10[i % category10.length]!
+    result[type] = free.length ? free[i % free.length]! : set1[i % set1.length]!
   })
   return result
 }

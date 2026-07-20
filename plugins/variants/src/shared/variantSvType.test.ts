@@ -71,6 +71,15 @@ describe('assignSvTypeColors', () => {
     expect(new Set(values).size).toBe(values.length)
   })
 
+  it('does not reuse a predefined class color for an unknown token', () => {
+    // regression: DUP (set1 blue) and an unrecognized CPX token must not share
+    // a color — the unknown skips every color a known class already took
+    const colors = assignSvTypeColors(['DUP', 'CPX', 'DEL'])
+    expect(colors.DUP).toBe('#377eb8')
+    expect(colors.CPX).not.toBe(colors.DUP)
+    expect(colors.CPX).not.toBe(colors.DEL)
+  })
+
   it('is deterministic', () => {
     const a = assignSvTypeColors(['INV', 'FOO', 'DEL'])
     const b = assignSvTypeColors(['DEL', 'FOO', 'INV'])
