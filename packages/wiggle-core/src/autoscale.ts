@@ -134,30 +134,29 @@ export function domainFromStats(
   return [stats.scoreMin, stats.scoreMax]
 }
 
-// Builds a `[low, high]` domain by clipping the score distribution to the
-// central `quantile` fraction (e.g. 0.99 → clip the top 1% of scores). Unlike
-// localsd it makes no normality assumption, so it stays robust on the heavily
-// right-skewed score distributions typical of coverage/wiggle data. A fixed
-// histogram over [scoreMin, scoreMax] keeps this a single O(n) pass with no
-// sort — the resulting quantile is approximate to ~1/NUM_HISTOGRAM_BINS of the
-// range, which is far finer than the display needs.
-function percentileDomainFromHistogram(
-  stats: ScoreStats,
-  summaryScoreMode: string,
-  quantile: number,
+// The `quantile`-th percentile magnitude of one signed side of the score
+// distribution: features are filtered to a single sign (`positiveSide`), their
+// magnitudes binned over `[0, maxMag]`, and the magnitude below which `quantile`
+// of that side's mass falls is returned — clipping the outermost `1 - quantile`
+// as outliers. Returns 0 when the side is empty. A fixed histogram keeps this an
+// O(n) pass with no sort, approximate to ~1/NUM_HISTOGRAM_BINS of maxMag, far
+// finer than the display needs.
+function sideMagnitudePercentile(
   datasets: Dataset[],
-): [number, number] {
-  const { scoreMin, scoreMax } = stats
-  const range = scoreMax - scoreMin
-  if (range <= 0) {
-    return [scoreMin, scoreMax]
+  scoresFor: (data: FeatureArrays) => Float32Array,
+  positiveSide: boolean,
+  maxMag: number,
+  quantile: number,
+): number {
+  if (maxMag <= 0) {
+    return 0
   }
   const bins = new Int32Array(NUM_HISTOGRAM_BINS)
-  const scale = NUM_HISTOGRAM_BINS / range
+  const scale = NUM_HISTOGRAM_BINS / maxMag
   let count = 0
   for (const { data, visStart, visEnd } of datasets) {
     const { featurePositions, numFeatures } = data
-    const scores = getEffectiveScores(data, summaryScoreMode)
+    const scores = scoresFor(data)
     for (let i = 0; i < numFeatures; i++) {
       if (
         visStart !== undefined &&
@@ -171,44 +170,74 @@ function percentileDomainFromHistogram(
       ) {
         continue
       }
-      const bin = Math.min(
-        NUM_HISTOGRAM_BINS - 1,
-        Math.floor((scores[i]! - scoreMin) * scale),
-      )
-      bins[bin]!++
-      count++
+      const mag = positiveSide ? scores[i]! : -scores[i]!
+      if (mag > 0) {
+        const bin = Math.min(NUM_HISTOGRAM_BINS - 1, Math.floor(mag * scale))
+        bins[bin]!++
+        count++
+      }
     }
   }
-
-  // Walk the cumulative histogram to the low/high quantile bins. `quantile` is
-  // the upper percentile directly (0.99 → 99th pct max, 1st pct min); the low
-  // bound is normally pinned to 0 below, so spending the whole budget on the
-  // high tail keeps the clip strong enough to catch outliers.
-  const lowTarget = (1 - quantile) * count
-  const highTarget = quantile * count
+  if (count === 0) {
+    return 0
+  }
+  const target = quantile * count
   let cumulative = 0
-  let lowBin = 0
-  let highBin = NUM_HISTOGRAM_BINS - 1
-  let lowFound = false
   for (let bin = 0; bin < NUM_HISTOGRAM_BINS; bin++) {
     cumulative += bins[bin]!
-    if (!lowFound && cumulative >= lowTarget) {
-      lowBin = bin
-      lowFound = true
-    }
-    if (cumulative >= highTarget) {
-      highBin = bin
-      break
+    // +1 so the target bin is included rather than clipped.
+    if (cumulative >= target) {
+      return ((bin + 1) / NUM_HISTOGRAM_BINS) * maxMag
     }
   }
-  // Convert bin edges back to scores. The high edge uses `highBin + 1` so the
-  // target bin is included rather than clipped. Pin the low bound to 0 for
-  // all-positive data, matching localsd's origin convention so the axis stays
-  // anchored at zero.
-  return [
-    scoreMin >= 0 ? 0 : scoreMin + (lowBin / NUM_HISTOGRAM_BINS) * range,
-    scoreMin + ((highBin + 1) / NUM_HISTOGRAM_BINS) * range,
-  ]
+  return maxMag
+}
+
+// Builds a `[low, high]` domain by clipping each side of the score distribution
+// to its central `quantile` fraction (e.g. 0.99 → clip the outermost 1% of each
+// sign). Unlike localsd it makes no normality assumption, so it stays robust on
+// the heavily skewed score distributions typical of coverage/wiggle data.
+//
+// The two signs are clipped INDEPENDENTLY, anchored at 0. A single combined
+// percentile spends its whole budget on the dominant side, so on strongly
+// one-sided signed data (e.g. phyloP: mostly-positive conservation with a
+// sparse, small negative tail) the minority tail's 1st percentile lands at or
+// above 0 and the negative extent collapses to a flat band. Measuring each
+// side's percentile from 0 outward keeps a small-but-real opposite tail visible.
+function percentileDomainFromHistogram(
+  stats: ScoreStats,
+  summaryScoreMode: string,
+  quantile: number,
+  datasets: Dataset[],
+): [number, number] {
+  const { scoreMin, scoreMax } = stats
+  if (scoreMax - scoreMin <= 0) {
+    return [scoreMin, scoreMax]
+  }
+  const useWhiskers = summaryScoreMode === 'whiskers'
+  // Mirror computeStats' array selection: whiskers spreads the bounds across the
+  // min/max summary arrays; every other mode draws both from one scalar.
+  const highScoresFor = (data: FeatureArrays) =>
+    useWhiskers ? data.featureMaxScores : getEffectiveScores(data, summaryScoreMode)
+  const lowScoresFor = (data: FeatureArrays) =>
+    useWhiskers ? data.featureMinScores : getEffectiveScores(data, summaryScoreMode)
+  const high =
+    scoreMax > 0
+      ? sideMagnitudePercentile(datasets, highScoresFor, true, scoreMax, quantile)
+      : 0
+  const negExtent =
+    scoreMin < 0
+      ? sideMagnitudePercentile(
+          datasets,
+          lowScoresFor,
+          false,
+          -scoreMin,
+          quantile,
+        )
+      : 0
+  // Anchor the low bound at 0 for all-positive data (matching localsd's origin
+  // convention); otherwise extend it to the negative side's clipped extent.
+  return [scoreMin < 0 ? -negExtent : 0, high]
 }
 
 /**

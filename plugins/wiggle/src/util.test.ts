@@ -162,6 +162,52 @@ describe('computeAutoscaleDomain', () => {
     expect(result![0]).toBe(0)
   })
 
+  test('localpercentile keeps a sparse negative tail visible (bidirectional)', () => {
+    // 95 positive + 5 negative features (like phyloP: mostly conserved with a
+    // small accelerated tail). A single combined 1st-percentile min lands >= 0
+    // and flattens the negatives; each side must clip independently so the
+    // negative extent survives.
+    const scores = [
+      ...Array.from({ length: 95 }, () => 3),
+      -1, -2, -3, -4, -5,
+    ]
+    const data = makeFeatureArrays(scores)
+    const entries = [{ data, visStart: 0, visEnd: 100 * scores.length }]
+    const result = computeAutoscaleDomain(
+      'localpercentile',
+      'avg',
+      3,
+      entries,
+      0.99,
+    )
+    expect(result![0]).toBeLessThan(0)
+    expect(result![0]).toBeLessThanOrEqual(-4)
+    expect(result![1]).toBeGreaterThan(0)
+  })
+
+  test('localpercentile whiskers uses min/max arrays for each side', () => {
+    // Bottom whiskers reach -8, top whiskers +12; the domain must open up to the
+    // whisker spread on each side, not just the average scores.
+    const data = {
+      featurePositions: new Uint32Array([0, 100, 100, 200]),
+      featureScores: new Float32Array([1, 2]),
+      featureMinScores: new Float32Array([-8, -6]),
+      featureMaxScores: new Float32Array([10, 12]),
+      numFeatures: 2,
+      hasSummaryScores: true,
+    }
+    const entries = [{ data, visStart: 0, visEnd: 200 }]
+    const result = computeAutoscaleDomain(
+      'localpercentile',
+      'whiskers',
+      3,
+      entries,
+      0.99,
+    )
+    expect(result![0]).toBeLessThanOrEqual(-8)
+    expect(result![1]).toBeGreaterThanOrEqual(12)
+  })
+
   test('multiple regions combined', () => {
     const data1 = makeFeatureArrays([2, 4])
     const data2 = makeFeatureArrays([6, 10])

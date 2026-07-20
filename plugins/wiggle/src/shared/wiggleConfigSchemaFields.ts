@@ -63,7 +63,7 @@ export const wiggleConfigSchemaFields = {
     type: 'number',
     defaultValue: 0.99,
     description:
-      'Upper percentile used as the max for the localpercentile autoscale type (e.g. 0.99 uses the 99th-percentile score as the max, clipping the top 1% of outliers; the min uses the 1st percentile, or 0 for all-positive data)',
+      'Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0',
     advanced: true,
   },
   // Sentinel promotable slots (like alignments featureHeight): `undefined` is
