@@ -31,6 +31,17 @@ Read it as a block: the SNPs inside the red triangle are correlated with each
 other, and that correlation fades as you move into the paler flanks, where
 recombination has had time to break the haplotype apart.
 
+The triangle summarizes those correlations; you can also look at the haplotypes
+themselves. Load the same phased genotypes as a multi-sample variant matrix and
+turn on genotype clustering, and the samples reorder so co-inherited haplotypes
+group into contiguous bands:
+
+<Figure src="/img/ld/lct_haplotype_matrix.png" caption="The haplotypes behind the LCT block: the same phased 1000 Genomes slice drawn as a multi-sample variant matrix (one column per variant, one row per each of the 2504 samples), with rows clustered by genotype similarity. Co-inherited haplotypes fall into contiguous horizontal bands rather than scattering row to row, and the large shared block of alternate alleles (dark blue) is the swept lactase-persistence haplotype that the r² triangle renders as a solid corner. Gene models (LCT, MCM6) sit above for context."/>
+
+Each band is a set of samples carrying the same stretch of alleles. The big
+block is the lactase-persistence haplotype: the same unit the r² triangle shows
+as correlation, here shown as the actual shared sequence across people.
+
 ## An inversion suppresses recombination
 
 An inversion produces a block for a different reason. Because the inverted and

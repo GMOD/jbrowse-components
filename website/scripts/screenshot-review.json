@@ -1621,8 +1621,8 @@
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
-    "status": "bad",
-    "note": "would it make sense to add other tracks like multisamplevariantmatrix or some fst or other type of thing to help demonstrate? see https://kalis.louisaslett.com/articles/lct_example.html or any other interesting education ways we could visualize this https://genome.ucsc.edu/training/education/lactase.html",
+    "status": "good",
+    "note": "RESOLVED: added a companion figure ld/lct_haplotype_matrix (linkage_disequilibrium.md) — the SAME hosted phased 1000G slice (lct_1kg_chr2.vcf.gz, 2504 samples) as a LinearMultiSampleVariantMatrixDisplay with runClustering, so the swept lactase-persistence haplotype reads as a clustered band of shared alt alleles (the kalis-style 'haplotypes behind the block' the reviewer linked). Uses the proven runClustering + readySelector=tree_sidebar_dendrogram pattern (no fixed timeout), MAF>0.35, 200kb core window (chr2:136.5-136.7Mb) to keep clustering tractable; verified the render shows real horizontal haplotype bands, not noise. Fst needs computed data (not hosted) so went with the matrix. The LD-triangle figure itself is unchanged/fine.",
     "reviewedAt": "2026-07-19T23:23:06.861Z",
     "hash": "9b226cc8c6b5211892144b5af4b73d9f67c20b6c"
   },

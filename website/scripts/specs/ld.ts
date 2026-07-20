@@ -77,7 +77,68 @@ const LCT_TRACK = {
   ],
 }
 
+// The haplotypes behind the LCT LD block, shown directly: the SAME phased 1000G
+// slice as the LD triangle, but as a multi-sample variant MATRIX with genotype
+// clustering on. Each column is a variant, each row one of the 2504 samples,
+// reordered by genotype similarity so co-inherited haplotypes group into
+// contiguous bands. The swept lactase-persistence haplotype reads as a large
+// block of samples sharing the same alleles — the concrete "why the SNPs travel
+// together" companion to the abstract r² triangle. runClustering runs the real
+// clustering RPC declaratively (readySelector waits on the dendrogram, so the
+// figure is correct however long clustering the callset takes); the window is
+// kept to the ~200 kb core block so the variant count stays tractable.
+const LCT_MATRIX_TRACK = {
+  type: 'VariantTrack',
+  trackId: 'kgp_lct_matrix',
+  name: 'LCT haplotypes (1000 Genomes, clustered)',
+  assemblyNames: ['hg19'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: KGP_CHR2,
+    fetchSizeLimit: 500_000_000,
+  },
+  displays: [
+    {
+      type: 'LinearMultiSampleVariantMatrixDisplay',
+      minorAlleleFrequencyFilter: 0.35,
+      height: 500,
+    },
+  ],
+}
+
 export const ldSpecs: ScreenshotSpec[] = [
+  {
+    mode: 'url',
+    name: 'ld/lct_haplotype_matrix',
+    url: `${HG19_HUB}&session=${encodeSessionSpec({
+      sessionTracks: [LCT_MATRIX_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr2:136,500,000-136,700,000',
+          tracks: [
+            {
+              trackId: 'hg19-ncbiRefSeqCurated',
+              type: 'LinearBasicDisplay',
+              height: 90,
+              showOnlyGenes: true,
+            },
+            {
+              trackId: 'kgp_lct_matrix',
+              type: 'LinearMultiSampleVariantMatrixDisplay',
+              runClustering: true,
+            },
+          ],
+        },
+      ],
+    })}&sessionName=Screenshot`,
+    readyText: 'chr2',
+    readySelector: '[data-testid="tree_sidebar_dendrogram"]',
+    readyTimeout: 180000,
+    viewportHeight: 660,
+    settleMs: 3000,
+  },
   {
     mode: 'url',
     name: 'ld/lct_lactase',
