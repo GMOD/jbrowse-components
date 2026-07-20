@@ -43,12 +43,33 @@ describe('buildSourceRenderData summaryScoreMode (bicolor, no solid color)', () 
   })
 
   // Regression: whiskers used to be silently dropped under the default bicolor
-  // (no solid color set), rendering only the avg split. It must render its 3
-  // min/avg/max layers from the full unsplit arrays regardless of bicolor.
-  test('whiskers mode renders 3 layers even without a solid color', () => {
+  // (no solid color set). In filled xyplot each band is split by sign so the two
+  // sides stack back-to-front independently: positive max..avg..min, then
+  // negative min..avg..max (most-negative/lightest at the back). The one positive
+  // feature (avg 5) and one negative feature (avg -5) yield a single value per
+  // side per band.
+  test('whiskers mode splits each band by sign for stacking (xyplot)', () => {
     const out = buildSourceRenderData(makeData(), {
       ...baseGpuProps,
       summaryScoreMode: 'whiskers',
+    })
+    expect(out.map(s => [...s.featureScores])).toEqual([
+      [9], // pos max
+      [5], // pos avg
+      [2], // pos min
+      [-8], // neg min (deepest, drawn first/back)
+      [-5], // neg avg
+      [-1], // neg max (drawn last/front, near pivot)
+    ])
+  })
+
+  // Line rendering does not overpaint, so bands stay whole (3 layers spanning
+  // both signs) and are colored per instance instead of being split.
+  test('whiskers mode keeps whole bands for line rendering', () => {
+    const out = buildSourceRenderData(makeData(), {
+      ...baseGpuProps,
+      summaryScoreMode: 'whiskers',
+      renderingType: 'line',
     })
     expect(out).toHaveLength(3)
     expect(out.map(s => [...s.featureScores])).toEqual([

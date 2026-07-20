@@ -136,7 +136,7 @@ describe('makeWhiskersLayers', () => {
     hasSummaryScores: false,
   }
 
-  const base = { posColor, negColor, pivot: 0 }
+  const base = { posColor, negColor, pivot: 0, isFilled: false }
 
   test('returns 3 layers (max, avg, min) when summary data present', () => {
     const result = makeWhiskersLayers({
@@ -144,11 +144,38 @@ describe('makeWhiskersLayers', () => {
       ...base,
       isDensityMode: false,
       isScatter: false,
+      isFilled: false,
     })
     expect(result).toHaveLength(3)
     expect(result[0]!.featureScores).toBe(maxScores)
     expect(result[1]!.featureScores).toBe(scores)
     expect(result[2]!.featureScores).toBe(minScores)
+  })
+
+  test('filled splits each band by sign, stacking each side back-to-front', () => {
+    // pivot 6. Per band, values >= 6 go to the positive side, the rest to the
+    // negative side. max [9,12] -> both pos; avg [5,8] -> 8 pos, 5 neg; min [2,4]
+    // -> both neg. Positive side stacks max..avg..min (light at the back);
+    // negative side reverses to min..avg..max.
+    const result = makeWhiskersLayers({
+      data: summaryData,
+      posColor,
+      negColor,
+      pivot: 6,
+      isDensityMode: false,
+      isScatter: false,
+      isFilled: true,
+    })
+    // no per-instance colors: each split layer is a single solid color
+    expect(result.every(l => l.colorsAbgr === undefined)).toBe(true)
+    expect(result.map(l => [...l.featureScores])).toEqual([
+      [9, 12], // pos max
+      [8], // pos avg
+      // pos min empty (both below pivot) -> dropped
+      [2, 4], // neg min (deepest, back)
+      [5], // neg avg
+      // neg max empty (both above pivot) -> dropped
+    ])
   })
 
   test('returns single layer when no summary variation', () => {
@@ -193,6 +220,7 @@ describe('makeWhiskersLayers', () => {
       pivot: 6,
       isDensityMode: false,
       isScatter: false,
+      isFilled: false,
     })
     expect(avg!.colorsAbgr).toHaveLength(2)
     expect(avg!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![1]) // neg vs pos
@@ -203,6 +231,24 @@ describe('makeWhiskersLayers', () => {
     // below-pivot avg color equals the min band's (both plain neg, but min is
     // darkened) — so they must differ by the tint
     expect(min!.colorsAbgr![0]).not.toBe(avg!.colorsAbgr![0])
+  })
+
+  test('negative bands mirror the tint: most-negative min band is lightest', () => {
+    // pivot 100: every band is below the pivot, so all features use negColor.
+    // The min band (most negative) must be lighter than the max band (least
+    // negative) — the inverse of the positive side, so magnitude reads as
+    // lightness in both directions rather than dark-brown negatives.
+    const [max, , min] = makeWhiskersLayers({
+      data: summaryData,
+      posColor,
+      negColor,
+      pivot: 100,
+      isDensityMode: false,
+      isScatter: false,
+      isFilled: false,
+    })
+    const red = (abgr: number) => abgr & 0xff
+    expect(red(min!.colorsAbgr![0]!)).toBeGreaterThan(red(max!.colorsAbgr![0]!))
   })
 })
 

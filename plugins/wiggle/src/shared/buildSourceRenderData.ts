@@ -1,9 +1,11 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
 import {
+  RENDERING_TYPE_XYPLOT,
   isOverlayMode,
   isScatterMode,
   makeWhiskersLayers,
+  renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
 import { getEffectiveScores } from '../util.ts'
 
@@ -19,6 +21,7 @@ function sourceLayers({
   summaryScoreMode,
   isDensityMode,
   scatter,
+  filled,
   posColor,
   negColor,
   pivot,
@@ -27,6 +30,7 @@ function sourceLayers({
   summaryScoreMode: string
   isDensityMode: boolean
   scatter: boolean
+  filled: boolean
   posColor: [number, number, number]
   negColor: [number, number, number]
   pivot: number
@@ -43,6 +47,7 @@ function sourceLayers({
       pivot,
       isDensityMode,
       isScatter: scatter,
+      isFilled: filled,
     })
   } else if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
     return [
@@ -112,6 +117,9 @@ export function buildSourceRenderData(
   } = gpuProps
   const overlay = isOverlayMode(renderingType)
   const scatter = isScatterMode(renderingType)
+  // Filled bars (xyplot, incl. multi-row/overlay variants) need whiskers split
+  // by sign for correct back-to-front stacking; line/scatter/density don't.
+  const filled = renderingTypeToInt(renderingType) === RENDERING_TYPE_XYPLOT
   const defaultPosColor = cssColorToNormalizedRgb(defaultPosColorStr)
   const defaultNegColor = cssColorToNormalizedRgb(defaultNegColorStr)
   const sourcesByName = new Map(data.sources.map(s => [s.name, s]))
@@ -141,6 +149,7 @@ export function buildSourceRenderData(
         summaryScoreMode,
         isDensityMode,
         scatter,
+        filled,
         posColor,
         negColor: overlay ? posColor : defaultNegColor,
         pivot: bicolorPivot,
