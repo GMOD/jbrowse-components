@@ -66,7 +66,7 @@ type: types.string
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly name: { readonly description: "descriptive name of the internet account"; readonly type: "string"; readonly defaultValue: ""; }; readonly description: { readonly description: "a description of the internet account"; readonly type: "string"; readonly defaultV...
 // code
 configuration: ConfigurationReference(BaseInternetAccountConfig)
 ```

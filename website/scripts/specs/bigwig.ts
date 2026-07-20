@@ -543,6 +543,11 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           // strip per individual; `defaultRendering` is a config slot, so
           // this flat key routes into the display's configOverrides
           defaultRendering: 'multirowdensity',
+          // copy number: most cells sit at the diploid baseline (~2), so the
+          // default localpercentile autoscale clamps the amplifications near
+          // the 99th percentile (~2.2). `local` uses the true region max so
+          // the gains render at full contrast and nothing is clipped.
+          autoscale: 'local',
           // hide the post-clustering dendrogram — the reordered rows are
           // the point; a tree implies a phylogeny we don't mean
           showTree: false,

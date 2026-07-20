@@ -36,7 +36,7 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 
 ```ts
 // type signature
-type sessionAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>, ...
+type sessionAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ readonly aliases: { readonly type: "stringArray"; readonly defaultValue: readonly []; readonly description: "Other possible names for the assembly"; }; readonly sequence: AnyConfigurationSchemaType; ... 5 more ...; readonly displayName: { ...; }; }, ConfigurationSc...
 // code
 sessionAssemblies: types.stripDefault(
         types.array(assemblyConfigSchemasType),
@@ -48,7 +48,7 @@ sessionAssemblies: types.stripDefault(
 
 ```ts
 // type signature
-type temporaryAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>, ...
+type temporaryAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ readonly aliases: { readonly type: "stringArray"; readonly defaultValue: readonly []; readonly description: "Other possible names for the assembly"; }; readonly sequence: AnyConfigurationSchemaType; ... 5 more ...; readonly displayName: { ...; }; }, ConfigurationSc...
 // code
 temporaryAssemblies: types.stripDefault(
         types.array(assemblyConfigSchemasType),

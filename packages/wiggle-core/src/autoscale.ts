@@ -280,3 +280,22 @@ export function computeAutoscaleDomain(
   }
   return domainFromStats(stats, autoscaleType, numStdDev)
 }
+
+/**
+ * #api
+ * The true `[min, max]` score extent of the visible features for a summary mode,
+ * before any autoscale clipping. Comparing it against the displayed domain flags
+ * when the domain clips real signal (e.g. localpercentile clamping copy-number
+ * gains that sit above the diploid baseline).
+ */
+export function computeScoreExtent(
+  summaryScoreMode: string,
+  visibleEntries: {
+    data: FeatureArrays
+    visStart: number
+    visEnd: number
+  }[],
+): [number, number] | undefined {
+  const stats = computeStats(summaryScoreMode, visibleEntries)
+  return stats ? [stats.scoreMin, stats.scoreMax] : undefined
+}

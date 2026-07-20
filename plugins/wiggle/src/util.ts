@@ -2,6 +2,7 @@ import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export {
   computeAutoscaleDomain,
+  computeScoreExtent,
   domainFromStats,
   getEffectiveScores,
   getNiceDomain,

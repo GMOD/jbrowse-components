@@ -273,7 +273,7 @@ type: types.literal('LinearMultiRowFeatureDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly partitionField: { readonly type: "string"; readonly defaultValue: "name"; readonly description: "feature attribute that assigns each feature to a row"; }; readonly color: { ...; }; ... 7 more ...; readonly showBranchLength: { ...; }; }, ConfigurationSchemaOp...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

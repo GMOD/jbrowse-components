@@ -146,7 +146,7 @@ type: types.literal('LinearArcDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly color: { readonly type: "color"; readonly description: "the color of the arcs"; readonly defaultValue: "darkblue"; readonly contextVariable: ["feature"]; }; readonly thickness: { ...; }; readonly label: { ...; }; readonly arcHeight: { ...; }; readonly captio...
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -177,7 +177,7 @@ type arcStyles =
   | {
       feature: Feature
       color: string
-      thickness: any
+      thickness: number
       label: string
       caption: string
       arcHeight: number
@@ -201,7 +201,7 @@ type selectedFeatureId = string | undefined
 #### getter: displayMode
 
 ```ts
-type displayMode = any
+type displayMode = 'arcs' | 'semicircles'
 ```
 
 </details>

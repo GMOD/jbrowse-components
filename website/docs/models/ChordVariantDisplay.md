@@ -111,7 +111,7 @@ bezierRadiusRatio: types.stripDefault(types.number, 0.1)
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly onChordClick: { readonly type: "boolean"; readonly description: "callback that should be run when a chord in the track is clicked"; readonly defaultValue: false; readonly contextVariable: [...]; }; readonly strokeColor: { ...; }; readonly strokeColorSelected...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

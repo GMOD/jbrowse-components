@@ -139,5 +139,5 @@ the display's full config reference.
   bedMethyl as signal
 - [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
   for config-file options
-- [Gallery: coverage, copy number, and epigenomics](/gallery/#quantitative) for
+- [Gallery: coverage, copy number, and epigenomics](/gallery/#copynumber) for
   live CNV tumor/normal and clustered copy-number examples to open and explore

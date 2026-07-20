@@ -40,7 +40,7 @@ The configuration slots for this model are documented on its
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly hubTxtLocation: { readonly type: "fileLocation"; readonly defaultValue: { readonly uri: "https://mysite.com/path/to/hub.txt"; readonly locationType: "UriLocation"; }; readonly description: "location of the hub file (usually called hub.txt)"; }; readonly asse...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

@@ -12,6 +12,7 @@ export type { WiggleScaleType } from './normalize.ts'
 
 export {
   computeAutoscaleDomain,
+  computeScoreExtent,
   domainFromStats,
   getEffectiveScores,
 } from './autoscale.ts'

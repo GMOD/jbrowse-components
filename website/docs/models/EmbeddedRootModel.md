@@ -47,7 +47,7 @@ come from the same product-core mixin the web/desktop root models use, so config
 
 ```ts
 // type signature
-type config = IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; }; }, ConfigurationSchemaOptions<...>>; ... 4 more ...
+type config = IModelType<{ configuration: ConfigurationSchemaType<{ readonly rpc: ConfigurationSchemaType<{ readonly defaultDriver: { readonly type: "string"; readonly description: "the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend"; readonly defaultValue: ""; readonly advanced: true...
 // code
 config: createConfigModel(pluginManager, assemblyConfigSchema)
 ```
@@ -137,7 +137,7 @@ textSearchManager: new TextSearchManager(pluginManager)
 #### getter: jbrowse
 
 ```ts
-type jbrowse = ModelPropertiesDeclarationToProperties<{ config: IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; };...
+type jbrowse = ModelPropertiesDeclarationToProperties<{ config: IModelType<{ configuration: ConfigurationSchemaType<{ readonly rpc: ConfigurationSchemaType<{ readonly defaultDriver: { readonly type: "string"; readonly description: "the RPC driver to use for tracks and tasks that are not configured to use a specific RPC backend"; r...
 ```
 
 #### getter: pluginManager

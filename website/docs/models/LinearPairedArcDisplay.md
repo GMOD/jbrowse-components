@@ -142,7 +142,7 @@ type: types.literal('LinearPairedArcDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly color: { readonly type: "color"; readonly description: "the color of the arcs"; readonly defaultValue: "jexl:defaultPairedArcColor(feature,alt)"; readonly contextVariable: ["feature", "alt"]; }; readonly lineWidth: { ...; }; }, ConfigurationSchemaOptions<......
 // code
 configuration: ConfigurationReference(configSchema)
 ```

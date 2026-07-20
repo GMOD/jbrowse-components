@@ -73,7 +73,7 @@ The axis-origin baseline: `1` for log, `0` otherwise.
 
 ```js
 // type signature
-(scaleType: string) => 1 | 0
+(scaleType: string) => 0 | 1
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)

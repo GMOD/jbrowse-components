@@ -57,7 +57,7 @@ type: types.literal(typeName)
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<AnyConfigurationSchemaType>
 // code
 configuration: ConfigurationReference(configSchema)
 ```

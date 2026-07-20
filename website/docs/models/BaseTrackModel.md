@@ -92,7 +92,7 @@ type: types.literal(trackType)
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<AnyConfigurationSchemaType>
 // code
 configuration: ConfigurationReference(baseTrackConfig)
 ```

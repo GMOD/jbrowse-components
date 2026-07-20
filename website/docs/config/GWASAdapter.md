@@ -47,7 +47,7 @@ else (e.g. `jexl:-log10(score)`) — arbitrary but slower than the native modes,
 so opt-in only
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:**
-`'none'`
+`DEFAULT_SCORE_TRANSFORM`
 
 #### slot: ldAdapter
 

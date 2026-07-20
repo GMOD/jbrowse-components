@@ -58,7 +58,7 @@ type: types.literal('OAuthInternetAccount')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly tokenType: { readonly description: "a custom name for a token to include in the header"; readonly type: "string"; readonly defaultValue: "Bearer"; }; readonly authEndpoint: { ...; }; ... 5 more ...; readonly responseType: { ...; }; }, ConfigurationSchemaOpti...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

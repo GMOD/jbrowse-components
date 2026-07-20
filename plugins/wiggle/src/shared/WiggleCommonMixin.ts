@@ -1,7 +1,11 @@
 import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 
-import { computeAutoscaleDomain, getNiceDomain } from '../util.ts'
+import {
+  computeAutoscaleDomain,
+  computeScoreExtent,
+  getNiceDomain,
+} from '../util.ts'
 import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleComponentUtils.ts'
 
@@ -45,18 +49,18 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
+       * The visible per-source feature arrays that feed autoscale, clipped to
+       * the coarse (500ms debounced) blocks so the domain doesn't recompute on
+       * every animation frame during zoom. `undefined` until the view + data
+       * are ready.
        */
-      get visibleScoreRange() {
+      get visibleEntries() {
         const view = getContainingView(self) as LinearGenomeViewModel
         if (!view.initialized || self.rpcDataMap.size === 0) {
           return undefined
         }
-        const numStdDev = self.numStdDev
-        const numQuantile = self.numQuantile
         const names = self.autoscaleSourceNames
-        // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
-        // so autoscale doesn't recompute on every animation frame during zoom.
-        const visibleEntries = view.coarseDynamicBlocks.flatMap(block => {
+        return view.coarseDynamicBlocks.flatMap(block => {
           const regionData = self.rpcDataMap.get(block.displayedRegionIndex!)
           if (!regionData) {
             return []
@@ -71,13 +75,35 @@ export function WiggleCommonMixin() {
               data: source,
             }))
         })
-        return computeAutoscaleDomain(
-          self.autoscaleType,
-          self.summaryScoreMode,
-          numStdDev,
-          visibleEntries,
-          numQuantile,
-        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get visibleScoreRange() {
+        const entries = self.visibleEntries
+        return entries
+          ? computeAutoscaleDomain(
+              self.autoscaleType,
+              self.summaryScoreMode,
+              self.numStdDev,
+              entries,
+              self.numQuantile,
+            )
+          : undefined
+      },
+      /**
+       * #getter
+       * The true, unclipped `[min, max]` of the visible data. The displayed
+       * `domain` may clip this (localpercentile/localsd/fixed bounds), so the
+       * score legend compares the two to flag clipped signal.
+       */
+      get dataRange() {
+        const entries = self.visibleEntries
+        return entries
+          ? computeScoreExtent(self.summaryScoreMode, entries)
+          : undefined
       },
     }))
     .views(self => ({

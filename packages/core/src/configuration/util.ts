@@ -38,6 +38,11 @@ import type {
 } from './types.ts'
 import type { IAnyType, IMSTMap } from '@jbrowse/mobx-state-tree'
 
+// This ESM package builds without @types/node, but consuming bundlers
+// (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
+// reference and give it a minimal module-scoped type for tsc.
+declare const process: { env: { NODE_ENV?: string } }
+
 // Evaluate a slot's `jexl:...` callback string against the realm's single jexl
 // instance (carrying plugin-registered functions), read from the config node's
 // env. readConfObject only ever operates on live MST configs — nested sub-config

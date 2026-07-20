@@ -274,7 +274,7 @@ type: types.literal('LinearMafDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly height: { readonly type: "maybeNumber"; readonly description: "display height in pixels; unset fits rows to content"; readonly defaultValue: undefined; }; readonly rowHeight: { ...; }; ... 17 more ...; readonly showInversions: { ...; }; }, ConfigurationSchem...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

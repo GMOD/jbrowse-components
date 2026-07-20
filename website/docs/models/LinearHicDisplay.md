@@ -182,7 +182,7 @@ type: types.literal('LinearHicDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly height: { readonly type: "number"; readonly defaultValue: 300; readonly description: "default height for the Hi-C track"; }; readonly colorScheme: { readonly type: "stringEnum"; readonly model: ISimpleType<...>; readonly defaultValue: "juicebox"; readonly de...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

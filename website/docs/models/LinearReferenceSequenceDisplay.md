@@ -177,7 +177,7 @@ type: types.literal('LinearReferenceSequenceDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly height: { readonly type: "maybeNumber"; readonly description: "display height in pixels; unset auto-fits to the sequence"; readonly defaultValue: undefined; }; readonly showForward: { ...; }; readonly showReverse: { ...; }; readonly showTranslation: { ...; }...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

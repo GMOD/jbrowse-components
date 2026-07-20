@@ -62,7 +62,7 @@ tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly name: { readonly type: "string"; readonly defaultValue: "nameOfConnection"; readonly description: "a unique name for this connection"; }; readonly assemblyNames: { readonly type: "stringArray"; readonly defaultValue: readonly []; readonly description: "optio...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

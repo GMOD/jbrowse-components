@@ -43,7 +43,7 @@ The configuration slots for this model are documented on its
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly dataDirLocation: { readonly type: "fileLocation"; readonly defaultValue: { readonly uri: "https://mysite.com/jbrowse/data/"; readonly locationType: "UriLocation"; }; readonly description: "the location of the JBrowse 1 data directory, often something like ht...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

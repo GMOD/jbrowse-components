@@ -224,7 +224,7 @@ type: types.literal('LinearManhattanDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly color: { readonly type: "color"; readonly defaultValue: "#0068d1"; readonly description: "CSS color or jexl callback for Manhattan points"; }; readonly colorBy: { readonly type: "stringEnum"; readonly model: ISimpleType<...>; readonly defaultValue: "normal";...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

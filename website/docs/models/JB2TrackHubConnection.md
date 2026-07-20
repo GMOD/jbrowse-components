@@ -40,7 +40,7 @@ The configuration slots for this model are documented on its
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly configJsonLocation: { readonly type: "fileLocation"; readonly defaultValue: { readonly uri: "https://mysite.com/path/to/config.json"; readonly locationType: "UriLocation"; }; readonly description: "location of the jb2 config file (usually called config.json)...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

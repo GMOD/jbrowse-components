@@ -67,7 +67,7 @@
   "alignments_track_arcs": {
     "name": "alignments_track_arcs",
     "status": "good",
-    "note": "FIXED: super-compact pileup (featureHeight 1 / spacing 0) so the RNA-seq reads fit without 'Max layout height reached'; plus log coverage scale (scaleType:'log') so the one dominant junction peak stops flattening the histogram behind the arcs (reviewer offered log / different-gene / max-value \u2014 log doubles as the documented remedy). Sashimi read-support labels kept on. Documented the Sashimi-arcs menu + Coverage->Scale type->Log scale in alignments_track.md. Regenerated.",
+    "note": "FIXED: super-compact pileup (featureHeight 1 / spacing 0) so the RNA-seq reads fit without 'Max layout height reached'; plus log coverage scale (scaleType:'log') so the one dominant junction peak stops flattening the histogram behind the arcs (reviewer offered log / different-gene / max-value — log doubles as the documented remedy). Sashimi read-support labels kept on. Documented the Sashimi-arcs menu + Coverage->Scale type->Log scale in alignments_track.md. Regenerated.",
     "reviewedAt": "2026-07-19T21:07:43.383Z",
     "hash": "c904b757a29b26a67921378efd7c5da6278f7600"
   },
@@ -267,7 +267,7 @@
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "WON'T FIX per reviewer's follow-up: they reconsidered and want the read-name field kept, since someone working outside JBrowse (e.g. holding a QNAME from samtools output) needs to paste a name \u2014 the right-click path can't serve that, as it requires already seeing the read. The suggested right-click item already exists anyway: 'Filter for this read' in LinearAlignmentsDisplay/menus/contextMenu.ts.",
+    "note": "WON'T FIX per reviewer's follow-up: they reconsidered and want the read-name field kept, since someone working outside JBrowse (e.g. holding a QNAME from samtools output) needs to paste a name — the right-click path can't serve that, as it requires already seeing the read. The suggested right-click item already exists anyway: 'Filter for this read' in LinearAlignmentsDisplay/menus/contextMenu.ts.",
     "reviewedAt": "2026-07-15T03:11:55.433Z",
     "hash": "66134b6ee309d9cf5a7007bf1d0721842a3cd91d"
   },
@@ -623,7 +623,7 @@
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
     "status": "good",
-    "note": "KEEP: the clean no-menu phased matrix used by multivariant_track.md, analyze_trio.md, and the gallery \u2014 distinct from the menu-overlay trio-matrix-phased",
+    "note": "KEEP: the clean no-menu phased matrix used by multivariant_track.md, analyze_trio.md, and the gallery — distinct from the menu-overlay trio-matrix-phased",
     "reviewedAt": "2026-07-13T18:35:55.607Z",
     "hash": "b9188bd65ce1aaffebfbad93c4c30a89fc685a50"
   },
@@ -643,7 +643,7 @@
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
     "status": "good",
-    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections \u2014 Genotypes (cell coloring) vs Population (sidebar row-label coloring) \u2014 making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
+    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections — Genotypes (cell coloring) vs Population (sidebar row-label coloring) — making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
     "reviewedAt": "2026-06-26T00:00:00.000Z"
   },
   "gwas/locuszoom_ld": {
@@ -656,7 +656,7 @@
   "gwas/manhattan": {
     "name": "gwas/manhattan",
     "status": "good",
-    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md \u2014 genome-wide real-world Manhattan.",
+    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md — genome-wide real-world Manhattan.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "link_to_split_view": {
@@ -694,19 +694,19 @@
   "product_architecture": {
     "name": "product_architecture",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one \u2014 the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one — the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "products_and_plugins": {
     "name": "products_and_plugins",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source \u2014 tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source — tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "protein/structure": {
     "name": "protein/structure",
     "status": "good",
-    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views \u2014 structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
+    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views — structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "no_build_final": {
@@ -780,7 +780,7 @@
   "desktop-session": {
     "name": "desktop-session",
     "status": "good",
-    "note": "resolved: the requested fallback is already implemented \u2014 products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
+    "note": "resolved: the requested fallback is already implemented — products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
     "reviewedAt": "2026-06-14T20:30:00.000Z"
   },
   "multiwig/cluster_dialog": {
@@ -804,7 +804,7 @@
   "variants/cluster_dialog": {
     "name": "variants/cluster_dialog",
     "status": "good",
-    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) \u2014 dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
+    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) — dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
     "reviewedAt": "2026-06-11T14:25:43.428Z"
   },
   "variants/clustered_result": {
@@ -936,13 +936,13 @@
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
     "status": "good",
-    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING \u2014 GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision \u2014 renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
+    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING — GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision — renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
     "status": "good",
-    "note": "resolved: deleted \u2014 the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
+    "note": "resolved: deleted — the bezier connectors matched the read colors, redundant with the inverted_duplication figure above. Removed spec (sv.ts), PNG, and the Figure+paragraph in sv_visualization.md.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "trio-hapibd-painting": {
@@ -997,8 +997,8 @@
     "name": "jbrowse-img/dark_theme",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T14:06:30.565Z",
-    "hash": "d97487813ea408101e9d8f701ea1883c952c50c4"
+    "reviewedAt": "2026-07-20T21:12:13.032Z",
+    "hash": "862db68b082284f6dc5caf3a9de10851891f2d77"
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
@@ -1170,7 +1170,7 @@
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "good",
-    "note": "FIXED both asks: added a highlight band over CDKN2A (chr9:21,967,752-21,975,132, the p16INK4a transcript the gene track draws) \u2014 same device as the sibling driver_kras_gain figure \u2014 and raised the alignments track 320 -> 520 with viewportHeight 960 -> 1160. The track is heightMode:fit, so the extra height buys taller, legible reads rather than more rows. Regenerated + verified.",
+    "note": "FIXED both asks: added a highlight band over CDKN2A (chr9:21,967,752-21,975,132, the p16INK4a transcript the gene track draws) — same device as the sibling driver_kras_gain figure — and raised the alignments track 320 -> 520 with viewportHeight 960 -> 1160. The track is heightMode:fit, so the extra height buys taller, legible reads rather than more rows. Regenerated + verified.",
     "reviewedAt": "2026-07-15T03:15:18.353Z",
     "hash": "b3d6f040edd966f18666bfb3689eb3af5c73ad81"
   },
@@ -1184,9 +1184,9 @@
   "gc_content": {
     "name": "gc_content",
     "status": "good",
-    "note": "FIXED: added two in-figure text annotations over the GC skew track arms \u2014 \"Mostly positive skew (leading strand)\" over the left blue replichore and \"Mostly negative skew (lagging strand)\" over the right red replichore \u2014 naming the two-arm skew profile the reviewer asked for.",
-    "reviewedAt": "2026-07-20T14:30:00.000Z",
-    "hash": "5967677352d63b49af0ea44d3aea2b69a5cc6e2a"
+    "note": "",
+    "reviewedAt": "2026-07-20T21:01:12.932Z",
+    "hash": "3da0b4e8a6936226885451e189781510a4cc4217"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1197,10 +1197,10 @@
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
-    "status": "bad",
-    "note": "compared with origin/main there are less grey items. why is this?",
-    "reviewedAt": "2026-07-20T18:30:12.215Z",
-    "hash": "f96929a99d3e884a9a685063ad5f0a549f2cd24e"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-20T21:01:57.431Z",
+    "hash": "28fc6230069b9d850e080356cc1fa4bf3d39f838"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
@@ -1246,16 +1246,16 @@
   "gallery/copynumber_clustered": {
     "name": "gallery/copynumber_clustered",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-19T21:10:11.917Z",
+    "note": "FIXED: set autoscale:'local' on the density track (gallery + multiwig/cluster_dialog specs). Copy number sits at the diploid baseline (~2), so the default localpercentile pinned the max at the 99th percentile (~2.2) and clamped the amplifications. `local` restores the true region max ([0,3] in the legend) so gains render at full contrast and nothing is clipped. Regenerated + verified. NOTE: whether the localpercentile DEFAULT should change (it silently clips baseline-relative signal like copy number) is an open design question raised with the user separately.",
+    "reviewedAt": "2026-07-20T21:18:45.000Z",
     "hash": "7fdb4dcc77b9011565d3fa45bbe2b9e8487b43db"
   },
   "gallery/fiberseq_gapdh": {
     "name": "gallery/fiberseq_gapdh",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T23:03:07.495Z",
-    "hash": "1cd1149e05b2d1a36025d3c93bbceea4be940c3f"
+    "reviewedAt": "2026-07-20T21:12:04.289Z",
+    "hash": "725e322eaa018d4a485afcb58ac0c6765a523b7a"
   },
   "gallery/gwas_bmi_fto": {
     "name": "gallery/gwas_bmi_fto",
@@ -1302,8 +1302,8 @@
     "name": "gallery/scatac_catlas",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:11:07.592Z",
-    "hash": "2335862c3eee2d75bb46fa9cbe2d1dce4e10bee1"
+    "reviewedAt": "2026-07-20T21:12:06.222Z",
+    "hash": "6229697353f70d3369ed95bc36e91eea52bdbcab"
   },
   "gallery/yeast_dotplot": {
     "name": "gallery/yeast_dotplot",
@@ -1356,21 +1356,21 @@
   "synteny_human_chimp_cigar_modes": {
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
-    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow \u2014 normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
+    "note": "FIXED: RepeatMasker labels now visible (L1HS labeled at the RB1 insertion, absent in chimp) via heightMode grow — normal-height, compact, no decimation. Addresses \"make the repeat masker labels visible\".",
     "reviewedAt": "2026-07-12T04:54:20.294Z",
     "hash": "a2f27829557f1af80456465a8f9b80a9092411e9"
   },
   "synteny_te_vapb_sva": {
     "name": "synteny_te_vapb_sva",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode fit->grow \u2014 repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
+    "note": "FIXED: RepeatMasker heightMode fit->grow — repeats now render at NORMAL feature height (no fit-scaling inflation), the track auto-sizes compactly to the few rows, and every name is drawn (SVA_F at the insertion) with no fit-ladder decimation. (Corrected from the earlier fit:110 which the reviewer flagged as weirdly tall + label-decimating.)",
     "reviewedAt": "2026-07-12T04:54:35.473Z",
     "hash": "32c40c06c60e0248dc0bcb5355c78481525ea530"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
-    "note": "FIXED: RepeatMasker heightMode grow \u2014 normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
+    "note": "FIXED: RepeatMasker heightMode grow — normal-height compact repeats with all labels (AluYb8 human-specific insertion labeled, absent in chimp); no inflation, no decimation. Per reviewer: \"normal height... compact, but still showing labels\".",
     "reviewedAt": "2026-07-12T04:54:33.334Z",
     "hash": "57e79553bb51d117c0459082fd588c1778aeabd8"
   },
@@ -1385,13 +1385,13 @@
     "name": "popgen/fst_in2lt_2L",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T11:12:30.538Z",
-    "hash": "0bfa28518448b671c2f41e1b945321512742b791"
+    "reviewedAt": "2026-07-20T21:12:16.790Z",
+    "hash": "f2da69022475b08745e7c3381f12a241190118e1"
   },
   "popgen/pi_cyp6g1": {
     "name": "popgen/pi_cyp6g1",
     "status": "good",
-    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima\u2019s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima\u2019s D are read off the one combined figure.",
+    "note": "resolved: deleted, merged into popgen/tajimad_cyp6g1 (which shows pi + Tajima’s D together); population_genomics.md \"Reading the signals\" reworded so pi and Tajima’s D are read off the one combined figure.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "qtl/bxd_overview": {
@@ -1505,13 +1505,13 @@
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
     "status": "good",
-    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section\u2019s how-to pipeline and reworded the figure-referencing prose.",
+    "note": "resolved: figure deleted per reviewer. Removed spec (popgen.ts) + PNG; kept the tutorial section’s how-to pipeline and reworded the figure-referencing prose.",
     "reviewedAt": "2026-07-11T03:42:23.000Z"
   },
   "popgen/ld_decay_2R": {
     "name": "popgen/ld_decay_2R",
     "status": "good",
-    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle \u2014 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
+    "note": "resolved: DELETED per reviewer (not powerful/clear enough). Removed spec + LD_TRACK const + PNG + the Figure in population_genomics.md (LD-section prose/config kept). gen:gallery-links + audit-figures regenerated. FOLLOW-UP (proposed, not yet done): replace with a famous human LD triangle — 17q21.31 MAPT/H1-H2 inversion block (ties to the tutorial's inversion theme); needs 1000G PLINK --r2 computed + hosted on jbrowse.org/demos.",
     "reviewedAt": "2026-07-11T01:56:16.000Z",
     "hash": ""
   },
@@ -1519,8 +1519,8 @@
     "name": "popgen/tajimad_cyp6g1",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:16:42.716Z",
-    "hash": "8bc740c50650cb7c4d810c2be26e8e36d2412c34"
+    "reviewedAt": "2026-07-20T21:13:31.540Z",
+    "hash": "e12a6ff0b1eb1389a2e0b506fbfe5a0d01805823"
   },
   "qtl/bxd_painting_input_order": {
     "name": "qtl/bxd_painting_input_order",
@@ -1560,7 +1560,7 @@
   "trio-ancestry": {
     "name": "trio-ancestry",
     "status": "good",
-    "note": "KEEP, resolved. Accurate whole-genome (chr1) FLARE local-ancestry painting of an ASW trio (6 haplotype rows, AFR/EUR mosaics), anchoring the 'Painting by local ancestry' section of analyze_trio.md. The reviewer's 'two highly diverged parents' idea isn't achievable in 1000G \u2014 trios are within-population, so both parents are ASW-admixed; there is no pure-AFR x pure-EUR trio. Whole-genome is the correct scale to show local ancestry as a landscape, and the caption already explains block boundaries = meiotic crossovers. User deferred to judgment; kept the real result.",
+    "note": "KEEP, resolved. Accurate whole-genome (chr1) FLARE local-ancestry painting of an ASW trio (6 haplotype rows, AFR/EUR mosaics), anchoring the 'Painting by local ancestry' section of analyze_trio.md. The reviewer's 'two highly diverged parents' idea isn't achievable in 1000G — trios are within-population, so both parents are ASW-admixed; there is no pure-AFR x pure-EUR trio. Whole-genome is the correct scale to show local ancestry as a landscape, and the caption already explains block boundaries = meiotic crossovers. User deferred to judgment; kept the real result.",
     "reviewedAt": "2026-07-20T18:49:10.000Z",
     "hash": "9d40a30933a104ec1738e879dfa8c24d1ec44458"
   },
@@ -1615,21 +1615,21 @@
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
     "status": "good",
-    "note": "KEEP, resolved. Three 1000G samples (HG00551/3/4) as a multirowxy MultiQuantitativeTrack over the AMY1 amylase copy-number locus \u2014 enough to demonstrate the 'multiple signals, each its own color' recipe cleanly (each sample its own color, copy number varying across the locus). A ton of samples would be flashier but is orthogonal to the recipe being taught (see the multiquantitative_track / cluster figures for the many-sample story). Left as-is.",
+    "note": "KEEP, resolved. Three 1000G samples (HG00551/3/4) as a multirowxy MultiQuantitativeTrack over the AMY1 amylase copy-number locus — enough to demonstrate the 'multiple signals, each its own color' recipe cleanly (each sample its own color, copy number varying across the locus). A ton of samples would be flashier but is orthogonal to the recipe being taught (see the multiquantitative_track / cluster figures for the many-sample story). Left as-is.",
     "reviewedAt": "2026-07-20T18:49:10.000Z",
     "hash": "7956a70e65074d8465264b3ac0c8806196942b6e"
   },
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
     "status": "good",
-    "note": "RESOLVED: added a companion figure ld/lct_haplotype_matrix (linkage_disequilibrium.md) \u2014 the SAME hosted phased 1000G slice (lct_1kg_chr2.vcf.gz, 2504 samples) as a LinearMultiSampleVariantMatrixDisplay with runClustering, so the swept lactase-persistence haplotype reads as a clustered band of shared alt alleles (the kalis-style 'haplotypes behind the block' the reviewer linked). Uses the proven runClustering + readySelector=tree_sidebar_dendrogram pattern (no fixed timeout), MAF>0.35, 200kb core window (chr2:136.5-136.7Mb) to keep clustering tractable; verified the render shows real horizontal haplotype bands, not noise. Fst needs computed data (not hosted) so went with the matrix. The LD-triangle figure itself is unchanged/fine.",
-    "reviewedAt": "2026-07-19T23:23:06.861Z",
-    "hash": "9b226cc8c6b5211892144b5af4b73d9f67c20b6c"
+    "note": "FIXED: rewrote the caption plainer (dropped the em-dash, the colon-flourish, and the dramatic 'One variant swept...' closer). The numbered list below the figure already carries the argument, so the caption just names what's shown.",
+    "reviewedAt": "2026-07-20T21:18:45.000Z",
+    "hash": "389a2e18b681e35b2be89503d1f3d0204a120eea"
   },
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
     "status": "good",
-    "note": "RESOLVED (deleted, moot). The MAPT 17q21.31 figure was already dropped in commit 969c44cc21 \u2014 no accessible callset has per-sample inversion genotypes to display (1000G phase3 SV has only a 16kb AC=1 singleton, gnomAD only a 53Mb whole-arm call, HGSVC2 a single merged row), so it was removed rather than padded with a proxy. No spec, no PNG, no doc reference remains; the reviewer's 'too complex / can't see the SV track' concern is addressed by removal.",
+    "note": "RESOLVED (deleted, moot). The MAPT 17q21.31 figure was already dropped in commit 969c44cc21 — no accessible callset has per-sample inversion genotypes to display (1000G phase3 SV has only a 16kb AC=1 singleton, gnomAD only a 53Mb whole-arm call, HGSVC2 a single merged row), so it was removed rather than padded with a proxy. No spec, no PNG, no doc reference remains; the reviewer's 'too complex / can't see the SV track' concern is addressed by removal.",
     "reviewedAt": "2026-07-20T18:49:10.000Z",
     "hash": "a396651fda247fd6b21d13f8ca363f4fb133b561"
   },
@@ -1643,7 +1643,7 @@
   "pangenome/variant_matrix": {
     "name": "pangenome/variant_matrix",
     "status": "good",
-    "note": "RESOLVED. Already carries genes + variant matrix + the orthogonal MAF alignment over the same K12 window. The reviewer's open question ('odgi depth? other complementary tracks?') is now answered structurally: odgi depth and per-strain presence each got their own dedicated whole-chromosome figures (Projection 4 / 4b, newly deployed) rather than being stacked as a 4th/5th lane here \u2014 the depth signal reads far better as a chromosome-wide overview than crammed into a 20kb matrix window. Figure left as-is.",
+    "note": "RESOLVED. Already carries genes + variant matrix + the orthogonal MAF alignment over the same K12 window. The reviewer's open question ('odgi depth? other complementary tracks?') is now answered structurally: odgi depth and per-strain presence each got their own dedicated whole-chromosome figures (Projection 4 / 4b, newly deployed) rather than being stacked as a 4th/5th lane here — the depth signal reads far better as a chromosome-wide overview than crammed into a 20kb matrix window. Figure left as-is.",
     "reviewedAt": "2026-07-20T18:49:10.000Z",
     "hash": "cacf19abf239ef0a587cf07ebca7ac63e03c0729"
   },
@@ -1651,8 +1651,8 @@
     "name": "phylop_ncbi_refseq_tp53",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-20T13:40:25.898Z",
-    "hash": "45d855a923d2e726273d52924653c7c5916379dd"
+    "reviewedAt": "2026-07-20T21:01:47.471Z",
+    "hash": "4b116c3dd61f86f6a2e5d2786a03f4c25ee9f1c6"
   },
   "readpair_heatmap_translocation": {
     "name": "readpair_heatmap_translocation",
@@ -1671,14 +1671,14 @@
   "ld/lct_haplotype_matrix": {
     "name": "ld/lct_haplotype_matrix",
     "status": "good",
-    "note": "RESOLVED (deleted, moot). Already consolidated away in commit c8126fae2d: the clustered haplotype matrix was a uniform cell field (its MAF>=0.35 variants are common across all populations, so no swept-haplotype band ever resolved) \u2014 the reviewer's 'clustering isn't clean' concern. Its one working piece (the ClinVar anchor) moved onto ld/lct_lactase, which now reads causal-variant -> LD block -> flanks. No spec/PNG/doc reference remains.",
+    "note": "RESOLVED (deleted, moot). Already consolidated away in commit c8126fae2d: the clustered haplotype matrix was a uniform cell field (its MAF>=0.35 variants are common across all populations, so no swept-haplotype band ever resolved) — the reviewer's 'clustering isn't clean' concern. Its one working piece (the ClinVar anchor) moved onto ld/lct_lactase, which now reads causal-variant -> LD block -> flanks. No spec/PNG/doc reference remains.",
     "reviewedAt": "2026-07-20T18:49:10.000Z",
     "hash": "9598aa2021cea26335e4e25781c1c806fefdf761"
   },
   "readpair_heatmap_chr3q": {
     "name": "readpair_heatmap_chr3q",
     "status": "good",
-    "note": "KEEP, resolved (data-limited, verified). A single 1.4Mb tandem duplication is inherently one off-diagonal dot; the display already maxes contrast (log scale, max-count color domain, coarse resolutionBias). Tested tightening the window 182.35-184.0Mb this session (on top of the prior agent's wider-window test) \u2014 neither concentrates the sparse discordant-pair signal; reverted to the tuned 182.2-184.2Mb window. It correctly anchors the readpair_heatmap.md tutorial (an honest single-SV signature). The cue-style tapestry needs a chromothripsis-grade sample + a newly-built hosted .hic, a data decision, not a spec tweak. User deferred to judgment; kept rather than gut the tutorial's figures.",
+    "note": "KEEP, resolved (data-limited, verified). A single 1.4Mb tandem duplication is inherently one off-diagonal dot; the display already maxes contrast (log scale, max-count color domain, coarse resolutionBias). Tested tightening the window 182.35-184.0Mb this session (on top of the prior agent's wider-window test) — neither concentrates the sparse discordant-pair signal; reverted to the tuned 182.2-184.2Mb window. It correctly anchors the readpair_heatmap.md tutorial (an honest single-SV signature). The cue-style tapestry needs a chromothripsis-grade sample + a newly-built hosted .hic, a data decision, not a spec tweak. User deferred to judgment; kept rather than gut the tutorial's figures.",
     "reviewedAt": "2026-07-20T18:49:10.000Z",
     "hash": "8168c9756153b649b3f8c26df981bb3446773ef6"
   },
@@ -1698,7 +1698,14 @@
   "pangenome/depth": {
     "name": "pangenome/depth",
     "status": "good",
-    "note": "FIXED (data unblocked + rendered + embedded). Uploaded the odgi-depth bigWig (built in ~/depth_build) to s3://jbrowse.org/demos/ecoli_pangenome/, added the ecoli_pggb_depth QuantitativeTrack to the hosted config.json, invalidated CloudFront, then regenerated. Dropped the useless K12 gene lane (at 4.6Mb the ~4300 genes only trip the too-many-features gate) so the depth curve carries the figure: a solid plateau near 4 (core, all 4 strains) dropping toward 1 over accessory. Embedded as a new <Figure> in pangenome.md Projection 4 (it had a JSON block but no image \u2014 the reviewer's 'no image here').",
+    "note": "FIXED (data unblocked + rendered + embedded). Uploaded the odgi-depth bigWig (built in ~/depth_build) to s3://jbrowse.org/demos/ecoli_pangenome/, added the ecoli_pggb_depth QuantitativeTrack to the hosted config.json, invalidated CloudFront, then regenerated. Dropped the useless K12 gene lane (at 4.6Mb the ~4300 genes only trip the too-many-features gate) so the depth curve carries the figure: a solid plateau near 4 (core, all 4 strains) dropping toward 1 over accessory. Embedded as a new <Figure> in pangenome.md Projection 4 (it had a JSON block but no image — the reviewer's 'no image here').",
     "reviewedAt": "2026-07-20T18:49:10.000Z"
+  },
+  "multisv_svtype": {
+    "name": "multisv_svtype",
+    "status": "good",
+    "note": "FIXED: rewrote the caption plainer (dropped the semicolon and em-dash list-dash; kept the class list as a plain colon list). Names what's shown without the AI-voice flourish.",
+    "reviewedAt": "2026-07-20T21:18:45.000Z",
+    "hash": "f6734ed89a8ac91dbea6bd069c6c873bdb253ce8"
   }
 }

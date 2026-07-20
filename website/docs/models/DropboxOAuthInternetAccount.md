@@ -61,7 +61,7 @@ type: types.literal('DropboxOAuthInternetAccount')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly authEndpoint: { readonly description: "the authorization code endpoint of the internet account"; readonly type: "string"; readonly defaultValue: "https://www.dropbox.com/oauth2/authorize"; }; readonly tokenEndpoint: { ...; }; readonly needsPKCE: { ...; }; re...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

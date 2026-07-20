@@ -62,7 +62,7 @@ type: types.literal('GoogleDriveOAuthInternetAccount')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly authEndpoint: { readonly description: "the authorization code endpoint of the internet account"; readonly type: "string"; readonly defaultValue: "https://accounts.google.com/o/oauth2/v2/auth"; }; readonly scopes: { ...; }; readonly domains: { ...; }; readonl...
 // code
 configuration: ConfigurationReference(configSchema)
 ```

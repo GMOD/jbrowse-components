@@ -234,7 +234,7 @@ type: types.literal('MultiLinearWiggleDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly height: { readonly type: "number"; readonly defaultValue: 200; readonly description: "Default height of the track"; }; readonly summaryScoreMode: { readonly type: "stringEnum"; readonly model: ISimpleType<...>; readonly description: "choose whether to use ma...
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -364,25 +364,25 @@ type renderState = WiggleGPURenderState
 #### getter: showTree
 
 ```ts
-type showTree = any
+type showTree = boolean
 ```
 
 #### getter: showBranchLength
 
 ```ts
-type showBranchLength = any
+type showBranchLength = boolean
 ```
 
 #### getter: showRowSeparators
 
 ```ts
-type showRowSeparators = any
+type showRowSeparators = boolean
 ```
 
 #### getter: showLegend
 
 ```ts
-type showLegend = any
+type showLegend = boolean
 ```
 
 #### getter: hierarchy

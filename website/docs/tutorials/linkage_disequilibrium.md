@@ -25,7 +25,7 @@ long stretch of correlated SNPs. The classic human example is lactase
 persistence: a regulatory variant upstream of the _LCT_ (lactase) gene swept
 recently in dairying populations, dragging a long haplotype with it.
 
-<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235 (LACTASE PERSISTENCE) — the −13910 C>T enhancer variant in an MCM6 intron that keeps LCT switched on into adulthood. Below it, exact haplotypic r² computed live from phased 1000 Genomes genotypes: the solid red block sits directly under that variant and fades into paler flanks on both sides. One variant swept, and the whole block of neighbouring SNPs went with it."/>
+<Figure src="/img/ld/lct_lactase.png" caption="LD at the human lactase locus on hg19. The ClinVar lane marks rs4988235, the -13910 C>T variant in an MCM6 intron associated with lactase persistence. Below it is haplotypic r² computed from phased 1000 Genomes genotypes. The red block sits under that variant and fades into paler flanks on both sides."/>
 
 Read the figure top to bottom and it makes one argument:
 

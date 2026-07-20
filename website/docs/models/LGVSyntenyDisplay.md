@@ -370,7 +370,7 @@ type: types.literal('LGVSyntenyDisplay')
 
 ```ts
 // type signature
-type configuration = ITypeUnion<any, any, any>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly mouseover: { readonly type: "string"; readonly defaultValue: "jexl:lgvSyntenyTooltip(feature)"; }; readonly colorBy: { readonly type: "frozen"; readonly defaultValue: { readonly type: "strand"; }; readonly description: "Color scheme for synteny reads"; reado...
 // code
 configuration: ConfigurationReference(schema)
 ```
@@ -865,43 +865,43 @@ type showLinkedReadLines = boolean
 #### getter: scaleType
 
 ```ts
-type scaleType = any
+type scaleType = 'linear' | 'log'
 ```
 
 #### getter: autoscaleType
 
 ```ts
-type autoscaleType = any
+type autoscaleType = 'local' | 'localsd'
 ```
 
 #### getter: minScore
 
 ```ts
-type minScore = any
+type minScore = number
 ```
 
 #### getter: maxScore
 
 ```ts
-type maxScore = any
+type maxScore = number
 ```
 
 #### getter: minScoreBound
 
 ```ts
-type minScoreBound = any
+type minScoreBound = number | undefined
 ```
 
 #### getter: maxScoreBound
 
 ```ts
-type maxScoreBound = any
+type maxScoreBound = number | undefined
 ```
 
 #### getter: numStdDev
 
 ```ts
-type numStdDev = any
+type numStdDev = number
 ```
 
 #### getter: selectedFeatureId
@@ -986,7 +986,7 @@ type configuredFeatureHeight = number
 #### getter: maxHeight
 
 ```ts
-type maxHeight = any
+type maxHeight = number
 ```
 
 #### getter: showSashimiLabels
@@ -1315,7 +1315,7 @@ type layoutReady = boolean
 #### getter: readConnectionsLineWidth
 
 ```ts
-type readConnectionsLineWidth = any
+type readConnectionsLineWidth = number
 ```
 
 #### getter: belowCoverageBands

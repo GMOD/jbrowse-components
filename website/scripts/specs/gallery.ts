@@ -25,6 +25,12 @@ export const gallerySpecs: ScreenshotSpec[] = [
           type: 'MultiLinearWiggleDisplay',
           height: 420,
           defaultRendering: 'multirowdensity',
+          // copy number: most cells sit at the diploid baseline (~2), so the
+          // default localpercentile autoscale pins the max near the 99th
+          // percentile (~2.2) and clamps the amplifications that are the point
+          // of the figure. `local` uses the true region max so gains render at
+          // full contrast and nothing is clipped.
+          autoscale: 'local',
           showTree: false,
         },
       ],
