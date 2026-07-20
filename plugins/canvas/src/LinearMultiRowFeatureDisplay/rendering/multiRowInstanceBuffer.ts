@@ -1,4 +1,7 @@
-import { resolveLocalRowIndices } from './resolveLocalRowIndices.ts'
+import {
+  isFeatureColorHidden,
+  resolveLocalRowIndices,
+} from './resolveLocalRowIndices.ts'
 import {
   FIELD_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,
@@ -36,7 +39,15 @@ export function buildMultiRowInstanceBuffer(
   let count = 0
   for (let i = 0; i < n; i++) {
     const rowIndex = rowForLocal[data.featurePartitionIndex[i]!]
-    if (rowIndex !== undefined && !hiddenColors?.has(featureColors[i]!)) {
+    if (
+      rowIndex !== undefined &&
+      !isFeatureColorHidden(
+        rowIndex,
+        featureColors[i]!,
+        hiddenColors,
+        rowColorsByIndex,
+      )
+    ) {
       const base = count * INSTANCE_STRIDE_F32
       u32[base + FIELD_OFFSET_F32.startBp] = featureStarts[i]!
       u32[base + FIELD_OFFSET_F32.endBp] = featureEnds[i]!

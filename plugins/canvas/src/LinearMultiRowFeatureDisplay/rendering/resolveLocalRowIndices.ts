@@ -9,3 +9,23 @@ export function resolveLocalRowIndices(
 ): (number | undefined)[] {
   return partitionValues.map(v => rowIndexByValue.get(v))
 }
+
+// Whether a feature's baked per-feature color is a toggled-off legend category,
+// so it should be dropped from both render paths and the hit-test. Shared by the
+// GPU encode, the Canvas2D draw, and the hit-test so they can't drift on the
+// hide axis. The test only applies to rows painting the per-feature color: a row
+// with a per-row override (dialog / sampleColorMap / palette) paints the
+// override color, which the legend never lists (see buildColorLegend's
+// `rowColorsByIndex[row] === undefined` scoping), so a baked color that happens
+// to match a hidden category must not hide it.
+export function isFeatureColorHidden(
+  rowIndex: number,
+  bakedColor: number,
+  hiddenColors: ReadonlySet<number> | undefined,
+  rowColorsByIndex: readonly (number | undefined)[] | undefined,
+): boolean {
+  return (
+    rowColorsByIndex?.[rowIndex] === undefined &&
+    (hiddenColors?.has(bakedColor) ?? false)
+  )
+}

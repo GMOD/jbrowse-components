@@ -102,7 +102,7 @@ function MultiRowSvgBody({
         treeAreaWidth={self.treeAreaWidth}
         availableHeight={height}
       />
-      {self.showLegend ? (
+      {self.showLegend && self.colorLegend.length ? (
         <MultiRowColorLegend
           entries={self.colorLegend}
           canvasWidth={view.width}

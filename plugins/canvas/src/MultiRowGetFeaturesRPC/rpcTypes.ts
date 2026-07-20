@@ -1,3 +1,4 @@
+import type { RegionTooLargeResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
@@ -53,20 +54,15 @@ export interface MultiRowGetFeaturesResult {
   featureCount?: number
 }
 
-// The region-too-large short-circuit: returned instead of the packed features
-// when the byte or density gate trips, so no feature payload is downloaded/packed
-// for a region the banner will replace. Mirrors the feature-render RPC.
-export interface MultiRowRegionTooLargeResult {
-  regionTooLarge: true
-  bytes?: number
-  featureCount?: number
-}
-
+// The region-too-large short-circuit (shared RegionTooLargeResult from the
+// feature-render RPC): returned instead of the packed features when the byte or
+// density gate trips, so no feature payload is downloaded/packed for a region the
+// banner will replace. The densityGate helpers already return this type.
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     MultiRowGetFeatures: {
       args: MultiRowGetFeaturesArgs
-      return: MultiRowGetFeaturesResult | MultiRowRegionTooLargeResult
+      return: MultiRowGetFeaturesResult | RegionTooLargeResult
     }
   }
 }

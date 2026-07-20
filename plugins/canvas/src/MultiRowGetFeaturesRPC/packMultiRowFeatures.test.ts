@@ -1,11 +1,11 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { MULTIROW_DEFAULT_COLOR } from './multiRowColors.ts'
 import {
   makeFeatureColorResolver,
   packMultiRowFeatures,
 } from './packMultiRowFeatures.ts'
+import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -89,7 +89,7 @@ test('no itemRgb on the features leaves the per-row palette in charge', () => {
     jexl: createJexlInstance(),
   })
   expect(r.usedItemRgb).toBe(false)
-  expect([...r.featureColors]).toEqual([cssColorToABGR(MULTIROW_DEFAULT_COLOR)])
+  expect([...r.featureColors]).toEqual([cssColorToABGR(FEATURE_DEFAULT_COLOR)])
 })
 
 test('a placeholder itemRgb does not hijack the per-row palette', () => {

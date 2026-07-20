@@ -5,7 +5,10 @@ import {
   spanLeft,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { resolveLocalRowIndices } from './resolveLocalRowIndices.ts'
+import {
+  isFeatureColorHidden,
+  resolveLocalRowIndices,
+} from './resolveLocalRowIndices.ts'
 
 import type {
   MultiRowRegionData,
@@ -60,7 +63,15 @@ export function drawMultiRowBlocks(
 
         for (let i = 0; i < featureStarts.length; i++) {
           const rowIndex = rowForLocal[featurePartitionIndex[i]!]
-          if (rowIndex !== undefined && !hiddenColors?.has(featureColors[i]!)) {
+          if (
+            rowIndex !== undefined &&
+            !isFeatureColorHidden(
+              rowIndex,
+              featureColors[i]!,
+              hiddenColors,
+              rowColorsByIndex,
+            )
+          ) {
             const xa = bpToPx(featureStarts[i]!)
             const xb = bpToPx(featureEnds[i]!)
             const width = Math.max(1, Math.abs(xb - xa))

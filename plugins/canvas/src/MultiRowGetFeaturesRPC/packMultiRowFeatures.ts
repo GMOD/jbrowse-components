@@ -1,15 +1,20 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
 import { cssColorToABGR, featureBedColor } from '@jbrowse/core/util/colorBits'
 
-import { MULTIROW_DEFAULT_COLOR } from './multiRowColors.ts'
+// multi-row's unset-slot fallback is just the generic feature default; unset is
+// also what turns on the per-row palette (resolveRowColors), which paints over
+// this on the main thread, so it's mostly invisible. A pure fallback, never
+// compared against a stored value (the slot is a `maybeColor`).
+import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type { MultiRowGetFeaturesResult } from './rpcTypes.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // Resolve the (possibly jexl) `color` slot to a CSS string for one feature,
-// degrading to the default color on a bad expression or non-string result. Only
-// called for a set slot — an unset one never reaches here.
+// degrading to the default color on a bad expression or non-string result.
+// Called for a set slot, or for an unset slot when the feature carries no BED
+// color (the resolver falls back to it with `colorCfg.color` = the default).
 export function evalColorSlot(
   colorCfg: { color: string },
   feature: Feature,
@@ -17,9 +22,9 @@ export function evalColorSlot(
 ) {
   try {
     const css = readConfigValue(colorCfg, 'color', feature, jexl)
-    return typeof css === 'string' ? css : MULTIROW_DEFAULT_COLOR
+    return typeof css === 'string' ? css : FEATURE_DEFAULT_COLOR
   } catch {
-    return MULTIROW_DEFAULT_COLOR
+    return FEATURE_DEFAULT_COLOR
   }
 }
 
@@ -47,7 +52,7 @@ export function makeFeatureColorResolver(
   jexl: JexlInstance,
 ) {
   const slotIsUnset = colorConfig === undefined
-  const colorCfg = { color: colorConfig ?? MULTIROW_DEFAULT_COLOR }
+  const colorCfg = { color: colorConfig ?? FEATURE_DEFAULT_COLOR }
   return (feature: Feature) => {
     const bedColor = slotIsUnset ? featureBedColor(feature) : undefined
     return {

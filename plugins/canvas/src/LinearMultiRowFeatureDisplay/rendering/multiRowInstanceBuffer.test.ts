@@ -76,6 +76,24 @@ test('skips features whose color is a hidden category', () => {
   expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 30])
 })
 
+test('a hidden category does not drop features on rows with a color override', () => {
+  const rowIndexByValue = new Map([
+    ['momHP0', 0],
+    ['dadHP1', 1],
+  ])
+  // row 0 (momHP0) is recolored, so it paints the override, not its baked color.
+  // hiding 0xff0000ff (feature 0's baked color) must NOT drop feature 0 — that
+  // color is not what the row paints and isn't in the legend.
+  const { buffer, count } = buildMultiRowInstanceBuffer(
+    region,
+    rowIndexByValue,
+    [0xff123456, undefined],
+    new Set([0xff0000ff]),
+  )
+  expect(count).toBe(3)
+  expect(decode(buffer, count).map(d => d.startBp)).toEqual([10, 20, 30])
+})
+
 test('rowColorsByIndex overrides the baked color for that row only', () => {
   const rowIndexByValue = new Map([
     ['momHP0', 0],

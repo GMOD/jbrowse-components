@@ -15,6 +15,7 @@ import {
 
 import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Feature } from '@jbrowse/core/util'
 
 export async function executeMultiRowGetFeatures({
   pluginManager,
@@ -78,12 +79,23 @@ export async function executeMultiRowGetFeatures({
     }
   }
 
-  const features = await updateStatus(
+  const featuresArray = await updateStatus(
     'Downloading features',
     statusCallback,
     () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
   checkStopToken2(stopTokenCheck)
+
+  // Dedup by feature id: multiple adapter passes can yield the same feature id
+  // (mirrors the feature-render RPC), which would otherwise double-count the
+  // density gate and pack duplicate quads.
+  const featureMap = new Map<string, Feature>()
+  for (const f of featuresArray) {
+    if (!featureMap.has(f.id())) {
+      featureMap.set(f.id(), f)
+    }
+  }
+  const features = [...featureMap.values()]
 
   // Post-fetch exact gate: the backstop when the sample under-counted (or was
   // skipped). Reports the same count the main thread re-derives its density

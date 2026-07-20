@@ -134,6 +134,23 @@ test('skips features whose color is a hidden category', () => {
   ])
 })
 
+test('a hidden category does not drop features on rows with a color override', () => {
+  const GREEN = 0xff00ff00
+  const { ctx, calls } = mockCtx()
+  // row 0 (mom) is recolored green, so it paints the override, not its baked RED.
+  // hiding RED must NOT drop mom's feature — RED isn't what the row paints and
+  // isn't in the legend.
+  drawMultiRowBlocks(ctx, new Map([[0, region]]), [block], {
+    ...state,
+    rowColorsByIndex: [GREEN, undefined],
+    hiddenColors: new Set([RED]),
+  })
+  expect(calls.map(c => c.fillStyle)).toEqual([
+    abgrToCssRgba(GREEN),
+    abgrToCssRgba(BLUE),
+  ])
+})
+
 test('rowColorsByIndex overrides the baked feature color per row', () => {
   const GREEN = 0xff00ff00
   const { ctx, calls } = mockCtx()

@@ -37,7 +37,10 @@ import {
   resolveConfiguredLegend,
 } from './rendering/colorLegend.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
-import { resolveLocalRowIndices } from './rendering/resolveLocalRowIndices.ts'
+import {
+  isFeatureColorHidden,
+  resolveLocalRowIndices,
+} from './rendering/resolveLocalRowIndices.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   buildEditableSources,
@@ -528,7 +531,12 @@ export default function stateModelFactory(
             rowForLocal[featurePartitionIndex[i]!] === targetRow &&
             featureStarts[i]! <= bp &&
             bp < featureEnds[i]! &&
-            !hiddenColors.has(featureColors[i]!)
+            !isFeatureColorHidden(
+              targetRow,
+              featureColors[i]!,
+              hiddenColors,
+              self.rowColorsByIndex,
+            )
           ) {
             return {
               id: featureIds[i]!,
