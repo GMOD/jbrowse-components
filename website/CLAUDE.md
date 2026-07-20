@@ -72,6 +72,13 @@ obvious. If a caption needs a paragraph of gene/pathway prose to be
 intelligible, the figure itself isn't a clear enough highlight; fix the figure
 (zoom, labels, in-view highlights), not the caption.
 
+**On-image `annotations` text stays at the bare minimum** — a label, not a
+paragraph. A callout drawn into the PNG covers the tracks underneath it, can't
+be re-flowed or translated, and goes stale silently. Give it the one phrase that
+names what the reader is looking at ("17q21.31 inversion: one non-recombining
+block") and put every further sentence in the `<Figure caption>`, which is
+selectable text beside the image rather than paint on top of it.
+
 **Many of these PNGs are too large to analyze directly — downscale first.**
 Capture is 1500px-wide at `deviceScaleFactor: 2`, so most images are ~3000px
 wide and the Read tool rejects them (oversized). Before reading one for visual

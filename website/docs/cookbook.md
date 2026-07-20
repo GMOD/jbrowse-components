@@ -397,7 +397,20 @@ A few of these need more than the one line above:
   [customizing feature colors](/docs/config_guides/customizing_feature_colors)
   for the full plugin file.
 
-<Figure caption="The lookup-table recipe on a track with real categorical variety: UCSC RepeatMasker over a 17q21 window, each element colored by its repeat class — SINE red, LINE blue, LTR green, DNA purple, simple repeats orange (jexl:...[get(feature,'repClass')]). Same technique as the table above, keyed on a BED column instead of feature.type." src="/img/cookbook_color_by_type.png"/>
+The lookup table scales past `feature.type`: key it on any field the track
+exposes. UCSC RepeatMasker carries a `repClass` column, so one table colors
+every repeat by its class:
+
+```json
+{
+  "color": "jexl:{SINE:'#e41a1c',LINE:'#377eb8',LTR:'#4daf4a',DNA:'#984ea3',Simple_repeat:'#ff7f00',Low_complexity:'#a65628'}[get(feature,'repClass')] || 'gray'"
+}
+```
+
+`get(feature, 'repClass')` reads a BED column the same way `feature.type` reads
+a GFF type, and `|| 'gray'` catches the classes not in the table.
+
+<Figure caption="The lookup-table recipe on a track with real categorical variety: UCSC RepeatMasker over a 17q21 window, each element colored by its repeat class with the table above — SINE red, LINE blue, LTR green, DNA purple, simple repeats orange, low complexity brown, anything else gray." src="/img/cookbook_color_by_type.png"/>
 
 ### Debugging a color callback
 

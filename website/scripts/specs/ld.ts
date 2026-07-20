@@ -17,39 +17,6 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // reconciles "chr17" at query time.
 const HG19_HUB = `?config=${encodeURIComponent('https://jbrowse.org/ucsc/hg19/config.json')}`
 
-const KGP_CHR17 = 'https://jbrowse.org/demos/popgen/mapt_1kg_chr17.vcf.gz'
-
-const LD_TRACK = {
-  type: 'VariantTrack',
-  trackId: 'kgp_chr17_ld',
-  name: '17q21.31 LD (r²)',
-  assemblyNames: ['hg19'],
-  adapter: {
-    type: 'VcfTabixAdapter',
-    uri: KGP_CHR17,
-    // 2504 samples make the region byte-heavy; raise the adapter's fetch gate
-    // (default 5 Mb) so panning/zooming within the slice loads rather than
-    // tripping "region too large".
-    fetchSizeLimit: 500_000_000,
-  },
-  displays: [
-    {
-      type: 'LDDisplay',
-      showLDTriangle: true,
-      showLegend: true,
-      // A proxy recombination track (1 - r² between adjacent SNPs) drawn above
-      // the triangle, so the "white gaps are recombination boundaries" story is
-      // shown, not just asserted: the spikes line up with the gaps.
-      showRecombination: true,
-      // Thin the dense 1000G SNPs to the common (haplotype-tagging) ones: cleans
-      // the speckle from noisy rare-allele r² estimates, keeps the block-forming
-      // markers, and keeps the O(N²) compute fast.
-      minorAlleleFrequencyFilter: 0.35,
-      height: 460,
-    },
-  ],
-}
-
 const KGP_CHR2 = 'https://jbrowse.org/demos/popgen/lct_1kg_chr2.vcf.gz'
 
 // LCT / MCM6 lactase-persistence locus. Recent positive selection swept a long
@@ -87,20 +54,33 @@ const LCT_TRACK = {
 // clustering RPC declaratively (readySelector waits on the dendrogram, so the
 // figure is correct however long clustering the callset takes); the window is
 // kept to the ~200 kb core block so the variant count stays tractable.
+//
+// Rows are colored by 1000 Genomes superpopulation, which is what makes the
+// SELECTION visible rather than just the haplotype: the swept block is
+// overwhelmingly EUR while AFR/EAS samples sit outside it. A haplotype that
+// long, that common, and that population-restricted is the signature of recent
+// positive selection — drift alone doesn't build it. Metadata is the release's
+// own panel file (sample / pop / super_pop / gender, tab-separated, so it drops
+// straight into samplesTsvLocation), served CORS-open from the EBI mirror.
+const KGP_PANEL =
+  'https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/integrated_call_samples_v3.20130502.ALL.panel'
+
 const LCT_MATRIX_TRACK = {
   type: 'VariantTrack',
   trackId: 'kgp_lct_matrix',
-  name: 'LCT haplotypes (1000 Genomes, clustered)',
+  name: 'LCT haplotypes (1000 Genomes, clustered by genotype, colored by population)',
   assemblyNames: ['hg19'],
   adapter: {
     type: 'VcfTabixAdapter',
     uri: KGP_CHR2,
     fetchSizeLimit: 500_000_000,
+    samplesTsvLocation: { uri: KGP_PANEL, locationType: 'UriLocation' },
   },
   displays: [
     {
       type: 'LinearMultiSampleVariantMatrixDisplay',
       minorAlleleFrequencyFilter: 0.35,
+      colorBy: 'super_pop',
       height: 500,
     },
   ],
@@ -140,12 +120,31 @@ export const ldSpecs: ScreenshotSpec[] = [
               height: 60,
               showOnlyGenes: true,
             },
-            { trackId: 'kgp_lct_ld', type: 'LDDisplay', height: 320 },
+            // The causal variant, from an independent source: ClinVar's
+            // LACTASE PERSISTENCE records sit at chr2:136,608,642–136,608,745
+            // — rs4988235, the -13910 C>T enhancer variant in MCM6 intron 13
+            // that keeps LCT transcribed into adulthood. ClinVar has ~79
+            // records in this window, nearly all unrelated VUS, so filter to
+            // the lactase phenotype: one labeled variant anchoring the block
+            // instead of a wall of clinical noise.
+            {
+              trackId: 'hg19-clinvarMain',
+              type: 'LinearBasicDisplay',
+              height: 70,
+              jexlFiltersSetting: [
+                "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
+              ],
+            },
+            { trackId: 'kgp_lct_ld', type: 'LDDisplay', height: 300 },
             {
               trackId: 'kgp_lct_matrix',
               type: 'LinearMultiSampleVariantMatrixDisplay',
               runClustering: true,
-              height: 380,
+              // wider than the 80px default so the population color strip
+              // beside the dendrogram is actually readable — that strip is
+              // what shows the swept band is EUR/SAS, i.e. the selection
+              treeAreaWidth: 150,
+              height: 400,
             },
           ],
         },
@@ -156,16 +155,16 @@ export const ldSpecs: ScreenshotSpec[] = [
     // paints well before it, so waiting on the dendrogram gates both
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
     readyTimeout: 180000,
-    viewportHeight: 1000,
+    viewportHeight: 1180,
     settleMs: 5000,
     annotations: [
       {
         type: 'text',
         x: 40,
         y: 250,
-        maxWidth: 360,
+        maxWidth: 290,
         fontSize: 15,
-        text: 'Top: the r² triangle — a solid red block means every SNP across the LCT/MCM6 locus is inherited together. Bottom: the same 2504 samples as a genotype matrix, rows clustered by similarity — one large band all carry the identical swept haplotype (the block), the rest do not.',
+        text: 'One swept haplotype: rs4988235 → LD block → its carriers',
       },
     ],
   },
@@ -220,63 +219,6 @@ export const ldSpecs: ScreenshotSpec[] = [
         maxWidth: 380,
         fontSize: 16,
         text: 'A variant near LCT keeps the milk-digesting enzyme lactase switched on into adulthood. It spread so fast under natural selection that a long block of neighboring SNPs was carried along with it — that block is the solid red triangle, all inherited together (high r²).',
-      },
-    ],
-  },
-  {
-    mode: 'url',
-    name: 'ld/mapt_17q21_inversion',
-    url: `${HG19_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [LD_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          // widened past the previous 43.7–44.3 Mb window (which sat entirely
-          // INSIDE the inversion, so the whole view was one red block and the
-          // boundary was invisible): now the ~250 kb left flank outside the
-          // inversion is in view, where r² drops off — so the block visibly
-          // ENDS at the inversion's edge. Right edge stays within the hosted
-          // VCF slice (43.4–44.6 Mb).
-          loc: 'chr17:43,470,000-44,590,000',
-          // Band the 17q21.31 inversion. Coordinates are the 1000 Genomes
-          // freeze-4 SV inversion call (hg38 chr17:45,568,280–46,495,155,
-          // "chr17-45568281-INV-926875") liftover'd to hg19 via the MAPT anchor
-          // — i.e. a real 1kGP SV-callset boundary, not a hand-drawn guess. The
-          // highlighted span is where the LD block lives; MAPT sits inside it.
-          highlight: [
-            {
-              refName: 'chr17',
-              start: 43_645_646,
-              end: 44_572_521,
-              assemblyName: 'hg19',
-            },
-          ],
-          assembly: 'hg19',
-          tracks: [
-            {
-              trackId: 'hg19-ncbiRefSeqCurated',
-              type: 'LinearBasicDisplay',
-              height: 90,
-              showOnlyGenes: true,
-            },
-            { trackId: 'kgp_chr17_ld', type: 'LDDisplay' },
-          ],
-        },
-      ],
-    })}&sessionName=Screenshot`,
-    readyText: 'variants shown',
-    readyTimeout: 180000,
-    // gene(90) + ld(460) + recombination zone + 2 headers + ruler/overview
-    viewportHeight: 790,
-    settleMs: 14000,
-    annotations: [
-      {
-        type: 'text',
-        x: 40,
-        y: 250,
-        maxWidth: 400,
-        fontSize: 16,
-        text: 'The highlighted span is the 17q21.31 inversion (~900 kb, the H1/H2 MAPT haplotypes) — the boundary the 1000 Genomes freeze-4 SV callset calls inverted. The two orientations cannot recombine, so every SNP across it is inherited as one block: the solid high-r² triangle is that non-recombining haplotype. Short-read genotype SV callsets miss this segmental-duplication-flanked inversion, so the LD block is how you actually see it.',
       },
     ],
   },

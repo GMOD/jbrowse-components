@@ -47,14 +47,13 @@ as correlation, here shown as the actual shared sequence across people.
 An inversion produces a block for a different reason. Because the inverted and
 standard arrangements cannot recombine in a heterozygote, the whole inverted
 segment is inherited as one unit, so its SNPs stay correlated across the entire
-region. The common 17q21.31 inversion (around the _MAPT_ gene) shows this
-cleanly.
+region. The common 17q21.31 inversion (around the _MAPT_ gene) is the
+textbook example: short-read SV callers miss the inversion itself, because
+segmental duplications flank it, so the LD block is how you see it at all.
 
-<Figure src="/img/ld/mapt_17q21_inversion.png" caption="LD across the common 17q21.31 inversion (human, 1000 Genomes). Red triangular blocks are haplotypes inherited as units; the blue recombination track on top (1 − r² between adjacent SNPs) peaks at the white gaps between them, marking where LD breaks down. The recombination-suppressed inverted segment reads as an extended block."/>
-
-The blue recombination track along the top makes the boundaries explicit: it
-peaks in the white gaps (adjacent SNPs uncorrelated, LD breaking down) and dips
-inside the red blocks (adjacent SNPs locked together).
+Turn on the LD display's recombination track (`showRecombination`) to make block
+boundaries explicit: the 1 − r² curve between adjacent SNPs peaks in the white
+gaps (LD breaking down) and dips inside the red blocks (SNPs locked together).
 
 ## LD is a local tool — mind the scale
 

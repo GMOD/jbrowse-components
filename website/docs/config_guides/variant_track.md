@@ -234,9 +234,9 @@ one unit, which shows up as a solid red block.
 
 The same picture explains why an **inversion** produces a block. Because the
 inverted and standard arrangements cannot recombine in a heterozygote, the whole
-inverted segment is inherited together, so its SNPs stay in strong LD:
+inverted segment is inherited together, so its SNPs stay in strong LD across the
+entire inverted region.
 
-<Figure src="/img/ld/mapt_17q21_inversion.png" caption="LD across the common 17q21.31 inversion (human, 1000 Genomes). Red triangular blocks are haplotypes inherited as units; the blue recombination track on top (1 − r² between adjacent SNPs) peaks at the white gaps between them, marking where LD breaks down. The recombination-suppressed inverted segment reads as an extended block."/>
 
 ### Generating the PLINK file
 
