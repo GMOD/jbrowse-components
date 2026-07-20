@@ -18,6 +18,7 @@ import {
 import { observer } from 'mobx-react'
 
 import PreferencesResetDialog from './PreferencesResetDialog.tsx'
+import { DTD_PATH_HEAD } from '../Session/BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ThemeMap } from '@jbrowse/core/ui'
@@ -166,7 +167,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
       session.setStickyViewHeaders(true)
     } else if (head === 'useWorkspaces') {
       session.setUseWorkspaces(false)
-    } else if (head === 'displayTypeDefaults' && displayType && slot) {
+    } else if (head === DTD_PATH_HEAD && displayType && slot) {
       session.setDisplayTypeDefault(displayType, slot, undefined)
     } else if (head) {
       session.clearPreferenceOverride(head)

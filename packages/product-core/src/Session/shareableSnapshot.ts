@@ -22,9 +22,10 @@ interface Bake {
  * `getComputedStyle` for the promotable-default cascade.
  *
  * A track that "follows" a session-wide promoted display-type default holds no
- * value of its own — its rendered value is resolved at read time from
- * `preferencesOverrides.displayTypeDefaults`, which is personal, localStorage-
- * backed, and deliberately never serialized into a shared session. So a raw
+ * value of its own — its rendered value is resolved at read time from the
+ * promoted display-type defaults in `preferencesOverrides`, which are personal,
+ * localStorage-backed, and deliberately never serialized into a shared session.
+ * So a raw
  * `getSnapshot(session)` records a track as at-default even when the sender is
  * looking at a promoted value, and the recipient (who lacks the sender's
  * preferences) sees something different. This flattens the live cascade into a

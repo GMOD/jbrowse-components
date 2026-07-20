@@ -42,6 +42,17 @@ export function parseDisplayTypeDefaultKey(key: string) {
   return displayType && slot ? { displayType, slot } : undefined
 }
 
+// Head of the display path a promoted default takes in a `getPreferenceChanges`
+// row: `[DTD_PATH_HEAD, displayType, slot]`. Purely a UI display + reset-routing
+// tag, deliberately distinct from the flat `DTD_PREFIX` storage key above — the
+// Preferences reset dialog matches on it to route a row back to
+// `setDisplayTypeDefault(type, slot, undefined)`. Shared from here so the
+// producer (`getPreferenceChanges`) and consumer (`resetPreferenceChange`) read
+// one literal and can't drift; a rename on one side alone would otherwise make
+// reset silently no-op. Reuses the old nested-object name so a row reads
+// naturally; the underlying store is flat.
+export const DTD_PATH_HEAD = 'displayTypeDefaults'
+
 /**
  * #stateModel BaseSessionModel
  *
@@ -220,7 +231,7 @@ export function BaseSessionModel<
           const dtd = parseDisplayTypeDefaultKey(key)
           if (dtd) {
             changes.push({
-              path: ['displayTypeDefaults', dtd.displayType, dtd.slot],
+              path: [DTD_PATH_HEAD, dtd.displayType, dtd.slot],
               from: undefined,
               to: value,
             } as TrackConfigChange)
