@@ -212,11 +212,12 @@ describe('JBrowseWebSessionModel', () => {
         'displayMode',
         undefined,
       )
-      // clearing the last slot must leave no empty `{ LinearBasicDisplay: {} }`
-      // cruft accumulating in the persisted localStorage blob
-      const store = session.preferencesOverrides.get('displayTypeDefaults') as
-        Record<string, unknown> | undefined
-      expect(store?.LinearBasicDisplay).toBeUndefined()
+      // clearing the last slot deletes its flat composite key outright, so the
+      // store is left empty rather than accumulating cruft in the persisted blob
+      expect(
+        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+      ).toBeUndefined()
+      expect(session.preferencesOverrides.size).toBe(0)
     })
 
     it('clearPreferenceOverrides drops every promoted default at once', () => {
@@ -274,6 +275,60 @@ describe('JBrowseWebSessionModel', () => {
       )
       expect(fired).toBe(1)
       dispose()
+    })
+  })
+
+  describe('displayTypeDefaults persistence', () => {
+    // PreferencesSessionMixin persists preferencesOverrides to localStorage on
+    // change and reloads them in afterAttach, so isolate each test
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    it('round-trips a promoted default through localStorage across a reload', () => {
+      const session = createTestSession()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+
+      // the flat composite key holds a literal NUL (`\0`) delimiter; it must
+      // survive JSON.stringify (escaped as  ) / JSON.parse intact
+      const raw = localStorage.getItem('jbrowsePreferences')
+      expect(raw).toContain('\\u0000')
+
+      // a fresh session (simulating a reload) rehydrates the promoted default
+      const reloaded = createTestSession()
+      expect(
+        reloaded.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+      ).toBe('compact')
+    })
+
+    it('migrates a legacy nested displayTypeDefaults blob to flat keys on load', () => {
+      // older builds stored promoted defaults under one nested object; a session
+      // that reloads such a blob must expand it to flat per-(type, slot) keys
+      localStorage.setItem(
+        'jbrowsePreferences',
+        JSON.stringify({
+          scrollZoom: true,
+          displayTypeDefaults: {
+            LinearBasicDisplay: { displayMode: 'compact' },
+            LinearArcDisplay: { displayMode: 'arcs' },
+          },
+        }),
+      )
+
+      const session = createTestSession()
+      expect(
+        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+      ).toBe('compact')
+      expect(
+        session.getDisplayTypeDefault('LinearArcDisplay', 'displayMode'),
+      ).toBe('arcs')
+      // the nested key is dropped, scalar prefs are untouched
+      expect(session.preferencesOverrides.get('displayTypeDefaults')).toBeUndefined()
+      expect(session.scrollZoom).toBe(true)
     })
   })
 
