@@ -30,7 +30,7 @@ function harness(init: { rowHeight: number; scrollTop: number; nrow: number }) {
   const state = { ...init }
   return {
     target: {
-      get rowHeight() {
+      get effectiveRowHeight() {
         return state.rowHeight
       },
       get scrollTop() {

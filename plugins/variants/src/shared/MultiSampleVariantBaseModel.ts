@@ -936,8 +936,8 @@ export default function MultiSampleVariantBaseModelF(
          * Floored at 1px only when non-positive: `availableHeight` floors at
          * 0 (see above), so `autoRowHeight` can still be exactly 0 when
          * `lineZoneHeight` swallows the whole display — dividing by it
-         * elsewhere (`/ rowHeight` in applyRowResizeWheel, the renderers)
-         * would propagate NaN/Infinity. A resolved getter must never hand
+         * elsewhere (`/ effectiveRowHeight` in applyRowResizeWheel, the
+         * renderers) would propagate NaN/Infinity. A resolved getter must never hand
          * back a degenerate value. The floor must not catch legitimate
          * sub-1px auto-fit heights (many-sample tracks squeezed into a short
          * display) — that's the normal case `hasOverflow` relies on staying

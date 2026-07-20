@@ -12,12 +12,16 @@ const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
 // (wiggle, multi-wiggle, manhattan, alignments coverage) exposes this exact
 // shape so the shared Score menu, autoscale/scale submenus, and SetMinMaxDialog
 // consume it without per-display adapters. minScore/maxScore are the raw config
-// values (Number.MIN_VALUE/MAX_VALUE sentinels intact) the dialog expects.
+// values (Number.MIN_VALUE/MAX_VALUE sentinels intact) the dialog expects;
+// minScoreBound/maxScoreBound are the resolved bounds (undefined = autoscale)
+// every implementer already derives (WiggleScoreConfigMixin + alignments).
 export interface ScoreScaleModel extends IAnyStateTreeNode {
   scaleType: string
   autoscaleType: string
   minScore: number
   maxScore: number
+  minScoreBound: number | undefined
+  maxScoreBound: number | undefined
   setScaleType: (v: string) => void
   setAutoscale: (v?: string) => void
   setMinScore: (n?: number) => void
@@ -77,14 +81,14 @@ export function makeAutoscaleTypeSubMenu(
   }
 }
 
-// minScore/maxScore carry Number.MIN_VALUE / MAX_VALUE as the "unset, fall back
-// to autoscale" sentinel (see WiggleScoreConfigMixin minScoreBound/maxScoreBound).
-// Surfacing the resolved bounds lets the menu show that a manual range is in
-// force — otherwise an autoscale-type radio still reads as checked while a fixed
-// bound silently overrides it.
+// The model resolves the Number.MIN_VALUE / MAX_VALUE "unset, fall back to
+// autoscale" sentinel into minScoreBound/maxScoreBound (undefined = autoscale).
+// Surfacing them lets the menu show that a manual range is in force — otherwise
+// an autoscale-type radio still reads as checked while a fixed bound silently
+// overrides it.
 function resolveScoreBounds(self: ScoreScaleModel) {
-  const min = self.minScore === Number.MIN_VALUE ? undefined : self.minScore
-  const max = self.maxScore === Number.MAX_VALUE ? undefined : self.maxScore
+  const min = self.minScoreBound
+  const max = self.maxScoreBound
   return { min, max, hasManual: min !== undefined || max !== undefined }
 }
 

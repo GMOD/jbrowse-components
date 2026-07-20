@@ -20,7 +20,7 @@ export function useVariantVirtualScroll(
   useVirtualScrollWheel(canvas, (e, applyScroll) => {
     if (e.shiftKey) {
       applyRowResizeWheel(e, canvas!, {
-        rowHeight: model.effectiveRowHeight,
+        effectiveRowHeight: model.effectiveRowHeight,
         scrollTop: model.scrollTop,
         nrow: model.nrow,
         viewportHeight: model.availableHeight,

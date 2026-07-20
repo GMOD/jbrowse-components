@@ -15,7 +15,9 @@ const MAX_ROW_HEIGHT = 20
 const RESIZE_PX_PER_WHEEL_PX = 1 / 240
 
 interface RowResizeTarget {
-  rowHeight: number
+  // resolved row height (never the raw 0/fit sentinel) — this is divided into
+  // below, so a 0 here would produce Infinity
+  effectiveRowHeight: number
   scrollTop: number
   nrow: number
   // height available to rows; the min row height is this divided by nrow, i.e.
@@ -43,10 +45,10 @@ export function applyRowResizeWheel(
   const maxRowHeight = Math.max(MAX_ROW_HEIGHT, minRowHeight)
   const newRowHeight = Math.max(
     minRowHeight,
-    Math.min(maxRowHeight, model.rowHeight + delta),
+    Math.min(maxRowHeight, model.effectiveRowHeight + delta),
   )
   const mouseY = e.clientY - el.getBoundingClientRect().top
-  const rowUnderMouse = (mouseY + model.scrollTop) / model.rowHeight
+  const rowUnderMouse = (mouseY + model.scrollTop) / model.effectiveRowHeight
   model.setRowHeight(newRowHeight)
   model.setScrollTop(rowUnderMouse * newRowHeight - mouseY)
 }
