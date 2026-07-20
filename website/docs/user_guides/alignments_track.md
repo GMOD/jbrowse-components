@@ -86,8 +86,7 @@ data), **Color by → Modifications** paints them. It offers two modes:
 See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
 modified-base workflow.
 
-<Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a CpG island on chr20." src="/img/alignments/modifications1.png" />
-<Figure caption="The same track colored by type (top) and 2-color (bottom) over a hypomethylated CpG island: by-type leaves it near-empty, 2-color fills it solid blue." src="/img/alignments/modifications2.png" />
+<Figure caption="COLO829 tumor nanopore reads over a hypomethylated CpG island on chr20, colored by type (top) and 2-color (bottom): by-type leaves the island near-empty, 2-color fills it solid blue." src="/img/alignments/modifications2.png" />
 
 ### Pair orientation and insert size
 

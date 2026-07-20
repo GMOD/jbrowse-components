@@ -188,11 +188,14 @@ of them is filled at any position, and that tells you which of the father's two
 copies the child got there. Every step between the blue rows is a crossover. The
 red rows work the same way for the maternal chromosome.
 
-## Coloring an admixed trio by ancestry
+## Painting the same trio by local ancestry
 
-The same display can paint rows by inferred ancestry instead of parental copy.
-That only shows structure for an admixed individual, so let's switch to a 1000
-Genomes African-American (ASW) trio: child NA19828, parents NA19818 and NA19819.
+The same display paints rows by whatever category is in the BED. Here that
+category is **inferred local ancestry**, a per-segment statistical estimate of
+which reference panel a stretch of chromosome most resembles, not a label on the
+person. That mosaic only has structure to show for a recently admixed
+individual, so we switch to a 1000 Genomes African-American (ASW) trio: child
+NA19828, parents NA19818 and NA19819.
 
 [FLARE](https://github.com/browning-lab/flare) infers per-haplotype local
 ancestry by comparing each target haplotype to labeled reference samples. It
@@ -261,12 +264,17 @@ haplotype gets a row:
 }
 ```
 
-Each of the six rows is one haplotype, painted African (orange) or European
-(blue) block by block. Note that nothing changed but `partitionField` (`sample`
-instead of `parenthap`), and the same display gives six rows instead of four.
-The row structure comes entirely from the BED column you point it at.
+Each of the six rows is one haplotype, its segments colored by the reference
+panel the inference assigned, orange or blue for the two FLARE distinguishes
+here. Note that nothing changed but `partitionField` (`sample` instead of
+`parenthap`), and the same display gives six rows instead of four. The row
+structure comes entirely from the BED column you point it at.
 
-<Figure caption="FLARE local-ancestry calls for a 1000 Genomes ASW trio on chr1, in the multi-row feature display. Six rows, one per haplotype (child, mother, father), colored African (orange) or European (blue)." src="/img/trio-ancestry.png"/>
+<Figure caption="FLARE local-ancestry calls for a 1000 Genomes ASW trio on chr1. Each of the six rows is one haplotype; the child's two are mosaics recombined from the parents, and every block boundary is a crossover. Orange and blue mark the two reference panels the inference distinguishes." src="/img/trio-ancestry.png"/>
+
+Read it the same way as the hap-ibd rows: each child block continues a segment
+carried by one parent, so the painting is a direct record of what was inherited,
+and the boundaries between blocks are that chromosome's crossovers.
 
 ## Relating the painting back to the genotypes
 

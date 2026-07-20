@@ -166,7 +166,7 @@ export const trioSpecs: ScreenshotSpec[] = [
         y: 350,
         maxWidth: 1100,
         fontSize: 16,
-        text: 'Six haplotypes of an ASW trio (child, mother, father) painted by local ancestry — AFR (orange) vs EUR (blue). Each row is one haplotype; the child recombines the ancestry blocks inherited from both parents.',
+        text: "The multi-row display painting a trio's six haplotypes by inferred local ancestry. The child's two rows are mosaics recombined from the parents, so each block boundary is a meiotic crossover. Orange and blue mark the two reference panels the inference distinguishes, not labels on the people.",
       },
     ],
   },

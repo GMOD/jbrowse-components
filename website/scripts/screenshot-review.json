@@ -273,8 +273,8 @@
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
-    "status": "bad",
-    "note": "might consider using the  'two color' rendering type for this screenshot  || AGENT-NEEDS-INPUT: JUDGMENT: \"two color\" for cytosine == fillUnmarked, which modifications2 already demonstrates; switching would duplicate it. Left as the per-type teaching figure. (Menu path fixed unrelatedly? no.)",
+    "status": "good",
+    "note": "RESOLVED: deleted per reviewer follow-up (\"we don't really need a per-type figure\"). Removed the spec (alignments.ts), the PNG, and the Figure in alignments_track.md; folded its takeaway into the modifications2 caption, which already shows by-type (top) vs 2-color (bottom) over the same hypomethylated CpG island. gallery-links regenerated.",
     "reviewedAt": "2026-07-16T20:43:56.103Z",
     "hash": "9f30826ead2af52810042b35b9326783fab9d24f"
   },
@@ -981,8 +981,8 @@
   },
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
-    "status": "bad",
-    "note": "the 'brownish' looking negaitve panel is not super 'exciting'. any better color? the purple in clingen, if meaningful, might benefit from a showLegend:true",
+    "status": "good",
+    "note": "RESOLVED (two fixes). (1) COLOR, per reviewer 'want all tracks positively affected' (not a per-figure override): changed the GLOBAL wiggle negColor default #f0636b (muted coral, muddies to brown at density) -> #e01e26 (clean red) in plugins/wiggle util.ts + wiggleConfigSchemaFields.ts. (2) CLUTTER: the NCBI RefSeq GFF rendered a UUID-labeled bar + region rows above the genes -- verified (tabix) these are RefSeq match/region/biological_region support features whose NCBI-assigned GFF ID is a UUID and which have no Name (getFeatureName = name ?? feature.get('id')), i.e. expected data, not a bug. Fixed with the EXISTING showOnlyGenes display prop via jb2export's JSON escape hatch ('{showOnlyGenes:true}' on --gffgz in the README). Regenerated hero (jb2export from source): clean gene models (ALDH4A1/IFFO2/MIR4695/MIR1290) + red phyloP negatives; gen-img-doc synced jbrowse-img.md + copied 1.png. Also applied showOnlyGenes + regenerated phylop_ncbi_refseq_tp53 (same clutter). clingen showLegend skipped (single feature, no categorical legend). See memory project_jb2export_gff_gene_heuristic_uuid_bar.",
     "reviewedAt": "2026-07-19T23:03:39.759Z",
     "hash": "ce4ceceb843bb9507a0c8e0860b0fbe43003f7a4"
   },

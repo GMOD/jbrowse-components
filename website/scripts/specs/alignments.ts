@@ -776,64 +776,6 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a
-  // UCSC CpG island on chr20 (use COLO829_tumor.ht at a CpG island + add
-  // a CpG island track). Declarative `colorBy: {type:'modifications'}` — the same
-  // state the track menu's Color by → Modifications → Type
-  // applies — because driving that 3-level hover menu live is unreliable over the
-  // COLO829 GPU display (its mod-data load keeps repainting the canvas, which
-  // closes the MUI menu mid-cascade). forceLoad auto-loads the reads.
-  {
-    mode: 'url',
-    name: 'alignments/modifications1',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr20:18,493,346-18,511,070',
-      tracks: [
-        'cpgisland_ucsc_hg38',
-        {
-          trackId: 'COLO829_tumor.ht',
-          colorBy: { type: 'modifications' },
-          // legend is opt-in now; this teaching figure explicitly shows
-          // the 5mC/5hmC color key
-          showLegend: true,
-          forceLoad: true,
-        },
-      ],
-    }),
-    readyText: 'COLO829',
-    readyTimeout: 60000,
-    settleMs: 35000,
-    // colorBy:modifications is set declaratively so the mod data is already
-    // loaded and painted by the time the menu opens. Then drive the live Color
-    // by → Modifications → One color per modification type path so the figure
-    // shows the menu route, not just the result (reviewer asked to actually open
-    // the menu). The MM/ML modes live in a "Modifications" submenu with two
-    // radios ("One color per modification type" / "One color per type, plus
-    // low-probability & unmodified in blue"); the per-type filter, threshold
-    // slider and
-    // cytosine context sit flat beneath them (no dialog). The selector is scoped
-    // by data-trackid to the COLO829 alignments track — the bare track_menu_icon
-    // matched the CpG-island feature track first, whose Color by menu has no
-    // modifications options.
-    actions: [
-      {
-        type: 'click',
-        selector:
-          '[data-testid="track_menu_icon"][data-trackid="COLO829_tumor.ht"]',
-      },
-      ...menuCascade(
-        ['Color by...', 'Modifications', 'One color per modification type'],
-        800,
-      ),
-    ],
-    annotations: cascadeBoxes([
-      'Color by...',
-      'Modifications',
-      'One color per modification type',
-    ]),
-  },
-
   // ────────────────────────────────────────────────────────────────────────
   // RNA-seq tutorial screenshots (use hg19 ACTB region from DEMO_CONFIG)
   // ────────────────────────────────────────────────────────────────────────

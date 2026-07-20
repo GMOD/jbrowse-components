@@ -48,7 +48,10 @@ export const conservationSpecs: ScreenshotSpec[] = [
               defaultRendering: 'xyplot',
               height: 130,
             },
-            { trackId: 'ncbi_genes_hg38_ucsc', height: 160 },
+            // showOnlyGenes drops the RefSeq support features (region/match/
+            // biological_region, which carry no Name and render as unnamed rows)
+            // so the track reads as a clean gene model beside the phyloP signal
+            { trackId: 'ncbi_genes_hg38_ucsc', height: 160, showOnlyGenes: true },
           ],
         },
       ],

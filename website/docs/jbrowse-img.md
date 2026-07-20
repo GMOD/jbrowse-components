@@ -40,12 +40,18 @@ the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 jb2export \
   --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
-  --gffgz https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz \
+  --gffgz https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz '{"showOnlyGenes":true}' \
   --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb \
   --bigwig https://hgdownload.soe.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
   --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
-  --loc 1:19,197,000-19,233,000 --width 1200 --out overview.png
+  --loc 1:19,190,000-19,240,000 --width 1200 --out overview.png
 ```
+
+The `'{"showOnlyGenes":true}'` after the GFF is a raw-JSON per-track override
+(any display setting can be set this way). NCBI RefSeq GFFs carry non-gene
+support features (`region`, `match`, `biological_region`) that would otherwise
+render as unnamed rows above the genes; `showOnlyGenes` restricts the track to
+gene/transcript features.
 
 ## Basic usage
 
