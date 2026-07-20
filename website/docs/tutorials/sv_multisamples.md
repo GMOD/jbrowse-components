@@ -144,7 +144,7 @@ by its variant's structural-variant class, so the whole window becomes a map of
 what kind of SV sits where, and the legend names each class present. The large
 inversion stands out as a solid band in the inversion color.
 
-<Figure caption="The same chr19 window with the multi-sample variant display colored by SV type. Each alt-carrying cell takes its variant's structural-variant class color, shaded by allele dosage (homozygous solid, heterozygous paler); the legend names every class present — deletions, duplications, insertions, inversions, copy-number, and the callset's complex (CPX) events. The large inversion is the orange band." src="/img/multisv_svtype.png" />
+<Figure caption="The same chr19 window with the multi-sample variant display colored by SV type. Each alt-carrying cell takes its variant's structural-variant class color; the legend names every class present — deletions, duplications, insertions, inversions, copy-number, and the callset's complex (CPX) events. The large inversion is the orange band." src="/img/multisv_svtype.png" />
 
 ### Read orientation evidence at the breakpoints
 

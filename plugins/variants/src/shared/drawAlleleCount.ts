@@ -76,16 +76,12 @@ export function getColorAlleleCount(
   }
 
   // Per-variant override (consequence impact / SV type): any alt-carrying cell
-  // (primary or secondary) takes the override color, shaded by alt dosage so
-  // zygosity still reads — homozygous renders the exact color (matching the
-  // legend swatch), heterozygous renders paler, the same het-lighter signal the
-  // default allele-dosage shading uses. No-call-only cells fall through to
-  // no-call shading, so a missing genotype is never mistaken for carrying it.
+  // (primary or secondary) takes the override color flat, so the class/impact
+  // color reads at full strength (dosage shading washed out the majority tier).
+  // No-call-only cells fall through to no-call shading, so a missing genotype is
+  // never mistaken for carrying the variant.
   if (altOverride !== undefined && (alt || alt2)) {
-    const dosage = (alt + alt2) / total
-    return dosage >= 1
-      ? altOverride
-      : colord(altOverride).mix('#ffffff', 1 - dosage).toHex()
+    return altOverride
   }
 
   // A non-primary ("other") alt is drawn as a single flat flag color regardless

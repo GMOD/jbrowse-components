@@ -164,10 +164,9 @@ describe('computeVariantCells featureColor override', () => {
     end: 101,
   })
 
-  test('hom-alt takes the exact override; het is dosage-shaded; ref/no-call keep theirs', async () => {
+  test('every alt-carrying cell takes the flat override; ref and no-call keep theirs', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
     const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
-    const { colord } = await import('@jbrowse/core/util/colord')
     const override = 'rgb(1,2,3)'
     const result = computeVariantCells({
       mafs: [{ feature, mostFrequentAlt: '1' }],
@@ -180,13 +179,9 @@ describe('computeVariantCells featureColor override', () => {
     const colors = [...result.cellColors]
     const overrideAbgr = getCachedABGR(override)
     const refAbgr = getCachedABGR(REFERENCE_COLOR)
-    // het (0/1, dosage 0.5) is the override mixed halfway to white
-    const hetShaded = getCachedABGR(colord(override).mix('#ffffff', 0.5).toHex())
-    // hom-alt renders the exact override (matches the legend swatch)
-    expect(colors.filter(c => c === overrideAbgr)).toHaveLength(1)
-    // het-alt renders the dosage-shaded color, distinct from the exact override
-    expect(colors.filter(c => c === hetShaded)).toHaveLength(1)
-    expect(hetShaded).not.toBe(overrideAbgr)
+    // both the het (0/1) and hom-alt (1/1) cells take the exact override,
+    // regardless of dosage; ref keeps its color, no-call is neither
+    expect(colors.filter(c => c === overrideAbgr)).toHaveLength(2)
     expect(colors).toContain(refAbgr)
     expect(result.numCells).toBe(4)
   })
