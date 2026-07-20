@@ -57,9 +57,15 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
 // - array/map/fileLocation/maybe* map to their runtime value types
 //   (`configurationSlot.ts` typeModels); `maybe*` become `T | undefined`, which
 //   surfaces the unset state at every read instead of hiding it behind `any`.
-// - scalars (string/number/boolean/color/integer/text) re-widen from the (now
-//   literal, due to `const`) `defaultValue` back to the base type, so reads stay
-//   assignable/reassignable.
+// - scalars key on `type` directly (string/text/color → string; number/integer
+//   → number; boolean → boolean). A numeric/boolean slot can carry a jexl-string
+//   `defaultValue` (e.g. arc `thickness`'s `jexl:logThickness(...)`), so deriving
+//   the value type from the default would mistype it as `string`. `readConfObject`
+//   evaluates the jexl on read and returns the slot's declared value type, so the
+//   `type`-keyed result is exactly what a read yields.
+// - a slot with an unrecognized `type` (a custom `model` whose value isn't a
+//   string enum) falls back to re-widening its literal `defaultValue` to the base
+//   scalar type.
 // - `frozen` stays `any` deliberately: it's the escape hatch for arbitrary
 //   dynamic JSON, so callers assert its shape at the read boundary; `unknown`
 //   would only add cast ceremony on legitimately-dynamic values.
@@ -82,15 +88,21 @@ type SlotValueFromDef<DEF> = DEF extends {
               ? boolean | undefined
               : DEF extends { type: 'maybeColor' }
                 ? string | undefined
-                : DEF extends { defaultValue: infer V }
-                  ? [V] extends [boolean]
+                : DEF extends { type: 'number' | 'integer' }
+                  ? number
+                  : DEF extends { type: 'boolean' }
                     ? boolean
-                    : [V] extends [string]
+                    : DEF extends { type: 'string' | 'text' | 'color' }
                       ? string
-                      : [V] extends [number]
-                        ? number
+                      : DEF extends { defaultValue: infer V }
+                        ? [V] extends [boolean]
+                          ? boolean
+                          : [V] extends [string]
+                            ? string
+                            : [V] extends [number]
+                              ? number
+                              : any
                         : any
-                  : any
 
 export type ConfigurationSlotValue<SCHEMA, K extends string> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>

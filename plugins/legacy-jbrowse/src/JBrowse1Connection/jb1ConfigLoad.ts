@@ -6,30 +6,34 @@ import { deepUpdate, fillTemplate } from './util.ts'
 import type {
   Config,
   Include,
-  JBLocation,
   LocalPathLocation,
   Track,
   UriLocation,
 } from './types.ts'
+import type { FileLocation } from '@jbrowse/core/util/types'
 
-function isUriLocation(location: JBLocation): location is UriLocation {
+// `dataRoot`/`baseConfigRoot` arrive from a `fileLocation` config slot, i.e. the
+// core `FileLocation` union — wider than JB1's own Uri/LocalPath pair. These
+// guards only read `.uri`/`.localPath`, so they accept the wider input and
+// narrow to the JB1-local shapes this loader constructs and passes on.
+function isUriLocation(location: FileLocation): location is UriLocation {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as UriLocation).uri !== undefined
 }
 
 function isLocalPathLocation(
-  location: JBLocation,
+  location: FileLocation,
 ): location is LocalPathLocation {
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   return (location as LocalPathLocation).localPath !== undefined
 }
 
 export async function fetchJb1(
-  dataRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
+  dataRoot: FileLocation = { uri: '', locationType: 'UriLocation' },
   baseConfig: Config = {
     include: ['{dataRoot}/trackList.json', '{dataRoot}/tracks.conf'],
   },
-  baseConfigRoot: JBLocation = { uri: '', locationType: 'UriLocation' },
+  baseConfigRoot: FileLocation = { uri: '', locationType: 'UriLocation' },
 ): Promise<Config> {
   let dataRootLocation = isUriLocation(dataRoot)
     ? dataRoot.uri
@@ -96,7 +100,9 @@ export async function createFinalConfig(
   return finalConfig
 }
 
-export async function fetchConfigFile(location: JBLocation): Promise<Config> {
+export async function fetchConfigFile(
+  location: FileLocation,
+): Promise<Config> {
   const result = await openLocation(location).readFile('utf8')
   if (isUriLocation(location)) {
     return parseJb1(result, location.uri)

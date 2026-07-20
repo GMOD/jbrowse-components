@@ -102,22 +102,16 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
        * positions) doesn't re-run these jexl expressions per feature per frame.
        */
       get arcStyles() {
-        // thickness/arcHeight are numeric slots with jexl-string defaults; the
-        // slot's declared `type: 'number'` is erased by the time it reaches the
-        // value-type derivation (only the jexl default string survives, as
-        // `string`), so a typed `self.conf` read would mistype them as string.
-        // They stay on the untyped `getConf` read; the string-valued slots use
-        // the typed `self.conf`.
+        // thickness/arcHeight are `type: 'number'` slots, so getConf types (and
+        // returns) a number — both have a default, so the read is never unset.
+        // color/label/caption are string slots read through the typed self.conf.
         return self.features?.map(feature => ({
           feature,
           color: readConfObject(self.conf, 'color', { feature }),
-          thickness: getConf(self, 'thickness', { feature }) ?? 2,
+          thickness: getConf(self, 'thickness', { feature }),
           label: readConfObject(self.conf, 'label', { feature }),
           caption: readConfObject(self.conf, 'caption', { feature }),
-          arcHeight: Math.min(
-            getConf(self, 'arcHeight', { feature }) ?? 100,
-            self.height,
-          ),
+          arcHeight: Math.min(getConf(self, 'arcHeight', { feature }), self.height),
         }))
       },
       /**

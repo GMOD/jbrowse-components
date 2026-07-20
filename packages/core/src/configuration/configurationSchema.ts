@@ -24,7 +24,13 @@ import { ElementId } from '../util/types/mst.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
 import type PluginManager from '../PluginManager.ts'
-import type { IAnyType } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyType,
+  IType,
+  ReferenceIdentifier,
+  SnapshotIn,
+  SnapshotOut,
+} from '@jbrowse/mobx-state-tree'
 
 export type {
   AnyConfigurationModel,
@@ -456,6 +462,59 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
   return idOrSnapshotUnion(displayRef, schemaType)
 }
 
+// true only for `any` (`1 & T` collapses to `any` when T is `any`, and
+// `0 extends any` holds; for any concrete T it's `0 extends 1 & T` → false).
+type IsAny<T> = 0 extends 1 & T ? true : false
+
+// Instance (`Type`) a config reference reads as. A reference to a **concrete**
+// schema reads as that schema's single-branded instance (`SCHEMA['Type']`, which
+// carries `IStateTreeNode<SCHEMA>`), so `ConfigurationSchemaForModel` recovers
+// the schema and `getConf` / `self.configuration` narrow. A reference to the
+// **widened** `AnyConfigurationSchemaType` — a factory that hasn't tightened its
+// `configSchema` param past it — has an `any` definition, so it reads `any`,
+// exactly as before this type existed: such factories gain no narrowing (their
+// slot values were already `any` via the `any` definition brand) but also don't
+// regress structural expectations like `DisplayModel`'s `{ displayId: string }`
+// that the old `any` instance satisfied vacuously.
+type ConfigReferenceInstance<SCHEMA extends AnyConfigurationSchemaType> =
+  SCHEMA extends ConfigurationSchemaType<infer D, any>
+    ? IsAny<D> extends true
+      ? any
+      : SCHEMA['Type']
+    : SCHEMA['Type']
+
+/**
+ * Static type of the value `ConfigurationReference` produces, and therefore of a
+ * track/display state model's `configuration` prop. Its **instance** type is a
+ * clean, single-branded schema instance (see `ConfigReferenceInstance`), so
+ * `ConfigurationSchemaForModel` — and thus `getConf(self, slot)` /
+ * `readConfObject(self.configuration, slot)` — recovers the concrete schema and
+ * its precise slot value types instead of `any`. The snapshot types stay
+ * `id-string | schema-snapshot`, matching the runtime union (`idOrSnapshotUnion`):
+ * a saved config serializes to its id string, and both an id string and a full
+ * inline snapshot are accepted as input — so views that push string ids or
+ * synthesized configs (`CircularView`, `SvInspectorView`) keep type-checking.
+ *
+ * Built by `Omit`-ing `Type` off `IType` and re-adding it, rather than reusing
+ * the runtime `ITypeUnion`: `IType`'s own `Type` is `STNValue<T, this>`, which
+ * re-brands `T` with `IStateTreeNode<this>`. Layering that over an already-branded
+ * `SCHEMA['Type']` (which carries `IStateTreeNode<SCHEMA>`) double-brands the
+ * node, and the two competing `IStateTreeNode<…>` brands defeat the single
+ * `infer SCHEMA` in `ConfigurationSchemaForModel` (leaving it `any`). Re-adding a
+ * plain `Type` keeps the single brand. See
+ * `agent-docs/guides/CONFIG_TYPE_NARROWING.md`.
+ */
+export type IConfigurationReference<
+  SCHEMA extends AnyConfigurationSchemaType,
+> = Omit<
+  IType<
+    ReferenceIdentifier | SnapshotIn<SCHEMA>,
+    ReferenceIdentifier | SnapshotOut<SCHEMA>,
+    ConfigReferenceInstance<SCHEMA>
+  >,
+  'Type'
+> & { readonly Type: ConfigReferenceInstance<SCHEMA> }
+
 /**
  * Dispatch by the schema's identifier: `trackId` → track-ref (resolves through
  * `session.getTrackById`), `displayId` → display-ref (resolves through the
@@ -464,20 +523,25 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
  * Display schemas must declare `explicitIdentifier: 'displayId'` (directly or
  * via `baseConfiguration: baseLinearDisplayConfigSchema`, which merges its
  * options through `preprocessConfigurationSchemaArguments`).
+ *
+ * The return is annotated `IConfigurationReference<SCHEMATYPE>` (see its doc)
+ * so `self.configuration` carries the concrete schema; the three runtime
+ * branches all produce union types MST can't relate to that hand-written
+ * instance type, hence the single cast at the choke point.
  */
 export function ConfigurationReference<
   SCHEMATYPE extends AnyConfigurationSchemaType,
->(schemaType: SCHEMATYPE) {
+>(schemaType: SCHEMATYPE): IConfigurationReference<SCHEMATYPE> {
   const id =
     getConfigurationSchemaMetadata(schemaType)?.options.explicitIdentifier
-  if (id === 'trackId') {
-    return TrackConfigurationReference(schemaType)
-  } else if (id === 'displayId') {
-    return DisplayConfigurationReference(schemaType)
-  } else {
-    // Plain (non-track/display) ref. The union accepts either an id string
-    // (resolved via `types.reference`) or an inline schema snapshot (held as a
-    // standalone schema instance).
-    return types.union(types.reference(schemaType), schemaType)
-  }
+  const ref =
+    id === 'trackId'
+      ? TrackConfigurationReference(schemaType)
+      : id === 'displayId'
+        ? DisplayConfigurationReference(schemaType)
+        : // Plain (non-track/display) ref. The union accepts either an id
+          // string (resolved via `types.reference`) or an inline schema
+          // snapshot (held as a standalone schema instance).
+          types.union(types.reference(schemaType), schemaType)
+  return ref
 }
