@@ -18,7 +18,7 @@ import {
 import { observer } from 'mobx-react'
 
 import PreferencesResetDialog from './PreferencesResetDialog.tsx'
-import { DTD_PATH_HEAD } from '../Session/BaseSession.ts'
+import { DISPLAY_TYPE_DEFAULTS_PATH_HEAD } from '../Session/BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ThemeMap } from '@jbrowse/core/ui'
@@ -57,35 +57,96 @@ export interface PreferencesDialogSession {
   getPreferenceChanges: () => TrackConfigChange[]
 }
 
-// every preference that currently differs from the default `resetAllPreferences`
-// reverts it to, across the three independent subsystems, so the confirmation
-// dialog shows the full effect of a reset. The preference-override map
-// (animationMode, scrollZoom, promoted display-type defaults) is enumerated by
-// the session; the theme and the layout flags are read here since each is its
-// own mixin with its own default.
+// The preference subsystems that live outside the session override map — theme
+// plus the two layout flags — each its own mixin with its own default. Defined
+// once here so the reset diff (`change`) and the reset actions
+// (`resetAllPreferences`, `resetPreferenceChange`) can't enumerate them
+// differently: `head` both tags the change row and routes its reset, so a row
+// always reverts through the same descriptor that produced it. The
+// preference-override map (animationMode, scrollZoom, promoted display-type
+// defaults) is enumerated separately by the session.
+interface PreferenceSubsystem {
+  head: string
+  // the change row when this subsystem differs from its default, else undefined
+  change: (session: PreferencesDialogSession) => TrackConfigChange | undefined
+  reset: (session: PreferencesDialogSession) => void
+}
+
+const PREFERENCE_SUBSYSTEMS: PreferenceSubsystem[] = [
+  {
+    head: 'theme',
+    change: s =>
+      s.themeName && s.themeName !== 'default'
+        ? { path: ['theme'], from: 'default', to: s.themeName }
+        : undefined,
+    reset: s => {
+      s.setThemeName('default')
+    },
+  },
+  {
+    head: 'stickyViewHeaders',
+    change: s =>
+      s.stickyViewHeaders
+        ? undefined
+        : { path: ['stickyViewHeaders'], from: true, to: false },
+    reset: s => {
+      s.setStickyViewHeaders(true)
+    },
+  },
+  {
+    head: 'useWorkspaces',
+    change: s =>
+      s.useWorkspaces
+        ? { path: ['useWorkspaces'], from: false, to: true }
+        : undefined,
+    reset: s => {
+      s.setUseWorkspaces(false)
+    },
+  },
+]
+
+// every preference that currently differs from its default, so the confirmation
+// dialog shows the full effect of a reset: the session override map plus each
+// non-map subsystem above.
 function collectPreferenceChanges(
   session: PreferencesDialogSession,
 ): TrackConfigChange[] {
-  const changes = [...session.getPreferenceChanges()]
-  const { themeName } = session
-  if (themeName && themeName !== 'default') {
-    changes.push({ path: ['theme'], from: 'default', to: themeName })
+  return [
+    ...session.getPreferenceChanges(),
+    ...PREFERENCE_SUBSYSTEMS.map(p => p.change(session)).filter(
+      c => c !== undefined,
+    ),
+  ]
+}
+
+// Reset every preference this dialog exposes back to its default: clear the
+// whole override map (scrollZoom, animationMode, all promoted display-type
+// defaults) at once, then reset each non-map subsystem through its own setter.
+function resetAllPreferences(session: PreferencesDialogSession) {
+  session.clearPreferenceOverrides()
+  for (const p of PREFERENCE_SUBSYSTEMS) {
+    p.reset(session)
   }
-  if (!session.stickyViewHeaders) {
-    changes.push({
-      path: ['stickyViewHeaders'],
-      from: true,
-      to: session.stickyViewHeaders,
-    })
+}
+
+// Revert a single change row (see `collectPreferenceChanges`) to its default,
+// routing to the subsystem that owns it: a non-map subsystem by matching `head`,
+// a promoted per-display-type default through `setDisplayTypeDefault(...
+// undefined)`, and every other row as a scalar override dropped from the map by
+// key.
+function resetPreferenceChange(
+  session: PreferencesDialogSession,
+  change: TrackConfigChange,
+) {
+  const [head, displayType, slot] = change.path
+  const subsystem = PREFERENCE_SUBSYSTEMS.find(p => p.head === head)
+  if (subsystem) {
+    subsystem.reset(session)
+  } else if (head === DISPLAY_TYPE_DEFAULTS_PATH_HEAD && displayType && slot) {
+    session.setDisplayTypeDefault(displayType, slot, undefined)
+  } else if (head) {
+    session.clearPreferenceOverride(head)
   }
-  if (session.useWorkspaces) {
-    changes.push({
-      path: ['useWorkspaces'],
-      from: false,
-      to: session.useWorkspaces,
-    })
-  }
-  return changes
 }
 
 // declarative user-preference rows backed by the session preferences-override
@@ -141,38 +202,6 @@ const PreferencesDialog = observer(function PreferencesDialog({
   // a confirmation dialog (showing the exact diff) guards the destructive reset,
   // instead of an accidental single click wiping every preference
   const [resetDialogOpen, setResetDialogOpen] = useState(false)
-
-  // Reset every preference this dialog exposes back to its default. The three
-  // subsystems persist independently, so each is reset through its own setter:
-  // the whole override map (scrollZoom, animationMode, all promoted display-type
-  // defaults), the theme, and the sticky-header/workspaces layout flags (whose
-  // defaults `true`/`false` mirror their MultipleViews `types.optional`).
-  function resetAllPreferences() {
-    session.clearPreferenceOverrides()
-    session.setThemeName('default')
-    session.setStickyViewHeaders(true)
-    session.setUseWorkspaces(false)
-  }
-
-  // Revert a single change row (see `collectPreferenceChanges`) to its default,
-  // routing to the subsystem that owns that preference: the theme and the two
-  // layout flags each have their own setter, a promoted per-display-type default
-  // clears through `setDisplayTypeDefault(...undefined)`, and every other row is
-  // a scalar override dropped from the override map by key.
-  function resetPreferenceChange(change: TrackConfigChange) {
-    const [head, displayType, slot] = change.path
-    if (head === 'theme') {
-      session.setThemeName('default')
-    } else if (head === 'stickyViewHeaders') {
-      session.setStickyViewHeaders(true)
-    } else if (head === 'useWorkspaces') {
-      session.setUseWorkspaces(false)
-    } else if (head === DTD_PATH_HEAD && displayType && slot) {
-      session.setDisplayTypeDefault(displayType, slot, undefined)
-    } else if (head) {
-      session.clearPreferenceOverride(head)
-    }
-  }
 
   const extraPanels = pluginManager.evaluateExtensionPoint(
     /** #extensionPoint Core-preferencesDialogPanels | sync | Add panels to the preferences dialog */
@@ -268,10 +297,10 @@ const PreferencesDialog = observer(function PreferencesDialog({
         <PreferencesResetDialog
           changes={collectPreferenceChanges(session)}
           onReset={() => {
-            resetAllPreferences()
+            resetAllPreferences(session)
           }}
           onResetRow={change => {
-            resetPreferenceChange(change)
+            resetPreferenceChange(session, change)
           }}
           onClose={() => {
             setResetDialogOpen(false)

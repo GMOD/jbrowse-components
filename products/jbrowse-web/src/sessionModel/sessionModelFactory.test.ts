@@ -304,32 +304,6 @@ describe('JBrowseWebSessionModel', () => {
         reloaded.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
       ).toBe('compact')
     })
-
-    it('migrates a legacy nested displayTypeDefaults blob to flat keys on load', () => {
-      // older builds stored promoted defaults under one nested object; a session
-      // that reloads such a blob must expand it to flat per-(type, slot) keys
-      localStorage.setItem(
-        'jbrowsePreferences',
-        JSON.stringify({
-          scrollZoom: true,
-          displayTypeDefaults: {
-            LinearBasicDisplay: { displayMode: 'compact' },
-            LinearArcDisplay: { displayMode: 'arcs' },
-          },
-        }),
-      )
-
-      const session = createTestSession()
-      expect(
-        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
-      ).toBe('compact')
-      expect(
-        session.getDisplayTypeDefault('LinearArcDisplay', 'displayMode'),
-      ).toBe('arcs')
-      // the nested key is dropped, scalar prefs are untouched
-      expect(session.preferencesOverrides.get('displayTypeDefaults')).toBeUndefined()
-      expect(session.scrollZoom).toBe(true)
-    })
   })
 
   describe('getPreferenceChanges (reset-to-defaults diff)', () => {

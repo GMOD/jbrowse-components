@@ -30,28 +30,30 @@ function isAnimationMode(val: unknown): val is AnimationMode {
 // a reader of another (every promotable display's `rpcProps` reads one via
 // `getDisplayTypeDefault`) — and collapse the get/set/diff logic to one lookup.
 // The `\0` delimiter can't appear in a display type or slot name.
-const DTD_PREFIX = 'displayTypeDefault\0'
+const DISPLAY_TYPE_DEFAULT_PREFIX = 'displayTypeDefault\0'
 
 export function displayTypeDefaultKey(displayType: string, slot: string) {
-  return `${DTD_PREFIX}${displayType}\0${slot}`
+  return `${DISPLAY_TYPE_DEFAULT_PREFIX}${displayType}\0${slot}`
 }
 
 export function parseDisplayTypeDefaultKey(key: string) {
-  const rest = key.startsWith(DTD_PREFIX) ? key.slice(DTD_PREFIX.length) : ''
+  const rest = key.startsWith(DISPLAY_TYPE_DEFAULT_PREFIX)
+    ? key.slice(DISPLAY_TYPE_DEFAULT_PREFIX.length)
+    : ''
   const [displayType, slot] = rest.split('\0')
   return displayType && slot ? { displayType, slot } : undefined
 }
 
 // Head of the display path a promoted default takes in a `getPreferenceChanges`
-// row: `[DTD_PATH_HEAD, displayType, slot]`. Purely a UI display + reset-routing
-// tag, deliberately distinct from the flat `DTD_PREFIX` storage key above — the
-// Preferences reset dialog matches on it to route a row back to
-// `setDisplayTypeDefault(type, slot, undefined)`. Shared from here so the
-// producer (`getPreferenceChanges`) and consumer (`resetPreferenceChange`) read
-// one literal and can't drift; a rename on one side alone would otherwise make
-// reset silently no-op. Reuses the old nested-object name so a row reads
-// naturally; the underlying store is flat.
-export const DTD_PATH_HEAD = 'displayTypeDefaults'
+// row: `[DISPLAY_TYPE_DEFAULTS_PATH_HEAD, displayType, slot]`. Purely a UI
+// display + reset-routing tag, deliberately distinct from the flat
+// `DISPLAY_TYPE_DEFAULT_PREFIX` storage key above — the Preferences reset dialog
+// matches on it to route a row back to `setDisplayTypeDefault(type, slot,
+// undefined)`. Shared from here so the producer (`getPreferenceChanges`) and
+// consumer (`resetPreferenceChange`) read one literal and can't drift; a rename
+// on one side alone would otherwise make reset silently no-op. The string is
+// just a readable row label; the underlying store is flat composite keys.
+export const DISPLAY_TYPE_DEFAULTS_PATH_HEAD = 'displayTypeDefaults'
 
 /**
  * #stateModel BaseSessionModel
@@ -231,7 +233,11 @@ export function BaseSessionModel<
           const dtd = parseDisplayTypeDefaultKey(key)
           if (dtd) {
             changes.push({
-              path: [DTD_PATH_HEAD, dtd.displayType, dtd.slot],
+              path: [
+                DISPLAY_TYPE_DEFAULTS_PATH_HEAD,
+                dtd.displayType,
+                dtd.slot,
+              ],
               from: undefined,
               to: value,
             } as TrackConfigChange)
@@ -340,19 +346,15 @@ export function BaseSessionModel<
       /**
        * #action
        * promote (or, with `value` undefined, clear) a per-display-type slot
-       * default. Stored in `preferencesOverrides` under one flat composite key
-       * (see `displayTypeDefaultKey`) so the PreferencesSessionMixin persists it
-       * to localStorage like other prefs.
+       * default. Just a preference override under one flat composite key (see
+       * `displayTypeDefaultKey`), so it persists and independently tracks like
+       * any other pref, and clearing deletes only that key.
        */
       setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        const key = displayTypeDefaultKey(displayType, slot)
-        // clearing just deletes the one flat key, so an emptied store leaves no
-        // cruft behind and each promoted default stays independently tracked
-        if (value === undefined) {
-          self.preferencesOverrides.delete(key)
-        } else {
-          self.preferencesOverrides.set(key, value)
-        }
+        this.setPreferenceOverride(
+          displayTypeDefaultKey(displayType, slot),
+          value,
+        )
       },
       /**
        * #action
