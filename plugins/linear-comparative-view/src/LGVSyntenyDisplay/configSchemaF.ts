@@ -115,3 +115,5 @@ function configSchemaF(pluginManager: PluginManager) {
 }
 
 export default configSchemaF
+
+export type LGVSyntenyDisplayConfigModel = ReturnType<typeof configSchemaF>

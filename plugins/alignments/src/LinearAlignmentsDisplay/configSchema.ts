@@ -573,6 +573,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
   )
 }
 
-export type LinearAlignmentsDisplayConfigModel = Instance<
-  ReturnType<typeof configSchemaFactory>
+export type LinearAlignmentsDisplayConfigSchema = ReturnType<
+  typeof configSchemaFactory
 >
+
+export type LinearAlignmentsDisplayConfigModel =
+  Instance<LinearAlignmentsDisplayConfigSchema>

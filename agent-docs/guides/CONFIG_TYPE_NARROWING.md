@@ -90,20 +90,25 @@ to the shared type (superset of props). **The full typecheck settles (b); an LSP
 hover on a real base read settles that narrowing actually happened (a green
 typecheck alone can't — `any` is assignable to everything, Trap 1).**
 
-**Done (shared-schema pin):** `MultiSampleVariantBaseModel` — param
-`SharedVariantConfigModel`, both subclass factories (`LinearMultiSampleVariant{Matrix,}Display`)
-retyped to the same so they pass an assignable schema in. Hover-verified:
-`getConf(self,'renderingMode')` → `'alleleCount' | 'phased'`, not `any`. The 9th
-read is a dynamic `getConf(self, key)` — `any` regardless (dynamic key).
+**Done (shared-schema pin):**
 
-**Next (same pattern, largest win):** `LinearAlignmentsDisplay` (34 base reads).
-Its only external consumer is `LGVSyntenyDisplay` (0 own reads; composes the
-alignments base with an extended schema — `configSchemaF.ts`), so it's the
-lowest-risk consumer. Wrinkle: the plugin exports the config *Instance*
-(`LinearAlignmentsDisplayConfigModel = Instance<ReturnType<…>>`), not the schema
-type — add a `…ConfigSchema = ReturnType<typeof configSchemaFactory>` export and
-pin the base + LGVSynteny params to it. `LinearWiggleDisplay` (gccontent
-consumer) and the canvas base come after.
+- `MultiSampleVariantBaseModel` — param `SharedVariantConfigModel`, both subclass
+  factories (`LinearMultiSampleVariant{Matrix,}Display`) retyped to the same so
+  they pass an assignable schema in. Hover-verified:
+  `getConf(self,'renderingMode')` → `'alleleCount' | 'phased'`, not `any`. The
+  9th read is a dynamic `getConf(self, key)` — `any` regardless (dynamic key).
+- `LinearAlignmentsDisplay` (34 base reads — the largest single win). The base is
+  registered directly *and* composed by `LGVSyntenyDisplay` (0 own reads). Added
+  a schema-type export `LinearAlignmentsDisplayConfigSchema = ReturnType<typeof
+  configSchemaFactory>` (the plugin previously exported only the config
+  *Instance*), pinned the base param to it, and retyped `LGVSyntenyDisplay`'s
+  factory to its own `LGVSyntenyDisplayConfigModel` so its extended schema still
+  passes in. Whole-repo typecheck clean — none of the 34 now-narrowed reads
+  surfaced a mismatch. Hover-verified: `getConf(self,'coverageHeight')` →
+  `number`.
+
+**Next (same pattern):** `LinearWiggleDisplay` (gccontent consumer) and the
+canvas base (`linearCanvasBaseDisplayStateModelFactory`, the widest fan-in).
 
 `DotplotDisplay`/`LinearSyntenyDisplay` have **empty** schemas
 (`ConfigurationSchema('…', {}, …)`) — nothing to narrow, skip.
@@ -198,8 +203,8 @@ narrowing at each converted factory's `getConf(self, …)` sites. Two shapes: a
 **leaf** takes a one-line param retype to its own schema type; a **base** (a
 factory other displays compose with an extended schema) takes the concrete
 **shared** schema it reads from, plus retyping its subclass factories — see "Bases:
-pin to the concrete SHARED schema" above. `LinearAlignmentsDisplay` (34 reads) is
-the biggest remaining target; the canvas/wiggle bases follow.
+pin to the concrete SHARED schema" above. Multisample + alignments bases done;
+the canvas/wiggle bases remain.
 
 ## How to verify any change here
 

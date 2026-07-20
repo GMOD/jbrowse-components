@@ -112,6 +112,7 @@ import { getColorForModification } from '../util.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadColorCategory } from './colorUtils.ts'
+import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
 import type {
   LinkedReadsMode,
   ReadConnectionsMode,
@@ -139,7 +140,6 @@ import type {
   PersistedColorBy,
   SortedBy,
 } from '../shared/types'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -310,7 +310,7 @@ const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>(
  * ```
  */
 export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LinearAlignmentsDisplayConfigSchema,
 ) {
   return (
     types

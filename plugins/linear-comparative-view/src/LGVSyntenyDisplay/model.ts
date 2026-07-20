@@ -25,7 +25,7 @@ import {
 } from './components/util.ts'
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItem } from './menus.ts'
 
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -63,7 +63,7 @@ const LaunchSyntenyViewDialog = lazy(
  * }
  * ```
  */
-function stateModelFactory(schema: AnyConfigurationSchemaType) {
+function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
   const baseModel = linearAlignmentsDisplayStateModelFactory(schema)
   return (
     types
