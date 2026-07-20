@@ -397,7 +397,7 @@ A few of these need more than the one line above:
   [customizing feature colors](/docs/config_guides/customizing_feature_colors)
   for the full plugin file.
 
-<Figure caption="The same NCBI RefSeq genes under the by-feature-type lookup recipe: CDS red, exons green, everything else gray." src="/img/cookbook_color_by_type.png"/>
+<Figure caption="The lookup-table recipe on a track with real categorical variety: UCSC RepeatMasker over a 17q21 window, each element colored by its repeat class — SINE red, LINE blue, LTR green, DNA purple, simple repeats orange (jexl:...[get(feature,'repClass')]). Same technique as the table above, keyed on a BED column instead of feature.type." src="/img/cookbook_color_by_type.png"/>
 
 ### Debugging a color callback
 

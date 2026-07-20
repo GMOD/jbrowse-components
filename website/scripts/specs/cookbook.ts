@@ -53,6 +53,37 @@ const COOKBOOK_MULTIWIG_TRACK = {
   },
 }
 
+// UCSC RepeatMasker for hg38 (jb2hubs golden-path build), a BedTabix whose
+// `#`-header exposes a `repClass` column (SINE/LINE/LTR/DNA/Simple_repeat/
+// Low_complexity/…). Wired as a session track for the color-by-category recipe,
+// which colors each repeat by that class — a track with real categorical
+// variety, unlike a gene model's handful of CDS/exon/gene types.
+const COOKBOOK_RMSK_TRACK = {
+  type: 'FeatureTrack',
+  trackId: 'cookbook_rmsk',
+  name: 'RepeatMasker',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    bedGzLocation: {
+      uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz',
+      locationType: 'UriLocation',
+    },
+    index: {
+      indexType: 'CSI',
+      location: {
+        uri: 'https://jbrowse.org/ucsc/hg38/rmsk.bed.gz.csi',
+        locationType: 'UriLocation',
+      },
+    },
+  },
+}
+
+// The exact lookup-table recipe taught in docs/cookbook.md, kept in one place so
+// the figure and the recipe text can't drift.
+const RMSK_CLASS_COLOR =
+  "jexl:{SINE:'#e41a1c',LINE:'#377eb8',LTR:'#4daf4a',DNA:'#984ea3',Simple_repeat:'#ff7f00',Low_complexity:'#a65628'}[get(feature,'repClass')] || 'gray'"
+
 // Figures that back the copy-paste recipes in docs/cookbook.md. Each spec
 // applies the exact recipe config to a demo track via inline per-track display
 // options (the session-spec equivalent of the recipe's displayDefaults), so if a
@@ -83,31 +114,31 @@ export const cookbookSpecs: ScreenshotSpec[] = [
     viewportHeight: 460,
   },
 
-  // "Color by feature type (lookup table)" recipe: the same NCBI RefSeq hg38
-  // track, colored by the exact jexl lookup the recipe teaches (CDS red, exon
-  // green, gene blue, everything else gray). Within each gene the coding
-  // segments (CDS) read red against green exon/UTR, so the lookup-table
-  // technique is visible per feature. Same window as color-by-strand so the two
-  // figures read as the same track under two different color rules.
+  // "Color by category (lookup table)" recipe: UCSC RepeatMasker over a
+  // repeat-dense 50 kb 17q21 window, each repeat colored by its `repClass` via
+  // the exact jexl lookup the recipe teaches (SINE red, LINE blue, LTR green,
+  // DNA purple, Simple_repeat orange, Low_complexity brown, everything else
+  // gray). A track with real categorical variety — six repeat classes visibly
+  // interleaved — unlike a gene model's CDS/exon/gene handful (reviewer: "not
+  // much type variety here … use a repeatmasker track").
   {
     mode: 'url',
     name: 'cookbook_color_by_type',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr17:7,400,000-7,700,000',
-      tracks: [
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [COOKBOOK_RMSK_TRACK],
+      views: [
         {
-          trackId: 'ncbi_refseq_109_hg38',
-          height: 260,
-          color:
-            "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4'}[feature.type] || 'gray'",
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:45,700,000-45,750,000',
+          tracks: [{ trackId: 'cookbook_rmsk', height: 380, color: RMSK_CLASS_COLOR }],
         },
       ],
     }),
-    readyText: 'NCBI RefSeq',
+    readyText: 'RepeatMasker',
     readyTimeout: 60000,
     settleMs: 6000,
-    viewportHeight: 460,
+    viewportHeight: 520,
   },
 
   // "Multiple signals on one track, each its own color" recipe: the three-sample

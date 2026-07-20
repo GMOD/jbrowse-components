@@ -201,8 +201,27 @@ export const ldSpecs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearGenomeView',
+          // widened past the previous 43.7–44.3 Mb window (which sat entirely
+          // INSIDE the inversion, so the whole view was one red block and the
+          // boundary was invisible): now the ~250 kb left flank outside the
+          // inversion is in view, where r² drops off — so the block visibly
+          // ENDS at the inversion's edge. Right edge stays within the hosted
+          // VCF slice (43.4–44.6 Mb).
+          loc: 'chr17:43,470,000-44,590,000',
+          // Band the 17q21.31 inversion. Coordinates are the 1000 Genomes
+          // freeze-4 SV inversion call (hg38 chr17:45,568,280–46,495,155,
+          // "chr17-45568281-INV-926875") liftover'd to hg19 via the MAPT anchor
+          // — i.e. a real 1kGP SV-callset boundary, not a hand-drawn guess. The
+          // highlighted span is where the LD block lives; MAPT sits inside it.
+          highlight: [
+            {
+              refName: 'chr17',
+              start: 43_645_646,
+              end: 44_572_521,
+              assemblyName: 'hg19',
+            },
+          ],
           assembly: 'hg19',
-          loc: 'chr17:43,700,000-44,300,000',
           tracks: [
             {
               trackId: 'hg19-ncbiRefSeqCurated',
@@ -223,11 +242,11 @@ export const ldSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        x: 320,
-        y: 260,
-        maxWidth: 440,
+        x: 40,
+        y: 250,
+        maxWidth: 400,
         fontSize: 16,
-        text: 'The solid triangle of high r² spans MAPT across the 17q21.31 inversion — the inverted segment is inherited as one non-recombining haplotype block.',
+        text: 'The highlighted span is the 17q21.31 inversion (~900 kb, the H1/H2 MAPT haplotypes) — the boundary the 1000 Genomes freeze-4 SV callset calls inverted. The two orientations cannot recombine, so every SNP across it is inherited as one block: the solid high-r² triangle is that non-recombining haplotype. Short-read genotype SV callsets miss this segmental-duplication-flanked inversion, so the LD block is how you actually see it.',
       },
     ],
   },

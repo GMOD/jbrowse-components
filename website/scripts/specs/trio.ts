@@ -127,8 +127,10 @@ export const trioSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr1',
+    // gate on the data-driven color legend (see trio-ancestry note)
+    readySelector: '[data-testid="multirow-color-legend"]',
     readyTimeout: 60000,
-    settleMs: 12000,
+    settleMs: 3000,
   },
 
   // Six haplotypes of a 1000 Genomes African-American (ASW) trio painted by
@@ -153,8 +155,14 @@ export const trioSpecs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr1',
+    // gate capture on the data-driven color legend (renders only once features
+    // have loaded + been binned), not just canvasDrawn/settle: canvasDrawn can
+    // flip on an empty first paint, so under a slow first-fetch a fixed settle
+    // could capture the track before the painting appears (the "empty ancestry
+    // painting" the reviewer saw was this capture race, not a data/aliasing bug)
+    readySelector: '[data-testid="multirow-color-legend"]',
     readyTimeout: 60000,
-    settleMs: 12000,
+    settleMs: 3000,
     // taller than the ~300px of view content so there is blank space below the
     // LGV for the callout (reviewer: don't overlap the painting — put the text
     // in empty space beneath, keep it brief)

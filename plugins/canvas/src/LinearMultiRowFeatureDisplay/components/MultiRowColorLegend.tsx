@@ -29,6 +29,7 @@ export default function MultiRowColorLegend({
       canvasWidth={canvasWidth}
       maxHeight={maxHeight}
       onDismiss={onDismiss}
+      testid="multirow-color-legend"
       entries={entries.map(e => ({
         key: e.label,
         label: e.label,

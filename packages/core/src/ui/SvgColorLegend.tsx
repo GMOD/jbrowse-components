@@ -58,12 +58,18 @@ export default function SvgColorLegend({
   maxHeight,
   onDismiss,
   children,
+  testid,
 }: {
   entries: ColorLegendEntry[]
   canvasWidth: number
   maxHeight?: number
   onDismiss?: () => void
   children?: ReactNode
+  // opt-in marker for tests/screenshot specs: the legend renders only once
+  // color entries exist (i.e. real data has loaded and been binned), so it is a
+  // data-gated ready signal — unlike canvasDrawn, which can flip on an
+  // empty first paint
+  testid?: string
 }) {
   const fit =
     maxHeight === undefined
@@ -87,7 +93,7 @@ export default function SvgColorLegend({
     TEXT_LEFT + maxLabelWidth + 6 + (onDismiss ? DISMISS_GUTTER : 0)
   const x = Math.max(0, canvasWidth - totalWidth - 4)
   return shown.length || overflowLabel || children ? (
-    <g transform={`translate(${x} 0)`}>
+    <g transform={`translate(${x} 0)`} data-testid={testid}>
       {shown.map((entry, idx) => (
         <g
           key={entry.key}
