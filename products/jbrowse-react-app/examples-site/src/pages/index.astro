@@ -8,7 +8,7 @@ import quickstart from '../examples/BasicExample.tsx?raw'
 import Shell from '../layouts/Shell.astro'
 import { componentLabel, mainMaxWidth, demoFillHeight } from '../siteMeta.ts'
 
-const base = import.meta.env.BASE_URL
+const base = import.meta.env.BASE_URL.replace(/\/$/, '')
 ---
 
 <Shell
@@ -55,7 +55,7 @@ const base = import.meta.env.BASE_URL
     <p>
       For production, offload data parsing and rendering to a web worker so the
       main thread stays responsive — see{' '}
-      <a href={`${base}customizing-the-app/#with-web-worker`}>Web worker RPC</a>{' '}
+      <a href={`${base}/customizing-the-app/#with-web-worker`}>Web worker RPC</a>{' '}
       in the sidebar.
     </p>
 
