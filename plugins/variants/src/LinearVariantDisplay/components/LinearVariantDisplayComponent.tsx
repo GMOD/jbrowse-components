@@ -7,7 +7,8 @@ import { observer } from 'mobx-react'
 import type { LinearVariantDisplayModel } from '../model.ts'
 
 // Reuses the canvas base display renderer and drops a floating color key into
-// its (position:relative) container while "Color by consequence impact" is on.
+// its (position:relative) container while a preset coloring (consequence impact
+// or SV type) is on.
 const LinearVariantDisplayComponent = observer(
   function LinearVariantDisplayComponent({
     model,
@@ -16,11 +17,11 @@ const LinearVariantDisplayComponent = observer(
   }) {
     return (
       <BaseLinearDisplayComponent model={model}>
-        {model.showImpactLegend ? (
+        {model.showColorLegend ? (
           <FloatingLegend
-            items={model.impactLegendItems}
+            items={model.colorLegendItems}
             onDismiss={() => {
-              model.setImpactLegendDismissed(true)
+              model.setColorLegendDismissed(true)
             }}
           />
         ) : null}

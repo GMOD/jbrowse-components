@@ -4,6 +4,7 @@ import {
   assignSvTypeColors,
   featureHasSvType,
   getVariantSvType,
+  getVariantSvTypeColor,
   svTypeDisplayLabel,
 } from './variantSvType.ts'
 
@@ -45,6 +46,19 @@ describe('getVariantSvType', () => {
   it('is empty for plain (non-symbolic) SNVs and indels', () => {
     expect(getVariantSvType(feat({ ALT: ['A'] }))).toBe('')
     expect(getVariantSvType(feat({ ALT: ['ACGT'] }))).toBe('')
+  })
+})
+
+describe('getVariantSvTypeColor (single-variant fixed-color jexl)', () => {
+  it('returns the predefined class color', () => {
+    expect(getVariantSvTypeColor(feat({ ALT: ['<DEL>'] }))).toBe('#e41a1c')
+  })
+  it('returns the copy-number rainbow color for a CN state', () => {
+    expect(getVariantSvTypeColor(feat({ ALT: ['<CN0>'] }))).toBe('hsl(240, 70%, 50%)')
+  })
+  it('returns neutral grey for a non-SV or unrecognized token', () => {
+    expect(getVariantSvTypeColor(feat({ ALT: ['A'] }))).toBe('#808080') // SNV
+    expect(getVariantSvTypeColor(feat({ ALT: ['<WEIRD>'] }))).toBe('#808080')
   })
 })
 

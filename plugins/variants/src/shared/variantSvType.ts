@@ -9,6 +9,17 @@ import type { Feature } from '@jbrowse/core/util'
 // plain marker string handled in makeFeatureColor rather than a jexl function.
 export const SV_TYPE_COLOR = 'svType'
 
+// The `color` slot jexl preset that paints single-variant features by SV class,
+// backed by the `svTypeColor` jexl function. The multi-sample displays use the
+// SV_TYPE_COLOR sentinel + a worker-computed present-only palette instead; this
+// pure-function form suits the single-variant display, whose `color` slot takes
+// a jexl string (same shape as the consequence CONSEQUENCE_IMPACT_JEXL preset).
+export const SV_TYPE_COLOR_JEXL = 'jexl:svTypeColor(feature)'
+
+// Fallback for a variant that isn't a recognized SV class (a plain SNV/indel, or
+// an unrecognized token) when painting by SV type on the single-variant display.
+const OTHER_SV_COLOR = '#808080'
+
 // Bucket for a record whose ALT alleles span more than one SV class (e.g.
 // ALT=<DEL>,<DUP>): a distinct flag color rather than silently picking one.
 export const MIXED_SV_TYPE = 'MIXED'
@@ -141,6 +152,22 @@ export function getVariantSvType(feature: Feature) {
  */
 export function featureHasSvType(feature: Feature) {
   return getVariantSvType(feature) !== ''
+}
+
+/**
+ * A fixed CSS color for a variant's SV class, for the single-variant display's
+ * `color` slot (via the `svTypeColor` jexl function): the predefined class
+ * color, the absolute copy-number rainbow color for a CN state, else a neutral
+ * grey for a non-SV or unrecognized token. Unlike the multi-sample palette this
+ * is a pure function (no present-set auto-assignment), so it can't distinguish
+ * arbitrary unknown tokens — those all read grey.
+ */
+export function getVariantSvTypeColor(feature: Feature) {
+  const type = getVariantSvType(feature)
+  if (isCopyNumberType(type)) {
+    return copyNumberColor(copyNumberValue(type))
+  }
+  return PREDEFINED_COLOR[type] ?? OTHER_SV_COLOR
 }
 
 // Human-readable legend label for a bucket, copy-number state, or raw token.

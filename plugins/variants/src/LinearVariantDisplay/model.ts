@@ -6,6 +6,10 @@ import {
   CONSEQUENCE_IMPACT_JEXL,
   IMPACT_TIERS,
 } from '../shared/variantConsequence.ts'
+import {
+  PREDEFINED_SV_TYPES,
+  SV_TYPE_COLOR_JEXL,
+} from '../shared/variantSvType.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -51,14 +55,14 @@ export default function stateModelFactory(
       /**
        * #volatile
        */
-      impactLegendDismissed: false,
+      colorLegendDismissed: false,
     }))
     .actions(self => ({
       /**
        * #action
        */
-      setImpactLegendDismissed(arg: boolean) {
-        self.impactLegendDismissed = arg
+      setColorLegendDismissed(arg: boolean) {
+        self.colorLegendDismissed = arg
       },
     }))
     .views(self => ({
@@ -78,26 +82,42 @@ export default function stateModelFactory(
       /**
        * #getter
        */
-      // Legend rows for the impact color key (one per tier).
-      get impactLegendItems(): LegendItem[] {
-        return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
+      // True when features are colored by their structural-variant class.
+      get colorsBySvType() {
+        return self.conf.color === SV_TYPE_COLOR_JEXL
       },
       /**
        * #getter
        */
-      // Show the floating impact legend while that coloring is active, unless
+      // Legend rows for whichever preset color key is active (impact tiers or SV
+      // classes), or none. SV-type shows the fixed class key; copy-number and
+      // unrecognized tokens aren't listed (the pure jexl has no present-set).
+      get colorLegendItems(): LegendItem[] {
+        if (this.colorsByConsequenceImpact) {
+          return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
+        }
+        if (this.colorsBySvType) {
+          return PREDEFINED_SV_TYPES.map(t => ({ color: t.color, label: t.label }))
+        }
+        return []
+      },
+      /**
+       * #getter
+       */
+      // Show the floating color key while a preset coloring is active, unless
       // the user dismissed it.
-      get showImpactLegend() {
-        return this.colorsByConsequenceImpact && !self.impactLegendDismissed
+      get showColorLegend() {
+        return this.colorLegendItems.length > 0 && !self.colorLegendDismissed
       },
 
       /**
        * #method
        */
       // Variants have no UTRs and no strand, so drop the base's "Strand" radio
-      // and open the solid-color dialog without the gene-oriented UTR row. Add a
-      // one-click "consequence impact" choice (SnpEff ANN / VEP CSQ). The
-      // inherited colorMenuItems() wraps these in the same "Color by..." entry.
+      // and open the solid-color dialog without the gene-oriented UTR row. Add
+      // one-click "consequence impact" (SnpEff ANN / VEP CSQ) and "SV type"
+      // presets. The inherited colorMenuItems() wraps these in the same "Color
+      // by..." entry.
       colorBySubMenuItems() {
         return [
           {
@@ -113,8 +133,17 @@ export default function stateModelFactory(
             type: 'radio' as const,
             checked: this.colorsByConsequenceImpact,
             onClick: () => {
-              self.setImpactLegendDismissed(false)
+              self.setColorLegendDismissed(false)
               self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
+            },
+          },
+          {
+            label: 'SV type',
+            type: 'radio' as const,
+            checked: this.colorsBySvType,
+            onClick: () => {
+              self.setColorLegendDismissed(false)
+              self.setFeatureColor(SV_TYPE_COLOR_JEXL)
             },
           },
           {
@@ -122,7 +151,8 @@ export default function stateModelFactory(
             type: 'radio' as const,
             checked:
               self.colorByMode === 'attribute' &&
-              !this.colorsByConsequenceImpact,
+              !this.colorsByConsequenceImpact &&
+              !this.colorsBySvType,
             onClick: () => {
               self.openColorByAttributeDialog()
             },

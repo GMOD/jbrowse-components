@@ -27,6 +27,7 @@ import {
   getVariantImpact,
   getVariantImpactColor,
 } from './shared/variantConsequence.ts'
+import { getVariantSvTypeColor } from './shared/variantSvType.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -90,6 +91,9 @@ export default class VariantsPlugin extends Plugin {
     jexl.addFunction('impact', getVariantImpact)
     jexl.addFunction('consequence', getVariantConsequence)
     jexl.addFunction('impactColor', getVariantImpactColor)
+    // `svTypeColor` powers the one-click "Color by SV type" menu item on the
+    // single-variant display (fixed class colors + copy-number rainbow).
+    jexl.addFunction('svTypeColor', getVariantSvTypeColor)
   }
 }
 
