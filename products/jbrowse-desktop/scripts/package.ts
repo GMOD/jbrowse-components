@@ -14,37 +14,21 @@
 import fs from 'fs'
 import path from 'path'
 
-import { BUILD, DIST, VERSION } from './packaging/config.ts'
+import {
+  BUILD,
+  DIST,
+  VERSION,
+  parsePackagingArgs,
+  type Platform,
+} from './packaging/config.ts'
 import { buildLinux } from './packaging/linux.ts'
 import { buildMac } from './packaging/mac.ts'
 import { ensureDir, fileSize, log } from './packaging/utils.ts'
 import { buildWindows } from './packaging/windows.ts'
 
-function parseArgs() {
-  const args = process.argv.slice(2)
-  const platforms = []
-  let noInstaller = false
-
-  for (const arg of args) {
-    if (arg === '--linux' || arg === 'linux') {
-      platforms.push('linux')
-    } else if (arg === '--mac' || arg === 'mac' || arg === '--darwin') {
-      platforms.push('mac')
-    } else if (arg === '--win' || arg === 'win' || arg === '--windows') {
-      platforms.push('win')
-    } else if (arg === '--all') {
-      platforms.push('linux', 'mac', 'win')
-    } else if (arg === '--no-installer') {
-      noInstaller = true
-    }
-  }
-
-  if (platforms.length === 0) {
-    const p = process.platform
-    platforms.push(p === 'darwin' ? 'mac' : p === 'win32' ? 'win' : 'linux')
-  }
-
-  return { platforms, noInstaller }
+function currentPlatform(): Platform {
+  const p = process.platform
+  return p === 'darwin' ? 'mac' : p === 'win32' ? 'win' : 'linux'
 }
 
 function printBanner(platforms: string[]) {
@@ -81,7 +65,8 @@ function printResults() {
 }
 
 async function main() {
-  const { platforms, noInstaller } = parseArgs()
+  const { platforms: selected, noInstaller } = parsePackagingArgs()
+  const platforms = selected.length > 0 ? selected : [currentPlatform()]
   printBanner(platforms)
 
   if (noInstaller) {

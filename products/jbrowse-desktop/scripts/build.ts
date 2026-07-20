@@ -15,20 +15,16 @@ if (customVersion) {
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
 }
 
-void build(desktopConfig(configFactory()))
-  .then(() => {
-    if (customVersion) {
-      fs.writeFileSync(pkgPath, originalPkgContent)
-    }
-    const testDataPath = path.resolve(import.meta.dirname, '../build/test_data')
-    if (fs.existsSync(testDataPath)) {
-      fs.rmSync(testDataPath, { recursive: true })
-      console.log('Removed test_data from build')
-    }
-  })
-  .catch((err: unknown) => {
-    if (customVersion) {
-      fs.writeFileSync(pkgPath, originalPkgContent)
-    }
-    throw err
-  })
+try {
+  await build(desktopConfig(configFactory()))
+} finally {
+  if (customVersion) {
+    fs.writeFileSync(pkgPath, originalPkgContent)
+  }
+}
+
+const testDataPath = path.resolve(import.meta.dirname, '../build/test_data')
+if (fs.existsSync(testDataPath)) {
+  fs.rmSync(testDataPath, { recursive: true })
+  console.log('Removed test_data from build')
+}

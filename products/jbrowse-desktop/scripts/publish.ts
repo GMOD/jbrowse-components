@@ -11,27 +11,7 @@ import fs from 'fs'
 import path from 'path'
 import { execSync } from 'child_process'
 
-import { DIST, VERSION } from './packaging/config.ts'
-
-function parseArgs() {
-  const args = process.argv.slice(2)
-  let publish = false
-  const platforms: string[] = []
-
-  for (const arg of args) {
-    if (arg === '--publish') {
-      publish = true
-    } else if (arg === '--linux') {
-      platforms.push('linux')
-    } else if (arg === '--mac') {
-      platforms.push('mac')
-    } else if (arg === '--win') {
-      platforms.push('win')
-    }
-  }
-
-  return { publish, platforms }
-}
+import { DIST, VERSION, parsePackagingArgs } from './packaging/config.ts'
 
 function getArtifacts(platforms: string[]) {
   if (!fs.existsSync(DIST)) {
@@ -104,7 +84,7 @@ function uploadToGitHub(artifacts: string[]) {
 }
 
 function main() {
-  const { publish, platforms } = parseArgs()
+  const { publish, platforms } = parsePackagingArgs()
 
   if (!publish) {
     console.log('No --publish flag, skipping upload')

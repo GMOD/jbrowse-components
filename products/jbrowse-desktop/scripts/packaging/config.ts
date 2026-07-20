@@ -1,5 +1,27 @@
 import fs from 'fs'
 import path from 'path'
+import { parseArgs } from 'node:util'
+
+export type Platform = 'linux' | 'mac' | 'win'
+
+export function parsePackagingArgs() {
+  const { values } = parseArgs({
+    options: {
+      linux: { type: 'boolean' },
+      mac: { type: 'boolean' },
+      win: { type: 'boolean' },
+      all: { type: 'boolean' },
+      'no-installer': { type: 'boolean' },
+      publish: { type: 'boolean' },
+    },
+  })
+  const all: Platform[] = ['linux', 'mac', 'win']
+  return {
+    platforms: values.all ? all : all.filter(p => values[p]),
+    noInstaller: Boolean(values['no-installer']),
+    publish: Boolean(values.publish),
+  }
+}
 
 export const ROOT = path.resolve(import.meta.dirname, '../..')
 export const DIST = path.join(ROOT, 'dist')
