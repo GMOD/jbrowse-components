@@ -19,6 +19,20 @@ Computes a score domain from the visible feature arrays for the `local` /
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
+## computeScoreExtent
+
+The true `[min, max]` score extent of the visible features for a summary mode,
+before any autoscale clipping. Comparing it against the displayed domain flags
+when the domain clips real signal (e.g. localpercentile clamping copy-number
+gains that sit above the diploid baseline).
+
+```js
+// type signature
+(summaryScoreMode: string, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[]) => [number, number] | undefined
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
+
 ## domainFromStats
 
 Converts score stats into a `[min, max]` domain, applying std-dev expansion for

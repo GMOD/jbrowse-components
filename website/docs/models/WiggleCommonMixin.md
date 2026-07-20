@@ -24,6 +24,7 @@ instead.
 | [featureUnderMouse](#volatile-featureundermouse)             | Volatiles  | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
 | [autoscaleSourceNames](#getter-autoscalesourcenames)         | Getters    | WiggleCommonMixin                                   | Source names to include when computing the autoscale domain; `undefined` means every fetched source. Multi-wiggle always fetches all sources and filters client-side, so it overrides this to the visible subset — otherwise a subtree filter that hides sources would leave the Y-axis scaled to the hidden ones. |
 | [visibleScoreRange](#getter-visiblescorerange)               | Getters    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
+| [dataRange](#getter-datarange)                               | Getters    | WiggleCommonMixin                                   | The true, unclipped `[min, max]` of the visible data. The displayed `domain` may clip this (localpercentile/localsd/fixed bounds), so the score legend compares the two to flag clipped signal.                                                                                                                    |
 | [domain](#getter-domain)                                     | Getters    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
 | [clearDisplaySpecificData](#action-cleardisplayspecificdata) | Actions    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
 | [setFeatureUnderMouse](#action-setfeatureundermouse)         | Actions    | WiggleCommonMixin                                   |                                                                                                                                                                                                                                                                                                                    |
@@ -97,6 +98,16 @@ filter that hides sources would leave the Y-axis scaled to the hidden ones.
 
 ```ts
 type autoscaleSourceNames = Set<string> | undefined
+```
+
+#### getter: dataRange
+
+The true, unclipped `[min, max]` of the visible data. The displayed `domain` may
+clip this (localpercentile/localsd/fixed bounds), so the score legend compares
+the two to flag clipped signal.
+
+```ts
+type dataRange = [number, number] | undefined
 ```
 
 </details>
