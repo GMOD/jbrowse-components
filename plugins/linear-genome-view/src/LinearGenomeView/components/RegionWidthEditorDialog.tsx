@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { SubmitDialog } from '@jbrowse/core/ui'
 import { toLocale } from '@jbrowse/core/util'
 import { TextField, Typography } from '@mui/material'
-import { observer } from 'mobx-react'
 
 import type { LinearGenomeViewModel } from '../model.ts'
 
@@ -11,16 +10,18 @@ function format(n: number) {
   return toLocale(Math.floor(n))
 }
 
-const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
+// not an observer: the initial value is seeded once and the field is
+// user-edited thereafter, so it shouldn't reactively reset if bpPerPx changes
+export default function RegionWidthEditorDialog({
   model,
   handleClose,
 }: {
   model: LinearGenomeViewModel
   handleClose: () => void
 }) {
-  const { bpPerPx, width } = model
-  const [val, setVal] = useState(() => format(bpPerPx * width))
-  const val2 = val.replaceAll(',', '')
+  const [val, setVal] = useState(() => format(model.bpPerPx * model.width))
+  const bp = +val.replaceAll(',', '')
+  const valid = Number.isFinite(bp) && bp > 0
 
   return (
     <SubmitDialog
@@ -29,8 +30,9 @@ const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
       fullWidth
       title="Edit zoom level"
       onCancel={handleClose}
+      submitDisabled={!valid}
       onSubmit={() => {
-        model.zoomTo(+val2 / model.width)
+        model.zoomTo(bp / model.width)
         handleClose()
       }}
     >
@@ -53,6 +55,4 @@ const RegionWidthEditorDialog = observer(function RegionWidthEditorDialog({
       </div>
     </SubmitDialog>
   )
-})
-
-export default RegionWidthEditorDialog
+}

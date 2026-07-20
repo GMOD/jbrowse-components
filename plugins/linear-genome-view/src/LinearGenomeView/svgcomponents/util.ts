@@ -13,11 +13,10 @@ import type { TrackLabelMode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
-interface Display {
-  height: number
-}
-interface Track {
-  displays: Display[]
+// Just the per-track heights that the vertical-layout math needs; every track
+// shape fed into these helpers (including SvgDisplayResult.track) satisfies it.
+interface TrackHeights {
+  displays: { height: number }[]
 }
 
 // A rendered track body plus the track it came from, as produced by each
@@ -41,6 +40,21 @@ export function staticBlocksDx(model: {
   offsetPx: number
 }) {
   return model.staticBlocks.offsetPx - model.offsetPx
+}
+
+// Major and minor gridline tick x-positions, shifted from the staticBlocks
+// frame into the view frame. Shared by the SVG gridlines and ruler so their
+// tick pitch can't drift. `dx` is returned too since the ruler reuses it to
+// place its coordinate labels.
+export function gridlineTickXs(model: {
+  staticBlocks: { offsetPx: number }
+  offsetPx: number
+  gridlineTicks: { major: boolean; x: number }[]
+}) {
+  const dx = staticBlocksDx(model)
+  const xs = (wantMajor: boolean) =>
+    model.gridlineTicks.filter(t => t.major === wantMajor).map(t => dx + t.x)
+  return { dx, major: xs(true), minor: xs(false) }
 }
 
 // `d` for a run of vertical tick lines, collapsed into one <path> rather than a
@@ -147,12 +161,12 @@ export function trackLabelLeftOffset({
 
 // vertical box a single track occupies. Shared by totalHeight (sum) and
 // SVGTracks.getOffsets (prefix-sum) so the two can't drift.
-export function trackBoxHeight(track: Track, textOffset: number) {
+export function trackBoxHeight(track: TrackHeights, textOffset: number) {
   return track.displays[0]!.height + textOffset + trackSpacing
 }
 
 export function totalHeight(
-  tracks: Track[],
+  tracks: TrackHeights[],
   textHeight: number,
   trackLabels: TrackLabelMode,
 ) {

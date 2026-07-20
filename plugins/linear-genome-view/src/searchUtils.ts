@@ -142,7 +142,12 @@ export async function handleSelectedRegion({
       grow,
     )
 
-  if (input.split(' ').every(entry => checkRef(entry, isRef))) {
+  if (
+    input
+      .split(/\s+/)
+      .filter(Boolean)
+      .every(entry => checkRef(entry, isRef))
+  ) {
     await navToLocstrings()
   } else {
     const searchScope = model.searchScope(assemblyName)

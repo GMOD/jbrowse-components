@@ -1957,8 +1957,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
           // Set the displayed region based on the parent region
           self.setDisplayedRegions([
             {
-              reversed,
               ...parentRegion,
+              reversed,
             },
           ])
 

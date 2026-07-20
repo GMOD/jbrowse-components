@@ -652,6 +652,11 @@ export async function fetchAllRegions<R>(
       ctx,
     )
     if (!ctx.isStale()) {
+      if (results.length !== needed.length) {
+        throw new Error(
+          `fetchAllRegions: adapter returned ${results.length} results for ${needed.length} regions`,
+        )
+      }
       needed.forEach(({ displayedRegionIndex }, i) => {
         opts.onResult(displayedRegionIndex, results[i]!)
       })

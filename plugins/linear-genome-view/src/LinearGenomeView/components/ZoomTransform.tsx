@@ -22,9 +22,11 @@ const useStyles = makeStyles()({
   },
 })
 
-// Shared zoom-transform wrapper for the gridline ticks and padding-block
-// overlays. Re-renders on zoom or region change, not on per-frame offsetPx
-// changes — those move the outer transform only.
+// Shared zoom/scroll-transform wrapper for the gridline ticks and padding-block
+// overlays. Lays the overlay out in the staticBlocks frame and shifts it into
+// the viewport by staticBlocks.offsetPx - offsetPx, so it tracks scroll — but a
+// re-render only patches this div's transform plus the child's path `d`
+// strings, so it stays cheap per frame.
 const ZoomTransform = observer(function ZoomTransform({
   model,
   offset = 0,

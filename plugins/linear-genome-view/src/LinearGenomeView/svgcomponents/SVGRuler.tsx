@@ -8,7 +8,7 @@ import {
   RULER_MINOR_TICK,
   RULER_TICK_FONT_SIZE,
   getRulerLayout,
-  staticBlocksDx,
+  gridlineTickXs,
   vlinePath,
 } from './util.ts'
 import {
@@ -41,15 +41,13 @@ function Ruler({
 }) {
   const theme = useTheme()
   const color = stripAlpha(theme.palette.text.secondary)
-  const { gridlineTicks, scalebarLabels, width } = model
-  const dx = staticBlocksDx(model)
-  const xs = (wantMajor: boolean) =>
-    gridlineTicks.filter(t => t.major === wantMajor).map(t => dx + t.x)
+  const { scalebarLabels, width } = model
+  const { dx, major, minor } = gridlineTickXs(model)
   // major and minor marks share a stroke and differ only in length, so both
   // collapse into a single path
   const ticks =
-    vlinePath(xs(true), tickTopY, tickTopY + RULER_MAJOR_TICK) +
-    vlinePath(xs(false), tickTopY, tickTopY + RULER_MINOR_TICK)
+    vlinePath(major, tickTopY, tickTopY + RULER_MAJOR_TICK) +
+    vlinePath(minor, tickTopY, tickTopY + RULER_MINOR_TICK)
   return (
     <>
       <path d={ticks} strokeWidth={1} stroke={color} fill="none" />

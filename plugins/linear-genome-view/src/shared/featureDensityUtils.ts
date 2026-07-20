@@ -1,9 +1,11 @@
 import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
 export function getDisplayStr(totalBytes: number) {
-  if (Math.floor(totalBytes / 1000000) > 0) {
+  // pick the unit from the rounded value so e.g. 999,999 bytes reads "1 Mb"
+  // rather than "1000 Kb"
+  if (Number.parseFloat((totalBytes / 1000000).toPrecision(3)) >= 1) {
     return `${Number.parseFloat((totalBytes / 1000000).toPrecision(3))} Mb`
-  } else if (Math.floor(totalBytes / 1000) > 0) {
+  } else if (Number.parseFloat((totalBytes / 1000).toPrecision(3)) >= 1) {
     return `${Number.parseFloat((totalBytes / 1000).toPrecision(3))} Kb`
   } else {
     return `${Math.floor(totalBytes)} bytes`

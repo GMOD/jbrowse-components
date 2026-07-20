@@ -91,7 +91,9 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
       onMouseMove={event => {
         const leftPx = event.clientX - rectLeftRef.current
         const hoverPosition = model.pxToBp(leftPx)
-        const hoverFeature = tracks.find(t => t.displays[0].featureUnderMouse)
+        const hoverFeature = tracks
+          .map(t => t.displays[0]?.featureUnderMouse)
+          .find(Boolean)
         session.setHovered({ hoverPosition, hoverFeature })
       }}
     >

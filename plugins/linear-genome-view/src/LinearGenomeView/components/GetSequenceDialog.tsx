@@ -59,36 +59,34 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
       if (selection.length === 0) {
         throw new Error('Selected region is out of bounds')
       }
-      return fetchSequence(model, selection)
+      const chunks = await fetchSequence(model, selection)
+      // validate here (in the async path) so a length mismatch surfaces via the
+      // dialog's own ErrorBanner rather than throwing during render
+      return chunks.map(chunk => {
+        const seq = chunk.get('seq') as string
+        const start = chunk.get('start') + 1
+        const end = chunk.get('end')
+        const loc = `${chunk.get('refName')}:${start}-${end}`
+        if (seq.length !== end - start + 1) {
+          throw new Error(
+            `${loc} returned ${toLocale(seq.length)} bases, but should have returned ${toLocale(
+              end - start + 1,
+            )}`,
+          )
+        }
+        return { loc, seq }
+      })
     },
   )
   const loading = sequenceChunks === undefined && !error
 
   const sequence = sequenceChunks
     ? formatSeqFasta(
-        sequenceChunks.map(chunk => {
-          let chunkSeq = chunk.get('seq') as string
-          const chunkRefName = chunk.get('refName')
-          const chunkStart = chunk.get('start') + 1
-          const chunkEnd = chunk.get('end')
-          const loc = `${chunkRefName}:${chunkStart}-${chunkEnd}`
-          if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
-            throw new Error(
-              `${loc} returned ${toLocale(chunkSeq.length)} bases, but should have returned ${toLocale(
-                chunkEnd - chunkStart + 1,
-              )}`,
-            )
-          }
-
-          if (rev) {
-            chunkSeq = reverse(chunkSeq)
-          }
-          if (comp) {
-            chunkSeq = complement(chunkSeq)
-          }
+        sequenceChunks.map(({ loc, seq }) => {
+          const revSeq = rev ? reverse(seq) : seq
           return {
             header: loc + (rev ? '-rev' : '') + (comp ? '-comp' : ''),
-            seq: chunkSeq,
+            seq: comp ? complement(revSeq) : revSeq,
           }
         }),
       )
@@ -167,7 +165,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           onClick={async () => {
             const { saveAs } = await import('@jbrowse/core/util')
             saveAs(
-              new Blob([sequence || ''], {
+              new Blob([sequence], {
                 type: 'text/x-fasta;charset=utf-8',
               }),
               'jbrowse_ref_seq.fa',
@@ -182,6 +180,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
         <Button
           onClick={() => {
             handleClose()
+            model.setOffsets()
           }}
           variant="contained"
         >

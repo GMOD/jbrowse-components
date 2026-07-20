@@ -27,7 +27,10 @@ export async function fetchSequence(
     )
   }
   const { rpcManager, assemblyManager } = session
-  const assemblyName = leftOffset.assemblyName || rightOffset.assemblyName || ''
+  const assemblyName = leftOffset.assemblyName ?? rightOffset.assemblyName
+  if (!assemblyName) {
+    throw new Error('no assemblyName found on the selected offsets')
+  }
   const assembly = assemblyManager.get(assemblyName)
   if (!assembly) {
     throw new Error(`assembly ${assemblyName} not found`)

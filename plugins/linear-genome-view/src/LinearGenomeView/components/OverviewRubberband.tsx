@@ -61,11 +61,11 @@ const OverviewRubberband = observer(function OverviewRubberband({
       if (startX !== undefined) {
         const offsetX = event.clientX - left
         if (Math.abs(offsetX - startX) > 3) {
-          const left = Math.min(startX, offsetX)
-          const right = Math.max(startX, offsetX)
+          const leftPx = Math.min(startX, offsetX)
+          const rightPx = Math.max(startX, offsetX)
           model.moveTo(
-            pxToBp(overview, left - cytobandOffset),
-            pxToBp(overview, right - cytobandOffset),
+            pxToBp(overview, leftPx - cytobandOffset),
+            pxToBp(overview, rightPx - cytobandOffset),
           )
         } else {
           const click = pxToBp(overview, startX - cytobandOffset)
@@ -139,7 +139,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
         className={classes.rubberbandControl}
         ref={controlsRef}
         onMouseDown={mouseDown}
-        onMouseOut={mouseOut}
+        onMouseLeave={mouseOut}
         onMouseMove={mouseMove}
       >
         {ControlComponent}

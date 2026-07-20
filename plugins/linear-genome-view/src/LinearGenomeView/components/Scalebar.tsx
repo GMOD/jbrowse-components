@@ -38,7 +38,6 @@ const Scalebar = observer(function Scalebar({
   model,
   style,
   className,
-  ...other
 }: ScalebarProps) {
   const { classes } = useStyles()
   const { staticBlocks, offsetPx } = model
@@ -50,7 +49,6 @@ const Scalebar = observer(function Scalebar({
       className={cx(classes.container, className)}
       variant="outlined"
       style={style}
-      {...other}
     >
       {/* offset 1px for left track border */}
       <Gridlines model={model} offset={1} />

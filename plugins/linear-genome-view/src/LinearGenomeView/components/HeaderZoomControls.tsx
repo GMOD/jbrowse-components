@@ -5,10 +5,9 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getBpDisplayStr, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
-import ZoomIn from '@mui/icons-material/ZoomIn'
-import ZoomOut from '@mui/icons-material/ZoomOut'
-import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import ZoomButton from './ZoomButton.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -104,41 +103,11 @@ const HeaderZoomControls = observer(function HeaderZoomControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { maxBpPerPx, minBpPerPx, coarseBpPerPx } = model
-  const zoomInDisabled = coarseBpPerPx <= minBpPerPx + 0.0001
-  const zoomOutDisabled = coarseBpPerPx >= maxBpPerPx - 0.0001
   return (
     <div className={classes.container}>
-      <Tooltip title="Zoom out 2x">
-        <span>
-          <IconButton
-            data-testid="zoom_out"
-            disabled={zoomOutDisabled}
-            onClick={() => {
-              model.zoom(model.bpPerPx * 2)
-            }}
-          >
-            <ZoomOut />
-          </IconButton>
-        </span>
-      </Tooltip>
-
+      <ZoomButton model={model} direction="out" />
       <ZoomSlider model={model} />
-
-      <Tooltip title="Zoom in 2x">
-        <span>
-          <IconButton
-            data-testid="zoom_in"
-            disabled={zoomInDisabled}
-            onClick={() => {
-              model.zoom(model.bpPerPx / 2)
-            }}
-          >
-            <ZoomIn />
-          </IconButton>
-        </span>
-      </Tooltip>
-
+      <ZoomButton model={model} direction="in" />
       <CascadingMenuButton menuItems={() => getZoomMenuItems(model)}>
         <MoreVert />
       </CascadingMenuButton>

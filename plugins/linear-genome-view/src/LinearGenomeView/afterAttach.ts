@@ -68,7 +68,11 @@ async function openTracklist(
   const widthBefore = self.volatileWidth
   self.activateTrackSelector()
   if (!drawerWasOpen) {
-    await when(() => self.volatileWidth !== widthBefore)
+    // Bounded so init can't wedge here if the drawer doesn't shrink the view
+    // (e.g. embedded or modal-drawer layouts, where no width change is coming)
+    await when(() => self.volatileWidth !== widthBefore, {
+      timeout: 1000,
+    }).catch(() => {})
   }
 }
 

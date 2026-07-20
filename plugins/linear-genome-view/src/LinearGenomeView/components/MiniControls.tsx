@@ -5,10 +5,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import AddIcon from '@mui/icons-material/Add'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import RemoveIcon from '@mui/icons-material/Remove'
-import ZoomIn from '@mui/icons-material/ZoomIn'
-import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton, Paper, Tooltip, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import ZoomButton from './ZoomButton.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -32,8 +32,7 @@ const MiniControls = observer(function MiniControls({
   model: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const { id, bpPerPx, maxBpPerPx, minBpPerPx, hideHeader, scalebarOnly } =
-    model
+  const { id, hideHeader, scalebarOnly } = model
   const { focusedViewId } = getSession(model)
   return (
     <Paper className={classes.background}>
@@ -69,24 +68,8 @@ const MiniControls = observer(function MiniControls({
         </Tooltip>
         {hideHeader ? (
           <>
-            <IconButton
-              data-testid="zoom_out"
-              disabled={bpPerPx >= maxBpPerPx - 0.0001}
-              onClick={() => {
-                model.zoom(bpPerPx * 2)
-              }}
-            >
-              <ZoomOut fontSize="small" />
-            </IconButton>
-            <IconButton
-              data-testid="zoom_in"
-              disabled={bpPerPx <= minBpPerPx + 0.0001}
-              onClick={() => {
-                model.zoom(bpPerPx / 2)
-              }}
-            >
-              <ZoomIn fontSize="small" />
-            </IconButton>
+            <ZoomButton model={model} direction="out" small />
+            <ZoomButton model={model} direction="in" small />
           </>
         ) : null}
       </Paper>

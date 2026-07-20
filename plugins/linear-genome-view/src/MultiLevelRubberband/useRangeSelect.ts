@@ -26,6 +26,7 @@ export function useRangeSelect(
     setAnchorPosition(undefined)
     setStartX(undefined)
     setCurrentX(0)
+    setGuideX(undefined)
   }, [])
 
   useEffect(() => {
@@ -91,8 +92,9 @@ export function useRangeSelect(
   }
 
   function mouseMove(event: React.MouseEvent<HTMLDivElement>) {
-    // Don't update guideX while the menu is open (rubberband locked)
-    if (anchorPosition) {
+    // Don't update guideX while the menu is open (rubberband locked) or while a
+    // drag-selection is in progress (the rubberband should show, not the guide)
+    if (anchorPosition || mouseDragging) {
       return
     }
     setGuideX(getRelativeX(event, ref.current))
