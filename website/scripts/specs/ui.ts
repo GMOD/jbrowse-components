@@ -318,6 +318,56 @@ export const uiSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // Same chr19 inversion window as `multisv`, but with the multi-sample display
+  // colored by SV type (`featureColor: 'svType'`): every alt-carrying cell takes
+  // its variant's structural-variant class color (the ~1.12Mb HGSV_73318
+  // inversion band paints the inversion color), and the legend names each SV
+  // class present. Demonstrates the SV-type coloring preset on real data.
+  {
+    mode: 'url',
+    name: 'multisv_svtype',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '19:42,749,096-47,802,386',
+          tracks: [
+            {
+              trackId: '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+              type: 'LinearMultiSampleVariantDisplay',
+              forceLoad: true,
+              height: 400,
+              featureColor: 'svType',
+            },
+            {
+              trackId: 'ncbi_refseq_109_hg38',
+              type: 'LinearBasicDisplay',
+              height: 140,
+              showLabels: 'on',
+              showDescriptions: false,
+              showOnlyGenes: true,
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: '1KGP',
+    readyTimeout: 90000,
+    viewportHeight: 720,
+    settleMs: 35000,
+    hideTooltip: true,
+    actions: [
+      { type: 'rightclick', from: { x: 1130, y: 450 } },
+      { type: 'waitForText', text: 'Sort by genotype' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Sort by genotype' },
+      { type: 'delay', ms: 6000 },
+      { type: 'hover', from: { x: 6, y: 6 } },
+      { type: 'delay', ms: 800 },
+    ],
+  },
+
   // Trio SV: the Kinh-Vietnamese trio (HG02030 child / HG02031 mother / HG02032
   // father) Illumina reads stacked over the 1000 Genomes Illumina ensemble SV
   // callset, at a ~43kb SV locus. The full NCBI 1000genomes CRAMs 503'd
