@@ -89,23 +89,5 @@ void computeLDPhased(uint3 gid: SV_DispatchThreadID) {
   float r = denom > 0.0 ? D / sqrt(denom) : 0.0;
   float r2 = clamp(r * r, 0.0, 1.0);
 
-  if (u.ldMetric == 0u) {
-    ldOut[k] = u.signedLD != 0u ? r : r2;
-    return;
-  }
-
-  float dprime = 0.0;
-  if (D > 0.0) {
-    float dmax = min(pA * qB, qA * pB);
-    if (dmax > 0.0) {
-      dprime = min(1.0, D / dmax);
-    }
-  } else if (D < 0.0) {
-    float absMin = min(pA * pB, qA * qB);
-    if (absMin > 0.0) {
-      dprime = u.signedLD != 0u ? max(-1.0, D / absMin)
-                                : min(1.0, abs(D) / absMin);
-    }
-  }
-  ldOut[k] = dprime;
+  ldOut[k] = ldFinalize(r, r2, D, pA, pB, u.ldMetric, u.signedLD);
 }

@@ -29,6 +29,7 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 //! targets: wgsl, glsl
 
 import colorPack;
+import hpmath;
 
 struct DotplotInstance {
   float x1 : ATTR0;
@@ -69,8 +70,9 @@ VsOut vs_main(DotplotInstance inst, uint vid : SV_VertexID) {
 
   // Quad template: pairs (0,1), (2,3), (4,5) form two triangles.
   // t interpolates along the segment, side pushes to one edge by halfWidth.
-  float t = (v == 2u || v == 3u || v == 5u) ? 1.0 : 0.0;
-  float side = (v == 1u || v == 4u || v == 5u) ? 1.0 : -1.0;
+  float2 q = quadLocal(v);
+  float t = q.y;
+  float side = q.x * 2.0 - 1.0;
 
   float sx1 = inst.x1 * u.bpPerPxHInv + u.panPxH;
   float sy1 = u.resolution.y - (inst.y1 * u.bpPerPxVInv + u.panPxV);
@@ -97,10 +99,9 @@ VsOut vs_main(DotplotInstance inst, uint vid : SV_VertexID) {
   float capDir = t * 2.0 - 1.0;
   float2 center = lerp(float2(sx1, sy1), float2(sx2, sy2), t);
   float2 pos = center + tangent * capDir * halfWidth + normal * side * halfWidth;
-  float2 clipSpace = (pos / u.resolution) * 2.0 - 1.0;
 
   VsOut o;
-  o.position = float4(clipSpace.x, -clipSpace.y, 0.0, 1.0);
+  o.position = screenToClip(pos, u.resolution);
   o.color = unpackRGBA(inst.color);
   o.uv = float2(t * len + capDir * halfWidth, side * halfWidth);
   o.dims = float2(len, halfWidth);

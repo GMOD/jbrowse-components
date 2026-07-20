@@ -17,7 +17,6 @@
 //! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_FLAT_MIN_PX
 
 import alignmentsUniforms;
-import colorPack;
 
 
 // 128 segments: the curve is a triangle-strip polyline, and its facet kinks run

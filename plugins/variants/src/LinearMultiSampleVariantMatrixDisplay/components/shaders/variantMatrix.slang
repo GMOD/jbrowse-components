@@ -86,8 +86,8 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   // priority.
   float yTop = float(inst.rowIndex) * u.rowHeight - u.scrollTop;
   float yBot = yTop + max(u.rowHeight, 1.0);
-  float pxToClipY = 2.0 / u.canvasHeight;
-  float clipY = lerp(1.0 - yBot * pxToClipY, 1.0 - yTop * pxToClipY, ly);
+  float clipY = lerp(yPxToClipY(yBot, u.canvasHeight),
+                     yPxToClipY(yTop, u.canvasHeight), ly);
 
   VsOut o;
   o.position = float4(clipX, clipY, 0.0, 1.0);

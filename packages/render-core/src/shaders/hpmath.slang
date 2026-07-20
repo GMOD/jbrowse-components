@@ -100,3 +100,13 @@ public float2 quadLocal(uint vid) {
     (v == 0u || v == 1u || v == 4u) ? 0.0 : 1.0
   );
 }
+
+// Screen-space (CSS px, top-left origin) → clip space, with the Y flip. Shared
+// by the synteny/dotplot/hic renderers, whose 2D marks all map a screen-px
+// point onto the viewport this way; keeps the flip sign from drifting between
+// the plugins that previously open-coded it. (Appended after quadLocal on
+// purpose: inserting earlier reshuffles every importer's debug #line numbers.)
+public float4 screenToClip(float2 screen, float2 resolution) {
+  float2 clip = screen / resolution * 2.0 - 1.0;
+  return float4(clip.x, -clip.y, 0.0, 1.0);
+}

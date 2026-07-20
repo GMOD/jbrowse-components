@@ -28,9 +28,8 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float x1 = xx.x;
   float x2 = xx.y;
 
-  float eh = effHeight(u);
   float bottom = covBottom(u);
-  float barTop = bottom + (normalizeDepth(inst.depth, u) * eh / u.canvasH) * 2.0;
+  float barTop = bottom + covBarScale(inst.depth, u);
   o.position = float4(
     flipX(lerp(x1, x2, local.x), u),
     lerp(bottom, barTop, local.y),

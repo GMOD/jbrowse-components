@@ -85,36 +85,15 @@ void computeLD(uint3 gid: SV_DispatchThreadID) {
   float mean2 = s2 / count;
   float var1 = s1sq / count - mean1 * mean1;
   float var2 = s2sq / count - mean2 * mean2;
+  float cov = sprod / count - mean1 * mean2;
   float r = 0.0;
   float r2 = 0.0;
   if (var1 > 0.0 && var2 > 0.0) {
-    float cov = sprod / count - mean1 * mean2;
     r = cov / sqrt(var1 * var2);
     r2 = clamp(r * r, 0.0, 1.0);
   }
 
-  if (u.ldMetric == 0u) {
-    ldOut[k] = u.signedLD != 0u ? r : r2;
-    return;
-  }
-
-  // D' calculation: composite LD estimator (Weir 1979), D = Cov(g1,g2) / 2
-  float D = (sprod / count - mean1 * mean2) * 0.5;
-  float qA = 1.0 - pA;
-  float qB = 1.0 - pB;
-  float dprime = 0.0;
-  if (D > 0.0) {
-    float dmax = min(pA * qB, qA * pB);
-    if (dmax > 0.0) {
-      dprime = min(1.0, D / dmax);
-    }
-  } else if (D < 0.0) {
-    float absMin = min(pA * pB, qA * qB);
-    if (absMin > 0.0) {
-      dprime = u.signedLD != 0u ? max(-1.0, D / absMin)
-                                : min(1.0, abs(D) / absMin);
-    }
-  }
-
-  ldOut[k] = dprime;
+  // Composite LD estimator (Weir 1979), D = Cov(g1,g2) / 2.
+  float D = cov * 0.5;
+  ldOut[k] = ldFinalize(r, r2, D, pA, pB, u.ldMetric, u.signedLD);
 }

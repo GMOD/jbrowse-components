@@ -53,3 +53,32 @@ public uint2 decodeTriangular(uint idx) {
   uint j = idx - i * (i - 1u) / 2u;
   return uint2(i, j);
 }
+
+// Final LD value from the per-cell statistics, shared by both compute kernels
+// (ldCompute derives r/r2/D from per-sample covariance; ldPhasedCompute from
+// haplotype-frequency popcounts, but the metric selection and D' normalization
+// downstream are identical). `ldMetric == 0` returns signed r or r2; otherwise
+// the composite D' (Weir 1979), clamped to [-1,1] signed or [0,1] unsigned.
+public float ldFinalize(
+  float r, float r2, float D, float pA, float pB, uint ldMetric, uint signedLD
+) {
+  if (ldMetric == 0u) {
+    return signedLD != 0u ? r : r2;
+  }
+  float qA = 1.0 - pA;
+  float qB = 1.0 - pB;
+  float dprime = 0.0;
+  if (D > 0.0) {
+    float dmax = min(pA * qB, qA * pB);
+    if (dmax > 0.0) {
+      dprime = min(1.0, D / dmax);
+    }
+  } else if (D < 0.0) {
+    float absMin = min(pA * pB, qA * qB);
+    if (absMin > 0.0) {
+      dprime = signedLD != 0u ? max(-1.0, D / absMin)
+                              : min(1.0, abs(D) / absMin);
+    }
+  }
+  return dprime;
+}

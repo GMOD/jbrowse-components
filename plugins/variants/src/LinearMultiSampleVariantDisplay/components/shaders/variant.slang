@@ -65,9 +65,8 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   // variantHitTest.ts (hit-test) — keep in sync.
   float yTop = float(inst.rowIndex) * u.rowHeight - u.scrollTop;
   float yBot = yTop + max(u.rowHeight, 2.0);
-  float pxToClipY = 2.0 / u.canvasHeight;
-  float cyTop = 1.0 - yTop * pxToClipY;
-  float cyBot = 1.0 - yBot * pxToClipY;
+  float cyTop = yPxToClipY(yTop, u.canvasHeight);
+  float cyBot = yPxToClipY(yBot, u.canvasHeight);
 
   float2 q = quadLocal(vid);
   float lx = q.x, ly = q.y;

@@ -66,12 +66,10 @@ static const float INDEX_GLYPH_SCALE = 1.6;
 VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
   uint v = vid % 6u;
 
-  // Two-triangle quad: x=0 when v in {0,2,3}, y=0 when v in {0,1,4}
-  bool xZero = (v == 0u || v == 2u || v == 3u);
-  bool yZero = (v == 0u || v == 1u || v == 4u);
-  float qx = xZero ? 0.0 : 1.0;
-  float qy = yZero ? 0.0 : 1.0;
-  float2 local = float2(qx, qy) * 2.0 - float2(1.0, 1.0);
+  // Two-triangle quad corner (0/1 per axis); shared with the whole fleet.
+  float2 q = quadLocal(v);
+  float2 local = q * 2.0 - 1.0;
+  bool xZero = q.x < 0.5;
 
   float startClipX = bpToClipX(inst.absPosition, u);
   float endClipX = bpToClipX(inst.absEnd, u);
@@ -111,7 +109,7 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     // and the LD index/lead SNP keep their distinct marker even when small.
     float diamPx = u.pointRadius * 2.0;
     float2 centerPx = float2((startClipX + 1.0) * 0.5 * u.viewportWidth, scoreYPx);
-    float2 vPx = crispSquareCornerPx(centerPx, diamPx, float2(qx, qy));
+    float2 vPx = crispSquareCornerPx(centerPx, diamPx, q);
     o.position = float4(vPx.x / u.viewportWidth * 2.0 - 1.0,
                         yPxToClipY(vPx.y, u.canvasHeight), 0.0, 1.0);
     o.localPos = local;

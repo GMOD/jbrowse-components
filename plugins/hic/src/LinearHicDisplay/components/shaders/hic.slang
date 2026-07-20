@@ -49,11 +49,8 @@ VsOut vs_main(HicInstance inst, uint vid : SV_VertexID) {
   float sx = rx * u.viewScale + u.viewOffsetX;
   float sy = ry * u.viewScale * u.yScalar;
 
-  float clipX = (sx / u.canvasSize.x) * 2.0 - 1.0;
-  float clipY = 1.0 - (sy / u.canvasSize.y) * 2.0;
-
   VsOut o;
-  o.position = float4(clipX, clipY, 0.0, 1.0);
+  o.position = screenToClip(float2(sx, sy), u.canvasSize);
   o.count = inst.count;
   return o;
 }
