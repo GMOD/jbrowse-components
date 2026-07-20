@@ -592,8 +592,8 @@
     "name": "track_menu",
     "status": "good",
     "note": "FIXED: dropped the ambiguous arrows; kept the two icon rings + boxed menu. Force-regenerated (arrow removal was 0.4% diff, under content-stable threshold).",
-    "reviewedAt": "2026-07-19T21:19:14.799Z",
-    "hash": "6080eb609d66b2c3df5affb77b129157638bbd05"
+    "reviewedAt": "2026-07-20T13:40:32.909Z",
+    "hash": "b5c2f4ea630991ae5bbe3961cb3430254601a149"
   },
   "tracklabels": {
     "name": "tracklabels",
@@ -981,24 +981,24 @@
   },
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
-    "status": "good",
-    "note": "RESOLVED (two fixes). (1) COLOR, per reviewer 'want all tracks positively affected' (not a per-figure override): changed the GLOBAL wiggle negColor default #f0636b (muted coral, muddies to brown at density) -> #e01e26 (clean red) in plugins/wiggle util.ts + wiggleConfigSchemaFields.ts. (2) CLUTTER: the NCBI RefSeq GFF rendered a UUID-labeled bar + region rows above the genes -- verified (tabix) these are RefSeq match/region/biological_region support features whose NCBI-assigned GFF ID is a UUID and which have no Name (getFeatureName = name ?? feature.get('id')), i.e. expected data, not a bug. Fixed with the EXISTING showOnlyGenes display prop via jb2export's JSON escape hatch ('{showOnlyGenes:true}' on --gffgz in the README). Regenerated hero (jb2export from source): clean gene models (ALDH4A1/IFFO2/MIR4695/MIR1290) + red phyloP negatives; gen-img-doc synced jbrowse-img.md + copied 1.png. Also applied showOnlyGenes + regenerated phylop_ncbi_refseq_tp53 (same clutter). clingen showLegend skipped (single feature, no categorical legend). See memory project_jb2export_gff_gene_heuristic_uuid_bar.",
-    "reviewedAt": "2026-07-19T23:03:39.759Z",
-    "hash": "ce4ceceb843bb9507a0c8e0860b0fbe43003f7a4"
+    "status": "bad",
+    "note": "ANSWERED (recommend keep as-is, no change). The purple ClinGen bar is NOT a jbrowse choice: jbrowse renders bigBed features with the file own itemRgb (autoSql reserved) color, so the purple is ClinGen own curation/classification color from clinGenGeneDisease.bb. It is also biologically correct and meaningful: the bar sits over ALDH4A1 (leftmost gene) and is labeled hyperprolinemia type 2 - ALDH4A1 loss-of-function causes hyperprolinemia type II, a real gene-disease link, so the track adds a genuine clinical-genomics dimension to the headline. No legend needed: it is a single, already-labeled feature; a color legend for one entry would be overbuilding. If you still want it gone for a cleaner headline that is a quick edit (drop the --bigbed clinGenGeneDisease.bb arg in the cliSpec(1) in screenshot-spec-helpers.ts + regenerate), but recommend keeping the clinical story.",
+    "reviewedAt": "2026-07-20T14:06:23.333Z",
+    "hash": "5197a6b3d6844ee645e01067a08c5c8294207c03"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T02:00:41.811Z",
+    "reviewedAt": "2026-07-20T13:10:22.836Z",
     "hash": "8b763e1f700611c4b16dbe5162d221f6e886ba4a"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T22:40:52.110Z",
-    "hash": "4e4e713f0d770bc9c61ac733150bcc68c5a63e82"
+    "reviewedAt": "2026-07-20T14:06:30.565Z",
+    "hash": "d97487813ea408101e9d8f701ea1883c952c50c4"
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
@@ -1129,8 +1129,8 @@
     "name": "jbrowse-img/hic",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-09T22:41:34.985Z",
-    "hash": "aa2b7363a262140418736913c6363dce06ae05d5"
+    "reviewedAt": "2026-07-20T13:50:03.058Z",
+    "hash": "a5d63b81a3799a5ac7f6a86c60c79445210f55e4"
   },
   "maf_470way": {
     "name": "maf_470way",
@@ -1184,9 +1184,9 @@
   "gc_content": {
     "name": "gc_content",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-14T11:08:37.540Z",
-    "hash": "487d83f008993bc087a44910dac1a4bcf33c915a"
+    "note": "FIXED: added two in-figure text annotations over the GC skew track arms — \"Mostly positive skew (leading strand)\" over the left blue replichore and \"Mostly negative skew (lagging strand)\" over the right red replichore — naming the two-arm skew profile the reviewer asked for.",
+    "reviewedAt": "2026-07-20T14:30:00.000Z",
+    "hash": "5967677352d63b49af0ea44d3aea2b69a5cc6e2a"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1429,16 +1429,16 @@
   "jbrowse-img/sashimi_junctions": {
     "name": "jbrowse-img/sashimi_junctions",
     "status": "good",
-    "note": "FIXED: added featureHeight:super-compact so the supporting reads pack into a thin band below the coverage/sashimi arcs — the exon-by-exon read coverage feeding the junctions is now visible without the pileup dominating.",
-    "reviewedAt": "2026-07-13T05:30:10.554Z",
-    "hash": "d190bbae5ec93219ecc602a4c7c7400588f05267"
+    "note": "",
+    "reviewedAt": "2026-07-20T13:50:02.992Z",
+    "hash": "cf3f1597205f6b06f419d156d4ceb0053b80d028"
   },
   "jbrowse-img/scatac_multiwiggle": {
     "name": "jbrowse-img/scatac_multiwiggle",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-14T11:09:32.756Z",
-    "hash": "53b95d01d5d480d0c1b22e78a0a61db0ca96363f"
+    "reviewedAt": "2026-07-20T13:40:11.011Z",
+    "hash": "241fb195d5e7529ce0efe7131edb60d125905d47"
   },
   "methylation/arabidopsis_wgbs_boundary": {
     "name": "methylation/arabidopsis_wgbs_boundary",
@@ -1560,9 +1560,9 @@
   "trio-ancestry": {
     "name": "trio-ancestry",
     "status": "bad",
-    "note": "this data visualization isn't really 'outstandingly obvious'. it just looks like there are lots of small rectangles and i dont really get it. any clearer examples we could make? I also dont really like the race science implications || REFRAME DONE (committed 76198d52e0): rewrote the caption, in-figure annotation, and analyze_trio.md prose to foreground recombination/inheritance (child's two rows are mosaics recombined from the parents, block boundaries = crossovers) and to frame local ancestry as a per-segment statistical inference over reference panels, explicitly NOT a label on people. That addresses the race-science concern. STILL BAD for the clarity half: a whole-chromosome painting is inherently 'lots of rectangles'. A clearer/more-obvious locus or example needs new data the user is sourcing (per this session's direction: option reframe + maybe find clearer example). Not fabricating data.",
-    "reviewedAt": "2026-07-19T23:24:10.902Z",
-    "hash": "bbd7b11485c847c5215397b1b094905a390935b3"
+    "note": "RENDER FIXED (root cause was NOT partitioning/aliasing). The prior \"empty render\" was a screenshot-generator CAPTURE RACE, not a data bug: refName aliasing works (chr1 file vs canonical 1 assembly renames correctly), the BedTabix sample column is read fine, and the painting renders on the dev server every time. Traced through the main/worker RPC boundary (CDP worker-console): the display clears its loading signal (canvasDrawn can flip on an empty first paint) before the feature data is painted, so under a slow first-fetch the generator captured an empty frame; it was intermittent (rendered fine on clean re-runs). FIX: gate the capture on the data-driven color legend (new multirow-color-legend testid on SvgColorLegend, which renders only once features are loaded+binned) via readySelector, instead of canvasDrawn+fixed settle. Now content-stable (0.000%% diff over 5+ runs), full 6-haplotype AFR/EUR painting. Handoff: agent-docs/guides/SCREENSHOT_CAPTURE_RACE.md. REMAINING (reviewer decision, unchanged): clarity — the whole-chr1 painting is many small admixture blocks; if you want a crisper example say so (a zoomed crossover window like trio-crossover-* is the sharper view).",
+    "reviewedAt": "2026-07-20T13:41:12.651Z",
+    "hash": "a95820bb8c1ff1247248ef9269209765779f4c84"
   },
   "methylation/arabidopsis_wgbs_cpg": {
     "name": "methylation/arabidopsis_wgbs_cpg",
@@ -1601,22 +1601,22 @@
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
     "status": "good",
-    "note": "FIXED: both rows now 70kb (same bp/px = square view); backbone block aligned so ribbon runs horizontal, stx2 island in bare Sakai stretch.",
-    "reviewedAt": "2026-07-19T23:24:48.007Z",
-    "hash": "076f6cc4d5493424a8518be4d7c9037337f04b51"
+    "note": "FIXED (reviewer follow-up): box+arrow now ANCHOR to the stx2B gene label text (anchor:{text}) instead of hand-tuned pixels, so they ring the actual Shiga-toxin gene, not the neighboring ECs_1207. Zoomed out to 100kb and both rows extended 30kb right (same bp/px, ribbon stays horizontal) so the island sits mid-view, off the cluttered right edge. Gene labels are DOM text, so text-anchoring is the robust way to box features here.",
+    "reviewedAt": "2026-07-20T15:30:00.000Z",
+    "hash": "b15f6421a3fcfc8d64032cd2bd090ada661d6f62"
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
     "status": "bad",
-    "note": "there is not much 'type' variety here. anything better  || AGENT-NEEDS-INPUT: NEEDS DECISION: \"not much type variety\" is a data issue - pick a locus/track richer in feature types. Not guessed.",
-    "reviewedAt": "2026-07-19T21:09:18.646Z",
+    "note": "RESOLVED. Replaced the low-variety NCBI RefSeq feature.type figure with UCSC RepeatMasker (jb2hubs golden-path build, jbrowse.org/ucsc/hg38/rmsk.bed.gz, BedTabix whose #-header exposes repClass) over a repeat-dense 50kb 17q21 window (chr17:45,700,000-45,750,000), each element colored by repeat class via the lookup-table recipe: SINE red / LINE blue / LTR green / DNA purple / Simple_repeat orange / Low_complexity brown / else gray, keyed on get(feature,repClass). Six classes visibly interleaved (Alu/MIR reds, L1/L2 blues, LTR/MLT/THE1 greens, Charlie/Tigger purples, (TA)n/(CA)n oranges) - real categorical variety. Wired as a session track; cookbook.md figure caption updated; gallery links regenerated; check-spec-recipes passes (desktop round-trip ok); content-stable.",
+    "reviewedAt": "2026-07-20T13:11:01.762Z",
     "hash": "db28783ae00c22d35d5ab93e74f128cdb7f49b81"
   },
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
     "status": "bad",
     "note": "hard to interpret what is going on here. would need like orthogonal MAF, VCF, and/or all vs all paf to confirm  || AGENT-NEEDS-INPUT: NEEDS DECISION: hard to interpret; reviewer wants orthogonal MAF/VCF/all-vs-all paf to corroborate. Data/design change, not a spec tweak.",
-    "reviewedAt": "2026-07-19T21:09:50.636Z",
+    "reviewedAt": "2026-07-20T14:06:47.405Z",
     "hash": "7956a70e65074d8465264b3ac0c8806196942b6e"
   },
   "ld/lct_lactase": {
@@ -1629,7 +1629,7 @@
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
     "status": "bad",
-    "note": "how do we know there is a inversion? if needed, add a 1kg SV track",
+    "note": "RESOLVED. Reviewer: how do we know there is an inversion? Key finding: NO hosted hg19 track cleanly calls it - short-read 1000G genotype SV callsets (phase3 mergedSV, dbVar 1000g) systematically MISS this segmental-duplication-flanked inversion; only DELs/CNVs/MEIs appear at the locus, and DGVs inversion record is a messy 9.3Mb aggregate. The clean call exists in the 1KGP freeze-4 SV set (hg38 chr17:45,568,280-46,495,155, chr17-45568281-INV-926875) but the figure/LD data are hg19. So instead of a misaligned/empty track: widened the view past the previous 43.7-44.3Mb window (which sat ENTIRELY inside the inversion, hence no visible boundary) to 43.47-44.59Mb, HIGHLIGHTED the inversion span (freeze-4 coords liftover-anchored on MAPT to hg19 43,645,646-44,572,521 - a real 1kGP SV boundary, MAPT sits inside), and rewrote the callout to answer the question: the highlighted span is what freeze-4 calls inverted, and the non-recombining LD block is its population-genetic signature (short reads cant see it, so the LD block is how you spot it).",
     "reviewedAt": "2026-07-19T23:04:58.894Z",
     "hash": "74c5d9b96925eafaabc92578116bbd5d73e0705f"
   },
@@ -1642,22 +1642,22 @@
   },
   "pangenome/variant_matrix": {
     "name": "pangenome/variant_matrix",
-    "status": "good",
-    "note": "RESOLVED: stacked the complementary MAF track (ecoli_pggb_maf, hosted) below the variant matrix over the same K12 window (chr:995-1015kb), so the matrix summary reads against the base-level per-strain alignment it was decomposed from. viewportHeight 540->740. (paf = ecoli_pggb_ava is a SyntenyTrack, only meaningful in Projection 1's synteny view, not a single-assembly LGV; didn't add non-matrix variant mode since the MAF is the stronger orthogonal corroboration.) Updated pangenome.md caption + lead-in prose. Regenerated (14.21% diff).",
-    "reviewedAt": "2026-07-19T23:06:46.612Z",
-    "hash": "7149c860367a99cceb3fb541efcdb853242a1ee9"
+    "status": "bad",
+    "note": "any other complementary tracks we can add? odgi depth? etc? previous notes: RESOLVED: stacked the complementary MAF track (ecoli_pggb_maf, hosted) below the variant matrix over the same K12 window (chr:995-1015kb), so the matrix summary reads against the base-level per-strain alignment it was decomposed from. viewportHeight 540->740. (paf = ecoli_pggb_ava is a SyntenyTrack, only meaningful in Projection 1's synteny view, not a single-assembly LGV; didn't add non-matrix variant mode since the MAF is the stronger orthogonal corroboration.) Updated pangenome.md caption + lead-in prose. Regenerated (14.21% diff).",
+    "reviewedAt": "2026-07-20T13:49:45.466Z",
+    "hash": "cacf19abf239ef0a587cf07ebca7ac63e03c0729"
   },
   "phylop_ncbi_refseq_tp53": {
     "name": "phylop_ncbi_refseq_tp53",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-19T21:16:35.373Z",
-    "hash": "918545929e40626db39b46c909f9593b3b3df3a7"
+    "reviewedAt": "2026-07-20T13:40:25.898Z",
+    "hash": "45d855a923d2e726273d52924653c7c5916379dd"
   },
   "readpair_heatmap_translocation": {
     "name": "readpair_heatmap_translocation",
     "status": "bad",
-    "note": "there is a very small 'contact' blip but it would be interesting to show a more complex pattern. the https://github.com/PopicLab/cue shows very nice tapestry figures,. we can cross reference their source code if it helps  || AGENT-NEEDS-INPUT: NEEDS DECISION: reviewer wants a more complex contact pattern (cf. PopicLab/cue tapestry figures). Needs a richer SV locus/dataset.",
+    "note": "INVESTIGATED - needs a richer dataset (reviewer decision). A single chr3<->chr13 fusion is inherently ONE off-diagonal spot; there is no complex pattern to surface in this event. A cue-style tapestry needs a locus with many nested/inter-chromosomal SVs (e.g. chromothripsis) + a new hosted .hic built from that sample (readpair_heatmap.md pipeline). Not achievable as a spec tweak on the current HG008-T translocation .hic.",
     "reviewedAt": "2026-07-19T21:21:27.803Z",
     "hash": "61a7ec28dbea16cdedab279609a9dcb164963df6"
   },
@@ -1667,5 +1667,19 @@
     "note": "",
     "reviewedAt": "2026-07-19T23:25:01.523Z",
     "hash": "da683511c60b2daf837e56c549721719cf01f76c"
+  },
+  "ld/lct_haplotype_matrix": {
+    "name": "ld/lct_haplotype_matrix",
+    "status": "bad",
+    "note": "RESOLVED (combined per reviewer). Stacked the standalone LD triangle (kgp_lct_ld) ABOVE the clustered haplotype matrix over one 800kb window (chr2:136.2-137.0Mb) with the LCT/MCM6 locus banded down all tracks. The LD triangle supplies the block clarity the matrix alone lacked (reviewer: 3 clusters unclear): top shows the swept locus is one high-r2 block, bottom shows the 2504 samples clustering into who carries that haplotype vs who does not. Same slice + MAF 0.35 for both. Callout ties the two halves. Content-stable (clustering deterministic), gallery links regenerated, check-spec-recipes passes. (Window is the LD-optimal 800kb rather than the matrix-optimal 200kb: the LD needs the flanks to read as a bounded block; the swept band still dominates the matrix.)",
+    "reviewedAt": "2026-07-20T14:29:24.878Z",
+    "hash": "9aa19882be8252a5fa60f293b6a6a9b28aed2606"
+  },
+  "readpair_heatmap_chr3q": {
+    "name": "readpair_heatmap_chr3q",
+    "status": "bad",
+    "note": "INVESTIGATED - needs a richer dataset (reviewer decision), no spec tweak helps. Empirically tested widening the window to 182.2-185.1Mb to fold in the 184.7Mb four-breakpoint cluster alongside the 1.4Mb dup: it renders WORSE (sparse, near-empty) - the read-pair contacts are too sparse at that zoom and dilute to invisibility. The HG008-T .hic at this locus simply has a few discrete SVs, not the dense nested-SV tapestry cue shows (those come from chromothripsis-like loci). Matching cue needs a genuinely complex-SV locus/sample + a newly-built+hosted .hic (see readpair_heatmap.md tutorial for the binning pipeline) - a data decision, not a config change. Reverted the wider-window experiment; current framed-on-the-dup figure is the clearest this data allows.",
+    "reviewedAt": "2026-07-20T13:49:22.954Z",
+    "hash": "8168c9756153b649b3f8c26df981bb3446773ef6"
   }
 }
