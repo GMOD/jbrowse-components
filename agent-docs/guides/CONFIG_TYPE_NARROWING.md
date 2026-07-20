@@ -41,10 +41,35 @@ brand (its definition is `any`), so every `getConf(self, …)` inside stays `any
 A factory that annotates the concrete schema type (e.g.
 `configSchema: LinearArcDisplayConfigModel`, where
 `LinearArcDisplayConfigModel = ReturnType<typeof configSchemaFactory>`) narrows
-every read for free. **Tightening those param annotations, one factory at a time,
-is the remaining win** — it's mechanical and low-risk (see the blast-radius note
-below). Most base factories (`linearCanvasBaseDisplayStateModelFactory`,
-wiggle/alignments bases) still take `AnyConfigurationSchemaType`.
+every read for free.
+
+**Done (leaf factories):** arc, hic, maf, multirow, gwas-manhattan,
+circular-chordvariant. Each was a one-line param retype (plus a named
+schema-type export where the plugin only exported a factory/value). Pure type
+change, no runtime effect.
+
+**Only convert LEAVES, and let `pnpm typecheck` be the judge.** A factory that
+is a **shared base** — instantiated by other displays with a *different,
+extended* schema — must NOT be pinned to one concrete type: that erases the
+subclass's extra slots and breaks the subclass's `getConf(self, 'extraSlot')`.
+`LinearWiggleDisplay` is the trap: `LinearGCContentDisplay` builds on its factory
+(imported via the `@jbrowse/plugin-wiggle` **package export**, so a file-path
+grep for consumers misses it) and passes a wiggle-schema-plus-`windowSize`/…
+schema. Pinning wiggle's param surfaced 3 `getConf` errors in gccontent — so it
+was reverted. The reliable base detector is the **full typecheck after
+converting**: a base used with an extended schema errors at the subclass; a true
+leaf stays clean.
+
+**Still widened** (deliberately): the base factories
+(`linearCanvasBaseDisplayStateModelFactory`, `LinearWiggleDisplay`,
+`MultiSampleVariantBaseModel`) need **generic threading** —
+`factory<S extends AnyConfigurationSchemaType>(configSchema: S)` — so each
+consumer's concrete/extended schema flows through; that's more invasive (a type
+param through the `.compose()`/`.props()` chain) and wants its own spike.
+`LinearAlignmentsDisplay` is likely a base too (LGVSyntenyDisplay builds on it —
+see its CLAUDE.md) and additionally exports the *Instance* type, not the schema.
+`DotplotDisplay`/`LinearSyntenyDisplay` have **empty** schemas
+(`ConfigurationSchema('…', {}, …)`) — nothing to narrow, skip.
 
 ## How `IConfigurationReference` works (and why the earlier attempt failed)
 
