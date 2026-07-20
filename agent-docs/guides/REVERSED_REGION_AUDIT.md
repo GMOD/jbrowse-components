@@ -108,6 +108,8 @@ Clean (verified this session):
   bars (`px - 0.5`), indicators.
 - arcs (`features/arcs/drawCanvas.ts`) — radius from `Math.abs(sx2 - sx1)`.
 - per-base draws in **sequence**, **gwas**, **canvas** — all resolve two edges.
+  **sequence** now also carries a reversed cell-geometry regression test
+  (`components/drawSequence.test.ts`, added 2026-07-20, mutation-verified).
 - **MAF** cells — had the pivot right independently; now shares
   `makeCellLeftMapper`.
 - **wiggle** and **variants** — both hit this bug historically and both carry a
@@ -147,12 +149,10 @@ Roughly highest value first:
    (`?renderer=`) — on GPU it renders correctly and tells you nothing. Navigate
    `ctgA:1..7,720[rev]` on `volvox_alignments_pileup_coverage`, zoom past 1bp/px,
    compare against the same locus unflipped.
-3. **Displays whose reversed tests may not assert cell geometry.** dotplot,
-   synteny (`linear-comparative-view`), maf, canvas, gwas and sequence all have
-   *some* reversed test; whether any pins a cell's span at a zoom where one base
-   is many px is unverified — that's the read-the-assertion pass described above.
-   **LD** renders unflipped in a flipped region — architectural, not the cell
-   class. See TODO.md; copy hic's upstream mirror.
+3. **LD renders unflipped in a flipped region** — architectural, not the cell
+   class. See TODO.md; copy hic's upstream mirror. (The rest of the cell-geometry
+   read-the-assertion pass is done — maf/canvas/sequence carry reversed
+   cell-geometry tests; dotplot/synteny/gwas are span/point classes, not cells.)
 4. **Reversed SVG export for alignments.** The only reversed *integration* tests
    are `ReversedRegionLabels.test.tsx` (gene labels) and `LaunchSynteny.test.tsx`
    (three flipped-synteny views) — neither touches a pileup. Copy the former and
