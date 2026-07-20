@@ -29,7 +29,7 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
       const gtfGzLocation = this.getConf('gtfGzLocation')
       const indexType = this.getConf(['index', 'indexType'])
       const loc = this.getConf(['index', 'location'])
-      const dontRedispatch = this.getConf('dontRedispatch') as string[]
+      const dontRedispatch = this.getConf('dontRedispatch')
       const gtf = new TabixIndexedFile({
         filehandle: openLocation(gtfGzLocation, this.pluginManager),
         ...openTabixIndexFilehandle(loc, indexType, this.pluginManager),

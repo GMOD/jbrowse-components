@@ -255,7 +255,12 @@ export interface ConfigurationSchemaType<
 }
 
 export function ConfigurationSchema<
-  DEFINITION extends ConfigurationSchemaDefinition,
+  // `const` preserves each slot's literal `type` ('stringArray', 'maybeNumber',
+  // …) through inference so `SlotValueFromDef` can key on it and return a
+  // precise value type instead of `any`. Scalar `defaultValue`s become literals
+  // as a side effect, but `SlotValueFromDef` re-widens those, so read types stay
+  // `number`/`string`/`boolean`, not `1`/`'x'`/`true`.
+  const DEFINITION extends ConfigurationSchemaDefinition,
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined = undefined,
   EXPLICIT_IDENTIFIER extends string | undefined = undefined,
 >(

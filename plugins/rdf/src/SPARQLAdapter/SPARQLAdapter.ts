@@ -77,7 +77,8 @@ export default class SPARQLAdapter extends BaseFeatureDataAdapter {
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    this.endpoint = readConfObject(config, 'endpoint').uri
+    const endpoint = readConfObject(config, 'endpoint')
+    this.endpoint = 'uri' in endpoint ? endpoint.uri : ''
     this.queryTemplate = readConfObject(config, 'queryTemplate')
     this.additionalQueryParams = readConfObject(config, 'additionalQueryParams')
     this.refNamesQueryTemplate = readConfObject(config, 'refNamesQueryTemplate')

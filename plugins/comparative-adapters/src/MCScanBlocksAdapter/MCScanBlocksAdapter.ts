@@ -36,7 +36,7 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
 
   async setupPre(opts: BaseOptions) {
     const { statusCallback = () => {} } = opts
-    const blockAssemblies = this.getConf('blockAssemblies') as string[]
+    const blockAssemblies = this.getConf('blockAssemblies')
     const bedLocations = this.getConf('bedLocations') as FileLocation[]
     const pm = this.pluginManager
     const blocks = openLocation(this.getConf('mcscanBlocksLocation'), pm)
@@ -90,7 +90,7 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
   private mateAssembly(queryAssembly: string, targetAssemblyName?: string) {
     return (
       targetAssemblyName ??
-      (this.getConf('assemblyNames') as string[]).find(n => n !== queryAssembly)
+      this.getConf('assemblyNames').find(n => n !== queryAssembly)
     )
   }
 

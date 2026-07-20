@@ -28,7 +28,7 @@ export default class MCScanAnchorsAdapter extends BaseFeatureDataAdapter<MCScanA
   }
   async setupPre(opts: BaseOptions) {
     const { statusCallback = () => {} } = opts
-    const assemblyNames = this.getConf('assemblyNames') as string[]
+    const assemblyNames = this.getConf('assemblyNames')
 
     const pm = this.pluginManager
     const bed1 = openLocation(this.getConf('bed1Location'), pm)

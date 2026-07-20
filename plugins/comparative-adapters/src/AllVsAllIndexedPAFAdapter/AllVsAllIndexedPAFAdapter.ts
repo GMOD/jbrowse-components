@@ -19,7 +19,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
-import type { FileLocation, Region } from '@jbrowse/core/util/types'
+import type { Region } from '@jbrowse/core/util/types'
 
 export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<AllVsAllIndexedPAFAdapterConfig> {
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -33,7 +33,7 @@ export default class AllVsAllIndexedPAFAdapter extends BaseFeatureDataAdapter<Al
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const pifGzLoc = this.getConf('pifGzLocation') as FileLocation
+    const pifGzLoc = this.getConf('pifGzLocation')
     const type = this.getConf(['index', 'indexType'])
     const loc = this.getConf(['index', 'location'])
     const pm = this.pluginManager

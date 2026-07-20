@@ -17,7 +17,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import type { Feature } from '@jbrowse/core/util'
-import type { FileLocation, Region } from '@jbrowse/core/util/types'
+import type { Region } from '@jbrowse/core/util/types'
 
 // PIF indexes each line by perspective: a 'q' prefix means indexed by query
 // coordinates (drawn when viewing the query), 't' means indexed by target
@@ -55,7 +55,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    const pifGzLoc = this.getConf('pifGzLocation') as FileLocation
+    const pifGzLoc = this.getConf('pifGzLocation')
     const type = this.getConf(['index', 'indexType'])
     const loc = this.getConf(['index', 'location'])
     const pm = this.pluginManager

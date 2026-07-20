@@ -2,6 +2,7 @@ import type {
   ConfigurationSchemaOptions,
   ConfigurationSchemaType,
 } from './configurationSchema.ts'
+import type { FileLocation } from '../util/types/index.ts'
 import type {
   ISimpleType,
   IStateTreeNode,
@@ -49,29 +50,47 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
           : never)
     : never
 
-// Value type of a single slot. A `stringEnum` slot carries its precise literal
-// union on `model` (a `types.enumeration`), so prefer that — it recovers the
-// exact union (e.g. 'normal' | 'compact') instead of widening to `string`.
-// Otherwise fall back to `defaultValue` (the slot's `type` string widens to
-// `string` under generic inference and is unusable; the `defaultValue` literal
-// survives as its widened type, which IS the value type). Only scalar slots
-// (string/number/boolean) and enumerations are typed precisely — arrays, maps,
-// sub-schemas, frozen, and constants degrade to `any` so existing call sites
-// that relied on the old `any` return keep compiling. jexl callbacks are
-// declared to return the slot's own type, so this is correct for them too.
+// Value type of a single slot. Keyed on the slot's literal `type`, which the
+// `const DEFINITION` param on `ConfigurationSchema` preserves through inference.
+// - `stringEnum` carries its literal union on `model` (a `types.enumeration`),
+//   so prefer that — recovers e.g. 'normal' | 'compact' instead of `string`.
+// - array/map/fileLocation/maybe* map to their runtime value types
+//   (`configurationSlot.ts` typeModels); `maybe*` become `T | undefined`, which
+//   surfaces the unset state at every read instead of hiding it behind `any`.
+// - scalars (string/number/boolean/color/integer/text) re-widen from the (now
+//   literal, due to `const`) `defaultValue` back to the base type, so reads stay
+//   assignable/reassignable.
+// - `frozen` stays `any` deliberately: it's the escape hatch for arbitrary
+//   dynamic JSON, so callers assert its shape at the read boundary; `unknown`
+//   would only add cast ceremony on legitimately-dynamic values.
+// jexl callbacks are declared to return the slot's own type, correct here too.
 type SlotValueFromDef<DEF> = DEF extends {
   model: ISimpleType<infer T extends string>
 }
   ? T
-  : DEF extends { defaultValue: infer V }
-    ? [V] extends [boolean]
-      ? V
-      : [V] extends [string]
-        ? V
-        : [V] extends [number]
-          ? V
-          : any
-    : any
+  : DEF extends { type: 'stringArray' }
+    ? string[]
+    : DEF extends { type: 'stringArrayMap' }
+      ? Record<string, string[]>
+      : DEF extends { type: 'numberMap' }
+        ? Record<string, number>
+        : DEF extends { type: 'fileLocation' }
+          ? FileLocation
+          : DEF extends { type: 'maybeNumber' }
+            ? number | undefined
+            : DEF extends { type: 'maybeBoolean' }
+              ? boolean | undefined
+              : DEF extends { type: 'maybeColor' }
+                ? string | undefined
+                : DEF extends { defaultValue: infer V }
+                  ? [V] extends [boolean]
+                    ? boolean
+                    : [V] extends [string]
+                      ? string
+                      : [V] extends [number]
+                        ? number
+                        : any
+                  : any
 
 export type ConfigurationSlotValue<SCHEMA, K extends string> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>

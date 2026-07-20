@@ -62,7 +62,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    this.bedGzLoc = readConfObject(this.config, 'bedGzLocation') as FileLocation
+    this.bedGzLoc = readConfObject(this.config, 'bedGzLocation')
     const type = readConfObject(this.config, ['index', 'indexType'])
     const loc = readConfObject(this.config, ['index', 'location'])
     const pm = this.pluginManager
