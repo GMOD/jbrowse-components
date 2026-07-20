@@ -55,6 +55,10 @@ Reads a configuration value from a state model that has a `.configuration`
 member (a track or display state model). For a raw configuration model, use
 `readConfObject` instead.
 
+For a `promotable` slot, use `getConfResolved` instead — a raw `getConf` skips
+the session-wide display-type-default tier of the cascade (a dev build warns
+when this happens).
+
 ```js
 // type signature
 <CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(model: { ...; }, slotPath?: SLOT | undefined, args?: Record<...>) => SLOT extends string ? ConfigurationSlotValue<...> : any

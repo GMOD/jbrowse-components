@@ -30,6 +30,7 @@ read one section, read [The cascade](#the-cascade).
 | Concern | File |
 | --- | --- |
 | Resolver + exported API | `packages/core/src/configuration/promotableDefaults.ts` |
+| Raw-read dev guard (`getConf` warns on a promotable slot) | `packages/core/src/configuration/util.ts` |
 | `promotable` / `promotedBase` slot metadata | `packages/core/src/configuration/configurationSlot.ts` |
 | Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
 | Share/export bake (`bakePromotedDefaultsIntoSnapshot`) | `packages/product-core/src/Session/shareableSnapshot.ts` |
@@ -39,7 +40,7 @@ read one section, read [The cascade](#the-cascade).
 | Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
 | Pin adornment + row builders | `packages/core/src/ui/{DefaultForAllAdornment.tsx,promotableMenuItems.tsx}` |
 | `endAdornment` menu-row primitive + renderer | `packages/core/src/ui/{MenuTypes.ts,CascadingMenu.tsx,MenuItemTrailing.tsx}` |
-| Adopters (all sentinel): `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` |
+| Adopters (all sentinel): `displayMode` / `heightMode` / `subfeatureLabels` / `displayDirectionalChevrons` | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` — **inherited by every `linearCanvasBaseDisplayStateModelFactory` consumer** (e.g. `LinearVariantDisplay`) via `baseConfiguration`, so those displays get the four pins for free |
 | Adopters (sentinel): `featureHeight` / `heightMode` / `colorBy` / `mismatchAlpha` / `linkedReads` / `readConnections` / `sashimiArcsMode` / `showSashimiLabels` / `showSoftClipping`; the lone plain slot: `readConnectionsDown` | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 | Adopters (sentinel): `scatterPointSize` + `lineWidth` (wiggle), `lineWidth` (paired-arc), `scatterPointSize` (Manhattan) | `plugins/wiggle/src/shared/{wiggleConfigSchemaFields.ts,WiggleScoreConfigMixin.ts}`, `plugins/arc/src/LinearPairedArcDisplay/{configSchema,model}.ts`, `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts` |
 | Shared `heightMode` mixin (canvas + alignments) | `plugins/linear-genome-view/src/BaseLinearDisplay/models/{HeightModeMixin.ts,heightMode.ts}` |
@@ -373,7 +374,18 @@ for free (no per-display passthroughs).
    consumer that trusts it.
 2. Read it on the display via `getConfResolved(self, slot)` (never raw `getConf`
    for a promotable slot — raw won't apply the display-type default, and for a
-   sentinel slot could hand a consumer `'inherit'`).
+   sentinel slot could hand a consumer `'inherit'`). A **dev-build guard** in
+   `getConf` (`util.ts`) enforces this: reading a `promotable` slot through
+   `getConf` logs a `console.error` naming the slot, deduped per (schema, slot)
+   and compiled out of production. The same slot name can be promotable in one
+   schema and a plain slot in another (`colorBy` is promotable on alignments,
+   plain on gwas/variants; `featureHeight` promotable on alignments, plain on
+   canvas-base; `displayMode` promotable on canvas-base, plain on arc), so the
+   check is per-schema and can't be a lint rule. `readConfObject` is the
+   deliberate raw escape hatch and does **not** warn — the resolver itself, and
+   any consumer holding a bare config with no session to resolve against, read
+   through it. So: `getConf` = resolution-aware entry point on a state model;
+   `readConfObject` = raw read.
 3. If the display isn't already an adopter, `.compose(PromotableDefaultsMixin())`
    so the badge hooks exist.
 4. Track menu: expose a `DisplayTypeDefaultControl` getter from the model built

@@ -1,9 +1,9 @@
 import { getSlotDefinition } from './slotFacade.ts'
 import {
-  getConf,
   getConfSnapshot,
   getConfigurationSchemaDefinition,
   isSlotDefinitionEntry,
+  readConfObject,
 } from './util.ts'
 import { deepEqual } from '../util/deepEqual.ts'
 import { getSession, isViewContainer } from '../util/index.ts'
@@ -154,7 +154,10 @@ interface SlotResolution {
 function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
   const def = getSlotDefinition(self.configuration, slot)
   const base = def.promotedBase ?? def.defaultValue
-  const own = getConf(self, slot)
+  // raw read through `readConfObject` (not `getConf`) on purpose: this *is* the
+  // resolver, so it wants the track's own stored value; `getConf` would warn
+  // about reading a promotable slot raw.
+  const own = readConfObject(self.configuration, slot)
   // `promoted` stays the raw session-wide value regardless of this display's
   // opt-out: it's a session-wide fact, and `isPromotableDefault` (the pin's
   // filled/outline state) reports on the session, not on one display's view of
@@ -305,7 +308,9 @@ export function resetSlotsToInherit(
     display.setIgnorePromotedDefaults(false)
     for (const slot of slots) {
       const def = getSlotDefinition(display.configuration, slot)
-      if (!deepEqual(getConf(display, slot), def.defaultValue)) {
+      // raw read (see resolveSlot): comparing the track's own stored value to
+      // the default to decide whether it needs resetting.
+      if (!deepEqual(readConfObject(display.configuration, slot), def.defaultValue)) {
         display.configuration.setSlot(slot, def.defaultValue)
       }
     }

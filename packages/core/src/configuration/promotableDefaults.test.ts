@@ -13,6 +13,7 @@ import {
   resolvePromotableConfigSnapshot,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
+import { getConf, readConfObject } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
@@ -768,5 +769,60 @@ describe('a display from a received session', () => {
     resetSlotsToInherit([display], ['mode'])
     expect(display.ignorePromotedDefaults).toBe(false)
     expect(getConfResolved(display, 'mode')).toBe('normal')
+  })
+})
+
+// The dev guard in getConf: a raw `getConf` of a promotable slot skips the
+// session-wide tier of the cascade, so it warns (dev only). getConfResolved and
+// the raw escape hatch readConfObject do not. A uniquely-named schema keeps the
+// module-global dedup Set from being pre-tripped by another test.
+describe('raw-read guard on promotable slots', () => {
+  const guardSchema = ConfigurationSchema('RawReadGuardDisplay', {
+    guardedHeight: {
+      type: 'maybeNumber',
+      defaultValue: undefined,
+      promotedBase: 7,
+      description: 'a promotable slot that must be read via getConfResolved',
+      promotable: true,
+    },
+    plainLabel: {
+      type: 'string',
+      defaultValue: 'hello',
+      description: 'a plain non-promotable slot',
+    },
+  })
+
+  test('getConf on a promotable slot warns; getConfResolved / readConfObject do not', () => {
+    const { display } = createDisplay(guardSchema)
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      // raw getConf of a promotable slot: warns, naming the slot + the fix
+      getConf(display, 'guardedHeight')
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy.mock.calls[0]![0]).toContain('guardedHeight')
+      expect(spy.mock.calls[0]![0]).toContain('getConfResolved')
+
+      // deduped: a second raw read of the same (schema, slot) stays silent
+      getConf(display, 'guardedHeight')
+      expect(spy).toHaveBeenCalledTimes(1)
+
+      // the resolution-aware reader and the raw escape hatch never warn
+      getConfResolved(display, 'guardedHeight')
+      readConfObject(display.configuration, 'guardedHeight')
+      expect(spy).toHaveBeenCalledTimes(1)
+    } finally {
+      spy.mockRestore()
+    }
+  })
+
+  test('getConf on a plain (non-promotable) slot does not warn', () => {
+    const { display } = createDisplay(guardSchema)
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      expect(getConf(display, 'plainLabel')).toBe('hello')
+      expect(spy).not.toHaveBeenCalled()
+    } finally {
+      spy.mockRestore()
+    }
   })
 })
