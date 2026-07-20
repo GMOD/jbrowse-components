@@ -23,8 +23,23 @@ function isAnimationMode(val: unknown): val is AnimationMode {
   return val === 'system' || val === 'enabled' || val === 'disabled'
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
+// Promoted per-display-type slot defaults live flat in `preferencesOverrides`
+// under one composite key each (`displayTypeDefault\0<type>\0<slot>`), not under
+// a single nested `displayTypeDefaults` object. Flat keys make each promoted
+// default its own tracked observable-map entry — promoting one can't invalidate
+// a reader of another (every promotable display's `rpcProps` reads one via
+// `getDisplayTypeDefault`) — and collapse the get/set/diff logic to one lookup.
+// The `\0` delimiter can't appear in a display type or slot name.
+const DTD_PREFIX = 'displayTypeDefault\0'
+
+export function displayTypeDefaultKey(displayType: string, slot: string) {
+  return `${DTD_PREFIX}${displayType}\0${slot}`
+}
+
+export function parseDisplayTypeDefaultKey(key: string) {
+  const rest = key.startsWith(DTD_PREFIX) ? key.slice(DTD_PREFIX.length) : ''
+  const [displayType, slot] = rest.split('\0')
+  return displayType && slot ? { displayType, slot } : undefined
 }
 
 /**
@@ -97,7 +112,10 @@ export function BaseSessionModel<
        * preference is its own tracked key: writing one (`setScrollZoom`) can't
        * invalidate a reader of another (`getDisplayTypeDefault` in a track's
        * `rpcProps`). A single spread-replaced object made every setter wake
-       * every reader, so toggling scroll-to-zoom re-fetched every track.
+       * every reader, so toggling scroll-to-zoom re-fetched every track. For the
+       * same reason each promoted per-display-type default is a flat composite
+       * key (see `displayTypeDefaultKey`), not a single nested `displayTypeDefaults`
+       * object — promoting one default can't wake readers of a different one.
        */
       preferencesOverrides: observable.map<string, unknown>(),
     }))
@@ -181,9 +199,9 @@ export function BaseSessionModel<
        * (see `setDisplayTypeDefault`); undefined when nothing was promoted.
        */
       getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        const all = self.preferencesOverrides.get('displayTypeDefaults')
-        const forType = isRecord(all) ? all[displayType] : undefined
-        return isRecord(forType) ? forType[slot] : undefined
+        return self.preferencesOverrides.get(
+          displayTypeDefaultKey(displayType, slot),
+        )
       },
       /**
        * #method
@@ -199,18 +217,13 @@ export function BaseSessionModel<
       getPreferenceChanges(): TrackConfigChange[] {
         const changes: TrackConfigChange[] = []
         for (const [key, value] of self.preferencesOverrides.entries()) {
-          if (key === 'displayTypeDefaults') {
-            const byType = isRecord(value) ? value : {}
-            for (const [displayType, slots] of Object.entries(byType)) {
-              const slotMap = isRecord(slots) ? slots : {}
-              for (const [slot, slotValue] of Object.entries(slotMap)) {
-                changes.push({
-                  path: ['displayTypeDefaults', displayType, slot],
-                  from: undefined,
-                  to: slotValue,
-                } as TrackConfigChange)
-              }
-            }
+          const dtd = parseDisplayTypeDefaultKey(key)
+          if (dtd) {
+            changes.push({
+              path: ['displayTypeDefaults', dtd.displayType, dtd.slot],
+              from: undefined,
+              to: value,
+            } as TrackConfigChange)
           } else {
             const dflt = getConf(self, ['preferences', key])
             if (value !== dflt) {
@@ -276,10 +289,16 @@ export function BaseSessionModel<
       /**
        * #action
        * set a runtime user-preference override (see `getPreference`). Mutates
-       * volatile state; products persist these to localStorage.
+       * volatile state; products persist these to localStorage. An `undefined`
+       * value deletes the key (rather than leaving a phantom entry that
+       * `getPreference` reads as absent) so the store never holds dead keys.
        */
       setPreferenceOverride(key: string, value: unknown) {
-        self.preferencesOverrides.set(key, value)
+        if (value === undefined) {
+          self.preferencesOverrides.delete(key)
+        } else {
+          self.preferencesOverrides.set(key, value)
+        }
       },
       /**
        * #action
@@ -310,35 +329,18 @@ export function BaseSessionModel<
       /**
        * #action
        * promote (or, with `value` undefined, clear) a per-display-type slot
-       * default. Stored under `preferencesOverrides.displayTypeDefaults` so the
-       * PreferencesSessionMixin persists it to localStorage like other prefs.
+       * default. Stored in `preferencesOverrides` under one flat composite key
+       * (see `displayTypeDefaultKey`) so the PreferencesSessionMixin persists it
+       * to localStorage like other prefs.
        */
       setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        const all = self.preferencesOverrides.get('displayTypeDefaults')
-        const map: Record<string, unknown> = isRecord(all) ? { ...all } : {}
-        const prev = map[displayType]
-        const forType: Record<string, unknown> = isRecord(prev)
-          ? { ...prev }
-          : {}
+        const key = displayTypeDefaultKey(displayType, slot)
+        // clearing just deletes the one flat key, so an emptied store leaves no
+        // cruft behind and each promoted default stays independently tracked
         if (value === undefined) {
-          delete forType[slot]
+          self.preferencesOverrides.delete(key)
         } else {
-          forType[slot] = value
-        }
-        // drop the whole display-type entry once its last slot is cleared, so
-        // clearing leaves no empty `{ [displayType]: {} }` cruft accumulating in
-        // the persisted localStorage blob
-        if (Object.keys(forType).length) {
-          map[displayType] = forType
-        } else {
-          delete map[displayType]
-        }
-        // likewise drop the whole key once no display type has a promoted slot,
-        // so an emptied store persists as absent rather than `{}`
-        if (Object.keys(map).length) {
-          self.preferencesOverrides.set('displayTypeDefaults', map)
-        } else {
-          self.preferencesOverrides.delete('displayTypeDefaults')
+          self.preferencesOverrides.set(key, value)
         }
       },
       /**
