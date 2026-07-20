@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import { useWiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import {
   CrossHatches,
   YSCALEBAR_LABEL_OFFSET,
@@ -19,8 +20,6 @@ import TooltipComponent from './TooltipComponent.tsx'
 import type { ManhattanHit } from '../findManhattanHit.ts'
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
 
-const COORD0: [number, number] = [0, 0]
-
 const LinearManhattanDisplayComponent = observer(
   function LinearManhattanDisplayComponent({
     model,
@@ -29,50 +28,51 @@ const LinearManhattanDisplayComponent = observer(
   }) {
     const { view, height } = model
     const width = view.trackWidthPx
-    const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
     const [contextMenu, setContextMenu] = useState<{
       coord: [number, number]
       hit: ManhattanHit
     }>()
 
-    function hitAt(event: React.MouseEvent<HTMLDivElement>) {
-      // renderState is always defined; an empty rpcDataMap/flatbush set simply
-      // yields no hit, so no separate loading guard is needed here.
-      const rect = event.currentTarget.getBoundingClientRect()
-      return findManhattanHit(
-        event.clientX - rect.left,
-        event.clientY - rect.top - YSCALEBAR_LABEL_OFFSET,
-        model.renderBlocks,
-        model.rpcDataMap,
-        model.flatbushes,
-        model.renderState,
-        model.regionRefNames,
-      )
-    }
+    // renderState is always defined; an empty rpcDataMap/flatbush set simply
+    // yields no hit, so no separate loading guard is needed. The offsetY passed
+    // by the shared handler is measured from the DisplayChrome top, so subtract
+    // the y-axis label band to land in the canvas' coordinate space.
+    const computeHit = useCallback(
+      (offsetX: number, offsetY: number) =>
+        findManhattanHit(
+          offsetX,
+          offsetY - YSCALEBAR_LABEL_OFFSET,
+          model.renderBlocks,
+          model.rpcDataMap,
+          model.flatbushes,
+          model.renderState,
+          model.regionRefNames,
+        ),
+      [model],
+    )
 
-    function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
-      setClientMouseCoord([event.clientX, event.clientY])
-      model.setFeatureUnderMouse(hitAt(event))
-    }
-
-    function handleMouseLeave() {
-      model.setFeatureUnderMouse(undefined)
-    }
-
-    function handleClick() {
-      const hit = model.featureUnderMouse
-      if (hit) {
-        model.selectFeature(hit)
-      }
-    }
+    const {
+      containerRef,
+      clientMouseCoord,
+      handleMouseMove,
+      handleMouseLeave,
+      handleClick,
+    } = useWiggleMouseHandlers(model, computeHit)
 
     function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
-      const hit = hitAt(event)
-      if (hit) {
-        event.preventDefault()
-        // clear the hover tooltip so it doesn't stay stuck behind the menu
-        model.setFeatureUnderMouse(undefined)
-        setContextMenu({ coord: [event.clientX, event.clientY], hit })
+      const container = containerRef.current
+      if (container) {
+        const rect = container.getBoundingClientRect()
+        const hit = computeHit(
+          event.clientX - rect.left,
+          event.clientY - rect.top,
+        )
+        if (hit) {
+          event.preventDefault()
+          // clear the hover tooltip so it doesn't stay stuck behind the menu
+          model.setFeatureUnderMouse(undefined)
+          setContextMenu({ coord: [event.clientX, event.clientY], hit })
+        }
       }
     }
 
@@ -80,6 +80,7 @@ const LinearManhattanDisplayComponent = observer(
       <DisplayChrome
         model={model}
         factory={ManhattanRenderer}
+        ref={containerRef}
         testid="manhattan-display"
         style={{ width, height }}
         onMouseMove={handleMouseMove}

@@ -1,5 +1,7 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
+import { parseChrBp } from './parseChrBp.ts'
+
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type { Region } from '@jbrowse/core/util'
 
@@ -21,24 +23,17 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 // that matches by name and needs no renaming.
 function indexSnpAsRegion(args: GetManhattanDataArgs): Region | undefined {
   const { indexSnp, region } = args
-  let out: Region | undefined
-  if (indexSnp) {
-    const colon = indexSnp.lastIndexOf(':')
-    const posStr = colon > 0 ? indexSnp.slice(colon + 1) : ''
-    // strict positive integer only, so a trailing-colon id ("chr2:",
-    // Number('')===0), an exponential ("chr2:1e3"), or a whitespace-padded
-    // value don't parse into a bogus {start:-1} region
-    const bp = /^\d+$/.test(posStr) ? Number(posStr) : Number.NaN
-    if (bp >= 1) {
-      out = {
-        refName: indexSnp.slice(0, colon),
-        start: bp - 1,
-        end: bp,
+  // bp >= 1 guards against a bogus {start:-1} region; a bare rsID (parseChrBp
+  // returns undefined) matches by name and needs no renaming
+  const parsed = indexSnp ? parseChrBp(indexSnp) : undefined
+  return parsed && parsed.bp >= 1
+    ? {
+        refName: parsed.refName,
+        start: parsed.bp - 1,
+        end: parsed.bp,
         assemblyName: region.assemblyName,
       }
-    }
-  }
-  return out
+    : undefined
 }
 
 export default class GetManhattanData extends RpcMethodType {

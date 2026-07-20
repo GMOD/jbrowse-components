@@ -14,7 +14,10 @@ import { Button, Divider, Paper, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ScoreColumnFields from '../GWASAdapter/ScoreColumnFields.tsx'
-import { DEFAULT_SCORE_COLUMN } from '../GWASAdapter/configSchema.ts'
+import {
+  DEFAULT_SCORE_COLUMN,
+  DEFAULT_SCORE_TRANSFORM,
+} from '../GWASAdapter/configSchema.ts'
 import { isTabixLocation, needsExplicitIndex } from './ldAdapterConfig.ts'
 import { buildGwasTrackConfig, canSubmit } from './util.ts'
 
@@ -47,7 +50,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   const [gwasLocation, setGwasLocation] = useState<FileLocation>()
   const [gwasIndexLocation, setGwasIndexLocation] = useState<FileLocation>()
   const [scoreColumn, setScoreColumn] = useState(DEFAULT_SCORE_COLUMN)
-  const [scoreTransform, setScoreTransform] = useState('none')
+  const [scoreTransform, setScoreTransform] = useState(DEFAULT_SCORE_TRANSFORM)
   const [ldLocation, setLdLocation] = useState<FileLocation>()
   const [ldIndexLocation, setLdIndexLocation] = useState<FileLocation>()
   const [trackName, setTrackName] = useState('GWAS track')

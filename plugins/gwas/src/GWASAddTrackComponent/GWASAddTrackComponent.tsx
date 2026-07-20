@@ -4,7 +4,11 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { observer } from 'mobx-react'
 
 import ScoreColumnFields from '../GWASAdapter/ScoreColumnFields.tsx'
-import { DEFAULT_SCORE_COLUMN } from '../GWASAdapter/configSchema.ts'
+import {
+  DEFAULT_SCORE_COLUMN,
+  DEFAULT_SCORE_TRANSFORM,
+  scoreAdapterFields,
+} from '../GWASAdapter/configSchema.ts'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -32,18 +36,13 @@ const GWASAddTrackComponent = observer(function ({
 
   const { adapter } = model.mixinData
   const scoreColumn = adapter?.scoreColumn ?? DEFAULT_SCORE_COLUMN
-  const scoreTransform = adapter?.scoreTransform ?? 'none'
+  const scoreTransform = adapter?.scoreTransform ?? DEFAULT_SCORE_TRANSFORM
 
   // Both fields live in one adapter object, so each edit rewrites the pair to
-  // avoid dropping the other. The default 'none' transform is omitted so
-  // accepting it doesn't write config noise.
+  // avoid dropping the other; fields at their schema default are omitted so
+  // accepting the defaults writes no config noise.
   function update(next: { scoreColumn: string; scoreTransform: string }) {
-    model.setMixinData({
-      adapter:
-        next.scoreTransform === 'none'
-          ? { scoreColumn: next.scoreColumn }
-          : next,
-    })
+    model.setMixinData({ adapter: scoreAdapterFields(next) })
   }
 
   return (

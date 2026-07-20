@@ -55,6 +55,8 @@ export function ldBinColor(r2: number | undefined): number {
       return color
     }
   }
+  // the last bin's threshold is 0, so any valid r² in [0,1] returned above;
+  // only a negative (invalid) r² falls through, treated as no-data grey
   return GREY
 }
 

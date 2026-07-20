@@ -98,7 +98,7 @@ test('canSubmit: an uploaded LD file needs an index only when it is tabix (.gz)'
   expect(canSubmit({ ...base, ldLocation: local('/p.ld.gz') })).toBe(true)
 })
 
-test('without LD: GWAS adapter only, no displays override, derives .tbi', () => {
+test('without LD: default score column/transform omitted, no displays, derives .tbi', () => {
   const cfg = buildGwasTrackConfig({
     trackId: 't1',
     trackName: 'GWAS',
@@ -110,13 +110,30 @@ test('without LD: GWAS adapter only, no displays override, derives .tbi', () => 
     ldLocation: undefined,
     ldIndexLocation: undefined,
   })
+  // both score fields are at their schema defaults, so neither is written
   expect(cfg.adapter).toEqual({
     type: 'GWASAdapter',
     bedGzLocation: uri('http://host/g.bed.gz'),
     index: { indexType: 'TBI', location: uri('http://host/g.bed.gz.tbi') },
-    scoreColumn: 'neg_log_pvalue',
   })
   expect('displays' in cfg).toBe(false)
+})
+
+test('a supplied .csi GWAS index is typed CSI, not assumed TBI', () => {
+  const cfg = buildGwasTrackConfig({
+    trackId: 't1',
+    trackName: 'GWAS',
+    assembly: 'hg38',
+    gwasLocation: uri('http://host/g.bed.gz'),
+    gwasIndexLocation: uri('http://host/g.bed.gz.csi'),
+    scoreColumn: 'neg_log_pvalue',
+    scoreTransform: 'none',
+    ldLocation: undefined,
+    ldIndexLocation: undefined,
+  })
+  expect(cfg.adapter).toMatchObject({
+    index: { indexType: 'CSI', location: uri('http://host/g.bed.gz.csi') },
+  })
 })
 
 test('a raw p-value column bakes scoreTransform into the adapter', () => {

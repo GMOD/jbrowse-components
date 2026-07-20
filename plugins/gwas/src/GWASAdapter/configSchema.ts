@@ -7,11 +7,32 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // default and the form pre-fill can't drift apart.
 export const DEFAULT_SCORE_COLUMN = 'neg_log_pvalue'
 
+// Default transform: the column is already -log10, so no remapping. Shared with
+// the schema default and the add-track UIs so they can't drift.
+export const DEFAULT_SCORE_TRANSFORM = 'none'
+
 // Native (fast-path) score-transform presets offered by the add-track UIs. The
 // `scoreTransform` slot also accepts an arbitrary `jexl:...` expression, so this
 // is the preset list, not the exhaustive domain.
 export const SCORE_TRANSFORMS = ['none', 'negLog10', 'negLog10FromLn'] as const
 export type ScoreTransform = (typeof SCORE_TRANSFORMS)[number]
+
+// The `scoreColumn`/`scoreTransform` adapter fields, omitting each when it's at
+// its schema default so accepting the defaults writes no config noise (the
+// already-`-log10` genome-wide case emits neither). Shared by both add-track
+// entry points so the omit-at-default rule can't drift.
+export function scoreAdapterFields({
+  scoreColumn,
+  scoreTransform,
+}: {
+  scoreColumn: string
+  scoreTransform: string
+}) {
+  return {
+    ...(scoreColumn === DEFAULT_SCORE_COLUMN ? {} : { scoreColumn }),
+    ...(scoreTransform === DEFAULT_SCORE_TRANSFORM ? {} : { scoreTransform }),
+  }
+}
 
 /**
  * #config GWASAdapter
@@ -43,7 +64,7 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
     scoreTransform: {
       type: 'string',
       description: 'transform applied to the score column',
-      defaultValue: 'none',
+      defaultValue: DEFAULT_SCORE_TRANSFORM,
     },
     /**
      * #slot

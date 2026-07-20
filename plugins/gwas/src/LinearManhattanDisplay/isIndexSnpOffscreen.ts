@@ -1,3 +1,5 @@
+import { parseChrBp } from '../ManhattanRPC/parseChrBp.ts'
+
 // The subset of LGV `visibleRegions` fields the off-screen test needs.
 interface VisibleSpan {
   refName: string
@@ -14,13 +16,12 @@ export function isIndexSnpOffscreen(
   indexSnp: string | undefined,
   visibleRegions: VisibleSpan[],
 ) {
-  const parts = indexSnp ? /^(.+):(\d+)$/.exec(indexSnp) : null
-  const refName = parts?.[1]
-  const pos = parts ? Number(parts[2]) - 1 : 0
+  const parsed = indexSnp ? parseChrBp(indexSnp) : undefined
+  const pos = parsed ? parsed.bp - 1 : 0
   return (
-    refName !== undefined &&
+    parsed !== undefined &&
     !visibleRegions.some(
-      r => r.refName === refName && pos >= r.start && pos < r.end,
+      r => r.refName === parsed.refName && pos >= r.start && pos < r.end,
     )
   )
 }

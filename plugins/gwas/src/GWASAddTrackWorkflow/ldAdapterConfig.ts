@@ -1,4 +1,5 @@
 import { isUriLocation } from '@jbrowse/core/util'
+import { getFileName, makeIndexType } from '@jbrowse/core/util/tracks'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -29,7 +30,13 @@ export function isTabixLocation(loc: FileLocation): boolean {
 // its index must be supplied explicitly.
 export function deriveTbiLocation(loc: FileLocation): FileLocation | undefined {
   if (isUriLocation(loc)) {
-    return { uri: `${loc.uri}.tbi`, locationType: 'UriLocation' }
+    return {
+      uri: `${loc.uri}.tbi`,
+      locationType: 'UriLocation',
+      // carry baseUri so the derived sibling resolves against the same config
+      // location as the file it indexes (matches core makeIndex)
+      ...(loc.baseUri ? { baseUri: loc.baseUri } : {}),
+    }
   } else if ('localPath' in loc) {
     return {
       localPath: `${loc.localPath}.tbi`,
@@ -44,6 +51,16 @@ export function deriveTbiLocation(loc: FileLocation): FileLocation | undefined {
 // sibling for it (a blob / file-handle upload, not a URL or local path).
 export function needsExplicitIndex(loc: FileLocation): boolean {
   return deriveTbiLocation(loc) === undefined
+}
+
+// Index config for a tabix file: sniff CSI vs TBI from the actual index
+// filename rather than assuming TBI. A supplied `.csi` (needed for contigs
+// > ~512 Mb) must be typed CSI; a derived `<file>.tbi` reads back as TBI.
+export function makeTabixIndex(location: FileLocation | undefined) {
+  return {
+    indexType: makeIndexType(location && getFileName(location), 'CSI', 'TBI'),
+    location,
+  }
 }
 
 // Build the PLINK .ld adapter config for the `GWASAdapter`'s `ldAdapter`
@@ -68,10 +85,7 @@ export function buildLdAdapterConfig(
     return {
       type,
       ldLocation,
-      index: {
-        indexType: 'TBI',
-        location: ldIndexLocation ?? deriveTbiLocation(ldLocation),
-      },
+      index: makeTabixIndex(ldIndexLocation ?? deriveTbiLocation(ldLocation)),
     }
   } else {
     return { type, ldLocation }

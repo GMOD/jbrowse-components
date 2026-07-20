@@ -2,8 +2,10 @@ import {
   buildLdAdapterConfig,
   deriveTbiLocation,
   isTabixLocation,
+  makeTabixIndex,
   needsExplicitIndex,
 } from './ldAdapterConfig.ts'
+import { scoreAdapterFields } from '../GWASAdapter/configSchema.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -68,15 +70,11 @@ export function buildGwasTrackConfig({
     adapter: {
       type: 'GWASAdapter',
       bedGzLocation: gwasLocation,
-      index: {
-        indexType: 'TBI',
-        location: gwasIndexLocation ?? deriveTbiLocation(gwasLocation),
-      },
-      scoreColumn,
-      // 'none' is the schema default, so omit it to keep the genome-wide
-      // (already -log10) adapter config minimal; only a raw/ln p-value column
-      // needs the transform baked in.
-      ...(scoreTransform === 'none' ? {} : { scoreTransform }),
+      index: makeTabixIndex(gwasIndexLocation ?? deriveTbiLocation(gwasLocation)),
+      // scoreColumn/scoreTransform omitted when at their schema defaults to keep
+      // the config minimal (the already-`-log10` genome-wide case writes
+      // neither).
+      ...scoreAdapterFields({ scoreColumn, scoreTransform }),
       // LD is a second data source nested on the adapter (like MAF's
       // annotationAdapter); the Manhattan display reads it for colorBy 'ld'.
       ...(ldLocation

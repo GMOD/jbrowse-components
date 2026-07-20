@@ -16,9 +16,19 @@ test('.gz URL → tabix adapter uri shorthand (preProcessSnapshot derives .tbi)'
   })
 })
 
-test('explicit index location wins over the derived one', () => {
+test('explicit .csi index location wins and is typed CSI', () => {
   const ld = uri('http://host/plink.ld.gz')
   const idx = uri('http://host/custom.csi')
+  expect(buildLdAdapterConfig(ld, idx)).toEqual({
+    type: 'PlinkLDTabixAdapter',
+    ldLocation: ld,
+    index: { indexType: 'CSI', location: idx },
+  })
+})
+
+test('explicit .tbi index location wins and is typed TBI', () => {
+  const ld = uri('http://host/plink.ld.gz')
+  const idx = uri('http://host/custom.tbi')
   expect(buildLdAdapterConfig(ld, idx)).toEqual({
     type: 'PlinkLDTabixAdapter',
     ldLocation: ld,
