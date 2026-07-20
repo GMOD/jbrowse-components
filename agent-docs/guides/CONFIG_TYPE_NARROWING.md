@@ -107,11 +107,38 @@ typecheck alone can't — `any` is assignable to everything, Trap 1).**
   surfaced a mismatch. Hover-verified: `getConf(self,'coverageHeight')` →
   `number`.
 
-**Next (same pattern):** `LinearWiggleDisplay` (gccontent consumer) and the
-canvas base (`linearCanvasBaseDisplayStateModelFactory`, the widest fan-in).
+**Remaining bases — both blocked, and precondition (b) is the reason (verified by
+investigation, not spiked because payoff is low):**
+
+- **`LinearWiggleDisplay` (3 base reads).** Precondition (b) fails for its
+  consumer `LinearGCContentDisplay`. gccontent doesn't statically import the
+  wiggle schema — it builds its own schema with
+  `baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay').configSchema`
+  (`sharedConfigSchema.ts`), a **runtime** lookup typed `AnyConfigurationSchemaType`
+  (`DisplayType.configSchema`). So `ReturnType<typeof sharedGCContentConfigSchema>`
+  does not statically contain the wiggle slots and is **not assignable** to the
+  wiggle schema type — the consumer-chain retype (SharedModelF + the two gccontent
+  state-model factories, all currently `AnyConfigurationSchemaType`) can't pass it
+  into a wiggle-pinned param. Would first require switching gccontent to a static
+  `import { linearWiggleDisplayConfigSchema }` base; not worth it for 3 reads.
+  (Contrast: `LGVSyntenyDisplay` static-imports `linearAlignmentsDisplayConfigSchemaFactory`,
+  so its base slots ARE statically present → (b) held → alignments converted.)
+- **`linearCanvasBaseDisplayStateModelFactory` / `LinearBasicDisplay` base (8 reads,
+  widest fan-in).** One consumer is `LinearVariantDisplay`, the exact display that
+  can't be pinned to a concrete schema without breaking the repo-wide
+  `{ displayId: string }` structural check (`LinearVariantDisplayComponent` →
+  `BaseLinearDisplay`; that's why the widened case is special-cased to `any`, and
+  why variant itself stays widened). Pinning the canvas base forces every consumer
+  — variant included — to a concrete schema, re-triggering that break. **Blocked
+  on Lead B** (surface `displayId` on the instance so variant can convert); do B
+  first, then this base and variant fall out together.
 
 `DotplotDisplay`/`LinearSyntenyDisplay` have **empty** schemas
 (`ConfigurationSchema('…', {}, …)`) — nothing to narrow, skip.
+
+Net: every **cleanly-winnable** factory (6 leaves + sequence + multiwiggle leaves,
+multisample + alignments bases) is converted. What's left is either empty (skip),
+low-payoff-and-blocked (wiggle), or gated on Lead B (canvas + variant).
 
 ## How `IConfigurationReference` works (and why the earlier attempt failed)
 
