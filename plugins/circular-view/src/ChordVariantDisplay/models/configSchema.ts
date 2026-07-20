@@ -100,3 +100,5 @@ function configSchemaF(_pluginManager: PluginManager) {
 }
 
 export default configSchemaF
+
+export type ChordVariantDisplayConfigModel = ReturnType<typeof configSchemaF>

@@ -17,12 +17,12 @@ import {
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import type { ChordVariantDisplayConfigModel } from './configSchema.ts'
 import type { Block } from '../../ChordRenderer/types.ts'
 import type {
   CircularViewModel,
   ExportSvgOptions,
 } from '../../CircularView/model.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ThemeOptions } from '@mui/material'
@@ -58,7 +58,7 @@ const ErrorMessageStackTraceDialog = lazy(
  * }
  * ```
  */
-const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
+const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
   return types
     .compose(
       'ChordVariantDisplay',

@@ -104,3 +104,7 @@ export function configSchemaFactory() {
     },
   )
 }
+
+export type LinearManhattanDisplayConfigModel = ReturnType<
+  typeof configSchemaFactory
+>
