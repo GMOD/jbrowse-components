@@ -169,9 +169,9 @@ jobs:
             exit 1
           fi
       - name: Type-aware lint (oxlint + tsgolint)
-        run: pnpm lint:fast:type
-      - name: Lint backstop (eslint — react-compiler + guards oxlint can't do)
         run: pnpm lint
+      - name: Lint backstop (eslint — react-compiler + guards oxlint can't do)
+        run: pnpm lint:eslint
 
   format:
     name: Format

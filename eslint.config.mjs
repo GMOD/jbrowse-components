@@ -8,8 +8,9 @@ import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-// CI-only backstop. The fast path is oxlint (`pnpm lint:fast` /
-// `lint:fast:type`), which owns correctness, react-hooks, the full type-aware
+// CI-only backstop (`pnpm lint:eslint`). The primary linter is oxlint
+// (`pnpm lint:fast` untyped / `pnpm lint` type-aware), which owns correctness,
+// react-hooks, the full type-aware
 // rule set (via tsgolint), and the portable core rules. Prettier owns
 // formatting + import ordering. This config runs ONLY the rules oxlint can't
 // yet do, and deliberately carries NO type information (no

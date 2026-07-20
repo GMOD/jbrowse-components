@@ -1,8 +1,8 @@
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
-import { renderWiggleFamilySvg } from '../shared/WiggleFamilySvg.tsx'
 import ScoreLegend from '../shared/ScoreLegend.tsx'
+import { renderWiggleFamilySvg } from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'

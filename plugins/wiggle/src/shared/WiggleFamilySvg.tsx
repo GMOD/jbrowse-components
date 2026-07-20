@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -10,14 +8,15 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { CrossHatchLines, YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
+import type React from 'react'
 
 // The display fields the shared SVG scaffold reads. Both LinearWiggleDisplay and
 // LinearManhattanDisplay satisfy this (`error`/`regionTooLarge`/`svgReady` come

@@ -1,3 +1,4 @@
+import { scoreAdapterFields } from '../GWASAdapter/configSchema.ts'
 import {
   buildLdAdapterConfig,
   deriveTbiLocation,
@@ -5,7 +6,6 @@ import {
   makeTabixIndex,
   needsExplicitIndex,
 } from './ldAdapterConfig.ts'
-import { scoreAdapterFields } from '../GWASAdapter/configSchema.ts'
 
 import type { FileLocation } from '@jbrowse/core/util/types'
 
@@ -70,7 +70,9 @@ export function buildGwasTrackConfig({
     adapter: {
       type: 'GWASAdapter',
       bedGzLocation: gwasLocation,
-      index: makeTabixIndex(gwasIndexLocation ?? deriveTbiLocation(gwasLocation)),
+      index: makeTabixIndex(
+        gwasIndexLocation ?? deriveTbiLocation(gwasLocation),
+      ),
       // scoreColumn/scoreTransform omitted when at their schema defaults to keep
       // the config minimal (the already-`-log10` genome-wide case writes
       // neither).

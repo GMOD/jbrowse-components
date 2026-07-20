@@ -4,9 +4,12 @@ We run two TypeScript versions on purpose. Don't "fix" this by unifying them.
 
 ## Why two versions
 
-- **Lint needs 6.x.** `@typescript-eslint` / `ts-api-utils` peer range is
-  `<6.1.0` — they haven't shipped TypeScript 7 support. Bumping the ambient
-  `typescript` devDependency breaks `pnpm lint`.
+- **The eslint backstop needs 6.x.** `pnpm lint` is now oxlint (type-aware via
+  tsgolint, which uses its own TS7-based checker — it does NOT read the ambient
+  `typescript`). But the CI backstop `pnpm lint:eslint` still parses with
+  `@typescript-eslint`, whose `ts-api-utils` peer range is `<6.1.0`; bumping the
+  ambient `typescript` breaks it. (The backstop is type-info-free, so it doesn't
+  type-check with 6.x — it just needs the parser to install.)
 - **Typecheck wants 7.x for speed.** `pnpm typecheck` runs an aliased
   `typescript7` devDependency (`npm:typescript@7`) by path
   (`node node_modules/typescript7/bin/tsc --noEmit`).
