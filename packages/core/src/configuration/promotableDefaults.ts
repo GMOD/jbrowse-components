@@ -28,11 +28,12 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * lives; every exported function reads a field off it.
  *
  * Whether the default value itself can be customized per-track depends on the slot:
- *   - Plain (`readConnectionsDown`): `defaultValue` is both the base and the
- *     inherit signal, so it can't be customized over an opposite session default.
- *     Only safe when no control ever promotes the *opposite* of `defaultValue`
- *     (readConnectionsDown's pin only ever promotes its `true` base); otherwise
- *     the setting becomes unturn-off-able and the slot wants the sentinel form.
+ *   - Plain (no current users): `defaultValue` is both the base and the inherit
+ *     signal, so it can't be customized over an opposite session default. Only
+ *     safe when no control ever promotes the *opposite* of `defaultValue`;
+ *     otherwise the setting becomes unturn-off-able and the slot wants the
+ *     sentinel form. Every production promotable slot uses the sentinel form —
+ *     prefer it for new slots.
  *   - Sentinel (`displayMode`, `showSoftClipping`): `defaultValue` is a dedicated
  *     `'inherit'` member (CSS `inherit`) — or the `undefined` of a
  *     `maybeBoolean`/`maybeNumber` — and `promotedBase` is what it resolves to

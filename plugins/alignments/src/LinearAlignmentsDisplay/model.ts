@@ -437,24 +437,21 @@ export default function stateModelFactory(
           return makeDisplayTypeDefaultControl(self, 'readConnections', 'cloud')
         },
         /** #getter */
-        // Resolved through the promotable-slot tiers (getConfResolved). The last
-        // plain-boolean promotable slot: `defaultValue` (true) doubles as the
-        // inherit signal, so a track could not pin `true` back over a promoted
-        // `false`. Safe only because the pin below promotes `true` alone, so
-        // that case is unreachable — promoting `false` here would need the
-        // maybeBoolean sentinel form (see showSoftClipping/mismatchAlpha).
+        // Resolved through the promotable-slot tiers (getConfResolved): a
+        // maybeBoolean sentinel (like showSoftClipping) — an unset track follows
+        // the session-wide default, else the promotedBase (true). getConfResolved
+        // never surfaces the `undefined` inherit sentinel.
         get readConnectionsDown(): boolean {
           return getConfResolved(self, 'readConnectionsDown')
         },
         /** #getter */
-        // "make this the default for all tracks" control (pin) for drawing arcs
-        // below the coverage band
+        // "make this the default for all tracks" control (pin): promotes the
+        // track's current resolved value, so either direction (below or above the
+        // coverage band) can be made the session-wide default.
         get readConnectionsDownDisplayTypeDefault() {
-          return makeDisplayTypeDefaultControl(
-            self,
+          return makeCurrentValueDisplayTypeDefaultControl(self, [
             'readConnectionsDown',
-            true,
-          )
+          ])
         },
         /** #getter */
         get showSashimiArcs(): boolean {

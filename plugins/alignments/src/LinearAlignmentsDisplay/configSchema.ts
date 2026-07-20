@@ -476,9 +476,17 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       readConnectionsDown: {
-        type: 'boolean',
-        defaultValue: true,
-        description: 'Draw read connections below the coverage band',
+        type: 'maybeBoolean',
+        description:
+          'Draw read connections below the coverage band. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (either direction, including drawing above the coverage band over an on session default)',
+        // Promotable via the `maybeBoolean` sentinel (like showSoftClipping):
+        // `undefined` (unset) is the inherit state, `promotedBase` (true) is what
+        // it resolves to when nothing is promoted. The plain-boolean form could
+        // never promote `false` (draw above coverage) because `defaultValue`
+        // doubled as the inherit signal. Read through the resolved
+        // `readConnectionsDown` getter (getConfResolved), never raw.
+        defaultValue: undefined,
+        promotedBase: true,
         promotable: true,
       },
       /**
