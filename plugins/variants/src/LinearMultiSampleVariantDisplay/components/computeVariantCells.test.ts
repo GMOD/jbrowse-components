@@ -150,10 +150,11 @@ describe('computeVariantCells featureColor override', () => {
     { name: 'S1', sampleName: 'S1', HP: 0 },
     { name: 'S2', sampleName: 'S2', HP: 0 },
     { name: 'S3', sampleName: 'S3', HP: 0 },
+    { name: 'S4', sampleName: 'S4', HP: 0 },
   ]
   const feature = makeFeature({
-    // S1 hom-ref, S2 het-alt (carrying), S3 no-call
-    genotypes: { S1: '0/0', S2: '0/1', S3: './.' },
+    // S1 hom-ref, S2 het-alt, S3 hom-alt, S4 no-call
+    genotypes: { S1: '0/0', S2: '0/1', S3: '1/1', S4: './.' },
     ALT: ['A'],
     REF: 'G',
     name: 'v1',
@@ -163,9 +164,10 @@ describe('computeVariantCells featureColor override', () => {
     end: 101,
   })
 
-  test('alt-carrying cell takes the override color; ref and no-call keep theirs', async () => {
+  test('hom-alt takes the exact override; het is dosage-shaded; ref/no-call keep theirs', async () => {
     const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
     const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
+    const { colord } = await import('@jbrowse/core/util/colord')
     const override = 'rgb(1,2,3)'
     const result = computeVariantCells({
       mafs: [{ feature, mostFrequentAlt: '1' }],
@@ -178,13 +180,14 @@ describe('computeVariantCells featureColor override', () => {
     const colors = [...result.cellColors]
     const overrideAbgr = getCachedABGR(override)
     const refAbgr = getCachedABGR(REFERENCE_COLOR)
-    // exactly the single het-alt cell is painted with the override
+    // het (0/1, dosage 0.5) is the override mixed halfway to white
+    const hetShaded = getCachedABGR(colord(override).mix('#ffffff', 0.5).toHex())
+    // hom-alt renders the exact override (matches the legend swatch)
     expect(colors.filter(c => c === overrideAbgr)).toHaveLength(1)
-    // ref cell is untouched, no-call cell is neither ref nor override
+    // het-alt renders the dosage-shaded color, distinct from the exact override
+    expect(colors.filter(c => c === hetShaded)).toHaveLength(1)
+    expect(hetShaded).not.toBe(overrideAbgr)
     expect(colors).toContain(refAbgr)
-    expect(
-      colors.filter(c => c === overrideAbgr || c === refAbgr),
-    ).toHaveLength(2)
-    expect(result.numCells).toBe(3)
+    expect(result.numCells).toBe(4)
   })
 })
