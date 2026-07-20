@@ -319,6 +319,11 @@ const sections = gallerySections
   }
   figcaption p {
     margin: 0.25rem 0;
+    /* Descriptions can contain long unbreakable tokens (file paths, URLs).
+       `anywhere` (not `break-word`) is required: it also shrinks the min-content
+       width, so the grid's 1fr track collapses instead of the token forcing the
+       card wider than a narrow mobile viewport. */
+    overflow-wrap: anywhere;
   }
   .card-links {
     display: flex;
