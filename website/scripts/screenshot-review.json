@@ -1642,8 +1642,8 @@
   },
   "pangenome/variant_matrix": {
     "name": "pangenome/variant_matrix",
-    "status": "bad",
-    "note": "if needed, turn off the 'matrix mode' or show both the matrix and non-matrix modes just to exemplify for user. also, show complementary tracks like the MAF and paf tracks if it helps. ",
+    "status": "good",
+    "note": "RESOLVED: stacked the complementary MAF track (ecoli_pggb_maf, hosted) below the variant matrix over the same K12 window (chr:995-1015kb), so the matrix summary reads against the base-level per-strain alignment it was decomposed from. viewportHeight 540->740. (paf = ecoli_pggb_ava is a SyntenyTrack, only meaningful in Projection 1's synteny view, not a single-assembly LGV; didn't add non-matrix variant mode since the MAF is the stronger orthogonal corroboration.) Updated pangenome.md caption + lead-in prose. Regenerated (14.21% diff).",
     "reviewedAt": "2026-07-19T23:06:46.612Z",
     "hash": "7149c860367a99cceb3fb541efcdb853242a1ee9"
   },

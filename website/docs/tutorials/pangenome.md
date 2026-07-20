@@ -156,7 +156,12 @@ sample:
 }
 ```
 
-<Figure caption="The graph's pangenome variants as a multi-sample matrix on the K12 reference: each column is one variant the graph called, each row one of the other three strains, each cell that strain's genotype (see the legend). The olive block on the left is where CFT073 and NCTC86 have no called genotype (the graph places no allele for them across that stretch) while Sakai carries the alternate, and the dense blue field to its right is where all three diverge from K12. The K12 gene lane (elfC, ycbU, pyrD…) gives the context above." src="/img/pangenome/variant_matrix.png" />
+Stacking the MAF alignment (Projection 3, below) over the same window turns the
+matrix from a standalone summary into something you can check: each band of
+shared or absent genotype sits directly above the per-strain alignment it was
+decomposed from.
+
+<Figure caption="The graph's pangenome variants as a multi-sample matrix on the K12 reference, with the MAF alignment stacked below. Each matrix column is one variant the graph called, each row one of the other three strains, each cell that strain's genotype (see the legend). The olive block on the left is where CFT073 and NCTC86 have no called genotype (the graph places no allele for them across that stretch) while Sakai carries the alternate, and the dense blue field to its right is where all three diverge from K12. The MAF track below is the same window's base-level multiple alignment (the per-strain alignment the graph decomposed those variants from, covered next in Projection 3), so the matrix summary can be read against the alignment it came from. The K12 gene lane (elfC, ycbU, pyrD…) gives the context above." src="/img/pangenome/variant_matrix.png" />
 
 The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and

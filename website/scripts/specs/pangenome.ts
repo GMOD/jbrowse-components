@@ -13,11 +13,15 @@ const CONFIG = encodeURIComponent(
 )
 
 export const pangenomeSpecs: ScreenshotSpec[] = [
-  // Projection 2: the graph's pangenome variants as a multi-sample matrix. Each
-  // column is one variant the graph called against K12, each row one of the
-  // three other strains; the cell color is that strain's genotype. Runs of
-  // shared alt across CFT073/NCTC86 vs Sakai (and vice-versa) read as vertical
-  // bands — the accessory structure of the pangenome at SNP resolution.
+  // Projection 2: the graph's pangenome variants as a multi-sample matrix, with
+  // the MAF alignment stacked below as an orthogonal view of the same window.
+  // Each matrix column is one variant the graph called against K12, each row one
+  // of the three other strains; the cell color is that strain's genotype. Runs
+  // of shared alt across CFT073/NCTC86 vs Sakai (and vice-versa) read as vertical
+  // bands — the accessory structure of the pangenome at SNP resolution. The MAF
+  // below is the same window's base-level multiple alignment, the representation
+  // the variants were decomposed from, so the matrix's summary can be read
+  // against the per-strain alignment it came from.
   {
     mode: 'url',
     name: 'pangenome/variant_matrix',
@@ -34,6 +38,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
               type: 'LinearMultiSampleVariantMatrixDisplay',
               height: 160,
             },
+            { trackId: 'ecoli_pggb_maf', type: 'LinearMafDisplay' },
           ],
         },
       ],
@@ -43,7 +48,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     readyText: '1,000,000',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 540,
+    viewportHeight: 740,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
