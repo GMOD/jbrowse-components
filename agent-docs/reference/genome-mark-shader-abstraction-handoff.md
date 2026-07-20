@@ -59,6 +59,53 @@ pipeline **identically**:
    against pinned-slangc output; generics may produce name-mangled identifiers
    its rules don't anticipate.
 
+## A prerequisite unknown: the two plugins flip strands differently
+
+Before the skeleton can be shared, it has to pick **one strand-flip model**, and
+the two candidate donor plugins currently disagree:
+
+- **canvas** (`featureGlyphUniforms.slang`) flips **upstream**: `blockClipUtils.ts`
+  negates component 2 of the `bpRangeX` uniform for reversed blocks, so the flip
+  happens *inside* `bpToClipX`/`hpToClipX`. Positions come out already flipped —
+  `rect` writes `float4(sx, sy, …)` with no post-flip. Its `flipX` is used only
+  on `inst.direction` (arrow/chevron pointing), never on position.
+- **alignments** (`alignmentsUniforms.slang`) flips **downstream**: it computes
+  forward clip-X and applies `flipX(x, u)` to the assembled position (and to the
+  `flippedQuadPos`/`covSegQuad` helpers).
+
+Both call the **same** shared `hpToClipX(splitPos, bpRange, hpZero)` core — the
+only difference is that canvas negates the `bpLen`/`bpRange.z` component for
+reversed blocks (`bpRangeXTuple(..., reversed)` in `blockClipUtils.ts`) while
+alignments keeps it positive and flips afterward. So there is **no structural
+barrier** to unifying; the deviation is a deliberate ergonomic choice, not
+accidental:
+
+- **The reason it's defensible:** alignments authors per-glyph geometry in
+  **forward orientation** (`start < end`) — mismatch's 2px floor
+  (`sx2 = max(sx1 + 2/canvasW, snapToPixelX(clip2))`), insertion serifs, clip-bar
+  widths, pixel-snapping. Downstream flip keeps that invariant trivial: compute
+  forward, flip once at `SV_Position`. Upstream flip makes `sx1 > sx2` on reversed
+  regions and breaks every one of those width/snap calcs unless each is rewritten
+  reversal-aware — which is exactly what canvas' dedicated `extendToMinWidthX` is.
+
+Consequences the spike must account for:
+
+1. A shared vertex skeleton must standardize on upstream-flip **or**
+   downstream-flip; it can't stay agnostic, because the flip site is baked into
+   where the skeleton assembles `SV_Position`.
+2. This is *why* `flipX` is duplicated across the two plugins and why it looks
+   like unshared code but isn't a pure hoist — the two copies serve different
+   roles (direction vs. position) against different `Uniforms` structs.
+3. Do **not** naively share alignments' `flippedQuadPos` into canvas: canvas'
+   `bpToClipX` already applied the flip, so a second `flipX` would **double-flip**
+   reversed blocks — a silent correctness bug, not a refactor.
+
+Recommendation: **keep the divergence until the skeleton work forces the choice.**
+When it does, target the **upstream** (negated-`bpRange`) model — it removes the
+per-vertex `flipX` — but budget for making alignments' glyph geometry
+reversal-aware first (a visually-verified change). Reconciling the flip model IS
+part of the skeleton migration, not a cheap standalone win.
+
 ## It also reopens a documented decision
 
 RFC-001 §5b deliberately chose **"primitives, not a framework"** and §5c says
@@ -103,8 +150,18 @@ helper *function* in a Slang module that each shader calls at the top of its own
 `vs_main`, while still declaring its own concrete instance struct. Less
 leverage (each shader keeps its struct + entry point), but captures ~60% of the
 vertex-body dedup with **zero** layout risk and **zero** codegen changes,
-because reflection still sees a plain concrete struct. This is the graceful
-degradation and is worth doing even if the generic path dies.
+because reflection still sees a plain concrete struct.
+
+**Update (2026-07, ADR-040):** for the **core codebase as it stands**, even this
+fallback does not clear the bar and should not be built speculatively. A
+consumer count showed the composition it would factor (`snapToPixelX(hpToClipX)`
++ `extendToMinWidthX`) has exactly **one** true consumer (`rect`) — the
+drift-prone atom `extendToMinWidthX` is already shared across four shaders, and
+the other candidates diverge on purpose. See
+`architecture-decision-records/adr-040-no-genome-quad-vertex-helper.md`. It stays
+the right graceful-degradation target *if the generic spike is attempted and
+fails*, or if a real multi-consumer pull appears (e.g. a third-party-plugin
+ergonomics mandate) — not as a standalone win today.
 
 ## What NOT to do
 

@@ -47,3 +47,4 @@ action needed under current workloads), **Proposed** (not yet decided).
 | [037](adr-037-two-collapse-mechanisms.md) | Accepted | Two "collapse" mechanisms stay distinct — automatic sub-pixel density-collapse vs. explicit `displayMode: 'collapsed'`; don't auto-select the preset for dense data |
 | [038](adr-038-desktop-plugin-trust-at-fetchconfig-funnel.md) | Accepted | Desktop vets remote-config plugins at the `fetchConfig` funnel, not per caller; mitigation until contextIsolation |
 | [039](adr-039-synteny-no-read-time-binning.md) | Accepted | No read-time binning for synteny/PIF (optimizes the wrong end); the N→M lever is a deferred `make-pif` binned tier, not a region gate |
+| [040](adr-040-no-genome-quad-vertex-helper.md) | Accepted | No shared genome-quad vertex helper; hpmath atoms are the right granularity and the composition on top is single-consumer |
