@@ -22,29 +22,30 @@ describe('getVariantSvType', () => {
     expect(getVariantSvType(feat({ INFO: { SVTYPE: ['invdup'] }, ALT: ['<INVDUP>'] }))).toBe('INVDUP')
   })
 
-  it('falls back to the SO type only for symbolic/breakend ALTs', () => {
-    expect(getVariantSvType(feat({ ALT: ['<DEL>'], type: 'deletion' }))).toBe('DEL')
-    expect(getVariantSvType(feat({ ALT: ['G[ctgA:200['], type: 'breakend' }))).toBe('BND')
+  it('derives from a symbolic/breakend ALT when SVTYPE is absent', () => {
+    expect(getVariantSvType(feat({ ALT: ['<DEL>'] }))).toBe('DEL')
+    expect(getVariantSvType(feat({ ALT: ['G[ctgA:200['] }))).toBe('BND')
+    expect(getVariantSvType(feat({ ALT: ['<CN0>'] }))).toBe('CNV')
   })
 
-  it('picks the primary type from a comma-joined multiallelic SO term', () => {
-    expect(getVariantSvType(feat({ ALT: ['<DEL>', '<DUP>'], type: 'deletion,duplication' }))).toBe('DEL')
+  it('uses the first structural ALT of a multiallelic site', () => {
+    expect(getVariantSvType(feat({ ALT: ['<DEL>', '<DUP>'] }))).toBe('DEL')
   })
 
   it('is empty for plain (non-symbolic) SNVs and indels', () => {
-    expect(getVariantSvType(feat({ ALT: ['A'], type: 'SNV' }))).toBe('')
-    expect(getVariantSvType(feat({ ALT: ['ACGT'], type: 'insertion' }))).toBe('')
+    expect(getVariantSvType(feat({ ALT: ['A'] }))).toBe('')
+    expect(getVariantSvType(feat({ ALT: ['ACGT'] }))).toBe('')
   })
 
-  it('ignores a missing-value SVTYPE', () => {
-    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['.'] }, ALT: ['A'], type: 'SNV' }))).toBe('')
+  it('ignores a missing-value SVTYPE and falls back to ALT', () => {
+    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['.'] }, ALT: ['A'] }))).toBe('')
   })
 })
 
 describe('featureHasSvType', () => {
   it('true for an SV, false for a plain SNV', () => {
     expect(featureHasSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>'] }))).toBe(true)
-    expect(featureHasSvType(feat({ ALT: ['A'], type: 'SNV' }))).toBe(false)
+    expect(featureHasSvType(feat({ ALT: ['A'] }))).toBe(false)
   })
 })
 

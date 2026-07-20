@@ -31,7 +31,7 @@ const CANONICAL_ORDER: Record<string, number> = Object.fromEntries(
   PREDEFINED_SV_TYPES.map((t, i) => [t.type, i]),
 )
 
-// Raw INFO/SVTYPE tokens (e.g. DUP:TANDEM) and SO terms both fold into these
+// Raw SVTYPE / symbolic-ALT tokens (e.g. DEL, DUP:TANDEM) fold into these
 // buckets; unrecognized tokens pass through uppercased so they still get a
 // distinct auto-assigned color.
 const RAW_TOKEN_TO_BUCKET: Record<string, string> = {
@@ -44,44 +44,37 @@ const RAW_TOKEN_TO_BUCKET: Record<string, string> = {
   TRA: 'BND',
 }
 
-// SO terms (feature.get('type')) for symbolic/breakend ALTs -> bucket. Plain
-// insertion/deletion from non-symbolic indels are intentionally absent: those
-// reach here only when the ALT is symbolic (see getVariantSvType), so a small
-// indel is never treated as an SV.
-const SO_TERM_TO_BUCKET: Record<string, string> = {
-  deletion: 'DEL',
-  insertion: 'INS',
-  duplication: 'DUP',
-  tandem_duplication: 'DUP',
-  inversion: 'INV',
-  inverted_duplication: 'INV',
-  copy_number_variation: 'CNV',
-  translocation: 'BND',
-  breakend: 'BND',
-}
-
 function normalizeRawToken(raw: string) {
   const token = raw.toUpperCase().split(':')[0]!.trim()
-  return RAW_TOKEN_TO_BUCKET[token] ?? token
-}
-
-function altIsSymbolicOrBreakend(alt: string[] | undefined) {
-  return !!alt?.some(
-    a =>
-      a.startsWith('<') ||
-      a.includes('[') ||
-      a.includes(']') ||
-      a.startsWith('.') ||
-      a.endsWith('.'),
-  )
+  // <CN0>/<CN2>/... copy-number alleles are a CNV class
+  return /^CN\d+$/.test(token) ? 'CNV' : (RAW_TOKEN_TO_BUCKET[token] ?? token)
 }
 
 /**
- * The structural-variant class of a variant, as a canonical bucket
- * (DEL/DUP/INS/INV/CNV/BND) or an unrecognized raw token, or '' when the
- * variant is not a structural variant. Prefers the canonical INFO/SVTYPE field;
- * for symbolic/breakend ALTs lacking SVTYPE it falls back to the derived SO
- * term. Plain (non-symbolic) SNVs and indels return ''.
+ * The SV class implied by a single ALT allele string: the token inside a
+ * symbolic `<...>` allele (normalized), `BND` for breakend notation, or '' for
+ * a plain sequence allele (a SNV/indel, not a structural variant). This reads
+ * the ALT directly rather than the human-readable SO `type`, which collapses
+ * distinct classes (every breakend flavor becomes 'breakend').
+ */
+export function svTypeFromAlt(alt: string) {
+  if (alt.startsWith('<') && alt.endsWith('>')) {
+    return normalizeRawToken(alt.slice(1, -1))
+  }
+  const isBreakend =
+    alt.includes('[') ||
+    alt.includes(']') ||
+    alt.startsWith('.') ||
+    alt.endsWith('.')
+  return isBreakend ? 'BND' : ''
+}
+
+/**
+ * The structural-variant class of a variant as a whole (its primary ALT), as a
+ * canonical bucket (DEL/DUP/INS/INV/CNV/BND) or an unrecognized raw token, or
+ * '' when the variant is not a structural variant. Prefers the canonical
+ * INFO/SVTYPE field, else derives from the first symbolic/breakend ALT.
+ * Allele-specific coloring uses svTypeFromAlt per ALT instead.
  */
 export function getVariantSvType(feature: Feature) {
   const info = feature.get('INFO') as Record<string, unknown> | undefined
@@ -91,9 +84,11 @@ export function getVariantSvType(feature: Feature) {
     return normalizeRawToken(raw)
   }
   const alt = feature.get('ALT') as string[] | undefined
-  if (altIsSymbolicOrBreakend(alt)) {
-    const term = (feature.get('type'))?.split(',')[0]
-    return term ? (SO_TERM_TO_BUCKET[term] ?? '') : ''
+  for (const a of alt ?? []) {
+    const t = svTypeFromAlt(a)
+    if (t) {
+      return t
+    }
   }
   return ''
 }
