@@ -1672,8 +1672,7 @@
     "name": "ld/lct_haplotype_matrix",
     "status": "good",
     "note": "RESOLVED (deleted, moot). Already consolidated away in commit c8126fae2d: the clustered haplotype matrix was a uniform cell field (its MAF>=0.35 variants are common across all populations, so no swept-haplotype band ever resolved) — the reviewer's 'clustering isn't clean' concern. Its one working piece (the ClinVar anchor) moved onto ld/lct_lactase, which now reads causal-variant -> LD block -> flanks. No spec/PNG/doc reference remains.",
-    "reviewedAt": "2026-07-20T18:49:10.000Z",
-    "hash": "9598aa2021cea26335e4e25781c1c806fefdf761"
+    "reviewedAt": "2026-07-20T22:02:04.675Z"
   },
   "readpair_heatmap_chr3q": {
     "name": "readpair_heatmap_chr3q",
