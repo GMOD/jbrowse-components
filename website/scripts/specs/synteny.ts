@@ -308,7 +308,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'K12',
-                loc: 'chr:1,026,000-1,096,000',
+                loc: 'chr:1,026,000-1,126,000',
                 tracks: [
                   {
                     trackId: 'K12_genes',
@@ -319,8 +319,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
                 ],
               },
               {
+                // Both rows extend the same 30 kb further right (still 100 kb, so
+                // same bp/px and the backbone ribbon stays horizontal): pulls the
+                // stx2 island in from the cluttered right edge toward mid-view.
                 assembly: 'Sakai',
-                loc: 'chr:1,205,000-1,275,000',
+                loc: 'chr:1,205,000-1,305,000',
                 tracks: [
                   {
                     trackId: 'Sakai_genes',
@@ -342,6 +345,27 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
+    // Point out the stx2 island (the reviewer's ask). The box and arrow ANCHOR
+    // to the stx2B gene's own label text, so they track the actual gene at
+    // capture time instead of hand-tuned pixels landing on a neighbor.
+    annotations: [
+      {
+        type: 'text',
+        text: 'stx2 (Shiga toxin) prophage island\npresent in Sakai, absent from K-12',
+        x: 300,
+        y: 335,
+        maxWidth: 380,
+      },
+      {
+        type: 'arrow',
+        from: { x: 560, y: 360 },
+        anchor: { text: 'stx2B' },
+      },
+      {
+        type: 'box',
+        anchor: { text: 'stx2B' },
+      },
+    ],
   },
 
   // The Linear synteny view import form for the allvsall_synteny.md "From the

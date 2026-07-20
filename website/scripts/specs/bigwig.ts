@@ -229,6 +229,26 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     // origin track(50) + content(~100) + taller skew(160) + headers/ruler/
     // overview; crop off the empty viewport below the three tracks
     crop: { x: 0, y: 0, width: 1500, height: 640 },
+    // Name the two-arm skew profile: the leading replichore (origin→terminus)
+    // runs mostly positive (blue), the lagging one mostly negative (red), the
+    // sign flipping at the two replication landmarks. Placed over each arm of
+    // the GC skew track (bottom).
+    annotations: [
+      {
+        type: 'text',
+        text: 'Mostly positive skew (leading strand)',
+        x: 150,
+        y: 430,
+        maxWidth: 260,
+      },
+      {
+        type: 'text',
+        text: 'Mostly negative skew (lagging strand)',
+        x: 930,
+        y: 555,
+        maxWidth: 260,
+      },
+    ],
   },
 
   // Whole-genome coverage profile from a single BigWig (COLO829 tumor MinION
