@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
+import { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import OAuthServer from '@node-oauth/express-oauth-server'
 import cors from 'cors'
 import express, {
   Router,
@@ -11,99 +11,24 @@ import express, {
   static as serveStatic,
   urlencoded,
 } from 'express'
-import expressBasicAuth from 'express-basic-auth'
 
-import type {
-  AuthorizationCode,
-  AuthorizationCodeModel,
-  Client,
-  RefreshToken,
-  RefreshTokenModel,
-  Token,
-} from '@node-oauth/oauth2-server'
-import type { Request } from 'express'
+import type { RequestHandler } from 'express'
 import type http from 'node:http'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const defaultDataPath = path.resolve(__dirname, '../test_data/volvox')
 
-interface OAuthModel extends RefreshTokenModel, AuthorizationCodeModel {}
+// Short-lived access tokens so the e2e flow exercises the refresh-token path.
+const ACCESS_TOKEN_LIFETIME_SEC = 5
 
-function createOAuthModel(redirectPort: number): OAuthModel {
-  const db: {
-    authorizationCode?: AuthorizationCode
-    client?: Client
-    token?: Token
-  } = {}
+function randomToken() {
+  return crypto.randomBytes(32).toString('hex')
+}
 
-  return {
-    async getClient(clientId, clientSecret) {
-      if (db.client) {
-        return db.client
-      }
-      db.client = {
-        id: clientId,
-        clientSecret,
-        grants: ['authorization_code', 'refresh_token'],
-        redirectUris: [`http://localhost:${redirectPort}/`],
-      }
-      return db.client
-    },
-    async saveToken(token, client, user) {
-      db.token = {
-        accessToken: token.accessToken,
-        accessTokenExpiresAt: token.accessTokenExpiresAt,
-        refreshToken: token.refreshToken,
-        refreshTokenExpiresAt: token.refreshTokenExpiresAt,
-        client,
-        user,
-      }
-      return db.token
-    },
-    async getAccessToken(token) {
-      if (!token || token === 'undefined') {
-        return false
-      }
-      return db.token
-    },
-    async getRefreshToken(_token) {
-      const { token: dbToken } = db
-      if (!dbToken) {
-        throw new Error('No token')
-      }
-      if (!('refreshToken' in dbToken)) {
-        throw new Error('No refresh token')
-      }
-      return dbToken as RefreshToken
-    },
-    async revokeToken(_token) {
-      return true
-    },
-    async generateAuthorizationCode(_client, _user, _scope) {
-      const seed = crypto.randomBytes(256)
-      return crypto.createHash('sha1').update(seed).digest('hex')
-    },
-    async saveAuthorizationCode(code, client, user) {
-      db.authorizationCode = {
-        authorizationCode: code.authorizationCode,
-        expiresAt: code.expiresAt,
-        client,
-        user,
-        redirectUri: code.redirectUri,
-      }
-      return db.authorizationCode
-    },
-    async getAuthorizationCode(_authorizationCode) {
-      return db.authorizationCode
-    },
-    async revokeAuthorizationCode(_authorizationCode) {
-      db.authorizationCode = undefined
-      return true
-    },
-    async verifyScope(_token, _scope) {
-      return true
-    },
-  }
+interface Token {
+  accessToken: string
+  accessTokenExpiresAt: number
+  refreshToken: string
 }
 
 export interface AuthServerOptions {
@@ -112,23 +37,48 @@ export interface AuthServerOptions {
   dataPath?: string
 }
 
+// Minimal in-memory OAuth2 test double, replacing @node-oauth/express-oauth-server.
+// It supports only what the JBrowse OAuthInternetAccount e2e tests drive — the
+// authorization-code and refresh-token grants plus bearer gating on /data — not
+// the full spec. Single client, single token; the demo username/password and the
+// redirect origin are checked, and PKCE params are accepted and ignored.
 export function startOAuthServer(
   options: AuthServerOptions,
 ): Promise<http.Server> {
   const { port, redirectPort = 3000, dataPath = defaultDataPath } = options
+  const redirectOrigin = `http://localhost:${redirectPort}`
+
+  let authorizationCode: string | undefined
+  let token: Token | undefined
+
+  function issueToken() {
+    token = {
+      accessToken: randomToken(),
+      accessTokenExpiresAt: Date.now() + ACCESS_TOKEN_LIFETIME_SEC * 1000,
+      refreshToken: randomToken(),
+    }
+    return {
+      access_token: token.accessToken,
+      token_type: 'Bearer',
+      expires_in: ACCESS_TOKEN_LIFETIME_SEC,
+      refresh_token: token.refreshToken,
+    }
+  }
+
+  const authenticate: RequestHandler = (req, res, next) => {
+    const presented = /^Bearer (\S+)$/.exec(req.headers.authorization ?? '')?.[1]
+    const valid =
+      token !== undefined &&
+      presented === token.accessToken &&
+      Date.now() < token.accessTokenExpiresAt
+    if (valid) {
+      next()
+    } else {
+      res.status(401).send('Unauthorized')
+    }
+  }
 
   return new Promise(resolve => {
-    const oauthServer = new OAuthServer({
-      model: createOAuthModel(redirectPort),
-      accessTokenLifetime: 5,
-      allowEmptyState: true,
-      allowExtendedTokenAttributes: true,
-      requireClientAuthentication: {
-        authorization_code: false,
-        refresh_token: false,
-      },
-    })
-
     const router = Router()
 
     router.get('/', (_req, res) => {
@@ -157,15 +107,20 @@ export function startOAuthServer(
       `)
     })
 
-    router.post(
-      '/authorize',
-      (req, res, next) => {
-        const { username, password } = req.body
-        if (username === 'username' && password === 'password') {
-          req.body.user = { user: 1 }
-          next()
-          return
+    router.post('/authorize', (req, res) => {
+      const body = req.body as Record<string, string>
+      const { username, password, redirect_uri, state } = body
+      const credsOk = username === 'username' && password === 'password'
+      if (credsOk && redirect_uri?.startsWith(redirectOrigin)) {
+        const code = randomToken()
+        authorizationCode = code
+        const url = new URL(redirect_uri)
+        url.searchParams.set('code', code)
+        if (state) {
+          url.searchParams.set('state', state)
         }
+        res.redirect(url.toString())
+      } else {
         const params = [
           'client_id',
           'redirect_uri',
@@ -173,31 +128,61 @@ export function startOAuthServer(
           'grant_type',
           'state',
         ]
-          .map(a => `${a}=${req.body[a]}`)
+          .map(a => `${a}=${body[a]}`)
           .join('&')
         res.redirect(`/oauth?success=false&${params}`)
-      },
-      oauthServer.authorize({
-        authenticateHandler: {
-          handle: (req: Request) => req.body.user,
-        },
-      }),
-    )
+      }
+    })
 
-    router.post('/token', oauthServer.token())
+    router.post('/token', (req, res) => {
+      const body = req.body as Record<string, string>
+      if (body.grant_type === 'authorization_code') {
+        if (body.code && body.code === authorizationCode) {
+          authorizationCode = undefined // single-use
+          res.json(issueToken())
+        } else {
+          res.status(400).json({ error: 'invalid_grant' })
+        }
+      } else if (body.grant_type === 'refresh_token') {
+        if (token && body.refresh_token === token.refreshToken) {
+          res.json(issueToken())
+        } else {
+          res.status(400).json({ error: 'invalid_grant' })
+        }
+      } else {
+        res.status(400).json({ error: 'unsupported_grant_type' })
+      }
+    })
 
     const app = express()
     app.use(cors())
     app.use(urlencoded({ extended: false }))
     app.use(json())
     app.use('/oauth', router)
-    app.use('/data', oauthServer.authenticate(), serveStatic(dataPath))
+    app.use('/data', authenticate, serveStatic(dataPath))
 
     const server = app.listen(port, () => {
       console.log(`OAuth Server listening on port ${port}`)
       resolve(server)
     })
   })
+}
+
+// HTTP Basic auth without a WWW-Authenticate challenge: JBrowse prompts for
+// credentials via its own UI, so a challenge header (which triggers the browser's
+// native login dialog) would break the test flow. Replaces express-basic-auth.
+function basicAuth(users: Record<string, string>): RequestHandler {
+  return (req, res, next) => {
+    const encoded = /^Basic (\S+)$/.exec(req.headers.authorization ?? '')?.[1]
+    const [user, pass] = encoded
+      ? Buffer.from(encoded, 'base64').toString().split(':')
+      : []
+    if (user !== undefined && users[user] === pass) {
+      next()
+    } else {
+      res.status(401).send('Unauthorized')
+    }
+  }
 }
 
 export function startBasicAuthServer(
@@ -209,24 +194,20 @@ export function startBasicAuthServer(
     const app = express()
     app.use(cors())
     // Per-path credentials must mount BEFORE the catch-all `/data`: express
-    // matches in registration order, and a failed expressBasicAuth on `/data`
-    // 401s before the more-specific handler is reached. These back the
-    // "multiple BasicAuth credentials on same domain" test (alice/bob).
+    // matches in registration order, and a failed auth on `/data` 401s before
+    // the more-specific handler is reached. These back the "multiple BasicAuth
+    // credentials on same domain" test (alice/bob).
     app.use(
       '/data/public',
-      expressBasicAuth({ users: { alice: 'public123' } }),
+      basicAuth({ alice: 'public123' }),
       serveStatic(dataPath),
     )
     app.use(
       '/data/private',
-      expressBasicAuth({ users: { bob: 'private456' } }),
+      basicAuth({ bob: 'private456' }),
       serveStatic(dataPath),
     )
-    app.use(
-      '/data',
-      expressBasicAuth({ users: { admin: 'password' } }),
-      serveStatic(dataPath),
-    )
+    app.use('/data', basicAuth({ admin: 'password' }), serveStatic(dataPath))
 
     const server = app.listen(port, () => {
       console.log(`HTTP BasicAuth Server listening on port ${port}`)
