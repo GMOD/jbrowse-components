@@ -1,9 +1,8 @@
 import { LocalFile } from 'generic-filehandle2'
-import RangeParser from 'range-parser'
 
 import type { GenericFilehandle } from 'generic-filehandle2'
 
-// kind of arbitrary, part of the rangeParser
+// clamps open-ended (`bytes=start-`) ranges; test files are far smaller
 const maxRangeRequest = 20000000
 
 export function generateReadBuffer(getFile: (s: string) => GenericFilehandle) {
@@ -36,21 +35,41 @@ export async function handleRangeRequest(
   file: GenericFilehandle,
   rangeHeader: string,
 ) {
-  const range = RangeParser(maxRangeRequest, rangeHeader)
+  const { start, end } = parseByteRange(rangeHeader, maxRangeRequest)
+  const length = end - start + 1
+  const buffer = await file.read(length, start)
+  const stats = await file.stat()
 
-  if (range === -2 || range === -1) {
-    throw new Error(`Error parsing range "${rangeHeader}"`)
-  } else {
-    const { start, end } = range[0]!
-    const length = end - start + 1
-    const buffer = await file.read(length, start)
-    const stats = await file.stat()
+  return new Response(buffer, {
+    status: 206,
+    headers: [['content-range', `${start}-${end}/${stats.size}`]],
+  })
+}
 
-    return new Response(buffer, {
-      status: 206,
-      headers: [['content-range', `${start}-${end}/${stats.size}`]],
-    })
+// Minimal HTTP byte-range parser replacing the `range-parser` dep: handles the
+// single-range `bytes=start-end`, `bytes=start-`, and `bytes=-suffix` forms the
+// genomic adapters emit (not multipart ranges), clamping open-ended ranges to
+// `size`. Throws on a malformed or unsatisfiable header.
+function parseByteRange(header: string, size: number) {
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header.trim())
+  const [, rawStart = '', rawEnd = ''] = match ?? []
+  const suffix = rawStart === '' ? Number(rawEnd) : undefined
+  const start =
+    suffix === undefined ? Number(rawStart) : Math.max(size - suffix, 0)
+  const end =
+    suffix === undefined && rawEnd !== ''
+      ? Math.min(Number(rawEnd), size - 1)
+      : size - 1
+  const valid =
+    match !== null &&
+    !(rawStart === '' && rawEnd === '') &&
+    !Number.isNaN(start) &&
+    start <= end &&
+    start < size
+  if (valid) {
+    return { start, end }
   }
+  throw new Error(`Error parsing range "${header}"`)
 }
 
 export async function handleFullRequest(file: GenericFilehandle) {
