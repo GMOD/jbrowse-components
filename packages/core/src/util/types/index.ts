@@ -664,6 +664,7 @@ export class AuthNeededError extends Error {
 export function isAuthNeededException(
   exception: unknown,
 ): exception is AuthNeededError {
+  /* oxlint-disable typescript/no-unnecessary-condition -- intentional runtime guard: tsgolint sees these branches as unreachable but the input is genuinely unknown at runtime */
   return (
     exception instanceof Error &&
     // DOMException
@@ -671,6 +672,7 @@ export function isAuthNeededException(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       (exception as AuthNeededError).url !== undefined)
   )
+  /* oxlint-enable typescript/no-unnecessary-condition */
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type

@@ -102,12 +102,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        */
       get initialized() {
+        /* oxlint-disable typescript/no-unnecessary-condition -- width is nominally number but undefined before first layout */
         return (
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           self.width !== undefined &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
         )
+        /* oxlint-enable typescript/no-unnecessary-condition */
       },
 
       /**

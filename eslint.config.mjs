@@ -1,25 +1,22 @@
 import eslintReact from '@eslint-react/eslint-plugin'
-import eslint from '@eslint/js'
 import eslintPluginAstro from 'eslint-plugin-astro'
-import baselineJs from 'eslint-plugin-baseline-js'
 import { importX } from 'eslint-plugin-import-x'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
-import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
 import eslintPluginUnicorn from 'eslint-plugin-unicorn'
 import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
-// Single source of truth for ignore globs, shared with the oxlint fast-lint
-// pass (`pnpm lint:fast`) so the two can't drift. Kept as strict JSON because
-// Node's JSON import assertion rejects JSONC comments. Rationale for the
-// non-obvious entries:
-//   - products/jbrowse-img/src/**/*.mjs — integration tests + their tsx loader
-//     hook run via node:test (not jest/typed-lint); see jbrowse-img/CLAUDE.md.
-//   - products/*/examples-site/** astro apps are standalone demos excluded from
-//     the root tsconfig, so the type-aware pipeline can't parse their
-//     frontmatter; lint them via their own tooling, not here.
+// CI-only backstop. The fast path is oxlint (`pnpm lint:fast` /
+// `lint:fast:type`), which owns correctness, react-hooks, the full type-aware
+// rule set (via tsgolint), and the portable core rules. Prettier owns
+// formatting + import ordering. This config runs ONLY the rules oxlint can't
+// yet do, and deliberately carries NO type information (no
+// `parserOptions.project`) so it stays fast and needs only one TypeScript
+// version — the things it enforces (react-compiler, the unicorn denylist,
+// @eslint-react, react-refresh, the no-restricted-syntax guards, astro) are all
+// syntactic. See agent-docs and .oxlintrc.json for the division of labor.
 import oxlintConfig from './.oxlintrc.json' with { type: 'json' }
 
 // Shared no-restricted-syntax selectors. Flat config *overrides* (not merges)
@@ -44,42 +41,48 @@ export default defineConfig(
     ignores: oxlintConfig.ignorePatterns,
   },
   {
+    // The tree has ~84 inline `eslint-disable @typescript-eslint/*` comments
+    // for rules that now run in oxlint (which honors the same comments). ESLint
+    // no longer defines those rules, so it would report every one as an unused
+    // directive. Turn the check off here — this is a thin CI backstop, not the
+    // primary linter. Re-enable once the comments are migrated to
+    // `oxlint-disable`.
+    linterOptions: {
+      reportUnusedDisableDirectives: 'off',
+    },
+  },
+  {
     languageOptions: {
+      // No `project` on purpose — this config is type-information-free so it
+      // stays fast. tseslint.parser is still needed to parse TS/TSX syntax.
+      parser: tseslint.parser,
       globals: {
         ...globals.browser,
       },
-      parserOptions: {
-        project: ['./tsconfig.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
     },
-
     settings: {
       react: {
         version: '19.2.4',
-      },
-      'import-x/resolver': {
-        typescript: true,
-        node: true,
       },
     },
   },
   {
     plugins: {
       'react-compiler': reactCompiler,
-      'tss-unused-classes': tssUnusedClasses,
       'react-refresh': eslintPluginReactRefresh,
+      'import-x': importX,
+      // Registered (rules left off) purely so the ~84 inline
+      // `eslint-disable @typescript-eslint/*` comments in the tree still
+      // resolve to a known rule instead of erroring "definition not found".
+      // Those rules now run in oxlint (which honors the same disable comments);
+      // this keeps the backstop green until the comments are migrated to
+      // `oxlint-disable`.
+      '@typescript-eslint': tseslint.plugin,
     },
     rules: {
       'react-compiler/react-compiler': 'error',
     },
   },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  ...tseslint.configs.stylisticTypeChecked,
-  ...tseslint.configs.strictTypeChecked,
-  importX.flatConfigs.recommended,
-  importX.flatConfigs.typescript,
   eslintReact.configs['recommended-typescript'],
   // eslint-plugin-unicorn: we adopt it as a DENYLIST, not an allowlist. The
   // `recommended` preset is the base (every recommended rule is ON), and the
@@ -245,45 +248,15 @@ export default defineConfig(
     },
   },
   {
-    files: ['**/*.{js,ts,jsx,tsx}'],
-    plugins: {
-      'baseline-js': baselineJs,
-    },
     rules: {
-      'baseline-js/use-baseline': [
-        'error',
-        {
-          available: 'widely',
-        },
-      ],
-    },
-  },
-  {
-    rules: {
-      'no-restricted-globals': ['error', 'Buffer'],
-      'no-empty': 'off',
-      'no-console': [
-        'error',
-        {
-          allow: ['error', 'warn'],
-        },
-      ],
-      'tss-unused-classes/unused-classes': 'warn',
-      // Vite resource queries (`?raw`, `?url`, etc.) make an import resolve to
-      // different content than the bare path; without this, no-duplicates
-      // treats e.g. `from './x.tsx'` + `from './x.tsx?raw'` as duplicates.
-      'import-x/no-duplicates': ['error', { considerQueryString: true }],
-      // Redundant with tsc's own module/export resolution, and the priciest
-      // rules in the whole run. tsc already fails the build on invalid
-      // named/default imports.
-      'import-x/namespace': 'off',
-      'import-x/default': 'off',
-      // Full-repo deprecated-usage check needs type info on every reference
-      // (~18% of lint time) and isn't build-breaking, so it's CI-only; see
-      // `lint:strict` in package.json.
-      '@typescript-eslint/no-deprecated': process.env.LINT_STRICT
-        ? 'error'
-        : 'off',
+      // Core rules oxlint doesn't own for us and prettier doesn't cover.
+      'no-console': ['error', { allow: ['error', 'warn'] }],
+      curly: 'error',
+      'object-shorthand': 'error',
+      'prefer-template': 'error',
+      'one-var': ['error', 'never'],
+      'spaced-comment': ['error', 'always', { markers: ['/'] }],
+      'react-refresh/only-export-components': 'error',
       // Pluggable components (ReactComponent/HeadingComponent/etc.) are
       // resolved via pluginManager registry lookups (getViewType,
       // getWidgetType, evaluateExtensionPoint) and rendered as JSX. This rule
@@ -291,69 +264,11 @@ export default defineConfig(
       // components defined during render, so it false-positives across the
       // whole plugin architecture.
       '@eslint-react/static-components': 'off',
-      curly: 'error',
-      'object-shorthand': 'error',
-      '@typescript-eslint/no-unnecessary-condition': 'error',
-      semi: ['error', 'never'],
-      'spaced-comment': [
-        'error',
-        'always',
-        {
-          markers: ['/'],
-        },
-      ],
-
-      'prefer-template': 'error',
-      'one-var': ['error', 'never'],
-      'react-refresh/only-export-components': 'error',
-
-      'import-x/no-unresolved': 'off',
-      // Import ordering is owned by prettier (@ianvs/prettier-plugin-sort-imports,
-      // see .prettierrc.json) so it autofixes on `pnpm format` and is enforced by
-      // `prettier --check` in CI. Keeping import-x/order here too would fight the
-      // plugin (they disagree on the react-type-first, sibling/parent, and
-      // alias-sort tie-breaks), so it is intentionally not enabled.
+      // Vite resource queries (`?raw`, `?url`, etc.) make an import resolve to
+      // different content than the bare path; without this, no-duplicates
+      // treats e.g. `from './x.tsx'` + `from './x.tsx?raw'` as duplicates.
+      'import-x/no-duplicates': ['error', { considerQueryString: true }],
       'import-x/extensions': ['error', 'ignorePackages'],
-      'import-x/no-named-as-default': 'off',
-      'import-x/no-named-as-default-member': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/no-unnecessary-type-conversion': 'off',
-      '@typescript-eslint/no-unnecessary-type-parameters': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/no-base-to-string': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-argument': 'off',
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/restrict-plus-operands': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/consistent-type-imports': 'error',
-      '@typescript-eslint/consistent-type-exports': 'error',
-      '@typescript-eslint/switch-exhaustiveness-check': [
-        'error',
-        { considerDefaultExhaustiveForUnions: true },
-      ],
-      '@typescript-eslint/require-await': 'off',
-      // An indexed `for` loop is often the clearer/faster choice (typed arrays,
-      // parallel arrays, index-dependent logic); loop style is our call.
-      '@typescript-eslint/prefer-for-of': 'off',
-      '@typescript-eslint/restrict-template-expressions': 'off',
-      '@typescript-eslint/no-empty-function': 'off',
-      '@typescript-eslint/no-extraneous-class': 'off',
-      '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/no-dynamic-delete': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          ignoreRestSiblings: true,
-          caughtErrors: 'none',
-        },
-      ],
     },
   },
   {
@@ -374,35 +289,20 @@ export default defineConfig(
       },
     },
     rules: {
-      'no-restricted-globals': 'off',
-      '@typescript-eslint/no-require-imports': 'off',
-      '@typescript-eslint/no-floating-promises': 'off',
-      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'off',
       'no-console': 'off',
-      'no-undef': 'off',
-      // Node-only build scripts/CLIs: baseline-js checks browser feature
-      // availability, which is irrelevant here (top-level await etc. are fine).
-      'baseline-js/use-baseline': 'off',
     },
   },
   {
-    // Electron main process: separate tsconfig, runs in node, uses console.log
-    // for auto-updater status messages.
+    // Electron main process runs in node and uses console.log for auto-updater
+    // status messages.
     files: ['products/jbrowse-desktop/electron/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
       },
-      parserOptions: {
-        project: ['./products/jbrowse-desktop/electron/tsconfig.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
     },
     rules: {
       'no-console': 'off',
-      // IpcChannels descriptors use `return: void` to mean "resolves to
-      // nothing"; switching to `undefined` breaks handler assignability.
-      '@typescript-eslint/no-invalid-void-type': 'off',
     },
   },
   {
@@ -415,16 +315,6 @@ export default defineConfig(
     },
     rules: {
       'no-console': 'off',
-    },
-  },
-  // Incremental rollout of strict-boolean-expressions: we want conditions to be
-  // explicit (no implicit coercion of nullable strings/numbers/booleans or
-  // `any`). The rule is opt-in per-package as each is cleaned up; expand the
-  // glob as more packages are made compliant. packages/sv-core is the first.
-  {
-    files: ['packages/sv-core/src/**/*.{ts,tsx}'],
-    rules: {
-      '@typescript-eslint/strict-boolean-expressions': 'error',
     },
   },
   // Catch jest.mock/unmock calls that reach into another package's src/.
@@ -460,16 +350,6 @@ export default defineConfig(
       ],
     },
   },
-  // website/src + website/scripts — use website/tsconfig.json (not root).
-  {
-    files: ['website/src/**/*.{ts,tsx}', 'website/scripts/**/*.ts'],
-    languageOptions: {
-      parserOptions: {
-        project: ['./website/tsconfig.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
   // Plain .ts files in website/src + website/scripts have no React
   // components, so React rules are disabled.
   {
@@ -479,18 +359,10 @@ export default defineConfig(
       'react-refresh/only-export-components': 'off',
     },
   },
-  // Each product's examples-site is a standalone Astro app excluded from the
-  // root tsconfig, so type-aware linting must use its own tsconfig. These are
-  // demonstrative examples, so `console.log` (e.g. logging a patch/region to
-  // show how to observe state) is legitimate, not a leftover debug statement.
+  // Each product's examples-site is demonstrative, so `console.log` (e.g.
+  // logging a patch/region to show how to observe state) is legitimate.
   {
     files: ['products/*/examples-site/src/**/*.{ts,tsx}'],
-    languageOptions: {
-      parserOptions: {
-        project: ['./products/*/examples-site/tsconfig.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
     rules: {
       'no-console': 'off',
     },
@@ -523,40 +395,17 @@ export default defineConfig(
       ],
     },
   },
-  // execCommand is deprecated but is the only clipboard write available in
-  // non-secure (http://) contexts, which JBrowse must support. This is a
-  // permanent, accepted exception, not a strict-mode-only inline
-  // eslint-disable: no-deprecated is off by default, so an inline disable
-  // comment would be flagged as unused outside of `lint:strict`.
-  {
-    files: ['packages/core/src/util/copyToClipboard.ts'],
-    rules: {
-      '@typescript-eslint/no-deprecated': 'off',
-    },
-  },
-  // The frontmatter of .astro files isn't part of any tsconfig `include`, so
-  // type-aware linting (which needs `parserOptions.project`) can't work
-  // there. Must come last so it wins over the blanket rule blocks above that
-  // re-enable type-checked rules with no `files` restriction.
+  // The frontmatter of .astro files needs the TS parser to read TypeScript
+  // (interface/`!`/etc.); the astro recommended preset doesn't set this, so
+  // frontmatter would otherwise parse as plain JS. Must come last so it wins.
   {
     files: ['**/*.astro', '**/*.astro/*.js', '**/*.astro/*.ts'],
     languageOptions: {
       parserOptions: {
-        // astro-eslint-parser needs the TS parser to read TypeScript
-        // frontmatter (interface/`!`/etc.); the astro recommended preset
-        // doesn't set this, so frontmatter would otherwise parse as plain JS.
         parser: tseslint.parser,
-        project: null,
       },
     },
     rules: {
-      ...tseslint.configs.disableTypeChecked.rules,
-      // consistent-type-imports/exports need type information but aren't part
-      // of tseslint's disableTypeChecked set, so with `project: null` above
-      // they throw ("rule requires type information") and abort the whole lint
-      // run on any .astro file. Turn them off here explicitly.
-      '@typescript-eslint/consistent-type-imports': 'off',
-      '@typescript-eslint/consistent-type-exports': 'off',
       // Astro injects client-script variables via `<script define:vars={{…}}>`,
       // which ESLint's scope analysis can't see, so no-undef false-positives on
       // them. TypeScript/astro handle real undefined-variable checks.

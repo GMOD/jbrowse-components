@@ -168,8 +168,10 @@ jobs:
             git diff --stat -- '**/*.generated.ts'
             exit 1
           fi
-      - name: Lint codebase
-        run: pnpm lint:strict
+      - name: Type-aware lint (oxlint + tsgolint)
+        run: pnpm lint:fast:type
+      - name: Lint backstop (eslint — react-compiler + guards oxlint can't do)
+        run: pnpm lint
 
   format:
     name: Format

@@ -100,9 +100,11 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     }
     const schema = pluginManager.pluggableConfigSchemaType('track')
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc7 sees getSnapshot here as unknown (eslint's TS6 service disagrees; see header note)
+    /* oxlint-disable typescript/no-unnecessary-type-assertion */
     const hydrated = getSnapshot(
       schema.create(base, { pluginManager }),
     ) as unknown as PlainTrackConfig
+    /* oxlint-enable typescript/no-unnecessary-type-assertion */
     canonicalBaseCache.set(base, hydrated)
     return hydrated
   }
