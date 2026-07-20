@@ -536,10 +536,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         // matches the probability callout's width so the two pills line up
         maxWidth: 340,
         fontSize: 16,
-        // Both callouts name the menu radio (colorBy.tsx); the second is
-        // abbreviated to its distinguishing clause to fit the callout. "only"
-        // here vs "every CpG" below is the contrast the figure teaches — it's why the
-        // island reads empty on this row and blue on the next.
+        // Both callouts lead with their menu radio label verbatim (colorBy.tsx).
+        // "only" here vs "every CpG" below is the contrast the figure teaches —
+        // it's why the island reads empty on this row and blue on the next.
         text: 'One color per modification type: only positions marked in the MM tag',
       },
       {
@@ -553,13 +552,15 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
             '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram"]',
         },
         dx: 250,
-        // this callout is 4 lines to the type callout's 1, and an anchored text
-        // grows downward from the container's mid-line, so it needs the extra
-        // lift to clear the frame bottom. maxWidth keeps the heading on one line.
-        dy: -110,
+        // this callout wraps to several lines, and an anchored text grows
+        // downward from the container's mid-line, so it needs the extra lift to
+        // clear the frame bottom. The heading is verbatim the menu radio label
+        // (colorBy.tsx) — reviewer: name the actual colorBy option, not a "Plus…"
+        // paraphrase — so it wraps across two lines at this maxWidth.
+        dy: -130,
         maxWidth: 340,
         fontSize: 16,
-        text: `Plus low-probability & unmodified in blue: every CpG painted
+        text: `One color per type, plus low-probability & unmodified in blue: every CpG painted
 
 - red = methylated
 - blue = low probability or unmarked`,

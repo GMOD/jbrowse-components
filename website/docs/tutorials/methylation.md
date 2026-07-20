@@ -143,14 +143,13 @@ This is clearest at a germline imprinting center, for example the SNRPN /
 Prader-Willi imprinting center (`chr15:24.95Mb`) in HG002, where one parental
 allele is methylated and the other is not.
 
-<Figure caption="Allele-specific methylation at the SNRPN / Prader-Willi imprinting center in HG002 ONT data. modkit's phased bedMethyl is loaded as one MultiQuantitativeTrack per haplotype (HP1, HP2), each a 0–100% 5mC profile. Over the CpG island one allele is ~89% methylated while the other is ~10%, the canonical imprinted split read off the two stacked profiles." src="/img/methylation/hg002_snrpn_allele_specific.png" />
-
-The same split is visible in the underlying reads. Loading the haplotagged ONT
-alignments and setting Group-by → HP with Color-by → methylation stacks the
+The same split is also visible in the underlying reads: loading the haplotagged
+ONT alignments and setting Group-by → HP with Color-by → methylation stacks the
 reads into their two haplotypes, each CpG call painted red (5mC) or blue
-(unmethylated).
+(unmethylated). Adding both to one view shows the aggregate profiles and the
+reads they summarize together.
 
-<Figure caption="The read-level source of the aggregate profiles above: the same HG002 ONT reads modkit summarized, grouped by haplotype and colored by methylation over the SNRPN CpG island. HP1 reads are methylated (red) across the island while HP2 reads are unmethylated (blue), the imprinted allele-specific split read by read." src="/img/methylation/hg002_snrpn_reads.png" />
+<Figure caption="Allele-specific methylation at the SNRPN / Prader-Willi imprinting center in HG002 ONT data. Top: modkit's phased bedMethyl loaded as one MultiQuantitativeTrack per haplotype (HP1, HP2), each a 0–100% 5mC profile — over the CpG island one allele is ~89% methylated while the other is ~10%. Bottom: the ONT reads those profiles summarize, grouped by HP and colored by methylation, HP1 methylated (red) and HP2 unmethylated (blue) read by read." src="/img/methylation/hg002_snrpn_combined.png" />
 
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for

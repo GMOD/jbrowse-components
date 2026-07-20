@@ -1281,6 +1281,19 @@ export const svSpecs: ScreenshotSpec[] = [
     // track to all fit (the gene track pushes the CNV calls down)
     viewportHeight: 880,
     settleMs: 20000,
+    // red arrow into the KRAS gene box (reviewer): KRAS is at ~chr12:25.2Mb, i.e.
+    // (25.205-23.0)/4.5 ≈ 0.49 across the 1500px view, so x≈745. The shaft must be
+    // well longer than the arrowhead (ARROW_LEN 8 × strokeWidth) or the line
+    // collapses and the head loses its orientation — so it runs a long diagonal
+    // from the ruler gutter (upper right) down into the highlighted gene glyph.
+    annotations: [
+      {
+        type: 'arrow',
+        from: { x: 880, y: 150 },
+        to: { x: 748, y: 198 },
+        strokeWidth: 4,
+      },
+    ],
   },
 
   // chr17: the copy-neutral-LOH teaching example — why BAF is read alongside the

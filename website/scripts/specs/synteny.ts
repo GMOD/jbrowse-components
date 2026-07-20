@@ -278,12 +278,18 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // The loci are not a free choice — they are read off the PAF. One 35 kb block
   // (Sakai 1,210,882-1,246,166 <-> K12 1,031,619-1,067,671, 1:1) is the shared
   // backbone; it ends at Sakai 1,246,166 and nothing from Sakai 1,252,260 to
-  // 1,274,685 aligns to K-12 at all. So the K12 window is placed to end just
-  // past where that block runs out: the ribbon enters from the left, stops, and
-  // the stx2 genes sit in the bare stretch beyond it with no ribbon above them.
-  // (The island's own far flanks align to K12 ~566 kb, a different locus — the
-  // prophage inserted into a rearranged site — which is why this frames the
-  // backbone block rather than the flanks.)
+  // 1,274,685 aligns to K-12 at all. The stx2 genes sit in that bare stretch,
+  // beyond the backbone block, with no ribbon above them. (The island's own far
+  // flanks align to K12 ~566 kb, a different locus — the prophage inserted into
+  // a rearranged site — which is why this frames the backbone block, not the
+  // flanks.)
+  //
+  // Both windows are the same 70 kb span so the two rows render at the same
+  // bp/px — the "Square view" state the reviewer asked for (both LGVs use the
+  // full view width, so equal spans give equal zoom). The backbone block is
+  // aligned to the same relative x in each (K12 1,026,000-1,096,000 vs Sakai
+  // 1,205,000-1,275,000), so its ribbon runs roughly horizontal and the stx2
+  // island bulges into the bare right side of the Sakai row.
   //
   // showOnlyGenes drops the CDS lanes and the full-width `region` feature that
   // RefSeq GFFs carry for the whole chromosome. No minAlignmentLength: at this
@@ -302,7 +308,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
             views: [
               {
                 assembly: 'K12',
-                loc: 'chr:1,044,000-1,078,000',
+                loc: 'chr:1,026,000-1,096,000',
                 tracks: [
                   {
                     trackId: 'K12_genes',
@@ -314,7 +320,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
               },
               {
                 assembly: 'Sakai',
-                loc: 'chr:1,220,000-1,290,000',
+                loc: 'chr:1,205,000-1,275,000',
                 tracks: [
                   {
                     trackId: 'Sakai_genes',

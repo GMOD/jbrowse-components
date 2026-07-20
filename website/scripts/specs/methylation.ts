@@ -100,11 +100,13 @@ export const methylationSpecs: ScreenshotSpec[] = [
     settleMs: 20000,
     // genes + aggregate(3 rows) + 3 compact pileups + headers/ruler/overview
     viewportHeight: 900,
-    // larger red pill labels naming each context row (reviewer). The aggregate
-    // multiwiggle stacks CpG/CHG/CHH in one 170px container (row centers ~28/85/
-    // 142px, so each label is nudged ±57px off the container center), and the
-    // three per-read pileups each get the matching label anchored to their own
-    // track row. dx pulls the pill toward the left edge of the data.
+    // larger red pill labels naming each context row (reviewer: push them almost
+    // to the far left edge of the data). The aggregate multiwiggle stacks
+    // CpG/CHG/CHH in one 170px container (row centers ~28/85/142px, so each label
+    // is nudged ±57px off the container center), and the three per-read pileups
+    // each get the matching label anchored to their own track row. dx pulls the
+    // pill hard toward the left edge of the ~1500px-wide data area (container
+    // center ~750, so -690 lands the pill near x≈60).
     annotations: [
       ...(['CpG', 'CHG', 'CHH'] as const).map((text, i) => ({
         type: 'text' as const,
@@ -112,7 +114,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
           selector:
             '[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_methyldackel"]',
         },
-        dx: -600,
+        dx: -690,
         dy: (i - 1) * 57,
         fontSize: 22,
         text,
@@ -128,7 +130,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
         anchor: {
           selector: `[data-testid^="trackRenderingContainer-"][data-testid$="-arabidopsis_wgbs_${ctx}"]`,
         },
-        dx: -600,
+        dx: -690,
         fontSize: 22,
         text,
       })),
@@ -216,40 +218,31 @@ export const methylationSpecs: ScreenshotSpec[] = [
   },
 
   // Allele-specific methylation at the SNRPN / PWS-IC imprinting center
-  // (chr15:24.95Mb) from HG002 ONT data. modkit emits a phased bedMethyl pileup
-  // per haplotype (wf-human-variation .1/.2 outputs); the two tracks are those
-  // per-haplotype pileups as 0-100% multi-row XY plots. At this germline
-  // imprinting center one parental allele is ~89% 5mC and the other ~10% — the
-  // textbook allele-specific-methylation split, readable directly off the two
-  // stacked profiles with no external analysis. COLO829 can't show this (it's a
-  // cancer line with LOH at every canonical DMR), so the demo switches data to
-  // HG002 for this figure. Region files are the chr15:24.85-25.05Mb slice of
-  // modkit's whole-genome phased bedMethyl, committed under test_data/hg002.
+  // (chr15:24.95Mb) from HG002 ONT data, in one view (reviewer: don't compose two
+  // screenshots — add the bedMethyl track as another track in the single view).
+  // Top-to-bottom: CpG island + SNRPN gene, the two per-haplotype modkit 5mC
+  // profiles (aggregate summary), then the same HG002 ONT reads grouped by HP and
+  // colored by methylation (the read-level source). One assembly, one locus, one
+  // x-scale — the aggregate profile and the reads that produce it line up
+  // column-for-column down the figure.
   {
     mode: 'url',
-    name: 'methylation/hg002_snrpn_allele_specific',
+    name: 'methylation/hg002_snrpn_combined',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      // SNRPN gene body + PWS-IC, wide enough to read the DMR against the CpG
-      // island and the gene's first exons (reviewer: zoom out a little — was
-      // 24,952,000-24,958,000, a 6kb window, now 8kb around the same center)
-      loc: 'chr15:24,951,000-24,959,000',
+      loc: 'chr15:24,948,000-24,962,000',
       tracks: [
-        // UCSC CpG-island annotation: the imprinting center overlaps a CpG
-        // island, so the methylated/unmethylated split lands on it. Kept short —
-        // it's a single annotation lane, so it needs no vertical room
         {
           trackId: 'cpgisland_ucsc_hg38',
           type: 'LinearBasicDisplay',
           height: 40,
         },
-        // NCBI RefSeq gene track for SNRPN context, given extra height so the
-        // gene model reads clearly above the methylation profiles
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
           type: 'LinearBasicDisplay',
           geneGlyphMode: 'longestCoding',
-          height: 180,
+          displayMode: 'compact',
+          height: 90,
         },
         {
           trackId: 'HG002_snrpn_modkit_hp1',
@@ -257,7 +250,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
           defaultRendering: 'multirowxy',
           minScore: 0,
           maxScore: 100,
-          height: 120,
+          height: 90,
         },
         {
           trackId: 'HG002_snrpn_modkit_hp2',
@@ -265,50 +258,12 @@ export const methylationSpecs: ScreenshotSpec[] = [
           defaultRendering: 'multirowxy',
           minScore: 0,
           maxScore: 100,
-          height: 120,
-        },
-      ],
-    }),
-    readyText: 'HG002',
-    // small local region files, so both settle quickly
-    readyTimeout: 60000,
-    settleMs: 15000,
-    // both single-row HP profiles (120px each) plus the short CpG-island lane
-    // and the taller gene track on top, trimmed so the stacked haplotypes aren't
-    // mostly whitespace
-    viewportHeight: 830,
-  },
-
-  // Per-read view behind the aggregate SNRPN profiles: the same HG002 ONT reads
-  // modkit summarized, plotted individually. groupBy HP splits the pileup into
-  // the two phased haplotypes and the fill-unmarked modifications view (formerly
-  // the standalone "methylation" scheme) paints each CpG call (red = 5mC,
-  // blue = unmethylated), so the allele-specific split is visible
-  // read-by-read — one haplotype's reads are methylated across the CpG island
-  // while the other's are not, the read-level source of the ~87%/~5% aggregate.
-  // Reads are the chr15 SNRPN slice of the GIAB HG002 ONT alignment, haplotagged
-  // against the phased SNP calls, hosted next to the bedMethyl slices.
-  {
-    mode: 'url',
-    name: 'methylation/hg002_snrpn_reads',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      // wider window around the SNRPN promoter / PWS-IC so the DMR sits in
-      // gene-body/flanking context; the per-haplotype red-vs-blue methylation
-      // contrast is clear, and the CpG-island track above marks the DMR
-      loc: 'chr15:24,948,000-24,962,000',
-      tracks: [
-        'cpgisland_ucsc_hg38',
-        {
-          trackId: 'ncbi_refseq_109_hg38_latest',
-          type: 'LinearBasicDisplay',
-          geneGlyphMode: 'longestCoding',
-          displayMode: 'compact',
+          height: 90,
         },
         {
           trackId: 'HG002_snrpn_5mC_reads',
           type: 'LinearAlignmentsDisplay',
-          height: 560,
+          height: 460,
           forceLoad: true,
           groupBy: { type: 'tag', tag: 'HP' },
           colorBy: {
@@ -321,40 +276,7 @@ export const methylationSpecs: ScreenshotSpec[] = [
     readySelector: '[data-testid="pileup-display-done"]',
     readyTimeout: 90000,
     settleMs: 15000,
-    viewportHeight: 880,
-    // label the two haplotype bands the groupBy HP split produces (reviewer):
-    // HP:1 reads are methylated (red) across the DMR, HP:2 unmethylated (blue)
-    annotations: [
-      {
-        type: 'text',
-        x: 170,
-        y: 505,
-        fontSize: 20,
-        text: 'reads tagged HP:1',
-      },
-      {
-        type: 'text',
-        x: 170,
-        y: 700,
-        fontSize: 20,
-        text: 'reads tagged HP:2',
-      },
-    ],
-  },
-
-  // Combine the two SNRPN allele-specific views into one figure (reviewer): the
-  // per-haplotype aggregate 5mC profiles on top, the per-read pileup that
-  // produces them below. Same assembly (hg38) and locus (chr15 PWS-IC, ~24.955
-  // Mb), so the aggregate/per-read pair reads top-to-bottom as summary → source.
-  // Each part stays its own openable figure; compose only stacks the committed
-  // PNGs. (The two windows differ in zoom — 8kb vs 14kb — so their x-scales are
-  // not pixel-aligned across the seam.)
-  {
-    mode: 'compose',
-    name: 'methylation/hg002_snrpn_combined',
-    parts: [
-      'methylation/hg002_snrpn_allele_specific',
-      'methylation/hg002_snrpn_reads',
-    ],
+    // cpg(40) + gene(90) + two aggregate profiles(90 each) + reads(460) + chrome
+    viewportHeight: 960,
   },
 ]

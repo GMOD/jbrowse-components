@@ -590,8 +590,8 @@
   },
   "track_menu": {
     "name": "track_menu",
-    "status": "bad",
-    "note": "unclear what the arrows are in screenshot 1, might remove arrows  || AGENT-FIX: removed the ambiguous arrows (kept the two icon rings). regenerated.",
+    "status": "good",
+    "note": "FIXED: dropped the ambiguous arrows; kept the two icon rings + boxed menu. Force-regenerated (arrow removal was 0.4% diff, under content-stable threshold).",
     "reviewedAt": "2026-07-19T21:19:14.799Z",
     "hash": "6080eb609d66b2c3df5affb77b129157638bbd05"
   },
@@ -853,10 +853,10 @@
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "bad",
-    "note": "Please use the actual name of the colorby text descriptions, not just \"Plus...\"",
-    "reviewedAt": "2026-07-19T23:02:55.249Z",
-    "hash": "ffbfefe81a38d4f84a4eabe542be4f15c7ed09c3"
+    "status": "good",
+    "note": "FIXED: both callouts now lead with the verbatim Color-by menu radio labels (not a Plus... paraphrase); regenerated.",
+    "reviewedAt": "2026-07-19T23:21:09.797Z",
+    "hash": "fb0fff609fc885d630798dddf83155c7362665d8"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -1190,10 +1190,10 @@
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
-    "status": "bad",
-    "note": "might add red arrow pointing at the KRAS",
-    "reviewedAt": "2026-07-19T23:07:34.651Z",
-    "hash": "5c57b3627ca976a82c1ec35779187abeece2e9a5"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:23:33.886Z",
+    "hash": "cfba2fc35bedcd5b58b43f940fb684b43ed0405d"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1286,8 +1286,8 @@
   },
   "gallery/nanopore_methylation": {
     "name": "gallery/nanopore_methylation",
-    "status": "bad",
-    "note": "link to source data in caption, elaborate a little more that it is a methylated and unmethylated cpg in caption  || AGENT-FIX: caption elaborated (5mC red / unmethylated blue + source). TODO: real source link maybe epi2me.nanoporetech.com.",
+    "status": "good",
+    "note": "FIXED: caption now names 5mC red / unmethylated blue + hypomethylated island vs methylated flanks, and links the source CRAM (jbrowse.org/genomes/GRCh38/methylation/).",
     "reviewedAt": "2026-07-19T21:11:02.154Z",
     "hash": "796c2c07cbe5c7986fa08cdddb13db90d8896cc7"
   },
@@ -1455,10 +1455,10 @@
   },
   "methylation/arabidopsis_wgbs_contexts": {
     "name": "methylation/arabidopsis_wgbs_contexts",
-    "status": "bad",
-    "note": "move text annotation boxes almost to far left",
-    "reviewedAt": "2026-07-19T23:05:15.782Z",
-    "hash": "5c01e766168f2770de30d8d76275eaa71886694d"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:23:14.790Z",
+    "hash": "f79ce1ec171ce3725456bb95f4e25dd56ea2011e"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1483,15 +1483,15 @@
   },
   "methylation/hg002_snrpn_allele_specific": {
     "name": "methylation/hg002_snrpn_allele_specific",
-    "status": "bad",
-    "note": "zoom out a little see notes for methylation/hg002_snrpn_reads  also  || AGENT-FIX: loc widened ~33%. regenerated.",
-    "reviewedAt": "2026-07-19T21:15:43.458Z",
-    "hash": "c4252a8985ab080b10253a9054d6039f7ec241b5"
+    "status": "good",
+    "note": "FIXED: consolidated into methylation/hg002_snrpn_combined; this figure + hg002_snrpn_reads deleted from methylation.md, specs and PNGs removed.",
+    "reviewedAt": "2026-07-19T23:25:19.860Z",
+    "hash": "97a6452726d0dad4d5c920918f297fd1ac218823"
   },
   "methylation/hg002_snrpn_reads": {
     "name": "methylation/hg002_snrpn_reads",
-    "status": "bad",
-    "note": "might want to combine this figure and  methylation/hg002_snrpn_allele_specific   || AGENT-FIX: added compose fig methylation/hg002_snrpn_combined (stacks reads over allele_specific). regenerated.",
+    "status": "good",
+    "note": "FIXED: consolidated into methylation/hg002_snrpn_combined; spec and PNG removed.",
     "reviewedAt": "2026-07-19T21:15:33.950Z",
     "hash": "f12b5e4ec948f34bb638d744b5428b02823011ed"
   },
@@ -1560,9 +1560,9 @@
   "trio-ancestry": {
     "name": "trio-ancestry",
     "status": "bad",
-    "note": "the text annotation overlaps the data visualization too much, need to make browser taller, so there is blank space below the lgv, and then put text annotations there. be very brief",
-    "reviewedAt": "2026-07-19T23:08:22.897Z",
-    "hash": "4c3ffd7d3c9786181142c83c3efe1b5ee279b223"
+    "note": "this data visualization isn't really 'outstandingly obvious'. it just looks like there are lots of small rectangles and i dont really get it. any clearer examples we could make? I also dont really like the race science implications",
+    "reviewedAt": "2026-07-19T23:24:10.902Z",
+    "hash": "bbd7b11485c847c5215397b1b094905a390935b3"
   },
   "methylation/arabidopsis_wgbs_cpg": {
     "name": "methylation/arabidopsis_wgbs_cpg",
@@ -1600,10 +1600,10 @@
   },
   "multiway_synteny/ecoli_stx_island": {
     "name": "multiway_synteny/ecoli_stx_island",
-    "status": "bad",
-    "note": "zoom out a bit more still",
-    "reviewedAt": "2026-07-19T23:05:55.878Z",
-    "hash": "b4d37ec72552bc01b618efc28de2ff2693ad6351"
+    "status": "good",
+    "note": "FIXED: both rows now 70kb (same bp/px = square view); backbone block aligned so ribbon runs horizontal, stx2 island in bare Sakai stretch.",
+    "reviewedAt": "2026-07-19T23:24:48.007Z",
+    "hash": "076f6cc4d5493424a8518be4d7c9037337f04b51"
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
@@ -1622,9 +1622,9 @@
   "ld/lct_lactase": {
     "name": "ld/lct_lactase",
     "status": "bad",
-    "note": "move the text annotation, it overlaps the highlight. also, what is the meaning of this block, why would a layperson care? make it easy to understand",
-    "reviewedAt": "2026-07-19T23:04:37.725Z",
-    "hash": "11b5072e45f4a56963c5bd48dc3c75b9431a6428"
+    "note": "would it make sense to add other tracks like multisamplevariantmatrix or some fst or other type of thing to help demonstrate? see https://kalis.louisaslett.com/articles/lct_example.html or any other interesting education ways we could visualize this https://genome.ucsc.edu/training/education/lactase.html",
+    "reviewedAt": "2026-07-19T23:23:06.861Z",
+    "hash": "9b226cc8c6b5211892144b5af4b73d9f67c20b6c"
   },
   "ld/mapt_17q21_inversion": {
     "name": "ld/mapt_17q21_inversion",
@@ -1663,9 +1663,9 @@
   },
   "methylation/hg002_snrpn_combined": {
     "name": "methylation/hg002_snrpn_combined",
-    "status": "bad",
-    "note": "you combined the two figures but it should instead be the bedmethyl track is just added as another track in the single screenshot",
-    "reviewedAt": "2026-07-19T23:05:45.376Z",
-    "hash": "6b528e98ed80ad3765a247e79cd8ce2255065c32"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-19T23:25:01.523Z",
+    "hash": "da683511c60b2daf837e56c549721719cf01f76c"
   }
 }

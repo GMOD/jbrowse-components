@@ -122,11 +122,13 @@ export const ldSpecs: ScreenshotSpec[] = [
     annotations: [
       {
         type: 'text',
-        x: 320,
-        y: 250,
-        maxWidth: 420,
+        // kept left of the banded LCT/MCM6 locus (highlight starts ~x=650) so
+        // the callout no longer sits on top of the highlight (reviewer)
+        x: 40,
+        y: 245,
+        maxWidth: 380,
         fontSize: 16,
-        text: 'The solid triangle of high r² over LCT/MCM6 is one long haplotype in strong linkage disequilibrium — the swept lactase-persistence block.',
+        text: 'A variant near LCT keeps the milk-digesting enzyme lactase switched on into adulthood. It spread so fast under natural selection that a long block of neighboring SNPs was carried along with it — that block is the solid red triangle, all inherited together (high r²).',
       },
     ],
   },
