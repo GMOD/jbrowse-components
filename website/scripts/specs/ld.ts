@@ -110,34 +110,64 @@ export const ldSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'ld/lct_haplotype_matrix',
+    // The two halves of the same story stacked over one 800 kb window (reviewer:
+    // "combine with an LD diagram"): the abstract r² triangle on top and the
+    // concrete phased haplotypes below, so the reader sees the block AND the
+    // samples that carry it in one frame. Same slice, same MAF filter. The
+    // banded LCT/MCM6 locus lines up down all three tracks.
     url: `${HG19_HUB}&session=${encodeSessionSpec({
-      sessionTracks: [LCT_MATRIX_TRACK],
+      sessionTracks: [LCT_TRACK, LCT_MATRIX_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
+          // wide enough that the swept block reads as a bounded red triangle
+          // against lower-LD flanks (a solid fill with no edge doesn't say
+          // "block") — same window as the standalone LD figure
+          loc: 'chr2:136,200,000-137,000,000',
+          highlight: [
+            {
+              refName: 'chr2',
+              start: 136_545_410,
+              end: 136_634_000,
+              assemblyName: 'hg19',
+            },
+          ],
           assembly: 'hg19',
-          loc: 'chr2:136,500,000-136,700,000',
           tracks: [
             {
               trackId: 'hg19-ncbiRefSeqCurated',
               type: 'LinearBasicDisplay',
-              height: 90,
+              height: 60,
               showOnlyGenes: true,
             },
+            { trackId: 'kgp_lct_ld', type: 'LDDisplay', height: 320 },
             {
               trackId: 'kgp_lct_matrix',
               type: 'LinearMultiSampleVariantMatrixDisplay',
               runClustering: true,
+              height: 380,
             },
           ],
         },
       ],
     })}&sessionName=Screenshot`,
     readyText: 'chr2',
+    // clustering (the dendrogram) is the slowest step; the LD triangle above
+    // paints well before it, so waiting on the dendrogram gates both
     readySelector: '[data-testid="tree_sidebar_dendrogram"]',
     readyTimeout: 180000,
-    viewportHeight: 660,
-    settleMs: 3000,
+    viewportHeight: 1000,
+    settleMs: 5000,
+    annotations: [
+      {
+        type: 'text',
+        x: 40,
+        y: 250,
+        maxWidth: 360,
+        fontSize: 15,
+        text: 'Top: the r² triangle — a solid red block means every SNP across the LCT/MCM6 locus is inherited together. Bottom: the same 2504 samples as a genotype matrix, rows clustered by similarity — one large band all carry the identical swept haplotype (the block), the rest do not.',
+      },
+    ],
   },
   {
     mode: 'url',
