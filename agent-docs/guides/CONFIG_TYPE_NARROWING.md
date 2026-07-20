@@ -77,18 +77,39 @@ reads stay `any` under generic threading.** Threading only narrows the
 LGVSynteny) have ~0 in-body reads, so it buys almost nothing. The bases hold the
 reads (alignments 34, multisample 9, wiggle), and those live in the base body.
 
+Tightening the **constraint** to a concrete schema — `factory<S extends
+LinearWiggleDisplayConfigModel>(configSchema: S)` — does *not* rescue it, and is
+worse: proved with a throwaway probe (a generic fn building
+`ConfigurationReference(configSchema: S)` and reading `getConf(self,'color')`), TS
+does not resolve `ConfigurationSlotName<ConfigurationSchemaForModel<ConfigReferenceInstance<S>>>`
+through the constraint, so **every named `getConf(self, …)` in the body errors**
+("`'color'` is not assignable to `ConfigurationSlotName<…<S>>`"), not just invalid
+ones. So a generic base body can't read slots by name at all under a concrete
+constraint. Don't retry generic threading in any form.
+
 The lever that narrows a base's own body is pinning its param to the **concrete
 schema it actually reads from** — its shared base schema, e.g.
 `configSchema: SharedVariantConfigModel` (`= ReturnType<typeof sharedVariantConfigFactory>`).
 This is the same single-brand mechanism as a leaf, just aimed at the shared
-schema. Preconditions, both verified for multisample: (a) every base read targets
-a slot on that shared schema (a subclass-only slot read would regress to `any`);
-(b) each subclass's *extended* schema stays assignable to the shared schema type,
-so the subclass can still pass it into the base param. (b) held for variants —
-`ConfigurationSchema(name, {height}, {baseConfiguration: shared})` is assignable
-to the shared type (superset of props). **The full typecheck settles (b); an LSP
-hover on a real base read settles that narrowing actually happened (a green
-typecheck alone can't — `any` is assignable to everything, Trap 1).**
+schema. Three preconditions:
+
+- **(a)** every base read targets a slot on that shared schema (a subclass-only
+  slot read would regress to `any`);
+- **(b)** each subclass's *extended* schema stays assignable to the shared schema
+  type, so the subclass can still pass it into the base param — held for variants,
+  `ConfigurationSchema(name, {height}, {baseConfiguration: shared})` is assignable
+  to the shared type (superset of props);
+- **(c)** — the one that actually gates the remaining bases — **no consumer may
+  read its *own* (non-shared) slots via `getConf(self, …)`.** The base owns the
+  `configuration` prop, so every consumer inherits `IConfigurationReference<shared>`;
+  pinning makes a consumer's own-slot read a hard **error** (not a silent `any`),
+  because `getConf` is a single constrained signature — a slot name outside the
+  pinned schema fails `SLOT extends ConfigurationSlotName<…>`. LGVSynteny and the
+  multisample subclasses satisfy (c) with 0 own reads; gccontent violates it.
+
+**The full typecheck settles (b)+(c); an LSP hover on a real base read settles that
+narrowing actually happened (a green typecheck alone can't — `any` is assignable to
+everything, Trap 1).**
 
 **Done (shared-schema pin):**
 
@@ -107,31 +128,32 @@ typecheck alone can't — `any` is assignable to everything, Trap 1).**
   surfaced a mismatch. Hover-verified: `getConf(self,'coverageHeight')` →
   `number`.
 
-**Remaining bases — both blocked, and precondition (b) is the reason (verified by
-investigation, not spiked because payoff is low):**
+**Remaining bases — both blocked (verified by investigation, not spiked because
+payoff is low):**
 
-- **`LinearWiggleDisplay` (3 base reads).** Precondition (b) fails for its
-  consumer `LinearGCContentDisplay`. gccontent doesn't statically import the
-  wiggle schema — it builds its own schema with
-  `baseConfiguration: pluginManager.getDisplayType('LinearWiggleDisplay').configSchema`
-  (`sharedConfigSchema.ts`), a **runtime** lookup typed `AnyConfigurationSchemaType`
-  (`DisplayType.configSchema`). So `ReturnType<typeof sharedGCContentConfigSchema>`
-  does not statically contain the wiggle slots and is **not assignable** to the
-  wiggle schema type — the consumer-chain retype (SharedModelF + the two gccontent
-  state-model factories, all currently `AnyConfigurationSchemaType`) can't pass it
-  into a wiggle-pinned param. Would first require switching gccontent to a static
-  `import { linearWiggleDisplayConfigSchema }` base; not worth it for 3 reads.
-  (Contrast: `LGVSyntenyDisplay` static-imports `linearAlignmentsDisplayConfigSchemaFactory`,
-  so its base slots ARE statically present → (b) held → alignments converted.)
+- **`LinearWiggleDisplay` (3 base reads).** Blocked by **precondition (c)**:
+  `LinearGCContentDisplay` reads its *own* slots — `getConf(self,'windowSize')`,
+  `'gcMode'`, `'windowDelta'` in `shared.tsx` — off the wiggle base's inherited
+  `configuration`. Pin the base and those three become hard errors ("`'windowSize'`
+  not assignable to `ConfigurationSlotName<wiggle>`"). That is the exact "3 gccontent
+  errors" a prior attempt hit and reverted. A **static** wiggle-schema base for
+  gccontent (`import { linearWiggleDisplayConfigSchema }` instead of the runtime
+  `pluginManager.getDisplayType('LinearWiggleDisplay').configSchema`) fixes only
+  (b) — assignability — but (c) still breaks the reads, and generic threading can't
+  rescue it (see the concrete-constraint probe above). The only clean fix is to
+  give gccontent its own concrete display-schema type on `self.configuration`,
+  which the shared wiggle base can't provide. Not worth it for 3 reads.
+  (Contrast: `LGVSyntenyDisplay`/multisample subclasses have 0 own reads, so (c)
+  holds and they converted.)
 - **`linearCanvasBaseDisplayStateModelFactory` / `LinearBasicDisplay` base (8 reads,
-  widest fan-in).** One consumer is `LinearVariantDisplay`, the exact display that
-  can't be pinned to a concrete schema without breaking the repo-wide
-  `{ displayId: string }` structural check (`LinearVariantDisplayComponent` →
-  `BaseLinearDisplay`; that's why the widened case is special-cased to `any`, and
-  why variant itself stays widened). Pinning the canvas base forces every consumer
-  — variant included — to a concrete schema, re-triggering that break. **Blocked
-  on Lead B** (surface `displayId` on the instance so variant can convert); do B
-  first, then this base and variant fall out together.
+  widest fan-in).** Doubly blocked. (c) fails — consumers read their own slots
+  (`LinearMultiRowFeatureDisplay` has 3 own `getConf(self,…)`, etc.), which a pin
+  would break. And its consumer `LinearVariantDisplay` is the exact display that
+  can't be pinned at all without breaking the repo-wide `{ displayId: string }`
+  structural check (`LinearVariantDisplayComponent` → `BaseLinearDisplay`; that's
+  why the widened case is special-cased to `any`, and why variant stays widened).
+  So even setting (c) aside, this base is **gated on Lead B** (surface `displayId`
+  on the instance so variant can convert).
 
 `DotplotDisplay`/`LinearSyntenyDisplay` have **empty** schemas
 (`ConfigurationSchema('…', {}, …)`) — nothing to narrow, skip.
