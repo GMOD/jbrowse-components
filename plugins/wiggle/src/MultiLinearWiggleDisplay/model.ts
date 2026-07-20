@@ -47,8 +47,8 @@ import {
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
 
+import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -88,7 +88,7 @@ const WiggleClusterDialog = lazy(
  * ```
  */
 export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: MultiLinearWiggleDisplayConfigModel,
 ) {
   return types
     .compose(

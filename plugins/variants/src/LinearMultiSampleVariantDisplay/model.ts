@@ -8,7 +8,7 @@ import type {
   VariantRenderingBackend,
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -20,7 +20,7 @@ import type {
  * Multi-sample variant display drawing one genotype row per sample, with a
  * per-cell feature widget on click.
  */
-export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
+export function stateModelFactory(configSchema: SharedVariantConfigModel) {
   return (
     types
       .compose(

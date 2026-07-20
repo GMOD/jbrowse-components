@@ -45,13 +45,11 @@ import {
 } from './multiSampleVariantMenuItems.ts'
 import { getVariantLegendSections } from './variantLegend.ts'
 
+import type { SharedVariantConfigModel } from './SharedVariantConfigSchema.ts'
 import type { ProcessedSource, Source } from './types.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AnyConfigurationModel,
-  AnyConfigurationSchemaType,
-} from '@jbrowse/core/configuration'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region, RpcStatus } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -261,7 +259,7 @@ function getGenotypeMapForFeature(
  * ```
  */
 export default function MultiSampleVariantBaseModelF(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: SharedVariantConfigModel,
   cellDataMode: 'regular' | 'matrix',
 ) {
   return (

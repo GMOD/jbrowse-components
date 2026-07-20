@@ -44,9 +44,11 @@ A factory that annotates the concrete schema type (e.g.
 every read for free.
 
 **Done (leaf factories):** arc, hic, maf, multirow, gwas-manhattan,
-circular-chordvariant. Each was a one-line param retype (plus a named
-schema-type export where the plugin only exported a factory/value). Pure type
-change, no runtime effect.
+circular-chordvariant, LinearReferenceSequenceDisplay, MultiLinearWiggleDisplay.
+Each was a one-line param retype (plus a named schema-type export where the
+plugin only exported a factory/value). Pure type change, no runtime effect. The
+sequence retype also let a `getConf(self,'height') as number | undefined` cast be
+dropped (the `maybeNumber` slot narrows on its own).
 
 **Only convert LEAVES, and let `pnpm typecheck` be the judge.** A factory that
 is a **shared base** — instantiated by other displays with a *different,
@@ -60,14 +62,49 @@ was reverted. The reliable base detector is the **full typecheck after
 converting**: a base used with an extended schema errors at the subclass; a true
 leaf stays clean.
 
-**Still widened** (deliberately): the base factories
-(`linearCanvasBaseDisplayStateModelFactory`, `LinearWiggleDisplay`,
-`MultiSampleVariantBaseModel`) need **generic threading** —
-`factory<S extends AnyConfigurationSchemaType>(configSchema: S)` — so each
-consumer's concrete/extended schema flows through; that's more invasive (a type
-param through the `.compose()`/`.props()` chain) and wants its own spike.
-`LinearAlignmentsDisplay` is likely a base too (LGVSyntenyDisplay builds on it —
-see its CLAUDE.md) and additionally exports the *Instance* type, not the schema.
+### Bases: pin to the concrete SHARED schema, NOT generic threading
+
+An earlier version of this doc said the base factories
+(`MultiSampleVariantBaseModel`, `LinearWiggleDisplay`,
+`linearCanvasBaseDisplayStateModelFactory`, `LinearAlignmentsDisplay`) want
+**generic threading** — `factory<S extends AnyConfigurationSchemaType>(configSchema: S)`.
+That is the wrong tool, and the reason is mechanical: inside a generic body `S`
+is known only by its constraint `AnyConfigurationSchemaType`, whose definition is
+`any`, so `ConfigReferenceInstance<S>` hits the deliberate `IsAny<D> ? any`
+special-case (`configurationSchema.ts`). **The base's own `getConf(self, …)`
+reads stay `any` under generic threading.** Threading only narrows the
+*consumers'* call sites — and the base subclasses (matrix, multisample,
+LGVSynteny) have ~0 in-body reads, so it buys almost nothing. The bases hold the
+reads (alignments 34, multisample 9, wiggle), and those live in the base body.
+
+The lever that narrows a base's own body is pinning its param to the **concrete
+schema it actually reads from** — its shared base schema, e.g.
+`configSchema: SharedVariantConfigModel` (`= ReturnType<typeof sharedVariantConfigFactory>`).
+This is the same single-brand mechanism as a leaf, just aimed at the shared
+schema. Preconditions, both verified for multisample: (a) every base read targets
+a slot on that shared schema (a subclass-only slot read would regress to `any`);
+(b) each subclass's *extended* schema stays assignable to the shared schema type,
+so the subclass can still pass it into the base param. (b) held for variants —
+`ConfigurationSchema(name, {height}, {baseConfiguration: shared})` is assignable
+to the shared type (superset of props). **The full typecheck settles (b); an LSP
+hover on a real base read settles that narrowing actually happened (a green
+typecheck alone can't — `any` is assignable to everything, Trap 1).**
+
+**Done (shared-schema pin):** `MultiSampleVariantBaseModel` — param
+`SharedVariantConfigModel`, both subclass factories (`LinearMultiSampleVariant{Matrix,}Display`)
+retyped to the same so they pass an assignable schema in. Hover-verified:
+`getConf(self,'renderingMode')` → `'alleleCount' | 'phased'`, not `any`. The 9th
+read is a dynamic `getConf(self, key)` — `any` regardless (dynamic key).
+
+**Next (same pattern, largest win):** `LinearAlignmentsDisplay` (34 base reads).
+Its only external consumer is `LGVSyntenyDisplay` (0 own reads; composes the
+alignments base with an extended schema — `configSchemaF.ts`), so it's the
+lowest-risk consumer. Wrinkle: the plugin exports the config *Instance*
+(`LinearAlignmentsDisplayConfigModel = Instance<ReturnType<…>>`), not the schema
+type — add a `…ConfigSchema = ReturnType<typeof configSchemaFactory>` export and
+pin the base + LGVSynteny params to it. `LinearWiggleDisplay` (gccontent
+consumer) and the canvas base come after.
+
 `DotplotDisplay`/`LinearSyntenyDisplay` have **empty** schemas
 (`ConfigurationSchema('…', {}, …)`) — nothing to narrow, skip.
 
@@ -156,8 +193,13 @@ but first measure how many existing loose reads (map-of-subschema, plain
 snapshots, `session.tracks` entries) legitimately need it (the loose overload's
 own comment in `util.ts` lists the intended cases).
 
-**D. Tighten factory `configSchema` params.** Mechanical rollout of the lever
-above; unlocks narrowing at each converted factory's `getConf(self, …)` sites.
+**D. Tighten factory `configSchema` params.** Rollout of the lever above; unlocks
+narrowing at each converted factory's `getConf(self, …)` sites. Two shapes: a
+**leaf** takes a one-line param retype to its own schema type; a **base** (a
+factory other displays compose with an extended schema) takes the concrete
+**shared** schema it reads from, plus retyping its subclass factories — see "Bases:
+pin to the concrete SHARED schema" above. `LinearAlignmentsDisplay` (34 reads) is
+the biggest remaining target; the canvas/wiggle bases follow.
 
 ## How to verify any change here
 

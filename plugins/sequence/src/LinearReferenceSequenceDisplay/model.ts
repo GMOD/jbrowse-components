@@ -34,7 +34,7 @@ import { hoverDetailForRow, rowLayout } from './components/sequenceHover.ts'
 import type { Canvas2DSequenceRenderer } from './components/Canvas2DSequenceRenderer.ts'
 import type { DrawSequenceState } from './components/drawSequence.ts'
 import type { SequenceHover } from './components/sequenceHover.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
 import type {
   ExportSvgDisplayOptions,
@@ -85,7 +85,9 @@ export interface SequenceRegionData {
  * }
  * ```
  */
-export function modelFactory(configSchema: AnyConfigurationSchemaType) {
+export function modelFactory(
+  configSchema: LinearReferenceSequenceDisplayConfigModel,
+) {
   return types
     .compose(
       'LinearReferenceSequenceDisplay',
@@ -211,9 +213,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * otherwise the zoom-aware computed height.
        */
       get height() {
-        return (
-          (getConf(self, 'height') as number | undefined) ?? this.computedHeight
-        )
+        return getConf(self, 'height') ?? this.computedHeight
       },
       get rowHeight() {
         return this.numRows > 0 ? this.height / this.numRows : 0

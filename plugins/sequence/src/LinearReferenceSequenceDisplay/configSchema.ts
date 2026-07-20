@@ -68,3 +68,5 @@ export const configSchema = ConfigurationSchema(
   },
   { explicitIdentifier: 'displayId', explicitlyTyped: true },
 )
+
+export type LinearReferenceSequenceDisplayConfigModel = typeof configSchema

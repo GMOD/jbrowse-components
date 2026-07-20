@@ -95,7 +95,7 @@ export function remapMultiWiggleConfig(snap: Record<string, unknown>) {
  * }
  * ```
  */
-export default ConfigurationSchema(
+const configSchema = ConfigurationSchema(
   'MultiLinearWiggleDisplay',
   {
     ...wiggleConfigSchemaFields,
@@ -191,3 +191,7 @@ export default ConfigurationSchema(
       remapMultiWiggleConfig(snap),
   },
 )
+
+export default configSchema
+
+export type MultiLinearWiggleDisplayConfigModel = typeof configSchema

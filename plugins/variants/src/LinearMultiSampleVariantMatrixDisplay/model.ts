@@ -4,7 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
 import type { VariantMatrixRenderingBackend } from './components/variantMatrixRenderingBackendTypes.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -17,7 +17,7 @@ import type {
  * matrix, with subpixel column alpha-scaling for anti-aliased parity.
  */
 export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: SharedVariantConfigModel,
 ) {
   return (
     types
