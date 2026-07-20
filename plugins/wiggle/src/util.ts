@@ -67,8 +67,12 @@ export const MULTI_WIGGLE_RENDERING_TYPES =
     options.map(([value]) => value),
   )
 
-// Default color used by wiggle config schema
+// Default colors used by wiggle config schema. The negative color is a clean,
+// saturated red rather than a muted coral so that at high density (many thin
+// overlapping bars, e.g. a zoomed-out phyloP track) the negative side still
+// reads as red instead of muddying toward brown.
 export const WIGGLE_POS_COLOR_DEFAULT = '#0068d1'
+export const WIGGLE_NEG_COLOR_DEFAULT = '#e01e26'
 
 // There was confusion about whether source or name was required, and effort to
 // remove one or the other was thwarted. Adapters like BigWigAdapter, even in

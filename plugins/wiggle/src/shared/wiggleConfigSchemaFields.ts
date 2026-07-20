@@ -1,6 +1,6 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
+import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 
 export const wiggleConfigSchemaFields = {
   posColor: {
@@ -11,7 +11,7 @@ export const wiggleConfigSchemaFields = {
   },
   negColor: {
     type: 'color',
-    defaultValue: '#f0636b',
+    defaultValue: WIGGLE_NEG_COLOR_DEFAULT,
     description:
       'Fill color for negative scores, used when useBicolor is true (the default)',
   },

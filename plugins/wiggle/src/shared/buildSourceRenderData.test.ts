@@ -24,7 +24,7 @@ function makeData(): WiggleDataResult {
 const baseGpuProps: WiggleGpuProps = {
   sources: [{ name: 'default' }],
   posColor: '#0068d1',
-  negColor: '#f0636b',
+  negColor: '#e01e26',
   summaryScoreMode: 'avg',
   renderingType: 'xyplot',
   isDensityMode: false,
