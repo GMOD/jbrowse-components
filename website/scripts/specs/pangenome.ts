@@ -98,9 +98,9 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
 
   // Projection 4: pangenome depth (core vs accessory) from `odgi depth`, as a
   // whole-chromosome overview so the shared plateau and the accessory dips read
-  // at a glance. NOTE: the ecoli_pggb_depth track only exists once the demo is
-  // rebuilt (build_ecoli_pangenome_graph.sh) and redeployed to S3 — regenerate
-  // this figure after that redeploy.
+  // at a glance. No gene lane: at 4.6 Mb the ~4,300 K12 genes only trip the
+  // FeatureTrack "too many features" gate, so the depth curve carries the figure
+  // on its own.
   {
     mode: 'url',
     name: 'pangenome/depth',
@@ -111,20 +111,19 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: 'chr:1-4,641,652',
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
               trackId: 'ecoli_pggb_depth',
               type: 'LinearWiggleDisplay',
-              height: 160,
+              height: 200,
             },
           ],
         },
       ],
     }),
-    readyText: '4,000,000',
+    readyText: 'pangenome depth',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 420,
+    viewportHeight: 360,
     settleMs: 15000,
     hideTooltip: true,
     actions: [
@@ -137,10 +136,8 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
 
   // Projection 4b: per-strain presence from `odgi pav` as a MultiQuantitativeTrack
   // — one bigWig subtrack per non-K12 strain, whole-chromosome so each strain's
-  // accessory dips read at a glance beside the aggregate depth curve. NOTE: the
-  // ecoli_pggb_pav track (and its per-strain bigWigs) only exist once the demo is
-  // rebuilt (build_ecoli_pangenome_graph.sh) and redeployed to S3 — regenerate
-  // this figure after that redeploy.
+  // accessory dips read at a glance beside the aggregate depth curve. No gene
+  // lane, same as the depth figure above.
   {
     mode: 'url',
     name: 'pangenome/pav',
@@ -151,20 +148,19 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
           assembly: 'K12',
           loc: 'chr:1-4,641,652',
           tracks: [
-            { trackId: 'K12_genes', type: 'LinearBasicDisplay' },
             {
               trackId: 'ecoli_pggb_pav',
               type: 'MultiLinearWiggleDisplay',
-              height: 200,
+              height: 240,
             },
           ],
         },
       ],
     }),
-    readyText: '4,000,000',
+    readyText: 'per-strain presence',
     readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 460,
+    viewportHeight: 400,
     settleMs: 15000,
     hideTooltip: true,
     actions: [

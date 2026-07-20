@@ -273,6 +273,8 @@ stretches the variant and MAF projections zoom into. (Collapsed repeats can push
 a window above the strain count, so read the signal as relative, not an exact
 genome tally.)
 
+<Figure caption="odgi depth across all 4.64 Mb of K12. The curve sits near 4 — all four strains traverse the graph there, so the sequence is core — and drops toward 1 over the accessory stretches private to fewer strains. This is odgi viz's per-column path coverage summed into one curve, replotted on K12 coordinates." src="/img/pangenome/depth.png" />
+
 ### Per-strain presence
 
 The depth track sums every path into one curve.
@@ -316,6 +318,8 @@ one row falls to 0 over its own accessory stretch while the others hold at 1. It
 is the per-genome read of the same core/accessory signal the depth curve
 summarizes.
 
+<Figure caption="odgi pav over the same K12 windows, one row per non-K12 strain. Each row holds near 1 where that strain is present and drops to 0 over its own accessory stretches, and the gap patterns differ per strain — so a single dip in the aggregate depth curve resolves here into which strain accounts for it. These are odgi viz's filled-vs-gap rows, windowed onto K12 coordinates." src="/img/pangenome/pav.png" />
+
 ## Compared to `odgi viz`
 
 odgi ships its own one-line renderer,
@@ -324,7 +328,7 @@ odgi ships its own one-line renderer,
 four projections above — because it draws the graph the way the graph is stored,
 which is exactly what makes a pangenome graph hard to read at first.
 
-<Figure caption="The same four-strain graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not (accessory sequence), over a thin band of the graph's links (its topology). The horizontal axis is graph node order — the pangenome sequence — not any genome's coordinates, so nothing here lines up with a gene or a chromosome position. The four JBrowse projections re-plot this same presence/absence and structure on K12's coordinates instead." src="/img/pangenome/graph.png" />
+<Figure caption="The same four-strain graph drawn by odgi viz: one row per strain, colored where that strain traverses the graph and white where it does not (accessory sequence), over a thin band of the graph's links (its topology). Its rows are the per-strain presence figure above read a different way — the white gaps here are the same accessory stretches that drop to 0 in the pav track — but ordered by graph node order (the pangenome sequence) rather than K12 position, so nothing lines up with a gene or a chromosome coordinate. The four JBrowse projections re-plot this same presence/absence and structure on K12's coordinates instead." src="/img/pangenome/graph.png" />
 
 `odgi viz` gives one row per strain, as the MAF and per-strain-presence tracks
 do. But its horizontal axis is not any genome's coordinates: it is the graph's
