@@ -52,6 +52,7 @@ export function WiggleCommonMixin() {
           return undefined
         }
         const numStdDev = self.numStdDev
+        const numQuantile = self.numQuantile
         const names = self.autoscaleSourceNames
         // Use coarseDynamicBlocks (500ms debounced) instead of visibleRegions
         // so autoscale doesn't recompute on every animation frame during zoom.
@@ -75,6 +76,7 @@ export function WiggleCommonMixin() {
           self.summaryScoreMode,
           numStdDev,
           visibleEntries,
+          numQuantile,
         )
       },
     }))

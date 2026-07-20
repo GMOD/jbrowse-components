@@ -55,6 +55,11 @@ function isStdDevAutoscale(autoscaleType: string) {
   return autoscaleType === 'localsd'
 }
 
+// Bin count for the approximate percentile histogram. 1024 bins gives ~0.1%
+// resolution on the domain, which is finer than any autoscale needs and keeps
+// the second pass O(n) with a fixed, trivial allocation.
+const NUM_HISTOGRAM_BINS = 1024
+
 function computeStats(
   summaryScoreMode: string,
   datasets: Dataset[],
@@ -129,10 +134,87 @@ export function domainFromStats(
   return [stats.scoreMin, stats.scoreMax]
 }
 
+// Builds a `[low, high]` domain by clipping the score distribution to the
+// central `quantile` fraction (e.g. 0.99 → clip the top 1% of scores). Unlike
+// localsd it makes no normality assumption, so it stays robust on the heavily
+// right-skewed score distributions typical of coverage/wiggle data. A fixed
+// histogram over [scoreMin, scoreMax] keeps this a single O(n) pass with no
+// sort — the resulting quantile is approximate to ~1/NUM_HISTOGRAM_BINS of the
+// range, which is far finer than the display needs.
+function percentileDomainFromHistogram(
+  stats: ScoreStats,
+  summaryScoreMode: string,
+  quantile: number,
+  datasets: Dataset[],
+): [number, number] {
+  const { scoreMin, scoreMax } = stats
+  const range = scoreMax - scoreMin
+  if (range <= 0) {
+    return [scoreMin, scoreMax]
+  }
+  const bins = new Int32Array(NUM_HISTOGRAM_BINS)
+  const scale = NUM_HISTOGRAM_BINS / range
+  let count = 0
+  for (const { data, visStart, visEnd } of datasets) {
+    const { featurePositions, numFeatures } = data
+    const scores = getEffectiveScores(data, summaryScoreMode)
+    for (let i = 0; i < numFeatures; i++) {
+      if (
+        visStart !== undefined &&
+        visEnd !== undefined &&
+        !overlaps(
+          featurePositions[i * 2]!,
+          featurePositions[i * 2 + 1]!,
+          visStart,
+          visEnd,
+        )
+      ) {
+        continue
+      }
+      const bin = Math.min(
+        NUM_HISTOGRAM_BINS - 1,
+        Math.floor((scores[i]! - scoreMin) * scale),
+      )
+      bins[bin]!++
+      count++
+    }
+  }
+
+  // Walk the cumulative histogram to the low/high quantile bins. `quantile` is
+  // the upper percentile directly (0.99 → 99th pct max, 1st pct min); the low
+  // bound is normally pinned to 0 below, so spending the whole budget on the
+  // high tail keeps the clip strong enough to catch outliers.
+  const lowTarget = (1 - quantile) * count
+  const highTarget = quantile * count
+  let cumulative = 0
+  let lowBin = 0
+  let highBin = NUM_HISTOGRAM_BINS - 1
+  let lowFound = false
+  for (let bin = 0; bin < NUM_HISTOGRAM_BINS; bin++) {
+    cumulative += bins[bin]!
+    if (!lowFound && cumulative >= lowTarget) {
+      lowBin = bin
+      lowFound = true
+    }
+    if (cumulative >= highTarget) {
+      highBin = bin
+      break
+    }
+  }
+  // Convert bin edges back to scores. The high edge uses `highBin + 1` so the
+  // target bin is included rather than clipped. Pin the low bound to 0 for
+  // all-positive data, matching localsd's origin convention so the axis stays
+  // anchored at zero.
+  return [
+    scoreMin >= 0 ? 0 : scoreMin + (lowBin / NUM_HISTOGRAM_BINS) * range,
+    scoreMin + ((highBin + 1) / NUM_HISTOGRAM_BINS) * range,
+  ]
+}
+
 /**
  * #api
  * Computes a score domain from the visible feature arrays for the `local` /
- * `localsd` autoscale types.
+ * `localsd` / `localpercentile` autoscale types.
  */
 export function computeAutoscaleDomain(
   autoscaleType: string,
@@ -143,10 +225,19 @@ export function computeAutoscaleDomain(
     visStart: number
     visEnd: number
   }[],
+  numQuantile = 0.99,
 ): [number, number] | undefined {
   const stats = computeStats(summaryScoreMode, visibleEntries)
   if (!stats) {
     return undefined
+  }
+  if (autoscaleType === 'localpercentile') {
+    return percentileDomainFromHistogram(
+      stats,
+      summaryScoreMode,
+      numQuantile,
+      visibleEntries,
+    )
   }
   return domainFromStats(stats, autoscaleType, numStdDev)
 }

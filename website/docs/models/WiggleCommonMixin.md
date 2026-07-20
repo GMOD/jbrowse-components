@@ -38,6 +38,7 @@ instead.
 | [scaleType](#getter-scaletype)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [autoscaleType](#getter-autoscaletype)                       | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [numStdDev](#getter-numstddev)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
+| [numQuantile](#getter-numquantile)                           | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [scatterPointSize](#getter-scatterpointsize)                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [lineWidth](#getter-linewidth)                               | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
 | [summaryScoreMode](#getter-summaryscoremode)                 | Getters    | [WiggleScoreConfigMixin](../wigglescoreconfigmixin) |                                                                                                                                                                                                                                                                                                                    |
@@ -224,6 +225,12 @@ type autoscaleType = string
 
 ```ts
 type numStdDev = number
+```
+
+#### getter: numQuantile
+
+```ts
+type numQuantile = number
 ```
 
 #### getter: scatterPointSize

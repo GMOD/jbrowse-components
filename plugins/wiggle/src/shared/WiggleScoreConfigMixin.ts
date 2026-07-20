@@ -118,6 +118,12 @@ export function WiggleScoreConfigMixin() {
       /**
        * #getter
        */
+      get numQuantile(): number {
+        return getConf(confNode(self), 'numQuantile')
+      },
+      /**
+       * #getter
+       */
       get scatterPointSize(): number {
         return getConfResolved(promotableNode(self), 'scatterPointSize')
       },

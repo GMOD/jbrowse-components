@@ -43,16 +43,27 @@ export const wiggleConfigSchemaFields = {
   },
   autoscale: {
     type: 'stringEnum',
-    model: types.enumeration('Autoscale type', ['local', 'localsd']),
-    defaultValue: 'local',
+    model: types.enumeration('Autoscale type', [
+      'local',
+      'localsd',
+      'localpercentile',
+    ]),
+    defaultValue: 'localpercentile',
     description:
-      'Autoscale type: "local" uses the min/max in the visible region, "localsd" uses mean ± numStdDev standard deviations',
+      'Autoscale type: "local" uses the min/max in the visible region, "localsd" uses mean ± numStdDev standard deviations, "localpercentile" uses the numQuantile-th percentile score as the max (robust to skewed/peaky data)',
   },
   numStdDev: {
     type: 'number',
     defaultValue: 3,
     description:
       'Number of standard deviations to use for the localsd autoscale type',
+    advanced: true,
+  },
+  numQuantile: {
+    type: 'number',
+    defaultValue: 0.99,
+    description:
+      'Upper percentile used as the max for the localpercentile autoscale type (e.g. 0.99 uses the 99th-percentile score as the max, clipping the top 1% of outliers; the min uses the 1st percentile, or 0 for all-positive data)',
     advanced: true,
   },
   // Sentinel promotable slots (like alignments featureHeight): `undefined` is

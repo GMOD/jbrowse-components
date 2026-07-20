@@ -30,6 +30,7 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 | [scaleType](#getter-scaletype)                       | Getters    | WiggleScoreConfigMixin |                                    |
 | [autoscaleType](#getter-autoscaletype)               | Getters    | WiggleScoreConfigMixin |                                    |
 | [numStdDev](#getter-numstddev)                       | Getters    | WiggleScoreConfigMixin |                                    |
+| [numQuantile](#getter-numquantile)                   | Getters    | WiggleScoreConfigMixin |                                    |
 | [scatterPointSize](#getter-scatterpointsize)         | Getters    | WiggleScoreConfigMixin |                                    |
 | [lineWidth](#getter-linewidth)                       | Getters    | WiggleScoreConfigMixin |                                    |
 | [summaryScoreMode](#getter-summaryscoremode)         | Getters    | WiggleScoreConfigMixin |                                    |
@@ -133,6 +134,12 @@ type autoscaleType = string
 
 ```ts
 type numStdDev = number
+```
+
+#### getter: numQuantile
+
+```ts
+type numQuantile = number
 ```
 
 #### getter: scatterPointSize

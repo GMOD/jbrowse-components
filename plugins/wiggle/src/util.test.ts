@@ -129,6 +129,39 @@ describe('computeAutoscaleDomain', () => {
     expect(result).toEqual([1, 15])
   })
 
+  test('localpercentile clips a high outlier off the top', () => {
+    // 99 features at score 1, one spike at 1000. local would scale to 1000;
+    // localpercentile (0.99) should clip the spike and stay near 1.
+    const scores = Array.from({ length: 99 }, () => 1)
+    scores.push(1000)
+    const data = makeFeatureArrays(scores)
+    const entries = [{ data, visStart: 0, visEnd: 100 * scores.length }]
+    const local = computeAutoscaleDomain('local', 'avg', 3, entries)
+    const pct = computeAutoscaleDomain(
+      'localpercentile',
+      'avg',
+      3,
+      entries,
+      0.99,
+    )
+    expect(local).toEqual([1, 1000])
+    expect(pct![0]).toBe(0)
+    expect(pct![1]).toBeLessThan(1000)
+  })
+
+  test('localpercentile pins low bound at 0 for all-positive data', () => {
+    const data = makeFeatureArrays([2, 5, 8])
+    const entries = [{ data, visStart: 0, visEnd: 300 }]
+    const result = computeAutoscaleDomain(
+      'localpercentile',
+      'avg',
+      3,
+      entries,
+      0.99,
+    )
+    expect(result![0]).toBe(0)
+  })
+
   test('multiple regions combined', () => {
     const data1 = makeFeatureArrays([2, 4])
     const data2 = makeFeatureArrays([6, 10])

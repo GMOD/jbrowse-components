@@ -10,11 +10,11 @@ to import these from a plugin.
 ## computeAutoscaleDomain
 
 Computes a score domain from the visible feature arrays for the `local` /
-`localsd` autoscale types.
+`localsd` / `localpercentile` autoscale types.
 
 ```js
 // type signature
-(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[]) => [number, number] | undefined
+(autoscaleType: string, summaryScoreMode: string, numStdDev: number, visibleEntries: { data: FeatureArrays; visStart: number; visEnd: number; }[], numQuantile?: number) => [...] | undefined
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
