@@ -50,7 +50,6 @@ start–end use [LinearArcDisplay](../lineararcdisplay) instead.
 | [type](#property-type)                                                 | Properties | LinearPairedArcDisplay                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [configuration](#property-configuration)                               | Properties | LinearPairedArcDisplay                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [conf](#getter-conf)                                                   | Getters    | LinearPairedArcDisplay                        | the config typed off the concrete schema; `ConfigurationReference` erases `self.configuration` to `any`, so reads route through this to stay typed (same move as `BaseAdapter<CONF>`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters    | LinearPairedArcDisplay                        | supplies the config read `ArcFetchModel`'s derived byte gate needs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | [lineWidth](#getter-linewidth)                                         | Getters    | LinearPairedArcDisplay                        | arc stroke width in px, from the promotable `lineWidth` slot (track-menu slider writes it); flat across all arcs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [arcStyles](#getter-arcstyles)                                         | Getters    | LinearPairedArcDisplay                        | per-arc styling and endpoint pairs (one per ALT), evaluated once when features/config change. Keeps the color jexl and makeFeaturePair (which runs parseSvAlt) out of the per-pan render loop. Deduped on a canonical endpoint-pair key: a paired feature is emitted from both endpoints and reciprocal BNDs arrive as two records, so the same arc otherwise draws twice whenever both endpoints are in the fetched regions.                                                                                                                                                                                                                                                                            |
 | [trackMenuItems](#method-trackmenuitems)                               | Methods    | LinearPairedArcDisplay                        |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -91,10 +90,12 @@ start–end use [LinearArcDisplay](../lineararcdisplay) instead.
 | [reloadCounter](#volatile-reloadcounter)                               | Volatiles  | [GlobalFetchMixin](../globalfetchmixin)       | Bumped by `reload()` to retrigger a global display's fetch autorun. Each display reads `void self.reloadCounter` in its `afterAttach` fetch autorun so a user-initiated reload re-runs the fetch even when no viewport/setting changed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | [svgReadyExtraTerminal](#getter-svgreadyextraterminal)                 | Getters    | [GlobalFetchMixin](../globalfetchmixin)       | Overridable hook (default false): a subclass returns true to mark an extra terminal state where off-screen export can proceed with no loaded data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | [svgReady](#getter-svgready)                                           | Getters    | [GlobalFetchMixin](../globalfetchmixin)       | Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an off-screen (SVG) export can read final data. Like that mixin it requires the dataset to actually be loaded (or a terminal error / too-large / extra state), NOT merely "not currently fetching": the fetch trigger is a debounced `afterAttach` autorun, so at export time `isLoading` can still be false with no data yet — a `displayPhase !== 'loading'` test would then capture an empty render. Never gates on `canvasDrawn`, which an off-screen export never sets. Off-screen renderers gate on it via `awaitSvgReady(model)`.                                                                                          |
-| [userByteSizeLimit](#property-userbytesizelimit)                       | Properties | [RegionTooLargeMixin](../regiontoolargemixin) | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [userByteSizeLimit](#volatile-userbytesizelimit)                       | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin) | user-confirmed byte limit after a force-load, disabling the gate. Volatile, not persisted: the interactive force-load button is a transient "show me this now" action and must not leak a raised gate into a saved or shared session. The declarative, session-scoped escape hatch is instead the `forceLoad` config slot (set per-session via a session spec, or baked into a track config for embedded/notebook views).                                                                                                                                                                                                                                                                                |
 | [featureDensityStats](#volatile-featuredensitystats)                   | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [byteEstimateVisibleBp](#volatile-byteestimatevisiblebp)               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin) | visibleBp at which the current `featureDensityStats` byte estimate was captured, so the derived gate (`estimatedVisibleBytes`) can scale it to the current view. Written by `setFeatureDensityStats`; ignored unless `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin) | The composing display's configured `fetchSizeLimit`, read straight from its config. Only evaluated when the derived gate is enabled (guarded by `derivedRegionTooLargeEnabled`), and every derived display extends `baseLinearDisplayConfigSchema`, which owns the slot — so the read is always valid where it fires. A display with a bespoke source can still override it.                                                                                                                                                                                                                                                                                                                             |
 | [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin) | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [configForceLoad](#getter-configforceload)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin) | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button). Read straight from the `forceLoad` config slot on `baseLinearDisplayConfigSchema` (same guard/ownership as `configuredFetchSizeLimit`), so every opt-in display honors it without per-display wiring.                                                                                                                                                                                                                                                                                                                                  |
 | [estimatedVisibleBytes](#getter-estimatedvisiblebytes)                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin) | The cached byte estimate scaled from the span it was measured over (`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to span, so scaling makes the derived verdict a pure function of the current view and self-releases on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                           |
 | [tooLargeStatus](#getter-toolargestatus)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin) | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in. Same helper as every other gating path so the banner text can't drift.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [regionTooLarge](#getter-regiontoolarge)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin) |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -159,14 +160,6 @@ move as `BaseAdapter<CONF>`)
 
 ```ts
 type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
-```
-
-#### getter: configuredFetchSizeLimit
-
-supplies the config read `ArcFetchModel`'s derived byte gate needs
-
-```ts
-type configuredFetchSizeLimit = any
 ```
 
 #### getter: lineWidth
@@ -610,20 +603,23 @@ type svgReady = boolean
 
 [RegionTooLargeMixin →](../regiontoolargemixin)
 
-**Properties**
+**Volatiles**
 
-#### property: userByteSizeLimit
+#### volatile: userByteSizeLimit
 
-user-confirmed byte limit after a force-load, disabling the gate
+user-confirmed byte limit after a force-load, disabling the gate. Volatile, not
+persisted: the interactive force-load button is a transient "show me this now"
+action and must not leak a raised gate into a saved or shared session. The
+declarative, session-scoped escape hatch is instead the `forceLoad` config slot
+(set per-session via a session spec, or baked into a track config for
+embedded/notebook views).
 
 ```ts
 // type signature
-type userByteSizeLimit = IMaybe<ISimpleType<number>>
+type userByteSizeLimit = number | undefined
 // code
-userByteSizeLimit: types.maybe(types.number)
+userByteSizeLimit: undefined as number | undefined
 ```
-
-**Volatiles**
 
 #### volatile: featureDensityStats
 
@@ -650,6 +646,18 @@ byteEstimateVisibleBp: undefined as number | undefined
 
 **Getters**
 
+#### getter: configuredFetchSizeLimit
+
+The composing display's configured `fetchSizeLimit`, read straight from its
+config. Only evaluated when the derived gate is enabled (guarded by
+`derivedRegionTooLargeEnabled`), and every derived display extends
+`baseLinearDisplayConfigSchema`, which owns the slot — so the read is always
+valid where it fires. A display with a bespoke source can still override it.
+
+```ts
+type configuredFetchSizeLimit = number
+```
+
 #### getter: densityTooLargeForDerivedGate
 
 Extra (non-byte) too-large axis folded into the derived verdict — canvas
@@ -658,6 +666,19 @@ false.
 
 ```ts
 type densityTooLargeForDerivedGate = boolean
+```
+
+#### getter: configForceLoad
+
+Declarative force-load: when true the display always renders regardless of
+region size / feature density (the config-driven equivalent of the force-load
+button). Read straight from the `forceLoad` config slot on
+`baseLinearDisplayConfigSchema` (same guard/ownership as
+`configuredFetchSizeLimit`), so every opt-in display honors it without
+per-display wiring.
+
+```ts
+type configForceLoad = boolean
 ```
 
 #### getter: estimatedVisibleBytes

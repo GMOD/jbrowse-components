@@ -473,10 +473,30 @@ Read-connection rendering mode (mate pairs + split reads)
 
 #### slot: readConnectionsDown
 
-Draw read connections below the coverage band
+Draw read connections below the coverage band. Unset (the default) follows the
+session-wide default for this display type, falling back to on; an explicit
+true/false customizes the track (either direction, including drawing above the
+coverage band over an on session default)
 
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true` · _promotable_
+**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
+**Default:** `undefined` · _promotable_
+
+```js
+{
+  type: 'maybeBoolean',
+  description:
+    'Draw read connections below the coverage band. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (either direction, including drawing above the coverage band over an on session default)',
+
+
+
+
+
+
+  defaultValue: undefined,
+  promotedBase: true,
+  promotable: true,
+}
+```
 
 #### slot: showSashimiArcs
 

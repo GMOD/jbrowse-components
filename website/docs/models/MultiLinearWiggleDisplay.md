@@ -104,6 +104,7 @@ with optional clustering and a tree sidebar.
 | [layoutReady](#getter-layoutready)                                     | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (default false): whether a searchable feature layout currently exists. Any display defining a feature-lookup method (`searchFeatureByID`, `getFeatureById`) must override it, so callers can tell "laid out, but off-display" from "no layout exists yet" — a distinction only the display can make. See BaseLinearDisplay/CLAUDE.md, "The three readiness axes".                                                                                                                                                                                                                                                                                                                       |
 | [renderBlocks](#getter-renderblocks)                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Shared cached view for every LGV-based GPU display. A single displayedRegion may produce multiple render blocks (shared GPU buffer, different scissor clips on screen). Plugins that want to suppress rendering in certain states (e.g. no domain yet) can override this getter to return [] — the autorun lifecycle will then issue an empty-blocks render that clears the canvas.                                                                                                                                                                                                                                                                                                                      |
 | [displayPhase](#getter-displayphase)                                   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | The display's mutually-exclusive visual state, precedence single-sourced in `computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data (viewport past loaded) is still on screen through the pre-refetch debounce.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Derived opt-in for the region-too-large gate: a display that declares a pre-flight byte estimate (`getByteEstimateConfig`) gates on it — the two are one decision, so they can't desync (this replaces the old dev-time "config set but gate off" console.error). Displays that capture the estimate through a custom fetch (LD, arc) or fold the byte check into their feature RPC (canvas) leave `getByteEstimateConfig` null and flip this true themselves. Guarded on `view.initialized`: `getByteEstimateConfig` reads `visibleBp` (which throws pre-init), and this getter is read from menu code before first paint. Pre-init the banner never shows anyway, so `false` is right.                 |
 | [setLoadedRegion](#action-setloadedregion)                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Action wrapper so callers after async boundaries stay in MST strict mode.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [clearAllRpcData](#action-clearallrpcdata)                             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | full reset: cancels fetch, clears error, loadedRegions, display-specific data, and the canvas-drawn flag. The too-large gate is derived (a pure function of the cached estimate × viewport), so it needs no explicit clear here — it self-releases when the viewport changes.                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | [invalidateLoadedRegions](#action-invalidateloadedregions)             | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | lighter reset: cancels fetch and clears loadedRegions, leaving error and regionTooLarge intact                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
@@ -112,12 +113,12 @@ with optional clustering and a tree sidebar.
 | [onRegionTooLarge](#action-onregiontoolarge)                           | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Overridable hook (no-op base): called when `regionTooLarge` transitions to true. Displays with transient hover/tooltip state override it to clear that state — the too-large banner replaces the rendered content, so a lingering hover would otherwise pin to a now-hidden feature. Wired to the `ClearHoverOnRegionTooLarge` autorun, fired by the derived too-large gate.                                                                                                                                                                                                                                                                                                                             |
 | [fetchRegions](#action-fetchregions)                                   | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | Run a per-region fetch with byte-estimate gating. Marks regions as loaded only AFTER the work callback has populated display-specific data (rpcDataMap, cellData, etc) so the GPU upload autorun sees committed data when it observes loadedRegions.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | [afterAttach](#action-afterattach)                                     | Actions    | [MultiRegionDisplayMixin](../multiregiondisplaymixin) | installs the five fetch-lifecycle autoruns (DisplayedRegionsChange, FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange, ClearHoverOnRegionTooLarge)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| [userByteSizeLimit](#property-userbytesizelimit)                       | Properties | [RegionTooLargeMixin](../regiontoolargemixin)         | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| [userByteSizeLimit](#volatile-userbytesizelimit)                       | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | user-confirmed byte limit after a force-load, disabling the gate. Volatile, not persisted: the interactive force-load button is a transient "show me this now" action and must not leak a raised gate into a saved or shared session. The declarative, session-scoped escape hatch is instead the `forceLoad` config slot (set per-session via a session spec, or baked into a track config for embedded/notebook views).                                                                                                                                                                                                                                                                                |
 | [featureDensityStats](#volatile-featuredensitystats)                   | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [byteEstimateVisibleBp](#volatile-byteestimatevisiblebp)               | Volatiles  | [RegionTooLargeMixin](../regiontoolargemixin)         | visibleBp at which the current `featureDensityStats` byte estimate was captured, so the derived gate (`estimatedVisibleBytes`) can scale it to the current view. Written by `setFeatureDensityStats`; ignored unless `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Opt-in switch: a byte-gated display flips this true to enable the derived, self-releasing region-too-large gate. Default false means the display never gates on size (`regionTooLarge` is always false), so non-byte displays (wiggle, manhattan, sequence, synteny, …) don't evaluate the LGV-only `tooLargeStatus` getters at all.                                                                                                                                                                                                                                                                                                                                                                     |
-| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The composing display's configured `fetchSizeLimit`. This mixin owns no `configuration`, so a derived display overrides this with `getConf(self, 'fetchSizeLimit')`. Only read when the derived gate is enabled; the default matches the BaseLinearDisplay slot default.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The composing display's configured `fetchSizeLimit`, read straight from its config. Only evaluated when the derived gate is enabled (guarded by `derivedRegionTooLargeEnabled`), and every derived display extends `baseLinearDisplayConfigSchema`, which owns the slot — so the read is always valid where it fires. A display with a bespoke source can still override it.                                                                                                                                                                                                                                                                                                                             |
 | [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate) | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [configForceLoad](#getter-configforceload)                             | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button). Read straight from the `forceLoad` config slot on `baseLinearDisplayConfigSchema` (same guard/ownership as `configuredFetchSizeLimit`), so every opt-in display honors it without per-display wiring.                                                                                                                                                                                                                                                                                                                                  |
 | [estimatedVisibleBytes](#getter-estimatedvisiblebytes)                 | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | The cached byte estimate scaled from the span it was measured over (`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to span, so scaling makes the derived verdict a pure function of the current view and self-releases on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.                                                                                                                                                                                                                                                                                           |
 | [tooLargeStatus](#getter-toolargestatus)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in. Same helper as every other gating path so the banner text can't drift.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | [regionTooLarge](#getter-regiontoolarge)                               | Getters    | [RegionTooLargeMixin](../regiontoolargemixin)         |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -839,6 +840,23 @@ The display's mutually-exclusive visual state, precedence single-sourced in
 type displayPhase = DisplayPhase
 ```
 
+#### getter: derivedRegionTooLargeEnabled
+
+Derived opt-in for the region-too-large gate: a display that declares a
+pre-flight byte estimate (`getByteEstimateConfig`) gates on it — the two are one
+decision, so they can't desync (this replaces the old dev-time "config set but
+gate off" console.error). Displays that capture the estimate through a custom
+fetch (LD, arc) or fold the byte check into their feature RPC (canvas) leave
+`getByteEstimateConfig` null and flip this true themselves.
+
+Guarded on `view.initialized`: `getByteEstimateConfig` reads `visibleBp` (which
+throws pre-init), and this getter is read from menu code before first paint.
+Pre-init the banner never shows anyway, so `false` is right.
+
+```ts
+type derivedRegionTooLargeEnabled = boolean
+```
+
 **Actions**
 
 #### action: setLoadedRegion
@@ -929,20 +947,23 @@ type afterAttach = () => void
 
 [RegionTooLargeMixin →](../regiontoolargemixin)
 
-**Properties**
+**Volatiles**
 
-#### property: userByteSizeLimit
+#### volatile: userByteSizeLimit
 
-user-confirmed byte limit after a force-load, disabling the gate
+user-confirmed byte limit after a force-load, disabling the gate. Volatile, not
+persisted: the interactive force-load button is a transient "show me this now"
+action and must not leak a raised gate into a saved or shared session. The
+declarative, session-scoped escape hatch is instead the `forceLoad` config slot
+(set per-session via a session spec, or baked into a track config for
+embedded/notebook views).
 
 ```ts
 // type signature
-type userByteSizeLimit = IMaybe<ISimpleType<number>>
+type userByteSizeLimit = number | undefined
 // code
-userByteSizeLimit: types.maybe(types.number)
+userByteSizeLimit: undefined as number | undefined
 ```
-
-**Volatiles**
 
 #### volatile: featureDensityStats
 
@@ -969,24 +990,13 @@ byteEstimateVisibleBp: undefined as number | undefined
 
 **Getters**
 
-#### getter: derivedRegionTooLargeEnabled
-
-Opt-in switch: a byte-gated display flips this true to enable the derived,
-self-releasing region-too-large gate. Default false means the display never
-gates on size (`regionTooLarge` is always false), so non-byte displays (wiggle,
-manhattan, sequence, synteny, …) don't evaluate the LGV-only `tooLargeStatus`
-getters at all.
-
-```ts
-type derivedRegionTooLargeEnabled = boolean
-```
-
 #### getter: configuredFetchSizeLimit
 
-The composing display's configured `fetchSizeLimit`. This mixin owns no
-`configuration`, so a derived display overrides this with
-`getConf(self, 'fetchSizeLimit')`. Only read when the derived gate is enabled;
-the default matches the BaseLinearDisplay slot default.
+The composing display's configured `fetchSizeLimit`, read straight from its
+config. Only evaluated when the derived gate is enabled (guarded by
+`derivedRegionTooLargeEnabled`), and every derived display extends
+`baseLinearDisplayConfigSchema`, which owns the slot — so the read is always
+valid where it fires. A display with a bespoke source can still override it.
 
 ```ts
 type configuredFetchSizeLimit = number
@@ -1000,6 +1010,19 @@ false.
 
 ```ts
 type densityTooLargeForDerivedGate = boolean
+```
+
+#### getter: configForceLoad
+
+Declarative force-load: when true the display always renders regardless of
+region size / feature density (the config-driven equivalent of the force-load
+button). Read straight from the `forceLoad` config slot on
+`baseLinearDisplayConfigSchema` (same guard/ownership as
+`configuredFetchSizeLimit`), so every opt-in display honors it without
+per-display wiring.
+
+```ts
+type configForceLoad = boolean
 ```
 
 #### getter: estimatedVisibleBytes

@@ -107,7 +107,7 @@ Slot types (`fileLocation`, `frozen`, ...) are explained in the
 | [drawLongRange](#slot-drawlongrange)                       | `boolean`                                                        | Draw long-range read-connection arcs                                                                                                                                       |
 | [arcColorByType](#slot-arccolorbytype)                     | `stringEnum` (insertSizeAndOrientation, insertSize, orientation) | How to color read-connection arcs                                                                                                                                          |
 | [readConnections](#slot-readconnections)                   | `stringEnum` (inherit, off, arc, cloud)                          | Read-connection rendering mode (mate pairs + split reads)                                                                                                                  |
-| [readConnectionsDown](#slot-readconnectionsdown)           | `boolean`                                                        | Draw read connections below the coverage band                                                                                                                              |
+| [readConnectionsDown](#slot-readconnectionsdown)           | `maybeBoolean`                                                   | Draw read connections below the coverage band.                                                                                                                             |
 | [showSashimiArcs](#slot-showsashimiarcs)                   | `boolean`                                                        | Draw sashimi (splice-junction) arcs                                                                                                                                        |
 | [sashimiArcsMode](#slot-sashimiarcsmode)                   | `stringEnum` (inherit, up, down, auto)                           | Sashimi junction-arc placement                                                                                                                                             |
 | [minSashimiScore](#slot-minsashimiscore)                   | `number`                                                         | Hide sashimi arcs with fewer than this many supporting reads                                                                                                               |
@@ -537,10 +537,30 @@ Read-connection rendering mode (mate pairs + split reads)
 
 #### slot: readConnectionsDown
 
-Draw read connections below the coverage band
+Draw read connections below the coverage band. Unset (the default) follows the
+session-wide default for this display type, falling back to on; an explicit
+true/false customizes the track (either direction, including drawing above the
+coverage band over an on session default)
 
-**Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`true` · _promotable_
+**Type:** [`maybeBoolean`](/docs/config_guides/slot_types#maybeboolean) ·
+**Default:** `undefined` · _promotable_
+
+```js
+{
+  type: 'maybeBoolean',
+  description:
+    'Draw read connections below the coverage band. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (either direction, including drawing above the coverage band over an on session default)',
+
+
+
+
+
+
+  defaultValue: undefined,
+  promotedBase: true,
+  promotable: true,
+}
+```
 
 #### slot: showSashimiArcs
 

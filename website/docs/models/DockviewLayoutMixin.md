@@ -23,7 +23,7 @@ contain multiple views stacked vertically.
 | [activePanelId](#property-activepanelid)                   | Properties | DockviewLayoutMixin | The currently active panel ID in dockview                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | [init](#property-init)                                     | Properties | DockviewLayoutMixin | The initial nested layout to build dockview from (simple viewIds/ direction/size form, vs. the verbose `dockviewLayout` dockview emits). Set from URL params (spec layout) OR carried in a loaded session snapshot (e.g. the `encoded-` session param), then consumed once when the dockview container mounts — `createInitialPanels` reads it, `applyInitLayout` builds the panels, and it is cleared to undefined (stripped from snapshots) so it never re-applies on a later remount. |
 | [pendingMove](#volatile-pendingmove)                       | Volatiles  | DockviewLayoutMixin |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| [getViewIdsForPanel](#getter-getviewidsforpanel)           | Getters    | DockviewLayoutMixin | Get view IDs for a specific panel                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| [getViewIdsForPanel](#getter-getviewidsforpanel)           | Getters    | DockviewLayoutMixin | Get view IDs for a specific panel, as a plain snapshot array. Never the live MST node: callers iterate this while removing views (which splices the underlying array via the reconcile autorun), so leaking the live array would skip elements mid-iteration. Mutators go through getPanelContainingView instead.                                                                                                                                                                        |
 | [getPanelContainingView](#getter-getpanelcontainingview)   | Getters    | DockviewLayoutMixin | Find the panel containing a view, returning the panel ID, that panel's view-ID list, and the view's index within it (or undefined if unassigned)                                                                                                                                                                                                                                                                                                                                         |
 | [setDockviewLayout](#action-setdockviewlayout)             | Actions    | DockviewLayoutMixin | Save the current dockview layout                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | [setActivePanelId](#action-setactivepanelid)               | Actions    | DockviewLayoutMixin | Set the active panel ID                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -129,15 +129,13 @@ pendingMove: undefined
 
 #### getter: getViewIdsForPanel
 
-Get view IDs for a specific panel
+Get view IDs for a specific panel, as a plain snapshot array. Never the live MST
+node: callers iterate this while removing views (which splices the underlying
+array via the reconcile autorun), so leaking the live array would skip elements
+mid-iteration. Mutators go through getPanelContainingView instead.
 
 ```ts
-type getViewIdsForPanel = (
-  panelId: string,
-) =>
-  | never[]
-  | (IMSTArray<ISimpleType<string>> &
-      IStateTreeNode<IArrayType<ISimpleType<string>>>)
+type getViewIdsForPanel = (panelId: string) => string[]
 ```
 
 #### getter: getPanelContainingView

@@ -109,7 +109,7 @@ false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of
 counts, so off-diagonal contacts read more strongly.
 
 **Type:** [`boolean`](/docs/config_guides/slot_types#boolean) · **Default:**
-`false`
+`true`
 
 #### slot: showResolutionControls
 

@@ -63,6 +63,9 @@ and the `renderParams` the view reads out.
 | [height](#getter-height)                                       | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [adapterConfig](#getter-adapterconfig)                         | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | [numFeats](#getter-numfeats)                                   | Getters    | LinearSyntenyDisplay          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| [totalAlignmentBp](#getter-totalalignmentbp)                   | Getters    | LinearSyntenyDisplay          | Summed genomic length (axis 0) of every loaded alignment block. Zoom- independent, so it recomputes only when featureData changes; alignmentCoverageFraction derives the on-screen density from it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| [meanAlignmentPx](#getter-meanalignmentpx)                     | Getters    | LinearSyntenyDisplay          | Mean on-screen width (px, axis 0) of this display's alignment blocks, or 0 until a fetch lands and both views connect. The fade only affects sub-pixel ribbons (perpW < 1), so a mean well under 1 means the view is dominated by thin ribbons — exactly what width-proportional fade declutters. Zoom-dependent (recomputes as bpPerPx changes), but each term is O(1) given the memoized `totalAlignmentBp`.                                                                                                                                                                                                                                                                                           |
+| [autoFadeThinAlignments](#getter-autofadethinalignments)       | Getters    | LinearSyntenyDisplay          | 'auto' fade-thin signal for this display: on when the ribbons are predominantly sub-pixel (`meanAlignmentPx` < 1) and there are enough of them to form a hairball. Many sub-pixel ribbons stacked at full alpha read as false-dark fans; fading them width-proportionally declutters into clean blocks (the historical default-on look). A sparse handful stays unfaded so a lone thin ribbon keeps full alpha, and the whole thing relaxes automatically on zoom-in as ribbons widen past 1px.                                                                                                                                                                                                          |
 | [presentCigarKinds](#getter-presentcigarkinds)                 | Getters    | LinearSyntenyDisplay          | Which CIGAR indel ops are actually painted in the current geometry. The worker only emits an indel instance for an op wide enough to draw (sub-pixel indels are dropped), so a set bit means a visible-width op of that kind is on screen. The legend keys its indel chips off this rather than the coarse "file has any CIGAR" flag, so whole-genome zoom (every indel sub-pixel) shows no dead insertion/deletion swatch.                                                                                                                                                                                                                                                                              |
 | [warnings](#getter-warnings)                                   | Getters    | LinearSyntenyDisplay          | Warnings surfaced in the view header. Flags a likely reversed assembly row order, detected once at view load (only when the two assemblies have distinct chromosome names).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | [ready](#getter-ready)                                         | Getters    | LinearSyntenyDisplay          | A fetch has completed (data is present, even if it mapped zero features). Not `numFeats > 0` — an empty-but-finished fetch is ready, otherwise an empty result spins the loading overlay forever.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -233,6 +236,42 @@ Stable backend key under the view-shared backend.
 
 ```ts
 type displayKey = number
+```
+
+#### getter: totalAlignmentBp
+
+Summed genomic length (axis 0) of every loaded alignment block. Zoom-
+independent, so it recomputes only when featureData changes;
+alignmentCoverageFraction derives the on-screen density from it.
+
+```ts
+type totalAlignmentBp = number
+```
+
+#### getter: meanAlignmentPx
+
+Mean on-screen width (px, axis 0) of this display's alignment blocks, or 0 until
+a fetch lands and both views connect. The fade only affects sub-pixel ribbons
+(perpW < 1), so a mean well under 1 means the view is dominated by thin ribbons
+— exactly what width-proportional fade declutters. Zoom-dependent (recomputes as
+bpPerPx changes), but each term is O(1) given the memoized `totalAlignmentBp`.
+
+```ts
+type meanAlignmentPx = number
+```
+
+#### getter: autoFadeThinAlignments
+
+'auto' fade-thin signal for this display: on when the ribbons are predominantly
+sub-pixel (`meanAlignmentPx` < 1) and there are enough of them to form a
+hairball. Many sub-pixel ribbons stacked at full alpha read as false-dark fans;
+fading them width-proportionally declutters into clean blocks (the historical
+default-on look). A sparse handful stays unfaded so a lone thin ribbon keeps
+full alpha, and the whole thing relaxes automatically on zoom-in as ribbons
+widen past 1px.
+
+```ts
+type autoFadeThinAlignments = boolean
 ```
 
 #### getter: presentCigarKinds

@@ -43,42 +43,43 @@ display went derived.
 
 ## Members
 
-| Member                                                                 | Kind       | Defined by          | Description                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ---------------------------------------------------------------------- | ---------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [userByteSizeLimit](#property-userbytesizelimit)                       | Properties | RegionTooLargeMixin | user-confirmed byte limit after a force-load, disabling the gate                                                                                                                                                                                                                                                                                                                                               |
-| [featureDensityStats](#volatile-featuredensitystats)                   | Volatiles  | RegionTooLargeMixin |                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [byteEstimateVisibleBp](#volatile-byteestimatevisiblebp)               | Volatiles  | RegionTooLargeMixin | visibleBp at which the current `featureDensityStats` byte estimate was captured, so the derived gate (`estimatedVisibleBytes`) can scale it to the current view. Written by `setFeatureDensityStats`; ignored unless `derivedRegionTooLargeEnabled`.                                                                                                                                                           |
-| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters    | RegionTooLargeMixin | Opt-in switch: a byte-gated display flips this true to enable the derived, self-releasing region-too-large gate. Default false means the display never gates on size (`regionTooLarge` is always false), so non-byte displays (wiggle, manhattan, sequence, synteny, …) don't evaluate the LGV-only `tooLargeStatus` getters at all.                                                                           |
-| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters    | RegionTooLargeMixin | The composing display's configured `fetchSizeLimit`. This mixin owns no `configuration`, so a derived display overrides this with `getConf(self, 'fetchSizeLimit')`. Only read when the derived gate is enabled; the default matches the BaseLinearDisplay slot default.                                                                                                                                       |
-| [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate) | Getters    | RegionTooLargeMixin | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.                                                                                                                                                                                                                                                |
-| [estimatedVisibleBytes](#getter-estimatedvisiblebytes)                 | Getters    | RegionTooLargeMixin | The cached byte estimate scaled from the span it was measured over (`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to span, so scaling makes the derived verdict a pure function of the current view and self-releases on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`. |
-| [tooLargeStatus](#getter-toolargestatus)                               | Getters    | RegionTooLargeMixin | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in. Same helper as every other gating path so the banner text can't drift.                                                                                                                                                            |
-| [regionTooLarge](#getter-regiontoolarge)                               | Getters    | RegionTooLargeMixin |                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [regionTooLargeReason](#getter-regiontoolargereason)                   | Getters    | RegionTooLargeMixin |                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [regionCannotBeRenderedText](#method-regioncannotberenderedtext)       | Methods    | RegionTooLargeMixin | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                                                                                                                                                          |
-| [setFeatureDensityStats](#action-setfeaturedensitystats)               | Actions    | RegionTooLargeMixin | Commits the byte estimate and records the span it was measured at (`byteEstimateVisibleBp`) so the derived gate can scale it to the current view. The capture is harmless for non-gated displays (they ignore it).                                                                                                                                                                                             |
-| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)     | Actions    | RegionTooLargeMixin | force-load: raise the byte limit past the current request so the gate releases. Raises past the estimate scaled to the _current_ view (not the raw captured bytes), so it clears even if the view zoomed out after the estimate was captured; `raiseLimitPast` is the raw fallback for a display with no scaled estimate. Canvas (which also has a density force-load) overrides this entirely.                |
-| [reload](#action-reload)                                               | Actions    | RegionTooLargeMixin |                                                                                                                                                                                                                                                                                                                                                                                                                |
-| [forceLoad](#action-forceload)                                         | Actions    | RegionTooLargeMixin | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch.                                                                                                                                                                                         |
-
-<details>
-<summary>RegionTooLargeMixin - Properties</summary>
-
-#### property: userByteSizeLimit
-
-user-confirmed byte limit after a force-load, disabling the gate
-
-```ts
-// type signature
-type userByteSizeLimit = IMaybe<ISimpleType<number>>
-// code
-userByteSizeLimit: types.maybe(types.number)
-```
-
-</details>
+| Member                                                                 | Kind      | Defined by          | Description                                                                                                                                                                                                                                                                                                                                                                                                               |
+| ---------------------------------------------------------------------- | --------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [userByteSizeLimit](#volatile-userbytesizelimit)                       | Volatiles | RegionTooLargeMixin | user-confirmed byte limit after a force-load, disabling the gate. Volatile, not persisted: the interactive force-load button is a transient "show me this now" action and must not leak a raised gate into a saved or shared session. The declarative, session-scoped escape hatch is instead the `forceLoad` config slot (set per-session via a session spec, or baked into a track config for embedded/notebook views). |
+| [featureDensityStats](#volatile-featuredensitystats)                   | Volatiles | RegionTooLargeMixin |                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [byteEstimateVisibleBp](#volatile-byteestimatevisiblebp)               | Volatiles | RegionTooLargeMixin | visibleBp at which the current `featureDensityStats` byte estimate was captured, so the derived gate (`estimatedVisibleBytes`) can scale it to the current view. Written by `setFeatureDensityStats`; ignored unless `derivedRegionTooLargeEnabled`.                                                                                                                                                                      |
+| [derivedRegionTooLargeEnabled](#getter-derivedregiontoolargeenabled)   | Getters   | RegionTooLargeMixin | Opt-in switch: a byte-gated display flips this true to enable the derived, self-releasing region-too-large gate. Default false means the display never gates on size (`regionTooLarge` is always false), so non-byte displays (wiggle, manhattan, sequence, synteny, …) don't evaluate the LGV-only `tooLargeStatus` getters at all.                                                                                      |
+| [configuredFetchSizeLimit](#getter-configuredfetchsizelimit)           | Getters   | RegionTooLargeMixin | The composing display's configured `fetchSizeLimit`, read straight from its config. Only evaluated when the derived gate is enabled (guarded by `derivedRegionTooLargeEnabled`), and every derived display extends `baseLinearDisplayConfigSchema`, which owns the slot — so the read is always valid where it fires. A display with a bespoke source can still override it.                                              |
+| [densityTooLargeForDerivedGate](#getter-densitytoolargeforderivedgate) | Getters   | RegionTooLargeMixin | Extra (non-byte) too-large axis folded into the derived verdict — canvas overrides it with its feature-density gate. Byte-only derived displays leave it false.                                                                                                                                                                                                                                                           |
+| [configForceLoad](#getter-configforceload)                             | Getters   | RegionTooLargeMixin | Declarative force-load: when true the display always renders regardless of region size / feature density (the config-driven equivalent of the force-load button). Read straight from the `forceLoad` config slot on `baseLinearDisplayConfigSchema` (same guard/ownership as `configuredFetchSizeLimit`), so every opt-in display honors it without per-display wiring.                                                   |
+| [estimatedVisibleBytes](#getter-estimatedvisiblebytes)                 | Getters   | RegionTooLargeMixin | The cached byte estimate scaled from the span it was measured over (`byteEstimateVisibleBp`) to the currently visible span. Roughly proportional to span, so scaling makes the derived verdict a pure function of the current view and self-releases on zoom-in — without it a large zoomed-out estimate stays above the limit forever and gates refetch. Only meaningful when `derivedRegionTooLargeEnabled`.            |
+| [tooLargeStatus](#getter-toolargestatus)                               | Getters   | RegionTooLargeMixin | Shared derived verdict + reason (AUTO_FORCE_LOAD_BP floor, then bytes-over-limit, then the density axis), fed the scaled estimate so the byte gate self-releases on zoom-in. Same helper as every other gating path so the banner text can't drift.                                                                                                                                                                       |
+| [regionTooLarge](#getter-regiontoolarge)                               | Getters   | RegionTooLargeMixin |                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [regionTooLargeReason](#getter-regiontoolargereason)                   | Getters   | RegionTooLargeMixin |                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [regionCannotBeRenderedText](#method-regioncannotberenderedtext)       | Methods   | RegionTooLargeMixin | Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the display chrome via `TooLargeMessage`, not the model.                                                                                                                                                                                                                                                                                     |
+| [setFeatureDensityStats](#action-setfeaturedensitystats)               | Actions   | RegionTooLargeMixin | Commits the byte estimate and records the span it was measured at (`byteEstimateVisibleBp`) so the derived gate can scale it to the current view. The capture is harmless for non-gated displays (they ignore it).                                                                                                                                                                                                        |
+| [setFeatureDensityStatsLimit](#action-setfeaturedensitystatslimit)     | Actions   | RegionTooLargeMixin | force-load: raise the byte limit past the current request so the gate releases. Raises past the estimate scaled to the _current_ view (not the raw captured bytes), so it clears even if the view zoomed out after the estimate was captured; `raiseLimitPast` is the raw fallback for a display with no scaled estimate. Canvas (which also has a density force-load) overrides this entirely.                           |
+| [reload](#action-reload)                                               | Actions   | RegionTooLargeMixin |                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| [forceLoad](#action-forceload)                                         | Actions   | RegionTooLargeMixin | Raises the byte limit past the current density stats and triggers a reload. The display chrome calls this via TooLargeMessage's force-load button; concrete display models override reload() to do the actual refetch.                                                                                                                                                                                                    |
 
 <details>
 <summary>RegionTooLargeMixin - Volatiles</summary>
+
+#### volatile: userByteSizeLimit
+
+user-confirmed byte limit after a force-load, disabling the gate. Volatile, not
+persisted: the interactive force-load button is a transient "show me this now"
+action and must not leak a raised gate into a saved or shared session. The
+declarative, session-scoped escape hatch is instead the `forceLoad` config slot
+(set per-session via a session spec, or baked into a track config for
+embedded/notebook views).
+
+```ts
+// type signature
+type userByteSizeLimit = number | undefined
+// code
+userByteSizeLimit: undefined as number | undefined
+```
 
 #### volatile: byteEstimateVisibleBp
 
@@ -127,10 +128,11 @@ type derivedRegionTooLargeEnabled = boolean
 
 #### getter: configuredFetchSizeLimit
 
-The composing display's configured `fetchSizeLimit`. This mixin owns no
-`configuration`, so a derived display overrides this with
-`getConf(self, 'fetchSizeLimit')`. Only read when the derived gate is enabled;
-the default matches the BaseLinearDisplay slot default.
+The composing display's configured `fetchSizeLimit`, read straight from its
+config. Only evaluated when the derived gate is enabled (guarded by
+`derivedRegionTooLargeEnabled`), and every derived display extends
+`baseLinearDisplayConfigSchema`, which owns the slot — so the read is always
+valid where it fires. A display with a bespoke source can still override it.
 
 ```ts
 type configuredFetchSizeLimit = number
@@ -144,6 +146,19 @@ false.
 
 ```ts
 type densityTooLargeForDerivedGate = boolean
+```
+
+#### getter: configForceLoad
+
+Declarative force-load: when true the display always renders regardless of
+region size / feature density (the config-driven equivalent of the force-load
+button). Read straight from the `forceLoad` config slot on
+`baseLinearDisplayConfigSchema` (same guard/ownership as
+`configuredFetchSizeLimit`), so every opt-in display honors it without
+per-display wiring.
+
+```ts
+type configForceLoad = boolean
 ```
 
 #### getter: estimatedVisibleBytes
