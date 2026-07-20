@@ -11,7 +11,8 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 // edge forward but its RIGHT edge reversed, so filling rightward from the raw
 // mapper would cover the neighbor. `bpRangeToScreen` resolves both edges and
 // orders them (min/abs), but nothing tested it — the snapshots are forward-only,
-// so the reversed path could regress silently (REVERSED_REGION_AUDIT item 3).
+// so the reversed path could regress silently. See render-core/CLAUDE.md
+// "makeCellLeftMapper" for the shared rule this exercises.
 
 const START = 1000
 const END = 1010

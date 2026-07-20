@@ -855,14 +855,14 @@ test('can perform bpToPx in a way that makes sense on things that happen outside
   expect(`${model.error}`).toEqual('Error: pxToBp failed to map to a region')
 })
 
-// The reversed-region audit (agent-docs/guides/REVERSED_REGION_AUDIT.md, item 5)
-// noted that every renderer-level reversed test hands `reversed: true` straight
-// to the render path — nothing proved the *model* actually delivers it. The
-// wiring is `displayedRegion.reversed` → `dynamicBlocks.contentBlocks` →
-// `view.visibleRegions` → `buildRenderBlocks` (the shared getter every GPU
-// display's render call reads via MultiRegionDisplayMixin.renderBlocks). This
-// pins that whole chain, so a display can't silently render a flipped region
-// forward.
+// Renderer-level reversed tests (alignments reversedMirror.test.ts) hand
+// `reversed: true` straight to the render path — they can't prove the *model*
+// delivers one. The wiring is `displayedRegion.reversed` →
+// `dynamicBlocks.contentBlocks` → `view.visibleRegions` → `buildRenderBlocks`
+// (the shared getter every GPU display's render call reads via
+// MultiRegionDisplayMixin.renderBlocks). This pins that whole chain, so a
+// display can't silently render a flipped region forward. The alignments-
+// specific counterpart is ReversedAlignmentsBlocks.test.tsx (jbrowse-web).
 describe('displayedRegion.reversed → buildRenderBlocks wiring', () => {
   function renderBlocksFor(reversed: boolean) {
     const { Session, LinearGenomeModel } = initialize()
