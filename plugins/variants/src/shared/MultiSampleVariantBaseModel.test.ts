@@ -1,7 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { applyColorPalette } from '@jbrowse/tree-sidebar'
 
-import { maybeApplyColorByPalette } from './MultiSampleVariantBaseModel.ts'
+import {
+  maybeApplyColorByPalette,
+  maybeApplyGroupBy,
+  sortSourcesByAttribute,
+} from './MultiSampleVariantBaseModel.ts'
 import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
 
 describe('SharedVariantConfigSchema', () => {
@@ -168,6 +172,91 @@ describe('maybeApplyColorByPalette', () => {
   it('returns undefined when the requested attribute is absent from sources', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
     expect(maybeApplyColorByPalette('nonexistent', sources)).toBe(undefined)
+    expect(warn).toHaveBeenCalled()
+    warn.mockRestore()
+  })
+})
+
+// Guards the groupBy wiring (setSources / setGroupBy -> maybeApplyGroupBy): rows
+// are reordered so each attribute value is contiguous, which is what makes a
+// group-restricted genotype pattern read as one band rather than scattered rows.
+describe('sortSourcesByAttribute', () => {
+  const sources = [
+    { name: 's1', pop: 'EUR' },
+    { name: 's2', pop: 'AFR' },
+    { name: 's3', pop: 'EUR' },
+    { name: 's4', pop: 'AFR' },
+    { name: 's5', pop: 'AFR' },
+  ]
+
+  it('makes each group contiguous, largest group first', () => {
+    expect(sortSourcesByAttribute(sources, 'pop').map(s => s.name)).toEqual([
+      's2',
+      's4',
+      's5',
+      's1',
+      's3',
+    ])
+  })
+
+  it('is stable within a group (preserves prior arrangement)', () => {
+    const result = sortSourcesByAttribute(sources, 'pop')
+    expect(result.filter(s => s.pop === 'AFR').map(s => s.name)).toEqual([
+      's2',
+      's4',
+      's5',
+    ])
+  })
+
+  it('breaks equal-size groups by name so the order is deterministic', () => {
+    const even = [
+      { name: 'a', pop: 'ZZZ' },
+      { name: 'b', pop: 'AAA' },
+    ]
+    expect(sortSourcesByAttribute(even, 'pop').map(s => s.name)).toEqual([
+      'b',
+      'a',
+    ])
+  })
+
+  it('sorts sources missing the attribute last, in original order', () => {
+    const mixed = [
+      { name: 'x' },
+      { name: 'y', pop: 'EUR' },
+      { name: 'z' },
+      { name: 'w', pop: 'EUR' },
+    ]
+    expect(sortSourcesByAttribute(mixed, 'pop').map(s => s.name)).toEqual([
+      'y',
+      'w',
+      'x',
+      'z',
+    ])
+  })
+})
+
+describe('maybeApplyGroupBy', () => {
+  const sources = [
+    { name: 's1', pop: 'EUR' },
+    { name: 's2', pop: 'AFR' },
+    { name: 's3', pop: 'EUR' },
+  ]
+
+  it('returns undefined when groupBy is unset (order untouched)', () => {
+    expect(maybeApplyGroupBy('', sources)).toBeUndefined()
+  })
+
+  it('groups by the requested attribute', () => {
+    expect(maybeApplyGroupBy('pop', sources)!.map(s => s.name)).toEqual([
+      's1',
+      's3',
+      's2',
+    ])
+  })
+
+  it('returns undefined when the attribute is absent from sources', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(maybeApplyGroupBy('nonexistent', sources)).toBeUndefined()
     expect(warn).toHaveBeenCalled()
     warn.mockRestore()
   })

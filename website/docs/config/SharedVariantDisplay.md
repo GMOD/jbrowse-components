@@ -18,16 +18,17 @@ plugin.
 Slot types (`fileLocation`, `frozen`, ...) are explained in the
 [config slot types reference](/docs/config_guides/slot_types).
 
-| Slot                                               | Type                               | Description                                                                                                                                                                                                                                                              |
-| -------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [showReferenceAlleles](#slot-showreferencealleles) | `boolean`                          | Starting value for drawing reference alleles.                                                                                                                                                                                                                            |
-| [showSidebarLabels](#slot-showsidebarlabels)       | `boolean`                          | Show the per-sample row labels in the sidebar                                                                                                                                                                                                                            |
-| [showTree](#slot-showtree)                         | `boolean`                          | Show the sample clustering tree in the sidebar                                                                                                                                                                                                                           |
-| [showBranchLength](#slot-showbranchlength)         | `boolean`                          | Draw the clustering tree with branch lengths                                                                                                                                                                                                                             |
-| [renderingMode](#slot-renderingmode)               | `stringEnum` (alleleCount, phased) | 'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype                                                                                                                                                                    |
-| [featureColor](#slot-featurecolor)                 | `string`                           | Optional per-feature color for the genotype cells: a jexl expression (or plain CSS color) evaluated once per variant in the worker, painting every alt-carrying cell with that color while ref/no-call cells keep their normal coloring so "who carries it" still reads. |
-| [colorBy](#slot-colorby)                           | `string`                           | Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping                                                                                                              |
-| [referenceDrawingMode](#slot-referencedrawingmode) | `stringEnum` (draw, skip)          | A 'draw'/'skip' toggle for reference alleles, settable independent of showReferenceAlleles (the admin-config-only starting default).                                                                                                                                     |
+| Slot                                               | Type                               | Description                                                                                                                                                                                                                                                                      |
+| -------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [showReferenceAlleles](#slot-showreferencealleles) | `boolean`                          | Starting value for drawing reference alleles.                                                                                                                                                                                                                                    |
+| [showSidebarLabels](#slot-showsidebarlabels)       | `boolean`                          | Show the per-sample row labels in the sidebar                                                                                                                                                                                                                                    |
+| [showTree](#slot-showtree)                         | `boolean`                          | Show the sample clustering tree in the sidebar                                                                                                                                                                                                                                   |
+| [showBranchLength](#slot-showbranchlength)         | `boolean`                          | Draw the clustering tree with branch lengths                                                                                                                                                                                                                                     |
+| [renderingMode](#slot-renderingmode)               | `stringEnum` (alleleCount, phased) | 'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype                                                                                                                                                                            |
+| [featureColor](#slot-featurecolor)                 | `string`                           | Optional per-feature color for the genotype cells: a jexl expression (or plain CSS color) evaluated once per variant in the worker, painting every alt-carrying cell with that color while ref/no-call cells keep their normal coloring so "who carries it" still reads.         |
+| [colorBy](#slot-colorby)                           | `string`                           | Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping                                                                                                                      |
+| [groupBy](#slot-groupby)                           | `string`                           | Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to order the sample rows by, so each group's rows are contiguous and a group-restricted genotype pattern reads as one band; empty means the rows keep their existing order |
+| [referenceDrawingMode](#slot-referencedrawingmode) | `stringEnum` (draw, skip)          | A 'draw'/'skip' toggle for reference alleles, settable independent of showReferenceAlleles (the admin-config-only starting default).                                                                                                                                             |
 
 <details>
 <summary>Advanced slots (2)</summary>
@@ -113,6 +114,15 @@ _advanced_
 Name of a sample-metadata attribute (a column in the adapter's
 samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means
 no grouping
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
+#### slot: groupBy
+
+Name of a sample-metadata attribute (a column in the adapter's
+samplesTsvLocation, e.g. 'population') to order the sample rows by, so each
+group's rows are contiguous and a group-restricted genotype pattern reads as one
+band; empty means the rows keep their existing order
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 

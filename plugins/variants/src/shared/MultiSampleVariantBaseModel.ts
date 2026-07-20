@@ -95,6 +95,7 @@ const PORTABLE_CONFIG_KEYS = [
   'showBranchLength',
   'referenceDrawingMode',
   'colorBy',
+  'groupBy',
   'featureColor',
 ] as const
 
@@ -129,6 +130,65 @@ export function sortSourcesByGenotype(
     })
     .sort((a, b) => b.rank - a.rank)
     .map(d => d.source)
+}
+
+// Group sample rows by a metadata attribute (e.g. 'super_pop'), so every member
+// of a group is contiguous and a group-restricted genotype pattern reads as a
+// solid band instead of being scattered across the matrix. Groups are ordered by
+// size (largest first) rather than alphabetically — the big groups are the ones
+// carrying visible structure, and a stable size order keeps the figure the same
+// across reruns. Sources missing the attribute sort last, in their original
+// order. Sorting is stable within a group, so a prior arrangement survives.
+export function sortSourcesByAttribute<S extends Record<string, unknown>>(
+  sources: S[],
+  attribute: string,
+): S[] {
+  const counts = new Map<string, number>()
+  for (const source of sources) {
+    const v = source[attribute]
+    if (typeof v === 'string') {
+      counts.set(v, (counts.get(v) ?? 0) + 1)
+    }
+  }
+  const rank = new Map<string, number>()
+  const ordered = [...counts.entries()].sort((a, b) =>
+    b[1] === a[1] ? a[0].localeCompare(b[0]) : b[1] - a[1],
+  )
+  for (let i = 0; i < ordered.length; i++) {
+    rank.set(ordered[i]![0], i)
+  }
+  return sources
+    .map((source, idx) => {
+      const v = source[attribute]
+      return {
+        source,
+        idx,
+        rank: typeof v === 'string' ? rank.get(v)! : ordered.length,
+      }
+    })
+    .sort((a, b) => (a.rank === b.rank ? a.idx - b.idx : a.rank - b.rank))
+    .map(d => d.source)
+}
+
+// Reorder by `groupBy` when the attribute is present, else leave the order
+// alone. Mirrors maybeApplyColorByPalette: an unset or unknown attribute is a
+// no-op rather than an error, so a config naming a column the metadata doesn't
+// have degrades to ungrouped instead of breaking the display.
+export function maybeApplyGroupBy<S extends Record<string, unknown>>(
+  groupBy: string,
+  sources: S[],
+): S[] | undefined {
+  if (!groupBy) {
+    return undefined
+  }
+  if (sources.some(source => groupBy in source)) {
+    return sortSourcesByAttribute(sources, groupBy)
+  }
+  console.warn(
+    `groupBy attribute "${groupBy}" not found in sample metadata. ` +
+      `Available attributes: ${Object.keys(sources[0] ?? {}).join(', ')}`,
+  )
+  return undefined
 }
 
 // Regions to fetch + render, by mode. Regular mode draws each variant at its
@@ -466,6 +526,14 @@ export default function MultiSampleVariantBaseModelF(
         get colorBy(): string {
           return getConf(self, 'colorBy')
         },
+        /**
+         * #getter
+         * Sample-metadata attribute the rows are grouped (reordered) by; ''
+         * leaves the existing order alone.
+         */
+        get groupBy(): string {
+          return getConf(self, 'groupBy')
+        },
 
         /**
          * #getter
@@ -580,12 +648,16 @@ export default function MultiSampleVariantBaseModelF(
             return
           }
           self.sourcesVolatile = sources
-          // Apply the colorBy palette only when the user hasn't already
-          // arranged the layout themselves.
+          // Apply the colorBy palette and groupBy ordering only when the user
+          // hasn't already arranged the layout themselves. groupBy runs on the
+          // colored rows so a config can set both and get grouped-and-colored
+          // in one pass.
           if (self.layout.length === 0) {
             const colored = maybeApplyColorByPalette(self.colorBy, sources)
-            if (colored) {
-              self.layout = colored
+            const grouped = maybeApplyGroupBy(self.groupBy, colored ?? sources)
+            const next = grouped ?? colored
+            if (next) {
+              self.layout = next
             }
           }
         },
@@ -606,6 +678,24 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #action
+         * Reorder sample rows so each value of a metadata attribute (e.g.
+         * 'population') is contiguous, or pass '' to clear the grouping.
+         * Persists the arrangement as the layout and records the choice in the
+         * `groupBy` config slot so it survives a data refetch and serializes
+         * into the session. Re-applies `colorBy` in the same pass so grouping
+         * doesn't drop an existing palette.
+         */
+        setGroupBy(groupBy: string) {
+          self.configuration.setSlot('groupBy', groupBy)
+          const sources = self.sourcesVolatile
+          if (sources) {
+            const colored = maybeApplyColorByPalette(self.colorBy, sources)
+            const base = colored ?? sources
+            self.layout = maybeApplyGroupBy(groupBy, base) ?? colored ?? []
+          }
+        },
+        /**
+         * #action
          * Restore the configured default arrangement — empties the layout
          * and clears the cluster tree, then re-applies the `colorBy` palette
          * if one is configured. Overrides the mixin's `clearLayout` so the
@@ -614,10 +704,13 @@ export default function MultiSampleVariantBaseModelF(
         clearLayout() {
           self.clusterTree = undefined
           const sources = self.sourcesVolatile
-          const colored = sources
-            ? maybeApplyColorByPalette(self.colorBy, sources)
-            : undefined
-          self.layout = colored ?? []
+          if (!sources) {
+            self.layout = []
+          } else {
+            const colored = maybeApplyColorByPalette(self.colorBy, sources)
+            const grouped = maybeApplyGroupBy(self.groupBy, colored ?? sources)
+            self.layout = grouped ?? colored ?? []
+          }
         },
         /**
          * #action

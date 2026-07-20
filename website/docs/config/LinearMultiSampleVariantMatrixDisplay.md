@@ -206,6 +206,15 @@ no grouping
 
 **Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
 
+#### slot: groupBy
+
+Name of a sample-metadata attribute (a column in the adapter's
+samplesTsvLocation, e.g. 'population') to order the sample rows by, so each
+group's rows are contiguous and a group-restricted genotype pattern reads as one
+band; empty means the rows keep their existing order
+
+**Type:** [`string`](/docs/config_guides/slot_types#string) · **Default:** `''`
+
 #### slot: referenceDrawingMode
 
 A 'draw'/'skip' toggle for reference alleles, settable independent of

@@ -140,9 +140,12 @@ export const ldSpecs: ScreenshotSpec[] = [
               trackId: 'kgp_lct_matrix',
               type: 'LinearMultiSampleVariantMatrixDisplay',
               runClustering: true,
-              // wider than the 80px default so the population color strip
-              // beside the dendrogram is actually readable — that strip is
-              // what shows the swept band is EUR/SAS, i.e. the selection
+              // Clustered by genotype, not grouped by population (groupBy is
+              // supported and was tried here): over an 800 kb window the matrix
+              // is ~1500 columns in ~1300 px, so population grouping only moves
+              // rows around inside an unreadable field, while clustering pulls
+              // the shared-haplotype samples into visible contiguous bands.
+              // The population read stays on the colorBy strip beside the tree.
               treeAreaWidth: 150,
               height: 400,
             },

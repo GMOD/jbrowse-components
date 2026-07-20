@@ -98,6 +98,15 @@ export default function sharedVariantConfigFactory() {
       },
       /**
        * #slot
+       */
+      groupBy: {
+        type: 'string',
+        defaultValue: '',
+        description:
+          "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to order the sample rows by, so each group's rows are contiguous and a group-restricted genotype pattern reads as one band; empty means the rows keep their existing order",
+      },
+      /**
+       * #slot
        * A 'draw'/'skip' toggle for reference alleles, settable independent of
        * showReferenceAlleles (the admin-config-only starting default). No
        * fallback derivation at read time — preProcessSnapshot below seeds this
