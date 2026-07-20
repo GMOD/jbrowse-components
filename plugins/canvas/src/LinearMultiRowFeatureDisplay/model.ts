@@ -50,14 +50,16 @@ import {
 } from './sourcesLogic.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
-import type { LinearMultiRowFeatureDisplayConfig } from './configSchema.ts'
+import type {
+  LinearMultiRowFeatureDisplayConfig,
+  LinearMultiRowFeatureDisplayConfigModel,
+} from './configSchema.ts'
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
   MultiRowRenderingBackend,
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource } from './sourcesLogic.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -93,7 +95,7 @@ export interface HoveredFeature extends MultiRowHit {
  * (labels + dendrogram + reorder) is the shared `TreeSidebarMixin`.
  */
 export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LinearMultiRowFeatureDisplayConfigModel,
 ) {
   return types
     .compose(

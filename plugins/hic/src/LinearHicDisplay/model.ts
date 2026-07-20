@@ -29,7 +29,7 @@ import type {
 } from '../RenderHicDataRPC/types.ts'
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { HicRenderingBackend } from './components/hicRenderingBackendTypes.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { HicTrackConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -63,9 +63,7 @@ import type {
  * ```
  */
 
-export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
-) {
+export default function stateModelFactory(configSchema: HicTrackConfigModel) {
   return types
     .compose(
       'LinearHicDisplay',

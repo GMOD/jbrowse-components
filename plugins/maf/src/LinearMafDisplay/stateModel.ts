@@ -78,8 +78,10 @@ import type {
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
-import type { LinearMafDisplayConfig } from './configSchema.ts'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type {
+  LinearMafDisplayConfig,
+  LinearMafDisplayConfigModel,
+} from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -127,7 +129,7 @@ export interface MafSource {
  * ```
  */
 export default function stateModelFactory(
-  configSchema: AnyConfigurationSchemaType,
+  configSchema: LinearMafDisplayConfigModel,
 ) {
   return (
     types
@@ -698,7 +700,7 @@ export default function stateModelFactory(
          */
         get fitTargetHeight(): number {
           return (
-            (getConf(self, 'height') as number | undefined) ??
+            (getConf(self, 'height')) ??
             self.nrow * DEFAULTS.rowHeight + self.rowsTopOffset
           )
         },
