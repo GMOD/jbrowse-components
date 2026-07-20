@@ -214,7 +214,7 @@ afterEach(() => {
 describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   it('refetches when bicolorPivot changes (rpcProps field)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -234,7 +234,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 
   it('refetches when resolution changes (rpcProps field)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -257,7 +257,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // change, so no refetch should happen.
   it('does NOT refetch when summaryScoreMode changes (gpuProps re-uploads)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -278,7 +278,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // (an rpcProps field), so changing color *can* legitimately refetch.
   it('does NOT refetch when posColor changes (gpuProps re-uploads)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -296,7 +296,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
 
   it('does not refetch when an unrelated property is touched', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -317,7 +317,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // and don't need a re-upload either.
   it('does NOT refetch when scaleType changes (handled by render autorun)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(400)
@@ -340,7 +340,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // before/after fetch catches that the moment a new field is added wrong.
   it('rpcProps shape is unchanged after a fetch populates rpcDataMap', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
 
     const before = JSON.stringify(display.rpcProps())
@@ -362,7 +362,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
   // changes is that a (zero-feature) region entry has loaded.
   it('renderState stays a stub through a zero-feature fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyWiggleData())
+    mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display } = createDisplay()
 
     // before the fetch: nothing loaded (the first-paint gate holds), stub state
