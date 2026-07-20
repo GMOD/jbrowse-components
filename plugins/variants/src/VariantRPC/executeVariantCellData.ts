@@ -13,6 +13,11 @@ import {
   featureHasConsequence,
   getVariantImpactColor,
 } from '../shared/variantConsequence.ts'
+import {
+  SV_TYPE_COLOR,
+  assignSvTypeColors,
+  getVariantSvType,
+} from '../shared/variantSvType.ts'
 
 import type { GetCellDataArgs } from './types.ts'
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
@@ -34,12 +39,16 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 function makeFeatureColor(
   featureColor: string | undefined,
   jexl: JexlInstance,
+  svTypeColors: Record<string, string>,
 ): ((feature: Feature) => string | undefined) | undefined {
   if (!featureColor) {
     return undefined
   }
   if (featureColor === CONSEQUENCE_IMPACT_JEXL) {
     return getVariantImpactColor
+  }
+  if (featureColor === SV_TYPE_COLOR) {
+    return feature => svTypeColors[getVariantSvType(feature)]
   }
   const cfg = { color: featureColor }
   return feature => {
@@ -76,6 +85,11 @@ interface CellDataBase {
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
   // "Color by...→Consequence impact" menu option.
   hasConsequence: boolean
+  // Whether any visible variant is a structural variant, gating the "Color
+  // by...→SV type" menu option, and the color assigned to each present SV type
+  // so the legend swatches match the painted cells exactly.
+  hasSvType: boolean
+  svTypeColors: Record<string, string>
   simplifiedFeatures: SimplifiedVariantFeature[]
   // Interned genotype payload (see shared/genotypeCodec.ts): the distinct
   // genotype strings, and the canonical sample order that each feature's
@@ -163,6 +177,7 @@ function computeSampleInfo(
   let hasUnphased = false
   let hasNoCall = false
   let hasConsequence = false
+  const svTypes = new Set<string>()
 
   // Single pass: accumulate sampleInfo/legend flags and build the simplified
   // feature list together. Avoids a second full iteration over mafs (was a
@@ -178,6 +193,10 @@ function computeSampleInfo(
     }
     if (!hasConsequence && featureHasConsequence(feature)) {
       hasConsequence = true
+    }
+    const svType = getVariantSvType(feature)
+    if (svType) {
+      svTypes.add(svType)
     }
     let samp = genotypesCache.get(featureId)
     if (!samp) {
@@ -234,6 +253,7 @@ function computeSampleInfo(
     hasUnphased,
     hasNoCall,
     hasConsequence,
+    svTypeColors: assignSvTypeColors([...svTypes]),
     simplifiedFeatures,
   }
 }
@@ -261,8 +281,6 @@ export async function executeVariantCellData({
     stopToken,
     displayedRegionIndices,
   } = args
-
-  const featureColorFn = makeFeatureColor(featureColor, pluginManager.jexl)
 
   // Only regular mode consumes per-region grouping (it ships one cell blob per
   // displayed region); matrix mode flattens back to a single `mafs` list, so
@@ -395,10 +413,20 @@ export async function executeVariantCellData({
     hasUnphased,
     hasNoCall,
     hasConsequence,
+    svTypeColors,
     simplifiedFeatures,
   } = await withProgress(
     { ...progressOpts, label: 'Computing sample info', total: mafs.length },
     report => computeSampleInfo(mafs, genotypesCache, report),
+  )
+  const hasSvType = Object.keys(svTypeColors).length > 0
+
+  // Resolved after computeSampleInfo because the SV-type preset's color map is
+  // built from the types actually present (see makeFeatureColor / svTypeColors).
+  const featureColorFn = makeFeatureColor(
+    featureColor,
+    pluginManager.jexl,
+    svTypeColors,
   )
 
   // For phased mode: expand sources into per-haplotype rows. The client sends
@@ -493,6 +521,8 @@ export async function executeVariantCellData({
         hasUnphased,
         hasNoCall,
         hasConsequence,
+        hasSvType,
+        svTypeColors,
         simplifiedFeatures,
         genotypeDict,
         sampleNames,
@@ -545,6 +575,8 @@ export async function executeVariantCellData({
         hasUnphased,
         hasNoCall,
         hasConsequence,
+        hasSvType,
+        svTypeColors,
         simplifiedFeatures,
         genotypeDict,
         sampleNames,

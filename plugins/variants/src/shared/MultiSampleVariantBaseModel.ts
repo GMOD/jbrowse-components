@@ -426,6 +426,23 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Whether any visible variant is a structural variant, gating the "Color
+         * by...→SV type" menu option.
+         */
+        get hasSvType() {
+          return self.cellData?.hasSvType ?? false
+        },
+        /**
+         * #getter
+         * The color assigned to each present SV type, built in the worker so the
+         * legend swatches match the painted cells (drives the "SV type" legend
+         * section).
+         */
+        get svTypeColors() {
+          return self.cellData?.svTypeColors
+        },
+        /**
+         * #getter
          */
         get sampleInfo() {
           return self.cellData?.sampleInfo
@@ -1100,6 +1117,7 @@ export default function MultiSampleVariantBaseModelF(
             hasUnphased: self.hasUnphased,
             hasNoCall: self.hasNoCall,
             featureColor: self.featureColor,
+            svTypeColors: self.svTypeColors,
             colorBy: self.colorBy,
             sources: self.sources,
           }).filter(s => !self.dismissedLegendSections.includes(s.id))

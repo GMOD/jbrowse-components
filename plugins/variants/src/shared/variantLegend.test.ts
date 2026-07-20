@@ -159,6 +159,25 @@ describe('getVariantLegendSections', () => {
     ])
   })
 
+  it('builds an SV-type section from the shipped color map', () => {
+    const sections = getVariantLegendSections({
+      renderingMode: 'alleleCount',
+      hasSecondaryAlt: false,
+      hasUnphased: false,
+      hasNoCall: false,
+      featureColor: 'svType',
+      svTypeColors: { DEL: '#e41a1c', DUP: '#377eb8', INVDUP: '#1f77b4' },
+      colorBy: '',
+      sources,
+    })
+    expect(sections.map(s => s.id)).toEqual(['svType'])
+    expect(sections[0]!.items).toEqual([
+      { color: '#e41a1c', label: 'Deletion' },
+      { color: '#377eb8', label: 'Duplication' },
+      { color: '#1f77b4', label: 'INVDUP' }, // unrecognized token: raw label
+    ])
+  })
+
   it('drops the cell legend for an arbitrary custom feature color', () => {
     const sections = getVariantLegendSections({
       renderingMode: 'alleleCount',

@@ -16,6 +16,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { capitalizeFirst } from './constants.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
+import { SV_TYPE_COLOR } from './variantSvType.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -201,6 +202,26 @@ export function variantTrackMenuItems(
             : 'No SnpEff/VEP annotations (ANN/CSQ) found in this dataset',
           onClick: () => {
             self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
+          },
+        },
+        {
+          label: `SV type${
+            self.hasSvType
+              ? ''
+              : !self.featuresVolatile
+                ? ' (checking for structural variants...)'
+                : ' (no structural variants found)'
+          }`,
+          helpText:
+            'Color every alt-carrying cell by the variant’s structural-variant class (deletion, duplication, insertion, inversion, ...); ref and no-call cells keep their normal coloring',
+          type: 'radio',
+          checked: self.featureColor === SV_TYPE_COLOR,
+          disabled: !self.hasSvType,
+          disabledHelpText: !self.featuresVolatile
+            ? 'Checking for structural variants...'
+            : 'No structural variants (SVTYPE) found in this dataset',
+          onClick: () => {
+            self.setFeatureColor(SV_TYPE_COLOR)
           },
         },
         ...(self.colorByAttributes.length

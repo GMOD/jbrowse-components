@@ -10,6 +10,7 @@ import {
   getAltColorForDosage,
 } from './constants.ts'
 import { CONSEQUENCE_IMPACT_JEXL, IMPACT_TIERS } from './variantConsequence.ts'
+import { SV_TYPE_COLOR, svTypeDisplayLabel } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
 import type {
@@ -129,6 +130,7 @@ export function getVariantLegendSections({
   hasUnphased,
   hasNoCall,
   featureColor,
+  svTypeColors,
   colorBy,
   sources,
 }: {
@@ -138,9 +140,14 @@ export function getVariantLegendSections({
   hasNoCall: boolean
   // Per-variant cell color override; '' = default genotype coloring. When set,
   // cells aren't genotype-colored, so the genotype legend is replaced — by the
-  // impact-tier key for the known consequence preset, or dropped for an
-  // arbitrary custom expression we can't build a key for.
+  // impact-tier key for the consequence preset, the present SV types for the SV-
+  // type preset, or dropped for an arbitrary custom expression we can't build a
+  // key for.
   featureColor: string
+  // The worker-assigned color per present SV type; drives the SV-type legend so
+  // its swatches match the painted cells. Only read when the SV-type preset is
+  // selected.
+  svTypeColors?: Record<string, string>
   colorBy: string
   sources: Source[] | undefined
 }): LegendSection[] {
@@ -152,7 +159,16 @@ export function getVariantLegendSections({
           title: 'Consequence impact',
           items: IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier })),
         }
-      : undefined
+      : featureColor === SV_TYPE_COLOR
+        ? {
+            id: 'svType',
+            title: 'SV type',
+            items: Object.entries(svTypeColors ?? {}).map(([type, color]) => ({
+              color,
+              label: svTypeDisplayLabel(type),
+            })),
+          }
+        : undefined
     : {
         id: 'genotypes',
         title: 'Genotypes',
