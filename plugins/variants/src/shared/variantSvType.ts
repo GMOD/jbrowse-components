@@ -9,6 +9,10 @@ import type { Feature } from '@jbrowse/core/util'
 // plain marker string handled in makeFeatureColor rather than a jexl function.
 export const SV_TYPE_COLOR = 'svType'
 
+// Bucket for a record whose ALT alleles span more than one SV class (e.g.
+// ALT=<DEL>,<DUP>): a distinct flag color rather than silently picking one.
+export const MIXED_SV_TYPE = 'MIXED'
+
 // Canonical SV-type buckets in legend order, with their predefined colors and
 // human-readable labels. Any type not listed here is an unrecognized token that
 // gets an auto-assigned palette color and shows its raw token as the label.
@@ -19,6 +23,7 @@ export const PREDEFINED_SV_TYPES = [
   { type: 'INV', label: 'Inversion', color: '#ff7f00' },
   { type: 'CNV', label: 'Copy number', color: '#984ea3' },
   { type: 'BND', label: 'Breakend', color: '#a65628' },
+  { type: MIXED_SV_TYPE, label: 'Mixed', color: '#607d8b' },
 ] as const
 
 const PREDEFINED_COLOR: Record<string, string> = Object.fromEntries(
@@ -70,27 +75,33 @@ export function svTypeFromAlt(alt: string) {
 }
 
 /**
- * The structural-variant class of a variant as a whole (its primary ALT), as a
- * canonical bucket (DEL/DUP/INS/INV/CNV/BND) or an unrecognized raw token, or
- * '' when the variant is not a structural variant. Prefers the canonical
- * INFO/SVTYPE field, else derives from the first symbolic/breakend ALT.
- * Allele-specific coloring uses svTypeFromAlt per ALT instead.
+ * The structural-variant class of a variant as a whole, as a canonical bucket
+ * (DEL/DUP/INS/INV/CNV/BND), MIXED when its ALT alleles span more than one
+ * class, an unrecognized raw token, or '' when it is not a structural variant.
+ * ALT drives the class (a multi-class record is MIXED regardless of SVTYPE);
+ * for a single class the declared INFO/SVTYPE is preferred, else the lone ALT
+ * class.
  */
 export function getVariantSvType(feature: Feature) {
+  const alt = feature.get('ALT') as string[] | undefined
+  const classes = new Set<string>()
+  for (const a of alt ?? []) {
+    const t = svTypeFromAlt(a)
+    if (t) {
+      classes.add(t)
+    }
+  }
+  if (classes.size > 1) {
+    return MIXED_SV_TYPE
+  }
   const info = feature.get('INFO') as Record<string, unknown> | undefined
   const svtype = info?.SVTYPE
   const raw = Array.isArray(svtype) ? svtype[0] : svtype
   if (typeof raw === 'string' && raw && raw !== '.') {
     return normalizeRawToken(raw)
   }
-  const alt = feature.get('ALT') as string[] | undefined
-  for (const a of alt ?? []) {
-    const t = svTypeFromAlt(a)
-    if (t) {
-      return t
-    }
-  }
-  return ''
+  const [only] = classes
+  return only ?? ''
 }
 
 /**

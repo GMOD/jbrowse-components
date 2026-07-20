@@ -28,8 +28,14 @@ describe('getVariantSvType', () => {
     expect(getVariantSvType(feat({ ALT: ['<CN0>'] }))).toBe('CNV')
   })
 
-  it('uses the first structural ALT of a multiallelic site', () => {
-    expect(getVariantSvType(feat({ ALT: ['<DEL>', '<DUP>'] }))).toBe('DEL')
+  it('flags a multi-class multiallelic site as MIXED', () => {
+    expect(getVariantSvType(feat({ ALT: ['<DEL>', '<DUP>'] }))).toBe('MIXED')
+    // MIXED wins even when SVTYPE names one class
+    expect(getVariantSvType(feat({ INFO: { SVTYPE: ['DEL'] }, ALT: ['<DEL>', '<DUP>'] }))).toBe('MIXED')
+  })
+
+  it('does not flag a same-class multiallelic site (e.g. CNV copy states)', () => {
+    expect(getVariantSvType(feat({ ALT: ['<CN0>', '<CN3>'] }))).toBe('CNV')
   })
 
   it('is empty for plain (non-symbolic) SNVs and indels', () => {
@@ -80,6 +86,7 @@ describe('svTypeDisplayLabel', () => {
   it('labels known buckets and passes through unknown tokens', () => {
     expect(svTypeDisplayLabel('DEL')).toBe('Deletion')
     expect(svTypeDisplayLabel('BND')).toBe('Breakend')
+    expect(svTypeDisplayLabel('MIXED')).toBe('Mixed')
     expect(svTypeDisplayLabel('INVDUP')).toBe('INVDUP')
   })
 })
