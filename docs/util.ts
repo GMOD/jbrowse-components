@@ -1053,8 +1053,8 @@ export function typeAndCodeBlock(
   ].join('\n')
 }
 
-// The shared skeleton every generated config/model page wears: Docusaurus
-// frontmatter, a one-line auto-generated preamble that folds in the source-code
+// The shared skeleton every generated config/model page wears: frontmatter, a
+// one-line auto-generated preamble that folds in the source-code
 // link, then the page body. The config and model generators differ only in
 // `notes` and `sourcePath`, so the skeleton lives here to stay single-sourced.
 export function docPage({

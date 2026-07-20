@@ -1,7 +1,7 @@
 # Contributing to JBrowse 2
 
-Welcome, we are happy to receive contributions to jbrowse 2. This short guide
-will help you get started
+Welcome, we are happy to receive contributions to JBrowse 2. This short guide
+will help you get started.
 
 ## Quick Start
 
@@ -35,8 +35,9 @@ Run from root:
 ### Products
 
 - **Web**: `cd products/jbrowse-web && pnpm start`
-- **Desktop**: Run `pnpm start` then `pnpm electron` in
-  `products/jbrowse-desktop`.
+- **Desktop**: `cd products/jbrowse-desktop && pnpm dev` (starts the dev server
+  and launches Electron in one command). To run the pieces separately, use
+  `pnpm start` then `pnpm electron`.
 - **Embedded component examples**:
   `cd products/jbrowse-react-linear-genome-view/examples-site && pnpm dev`
 
@@ -45,14 +46,13 @@ Run from root:
 - `packages/`: Core libraries.
 - `plugins/`: Feature code (Alignments, Variants, etc.). Main dev area.
 - `products/`: Apps (Web, Desktop, CLI).
-- `website/`: Docusaurus site.
+- `website/`: Astro documentation site.
 
 ## Documentation
 
-Run
+The website is an [Astro](https://astro.build/) site. Run it locally with:
 
 ```bash
 cd website
-pnpm install
-pnpm start
+pnpm dev
 ```
