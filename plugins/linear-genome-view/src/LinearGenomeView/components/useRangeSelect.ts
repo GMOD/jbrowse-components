@@ -1,9 +1,9 @@
-import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type React from 'react'
 
 interface AnchorPosition {
   offsetX: number

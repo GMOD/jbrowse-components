@@ -1,11 +1,11 @@
+import { nanoid } from '../util/nanoid.ts'
 import RpcClient from './RpcClient.ts'
 import WorkerPoolRpcDriver from './WorkerPoolRpcDriver.ts'
 import { deserializeError } from './serializeError/index.ts'
-import { nanoid } from '../util/nanoid.ts'
 
-import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
 import type { PluginDefinition } from '../PluginLoader.ts'
 import type { RpcStatus, StatusCallback } from '../util/progress.ts'
+import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker

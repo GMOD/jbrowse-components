@@ -11,8 +11,8 @@ import { sashimiArcKey, sashimiSelectionKey } from './sashimiArcs.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'
 
-import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One side's worth of arcs as an absolutely-positioned SVG at the (scrolled)

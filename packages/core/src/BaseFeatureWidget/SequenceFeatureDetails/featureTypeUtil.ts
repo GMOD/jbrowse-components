@@ -1,8 +1,8 @@
-import type { SequenceDisplayMode, ShowCoordinatesMode } from './model.ts'
 import type {
   SimpleFeatureSerialized,
   SimpleFeatureSerializedNoId,
 } from '../../util/index.ts'
+import type { SequenceDisplayMode, ShowCoordinatesMode } from './model.ts'
 
 // these predicates only ever read type/subfeatures, so they accept a bare
 // subfeature (no guaranteed uniqueId) as readily as a full feature

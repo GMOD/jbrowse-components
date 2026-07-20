@@ -9,7 +9,6 @@
 //   node annotate_variants.mjs [input.vcf.gz] [output.vcf.gz]
 // Defaults to rewriting volvox.test.vcf.gz in place. Requires bgzip + tabix on
 // PATH. Re-run to regenerate.
-
 import { execFileSync } from 'child_process'
 import { readFileSync, writeFileSync } from 'fs'
 import { gunzipSync } from 'zlib'

@@ -3,11 +3,11 @@ import { useEffect, useRef } from 'react'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
-import { drawPeptidesForRegions } from './peptidePositioning.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
+import { drawPeptidesForRegions } from './peptidePositioning.ts'
 
-import type { VisibleRegion } from './hitTesting.ts'
 import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { VisibleRegion } from './hitTesting.ts'
 
 // Amino-acid letters drawn straight onto a 2D canvas (one fillText per residue)
 // rather than one absolutely-positioned <div> per residue — the same approach

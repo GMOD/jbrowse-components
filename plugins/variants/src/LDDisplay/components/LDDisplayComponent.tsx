@@ -9,6 +9,8 @@ import {
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
+import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
+import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 import Crosshairs from './Crosshairs.tsx'
 import FocalSnpHighlight from './FocalSnpHighlight.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
@@ -17,8 +19,6 @@ import LDStatusBar from './LDStatusBar.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './VariantLabels.tsx'
 import Wrapper from './Wrapper.tsx'
-import RecombinationTrack from '../../shared/components/RecombinationTrack.tsx'
-import RecombinationYScaleBar from '../../shared/components/RecombinationYScaleBar.tsx'
 
 import type { LDFlatbushItem } from '../../RenderLDDataRPC/types.ts'
 import type { SharedLDModel } from '../shared.ts'

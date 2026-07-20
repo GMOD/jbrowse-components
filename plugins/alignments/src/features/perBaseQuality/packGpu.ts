@@ -1,7 +1,7 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { qualityAbgr } from './colors.ts'
 import * as perBaseQualityShader from '../../LinearAlignmentsDisplay/shaders/slang/packedColorQuad.generated.ts'
+import { qualityAbgr } from './colors.ts'
 
 import type { PerBaseQualityUploadData } from './types.ts'
 

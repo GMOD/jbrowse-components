@@ -1,7 +1,7 @@
 import { fetchJson, useFetch } from '@jbrowse/core/util'
 
-import type { Entry } from './getColumnDefinitions.tsx'
 import type { Fav } from '../types.ts'
+import type { Entry } from './getColumnDefinitions.tsx'
 
 type RawEntry = Entry & { orderKey?: number }
 

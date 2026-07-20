@@ -1,5 +1,4 @@
 import { lazy } from 'react'
-import type { ComponentType } from 'react'
 
 import {
   CascadingMenuButton,
@@ -15,12 +14,13 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { CircularProgress, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
 import { isNodeCollapsed } from '../../model.ts'
 import { getAllSubcategories, getAllTrackNodes } from '../../util.ts'
+import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeCategoryNode, TreeTrackNode } from '../../types.ts'
+import type { ComponentType } from 'react'
 
 export interface FolderDialogProps {
   model: HierarchicalTrackSelectorModel

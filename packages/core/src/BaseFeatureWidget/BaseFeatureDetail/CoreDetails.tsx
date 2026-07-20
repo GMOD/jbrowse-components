@@ -1,7 +1,7 @@
+import { toLocale } from '../../util/index.ts'
 import Position from './Position.tsx'
 import SimpleField from './SimpleField.tsx'
 import { applyFeatureFormatting } from './util.ts'
-import { toLocale } from '../../util/index.ts'
 
 import type { BaseProps } from '../types.tsx'
 

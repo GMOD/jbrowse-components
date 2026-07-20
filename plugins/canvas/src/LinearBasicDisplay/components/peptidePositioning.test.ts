@@ -1,10 +1,10 @@
 import { forEachRenderedPeptide } from './peptidePositioning.ts'
 
-import type { PeptideCell } from './peptidePositioning.ts'
 import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { PeptideCell } from './peptidePositioning.ts'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 function makeItem(

@@ -1,3 +1,4 @@
+import BaseResult from '../../TextSearch/BaseResults.ts'
 import {
   cap,
   coerceToResult,
@@ -6,7 +7,6 @@ import {
   getInputWidth,
   getOptionLabel,
 } from './util.ts'
-import BaseResult from '../../TextSearch/BaseResults.ts'
 
 const opt = (label: string) => ({ result: new BaseResult({ label }) })
 

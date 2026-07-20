@@ -5,9 +5,9 @@ import SVGGridlines from './SVGGridlines.tsx'
 import SVGRuler from './SVGRuler.tsx'
 import SVGTracks from './SVGTracks.tsx'
 
-import type { SvgDisplayResult } from './util.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
+import type { SvgDisplayResult } from './util.ts'
 
 // One LGV's worth of exported SVG: assembly label + ruler on top, then optional
 // gridlines and the track bodies. Shared verbatim by the linear-synteny and

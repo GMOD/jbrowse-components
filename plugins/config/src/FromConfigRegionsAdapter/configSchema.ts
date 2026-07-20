@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
 /**
  * #config FromConfigRegionsAdapter
  * used for specifying refNames+sizes of an assembly

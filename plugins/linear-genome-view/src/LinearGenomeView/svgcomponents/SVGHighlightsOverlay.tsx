@@ -1,11 +1,10 @@
-import type { ReactNode } from 'react'
-
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { getEnv } from '@jbrowse/core/util'
 
 import SVGHighlights from './SVGHighlights.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { ReactNode } from 'react'
 
 // The highlight layer over one view's tracks area: native LGV highlights plus
 // whatever plugins contribute (bookmarks), clipped to the view width. Callers

@@ -11,11 +11,11 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 import BulkEditPanel from './BulkEditPanel.tsx'
 import ClearTreeWarningDialog from './ClearTreeWarningDialog.tsx'
 import RowPalettizer from './RowPalettizer.tsx'
 import SourceGrid from './SourceGrid.tsx'
-import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
 
 import type { ColorColumn } from './SourceGrid.tsx'
 

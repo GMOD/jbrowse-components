@@ -6,10 +6,8 @@ import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
 import {
-  type Track,
   createTextSearchConf,
   findTrackConfigsToIndex,
-  type indexType,
 } from '@jbrowse/text-indexing'
 import { autorun, observable, toJS } from 'mobx'
 
@@ -20,6 +18,7 @@ import type { SessionWithDrawerWidgets } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends } from '@jbrowse/product-core'
+import type { Track, indexType } from '@jbrowse/text-indexing'
 
 const { ipcRenderer } = window.require('electron')
 

@@ -8,9 +8,9 @@ import DLGAP3 from './test_data/DLGAP3.ts'
 import NCDN from './test_data/NCDN.ts'
 import { getSequencePlaintext } from './util.ts'
 
-import type { SequenceDisplayMode } from './model.ts'
 import type { SimpleFeatureSerializedNoId } from '../../util/index.ts'
 import type { SeqState } from '../util.tsx'
+import type { SequenceDisplayMode } from './model.ts'
 
 // Usage reference for the public SequencePanel component (it has external
 // consumers): each test below renders <SequencePanel> with a different mode and

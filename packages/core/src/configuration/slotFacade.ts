@@ -1,15 +1,15 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
+import { getEnv } from '../util/index.ts'
+import { getEnumerationValues } from '../util/mst-reflection.ts'
 import {
   getConfigurationSchemaDefinition,
   isSlotDefinitionEntry,
 } from './util.ts'
-import { getEnv } from '../util/index.ts'
-import { getEnumerationValues } from '../util/mst-reflection.ts'
 
+import type PluginManager from '../PluginManager.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
-import type PluginManager from '../PluginManager.ts'
 
 /**
  * The slot's metadata entry, or undefined when `slotName` names a nested

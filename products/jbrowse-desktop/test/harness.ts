@@ -1,11 +1,11 @@
-import { spawn, ChildProcess, execSync } from 'child_process'
+import { ChildProcess, execSync, spawn } from 'child_process'
 import http from 'http'
 import { createRequire } from 'module'
-import { dirname, resolve, join } from 'path'
+import { dirname, join, resolve } from 'path'
 import { fileURLToPath } from 'url'
 
+import { Builder, By, Key, WebDriver, logging, until } from 'selenium-webdriver'
 import handler from 'serve-handler'
-import { Builder, WebDriver, By, until, logging, Key } from 'selenium-webdriver'
 
 const require = createRequire(import.meta.url)
 const __dirname = dirname(fileURLToPath(import.meta.url))

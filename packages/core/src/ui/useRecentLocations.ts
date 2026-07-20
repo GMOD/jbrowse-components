@@ -1,5 +1,5 @@
-import { instanceScopedKey } from './useAssemblySelection.ts'
 import { useLocalStorage } from '../util/index.ts'
+import { instanceScopedKey } from './useAssemblySelection.ts'
 
 // keep the list short so it reads as "jump back to somewhere recent" rather
 // than a full history

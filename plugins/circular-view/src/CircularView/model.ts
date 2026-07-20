@@ -1,5 +1,4 @@
 import { lazy } from 'react'
-import type { FC, ReactNode } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
@@ -26,6 +25,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { FC, ReactNode } from 'react'
 
 const twoPi = 2 * Math.PI
 

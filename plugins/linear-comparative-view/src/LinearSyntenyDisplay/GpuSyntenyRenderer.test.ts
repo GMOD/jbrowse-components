@@ -3,11 +3,11 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { GpuSyntenyRenderer, SYNTENY_PASSES } from './GpuSyntenyRenderer.ts'
 import { UNIFORM_OFFSET_F32 as U } from './shaders/syntenyFillStraight.generated.ts'
 
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 function makeMockCanvas(width = 800, height = 100): HTMLCanvasElement {
   return { width, height } as unknown as HTMLCanvasElement

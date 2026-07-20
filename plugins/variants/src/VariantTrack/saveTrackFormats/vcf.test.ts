@@ -1,7 +1,7 @@
 import VcfParser from '@gmod/vcf'
 
-import { stringifyVCF } from './vcf.ts'
 import VcfFeature from '../../VcfFeature/index.ts'
+import { stringifyVCF } from './vcf.ts'
 
 const header =
   '##INFO=<ID=SOMATIC,Number=0,Type=Flag,Description="">\n' +

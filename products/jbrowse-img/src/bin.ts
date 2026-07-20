@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import { registerHooks } from 'node:module'
 
 import { resolve } from './resolve.ts'

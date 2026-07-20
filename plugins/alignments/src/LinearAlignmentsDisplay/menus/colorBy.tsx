@@ -5,8 +5,6 @@ import { promotableRadioItem } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
-import { ModificationThresholdSlider } from './ModificationThresholdSlider.tsx'
-import { checkboxItem, radioItems } from './menuHelpers.ts'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import {
   cytosineContextOptions,
@@ -16,6 +14,8 @@ import {
   DEFAULT_MODIFICATION_THRESHOLD,
   isModificationTypeVisible,
 } from '../../shared/types.ts'
+import { ModificationThresholdSlider } from './ModificationThresholdSlider.tsx'
+import { checkboxItem, radioItems } from './menuHelpers.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type {

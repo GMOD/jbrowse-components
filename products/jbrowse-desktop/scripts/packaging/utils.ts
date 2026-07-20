@@ -1,9 +1,11 @@
-import { execSync, type ExecSyncOptions } from 'child_process'
+import { execSync } from 'child_process'
 import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
 import { APP_NAME, DIST, ROOT, VERSION } from './config.ts'
+
+import type { ExecSyncOptions } from 'child_process'
 
 export function log(msg: string) {
   console.log(`\n→ ${msg}`)

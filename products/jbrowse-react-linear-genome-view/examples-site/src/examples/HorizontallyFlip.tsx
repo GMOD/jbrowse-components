@@ -1,11 +1,10 @@
 import { useRef, useState } from 'react'
-import type { RefObject } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
-import {
-  LinearGenomeView,
-  type ViewModel,
-} from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
+import type { RefObject } from 'react'
 
 const assembly = {
   name: 'volvox',

@@ -1,3 +1,5 @@
+import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
+
 export interface LDRenderState {
   yScalar: number
   canvasWidth: number
@@ -16,8 +18,6 @@ export interface LDUploadData {
   positions?: Float32Array
   cellSizes?: Float32Array
 }
-
-import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 export interface LDRenderingBackend extends GlobalRenderingBackend<
   LDUploadData,

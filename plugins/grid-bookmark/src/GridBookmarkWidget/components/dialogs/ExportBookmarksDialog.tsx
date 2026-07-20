@@ -5,8 +5,8 @@ import GetAppIcon from '@mui/icons-material/GetApp'
 import { MenuItem, Select, Stack, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
 import { downloadBookmarkFile } from '../../utils.ts'
+import BookmarkSelectionAlert from './BookmarkSelectionAlert.tsx'
 
 import type { GridBookmarkModel } from '../../model.ts'
 

@@ -3,10 +3,10 @@ import GradeIcon from '@mui/icons-material/Grade'
 import HistoryIcon from '@mui/icons-material/History'
 import { observer } from 'mobx-react'
 
-import BadgeDropdownTracks from './BadgeDropdownTracks.tsx'
-import HamburgerMenu from './HamburgerMenu.tsx'
 import ClearableSearchField from '../../../shared/ClearableSearchField.tsx'
 import ShoppingCart from '../ShoppingCart.tsx'
+import BadgeDropdownTracks from './BadgeDropdownTracks.tsx'
+import HamburgerMenu from './HamburgerMenu.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 

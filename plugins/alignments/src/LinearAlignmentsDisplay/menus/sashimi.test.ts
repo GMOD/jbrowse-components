@@ -1,5 +1,5 @@
-import { getSashimiMenuItem } from './sashimi.ts'
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
+import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'

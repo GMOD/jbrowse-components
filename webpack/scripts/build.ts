@@ -5,8 +5,8 @@ import browserslist from 'browserslist'
 import chalk from 'chalk'
 import webpack from 'webpack'
 
-import { appBuild, appHtml, appIndexJs, appPublic } from '../config/paths.ts'
 import { printFileSizesAfterBuild } from '../FileSizeReporter.ts'
+import { appBuild, appHtml, appIndexJs, appPublic } from '../config/paths.ts'
 
 process.on('unhandledRejection', err => {
   throw err

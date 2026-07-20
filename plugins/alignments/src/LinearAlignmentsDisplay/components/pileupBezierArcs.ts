@@ -1,6 +1,6 @@
+import { computePileupBezierArcs } from '../../features/linkedReads/computeOverlay.ts'
 import { makeBpToScreenX } from './alignmentComponentUtils.ts'
 import { sectionBandBottom } from './sectionScreen.ts'
-import { computePileupBezierArcs } from '../../features/linkedReads/computeOverlay.ts'
 
 import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'

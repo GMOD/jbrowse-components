@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config HtsgetBamAdapter
  * #trackType AlignmentsTrack

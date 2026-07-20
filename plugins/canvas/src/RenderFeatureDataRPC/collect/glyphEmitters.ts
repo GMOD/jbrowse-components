@@ -30,8 +30,8 @@ import {
 } from './glyphColors.ts'
 import { aminoAcidsByFeature, aminoAcidsInRange } from './peptideMapping.ts'
 
-import type { Collector, RenderContext } from './renderContext.ts'
 import type { FeatureLayout } from '../types.ts'
+import type { Collector, RenderContext } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Subfeature display label: the config-jexl `labels.name` slot (so a `product`

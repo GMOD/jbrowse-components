@@ -1,8 +1,8 @@
 import { openFeatureWidget } from '@jbrowse/core/util'
 
+import { getModificationCallName } from '../../shared/modificationData.ts'
 import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
 import { formatLenRange, getTooltipBin, pct } from './tooltipUtils.ts'
-import { getModificationCallName } from '../../shared/modificationData.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'

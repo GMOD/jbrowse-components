@@ -1,8 +1,8 @@
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import Attributes from './Attributes.tsx'
 import { createJBrowseTheme } from '../../ui/index.ts'
+import Attributes from './Attributes.tsx'
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(

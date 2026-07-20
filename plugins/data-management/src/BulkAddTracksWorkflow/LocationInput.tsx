@@ -1,5 +1,3 @@
-import type { Dispatch, SetStateAction } from 'react'
-
 import { FileDropZone } from '@jbrowse/core/ui'
 import { fileToLocation } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -14,6 +12,7 @@ import { observer } from 'mobx-react'
 
 import type { BulkLocationsState } from './useBulkLocations.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
+import type { Dispatch, SetStateAction } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   section: {

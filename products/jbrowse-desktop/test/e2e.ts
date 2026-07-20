@@ -1,24 +1,24 @@
 import { ChildProcess } from 'child_process'
 import http from 'http'
 
-import { WebDriver, By, until, Key } from 'selenium-webdriver'
+import { By, Key, WebDriver, until } from 'selenium-webdriver'
 
 import {
   APP_BINARY,
   REPO_ROOT,
-  isHeadless,
+  cleanupUI,
+  clearInput,
+  createDriver,
   delay,
+  findByText,
+  flushBrowserLogs,
+  isHeadless,
+  killProcesses,
+  openMenuItem,
+  openVolvoxGenome,
   startChromedriver,
   startStaticServer,
-  createDriver,
-  flushBrowserLogs,
-  findByText,
-  clearInput,
   waitForBackdropsToDisappear,
-  openVolvoxGenome,
-  cleanupUI,
-  openMenuItem,
-  killProcesses,
 } from './harness.ts'
 
 const DATA_PORT = 9444

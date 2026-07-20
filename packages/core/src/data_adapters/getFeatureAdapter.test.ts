@@ -1,9 +1,9 @@
-import { BaseAdapter, BaseFeatureDataAdapter } from './BaseAdapter/index.ts'
-import { getFeatureAdapter } from './getFeatureAdapter.ts'
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from '../configuration/configurationSchema.ts'
 import AdapterType from '../pluggableElementTypes/AdapterType.ts'
 import { ObservableCreate } from '../util/rxjs.ts'
+import { BaseAdapter, BaseFeatureDataAdapter } from './BaseAdapter/index.ts'
+import { getFeatureAdapter } from './getFeatureAdapter.ts'
 
 import type { Feature } from '../util/simpleFeature.ts'
 

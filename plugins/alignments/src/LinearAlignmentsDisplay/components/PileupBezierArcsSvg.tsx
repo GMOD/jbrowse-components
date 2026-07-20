@@ -1,11 +1,11 @@
 import { observer } from 'mobx-react'
 
+import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
   BEZIER_ARC_STROKE_WIDTH,
   computePileupBezierArcsFromModel,
 } from './pileupBezierArcs.ts'
-import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

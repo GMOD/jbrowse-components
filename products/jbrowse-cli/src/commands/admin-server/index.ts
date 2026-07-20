@@ -6,6 +6,7 @@ import { parseArgs } from 'node:util'
 import cors from 'cors'
 import express, { json, static as serveStatic } from 'express'
 
+import { debug, printHelp } from '../../utils.ts'
 import {
   generateKey,
   parsePort,
@@ -13,7 +14,6 @@ import {
   setupRoutes,
   startServer,
 } from './utils.ts'
-import { debug, printHelp } from '../../utils.ts'
 
 import type { Request, Response } from 'express'
 import type { Server } from 'node:http'

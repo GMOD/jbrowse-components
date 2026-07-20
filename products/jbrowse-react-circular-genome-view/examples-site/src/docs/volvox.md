@@ -14,6 +14,7 @@ takes a single `assembly` rather than an `assemblies` array.
 
 ```jsx
 import { CircularGenomeView } from '@jbrowse/react-circular-genome-view2'
+
 ;<CircularGenomeView
   assembly={assembly}
   tracks={tracks}

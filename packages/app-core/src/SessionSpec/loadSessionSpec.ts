@@ -3,8 +3,8 @@ import {
   isSessionWithAddTracks,
 } from '@jbrowse/core/util'
 
-import type { LayoutNode, ViewSpec } from './types.ts'
 import type { DockviewLayoutNode } from '../DockviewLayout/index.ts'
+import type { LayoutNode, ViewSpec } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // Convert LayoutNode (view indices into the spec's `views` array) to

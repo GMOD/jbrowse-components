@@ -7,8 +7,8 @@ import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
 
-import type { RenderSvgModel } from './renderSvg.tsx'
 import type { MultiRowGetFeaturesResult } from '../MultiRowGetFeaturesRPC/rpcTypes.ts'
+import type { RenderSvgModel } from './renderSvg.tsx'
 import type {
   ClusterHierarchyNode,
   HierarchyNode,

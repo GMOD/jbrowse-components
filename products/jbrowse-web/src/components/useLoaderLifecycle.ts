@@ -1,5 +1,4 @@
 import { useEffect } from 'react'
-import type { Dispatch, SetStateAction } from 'react'
 
 import {
   reloadSessionLoader,
@@ -8,6 +7,7 @@ import {
 import { disposeLoader } from './disposeLoader.ts'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'
+import type { Dispatch, SetStateAction } from 'react'
 
 // Activates the loader (which runs its own ready-watching autorun) and
 // disposes on unmount or loader swap. Plugin reloads come back through

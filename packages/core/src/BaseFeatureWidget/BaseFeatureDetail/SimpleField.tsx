@@ -1,6 +1,6 @@
+import { makeStyles } from '../../util/tss-react/index.ts'
 import BasicValue from './BasicValue.tsx'
 import FieldName from './FieldName.tsx'
-import { makeStyles } from '../../util/tss-react/index.ts'
 
 import type { FeatureFormatter } from '../types.tsx'
 

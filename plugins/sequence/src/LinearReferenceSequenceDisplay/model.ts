@@ -14,16 +14,13 @@ import {
   getRpcSessionId,
   getTrackAssemblyNames,
 } from '@jbrowse/core/util/tracks'
-import { type Instance, getEnv, types } from '@jbrowse/mobx-state-tree'
+import { getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
-import {
-  type DisplayPhase,
-  computeDisplayPhase,
-} from '@jbrowse/render-core/displayPhase'
+import { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
 
@@ -36,10 +33,12 @@ import type { DrawSequenceState } from './components/drawSequence.ts'
 import type { SequenceHover } from './components/sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayConfigModel } from './configSchema.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
 type LGV = LinearGenomeViewModel
 

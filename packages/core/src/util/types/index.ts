@@ -1,15 +1,5 @@
-import type React from 'react'
-
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-import type {
-  BlobLocation as MUBlobLocation,
-  FileHandleLocation as MUFileHandleLocation,
-  LocalPathLocation as MULocalPathLocation,
-  NoAssemblyRegion as MUNoAssemblyRegion,
-  Region as MUIRegion,
-  UriLocation as MUUriLocation,
-} from './mst.ts'
 import type { PluginDefinition } from '../../PluginLoader.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
 import type assemblyManager from '../../assemblyManager/index.ts'
@@ -20,12 +10,21 @@ import type { MenuItem, SerializableThemeArgs } from '../../ui/index.ts'
 import type { Feature } from '../simpleFeature.ts'
 import type { TrackConfigChange } from '../trackConfigDelta.ts'
 import type {
+  BlobLocation as MUBlobLocation,
+  FileHandleLocation as MUFileHandleLocation,
+  Region as MUIRegion,
+  LocalPathLocation as MULocalPathLocation,
+  NoAssemblyRegion as MUNoAssemblyRegion,
+  UriLocation as MUUriLocation,
+} from './mst.ts'
+import type {
   IAnyStateTreeNode,
   IStateTreeNode,
   Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
 import type { Theme, ThemeOptions } from '@mui/material'
+import type React from 'react'
 
 export type * from './util.ts'
 

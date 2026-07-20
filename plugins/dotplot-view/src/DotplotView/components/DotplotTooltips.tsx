@@ -2,8 +2,8 @@ import { Suspense, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
+import type { DotplotInteraction } from './useDotplotInteraction.ts'
 
 const DotplotCoordTooltip = lazy(() => import('./DotplotCoordTooltip.tsx'))
 

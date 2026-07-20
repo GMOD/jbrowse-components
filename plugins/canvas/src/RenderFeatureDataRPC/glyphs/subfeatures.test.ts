@@ -1,6 +1,6 @@
-import { layoutSubfeatures } from './subfeatures.ts'
 import { LABEL_FONT_SIZE } from '../constants.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
+import { layoutSubfeatures } from './subfeatures.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

@@ -1,7 +1,7 @@
-import type { AnyDataAdapter } from './util.ts'
 import type PluginManager from '../../PluginManager.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { getSubAdapterType } from '../dataAdapterCache.ts'
+import type { AnyDataAdapter } from './util.ts'
 
 export * from './util.ts'
 export type * from './types.ts'

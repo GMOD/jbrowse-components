@@ -1,10 +1,11 @@
-import { type RefObject, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
+import type { RefObject } from 'react'
 
 const SharedTooltip = observer(function SharedTooltip({
   containerRef,

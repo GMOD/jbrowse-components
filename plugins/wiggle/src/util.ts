@@ -1,3 +1,5 @@
+import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
+
 export {
   computeAutoscaleDomain,
   domainFromStats,
@@ -18,8 +20,6 @@ export type {
   WiggleFeatureArrays,
   WiggleSourceData,
 } from '@jbrowse/wiggle-core'
-
-import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
 
 export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
 

@@ -1,5 +1,6 @@
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
+import { getEffectiveScores } from '../util.ts'
 import {
   RENDERING_TYPE_XYPLOT,
   isOverlayMode,
@@ -7,10 +8,9 @@ import {
   makeWhiskersLayers,
   renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
-import { getEffectiveScores } from '../util.ts'
 
-import type { WiggleLayer } from './wiggleComponentUtils.ts'
 import type { WiggleDataResult } from '../util.ts'
+import type { WiggleLayer } from './wiggleComponentUtils.ts'
 import type { SourceRenderData, WiggleSourceData } from '@jbrowse/wiggle-core'
 
 // The render layers one source contributes, chosen by summaryScoreMode but

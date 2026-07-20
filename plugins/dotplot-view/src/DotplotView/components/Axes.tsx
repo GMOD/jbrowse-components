@@ -5,8 +5,8 @@ import { observer } from 'mobx-react'
 
 import { AXIS_LABEL_FONT, tickLabel, truncateRefName } from './util.ts'
 
-import type { Tick } from './util.ts'
 import type { DotplotViewModel } from '../model.ts'
+import type { Tick } from './util.ts'
 
 const useStyles = makeStyles()(() => ({
   vtext: {

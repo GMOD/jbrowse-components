@@ -1,8 +1,8 @@
-import { getReadDisplayLegendItems } from './legendUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
+import { getReadDisplayLegendItems } from './legendUtils.ts'
 
-import type { ColorSchemeType } from './types.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
+import type { ColorSchemeType } from './types.ts'
 
 function labels(
   type: ColorSchemeType,

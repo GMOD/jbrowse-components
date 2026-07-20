@@ -1,9 +1,9 @@
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { paf_chain2paf } from './util.ts'
 import PAFAdapter from '../PAFAdapter/PAFAdapter.ts'
 import { getWeightedMeans } from '../PAFAdapter/util.ts'
+import { paf_chain2paf } from './util.ts'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 

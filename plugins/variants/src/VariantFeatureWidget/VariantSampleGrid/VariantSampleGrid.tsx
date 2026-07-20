@@ -19,8 +19,8 @@ import {
   getSampleGridRows,
 } from './getSampleGridRows.ts'
 
-import type { Filters, VariantFieldDescriptions } from './types.ts'
 import type { VCFFeatureSerialized } from '../types.ts'
+import type { Filters, VariantFieldDescriptions } from './types.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 
 type ColumnDisplayMode = 'all' | 'gtOnly' | 'gtAndGenotype'

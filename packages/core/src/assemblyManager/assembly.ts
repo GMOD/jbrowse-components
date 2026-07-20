@@ -1,6 +1,9 @@
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { onBecomeObserved } from 'mobx'
 
+import { getConf } from '../configuration/index.ts'
+import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
+import QuickLRU from '../util/QuickLRU/index.ts'
 import {
   getAssemblyRegions,
   getCytobands,
@@ -10,15 +13,12 @@ import { getGeneticCodesFromFile, lookupGeneticCodeId } from './geneticCodes.ts'
 import { loadRefNameMap } from './loadRefNameMap.ts'
 import { defaultRefNameColors } from './refNameColors.ts'
 import { buildRefNameMaps, checkRefName } from './refNameMaps.ts'
-import { getConf } from '../configuration/index.ts'
-import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
-import QuickLRU from '../util/QuickLRU/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
+import type { RefNameAliases, RefNameMaps } from './refNameMaps.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 // re-exported so `@jbrowse/core/assemblyManager/assembly` stays the public entry

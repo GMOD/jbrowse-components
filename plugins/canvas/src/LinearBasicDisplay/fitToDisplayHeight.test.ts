@@ -1,11 +1,11 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import { maxBottom } from './layout.ts'
-import { createTestEnvironment } from './testEnv.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { maxBottom } from './layout.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 import type {
   FeatureDataResult,

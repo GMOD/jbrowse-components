@@ -11,6 +11,7 @@ import type {
   GlAttributeLayout,
   PassDescriptor,
 } from '@jbrowse/render-core/hal'
+
 // Alignments and multi-synteny are NOT validated here: their deep import chains
 // hit jest module-resolution issues in this suite, and no equivalent
 // attribute-parity check currently exists in their own plugin suites. Their

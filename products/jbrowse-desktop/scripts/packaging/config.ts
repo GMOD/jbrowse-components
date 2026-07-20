@@ -1,6 +1,6 @@
 import fs from 'fs'
-import path from 'path'
 import { parseArgs } from 'node:util'
+import path from 'path'
 
 export type Platform = 'linux' | 'mac' | 'win'
 

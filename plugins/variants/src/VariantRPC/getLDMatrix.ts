@@ -13,18 +13,19 @@ import {
   passesHweFilter,
 } from '@jbrowse/ld-core'
 
+import { GENOTYPE_SPLITTER as SPLITTER } from '../shared/constants.ts'
+import { phaseSignal } from '../shared/detectPhased.ts'
 import {
   computeLDMatrixGPU,
   computeLDMatrixGPUPhased,
 } from './getLDMatrixGPU.ts'
-import { GENOTYPE_SPLITTER as SPLITTER } from '../shared/constants.ts'
-import { phaseSignal } from '../shared/detectPhased.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
 import type { PackedHaplotypes } from '@jbrowse/ld-core'
+
 const SLASH_CODE = 47 // '/'
 const PIPE_CODE = 124 // '|'
 const ZERO_CODE = 48 // '0'

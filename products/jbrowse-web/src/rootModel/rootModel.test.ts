@@ -4,8 +4,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import corePlugins from '../corePlugins.ts'
-import rootModelFactory from './rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
+import rootModelFactory from './rootModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 

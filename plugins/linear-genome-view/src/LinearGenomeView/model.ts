@@ -1,4 +1,3 @@
-import type React from 'react'
 import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
@@ -92,6 +91,7 @@ import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type React from 'react'
 
 // lazies
 const SearchResultsDialog = lazy(

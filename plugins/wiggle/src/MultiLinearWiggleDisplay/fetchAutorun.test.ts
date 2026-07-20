@@ -15,12 +15,12 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { waitFor } from '@testing-library/react'
 
+import { processFeaturesFromArrays } from '../util.ts'
 import configSchema from './configSchema.ts'
 import stateModelFactory from './model.ts'
-import { processFeaturesFromArrays } from '../util.ts'
 
-import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type { WiggleDataResult } from '../util.ts'
+import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // The RenderMultiWiggleData RPC result for a region the adapter has no features

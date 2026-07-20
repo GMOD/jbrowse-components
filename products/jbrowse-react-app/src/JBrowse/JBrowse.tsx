@@ -1,5 +1,4 @@
 import { useImperativeHandle, useState } from 'react'
-import type { Ref } from 'react'
 
 import JBrowseApp from '../JBrowseApp/index.ts'
 import { createViewStateFromProps } from '../createViewStateFromProps.ts'
@@ -8,6 +7,7 @@ import type { ViewModel } from '../createModel.ts'
 import type { Config } from '../types.ts'
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { IJsonPatch } from '@jbrowse/mobx-state-tree'
+import type { Ref } from 'react'
 
 // one view to open at launch. `init` is the view-type-specific launch blob
 // (LinearGenomeView's InitState, CircularViewInit, synteny's, ...), so across

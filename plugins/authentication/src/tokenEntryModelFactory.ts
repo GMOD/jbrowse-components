@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { InternetAccount } from '@jbrowse/core/pluggableElementTypes/models'
 import { getRoot, types } from '@jbrowse/mobx-state-tree'
@@ -11,6 +9,7 @@ import type {
   AbstractSessionModel,
   UriLocation,
 } from '@jbrowse/core/util/types'
+import type React from 'react'
 
 // internet accounts live on the root model (a sibling of session), so read
 // session off the root rather than walking up via getSession

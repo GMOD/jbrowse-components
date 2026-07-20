@@ -1,4 +1,4 @@
-import { createViewState, JBrowseApp } from '@jbrowse/react-app2'
+import { JBrowseApp, createViewState } from '@jbrowse/react-app2'
 
 import assembly from './assembly'
 import tracks from './tracks'

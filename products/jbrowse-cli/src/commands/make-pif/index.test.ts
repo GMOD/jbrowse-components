@@ -7,8 +7,8 @@ import path from 'node:path'
 import { Writable } from 'node:stream'
 import { gunzipSync } from 'node:zlib'
 
-import { createPIF } from './pif-generator.ts'
 import { runCommand, runInTmpDir } from '../../testUtil.ts'
+import { createPIF } from './pif-generator.ts'
 
 const base = path.join(__dirname, '..', '..', '..', 'test', 'data')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')

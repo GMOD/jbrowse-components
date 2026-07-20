@@ -8,8 +8,8 @@ import {
   mirrorUInRegion,
 } from '../regionOffsets.ts'
 
-import type { HicDataResult, RenderHicDataArgs } from './types.ts'
 import type HicAdapter from '../HicAdapter/HicAdapter.ts'
+import type { HicDataResult, RenderHicDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export async function executeRenderHicData({

@@ -1,11 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 
+import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
 import { signWindowsFile } from './signing.ts'
 import { generateLatestYml, log, run, runQuiet } from './utils.ts'
-import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 
 // Convert Unix path to Windows path for Wine (e.g., /home/user -> Z:\home\user)
 function toWinePath(unixPath: string) {

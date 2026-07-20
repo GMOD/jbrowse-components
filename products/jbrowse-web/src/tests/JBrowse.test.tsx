@@ -5,7 +5,10 @@ import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { fireEvent } from '@testing-library/react'
 
 import volvoxConfigSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
+import { buildShareUrl } from '../components/buildShareUrl.ts'
 import corePlugins from '../corePlugins.ts'
+import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
+import sessionModelFactory from '../sessionModel/index.ts'
 import TestPlugin from './TestPlugin.ts'
 import {
   createView,
@@ -15,9 +18,6 @@ import {
   hts,
   setup,
 } from './util.tsx'
-import { buildShareUrl } from '../components/buildShareUrl.ts'
-import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
-import sessionModelFactory from '../sessionModel/index.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 jest.mock('../components/buildShareUrl.ts', () => ({

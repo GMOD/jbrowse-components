@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react'
 
-import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawMafEmptyLines } from '../../LinearMafRenderer/rendering/emptyLines.ts'
+import OverlayCanvas from './OverlayCanvas.tsx'
 
-import type { EmptyLineSegment } from './computeVisibleEmptyLines.ts'
 import type { MafColorPalette } from '../../LinearMafRenderer/util.ts'
+import type { EmptyLineSegment } from './computeVisibleEmptyLines.ts'
 
 const EmptyLinesOverlay = observer(function EmptyLinesOverlay({
   segments,

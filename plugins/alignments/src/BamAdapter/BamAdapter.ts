@@ -5,12 +5,12 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 import { filterTagValue, parseSamHeader } from '../shared/util.ts'
+import BamSlightlyLazyFeature from './BamSlightlyLazyFeature.ts'
 
-import type { BamAdapterConfig } from './configSchema.ts'
 import type { FilterBy } from '../shared/types.ts'
 import type { ParsedSamHeader } from '../shared/util.ts'
+import type { BamAdapterConfig } from './configSchema.ts'
 import type {
   BaseOptions,
   BaseSequenceAdapter,

@@ -5,8 +5,8 @@ import { observer } from 'mobx-react'
 
 import VerticalGuide from './VerticalGuide.tsx'
 
-import type { useRangeSelect } from './useRangeSelect.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { useRangeSelect } from './useRangeSelect.ts'
 
 const RubberbandSpan = lazy(() => import('./RubberbandSpan.tsx'))
 

@@ -2,8 +2,8 @@ import { isFeatureAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 
-import type { MultiSampleVariantGetSourcesArgs } from './types.ts'
 import type { Source } from '../shared/types.ts'
+import type { MultiSampleVariantGetSourcesArgs } from './types.ts'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {

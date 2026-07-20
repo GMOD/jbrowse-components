@@ -1,5 +1,5 @@
-import { measureLegendText } from './measureLegendText.ts'
 import { formatScore } from '../util.ts'
+import { measureLegendText } from './measureLegendText.ts'
 
 export default function ScoreLegend({
   domain,

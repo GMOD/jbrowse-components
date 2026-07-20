@@ -4,8 +4,8 @@ import { observer } from 'mobx-react'
 
 import { checkboxSx, useFacetedTableStyles } from './facetedTableStyles.ts'
 
-import type { FacetedColumn } from './FacetedDataGrid.tsx'
 import type { FacetedRow } from '../facetedModel.ts'
+import type { FacetedColumn } from './FacetedDataGrid.tsx'
 
 const FacetedTableRow = observer(function FacetedTableRow({
   row,

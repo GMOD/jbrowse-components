@@ -1,9 +1,8 @@
 import { useRef } from 'react'
 
-import {
-  LinearGenomeView,
-  type ViewModel,
-} from '@jbrowse/react-linear-genome-view2'
+import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'volvox',

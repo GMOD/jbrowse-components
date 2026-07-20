@@ -1,11 +1,11 @@
-import { execSync, exec } from 'child_process'
+import { exec, execSync } from 'child_process'
 import {
-  mkdtempSync,
-  writeFileSync,
-  rmSync,
-  existsSync,
   createReadStream,
+  existsSync,
+  mkdtempSync,
+  rmSync,
   statSync,
+  writeFileSync,
 } from 'fs'
 import { createServer } from 'http'
 import { tmpdir } from 'os'

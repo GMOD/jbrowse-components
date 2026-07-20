@@ -1,9 +1,9 @@
 import path from 'node:path'
 
-import HttpMap from './HttpMap.ts'
 import first from '../../test_data/names/0.json' with { type: 'json' }
 import last from '../../test_data/names/f.json' with { type: 'json' }
 import meta from '../../test_data/names/meta.json' with { type: 'json' }
+import HttpMap from './HttpMap.ts'
 
 const rootTemplate = path
   .join(__dirname, '..', '..', '..', '..', 'test_data', 'names')

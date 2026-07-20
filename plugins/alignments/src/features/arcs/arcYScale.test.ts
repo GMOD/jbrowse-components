@@ -1,13 +1,13 @@
 import { colorShortInsert, colorShortInsertArc } from '@jbrowse/core/ui/theme'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
-import { arcYFraction } from './arcYScale.ts'
 import {
   arcColorPalette,
   arcMarkerColorPalette,
   linkedReadColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 import { UNIFORM_SLOT_ARRAYS } from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
+import { arcYFraction } from './arcYScale.ts'
 
 // The JS palettes (Canvas2D / SVG) and the GPU uniform slots are two hand-kept
 // copies of the same color table. If they drift — a color constant added to one

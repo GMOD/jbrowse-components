@@ -3,12 +3,12 @@ import { useCallback, useState } from 'react'
 import { Box, FormHelperText, InputLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { notEmpty } from '../../util/index.ts'
+import { isUriLocation } from '../../util/types/index.ts'
 import LocationInput from './LocationInput.tsx'
 import SourceTypeSelector from './SourceTypeSelector.tsx'
 import useInternetAccounts from './useInternetAccounts.ts'
 import { addAccountToLocation, getInitialSourceType } from './util.ts'
-import { notEmpty } from '../../util/index.ts'
-import { isUriLocation } from '../../util/types/index.ts'
 
 import type { AbstractRootModel, FileLocation } from '../../util/types/index.ts'
 

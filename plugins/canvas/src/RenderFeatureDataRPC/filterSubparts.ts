@@ -1,8 +1,9 @@
-import { type Feature, SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature } from '@jbrowse/core/util'
 
 import { featureType, getSubfeatures, isCDS, isExon, isUTR } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 function utrType(strand: number, isFivePrime: boolean) {
   if (strand > 0) {

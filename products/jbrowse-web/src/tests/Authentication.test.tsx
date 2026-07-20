@@ -1,6 +1,7 @@
 import { fireEvent, waitFor, within } from '@testing-library/react'
 import { RemoteFile } from 'generic-filehandle2'
 
+import config from '../../test_data/volvox/config_auth.json' with { type: 'json' }
 import {
   createView,
   doBeforeEach,
@@ -9,7 +10,6 @@ import {
   hts,
   setup,
 } from './util.tsx'
-import config from '../../test_data/volvox/config_auth.json' with { type: 'json' }
 
 setup()
 

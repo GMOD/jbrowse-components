@@ -1,12 +1,12 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 
-import { facetLabel, getRowStr } from './util.ts'
 import OverrideBadge from '../../HierarchicalTrackSelectorWidget/components/tree/OverrideBadge.tsx'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
+import { facetLabel, getRowStr } from './util.ts'
 
-import type { FacetedColumn } from './FacetedDataGrid.tsx'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'
+import type { FacetedColumn } from './FacetedDataGrid.tsx'
 
 // Builds the column list: a name column (with the per-track menu) followed by
 // the facet columns in field order. A metadata column whose bare key collides

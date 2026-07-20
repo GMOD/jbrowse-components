@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
-import type { ReactNode } from 'react'
 
 import { Alert, Button, Snackbar } from '@mui/material'
 
 import { NotifyContext } from './NotifyContext.ts'
 
 import type { NotifyAction } from './NotifyContext.ts'
+import type { ReactNode } from 'react'
 
 interface Notification {
   error: unknown

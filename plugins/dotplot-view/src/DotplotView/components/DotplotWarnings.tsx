@@ -4,6 +4,7 @@ import { Alert, Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
+
 // lazy components
 const WarningDialog = lazy(() => import('./WarningDialog.tsx'))
 

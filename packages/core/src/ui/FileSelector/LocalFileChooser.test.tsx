@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom'
+
 import { act, render } from '@testing-library/react'
 
-import LocalFileChooser from './LocalFileChooser.tsx'
 import { clearFileFromCache, setFileInCache } from '../../util/tracks.ts'
+import LocalFileChooser from './LocalFileChooser.tsx'
 
 import type { FileHandleLocation } from '../../util/types/index.ts'
 

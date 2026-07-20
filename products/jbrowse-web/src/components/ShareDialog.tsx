@@ -3,12 +3,7 @@ import { useState } from 'react'
 import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
-import {
-  type SessionShareMode,
-  type SessionWithShareURL,
-  localStorageGetItem,
-  useFetch,
-} from '@jbrowse/core/util'
+import { localStorageGetItem, useFetch } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { bakePromotedDefaultsIntoSnapshot } from '@jbrowse/product-core'
 import BookmarkAddIcon from '@mui/icons-material/BookmarkAdd'
@@ -29,6 +24,8 @@ import { observer } from 'mobx-react'
 
 import ShareInfoDialog from './ShareInfoDialog.tsx'
 import { SHARE_MODE_LOCALSTORAGE_KEY, buildShareUrl } from './buildShareUrl.ts'
+
+import type { SessionShareMode, SessionWithShareURL } from '@jbrowse/core/util'
 
 const SHARE_MODES = [
   { value: 'short', label: 'Short URL' },

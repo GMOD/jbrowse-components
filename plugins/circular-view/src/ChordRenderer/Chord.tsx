@@ -4,8 +4,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import { getStrokeProps, polarToCartesian } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { getEndpoint } from './chordGeometry.ts'
 import { bpToRadians } from '../CircularView/slices.ts'
+import { getEndpoint } from './chordGeometry.ts'
 
 import type { Block } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'

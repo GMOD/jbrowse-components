@@ -1,8 +1,8 @@
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { observer } from 'mobx-react'
 
-import ColorLegend from './MultiSampleVariantColorLegend.tsx'
 import { getMaxLabelWidth } from '../variantLegend.ts'
+import ColorLegend from './MultiSampleVariantColorLegend.tsx'
 
 import type { RowColorsModel } from './types.ts'
 

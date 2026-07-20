@@ -18,9 +18,10 @@ npm install @jbrowse/react-circular-genome-view2 --legacy-peer-deps
 
 ```tsx
 import '@fontsource/roboto'
+
 import {
-  createViewState,
   JBrowseCircularGenomeView,
+  createViewState,
 } from '@jbrowse/react-circular-genome-view2'
 
 function View() {

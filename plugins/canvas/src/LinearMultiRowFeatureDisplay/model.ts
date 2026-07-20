@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import {
   ConfigurationReference,
   getConf,
@@ -28,10 +26,10 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { observable } from 'mobx'
 
-import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
-import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
+import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
+import { getMultiRowSortAutorun } from './getMultiRowSortAutorun.ts'
 import {
   buildColorLegend,
   resolveConfiguredLegend,
@@ -67,6 +65,7 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 export interface MultiRowHit {
   // adapter feature id + the region it was found in, so a click can re-fetch

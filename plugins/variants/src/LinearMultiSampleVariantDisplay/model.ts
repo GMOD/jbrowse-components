@@ -4,11 +4,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
+import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
 import type {
   VariantRenderingBackend,
   VariantUploadData,
 } from './components/variantRenderingBackendTypes.ts'
-import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,

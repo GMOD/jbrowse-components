@@ -7,8 +7,8 @@ import {
 } from './GpuManhattanRenderer.ts'
 import * as shader from './shaders/manhattan.generated.ts'
 
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,

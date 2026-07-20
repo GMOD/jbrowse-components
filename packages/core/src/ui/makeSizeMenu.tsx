@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { makeStyles } from '../util/tss-react/index.ts'
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 import {
   INLINE_MENU_ROW_WIDTH,
@@ -10,11 +11,10 @@ import {
 } from './InlineMenuControls.tsx'
 import SingleSlider from './SingleSlider.tsx'
 import { sliderScale } from './sliderScale.ts'
-import { makeStyles } from '../util/tss-react/index.ts'
 
+import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
 import type { MenuItem } from './MenuTypes.ts'
 import type { SliderScale } from './sliderScale.ts'
-import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
 
 const useStyles = makeStyles()(theme => ({
   root: {

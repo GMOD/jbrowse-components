@@ -10,6 +10,7 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
+import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 import { filterTracks } from './filterTracks.ts'
 import { generateHierarchy } from './generateHierarchy.ts'
 import {
@@ -17,7 +18,6 @@ import {
   findTopLevelCategories,
   getAllTrackNodes,
 } from './util.ts'
-import { configScopedKey, keyConfigPostFix } from '../shared/configScopedKey.ts'
 
 import type { TreeNode } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

@@ -1,9 +1,8 @@
-import type React from 'react'
-
 import { SvgCanvas } from './SvgCanvas.ts'
 import { createSvgRasterCanvas } from './createSvgRasterCanvas.ts'
 
 import type { SvgRasterCanvasOpts } from './createSvgRasterCanvas.ts'
+import type React from 'react'
 
 // Shared 2D-context type for the SVG-export draw pipeline. Real
 // CanvasRenderingContext2D when rasterizing to PNG; SvgCanvas when emitting

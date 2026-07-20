@@ -1,9 +1,8 @@
-import type React from 'react'
-
 import PluggableElementBase from './PluggableElementBase.ts'
 
 import type DisplayType from './DisplayType.ts'
 import type { IAnyModelType, IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type React from 'react'
 
 type BasicView = React.ComponentType<{
   // TODO: can we use AbstractViewModel here?

@@ -32,15 +32,15 @@ import {
 } from './sharedRendererConstants.ts'
 
 import type {
-  FeatureRenderBlock,
-  RenderState,
-} from './canvasFeatureRenderingBackendTypes.ts'
-import type {
   FeatureDataResult,
   FeatureLabelData,
   HitItemBase,
   RegionRenderData,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  FeatureRenderBlock,
+  RenderState,
+} from './canvasFeatureRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { BlockClip } from '@jbrowse/render-core/canvas2dUtils'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'

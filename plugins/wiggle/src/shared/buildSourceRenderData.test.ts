@@ -1,8 +1,8 @@
-import { buildSourceRenderData } from './buildSourceRenderData.ts'
 import { processFeaturesFromArrays } from '../util.ts'
+import { buildSourceRenderData } from './buildSourceRenderData.ts'
 
-import type { WiggleGpuProps } from './buildSourceRenderData.ts'
 import type { WiggleDataResult } from '../util.ts'
+import type { WiggleGpuProps } from './buildSourceRenderData.ts'
 
 // One feature with positive avg, one with negative avg; each carries diverging
 // min/max so it counts as a real summary feature (whiskers becomes 3 layers).

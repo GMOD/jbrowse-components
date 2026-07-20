@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 // Drives the hs1 vs mm39 dotplot session-spec URL and screenshots the result
 // after autoDiagonalize completes.
-
 import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'

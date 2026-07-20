@@ -1,5 +1,5 @@
-import { createTestEnvironment } from './testEnv.ts'
 import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 // The bottom-right isoform-collapse control (GeneGlyphControl) is gated by
 // showGeneGlyphNotice: the loaded data has a multi-isoform gene, so switching

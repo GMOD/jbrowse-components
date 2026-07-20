@@ -11,10 +11,10 @@ import {
 } from '@jbrowse/core/util/geneticCodes'
 import { firstValueFrom, toArray } from 'rxjs'
 
-import { dedupedSortedCDS } from './cdsSegments.ts'
 import { hasCDSSubfeature, hasContainerChildren } from '../glyphs/glyphUtils.ts'
 import { hasMatureProteinChildren } from '../glyphs/matureProteinRegion.ts'
 import { getSubfeatures, isCDS } from '../util.ts'
+import { dedupedSortedCDS } from './cdsSegments.ts'
 
 import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

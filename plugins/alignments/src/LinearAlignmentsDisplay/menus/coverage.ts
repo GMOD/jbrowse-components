@@ -1,4 +1,6 @@
-import { type ScoreScaleModel, makeScoreSubMenu } from '@jbrowse/wiggle-core'
+import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
+
+import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 
 interface CoverageModel extends ScoreScaleModel {
   numStdDev: number

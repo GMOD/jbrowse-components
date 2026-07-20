@@ -14,9 +14,9 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { runWiggleClustering } from '../../runWiggleClustering.ts'
 import SamplesPerPixelField from './SamplesPerPixelField.tsx'
 import { useClusterSamplingOptions } from './clusterOptions.ts'
-import { runWiggleClustering } from '../../runWiggleClustering.ts'
 
 import type { ReducedModel } from './types.ts'
 import type { RpcStatus } from '@jbrowse/core/util'

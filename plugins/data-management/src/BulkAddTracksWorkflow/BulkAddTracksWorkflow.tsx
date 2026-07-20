@@ -12,6 +12,7 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { DEFAULT_WORKFLOW } from '../AddTrackWidget/workflowNames.ts'
 import LocationInput from './LocationInput.tsx'
 import PreviewMessages from './PreviewMessages.tsx'
 import SubmitTracksButton from './SubmitTracksButton.tsx'
@@ -20,7 +21,6 @@ import { locationId } from './pairLocations.ts'
 import { summarizeBulkInput } from './preview.ts'
 import { useBulkLocations } from './useBulkLocations.ts'
 import { resolveTrackNames } from './util.ts'
-import { DEFAULT_WORKFLOW } from '../AddTrackWidget/workflowNames.ts'
 
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
 

@@ -8,8 +8,8 @@ import {
 } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import type { SyntenyFeatureDetailModel } from './types.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { SyntenyFeatureDetailModel } from './types.ts'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 // lazies

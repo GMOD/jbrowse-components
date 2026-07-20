@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react'
 
-import PluginWarningDialog from './PluginWarningDialog.tsx'
 import factoryReset from '../factoryReset.ts'
 import { rememberPlugins } from '../trustedPlugins.ts'
+import PluginWarningDialog from './PluginWarningDialog.tsx'
 
 import type { SessionLoaderModel } from '../SessionLoader.ts'
 import type { SessionTriagedInfo } from '../types.ts'

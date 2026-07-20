@@ -7,8 +7,8 @@ import {
 } from '@jbrowse/core/util/stopToken'
 import { clusterProgressStatus } from '@jbrowse/tree-sidebar'
 
-import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 import { makeFeatureColorResolver } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 
 import type { MatrixFeature } from './buildMultiRowMatrix.ts'
 import type { MultiRowClusterFeaturesArgs } from './rpcTypes.ts'

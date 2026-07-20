@@ -1,5 +1,5 @@
-import configSchema from './configSchema.ts'
 import { AdapterType } from '../../pluggableElementTypes/index.ts'
+import configSchema from './configSchema.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 

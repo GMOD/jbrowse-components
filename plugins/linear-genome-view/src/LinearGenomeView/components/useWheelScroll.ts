@@ -1,4 +1,3 @@
-import type React from 'react'
 import { useEffect, useRef } from 'react'
 
 import {
@@ -9,6 +8,8 @@ import {
   wheelZoomAccum,
 } from '@jbrowse/core/util'
 import { trackPointerPresence } from '@jbrowse/core/util/pointerPresence'
+
+import type React from 'react'
 
 interface GenomeViewModel {
   bpPerPx: number

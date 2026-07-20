@@ -22,8 +22,6 @@ import {
 } from '../components/detailWidgets.ts'
 import { viewMateRegionInCurrentView } from '../viewMateRegion.ts'
 
-const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
-
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
 import type {
@@ -35,6 +33,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const SortByTagDialog = lazy(() => import('../dialogs/SortByTagDialog.tsx'))
 
 type LGV = LinearGenomeViewModel
 

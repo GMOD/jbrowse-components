@@ -4,9 +4,9 @@ import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
 import { labelOffset, svgTrackName, trackBoxHeight } from './util.ts'
 
-import type { SvgDisplayResult } from './util.ts'
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
+import type { SvgDisplayResult } from './util.ts'
 
 type LGV = LinearGenomeViewModel
 

@@ -14,8 +14,8 @@ import { autorun, untracked } from 'mobx'
 
 import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 
-import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { Region } from '@jbrowse/core/util'
 
 // The stop-token rotation + staleness guard come from

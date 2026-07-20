@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { RefNameAutocomplete } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'

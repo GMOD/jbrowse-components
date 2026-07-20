@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import type { RefObject } from 'react'
 
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { isAlive } from '@jbrowse/mobx-state-tree'
+
+import type { RefObject } from 'react'
 
 // Fires `onInteract` when a mousedown/keydown lands inside `ref`. Listens at the
 // document level (not via React handlers) so it still fires when child drag

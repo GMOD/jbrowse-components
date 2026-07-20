@@ -7,12 +7,12 @@ import { isDataCurrent } from '@jbrowse/synteny-core'
 import { dotplotFetchKey } from './fetchKey.ts'
 import { renderSvg } from './renderSvg.tsx'
 
-import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
-import type { DotplotRpcData } from './types.ts'
 import type {
   DotplotViewModel,
   ExportSvgOptions,
 } from '../DotplotView/model.ts'
+import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
+import type { DotplotRpcData } from './types.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'

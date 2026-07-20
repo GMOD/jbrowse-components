@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
+import { isObject } from '../../util/index.ts'
+import { makeStyles } from '../../util/tss-react/index.ts'
 import Attributes from './Attributes.tsx'
 import BasicValue from './BasicValue.tsx'
 import FieldName from './FieldName.tsx'
-import { isObject } from '../../util/index.ts'
-import { makeStyles } from '../../util/tss-react/index.ts'
 
 import type { FeatureFormatter } from '../types.tsx'
 

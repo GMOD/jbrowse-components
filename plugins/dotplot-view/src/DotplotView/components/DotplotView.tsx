@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
+import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
 import DisplayStatusOverlays from './DisplayStatusOverlays.tsx'
 import DotplotTooltips from './DotplotTooltips.tsx'
@@ -16,7 +17,6 @@ import ImportForm from './ImportForm/index.tsx'
 import MouseInteractionLayer from './MouseInteractionLayer.tsx'
 import SelectionContextMenu from './SelectionContextMenu.tsx'
 import { useDotplotInteraction } from './useDotplotInteraction.ts'
-import { createDotplotRenderer } from '../../DotplotDisplay/DotplotRenderer.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 

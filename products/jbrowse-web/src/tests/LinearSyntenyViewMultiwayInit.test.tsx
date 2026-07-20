@@ -1,8 +1,8 @@
 import { waitFor } from '@testing-library/react'
 
+import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
-import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 
 setup()
 

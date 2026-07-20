@@ -1,9 +1,9 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { getNodePresentation } from '../../model.ts'
 import TrackCategory from './TrackCategory.tsx'
 import TrackLabel from './TrackLabel.tsx'
-import { getNodePresentation } from '../../model.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeCategoryNode, TreeNode } from '../../types.ts'

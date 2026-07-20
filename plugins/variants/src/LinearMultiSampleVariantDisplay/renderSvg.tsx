@@ -3,9 +3,9 @@ import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
 
-import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
 import { REFERENCE_COLOR } from '../shared/constants.ts'
+import { drawVariantBlocks } from './components/Canvas2DVariantRenderer.ts'
 
 import type { RenderSvgBaseModel } from '../shared/renderSvgUtils.ts'
 import type {

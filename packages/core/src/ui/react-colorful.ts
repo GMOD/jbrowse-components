@@ -4,13 +4,14 @@
 // copy of react-colorful/dist/index.esmodule.js
 
 import e, {
-  useRef as r,
-  useMemo as t,
-  useEffect as o,
   useState as a,
   useCallback as l,
   useLayoutEffect as n,
+  useEffect as o,
+  useRef as r,
+  useMemo as t,
 } from 'react'
+
 function s() {
   return (s =
     Object.assign ||

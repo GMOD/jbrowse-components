@@ -6,16 +6,16 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
-import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
 import {
   filterReadFlag,
   filterTagValue,
   parseSamHeader,
 } from '../shared/util.ts'
+import CramSlightlyLazyFeature from './CramSlightlyLazyFeature.ts'
 
-import type { CramAdapterConfig } from './configSchema.ts'
 import type { FilterBy } from '../shared/types.ts'
 import type { ParsedSamHeader } from '../shared/util.ts'
+import type { CramAdapterConfig } from './configSchema.ts'
 import type { CramRecord } from '@gmod/cram'
 import type {
   BaseOptions,

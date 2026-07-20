@@ -30,6 +30,8 @@ import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
 import { observable } from 'mobx'
 
+import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
+import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 import {
   computeVisibleAnnotations,
   findFrameAt,
@@ -57,19 +59,7 @@ import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
-import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
-import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 
-import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
-import type {
-  CodonConservationBar,
-  CodonMarker,
-} from './components/computeVisibleCodons.ts'
-import type { ConservationMode } from './conservationModes.ts'
-import type {
-  RowIdentityMode,
-  RowIdentityModeWithOff,
-} from './rowIdentityModes.ts'
 import type {
   MafGPURenderState,
   MafGpuProps,
@@ -78,10 +68,20 @@ import type {
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
+import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
+import type {
+  CodonConservationBar,
+  CodonMarker,
+} from './components/computeVisibleCodons.ts'
 import type {
   LinearMafDisplayConfig,
   LinearMafDisplayConfigModel,
 } from './configSchema.ts'
+import type { ConservationMode } from './conservationModes.ts'
+import type {
+  RowIdentityMode,
+  RowIdentityModeWithOff,
+} from './rowIdentityModes.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {

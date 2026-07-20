@@ -7,8 +7,8 @@ import {
   INTERBASE_SOFTCLIP,
 } from '../shared/types.ts'
 
-import type { PileupDataResult } from './types'
 import type { SortedBy } from '../shared/types.ts'
+import type { PileupDataResult } from './types'
 
 const DELETION_CHAR = 42 // '*'
 

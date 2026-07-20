@@ -9,6 +9,7 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { useTheme } from '@mui/material'
 
+import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import {
   drawFeatureBlocks,
   drawHighlightBoxes,
@@ -17,10 +18,9 @@ import { highlightBoxColors } from './components/highlightUtils.ts'
 import { forEachDisplayLabel } from './components/labelPositioning.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './components/sharedRendererConstants.ts'
-import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
-import type { ResolvedLabel } from './components/labelPositioning.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { ResolvedLabel } from './components/labelPositioning.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type {

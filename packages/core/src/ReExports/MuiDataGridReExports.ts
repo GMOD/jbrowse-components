@@ -1,4 +1,6 @@
-import { type ComponentType, lazy } from 'react'
+import { lazy } from 'react'
+
+import type { ComponentType } from 'react'
 
 // Every entry lazy-loads the same '@mui/x-data-grid' chunk and picks one named
 // export off it, so they're generated from a name list rather than written out

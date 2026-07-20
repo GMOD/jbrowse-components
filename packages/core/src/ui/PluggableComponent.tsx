@@ -1,8 +1,7 @@
-import type React from 'react'
-
 import { observer } from 'mobx-react'
 
 import type PluginManager from '../PluginManager'
+import type React from 'react'
 
 // observer so that observable reads inside evaluateExtensionPoint callbacks
 // (e.g. model.trackAdapterType) are tracked here — re-evaluates when they

@@ -10,10 +10,10 @@ import CladeSelector from './CladeSelector.tsx'
 import SearchField from './SearchField.tsx'
 import { getTableMenuItems } from './getTableMenuItems.ts'
 
+import type { Fav, LaunchCallback } from '../types.ts'
 import type { Entry } from './getColumnDefinitions.tsx'
 import type { Categories } from './useCategories.ts'
 import type { GenomesTableState } from './useGenomesTableState.ts'
-import type { Fav, LaunchCallback } from '../types.ts'
 
 const useStyles = makeStyles()({
   span: {

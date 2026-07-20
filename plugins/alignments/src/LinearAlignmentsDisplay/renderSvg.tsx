@@ -1,6 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import type React from 'react'
-
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
@@ -12,6 +10,7 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
+import { getMismatchContrastMap } from '../shared/util.ts'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import TlenAxisLabel from './components/TlenAxisLabel.tsx'
@@ -23,7 +22,6 @@ import { groupSectionLabel } from './groupLabelStyle.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 import { buildSectionRenders } from './sectionLayout.ts'
 import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
-import { getMismatchContrastMap } from '../shared/util.ts'
 
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type {
@@ -31,6 +29,7 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
+import type React from 'react'
 
 type RenderSection = LinearAlignmentsDisplayModel['renderSections'][number]
 

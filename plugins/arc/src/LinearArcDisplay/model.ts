@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import {
   ConfigurationReference,
   getConf,
@@ -19,6 +17,7 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 /**
  * #stateModel LinearArcDisplay

@@ -3,8 +3,8 @@ import { observer } from 'mobx-react'
 import SashimiArcLabel from './SashimiArcLabel.tsx'
 import { sashimiArcKey } from './sashimiArcs.ts'
 
-import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
+import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 
 // One side's arcs translated to its sub-band's content-space top. Arc geometry
 // is already band-local, so a single translate places the whole side.

@@ -10,10 +10,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import IntronActionButtons from './IntronActionButtons.tsx'
-import { getExonsAndCDS } from './util.ts'
 import { getFeatureName } from '../../RenderFeatureDataRPC/labelUtils.ts'
 import { isExon } from '../../RenderFeatureDataRPC/util.ts'
+import IntronActionButtons from './IntronActionButtons.tsx'
+import { getExonsAndCDS } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'

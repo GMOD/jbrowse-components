@@ -3,11 +3,11 @@ import { useState } from 'react'
 import { Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import FieldName from './FieldName.tsx'
 import DataGridFlexContainer from '../../ui/DataGridFlexContainer.tsx'
 import { SanitizedHTML } from '../../ui/index.ts'
 import { getStr, measureGridWidth } from '../../util/index.ts'
 import { makeStyles } from '../../util/tss-react/index.ts'
+import FieldName from './FieldName.tsx'
 
 import type { GridColDef } from '@mui/x-data-grid'
 

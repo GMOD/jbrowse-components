@@ -1,6 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import type React from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -18,14 +16,15 @@ import {
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 import SvgLdLegend from './components/SvgLdLegend.tsx'
 
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
+import type React from 'react'
 
 type LGV = LinearGenomeViewModel
 

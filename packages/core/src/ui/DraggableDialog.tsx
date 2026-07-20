@@ -5,7 +5,9 @@ import CloseIcon from '@mui/icons-material/Close'
 import { DialogTitle, IconButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Dialog, { type Props as DialogProps } from './Dialog.tsx'
+import Dialog from './Dialog.tsx'
+
+import type { Props as DialogProps } from './Dialog.tsx'
 
 const useStyles = makeStyles()(theme => ({
   closeButton: {

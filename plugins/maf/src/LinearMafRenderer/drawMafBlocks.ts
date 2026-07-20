@@ -3,8 +3,8 @@ import {
   makeCellLeftMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { renderBases } from './rendering/bases.ts'
 import { rowBandGeometry } from '../LinearMafDisplay/components/visibleRegionGeometry.ts'
+import { renderBases } from './rendering/bases.ts'
 
 import type {
   MafGPURenderState,

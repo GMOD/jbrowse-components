@@ -1,5 +1,3 @@
-import type { ComponentType } from 'react'
-
 import { observer } from 'mobx-react'
 
 import AlignmentConnections from './AlignmentConnections.tsx'
@@ -7,8 +5,9 @@ import Breakends from './Breakends.tsx'
 import PairedFeatures from './PairedFeatures.tsx'
 import Translocations from './Translocations.tsx'
 
-import type { OverlayProps } from './overlayUtils.tsx'
 import type { OverlayKind } from '../types.ts'
+import type { OverlayProps } from './overlayUtils.tsx'
+import type { ComponentType } from 'react'
 
 // `satisfies` is the point: a new OverlayKind with no overlay to draw it is a
 // compile error here, not a match that classifies fine and renders nothing.

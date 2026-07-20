@@ -1,12 +1,11 @@
-import type { ReactNode } from 'react'
-
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 
-import { useTooltipStyles } from './tooltipStyles.ts'
 import { describeMafStatus } from '../../util/mafStatus.ts'
+import { useTooltipStyles } from './tooltipStyles.ts'
 
-import type { CodonChange, CodonHit } from './computeVisibleCodons.ts'
 import type { GenomicPosition, MafHover } from '../util.ts'
+import type { CodonChange, CodonHit } from './computeVisibleCodons.ts'
+import type { ReactNode } from 'react'
 
 function strandStr(strand?: number) {
   return strand === -1 ? '-' : '+'

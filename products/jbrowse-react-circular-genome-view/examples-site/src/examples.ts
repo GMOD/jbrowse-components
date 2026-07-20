@@ -1,4 +1,6 @@
-import { type ExamplePage, flattenExamples } from './exampleModel.ts'
+import { flattenExamples } from './exampleModel.ts'
+
+import type { ExamplePage } from './exampleModel.ts'
 
 export type { ExamplePage, ExampleSection } from './exampleModel.ts'
 export { section } from './exampleModel.ts'

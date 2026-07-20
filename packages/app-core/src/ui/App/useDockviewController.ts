@@ -10,9 +10,9 @@ import {
   reconcilePanelAssignments,
 } from './dockviewUtils.ts'
 
+import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import type { DockviewContextValue } from './DockviewContext.tsx'
 import type { DockviewSessionType } from './types.ts'
-import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import type {
   DockviewApi,
   DockviewGroupPanel,

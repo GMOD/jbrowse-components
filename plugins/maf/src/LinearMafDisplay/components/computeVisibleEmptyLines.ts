@@ -1,8 +1,8 @@
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafStatus } from '../../types.ts'
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 
 export interface EmptyLineSegment {
   x: number

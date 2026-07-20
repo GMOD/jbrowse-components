@@ -1,11 +1,11 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { ConfigurationSchema } from '../../configuration/index.ts'
 import { expandTrackConfigShorthand } from './expandTrackConfigShorthand.ts'
 import { liftLegacyRendererConfig } from './migrateTrackConfig.ts'
-import { ConfigurationSchema } from '../../configuration/index.ts'
 
-import type { LegacyDisplaySnapshot } from './migrateTrackConfig.ts'
 import type PluginManager from '../../PluginManager.ts'
+import type { LegacyDisplaySnapshot } from './migrateTrackConfig.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 interface TrackConfigSnapshot {

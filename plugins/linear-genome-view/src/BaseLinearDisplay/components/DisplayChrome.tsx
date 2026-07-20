@@ -1,18 +1,17 @@
-import type { ComponentPropsWithRef, ReactNode } from 'react'
-
 import { useRenderingBackend } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 import DisplayErrorBar from './DisplayErrorBar.tsx'
 import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
-import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 
+import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
 import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
-import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
+import type { ComponentPropsWithRef, ReactNode } from 'react'
 
 // The model contract is the *union of what the chrome and its sub-overlays
 // read*, composed directly from each overlay's own model prop type so it can't

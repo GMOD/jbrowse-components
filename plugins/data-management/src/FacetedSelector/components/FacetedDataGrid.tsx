@@ -2,6 +2,8 @@ import { useRef } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { useSearchHighlight } from '../../shared/useSearchHighlight.ts'
+import { getRowSelectionState } from '../facetedSelection.ts'
 import FacetedTableHead from './FacetedTableHead.tsx'
 import FacetedTableRow from './FacetedTableRow.tsx'
 import {
@@ -12,8 +14,6 @@ import {
 } from './facetedTableStyles.ts'
 import { useColumnResize } from './useColumnResize.ts'
 import { useVirtualRows } from './useVirtualRows.ts'
-import { useSearchHighlight } from '../../shared/useSearchHighlight.ts'
-import { getRowSelectionState } from '../facetedSelection.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel, FacetedRow } from '../facetedModel.ts'

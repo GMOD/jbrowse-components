@@ -2,8 +2,8 @@ import { INDICATOR_TRIANGLE_H, coverageLayout } from '@jbrowse/alignments-core'
 
 import { interbaseTypeName } from '../../shared/types.ts'
 
-import type { IndicatorHitResult } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { IndicatorHitResult } from './types.ts'
 
 // Horizontal slack (px) so the 1px-wide interbase bars are practical to hover.
 const BAR_HIT_HALF_WIDTH_PX = 3

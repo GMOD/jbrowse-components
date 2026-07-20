@@ -1,5 +1,6 @@
 import { fireEvent } from '@testing-library/react'
 
+import hicConfig from '../../../../extra_test_data/hic_integration_test.json' with { type: 'json' }
 import {
   createView,
   doBeforeEach,
@@ -7,7 +8,6 @@ import {
   hts,
   setup,
 } from './util.tsx'
-import hicConfig from '../../../../extra_test_data/hic_integration_test.json' with { type: 'json' }
 
 beforeEach(() => {
   doBeforeEach(url => require.resolve(`../../../../extra_test_data/${url}`))

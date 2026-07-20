@@ -5,10 +5,10 @@ import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 
-import LoadingDots from './LoadingDots.tsx'
-import StatusProgressBar from './StatusProgressBar.tsx'
 import { progressLabel } from '../util/progress.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+import LoadingDots from './LoadingDots.tsx'
+import StatusProgressBar from './StatusProgressBar.tsx'
 
 const cancelDelayMs = 5000
 

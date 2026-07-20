@@ -4,7 +4,6 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
-import { computeVariantHitQuery } from './variantHitTest.ts'
 import {
   buildVariantHit,
   variantTooltipKey,
@@ -15,6 +14,7 @@ import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import { computeVariantHitQuery } from './variantHitTest.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'

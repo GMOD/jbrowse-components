@@ -1,9 +1,9 @@
 import path from 'node:path'
 
-import { syntenyAdapterTypes } from './adapter-utils.ts'
-import { parseJsonFlag } from './validators.ts'
 import { isURL } from '../../types/common.ts'
 import { parseCommaSeparatedString } from '../../utils.ts'
+import { syntenyAdapterTypes } from './adapter-utils.ts'
+import { parseJsonFlag } from './validators.ts'
 
 import type { Track } from '../../base.ts'
 

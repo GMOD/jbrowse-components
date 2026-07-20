@@ -1,9 +1,9 @@
 import { abgrAlpha, packAbgr } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import { getModificationCallName } from '../../shared/modificationData.ts'
 import { buildModificationArrays } from './buildArrays.ts'
 import { hitTestModification } from './hitTest.ts'
-import { getModificationCallName } from '../../shared/modificationData.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'

@@ -10,9 +10,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { DEFAULT_WORKFLOW, PASTE_JSON_WORKFLOW } from '../workflowNames.ts'
 import DefaultAddTrackWorkflow from './DefaultAddTrackWorkflow.tsx'
 import PasteConfigWorkflow from './PasteConfigWorkflow.tsx'
-import { DEFAULT_WORKFLOW, PASTE_JSON_WORKFLOW } from '../workflowNames.ts'
 
 import type { AddTrackModel } from '../model.ts'
 import type { AddTrackWorkflowCategory } from '@jbrowse/core/pluggableElementTypes'

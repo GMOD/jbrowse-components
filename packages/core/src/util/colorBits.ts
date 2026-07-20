@@ -1,4 +1,3 @@
-import { namedColorToHex } from './color/cssColorsLevel4.ts'
 import {
   getAlpha,
   getBlue,
@@ -7,6 +6,7 @@ import {
   newColor,
   parse,
 } from './color-bits/index.ts'
+import { namedColorToHex } from './color/cssColorsLevel4.ts'
 
 import type { Color } from './color-bits/index.ts'
 import type { Feature } from './simpleFeature.ts'

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+
 import {
-  createViewState,
   JBrowseLinearGenomeView,
+  createViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 import assembly from './assembly'

@@ -1,5 +1,4 @@
 import { Fragment, useId } from 'react'
-import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ResizeHandle, VerticalScrollbar } from '@jbrowse/core/ui'
@@ -26,6 +25,7 @@ import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
 import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
+import type React from 'react'
 
 const SCROLLBAR_WIDTH = 12
 const COMPACT_AXIS_HEIGHT = 30

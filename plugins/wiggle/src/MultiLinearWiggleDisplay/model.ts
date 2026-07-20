@@ -26,11 +26,6 @@ import {
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import PaletteIcon from '@mui/icons-material/Palette'
 
-import {
-  buildEditableSources,
-  buildSources,
-  withSourceAlias,
-} from './sourcesLogic.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { installWiggleRenderingBackend } from '../shared/installWiggleRenderingBackend.ts'
 import {
@@ -46,9 +41,14 @@ import {
   makeSummaryScoreModeSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
+import {
+  buildEditableSources,
+  buildSources,
+  withSourceAlias,
+} from './sourcesLogic.ts'
 
-import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { Source, SourceInfo, WiggleDataResult } from '../util.ts'
+import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'

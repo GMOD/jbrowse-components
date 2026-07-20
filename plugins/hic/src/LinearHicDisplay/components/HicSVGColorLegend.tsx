@@ -1,11 +1,9 @@
 import { GRADIENT_LEGEND_WIDTH, SvgGradientLegend } from '@jbrowse/core/ui'
 
-import {
-  DEFAULT_HIC_COLOR_SCHEME,
-  type HicColorScheme,
-  getLegendSvgStops,
-} from './colorRamp.ts'
+import { DEFAULT_HIC_COLOR_SCHEME, getLegendSvgStops } from './colorRamp.ts'
 import { getHicScaleLabels } from './scaleLabels.ts'
+
+import type { HicColorScheme } from './colorRamp.ts'
 
 export default function HicSVGColorLegend({
   maxScore,

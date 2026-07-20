@@ -1,3 +1,9 @@
+import type {
+  LocalPathLocation,
+  Track,
+  UriLocation,
+} from '@jbrowse/text-indexing-core'
+
 /**
  * By convention, exit codes in this base class are below 100
  */
@@ -11,12 +17,6 @@ export type {
   UriLocation,
   VcfAdapter,
   VcfTabixAdapter,
-} from '@jbrowse/text-indexing-core'
-
-import type {
-  LocalPathLocation,
-  Track,
-  UriLocation,
 } from '@jbrowse/text-indexing-core'
 
 export interface IndexedFastaAdapter {

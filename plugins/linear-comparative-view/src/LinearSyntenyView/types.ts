@@ -1,10 +1,9 @@
-import type React from 'react'
-
 import type {
   TrackInit,
   TrackLabelMode,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
+import type React from 'react'
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 

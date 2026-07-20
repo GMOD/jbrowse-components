@@ -28,6 +28,72 @@ A TS error "Property 'configuration' is missing" means you have the raw config
 and should be calling `readConfObject`. Don't loosen `getConf` to accept both
 shapes — the type error is the signal.
 
+Their type-strictness is **asymmetric**, which matters for the narrowing below.
+`getConf` has a _single_ constrained signature: its slot-name param must satisfy
+`SLOT extends ConfigurationSlotName<schema> | string[]`, with no loose
+fallthrough. `readConfObject` carries an _extra_ loose `(config, string): any`
+overload (for maps-of-subschema, plain snapshots, and possibly-un-hydrated
+`session.tracks` entries). So on a model whose schema is **concrete**, a slot
+name outside the schema is a **hard compile error** through `getConf` but
+silently falls through to `any` through `readConfObject`. `getConf` is therefore
+the stricter reader (and the only one that catches slot-name typos) — don't
+reach for `readConfObject` to make a slot-name error go away; that only launders
+away the check.
+
+## Config read type narrowing
+
+Reads narrow to precise slot value types **only when the model's schema is
+concrete**, not the widened `AnyConfigurationSchemaType`. Three pieces make this
+work:
+
+- `SlotValueFromDef` (`types.ts`) derives each slot's value type from its
+  literal `type` (string/text/color → string, number/integer → number, boolean →
+  boolean), _not_ its `defaultValue` — a number slot can carry a jexl-string
+  default (`jexl:logThickness(...)`), and `readConfObject` evaluates jexl on
+  read to return the declared type.
+- `ConfigurationReference(schema)` returns `IConfigurationReference<schema>`, a
+  single-branded instance type, so `self.configuration` carries the concrete
+  schema and raw `getConf(self, 'x')` narrows off it.
+- The **widened** case (`AnyConfigurationSchemaType`, definition `any`) is
+  special-cased back to `any` on purpose: `AnyConfigurationModel` lacks a named
+  `displayId` (the schema builder erases props through a `Record<string, any>`
+  `modelDefinition`), which would break the one repo-wide structural check of a
+  display model against `{ displayId: string }`. **Measured:** flipping that
+  branch to `AnyConfigurationModel` breaks exactly **one** production site
+  (`LinearVariantDisplayComponent`) — so surfacing `displayId` on the config
+  instance is the minimal unblock for the variant/canvas base below.
+
+**The lever that turns narrowing on: type a state-model factory's `configSchema`
+param to its concrete schema type**
+(`configSchema: LinearArcDisplayConfigModel = ReturnType<typeof configSchemaFactory>`)
+instead of `AnyConfigurationSchemaType`. Every `getConf(self, …)` in that body
+then narrows for free. Done for the leaf display factories and two shared bases
+(`MultiSampleVariantBaseModel` → `SharedVariantConfigModel`,
+`LinearAlignmentsDisplay` → its config-schema type, retyping subclass factories
+to pass an assignable schema in).
+
+**Don't pin a shared base if any consumer reads its _own_ (non-shared) slots via
+`getConf(self, …)`.** The base owns the `configuration` prop, so pinning turns a
+consumer's own-slot read into a hard error. That is why `LinearWiggleDisplay`
+stays widened — gccontent reads its own `windowSize`/`gcMode`/`windowDelta`, low
+payoff to move them. The `linearCanvasBaseDisplayStateModelFactory` /
+`LinearVariantDisplay` base is blocked differently: even setting own-reads
+aside, pinning variant needs the config instance to carry `displayId` (the
+measured one-site gap above), so it's gated on that identifier fix, not just on
+moving reads. **Generic threading does not rescue this**: inside a generic body
+`S` is known only by its constraint, so `ConfigReferenceInstance<S>` hits the
+`IsAny` widen (reads stay `any`), and under a concrete constraint TS won't
+resolve `ConfigurationSlotName<…<S>>` at all (every named read errors). Don't
+retry it in any form.
+
+Two traps when verifying: a **bogus** slot name proves nothing (it falls through
+`readConfObject`'s loose overload to `any` and always "passes") — test a
+**real** slot name and hover the result; and feeding an opaque type variable
+into `types.union`/`types.reference` compiles with **0 errors but an `any`
+instance**, so a green typecheck is not proof — hover it. Compile-time
+regression guards live in `configTypeNarrowing.test.ts` (checked by
+`pnpm typecheck`, not jest).
+
 ## Frozen tracks + hydration + `ConfigurationReference`
 
 The biggest piece of subtlety. Read this before changing any of:

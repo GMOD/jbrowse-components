@@ -1,8 +1,9 @@
 import { Fragment } from 'react'
-import type { ReactNode } from 'react'
 
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
+
+import type { ReactNode } from 'react'
 
 // The synteny ribbons for one level, drawn in [0,width] x [0,levelHeight]. The
 // parent positions this group so its top edge meets the bottom of the upper

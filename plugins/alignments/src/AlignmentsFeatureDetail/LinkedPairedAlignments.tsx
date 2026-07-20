@@ -4,11 +4,11 @@ import { getAssemblyName, hasBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { LaunchBreakpointSplitViewLink } from './links.tsx'
 import {
   buildPairedEndMateFeature,
   computeMateFields,
 } from '../shared/mateFeature.ts'
+import { LaunchBreakpointSplitViewLink } from './links.tsx'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'

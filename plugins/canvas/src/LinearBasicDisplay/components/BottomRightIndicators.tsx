@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import { OVERFLOW_INDICATOR_Z_INDEX } from './sharedRendererConstants.ts'
+
+import type { ReactNode } from 'react'
 
 // Width reserved for the scroll container's own scrollbar, so indicators
 // don't render underneath it when the content overflows.

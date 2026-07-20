@@ -1,7 +1,7 @@
 import { findMultiWiggleHit, findOverlayHit, findRowHit } from './findHit.ts'
 
-import type { MultiWiggleHitModel } from './findHit.ts'
 import type { WiggleFeatureArrays, WiggleSourceData } from '../../util.ts'
+import type { MultiWiggleHitModel } from './findHit.ts'
 
 function makeSource(
   name: string,

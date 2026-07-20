@@ -2,6 +2,7 @@ import fs from 'fs'
 
 import slugify from 'slugify'
 
+import { writeFormatted } from './format.ts'
 import {
   codeBlock,
   exampleSection,
@@ -9,7 +10,6 @@ import {
   repoRelative,
   section,
 } from './util.ts'
-import { writeFormatted } from './format.ts'
 
 import type { Example, ExtractedNode } from './util.ts'
 

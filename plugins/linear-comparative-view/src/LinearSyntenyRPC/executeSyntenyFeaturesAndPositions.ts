@@ -17,8 +17,8 @@ import {
 import { clipLargeBlockToWindow } from './clipSyntenyFeature.ts'
 import { syntenyPanBufferPx } from './syntenyFetchWindow.ts'
 
-import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
+import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'

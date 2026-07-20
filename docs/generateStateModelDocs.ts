@@ -2,7 +2,9 @@ import fs from 'fs'
 
 import slugify from 'slugify'
 
+import { writeFormatted } from './format.ts'
 import {
+  assertSingleHeader,
   collapsibleClosed,
   collectTransitive,
   docPage,
@@ -20,11 +22,9 @@ import {
   tableCell,
   typeAliasBlock,
   typeAndCodeBlock,
-  assertSingleHeader,
   warnHeaderGaps,
   withHeaders,
 } from './util.ts'
-import { writeFormatted } from './format.ts'
 
 import type { ComposedRef, Example, ExtractedNode, TagType } from './util.ts'
 

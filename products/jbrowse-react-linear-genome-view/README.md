@@ -18,9 +18,10 @@ npm install @jbrowse/react-linear-genome-view2 --legacy-peer-deps
 
 ```tsx
 import '@fontsource/roboto'
+
 import {
-  createViewState,
   JBrowseLinearGenomeView,
+  createViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 function View() {

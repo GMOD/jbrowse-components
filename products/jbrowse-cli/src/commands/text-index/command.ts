@@ -2,8 +2,8 @@ import { parseArgs } from 'node:util'
 
 import { defaultAttributesToIndex } from '@jbrowse/text-indexing-core'
 
-import { aggregateIndex, indexFileList, perTrackIndex } from './index.ts'
 import { printHelp } from '../../utils.ts'
+import { aggregateIndex, indexFileList, perTrackIndex } from './index.ts'
 
 export async function run(args?: string[]) {
   const options = {

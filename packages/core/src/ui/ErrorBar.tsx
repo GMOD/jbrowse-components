@@ -1,8 +1,8 @@
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { Alert, IconButton, Tooltip } from '@mui/material'
 
-import StackTraceButton from './StackTraceButton.tsx'
 import { makeStyles } from '../util/tss-react/index.ts'
+import StackTraceButton from './StackTraceButton.tsx'
 
 const useStyles = makeStyles()({
   content: {

@@ -1,8 +1,8 @@
+import type { FileLocation } from '../util/types/index.ts'
 import type {
   ConfigurationSchemaOptions,
   ConfigurationSchemaType,
 } from './configurationSchema.ts'
-import type { FileLocation } from '../util/types/index.ts'
 import type {
   ISimpleType,
   IStateTreeNode,

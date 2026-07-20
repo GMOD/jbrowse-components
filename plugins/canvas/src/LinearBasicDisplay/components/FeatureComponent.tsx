@@ -13,6 +13,7 @@ import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { MORPH_DURATION_MS } from '../yMorph.ts'
 import BottomRightIndicators from './BottomRightIndicators.tsx'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
@@ -28,16 +29,15 @@ import {
   useFloatingLabels,
   useHighlightOverlays,
 } from './useOverlayElements.tsx'
-import { MORPH_DURATION_MS } from '../yMorph.ts'
 
-import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
-import type { GeneGlyphMode } from '../geneGlyphMode.ts'
-import type { FeatureItemEntry, FlatbushRegionIndexes } from './hitTesting.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { GeneGlyphMode } from '../geneGlyphMode.ts'
+import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
+import type { FeatureItemEntry, FlatbushRegionIndexes } from './hitTesting.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type {

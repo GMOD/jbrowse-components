@@ -1,5 +1,5 @@
-import { serializeError } from './serializeError/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
+import { serializeError } from './serializeError/index.ts'
 
 import type { ErrorObject } from './serializeError/index.ts'
 

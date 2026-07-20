@@ -1,21 +1,20 @@
-import React from 'react'
-
 import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import React from 'react'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
 
-import { renderSvg } from './renderSvg.tsx'
 import {
   makeFeatureData,
   makeFlatbushItem,
   packFixtureRects,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { renderSvg } from './renderSvg.tsx'
 
-import type { RenderSvgModel } from './renderSvg.tsx'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { RenderSvgModel } from './renderSvg.tsx'
 
 // renderSvg calls getContainingView(model) to reach the LGV. Since the model
 // is a plain object in tests (not an MST node), we intercept the call.

@@ -2,9 +2,9 @@ import { screen, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 import { LocalFile } from 'generic-filehandle2'
 
+import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 import { handleRequest } from './generateReadBuffer.ts'
 import { createView, doBeforeEach, generateReadBuffer } from './util.tsx'
-import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 
 beforeEach(() => {
   doBeforeEach()

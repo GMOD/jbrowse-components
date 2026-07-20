@@ -1,6 +1,5 @@
-import type React from 'react'
-
 import type { MenuItem } from '@jbrowse/core/ui'
+import type React from 'react'
 
 /**
  * Build a radio submenu from a `[value, label]` option table keyed on the

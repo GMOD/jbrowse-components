@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import type React from 'react'
 
 import {
   colorFwdStrand,
@@ -19,6 +18,7 @@ import type { CigarCoords } from '../../shared/hitTestTypes.ts'
 import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
+import type React from 'react'
 
 export function makeBpToScreenX(view: LinearGenomeViewModel) {
   const { offsetPx } = view

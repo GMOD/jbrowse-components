@@ -13,11 +13,11 @@ import {
   strokeColor,
 } from './glyphColors.ts'
 
-import type { Collector, RenderContext } from './renderContext.ts'
 import type { ArrowData, LineData, RectData } from '../packRenderArrays.ts'
 import type { AggregatedAminoAcid } from '../peptides/aggregateAminoAcids.ts'
 import type { AminoAcidOverlayItem } from '../rpcTypes.ts'
 import type { FeatureLayout } from '../types.ts'
+import type { Collector, RenderContext } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 const UTR_HEIGHT_FRACTION = 0.65

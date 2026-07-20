@@ -1,26 +1,25 @@
-import type { ReactNode } from 'react'
-
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import Cytobands from './Cytobands.tsx'
-import OverviewHighlight from './OverviewHighlight.tsx'
-import OverviewRubberband from './OverviewRubberband.tsx'
-import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
-import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
-import { elidedBlockStyles, getCytobands } from './util.ts'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 import {
   REF_NAME_LABEL_FONT_SIZE,
   getBlockRefName,
   showRefNameLabels,
 } from '../util.ts'
+import Cytobands from './Cytobands.tsx'
+import OverviewHighlight from './OverviewHighlight.tsx'
+import OverviewRubberband from './OverviewRubberband.tsx'
+import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
+import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
+import { elidedBlockStyles, getCytobands } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { ReactNode } from 'react'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {

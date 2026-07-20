@@ -8,8 +8,8 @@ import {
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import SharedModelF from './shared.tsx'
 import { makeGCContentTrackConf } from '../makeGCContentTrackConf.ts'
+import SharedModelF from './shared.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'

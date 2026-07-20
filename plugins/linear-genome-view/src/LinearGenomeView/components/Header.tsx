@@ -3,6 +3,7 @@ import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { HEADER_BAR_HEIGHT } from '../consts.ts'
 import HeaderClearHighlightButton from './HeaderClearHighlightButton.tsx'
 import HeaderPanControls from './HeaderPanControls.tsx'
 import HeaderRegionWidth from './HeaderRegionWidth.tsx'
@@ -10,7 +11,6 @@ import HeaderTrackSelectorButton from './HeaderTrackSelectorButton.tsx'
 import HeaderZoomControls from './HeaderZoomControls.tsx'
 import OverviewScalebar from './OverviewScalebar.tsx'
 import SearchBox from './SearchBox.tsx'
-import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 

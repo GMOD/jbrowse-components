@@ -1,12 +1,12 @@
 import { updateStatus } from '@jbrowse/core/util'
 
-import { PRECOMPUTED_LD_ADAPTERS } from './types.ts'
 import { getLDMatrix } from '../VariantRPC/getLDMatrix.ts'
 import { getLDMatrixFromPlink } from '../VariantRPC/getLDMatrixFromPlink.ts'
+import { PRECOMPUTED_LD_ADAPTERS } from './types.ts'
 
+import type { LDMethod, LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type { RenderLDDataArgs } from './RenderLDData.ts'
 import type { LDDataResult } from './types.ts'
-import type { LDMethod, LDMetric } from '../VariantRPC/getLDMatrix.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { StatusCallback } from '@jbrowse/core/util'
 

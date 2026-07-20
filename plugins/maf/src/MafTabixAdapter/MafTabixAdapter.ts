@@ -10,8 +10,8 @@ import {
   selectReferenceSequenceString,
 } from '../util/parseAssemblyName.ts'
 
-import type { MafTabixAdapterConfig } from './configSchema.ts'
 import type { AlignmentRecord, MafAdapterOptions } from '../types.ts'
+import type { MafTabixAdapterConfig } from './configSchema.ts'
 import type {
   BaseFeatureDataAdapter as BaseAdapter,
   BaseOptions,

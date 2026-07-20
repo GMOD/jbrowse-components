@@ -8,8 +8,8 @@ import { observer } from 'mobx-react'
 
 import { SequenceRenderer } from './Canvas2DSequenceRenderer.ts'
 
-import type { SequenceHover } from './sequenceHover.ts'
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
+import type { SequenceHover } from './sequenceHover.ts'
 
 const SequenceBody = observer(function SequenceBody({
   model,

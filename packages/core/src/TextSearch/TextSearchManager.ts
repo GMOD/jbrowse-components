@@ -3,13 +3,13 @@ import uFuzzy from '@leeoniya/ufuzzy'
 import { readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 
-import type BaseResult from './BaseResults.ts'
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   BaseTextSearchAdapter,
   BaseTextSearchArgs,
 } from '../data_adapters/BaseAdapter/index.ts'
+import type BaseResult from './BaseResults.ts'
 
 export interface SearchScope {
   includeAggregateIndexes: boolean

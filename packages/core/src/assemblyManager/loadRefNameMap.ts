@@ -1,9 +1,9 @@
 import { getSequenceAdapterConfig } from './getSequenceAdapterConfig.ts'
 import { checkRefName } from './refNameMaps.ts'
 
+import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type { Assembly } from './assembly.ts'
 import type { RefNameAliases } from './refNameMaps.ts'
-import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 
 // the subset of the assembly model that loadRefNameMap reads; using a Pick
 // (rather than the full Assembly) lets `self` satisfy it from inside the

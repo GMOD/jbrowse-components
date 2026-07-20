@@ -2,19 +2,21 @@ import { getClip } from '@jbrowse/cigar-utils'
 import { getTag } from '@jbrowse/modifications-utils'
 
 import {
-  extractCigarFeatures,
-  isMismatchFeature,
-} from './extractCigarFeatures.ts'
-import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
-import { isFillUnmarkedMode } from './types.ts'
-import {
   extractBisulfite,
   extractMethylation,
   extractModifications,
 } from '../features/modification/extract.ts'
 import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
+import {
+  extractCigarFeatures,
+  isMismatchFeature,
+} from './extractCigarFeatures.ts'
+import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
+import { isFillUnmarkedMode } from './types.ts'
 
+import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
+import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { ColorBy } from './types.ts'
 import type {
   FeatureData,
@@ -25,8 +27,6 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
-import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
-import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { Feature, ProgressReporter, Region } from '@jbrowse/core/util'
 import type { ModificationType } from '@jbrowse/modifications-utils'
 

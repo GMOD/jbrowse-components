@@ -1,13 +1,13 @@
 import { Alert, MenuItem, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import FileSelector from './FileSelector/FileSelector.tsx'
 import {
   adapterLabels,
   adapterTypes,
   makeSetField,
 } from '../util/assemblyConfigUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+import FileSelector from './FileSelector/FileSelector.tsx'
 
 import type { AdapterType, FormState } from '../util/assemblyConfigUtils.ts'
 import type { FileLocation } from '../util/types/index.ts'

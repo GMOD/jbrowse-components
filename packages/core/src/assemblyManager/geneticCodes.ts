@@ -3,8 +3,8 @@ import { parseTranslTable } from '../util/geneticCodes.ts'
 import { openLocation } from '../util/io/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { RefNameAliases } from './refNameMaps.ts'
 import type { FileLocation } from '../util/types/index.ts'
+import type { RefNameAliases } from './refNameMaps.ts'
 
 /** NCBI's standard genetic code, used by any refName without a mapping */
 const STANDARD_GENETIC_CODE_ID = 1

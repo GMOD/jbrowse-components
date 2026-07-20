@@ -2,10 +2,10 @@ import { useState } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { stringToJexlExpression } from '../util/jexlStrings.ts'
 import ExternalLink from './ExternalLink.tsx'
 import MonospaceTextField from './MonospaceTextField.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
-import { stringToJexlExpression } from '../util/jexlStrings.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
 

@@ -1,3 +1,4 @@
+import { isObject, isUriLocation } from '../../util/index.ts'
 import ArrayValue from './ArrayValue.tsx'
 import DataGridDetails from './DataGridDetails.tsx'
 import SimpleField from './SimpleField.tsx'
@@ -7,7 +8,6 @@ import {
   applyFeatureFormatting,
   generateMaxWidth,
 } from './util.ts'
-import { isObject, isUriLocation } from '../../util/index.ts'
 
 import type { Descriptors, FeatureFormatter } from '../types.tsx'
 

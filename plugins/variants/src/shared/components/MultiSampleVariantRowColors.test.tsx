@@ -1,8 +1,8 @@
 import { render } from '@testing-library/react'
 
-import MultiSampleVariantRowColors from './MultiSampleVariantRowColors.tsx'
 import configFactory from '../../LinearMultiSampleVariantDisplay/configSchema.ts'
 import stateModelFactory from '../../LinearMultiSampleVariantDisplay/model.ts'
+import MultiSampleVariantRowColors from './MultiSampleVariantRowColors.tsx'
 
 // Regression guard for the fit-mode sidebar labels. In the default
 // fit-to-display-height mode (rowHeight 0) the row-color/label overlay used to

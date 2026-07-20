@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
-import { LogoFull } from './Logo.tsx'
 import { readConfObject } from '../configuration/index.ts'
+import { LogoFull } from './Logo.tsx'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 

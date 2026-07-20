@@ -1,18 +1,3 @@
-export {
-  INSERTION_SERIF_MIN_PX_PER_BP,
-  LONG_INSERTION_MIN_LENGTH,
-  LONG_INSERTION_TEXT_THRESHOLD_PX,
-  MIN_HEIGHT_FOR_TEXT,
-  MIN_LABEL_OPACITY,
-  MIN_PX_PER_BP_FOR_TEXT,
-  computeLabelFontSize,
-  getInsertionType,
-  insertionBarWidth,
-  labelFadeOpacity,
-  textWidthForNumber,
-} from '@jbrowse/alignments-core'
-export type { InsertionType } from '@jbrowse/alignments-core'
-
 import {
   CS_FIRST_OF_PAIR,
   CS_INSERT_SIZE,
@@ -27,6 +12,21 @@ import {
 } from './shaders/slang/read.iface.generated.ts'
 
 import type { ShaderScheme } from '../shared/types.ts'
+
+export {
+  INSERTION_SERIF_MIN_PX_PER_BP,
+  LONG_INSERTION_MIN_LENGTH,
+  LONG_INSERTION_TEXT_THRESHOLD_PX,
+  MIN_HEIGHT_FOR_TEXT,
+  MIN_LABEL_OPACITY,
+  MIN_PX_PER_BP_FOR_TEXT,
+  computeLabelFontSize,
+  getInsertionType,
+  insertionBarWidth,
+  labelFadeOpacity,
+  textWidthForNumber,
+} from '@jbrowse/alignments-core'
+export type { InsertionType } from '@jbrowse/alignments-core'
 
 // Maps each shader color-scheme name to its dispatch index. The values come
 // straight from read.slang's `export-consts` (see read.generated.ts), so this

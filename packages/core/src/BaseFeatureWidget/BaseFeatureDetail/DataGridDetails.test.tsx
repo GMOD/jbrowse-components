@@ -1,8 +1,8 @@
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import DataGridDetails from './DataGridDetails.tsx'
 import { createJBrowseTheme } from '../../ui/index.ts'
+import DataGridDetails from './DataGridDetails.tsx'
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(

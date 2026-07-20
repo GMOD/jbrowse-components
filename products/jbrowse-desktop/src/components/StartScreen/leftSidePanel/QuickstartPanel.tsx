@@ -3,11 +3,11 @@ import { useState } from 'react'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util'
 
-import CollapsibleSection from './CollapsibleSection.tsx'
-import LinkMenuRow from './LinkMenuRow.tsx'
 import { useInnerDims } from '../availableGenomes/util.ts'
 import DeleteQuickstartDialog from '../dialogs/DeleteQuickstartDialog.tsx'
 import RenameQuickstartDialog from '../dialogs/RenameQuickstartDialog.tsx'
+import CollapsibleSection from './CollapsibleSection.tsx'
+import LinkMenuRow from './LinkMenuRow.tsx'
 
 const { ipcRenderer } = window.require('electron')
 

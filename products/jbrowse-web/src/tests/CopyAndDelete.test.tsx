@@ -1,6 +1,7 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { fireEvent, render, waitFor } from '@testing-library/react'
 
+import masterConfig from '../../test_data/volvox/connection_test.json' with { type: 'json' }
 import {
   JBrowse,
   createView,
@@ -11,7 +12,6 @@ import {
   mockConsoleWarn,
   setup,
 } from './util.tsx'
-import masterConfig from '../../test_data/volvox/connection_test.json' with { type: 'json' }
 
 setup()
 beforeEach(() => {

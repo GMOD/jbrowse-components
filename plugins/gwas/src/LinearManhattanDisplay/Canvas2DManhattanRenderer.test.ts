@@ -1,7 +1,7 @@
 import { drawManhattanBlocks } from './Canvas2DManhattanRenderer.ts'
 
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Minimal Canvas2D mock recording the fillStyle/arc calls so we can assert

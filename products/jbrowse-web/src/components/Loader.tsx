@@ -12,10 +12,10 @@ import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 
 import '@fontsource/roboto'
 
-import Renderer from './Renderer.tsx'
-import { useLoaderLifecycle } from './useLoaderLifecycle.ts'
 import { createSessionLoaderFromUrl } from '../createSessionLoader.ts'
 import factoryReset from '../factoryReset.ts'
+import Renderer from './Renderer.tsx'
+import { useLoaderLifecycle } from './useLoaderLifecycle.ts'
 
 export function Loader({ initialTimestamp }: { initialTimestamp?: number }) {
   const [loader, setLoader] = useState(() =>

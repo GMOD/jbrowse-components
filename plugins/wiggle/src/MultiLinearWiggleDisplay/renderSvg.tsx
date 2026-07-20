@@ -1,6 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import type React from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -11,17 +9,18 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgTreePath } from '@jbrowse/tree-sidebar'
 
-import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
-import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 import { drawWiggleToCtx } from '../shared/Canvas2DWiggleRenderer.ts'
 import OverlayColorLegend from '../shared/OverlayColorLegend.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
+import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
+import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 
 import type { MultiLinearWiggleDisplayModel } from './model.ts'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 type LGV = LinearGenomeViewModel
 

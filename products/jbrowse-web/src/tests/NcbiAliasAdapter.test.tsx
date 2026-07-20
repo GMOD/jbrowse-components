@@ -1,3 +1,4 @@
+import config from '../../test_data/cfam2/config.json' with { type: 'json' }
 import {
   createView,
   doBeforeEach,
@@ -5,7 +6,6 @@ import {
   findCanvasIn,
   setup,
 } from './util.tsx'
-import config from '../../test_data/cfam2/config.json' with { type: 'json' }
 
 setup()
 

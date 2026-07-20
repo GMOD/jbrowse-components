@@ -1,7 +1,7 @@
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafStatus, MafSummaryRecord } from '../../types.ts'
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 
 export interface SummaryBar {
   x: number

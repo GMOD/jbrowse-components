@@ -2,6 +2,12 @@ import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
+import {
+  REF_NAME_LABEL_FONT_SIZE,
+  getScalebarRefNameLabels,
+  labelFitsInBlock,
+  tickLabelWidth,
+} from '../util.ts'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import {
   RULER_MAJOR_TICK,
@@ -11,12 +17,6 @@ import {
   gridlineTickXs,
   vlinePath,
 } from './util.ts'
-import {
-  REF_NAME_LABEL_FONT_SIZE,
-  getScalebarRefNameLabels,
-  labelFitsInBlock,
-  tickLabelWidth,
-} from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 

@@ -6,10 +6,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Alert, Button, Link, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import AdvancedOptions from './AdvancedOptions.tsx'
-import FileDropZone from './FileDropZone.tsx'
-import FileSelector from './FileSelector/FileSelector.tsx'
-import SequenceAdapterInputs from './SequenceAdapterInputs.tsx'
 import {
   applyClassifiedFiles,
   applyPrimaryFile,
@@ -23,6 +19,10 @@ import {
 } from '../util/assemblyConfigUtils.ts'
 import { fileToLocation } from '../util/index.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+import AdvancedOptions from './AdvancedOptions.tsx'
+import FileDropZone from './FileDropZone.tsx'
+import FileSelector from './FileSelector/FileSelector.tsx'
+import SequenceAdapterInputs from './SequenceAdapterInputs.tsx'
 
 import type { AdapterType, FormState } from '../util/assemblyConfigUtils.ts'
 import type { FileLocation } from '../util/types/index.ts'

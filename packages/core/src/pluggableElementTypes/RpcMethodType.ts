@@ -1,4 +1,3 @@
-import PluggableElementBase from './PluggableElementBase.ts'
 import { renameRegionsIfNeeded } from '../util/index.ts'
 import { isRpcResult } from '../util/rpc.ts'
 import {
@@ -12,6 +11,7 @@ import {
   isFileHandleLocation,
   isUriLocation,
 } from '../util/types/index.ts'
+import PluggableElementBase from './PluggableElementBase.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { Region } from '../util/index.ts'

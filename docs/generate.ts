@@ -1,16 +1,16 @@
 import { sync as spawnSync } from 'cross-spawn'
 
-import { extractWithComment, getAllFiles } from './util.ts'
 import {
   accumulateApi,
   writeApiDocs,
   writeApiReadmes,
 } from './generateApiDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
+import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
 import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
 import { writeJexlDocs } from './generateJexlDocs.ts'
-import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
+import { extractWithComment, getAllFiles } from './util.ts'
 
 import type { ApiGroup } from './generateApiDocs.ts'
 import type { Config } from './generateConfigDocs.ts'

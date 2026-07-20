@@ -2,8 +2,8 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { createEmbeddedRootModel } from '@jbrowse/embedded-core'
 
 import corePlugins from '../corePlugins.ts'
-import createSessionModel from './createSessionModel.ts'
 import { version } from '../version.ts'
+import createSessionModel from './createSessionModel.ts'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
 import type { Instance } from '@jbrowse/mobx-state-tree'

@@ -1,10 +1,10 @@
-import { getChainBounds } from './chainOverlayUtils.ts'
 import {
   buildReadIdToIndex,
   computeArcBand,
   ensureRegion,
   interbaseRangeEnds,
 } from '../renderers/rendererTypes.ts'
+import { getChainBounds } from './chainOverlayUtils.ts'
 
 import type { RenderState } from '../renderers/rendererTypes.ts'
 

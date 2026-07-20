@@ -1,8 +1,9 @@
 import { useId } from 'react'
-import type { ReactNode } from 'react'
 
 import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
+
+import type { ReactNode } from 'react'
 
 const HatchCircle = observer(function HatchCircle({
   radius,

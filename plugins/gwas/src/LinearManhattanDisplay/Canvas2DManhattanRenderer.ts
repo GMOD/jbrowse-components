@@ -6,13 +6,14 @@ import {
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { appendPointMarker } from '@jbrowse/wiggle-core'
 
-import { scoreToY } from './manhattanRenderingBackendTypes.ts'
 import { GLYPH_INDEX, GLYPH_INSERTION } from '../ManhattanRPC/rpcTypes.ts'
+import { scoreToY } from './manhattanRenderingBackendTypes.ts'
 
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+
 // Must match INDEX_GLYPH_SCALE in manhattan.slang: LocusZoom draws the
 // index/lead SNP visibly larger than the other points. Exported so
 // glyphContract.test.ts can pin the two against each other.

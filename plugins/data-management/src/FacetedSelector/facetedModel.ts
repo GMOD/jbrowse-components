@@ -12,6 +12,8 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
+import { measureNameColumnWidth } from '../HierarchicalTrackSelectorWidget/components/shared/trackGridUtils.ts'
+import { configScopedKey } from '../shared/configScopedKey.ts'
 import { getRowStr, isMetadataFacet, metadataFacet } from './components/util.ts'
 import {
   computeFacetCategoryCounts,
@@ -19,8 +21,6 @@ import {
   filterRowsByText,
 } from './facetedFilter.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
-import { measureNameColumnWidth } from '../HierarchicalTrackSelectorWidget/components/shared/trackGridUtils.ts'
-import { configScopedKey } from '../shared/configScopedKey.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'

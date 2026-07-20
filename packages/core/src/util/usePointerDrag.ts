@@ -1,7 +1,8 @@
-import type React from 'react'
 import { useRef } from 'react'
 
 import { useEventCallback } from './useEventCallback.ts'
+
+import type React from 'react'
 
 /**
  * Pointer-capture drag lifecycle shared by draggable UI (resize handles,

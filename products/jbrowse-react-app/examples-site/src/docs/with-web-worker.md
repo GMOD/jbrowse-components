@@ -10,6 +10,7 @@ the package's prebuilt `@jbrowse/react-app2/esm/makeWorkerInstance` instead:
 
 ```jsx
 import RpcWorker from '@jbrowse/react-app2/esm/rpcWorker?worker'
+
 ;<JBrowse
   assemblies={assemblies}
   tracks={tracks}

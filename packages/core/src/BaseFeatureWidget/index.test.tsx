@@ -2,11 +2,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { act, render } from '@testing-library/react'
 
-import { stateModelFactory } from './index.ts'
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from '../configuration/index.ts'
-import BaseFeatureDetails from './BaseFeatureDetail/index.tsx'
 import { createJBrowseTheme } from '../ui/index.ts'
+import BaseFeatureDetails from './BaseFeatureDetail/index.tsx'
+import { stateModelFactory } from './index.ts'
 
 test('open up a widget', async () => {
   const pluginManager = new PluginManager([])

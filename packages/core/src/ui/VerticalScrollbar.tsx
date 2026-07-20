@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
-import type React from 'react'
 
 import { clamp } from '../util/numericUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
 import { useRafCommit } from '../util/useRafCommit.ts'
 import { useVirtualScrollWheel } from '../util/useVirtualScrollWheel.ts'
+
+import type React from 'react'
 
 const TRACK_WIDTH = 12
 const MIN_THUMB_HEIGHT = 20

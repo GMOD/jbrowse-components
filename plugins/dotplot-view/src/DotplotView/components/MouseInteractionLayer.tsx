@@ -1,5 +1,4 @@
 import { Suspense } from 'react'
-import type { ComponentType, ReactNode } from 'react'
 
 import { PluggableComponent } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
@@ -8,8 +7,9 @@ import { observer } from 'mobx-react'
 
 import DotplotGrid from './DotplotGrid.tsx'
 
-import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
+import type { DotplotInteraction } from './useDotplotInteraction.ts'
+import type { ComponentType, ReactNode } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   grid: {

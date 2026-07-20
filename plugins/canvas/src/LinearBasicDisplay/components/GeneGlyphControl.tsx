@@ -5,8 +5,8 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import { observer } from 'mobx-react'
 
-import StatusChip from './StatusChip.tsx'
 import { GENE_GLYPH_MODE_OPTIONS } from '../geneGlyphMode.ts'
+import StatusChip from './StatusChip.tsx'
 
 import type { GeneGlyphMode } from '../geneGlyphMode.ts'
 

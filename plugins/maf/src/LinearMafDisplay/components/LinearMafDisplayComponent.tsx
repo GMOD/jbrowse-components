@@ -10,6 +10,8 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
+import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
+import { openInsertionWidgetOnClick } from '../openInsertionWidget.ts'
 import AnnotationOverlay from './AnnotationOverlay.tsx'
 import CodonTranslationOverlay from './CodonTranslationOverlay.tsx'
 import Crosshairs from './Crosshairs.tsx'
@@ -36,8 +38,6 @@ import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { resolveMafRowHover } from './resolveRowHover.ts'
 import { useDragSelection } from './useDragSelection.ts'
-import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
-import { openInsertionWidgetOnClick } from '../openInsertionWidget.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 

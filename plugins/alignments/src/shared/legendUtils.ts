@@ -4,6 +4,10 @@ import {
   unmethylated5mC,
 } from '@jbrowse/core/ui/theme'
 
+import {
+  categorySwatchColor,
+  rgb255,
+} from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { isModificationScheme } from './colorSchemes.ts'
 import { getModificationName } from './modificationData.ts'
 import {
@@ -11,17 +15,13 @@ import {
   paintsUnmodifiedState,
   usesMethylationLegend,
 } from './types.ts'
-import {
-  categorySwatchColor,
-  rgb255,
-} from '../LinearAlignmentsDisplay/colorUtils.ts'
 
-import type { ColorBy, ColorSchemeType } from './types.ts'
 import type {
   ReadColorCategory,
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette } from '../LinearAlignmentsDisplay/shaders/colors.ts'
+import type { ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 export type { LegendItem } from '@jbrowse/plugin-linear-genome-view'

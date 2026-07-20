@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
+import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 import {
   APP_ID,
   APP_NAME,
@@ -12,7 +13,6 @@ import {
   VERSION,
 } from './config.ts'
 import { ensureDir, generateAppUpdateYml, log } from './utils.ts'
-import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 
 export async function packageApp(
   platform: 'darwin' | 'linux' | 'win32',

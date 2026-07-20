@@ -1,12 +1,12 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { DockviewLayoutMixin } from '../../DockviewLayout/index.ts'
 import {
   applyInitLayout,
   createPanelId,
   getPanelPosition,
   rearrangePanelsWithDirection,
 } from './dockviewUtils.ts'
-import { DockviewLayoutMixin } from '../../DockviewLayout/index.ts'
 
 import type { DockviewApi } from 'dockview-react'
 

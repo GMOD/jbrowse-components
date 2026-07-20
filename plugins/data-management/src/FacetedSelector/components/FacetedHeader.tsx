@@ -8,9 +8,9 @@ import { observer } from 'mobx-react'
 import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
 import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 
-import type { FacetedColumn } from './FacetedDataGrid.tsx'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'
+import type { FacetedColumn } from './FacetedDataGrid.tsx'
 
 const FacetedHeader = observer(function FacetedHeader({
   model,

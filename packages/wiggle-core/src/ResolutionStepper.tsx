@@ -1,11 +1,10 @@
-import type React from 'react'
-
 import { INLINE_MENU_ROW_WIDTH, ResetToDefaultButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { MenuItem } from '@jbrowse/core/ui'
+import type React from 'react'
 
 const useStyles = makeStyles()(theme => ({
   row: {

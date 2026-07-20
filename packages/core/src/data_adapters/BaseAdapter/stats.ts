@@ -1,13 +1,14 @@
-import { type Observable, firstValueFrom } from 'rxjs'
+import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { max, min, sum } from '../../util/index.ts'
 import { rectifyStats } from '../../util/stats.ts'
 
-import type { BaseOptions } from './types.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { RectifiedQuantitativeStats } from '../../util/stats.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
+import type { BaseOptions } from './types.ts'
+import type { Observable } from 'rxjs'
 
 const DENSITY_SAMPLE_INITIAL_INTERVAL = 1000
 const DENSITY_SAMPLE_MIN_FEATURES = 70

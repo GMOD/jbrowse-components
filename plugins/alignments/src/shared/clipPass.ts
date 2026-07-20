@@ -1,8 +1,8 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
+import * as clipShader from '../LinearAlignmentsDisplay/shaders/slang/clip.generated.ts'
 import { INTERBASE_HARDCLIP, INTERBASE_SOFTCLIP } from './types.ts'
 import { interbaseRangeEnds } from './uploadTypes.ts'
-import * as clipShader from '../LinearAlignmentsDisplay/shaders/slang/clip.generated.ts'
 
 import type {
   CigarCoords,

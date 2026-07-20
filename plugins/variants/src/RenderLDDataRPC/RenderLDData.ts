@@ -1,7 +1,7 @@
 import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions'
 
-import type { LDDataResult } from './types.ts'
 import type { LDMetric } from '../VariantRPC/getLDMatrix.ts'
+import type { LDDataResult } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'

@@ -3,7 +3,6 @@ import { useId } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 import {
   buildVariantHit,
   variantTooltipKey,
@@ -14,6 +13,7 @@ import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'

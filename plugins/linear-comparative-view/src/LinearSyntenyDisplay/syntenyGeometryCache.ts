@@ -1,5 +1,5 @@
-import type { PickIndex } from './syntenyPickEngine.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { PickIndex } from './syntenyPickEngine.ts'
 
 // Pairs uploaded geometry with its lazily-built Flatbush pick index. Mutating a
 // region invalidates that key's pick index; the next pick rebuilds it.

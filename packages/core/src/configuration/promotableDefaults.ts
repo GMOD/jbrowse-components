@@ -1,3 +1,6 @@
+import { deepEqual } from '../util/deepEqual.ts'
+import { getSession, isViewContainer } from '../util/index.ts'
+import { getEnumerationValues } from '../util/mst-reflection.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 import {
   getConfSnapshot,
@@ -5,13 +8,10 @@ import {
   isSlotDefinitionEntry,
   readConfObject,
 } from './util.ts'
-import { deepEqual } from '../util/deepEqual.ts'
-import { getSession, isViewContainer } from '../util/index.ts'
-import { getEnumerationValues } from '../util/mst-reflection.ts'
 
+import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
-import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**

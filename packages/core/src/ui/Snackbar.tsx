@@ -2,8 +2,8 @@ import { Suspense, lazy } from 'react'
 
 import { observer } from 'mobx-react'
 
-import type { ErrorDialogState, SnackbarMessage } from './SnackbarModel.tsx'
 import type { AbstractSessionModel } from '../util/index.ts'
+import type { ErrorDialogState, SnackbarMessage } from './SnackbarModel.tsx'
 
 const SnackbarContents = lazy(() => import('./SnackbarContents.tsx'))
 const ErrorMessageStackTraceDialog = lazy(

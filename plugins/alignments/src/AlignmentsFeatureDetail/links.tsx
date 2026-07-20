@@ -1,11 +1,10 @@
-import type { ReactNode } from 'react'
-
 import { ActionLink } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { launchBreakpointSplitView, navToLoc } from '@jbrowse/sv-core'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { ReactNode } from 'react'
 
 // Navigates the widget's associated view to a locstring.
 export function NavToLocLink({

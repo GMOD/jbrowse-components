@@ -2,8 +2,8 @@ import { bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import { scoreToY, yToScore } from './manhattanRenderingBackendTypes.ts'
 
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 

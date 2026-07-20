@@ -11,12 +11,12 @@ import { Image, createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
-import { generateReadBuffer } from './generateReadBuffer.ts'
 import configSnapshot from '../../test_data/volvox/config.json' with { type: 'json' }
 import corePlugins from '../corePlugins.ts'
-import JBrowse from './TestingJBrowse.tsx'
 import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
+import JBrowse from './TestingJBrowse.tsx'
+import { generateReadBuffer } from './generateReadBuffer.ts'
 
 import type { WebSessionModel } from '../sessionModel/index.ts'
 import type { AppRootModel } from '@jbrowse/core/util'

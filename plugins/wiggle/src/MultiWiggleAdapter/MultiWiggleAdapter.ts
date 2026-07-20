@@ -15,8 +15,8 @@ import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type {
-  AugmentedRegion as Region,
   FileLocation,
+  AugmentedRegion as Region,
 } from '@jbrowse/core/util/types'
 
 interface WiggleOptions extends WiggleAdapterOptions {

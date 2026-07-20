@@ -1,3 +1,4 @@
+import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
 import { findGlyph } from './findGlyph.ts'
@@ -5,7 +6,6 @@ import { layoutProcessedTranscript } from './processed.ts'
 import { layoutRepeatRegion } from './repeatRegion.ts'
 import { layoutSegments } from './segments.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
-import { mockDisplayConfig } from '../testUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

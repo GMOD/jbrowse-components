@@ -1,9 +1,9 @@
 import { getContainingView, openFeatureWidget } from '@jbrowse/core/util'
 import { observable } from 'mobx'
 
+import { computeAutoscaleDomain, getNiceDomain } from '../util.ts'
 import { WiggleScoreConfigMixin } from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleComponentUtils.ts'
-import { computeAutoscaleDomain, getNiceDomain } from '../util.ts'
 
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

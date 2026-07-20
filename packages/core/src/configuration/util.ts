@@ -13,17 +13,19 @@ import {
 } from '@jbrowse/mobx-state-tree'
 
 import {
-  getConfigurationSchemaMetadata,
-  isRegisteredConfigurationSchema,
-} from './schemaRegistry.ts'
-import { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
-import {
   getDefaultValue,
   getSubType,
   getUnionSubTypes,
   resolveLateType,
 } from '../util/mst-reflection.ts'
+import {
+  getConfigurationSchemaMetadata,
+  isRegisteredConfigurationSchema,
+} from './schemaRegistry.ts'
+import { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
 
+import type { Feature } from '../util/index.ts'
+import type { JexlInstance } from '../util/jexlStrings.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type {
   AnyConfiguration,
@@ -34,8 +36,6 @@ import type {
   ConfigurationSlotName,
   ConfigurationSlotValue,
 } from './types.ts'
-import type { Feature } from '../util/index.ts'
-import type { JexlInstance } from '../util/jexlStrings.ts'
 import type { IAnyType, IMSTMap } from '@jbrowse/mobx-state-tree'
 
 // Evaluate a slot's `jexl:...` callback string against the realm's single jexl

@@ -1,5 +1,14 @@
 import '@testing-library/jest-dom'
 
+import {
+  restoreFileHandles,
+  restoreFileHandlesFromSnapshot,
+} from '@jbrowse/core/util/tracks'
+import { fireEvent, render, waitFor } from '@testing-library/react'
+
+import { reloadPage } from '../util.ts'
+import { JBrowse, doBeforeEach, getPluginManager } from './util.tsx'
+
 jest.mock('@jbrowse/core/util/tracks', () => ({
   ...jest.requireActual('@jbrowse/core/util/tracks'),
   restoreFileHandlesFromSnapshot: jest.fn(),
@@ -12,15 +21,6 @@ jest.mock('../util', () => ({
   ...jest.requireActual('../util'),
   reloadPage: jest.fn(),
 }))
-
-import {
-  restoreFileHandles,
-  restoreFileHandlesFromSnapshot,
-} from '@jbrowse/core/util/tracks'
-import { fireEvent, render, waitFor } from '@testing-library/react'
-
-import { reloadPage } from '../util.ts'
-import { JBrowse, doBeforeEach, getPluginManager } from './util.tsx'
 
 const mockReload = reloadPage as jest.Mock
 

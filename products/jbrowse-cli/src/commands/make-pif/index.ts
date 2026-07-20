@@ -1,17 +1,17 @@
 import { parseArgs } from 'node:util'
 
-import {
-  DEFAULT_COARSE_SPLIT_GAP,
-  createPIF,
-  getOutputFilename,
-  spawnSortProcess,
-} from './pif-generator.ts'
 import { printHelp } from '../../utils.ts'
 import { waitForProcessClose } from '../process-utils.ts'
 import {
   validateFileArgument,
   validateRequiredCommands,
 } from '../shared/validators.ts'
+import {
+  DEFAULT_COARSE_SPLIT_GAP,
+  createPIF,
+  getOutputFilename,
+  spawnSortProcess,
+} from './pif-generator.ts'
 
 export async function run(args?: string[]) {
   const options = {

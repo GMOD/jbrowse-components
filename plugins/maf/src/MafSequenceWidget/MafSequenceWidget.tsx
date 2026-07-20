@@ -4,10 +4,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { formatFastaSequences } from '../util/formatFastaSequences.ts'
 import MafSequenceWidgetMenu from './MafSequenceWidgetMenu.tsx'
 import SequenceDisplay from './SequenceDisplay.tsx'
 import { useMafSequenceSettings } from './useMafSequenceSettings.ts'
-import { formatFastaSequences } from '../util/formatFastaSequences.ts'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
 

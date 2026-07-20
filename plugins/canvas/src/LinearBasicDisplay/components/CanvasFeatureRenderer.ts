@@ -7,9 +7,9 @@ import {
   GpuCanvasFeatureRenderer,
 } from './GpuCanvasFeatureRenderer.ts'
 
-export { type FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
-
 import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
+
+export { type FeatureRenderBlock } from './canvasFeatureRenderingBackendTypes.ts'
 
 export function CanvasFeatureRenderer(canvas: HTMLCanvasElement) {
   return createRenderingBackend<CanvasFeatureRenderingBackend>(canvas, {

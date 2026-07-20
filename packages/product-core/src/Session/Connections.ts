@@ -1,7 +1,7 @@
 import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
-import { isBaseSession } from './BaseSession.ts'
 import { asSession } from '../siblingCast.ts'
+import { isBaseSession } from './BaseSession.ts'
 
 import type { BaseSession } from './BaseSession.ts'
 import type { SessionWithReferenceManagementType } from './ReferenceManagement.ts'

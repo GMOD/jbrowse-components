@@ -1,3 +1,4 @@
+import { resolveConfigPath } from '../../utils.ts'
 import { createTrixAdapter } from './adapter-utils.ts'
 import {
   formatDryRun,
@@ -12,7 +13,6 @@ import {
   validateAssembliesForPerTrack,
   validateTrackConfigs,
 } from './validators.ts'
-import { resolveConfigPath } from '../../utils.ts'
 
 import type { TextIndexFlags } from './index.ts'
 

@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import {
   ADORNMENT_RESERVE_PX,
@@ -21,6 +19,7 @@ import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 import { recentLocationsMenu } from './recentLocationsMenu.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
+import type React from 'react'
 
 const defaultStyle = { margin: SPACING }
 

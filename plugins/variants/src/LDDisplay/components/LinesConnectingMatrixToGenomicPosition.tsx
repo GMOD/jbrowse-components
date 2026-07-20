@@ -4,14 +4,14 @@ import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import VariantLabels from './VariantLabels.tsx'
-import Wrapper from './Wrapper.tsx'
-import { getSnpViewportX } from './snpViewportX.ts'
 import {
   ConnectorLine,
   ConnectorLineField,
   ConnectorResizeHandle,
 } from '../../shared/ConnectorLines.tsx'
+import VariantLabels from './VariantLabels.tsx'
+import Wrapper from './Wrapper.tsx'
+import { getSnpViewportX } from './snpViewportX.ts'
 
 import type { LDSnp } from '../../VariantRPC/getLDMatrix.ts'
 import type { ConnectorCoord } from '../../shared/ConnectorLines.tsx'

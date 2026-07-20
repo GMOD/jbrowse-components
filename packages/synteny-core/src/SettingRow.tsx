@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react'
-
 import { Typography } from '@mui/material'
 
 import HelpTooltip from './HelpTooltip.tsx'
+
+import type { ReactNode } from 'react'
 
 // One row of a synteny/dotplot settings popover. Shares a fixed 3-column grid
 // (label | control | help) with every other row so controls all start at the

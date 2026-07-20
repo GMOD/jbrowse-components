@@ -1,18 +1,18 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import PluginManager from '../PluginManager.ts'
 import {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
 import { getConf } from './index.ts'
-import PluginManager from '../PluginManager.ts'
 
 import type { IConfigurationReference } from './configurationSchema.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // Regression guard for the config-read narrowing described in
-// agent-docs/guides/CONFIG_TYPE_NARROWING.md. `Equal` is an exact type equality
+// ./CLAUDE.md ("Config read type narrowing"). `Equal` is an exact type equality
 // that ALSO distinguishes `any` from every concrete type, and `assertType`
 // fails `pnpm typecheck` when its check is `false` — so a `getConf(self, slot)`
 // read silently widening to `any` is caught here. A plain typecheck can't catch

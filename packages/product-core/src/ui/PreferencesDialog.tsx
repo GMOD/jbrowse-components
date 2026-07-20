@@ -1,5 +1,4 @@
 import { Suspense, useState } from 'react'
-import type React from 'react'
 
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -17,12 +16,13 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import PreferencesResetDialog from './PreferencesResetDialog.tsx'
 import { DISPLAY_TYPE_DEFAULTS_PATH_HEAD } from '../Session/BaseSession.ts'
+import PreferencesResetDialog from './PreferencesResetDialog.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ThemeMap } from '@jbrowse/core/ui'
 import type { AnimationMode, TrackConfigChange } from '@jbrowse/core/util'
+import type React from 'react'
 
 const useStyles = makeStyles()({
   container: {

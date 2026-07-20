@@ -3,8 +3,8 @@ import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegio
 
 import { drawSequenceBlocks } from './drawSequence.ts'
 
-import type { DrawSequenceState } from './drawSequence.ts'
 import type { SequenceRegionData } from '../model.ts'
+import type { DrawSequenceState } from './drawSequence.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Sequence is text — there is no GPU shader path, so this is Canvas2D-only

@@ -1,7 +1,7 @@
 import { from } from 'rxjs'
 
-import { calculateFeatureDensityStats } from './stats.ts'
 import SimpleFeature from '../../util/simpleFeature.ts'
+import { calculateFeatureDensityStats } from './stats.ts'
 
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 

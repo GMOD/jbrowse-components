@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import {
   ConfigurationReference,
   getConfResolved,
@@ -10,9 +8,9 @@ import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { TrackHeightMixin } from '@jbrowse/plugin-linear-genome-view'
 
+import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
 import { makeFeaturePair, pairKey } from './components/util.ts'
 import { makeLineWidthMenuItem } from './lineWidthMenu.tsx'
-import { ArcFetchModel } from '../shared/ArcFetchModel.ts'
 
 import type {
   LinearPairedArcDisplayConfig,
@@ -21,6 +19,7 @@ import type {
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 /**
  * #stateModel LinearPairedArcDisplay

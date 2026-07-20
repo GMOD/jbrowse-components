@@ -8,8 +8,8 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
-import { getTrackOffsets } from './util.ts'
 import Overlay from '../components/Overlay.tsx'
+import { getTrackOffsets } from './util.ts'
 
 import type { BreakpointViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'

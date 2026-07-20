@@ -2,13 +2,14 @@ import { saveAs } from '@jbrowse/core/util'
 import { fireEvent, waitFor } from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event'
 
+import { createView, doBeforeEach, hts, setup } from './util.tsx'
+
+import './svgExportMocks.ts'
+
 let mockCounter = 0
 jest.mock('@jbrowse/core/util/nanoid', () => ({
   nanoid: () => `test-id-${mockCounter++}`,
 }))
-
-import { createView, doBeforeEach, hts, setup } from './util.tsx'
-import './svgExportMocks.ts'
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({
   ...jest.requireActual('@jbrowse/core/util/FileSaver'),

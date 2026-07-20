@@ -11,6 +11,7 @@ import {
 } from '@mui/x-data-grid'
 import { observer } from 'mobx-react'
 
+import { navToBookmark } from '../utils.ts'
 import EmptyState from './EmptyState.tsx'
 import SelectionActions from './SelectionActions.tsx'
 import {
@@ -23,7 +24,6 @@ import {
   startLabelEditOnClick,
   useCellStyles,
 } from './columns.tsx'
-import { navToBookmark } from '../utils.ts'
 
 import type {
   GridBookmarkModel,

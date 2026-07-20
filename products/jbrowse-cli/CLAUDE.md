@@ -11,6 +11,7 @@ Example:
 
 ```typescript
 import fetch from './cliFetch.ts' // ✓ Correct
+
 // const response = await fetch(url)  // ✗ Wrong - uses global fetch
 ```
 

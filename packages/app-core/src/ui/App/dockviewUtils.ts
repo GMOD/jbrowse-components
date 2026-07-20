@@ -1,10 +1,10 @@
 import { createElementId } from '@jbrowse/core/util/types/mst'
 
-import type { DockviewSessionType } from './types.ts'
 import type {
   DockviewLayoutNode,
   SessionWithDockviewLayout,
 } from '../../DockviewLayout/index.ts'
+import type { DockviewSessionType } from './types.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
 import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
 

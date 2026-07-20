@@ -6,11 +6,11 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { TrackOverlayContext } from '../TrackOverlayContext.ts'
 import Gridlines from './Gridlines.tsx'
 import PaddingBlocks from './PaddingBlocks.tsx'
 import TrackLabel from './TrackLabel.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
-import { TrackOverlayContext } from '../TrackOverlayContext.ts'
 
 import type { LinearDisplayModel } from '../../BaseLinearDisplay/types.ts'
 import type { LinearGenomeViewModel } from '../index.ts'

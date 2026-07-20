@@ -1,10 +1,11 @@
-import type React from 'react'
 import { useState } from 'react'
 
 import HelpOutlined from '@mui/icons-material/HelpOutlined'
 import { IconButton } from '@mui/material'
 
 import CascadingMenuHelpDialog from './CascadingMenuHelpDialog.tsx'
+
+import type React from 'react'
 
 const buttonStyle = { marginLeft: 4, padding: 4 }
 

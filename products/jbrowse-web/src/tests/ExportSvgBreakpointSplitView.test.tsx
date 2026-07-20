@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/react'
 
+import breakpointConfig from '../../test_data/breakpoint/config.json' with { type: 'json' }
 import {
   createView,
   doBeforeEach,
@@ -7,9 +8,9 @@ import {
   mockConsoleWarn,
   setup,
 } from './util.tsx'
-import breakpointConfig from '../../test_data/breakpoint/config.json' with { type: 'json' }
 
 import './svgExportMocks.ts'
+
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()

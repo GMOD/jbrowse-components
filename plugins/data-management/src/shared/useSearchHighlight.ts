@@ -1,6 +1,8 @@
-import { type RefObject, useLayoutEffect } from 'react'
+import { useLayoutEffect } from 'react'
 
 import { alpha, useTheme } from '@mui/material'
+
+import type { RefObject } from 'react'
 
 const styleElements = new Map<string, HTMLStyleElement>()
 

@@ -1,12 +1,12 @@
 import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
   SyntenyPickResult,
   SyntenyRenderState,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 // Subset of CanvasRenderingContext2D the draw + pick paths need. SvgCanvas
 // (packages/core/src/util/SvgCanvas.ts) satisfies this for SVG export.

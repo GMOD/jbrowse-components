@@ -7,14 +7,14 @@ import {
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
+import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 import { drawLDBlocks } from './components/Canvas2DLDRenderer.ts'
 import LDSVGColorLegend from './components/LDSVGColorLegend.tsx'
 import LinesConnectingMatrixToGenomicPosition from './components/LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './components/VariantLabels.tsx'
 import Wrapper from './components/Wrapper.tsx'
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
-import RecombinationTrack from '../shared/components/RecombinationTrack.tsx'
-import RecombinationYScaleBar from '../shared/components/RecombinationYScaleBar.tsx'
 
 import type { SharedLDModel } from './shared.ts'
 import type {

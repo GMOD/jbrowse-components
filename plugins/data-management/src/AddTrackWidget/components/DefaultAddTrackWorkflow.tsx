@@ -13,10 +13,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { BULK_WORKFLOW } from '../workflowNames.ts'
 import ConfirmTrack from './ConfirmTrack.tsx'
 import TrackSourceSelect from './TrackSourceSelect.tsx'
 import { doSubmit } from './doSubmit.ts'
-import { BULK_WORKFLOW } from '../workflowNames.ts'
 
 import type { AddTrackModel } from '../model.ts'
 

@@ -26,8 +26,39 @@
     "unicorn/no-empty-file": "off",
     "unicorn/no-useless-spread": "off",
     "oxc/erasing-op": "off",
-    "eslint/no-unsafe-optional-chaining": "off"
+    "eslint/no-unsafe-optional-chaining": "off",
+    "react/rules-of-hooks": "error",
+    "typescript/no-unnecessary-condition": "error",
+    "typescript/switch-exhaustiveness-check": [
+      "error",
+      { "considerDefaultExhaustiveForUnions": true }
+    ],
+    "typescript/require-array-sort-compare": "off",
+    "typescript/consistent-type-imports": "error",
+    "typescript/consistent-type-exports": "error",
+    "typescript/restrict-template-expressions": "off",
+    "typescript/no-base-to-string": "off",
+    "typescript/unbound-method": "off",
+    "typescript/no-misused-promises": "off",
+    "typescript/no-unsafe-member-access": "off",
+    "typescript/no-unsafe-argument": "off",
+    "typescript/no-unsafe-assignment": "off",
+    "typescript/no-unsafe-call": "off",
+    "typescript/no-unsafe-return": "off",
+    "typescript/restrict-plus-operands": "off",
+    "typescript/require-await": "off",
+    "typescript/prefer-nullish-coalescing": "off",
+    "typescript/no-unnecessary-type-parameters": "off",
+    "typescript/no-unnecessary-type-conversion": "off"
   },
+  "overrides": [
+    {
+      "files": ["packages/sv-core/src/**/*.{ts,tsx}"],
+      "rules": {
+        "typescript/strict-boolean-expressions": "error"
+      }
+    }
+  ],
   "ignorePatterns": [
     "**/build",
     "**/dist*",

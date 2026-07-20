@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import {
@@ -14,6 +12,7 @@ import {
 import { observer } from 'mobx-react'
 
 import type { JobModel } from '../jobModel.ts'
+import type { ReactNode } from 'react'
 
 const useStyles = makeStyles()(theme => ({
   expandIcon: {

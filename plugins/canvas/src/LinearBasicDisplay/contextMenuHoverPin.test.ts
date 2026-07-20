@@ -1,8 +1,8 @@
-import { createTestEnvironment } from './testEnv.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 function regionData() {
   const features = Array.from({ length: 4 }, (_, i) => ({

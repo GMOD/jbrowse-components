@@ -1,10 +1,10 @@
 import { autorun } from 'mobx'
 
-import { createTestEnvironment } from './testEnv.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 // Reference identity, not a spy: a reused index IS the same object, a rebuilt one
 // is a fresh Flatbush. Exact, and no mocking needed.

@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react'
-
 import { coarseStripHTML, max, measureText, sum } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 
@@ -12,6 +10,7 @@ import {
 import type { TrackLabelMode } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { ReactNode } from 'react'
 
 // Just the per-track heights that the vertical-layout math needs; every track
 // shape fed into these helpers (including SvgDisplayResult.track) satisfies it.

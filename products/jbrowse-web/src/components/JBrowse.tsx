@@ -5,9 +5,9 @@ import { onSnapshot } from '@jbrowse/mobx-state-tree'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { readQueryParams, setQueryParams } from '../useQueryParam.ts'
 import FileHandleRestoreBanner from './FileHandleRestoreBanner.tsx'
 import ShareButton from './ShareButton.tsx'
-import { readQueryParams, setQueryParams } from '../useQueryParam.ts'
 
 import type { WebSessionModel } from '../sessionModel/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

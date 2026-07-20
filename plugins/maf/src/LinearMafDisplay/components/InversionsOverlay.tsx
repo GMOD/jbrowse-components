@@ -1,8 +1,8 @@
 import { colorLongreadInv } from '@jbrowse/core/ui/theme'
 import { observer } from 'mobx-react'
 
-import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawInversions } from '../../LinearMafRenderer/rendering/inversions.ts'
+import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { InversionMarker } from './computeVisibleInversions.ts'
 

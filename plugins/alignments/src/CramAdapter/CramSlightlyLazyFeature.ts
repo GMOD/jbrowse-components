@@ -8,11 +8,11 @@ import {
   numericCigarToString,
 } from '@jbrowse/cigar-utils'
 
-import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
-import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import { getPairOrientation } from '../shared/pairOrientation.ts'
 import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
+import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
+import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 
 import type CramAdapter from './CramAdapter.ts'
 import type { CramRecord } from '@gmod/cram'

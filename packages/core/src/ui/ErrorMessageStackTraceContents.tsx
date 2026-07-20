@@ -1,7 +1,7 @@
 import { Typography, alpha } from '@mui/material'
 
-import ExternalLink from './ExternalLink.tsx'
 import { makeStyles } from '../util/tss-react/index.ts'
+import ExternalLink from './ExternalLink.tsx'
 
 const EMAIL = 'jbrowse2@berkeley.edu'
 

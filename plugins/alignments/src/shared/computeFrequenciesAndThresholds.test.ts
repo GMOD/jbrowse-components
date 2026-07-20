@@ -1,8 +1,8 @@
+import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 import {
   applyDepthDependentThreshold,
   computePositionFrequencies,
 } from './computeFrequenciesAndThresholds.ts'
-import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 
 describe('computePositionFrequencies (interbase depth)', () => {
   it('uses max of left and right depth for interbase features', () => {

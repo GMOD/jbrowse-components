@@ -7,7 +7,6 @@ import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 
-import type { ParentViewDuck } from './parentViewDuck.ts'
 import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type {
   SyntenyRenderState,
@@ -15,6 +14,7 @@ import type {
   SyntenyTrackRenderParams,
 } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
+import type { ParentViewDuck } from './parentViewDuck.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

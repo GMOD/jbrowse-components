@@ -10,10 +10,10 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 import { Accordion, AccordionSummary, Button, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 import InstalledPluginsList from './InstalledPluginsList.tsx'
 import PluginCard from './PluginCard.tsx'
 import { useFetchPlugins } from './util.ts'
-import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 
 import type { PluginStoreModel } from '../model.ts'
 

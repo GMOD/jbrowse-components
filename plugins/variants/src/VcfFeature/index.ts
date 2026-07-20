@@ -1,9 +1,10 @@
-import { type Feature, max } from '@jbrowse/core/util'
+import { max } from '@jbrowse/core/util'
 
 import { getSOTermAndDescription, parseFiniteNumber } from './util.ts'
 
 import type VCFParser from '@gmod/vcf'
 import type { GenotypeCallback, Variant } from '@gmod/vcf'
+import type { Feature } from '@jbrowse/core/util'
 
 type FeatureData = ReturnType<typeof dataFromVariant>
 

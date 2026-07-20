@@ -15,12 +15,12 @@ import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { waitFor } from '@testing-library/react'
 
+import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
+import { BaseLinearDisplayComponent } from '../index.ts'
 import { getTrackOrderSubMenu } from './components/trackLabelMenuItems.ts'
 import hg38Regions from './hg38DisplayedRegions.json' with { type: 'json' }
 import { stateModelFactory } from './index.ts'
 import volvoxDisplayedRegions from './volvoxDisplayedRegions.json' with { type: 'json' }
-import TrackHeightMixin from '../BaseLinearDisplay/models/TrackHeightMixin.tsx'
-import { BaseLinearDisplayComponent } from '../index.ts'
 
 import type { LinearGenomeViewModel } from './index.ts'
 import type { InitState } from './types.ts'

@@ -1,11 +1,11 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
+import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 import {
   makeFeatureColorResolver,
   packMultiRowFeatures,
 } from './packMultiRowFeatures.ts'
-import { FEATURE_DEFAULT_COLOR } from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

@@ -1,9 +1,9 @@
 import { spawn } from 'child_process'
 import { createRequire } from 'module'
 
-import desktopConfig from './config.ts'
 import configFactory from '../../../webpack/config/webpack.config.ts'
 import startServer from '../../../webpack/scripts/start.ts'
+import desktopConfig from './config.ts'
 
 const url = await startServer(desktopConfig(configFactory()))
 

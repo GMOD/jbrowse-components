@@ -1,10 +1,10 @@
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
 
+import { makeStyles } from '../util/tss-react/index.ts'
 import RedErrorMessageBox from './RedErrorMessageBox.tsx'
 import StackTraceButton from './StackTraceButton.tsx'
 import { parseError } from './parseError.ts'
-import { makeStyles } from '../util/tss-react/index.ts'
 
 const useStyles = makeStyles()(theme => ({
   bg: {

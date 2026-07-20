@@ -8,11 +8,11 @@ import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { Divider, ToggleButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 import ColorBySelector from './ColorBySelector.tsx'
 import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
 import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
-import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 

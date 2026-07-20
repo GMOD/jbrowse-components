@@ -1,7 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 
-import { executeRenderHicData } from './executeRenderHicData.ts'
 import { findContactAt } from '../LinearHicDisplay/contactLookup.ts'
+import { executeRenderHicData } from './executeRenderHicData.ts'
 
 import type { HicDataResult } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

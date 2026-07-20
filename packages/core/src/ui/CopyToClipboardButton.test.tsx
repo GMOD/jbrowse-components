@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render } from '@testing-library/react'
 
-import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 import copy from '../util/copyToClipboard.ts'
+import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 
 jest.mock('../util/copyToClipboard.ts', () => ({
   __esModule: true,

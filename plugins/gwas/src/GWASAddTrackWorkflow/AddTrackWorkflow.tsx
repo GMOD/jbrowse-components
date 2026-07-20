@@ -13,10 +13,10 @@ import { getRoot } from '@jbrowse/mobx-state-tree'
 import { Button, Divider, Paper, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { isTabixLocation, needsExplicitIndex } from './ldAdapterConfig.ts'
-import { buildGwasTrackConfig, canSubmit } from './util.ts'
 import ScoreColumnFields from '../GWASAdapter/ScoreColumnFields.tsx'
 import { DEFAULT_SCORE_COLUMN } from '../GWASAdapter/configSchema.ts'
+import { isTabixLocation, needsExplicitIndex } from './ldAdapterConfig.ts'
+import { buildGwasTrackConfig, canSubmit } from './util.ts'
 
 import type { AbstractRootModel } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'

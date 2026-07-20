@@ -1,5 +1,4 @@
 import { useImperativeHandle, useState } from 'react'
-import type { Ref } from 'react'
 
 import { observer } from 'mobx-react'
 
@@ -9,6 +8,7 @@ import createViewState from '../createViewState.ts'
 import type { ViewModel } from '../createModel/createModel.ts'
 import type { CreateViewStateBaseOptions } from '../createViewState.ts'
 import type { InitState } from '@jbrowse/plugin-linear-genome-view'
+import type { Ref } from 'react'
 
 export interface LinearGenomeViewProps extends CreateViewStateBaseOptions {
   // declarative description of the initial view: optional loc, tracks to show,

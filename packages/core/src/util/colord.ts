@@ -1,6 +1,6 @@
 import {
-  alpha as cbAlpha,
   blend,
+  alpha as cbAlpha,
   formatHEX,
   formatHEXA,
   getAlpha,

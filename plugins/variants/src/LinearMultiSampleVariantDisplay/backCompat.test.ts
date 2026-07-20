@@ -1,7 +1,7 @@
-import multiSampleConfigFactory from './configSchema.ts'
-import multiSampleStateModelFactory from './model.ts'
 import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
 import matrixStateModelFactory from '../LinearMultiSampleVariantMatrixDisplay/model.ts'
+import multiSampleConfigFactory from './configSchema.ts'
+import multiSampleStateModelFactory from './model.ts'
 
 // These displays were renamed (MultiLinearVariantDisplay ->
 // LinearMultiSampleVariantDisplay, LinearVariantMatrixDisplay ->

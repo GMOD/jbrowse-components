@@ -2,20 +2,20 @@ import { useMemo } from 'react'
 
 import CloseIcon from '@mui/icons-material/Close'
 import {
-  Dialog as MUIDialog,
   DialogTitle,
   Divider,
   IconButton,
+  Dialog as MUIDialog,
   ScopedCssBaseline,
   ThemeProvider,
   createTheme,
   useTheme,
 } from '@mui/material'
 
+import { makeStyles } from '../util/tss-react/index.ts'
 import ErrorBanner from './ErrorBanner.tsx'
 import { ErrorBoundary } from './ErrorBoundary.tsx'
 import SanitizedHTML from './SanitizedHTML.tsx'
-import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { DialogProps } from '@mui/material'
 

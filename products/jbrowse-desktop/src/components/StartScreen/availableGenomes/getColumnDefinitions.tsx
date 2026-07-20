@@ -3,8 +3,8 @@ import Close from '@mui/icons-material/Close'
 import { Tooltip } from '@mui/material'
 import { green, red } from '@mui/material/colors'
 
-import GenomeNameCell from './GenomeNameCell.tsx'
 import StarIcon from '../StarIcon.tsx'
+import GenomeNameCell from './GenomeNameCell.tsx'
 
 import type { LaunchCallback } from '../types.ts'
 

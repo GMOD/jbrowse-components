@@ -1,9 +1,9 @@
+import { readSessionFromDynamo } from './sessionSharing.ts'
+
 jest.mock('./crypto.ts', () => ({
   aesDecrypt: jest.fn().mockResolvedValue('decrypted-session-data'),
   aesEncrypt: jest.fn().mockResolvedValue('encrypted-data'),
 }))
-
-import { readSessionFromDynamo } from './sessionSharing.ts'
 
 describe('readSessionFromDynamo', () => {
   describe('sessionId extraction', () => {

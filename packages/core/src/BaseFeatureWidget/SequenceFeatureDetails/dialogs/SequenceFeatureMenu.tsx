@@ -1,5 +1,4 @@
 import { lazy, useState } from 'react'
-import type { RefObject } from 'react'
 
 import MoreVert from '@mui/icons-material/MoreVert'
 import Settings from '@mui/icons-material/Settings'
@@ -18,6 +17,7 @@ import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
 } from '../model.ts'
+import type { RefObject } from 'react'
 
 // lazies
 const SequenceFeatureSettingsDialog = lazy(() => import('./SettingsDialog.tsx'))

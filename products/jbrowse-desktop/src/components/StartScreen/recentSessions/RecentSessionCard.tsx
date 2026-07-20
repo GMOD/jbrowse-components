@@ -14,10 +14,10 @@ import {
   Typography,
 } from '@mui/material'
 
+import StarIcon from '../StarIcon.tsx'
 import { defaultSessionScreenshot } from './defaultSessionScreenshot.ts'
 import { formatLastModified } from './formatLastModified.ts'
 import { sessionMenuItems } from './sessionMenuItems.ts'
-import StarIcon from '../StarIcon.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 

@@ -1,9 +1,8 @@
-import type React from 'react'
-
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
+import type React from 'react'
 
 const SvgVariantOverlay = ({
   id,

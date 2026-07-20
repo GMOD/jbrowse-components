@@ -2,8 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
 
-import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 import { DEFAULT_MANHATTAN_COLOR } from '../ManhattanRPC/rpcTypes.ts'
+import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
 // Reuses LinearWiggleDisplay's schema, but overrides `color`: wiggle's is the
 // single-color fallback for when `useBicolor` is off. Manhattan is always

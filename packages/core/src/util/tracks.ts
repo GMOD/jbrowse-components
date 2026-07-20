@@ -6,22 +6,22 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
 
+import { isConfigurationSlot, readConfObject } from '../configuration/index.ts'
 import {
   getFileHandle,
   storeFileHandle,
   verifyPermission,
 } from './fileHandleStore.ts'
 import { getEnv, getSession, objectHash } from './mstUtils.ts'
-import { isConfigurationSlot, readConfObject } from '../configuration/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   BlobLocation,
   FileHandleLocation,
   FileLocation,
   PreFileLocation,
 } from './types/index.ts'
-import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   IAnyStateTreeNode,
   IAnyType,

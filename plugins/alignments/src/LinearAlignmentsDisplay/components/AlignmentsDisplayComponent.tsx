@@ -12,8 +12,8 @@ import {
 import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import PileupBody from './PileupComponent.tsx'
 import { AlignmentsRenderer } from '../renderers/AlignmentsRenderer.ts'
+import PileupBody from './PileupComponent.tsx'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

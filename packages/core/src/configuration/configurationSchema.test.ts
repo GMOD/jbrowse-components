@@ -5,12 +5,12 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 
-import { getConf, readConfObject } from './index.ts'
 import PluginManager from '../PluginManager.ts'
 import {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
+import { getConf, readConfObject } from './index.ts'
 import { isConfigurationModel } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()

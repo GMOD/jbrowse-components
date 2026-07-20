@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 
-import { INDEX_GLYPH_SCALE } from './Canvas2DManhattanRenderer.ts'
 import {
   GLYPH_INDEX,
   GLYPH_INSERTION,
   GLYPH_POINT,
 } from '../ManhattanRPC/rpcTypes.ts'
+import { INDEX_GLYPH_SCALE } from './Canvas2DManhattanRenderer.ts'
 
 // The GPU path duplicates two things the Canvas2D/SVG path also encodes: the
 // glyph id numbering (rpcTypes) and the index-SNP size bump (Canvas2D). Both

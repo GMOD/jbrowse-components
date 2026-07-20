@@ -16,8 +16,8 @@ import { useGenomesTableState } from './useGenomesTableState.ts'
 import { useSearchHighlight } from './useSearchHighlight.ts'
 import useTaxonomyClades from './useTaxonomyClades.ts'
 
-import type { Entry } from './getColumnDefinitions.tsx'
 import type { Fav, LaunchCallback } from '../types.ts'
+import type { Entry } from './getColumnDefinitions.tsx'
 
 const useStyles = makeStyles()({
   panel: {

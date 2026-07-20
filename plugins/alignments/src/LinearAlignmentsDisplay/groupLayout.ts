@@ -1,18 +1,18 @@
 import {
+  buildLaidOutPileupMap,
+  pileupLayoutMaxY,
+} from '../RenderAlignmentDataRPC/sortLayout.ts'
+import {
   attachLinkedReadLines,
   buildLaidOutChainMap,
   chainLayoutMaxY,
 } from './computeChainLayout.ts'
 import { overlayReadTagColors } from './readTagColors.ts'
-import {
-  buildLaidOutPileupMap,
-  pileupLayoutMaxY,
-} from '../RenderAlignmentDataRPC/sortLayout.ts'
 
-import type { GroupId } from './groupedDataMaps.ts'
 import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
+import type { GroupId } from './groupedDataMaps.ts'
 
 // Per group key: region index → laid-out data (Y arrays filled).
 export type LaidOutByGroup = Map<string, Map<number, PileupDataResult>>

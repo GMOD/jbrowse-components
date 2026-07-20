@@ -8,15 +8,15 @@ import {
   isDataCurrent,
 } from '@jbrowse/synteny-core'
 
-import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import { computePresentCigarKinds } from '../LinearSyntenyRPC/presentCigarKinds.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { syntenyFetchRegions } from '../LinearSyntenyRPC/syntenyFetchWindow.ts'
 import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
+import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 
-import type { ClickCoord } from './components/util.ts'
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { ClickCoord } from './components/util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { CigarOpMask, SyntenyColorBy } from '@jbrowse/synteny-core'

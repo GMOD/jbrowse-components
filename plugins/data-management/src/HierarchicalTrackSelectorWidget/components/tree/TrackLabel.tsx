@@ -3,10 +3,10 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { isUnsupported } from '../../util.ts'
 import CheckboxLite from './CheckboxLite.tsx'
 import OverrideBadge from './OverrideBadge.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
-import { isUnsupported } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { TreeTrackNode } from '../../types.ts'

@@ -15,8 +15,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import { Button, CircularProgress, Container, Grid } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { recentLocationsMenu } from './recentLocationsMenu.ts'
 import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
+import { recentLocationsMenu } from './recentLocationsMenu.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 

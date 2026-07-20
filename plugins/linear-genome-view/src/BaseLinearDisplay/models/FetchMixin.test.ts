@@ -3,12 +3,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import FetchMixin from './FetchMixin.ts'
 
+import type { FetchContext } from './FetchMixin.ts'
+
 // FetchMixin logs console.error on non-abort failures; silence it here since
 // error-path tests deliberately trigger these
 beforeEach(() => jest.spyOn(console, 'error').mockImplementation(() => {}))
 afterEach(() => jest.restoreAllMocks())
-
-import type { FetchContext } from './FetchMixin.ts'
 
 const TestModel = types.compose('Test', FetchMixin(), types.model({}))
 

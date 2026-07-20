@@ -1,7 +1,7 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import rpcConfigSchema from './configSchema.ts'
 import { readConfObject } from '../configuration/index.ts'
+import rpcConfigSchema from './configSchema.ts'
 
 test('defaults strip to an empty snapshot', () => {
   expect(getSnapshot(rpcConfigSchema.create({}))).toEqual({})

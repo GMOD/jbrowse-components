@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+
 import {
-  createViewState,
   JBrowseCircularGenomeView,
+  createViewState,
 } from '@jbrowse/react-circular-genome-view2'
 
 import assembly from './assembly'

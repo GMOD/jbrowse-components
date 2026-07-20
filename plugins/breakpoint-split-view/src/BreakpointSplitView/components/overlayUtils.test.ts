@@ -1,3 +1,4 @@
+import { makeOffscreenLayout } from '../util.ts'
 import {
   buildBreakpointPath,
   buildSimplePath,
@@ -5,7 +6,6 @@ import {
   resolvedPairs,
   strandToSign,
 } from './overlayUtils.tsx'
-import { makeOffscreenLayout } from '../util.ts'
 
 import type { LayoutMatch, LayoutRecord, OverlayLevel } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'

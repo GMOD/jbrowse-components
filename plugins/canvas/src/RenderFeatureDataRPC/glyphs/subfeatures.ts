@@ -1,7 +1,7 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
+import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { findGlyph } from './findGlyph.ts'
 import { hasCodingSubfeature } from './glyphUtils.ts'
-import { featureType, getSubfeatures, isCDS } from '../util.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'

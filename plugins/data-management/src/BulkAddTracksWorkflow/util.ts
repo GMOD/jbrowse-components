@@ -12,8 +12,8 @@ import {
   isRelativeUrl,
 } from '../AddTrackWidget/urlWarnings.ts'
 
-import type { TrackConfRow } from './buildConfigs.ts'
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
+import type { TrackConfRow } from './buildConfigs.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export type InputMode = 'remote' | 'local'

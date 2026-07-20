@@ -1,7 +1,7 @@
 import { createContext, use } from 'react'
 
-import type { DockviewSessionType } from './types.ts'
 import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
+import type { DockviewSessionType } from './types.ts'
 import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
 
 export interface DockviewContextValue {

@@ -2,18 +2,14 @@ import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
 import {
-  MAX_VISIBLE_CHEVRONS_PER_LINE,
-  canvasEdgeFlags,
-} from './sharedRendererConstants.ts'
-import {
-  ARROW_PASS as PASS_ARROW,
   ArrowPass,
-  CHEVRON_PASS as PASS_CHEVRON,
-  CONTINUATION_PASS as PASS_CONTINUATION,
   ContinuationPass,
   FEATURE_GLYPH_UNIFORM_BYTE_SIZE,
-  LINE_PASS as PASS_LINE,
   LinePass,
+  ARROW_PASS as PASS_ARROW,
+  CHEVRON_PASS as PASS_CHEVRON,
+  CONTINUATION_PASS as PASS_CONTINUATION,
+  LINE_PASS as PASS_LINE,
   RECT_PASS as PASS_RECT,
   RectPass,
   makeChevronPass,
@@ -23,12 +19,16 @@ import {
   packRects,
   rectShader,
 } from '../passes/index.ts'
+import {
+  MAX_VISIBLE_CHEVRONS_PER_LINE,
+  canvasEdgeFlags,
+} from './sharedRendererConstants.ts'
 
+import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type {
   FeatureRenderBlock,
   RenderState,
 } from './canvasFeatureRenderingBackendTypes.ts'
-import type { RegionRenderData } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 

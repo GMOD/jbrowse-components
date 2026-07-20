@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+
 /**
  * #config FromConfigSequenceAdapter
  * supplies reference sequence inline in the config; each feature's `seq` holds

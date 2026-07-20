@@ -1,15 +1,15 @@
-import {
-  computeLaidOutData,
-  createIncrementalLayout,
-  maxBottom,
-  scaleLaidOutData,
-} from './layout.ts'
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import { ROW_PADDING } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
   makeFeatureData as makeBaseFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import {
+  computeLaidOutData,
+  createIncrementalLayout,
+  maxBottom,
+  scaleLaidOutData,
+} from './layout.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 

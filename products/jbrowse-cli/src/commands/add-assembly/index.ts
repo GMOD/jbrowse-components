@@ -1,6 +1,10 @@
 import path from 'node:path'
 import { parseArgs } from 'node:util'
 
+import { debug, printHelp, requirePositional } from '../../utils.ts'
+import { loadFiles } from '../add-track-utils/file-operations.ts'
+import { validateLoadOption } from '../add-track-utils/validators.ts'
+import { saveConfigAndReport } from '../shared/config-operations.ts'
 import {
   addAssemblyToConfig,
   enhanceAssembly,
@@ -10,10 +14,6 @@ import {
   resolveTargetPath,
   validateSequenceType,
 } from './utils.ts'
-import { debug, printHelp, requirePositional } from '../../utils.ts'
-import { loadFiles } from '../add-track-utils/file-operations.ts'
-import { validateLoadOption } from '../add-track-utils/validators.ts'
-import { saveConfigAndReport } from '../shared/config-operations.ts'
 
 export async function run(args?: string[]) {
   const options = {

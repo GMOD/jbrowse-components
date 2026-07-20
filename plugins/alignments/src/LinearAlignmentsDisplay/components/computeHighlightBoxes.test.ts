@@ -1,7 +1,7 @@
 import { computeHighlightBoxes } from './computeHighlightBoxes.ts'
 
-import type { HighlightSection } from './computeHighlightBoxes.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { HighlightSection } from './computeHighlightBoxes.ts'
 
 // computeHighlightBoxes only reads readPositions/readYs off the rpc data.
 const rpcData = {

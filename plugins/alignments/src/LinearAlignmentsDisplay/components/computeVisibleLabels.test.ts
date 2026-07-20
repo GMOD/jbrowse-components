@@ -1,5 +1,5 @@
-import { computeVisibleLabels } from './computeVisibleLabels.ts'
 import { INTERBASE_INSERTION, INTERBASE_SOFTCLIP } from '../../shared/types.ts'
+import { computeVisibleLabels } from './computeVisibleLabels.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 

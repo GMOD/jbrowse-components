@@ -3,11 +3,11 @@ import { useRef } from 'react'
 import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { Dialog } from '../../../ui/index.ts'
+import { makeStyles } from '../../../util/tss-react/index.ts'
 import SequenceBody from '../SequenceBody.tsx'
 import SequenceFeatureMenu from './SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './SequenceTypeSelector.tsx'
-import { Dialog } from '../../../ui/index.ts'
-import { makeStyles } from '../../../util/tss-react/index.ts'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type { ErrorState, SeqState } from '../../util.tsx'

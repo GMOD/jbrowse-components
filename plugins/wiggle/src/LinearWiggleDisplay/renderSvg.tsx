@@ -1,6 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import type React from 'react'
-
 import { getContainingView } from '@jbrowse/core/util'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -24,6 +22,7 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 type LGV = LinearGenomeViewModel
 

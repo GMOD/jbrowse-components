@@ -5,8 +5,8 @@
 
 import { useTheme } from '@mui/material'
 
-import { exportMargin } from './constants.ts'
 import { stripAlpha } from '../util/index.ts'
+import { exportMargin } from './constants.ts'
 
 // Full-bleed background rect. `width`/`height` are the *total* SVG dimensions.
 export function SVGBackground({

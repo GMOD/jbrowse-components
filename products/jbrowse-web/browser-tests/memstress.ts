@@ -16,7 +16,9 @@ import {
   createTestServer,
   encodeSessionSpec,
 } from '@jbrowse/browser-test-utils'
-import puppeteer, { type CDPSession, type Page } from 'puppeteer'
+import puppeteer from 'puppeteer'
+
+import type { CDPSession, Page } from 'puppeteer'
 
 const repoRoot = '/home/cdiesh/src/jbrowse-components2'
 const jbrowseWebRoot = `${repoRoot}/products/jbrowse-web`

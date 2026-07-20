@@ -3,8 +3,8 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { rowBandGeometry } from './visibleRegionGeometry.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
+import { rowBandGeometry } from './visibleRegionGeometry.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { RowIdentityMode } from '../rowIdentityModes.ts'

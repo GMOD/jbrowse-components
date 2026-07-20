@@ -1,6 +1,7 @@
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
 import { createRoot } from 'react-dom/client'
+
 import '@fontsource/roboto'
 import 'dockview-react/dist/styles/dockview.css'
 

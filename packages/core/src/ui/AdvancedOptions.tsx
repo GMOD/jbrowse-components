@@ -1,8 +1,8 @@
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import FileSelector from './FileSelector/FileSelector.tsx'
 import { makeSetField } from '../util/assemblyConfigUtils.ts'
+import FileSelector from './FileSelector/FileSelector.tsx'
 
 import type { FormState } from '../util/assemblyConfigUtils.ts'
 

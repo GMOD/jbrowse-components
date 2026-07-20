@@ -19,7 +19,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { fetchTrackData } from './fetchTrackData.ts'
 import {
   CopyToClipboardButton,
   Dialog,
@@ -27,6 +26,7 @@ import {
 } from '../../../ui/index.ts'
 import { getContainingView, saveAs, useFetch } from '../../../util/index.ts'
 import { makeStyles } from '../../../util/tss-react/index.ts'
+import { fetchTrackData } from './fetchTrackData.ts'
 
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'

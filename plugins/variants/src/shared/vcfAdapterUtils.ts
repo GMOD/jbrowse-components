@@ -1,8 +1,8 @@
 import { downloadStatus, fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import { parseSamplesTsv } from './parseSamplesTsv.ts'
 import VcfFeature from '../VcfFeature/index.ts'
+import { parseSamplesTsv } from './parseSamplesTsv.ts'
 
 import type { TabixIndexedFile } from '@gmod/tabix'
 import type VcfParser from '@gmod/vcf'

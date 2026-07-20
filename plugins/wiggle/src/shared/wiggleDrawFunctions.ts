@@ -2,13 +2,13 @@ import { setAbgrFill } from '@jbrowse/core/util/colorBits'
 import { bpToScreenPx, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
 import { appendPointMarker } from '@jbrowse/wiggle-core'
 
-import { makeDensityRgbStringFn } from './getDensityColor.ts'
-import { SCALE_TYPE_LOG } from './wiggleComponentUtils.ts'
 import {
   WIGGLE_FUDGE_FACTOR,
   WIGGLE_MIN_PX,
   makeScoreNormalizer,
 } from '../util.ts'
+import { makeDensityRgbStringFn } from './getDensityColor.ts'
+import { SCALE_TYPE_LOG } from './wiggleComponentUtils.ts'
 
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'

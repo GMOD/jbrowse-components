@@ -1,10 +1,10 @@
 import { drawMismatches } from './drawCanvas.ts'
 
-import type { MismatchUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { MismatchUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Records the fillStyle in effect at each fillRect, so we can read back the

@@ -12,7 +12,6 @@
 //      orientation is '-', so most ribbons run untwisted
 //   5. reorder q-chroms by tile-dominant target-chr (greedy left-to-right)
 //   6. paint ribbons by target chromosome (chromosome painting)
-
 import { spawn } from 'child_process'
 import fs from 'fs'
 import readline from 'readline'

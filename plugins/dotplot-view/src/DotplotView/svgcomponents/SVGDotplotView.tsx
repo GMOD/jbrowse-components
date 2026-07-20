@@ -5,9 +5,9 @@ import { getEnv, getSession } from '@jbrowse/core/util'
 import { coerceColorBy } from '@jbrowse/synteny-core'
 import { when } from 'mobx'
 
-import { SVGColorByLegend } from './SVGColorByLegend.tsx'
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
+import { SVGColorByLegend } from './SVGColorByLegend.tsx'
 
 import type { DotplotViewModel, ExportSvgOptions } from '../model.ts'
 

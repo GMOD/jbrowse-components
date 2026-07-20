@@ -1,6 +1,5 @@
 import { updateStatus } from '@jbrowse/core/util'
 
-import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 import { buildGapArrays } from '../features/gap/buildArrays.ts'
 import { buildMismatchArrays } from '../features/mismatch/buildArrays.ts'
 import { buildModificationArrays } from '../features/modification/buildArrays.ts'
@@ -8,7 +7,10 @@ import { buildPerBaseLetterArrays } from '../features/perBaseLetter/buildArrays.
 import { buildPerBaseQualityArrays } from '../features/perBaseQuality/buildArrays.ts'
 import { buildSegmentArrays } from '../features/read/buildSegments.ts'
 import { buildSoftclipBaseArrays } from '../features/softclip/buildArrays.ts'
+import { buildInterbaseArrays } from './buildInterbaseArrays.ts'
 
+import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
+import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type {
   FeatureData,
   GapData,
@@ -18,8 +20,6 @@ import type {
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
-import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
-import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 /**

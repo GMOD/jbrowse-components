@@ -1,5 +1,5 @@
-import { ExternalTokenEntryForm } from './ExternalTokenEntryForm.tsx'
 import { tokenEntryModelFactory } from '../tokenEntryModelFactory.ts'
+import { ExternalTokenEntryForm } from './ExternalTokenEntryForm.tsx'
 
 import type { ExternalTokenInternetAccountConfigModel } from './configSchema.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'

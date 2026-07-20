@@ -1,6 +1,5 @@
 import React from 'react'
 
-export { unzip } from '@gmod/bgzf-filehandle'
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
 import { flushSync } from 'react-dom'
@@ -15,6 +14,8 @@ import { isUriLocation } from './types/index.ts'
 
 import type { FileLocation } from './types/index.ts'
 import type { GridRowId, GridRowSelectionModel } from '@mui/x-data-grid'
+
+export { unzip } from '@gmod/bgzf-filehandle'
 
 export * from './stringUtils.ts'
 export * from './svgColorProps.ts'

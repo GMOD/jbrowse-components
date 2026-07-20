@@ -6,8 +6,8 @@ import { destroy } from '@jbrowse/mobx-state-tree'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import FacetedSelector from './FacetedSelector.tsx'
 import { facetedStateTreeF } from '../facetedModel.ts'
+import FacetedSelector from './FacetedSelector.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'

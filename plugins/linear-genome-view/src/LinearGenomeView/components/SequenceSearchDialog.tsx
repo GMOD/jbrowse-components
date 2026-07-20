@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import type { ComponentType } from 'react'
 
 import { Dialog, PluggableComponent } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
@@ -12,6 +11,7 @@ import MotifListPanel from './MotifListPanel.tsx'
 import SequencePatternPanel from './SequencePatternPanel.tsx'
 
 import type { SequenceSearchModeProps } from './searchModes.ts'
+import type { ComponentType } from 'react'
 
 const useStyles = makeStyles()({
   modeBar: {

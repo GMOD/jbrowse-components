@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
-import type { DragEvent, KeyboardEvent, ReactNode } from 'react'
 
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { Typography, alpha } from '@mui/material'
 
 import { makeStyles } from '../util/tss-react/index.ts'
+
+import type { DragEvent, KeyboardEvent, ReactNode } from 'react'
 
 // map of MIME type -> allowed file extensions, e.g. { 'application/json':
 // ['.json'] }. Mirrors the react-dropzone shape we used to depend on.

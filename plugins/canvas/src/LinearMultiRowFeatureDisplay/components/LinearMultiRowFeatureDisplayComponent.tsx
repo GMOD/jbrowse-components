@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import {
@@ -9,12 +7,13 @@ import {
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
+import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
 import MultiRowColorLegend from './MultiRowColorLegend.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
-import { MultiRowRendererFactory } from '../rendering/MultiRowRendererFactory.ts'
 
 import type { LinearMultiRowFeatureDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 const MultiRowCanvas = observer(function MultiRowCanvas({
   model,

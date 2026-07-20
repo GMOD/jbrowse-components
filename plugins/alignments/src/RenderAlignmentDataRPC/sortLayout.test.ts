@@ -1,12 +1,12 @@
+import { INTERBASE_SOFTCLIP } from '../shared/types.ts'
 import {
   computeLayout,
   computeMultiRegionLayout,
   computeSortedLayout,
 } from './sortLayout.ts'
-import { INTERBASE_SOFTCLIP } from '../shared/types.ts'
 
-import type { PileupDataResult } from './types.ts'
 import type { SortedBy } from '../shared/types.ts'
+import type { PileupDataResult } from './types.ts'
 
 interface Read {
   start: number

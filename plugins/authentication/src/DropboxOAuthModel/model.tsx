@@ -1,10 +1,10 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import DropboxIcon from './DropboxIcon.tsx'
-import { getDescriptiveErrorMessage } from './util.ts'
 import { configSchema as OAuthConfigSchema } from '../OAuthModel/index.ts'
 import baseModel from '../OAuthModel/model.tsx'
+import DropboxIcon from './DropboxIcon.tsx'
+import { getDescriptiveErrorMessage } from './util.ts'
 
 import type { DropboxOAuthInternetAccountConfigModel } from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util/types'

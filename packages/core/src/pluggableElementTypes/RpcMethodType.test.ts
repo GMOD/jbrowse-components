@@ -1,6 +1,6 @@
 import PluginManager from '../PluginManager.ts'
-import RpcMethodType, { convertFileHandleLocations } from './RpcMethodType.ts'
 import { clearFileFromCache, setFileInCache } from '../util/tracks.ts'
+import RpcMethodType, { convertFileHandleLocations } from './RpcMethodType.ts'
 
 const pluginManager = new PluginManager()
 

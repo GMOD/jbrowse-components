@@ -14,15 +14,6 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
-import {
-  conservationTicks,
-  drawCodonConservation,
-  drawConservation,
-} from './components/drawConservation.ts'
-import { drawMafCoverage } from './components/drawMafCoverage.ts'
-import { drawRowIdentity } from './components/drawRowIdentity.ts'
-import { drawSourceChrom } from './components/drawSourceChrom.ts'
-import { YSCALE_AXIS_X } from './components/yScaleAxis.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
@@ -38,6 +29,15 @@ import {
   getFrameColors,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
+import {
+  conservationTicks,
+  drawCodonConservation,
+  drawConservation,
+} from './components/drawConservation.ts'
+import { drawMafCoverage } from './components/drawMafCoverage.ts'
+import { drawRowIdentity } from './components/drawRowIdentity.ts'
+import { drawSourceChrom } from './components/drawSourceChrom.ts'
+import { YSCALE_AXIS_X } from './components/yScaleAxis.ts'
 
 import type { LinearMafDisplayModel } from './stateModel.ts'
 import type {

@@ -3,7 +3,6 @@
 // the synteny canvas after init/diagonalization completes. Used by the verify
 // skill to confirm autoDiagonalize / colorBy=query / minAlignmentLength wiring
 // is hit on first load.
-
 import http from 'http'
 import path from 'path'
 import { fileURLToPath } from 'url'

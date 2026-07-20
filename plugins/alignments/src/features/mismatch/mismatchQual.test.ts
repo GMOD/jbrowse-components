@@ -1,9 +1,9 @@
+import * as mismatchShader from '../../LinearAlignmentsDisplay/shaders/slang/mismatch.generated.ts'
 import { buildMismatchArrays } from './buildArrays.ts'
 import { packMismatches } from './packGpu.ts'
-import * as mismatchShader from '../../LinearAlignmentsDisplay/shaders/slang/mismatch.generated.ts'
 
-import type { MismatchUploadData } from './types.ts'
 import type { MismatchData } from '../../shared/webglRpcTypes.ts'
+import type { MismatchUploadData } from './types.ts'
 
 function mm(position: number, qual: number): MismatchData {
   return { readIndex: 0, position, base: 65, strand: 1, qual }

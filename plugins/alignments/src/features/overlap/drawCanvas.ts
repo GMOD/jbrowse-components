@@ -9,11 +9,11 @@ import {
   OVERLAP_ALPHA,
 } from '../../LinearAlignmentsDisplay/shaders/slang/overlap.iface.generated.ts'
 
-import type { OverlapsUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { OverlapsUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 // Mild dark tint at full strength; the px-width fade scales it down for narrow

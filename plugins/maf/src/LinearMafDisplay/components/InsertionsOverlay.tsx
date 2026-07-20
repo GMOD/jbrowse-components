@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react'
 
-import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawMafInsertions } from '../../LinearMafRenderer/rendering/insertions.ts'
+import OverlayCanvas from './OverlayCanvas.tsx'
 
-import type { InsertionMarker } from './computeVisibleInsertions.ts'
 import type { MafColorPalette } from '../../LinearMafRenderer/util.ts'
+import type { InsertionMarker } from './computeVisibleInsertions.ts'
 
 const InsertionsOverlay = observer(function InsertionsOverlay({
   markers,

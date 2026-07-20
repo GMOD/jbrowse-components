@@ -5,6 +5,8 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
+import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 import {
   LINKED_READ_COLOR_PAIR_RR,
   LINKED_READ_COLOR_SPLIT_INV,
@@ -13,8 +15,6 @@ import {
   computePileupBezierArcs,
   enumerateBezierPairs,
 } from './computeOverlay.ts'
-import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 

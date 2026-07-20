@@ -5,6 +5,7 @@ import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+
 export type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
 export type {

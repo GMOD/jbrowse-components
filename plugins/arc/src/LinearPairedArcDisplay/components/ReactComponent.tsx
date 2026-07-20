@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react'
 
-import Arcs from './Arcs.tsx'
 import BaseDisplayComponent from '../../shared/BaseDisplayComponent.tsx'
+import Arcs from './Arcs.tsx'
 
 import type { LinearPairedArcDisplayModel } from '../model.ts'
 

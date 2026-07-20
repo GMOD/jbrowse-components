@@ -1,11 +1,11 @@
 import { waitFor } from '@testing-library/react'
 
+import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
 import {
   grapePeachGetFile,
   utilizeFetchMockForTest,
 } from './generateReadBuffer.ts'
 import { getPluginManager, setup } from './util.tsx'
-import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
 
 setup()
 

@@ -7,8 +7,8 @@ import Formatter from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatt
 import { Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import AltFormatter from './AltFormatter.tsx'
 import { getTraMate } from '../VcfFeature/util.ts'
+import AltFormatter from './AltFormatter.tsx'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 

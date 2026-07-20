@@ -10,8 +10,8 @@ import JBrowseViewPanel from './JBrowseViewPanel.tsx'
 import JBrowseViewTab from './JBrowseViewTab.tsx'
 import { useDockviewController } from './useDockviewController.ts'
 
-import type { DockviewSessionType } from './types.ts'
 import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
+import type { DockviewSessionType } from './types.ts'
 
 const useStyles = makeStyles()(() => ({
   container: {

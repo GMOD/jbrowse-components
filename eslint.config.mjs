@@ -1,15 +1,16 @@
-import eslint from '@eslint/js'
-import { defineConfig } from 'eslint/config'
-import { importX } from 'eslint-plugin-import-x'
-import eslintPluginAstro from 'eslint-plugin-astro'
 import eslintReact from '@eslint-react/eslint-plugin'
+import eslint from '@eslint/js'
+import eslintPluginAstro from 'eslint-plugin-astro'
+import baselineJs from 'eslint-plugin-baseline-js'
+import { importX } from 'eslint-plugin-import-x'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 import tssUnusedClasses from 'eslint-plugin-tss-unused-classes'
+import eslintPluginUnicorn from 'eslint-plugin-unicorn'
+import { defineConfig } from 'eslint/config'
 import globals from 'globals'
 import tseslint from 'typescript-eslint'
-import baselineJs from 'eslint-plugin-baseline-js'
-import eslintPluginUnicorn from 'eslint-plugin-unicorn'
+
 // Single source of truth for ignore globs, shared with the oxlint fast-lint
 // pass (`pnpm lint:fast`) so the two can't drift. Kept as strict JSON because
 // Node's JSON import assertion rejects JSONC comments. Rationale for the
@@ -307,37 +308,11 @@ export default defineConfig(
       'react-refresh/only-export-components': 'error',
 
       'import-x/no-unresolved': 'off',
-      'import-x/order': [
-        'error',
-        {
-          named: true,
-          'newlines-between': 'always',
-          alphabetize: {
-            order: 'asc',
-          },
-          groups: [
-            'builtin',
-            ['external', 'internal'],
-            ['parent', 'sibling', 'index', 'object'],
-            'type',
-          ],
-          pathGroups: [
-            {
-              group: 'builtin',
-              pattern: 'react',
-              position: 'before',
-            },
-            {
-              group: 'external',
-              pattern: '@mui/icons-material',
-              position: 'after',
-            },
-          ],
-
-          pathGroupsExcludedImportTypes: ['react'],
-        },
-      ],
-
+      // Import ordering is owned by prettier (@ianvs/prettier-plugin-sort-imports,
+      // see .prettierrc.json) so it autofixes on `pnpm format` and is enforced by
+      // `prettier --check` in CI. Keeping import-x/order here too would fight the
+      // plugin (they disagree on the react-type-first, sibling/parent, and
+      // alias-sort tie-breaks), so it is intentionally not enabled.
       'import-x/extensions': ['error', 'ignorePackages'],
       'import-x/no-named-as-default': 'off',
       'import-x/no-named-as-default-member': 'off',

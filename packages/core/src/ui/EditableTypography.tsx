@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react'
-import type { Ref } from 'react'
 
 import useMeasure from '@jbrowse/core/util/useMeasure'
 import { InputBase, Typography, useTheme } from '@mui/material'
@@ -7,6 +6,7 @@ import { InputBase, Typography, useTheme } from '@mui/material'
 import { makeStyles } from '../util/tss-react/index.ts'
 
 import type { TypographyProps } from '@mui/material'
+import type { Ref } from 'react'
 
 type Variant = TypographyProps['variant']
 

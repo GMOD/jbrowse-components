@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import { deriveFastaLocations } from '../chromSizesUtils.ts'
+
 /**
  * #config BgzipFastaAdapter
  * #trackType ReferenceSequenceTrack

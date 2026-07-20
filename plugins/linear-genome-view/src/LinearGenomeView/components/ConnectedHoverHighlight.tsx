@@ -3,8 +3,8 @@ import { observer } from 'mobx-react'
 
 import HoverPositionHighlight from './HoverPositionHighlight.tsx'
 
-import type { HoverHighlightPosition } from './HoverPositionHighlight.tsx'
 import type { LinearGenomeViewModel } from '../model.ts'
+import type { HoverHighlightPosition } from './HoverPositionHighlight.tsx'
 
 // Draws a crosshair for every session widget "connected" to this view that is
 // currently publishing a hover position. Each cross-widget hover overlay (the

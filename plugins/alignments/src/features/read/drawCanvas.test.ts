@@ -1,14 +1,14 @@
 import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
 
-import { drawReads, showChevron } from './drawCanvas.ts'
 import { ColorScheme } from '../../LinearAlignmentsDisplay/constants.ts'
+import { drawReads, showChevron } from './drawCanvas.ts'
 
-import type { ChevronFrame } from './drawCanvas.ts'
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorPalette } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
+import type { ChevronFrame } from './drawCanvas.ts'
 
 const BLACK: [number, number, number] = [0, 0, 0]
 const palette = {

@@ -1,3 +1,4 @@
+import { featureType, getSubfeatures, isCDS } from '../util.ts'
 import { layoutBox } from './box.ts'
 import { layoutCrisprGuide } from './crisprGuide.ts'
 import { hasCDSSubfeature, hasContainerChildren } from './glyphUtils.ts'
@@ -9,7 +10,6 @@ import { layoutProcessedTranscript } from './processed.ts'
 import { isRepeatRegion, layoutRepeatRegion } from './repeatRegion.ts'
 import { layoutSegments } from './segments.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
-import { featureType, getSubfeatures, isCDS } from '../util.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'

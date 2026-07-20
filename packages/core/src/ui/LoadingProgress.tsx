@@ -1,6 +1,6 @@
+import { progressLabel } from '../util/progress.ts'
 import LoadingEllipses from './LoadingEllipses.tsx'
 import StatusProgressBar from './StatusProgressBar.tsx'
-import { progressLabel } from '../util/progress.ts'
 
 import type { TypographyProps } from '@mui/material'
 

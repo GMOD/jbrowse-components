@@ -12,8 +12,8 @@ import {
   visibleRange,
 } from './sequenceGeometry.ts'
 
-import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
 import type { SequenceRegionData } from '../model.ts'
+import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
 import type { Frame } from '@jbrowse/core/util'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'

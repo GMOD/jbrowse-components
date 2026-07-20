@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -10,6 +8,7 @@ import ScalebarCoordinateLabels from './ScalebarCoordinateLabels.tsx'
 import ScalebarRefNameLabels from './ScalebarRefNameLabels.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type React from 'react'
 
 type LGV = LinearGenomeViewModel
 

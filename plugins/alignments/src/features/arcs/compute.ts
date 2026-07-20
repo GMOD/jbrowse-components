@@ -20,12 +20,12 @@ import {
   resolveReadGroup,
 } from '../../shared/readGroupConnections.ts'
 
-import type { ArcsUploadData } from './types.ts'
 import type { ReadColorCategory } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
 import type { ReadConnection } from '../../shared/readGroupConnections.ts'
 import type { ArcColorByType } from '../../shared/types.ts'
+import type { ArcsUploadData } from './types.ts'
 
 // Arc shape enum. Values are shared with arc.slang (which checks them via
 // `> 0.5` / `> 1.5` thresholds); keep in lockstep.

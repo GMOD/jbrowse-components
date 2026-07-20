@@ -2,8 +2,8 @@ import { ActionLink, CascadingMenuButton } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreHoriz from '@mui/icons-material/MoreHoriz'
 
-import { sessionMenuItems } from './sessionMenuItems.ts'
 import StarIcon from '../StarIcon.tsx'
+import { sessionMenuItems } from './sessionMenuItems.ts'
 
 import type { RecentSessionData } from '../types.ts'
 

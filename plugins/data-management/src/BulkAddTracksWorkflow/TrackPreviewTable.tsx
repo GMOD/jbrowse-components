@@ -1,5 +1,3 @@
-import type { Dispatch, SetStateAction } from 'react'
-
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconButton, Typography } from '@mui/material'
@@ -9,6 +7,7 @@ import { observer } from 'mobx-react'
 import type { TrackConfRow, TrackStatus } from './buildConfigs.ts'
 import type { NamedRow } from './util.ts'
 import type { GridColDef } from '@mui/x-data-grid'
+import type { Dispatch, SetStateAction } from 'react'
 
 const ROW_HEIGHT = 30
 const HEADER_HEIGHT = 35

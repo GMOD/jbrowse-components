@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { getParent, hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
@@ -15,6 +13,7 @@ import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { RpcStatus } from '../../util/progress.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type React from 'react'
 
 /**
  * #stateModel BaseDisplay

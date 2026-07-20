@@ -1,6 +1,6 @@
+import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 import { lookupR2, matchesIndexSnp, posKey } from './ldToIndex.ts'
 import { GLYPH_INDEX, GLYPH_INSERTION, GLYPH_POINT } from './rpcTypes.ts'
-import { ldBinColor, ldIndexColor } from '../LinearManhattanDisplay/ldBins.ts'
 
 import type { LdToIndex } from './ldToIndex.ts'
 import type { Feature } from '@jbrowse/core/util'

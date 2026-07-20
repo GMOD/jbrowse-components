@@ -5,8 +5,8 @@ import {
 } from '@jbrowse/core/ui'
 import AltRouteIcon from '@mui/icons-material/AltRoute'
 
-import { checkboxItem } from './menuHelpers.ts'
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
+import { checkboxItem } from './menuHelpers.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'

@@ -1,5 +1,3 @@
-import type React from 'react'
-
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
@@ -19,10 +17,10 @@ import {
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
+import { generateLDColorRamp } from './components/ldColorRamp.ts'
 
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type {
@@ -39,6 +37,7 @@ import type {
   LegendItem,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 function upperBoundFloat32(arr: Float32Array, val: number) {
   let lo = 0

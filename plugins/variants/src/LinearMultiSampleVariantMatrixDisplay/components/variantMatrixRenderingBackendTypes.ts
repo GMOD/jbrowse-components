@@ -1,3 +1,5 @@
+import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
+
 export interface MatrixRenderState {
   canvasWidth: number
   canvasHeight: number
@@ -27,8 +29,6 @@ export interface VariantMatrixUploadData {
   numCells: number
   numFeatures: number
 }
-
-import type { GlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
 export type VariantMatrixRenderingBackend = GlobalRenderingBackend<
   VariantMatrixUploadData,

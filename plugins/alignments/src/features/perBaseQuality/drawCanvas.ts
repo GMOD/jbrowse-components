@@ -1,15 +1,15 @@
-import { qualityCssColors } from './colors.ts'
 import {
   makePileupCellMapper,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { qualityCssColors } from './colors.ts'
 
-import type { PerBaseQualityUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { PerBaseQualityUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawPerBaseQuality(

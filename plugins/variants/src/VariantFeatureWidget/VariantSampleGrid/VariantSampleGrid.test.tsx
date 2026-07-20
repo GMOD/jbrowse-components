@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, screen } from '@testing-library/react'

@@ -1,9 +1,9 @@
-import type React from 'react'
 import { useMemo, useRef } from 'react'
 
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
+import { getMismatchContrastMap } from '../../shared/util.ts'
 import {
   CLICK_SUPPRESS_THRESHOLD_PX,
   isDragInProgress,
@@ -28,7 +28,6 @@ import {
   formatIndicatorTooltip,
   formatModificationTooltip,
 } from './tooltipUtils.ts'
-import { getMismatchContrastMap } from '../../shared/util.ts'
 
 import type {
   CigarHitResult,
@@ -36,6 +35,7 @@ import type {
 } from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type React from 'react'
 
 export type { LinearAlignmentsDisplayModel }
 

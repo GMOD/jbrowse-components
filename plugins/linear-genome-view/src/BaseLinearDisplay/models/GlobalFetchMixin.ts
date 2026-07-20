@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import FetchMixin from './FetchMixin.ts'
 import RegionTooLargeMixin from '../../shared/RegionTooLargeMixin.tsx'
+import FetchMixin from './FetchMixin.ts'
 
 /**
  * Rendering-agnostic foundation for any display holding a single global

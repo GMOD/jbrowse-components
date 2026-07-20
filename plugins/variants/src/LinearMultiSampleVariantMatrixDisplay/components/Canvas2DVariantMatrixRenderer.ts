@@ -2,8 +2,8 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
-import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 import { f2 } from '../../shared/constants.ts'
+import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 
 import type {
   MatrixRenderState,

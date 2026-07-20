@@ -3,13 +3,13 @@ import { autorun } from 'mobx'
 
 import { getConf } from '../configuration/index.ts'
 import { getSession } from '../util/index.ts'
+import { ElementId } from '../util/types/mst.ts'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model.ts'
 import { formatSubfeatures, nullReplacer } from './util.tsx'
-import { ElementId } from '../util/types/mst.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { MaybeSerializedFeat } from './types.tsx'
 import type { SimpleFeatureSerialized } from '../util/index.ts'
+import type { MaybeSerializedFeat } from './types.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**

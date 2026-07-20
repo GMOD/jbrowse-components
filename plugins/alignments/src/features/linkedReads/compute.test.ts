@@ -8,6 +8,10 @@ import {
 } from '@jbrowse/alignments-core'
 
 import {
+  connectionEndpoints,
+  readGroupConnections,
+} from '../../shared/readGroupConnections.ts'
+import {
   LINKED_READ_COLOR_PAIR_LL,
   LINKED_READ_COLOR_PAIR_LR,
   LINKED_READ_COLOR_PAIR_RL,
@@ -19,13 +23,9 @@ import {
   groupReadsByName,
   isNormalOrientation,
 } from './compute.ts'
-import {
-  connectionEndpoints,
-  readGroupConnections,
-} from '../../shared/readGroupConnections.ts'
 
-import type { ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ReadEntry } from './compute.ts'
 
 // Minimal PileupDataResult with only the fields used by these functions.
 function makeData(opts: {

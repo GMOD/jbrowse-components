@@ -3,12 +3,12 @@ import {
   bezierConnectorPath,
 } from '@jbrowse/core/util'
 
-import { connectionLabel, iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
+import { connectionLabel, iterLinkedPairs } from './compute.ts'
 
-import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
 
 // Cull by endpoint Y. The endpoints alone don't bound the curve — every curve

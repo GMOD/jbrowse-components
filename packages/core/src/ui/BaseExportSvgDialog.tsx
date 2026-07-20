@@ -12,10 +12,10 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { getSession } from '../util/index.ts'
 import ErrorBanner from './ErrorBanner.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
 import { useExportSvgPreference } from './useExportSvgPreference.ts'
-import { getSession } from '../util/index.ts'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 

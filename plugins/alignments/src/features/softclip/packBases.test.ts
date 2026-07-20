@@ -1,5 +1,5 @@
-import { packSoftclipBases } from './packBases.ts'
 import * as mismatchShader from '../../LinearAlignmentsDisplay/shaders/slang/mismatch.generated.ts'
+import { packSoftclipBases } from './packBases.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 

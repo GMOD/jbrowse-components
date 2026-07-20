@@ -1,11 +1,11 @@
 import { Suspense, lazy, useRef } from 'react'
-import type { ReactNode } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import Gridlines from './Gridlines.tsx'
 import OverviewHighlightBand from './OverviewHighlightBand.tsx'
 import PaddingBlocks from './PaddingBlocks.tsx'
@@ -14,11 +14,11 @@ import Rubberband from './Rubberband.tsx'
 import Scalebar from './Scalebar.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
-import { getHighlightColor, highlightKey } from './util.ts'
-import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import { useSideScroll } from './useSideScroll.ts'
+import { getHighlightColor, highlightKey } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { ReactNode } from 'react'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {

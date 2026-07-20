@@ -4,9 +4,10 @@ sequence and a structural variant track.
 
 ```tsx
 import '@fontsource/roboto'
+
 import {
-  createViewState,
   JBrowseCircularGenomeView,
+  createViewState,
 } from '@jbrowse/react-circular-genome-view2'
 
 const assembly = {

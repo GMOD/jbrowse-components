@@ -1,11 +1,5 @@
-import { arcYFraction } from './arcYScale.ts'
-import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import {
-  type DrawBlock,
-  type RenderState,
-  bpToScreenX,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { bpToScreenX } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import {
   ARC_HEIGHT_MARGIN,
   arcColorPalette,
@@ -16,9 +10,15 @@ import {
   ARC_FLAT_MIN_PX,
 } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
 import { ARC_MARKER_PX } from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.iface.generated.ts'
+import { arcYFraction } from './arcYScale.ts'
+import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './compute.ts'
 
-import type { ArcsUploadData } from './types.ts'
+import type {
+  DrawBlock,
+  RenderState,
+} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { RGBColor } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
+import type { ArcsUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 interface DrawArcsOpts {

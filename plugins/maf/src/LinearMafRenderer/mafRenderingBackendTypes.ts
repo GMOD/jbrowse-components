@@ -1,5 +1,5 @@
-import type { MafColorPalette } from './util.ts'
 import type { AlignmentContext, MafStatus } from '../types.ts'
+import type { MafColorPalette } from './util.ts'
 import type { Canvas2DCoverageBuffer } from '@jbrowse/alignments-core'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'

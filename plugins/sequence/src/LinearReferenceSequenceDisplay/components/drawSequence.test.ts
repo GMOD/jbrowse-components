@@ -1,8 +1,8 @@
 import { drawSequenceBlocks } from './drawSequence.ts'
 
+import type { SequenceRegionData } from '../model.ts'
 import type { DrawSequenceState } from './drawSequence.ts'
 import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
-import type { SequenceRegionData } from '../model.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 

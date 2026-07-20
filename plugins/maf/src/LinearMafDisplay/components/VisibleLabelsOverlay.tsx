@@ -3,9 +3,9 @@ import { useMemo } from 'react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawMafLabels } from '../../LinearMafRenderer/rendering/labels.ts'
 import { getContrastBaseMap } from '../../LinearMafRenderer/util.ts'
+import OverlayCanvas from './OverlayCanvas.tsx'
 
 import type { VisibleLabel } from './computeVisibleLabels.ts'
 

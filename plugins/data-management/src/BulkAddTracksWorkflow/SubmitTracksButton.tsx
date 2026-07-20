@@ -5,8 +5,8 @@ import { observer } from 'mobx-react'
 
 import { plural, submitBulkTracks } from './util.ts'
 
-import type { NamedRow } from './util.ts'
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
+import type { NamedRow } from './util.ts'
 
 const useStyles = makeStyles()(theme => ({
   submit: {

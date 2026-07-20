@@ -2,11 +2,11 @@ import path from 'node:path'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 
-import Adapter from './JBrowse1TextSearchAdapter.ts'
-import configSchema from './configSchema.ts'
 import first from '../../test_data/names/0.json' with { type: 'json' }
 import last from '../../test_data/names/f.json' with { type: 'json' }
 import meta from '../../test_data/names/meta.json' with { type: 'json' }
+import Adapter from './JBrowse1TextSearchAdapter.ts'
+import configSchema from './configSchema.ts'
 
 function mockFetch(url: RequestInfo | URL) {
   let response = {}

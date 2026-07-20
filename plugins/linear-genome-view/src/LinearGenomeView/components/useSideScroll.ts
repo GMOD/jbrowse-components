@@ -1,7 +1,7 @@
-import type React from 'react'
 import { useEffect, useRef, useState } from 'react'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type React from 'react'
 
 export function useSideScroll(model: LinearGenomeViewModel) {
   const [mouseDragging, setMouseDragging] = useState(false)

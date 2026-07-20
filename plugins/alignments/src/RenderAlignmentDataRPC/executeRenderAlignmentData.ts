@@ -46,13 +46,13 @@ import { buildReadInterchrom } from '../shared/readInterchrom.ts'
 import { runCoveragePipeline } from '../shared/runCoveragePipeline.ts'
 import { getFlags } from '../shared/util.ts'
 
+import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
+import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type {
   AlignmentGroup,
   PileupDataResult,
   RenderAlignmentDataArgs,
 } from './types.ts'
-import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
-import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'

@@ -1,8 +1,8 @@
 import { ThemeProvider } from '@mui/material'
 import { render } from '@testing-library/react'
 
-import UriField from './UriField.tsx'
 import { createJBrowseTheme } from '../../ui/index.ts'
+import UriField from './UriField.tsx'
 
 function renderWithTheme(ui: React.ReactElement) {
   return render(

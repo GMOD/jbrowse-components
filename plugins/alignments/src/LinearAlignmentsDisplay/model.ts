@@ -27,12 +27,8 @@ import {
 } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  type ExportSvgDisplayOptions,
-  type FetchContext,
   GROW_MAX_HEIGHT,
-  type HeightMode,
   HeightModeMixin,
-  type LinearGenomeViewModel,
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
@@ -42,6 +38,27 @@ import {
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import { autorun, observable, reaction } from 'mobx'
 
+import {
+  arcColorLegendCategory,
+  computeArcsRegionMap,
+} from '../features/arcs/compute.ts'
+import {
+  bezierConnectionLegendItems,
+  enumerateBezierPairs,
+  isBezierArcPair,
+} from '../features/linkedReads/computeOverlay.ts'
+import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
+import {
+  COLOR_SCHEMES,
+  isModificationScheme,
+  normalizeColorBy,
+} from '../shared/colorSchemes.ts'
+import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
+import {
+  DEFAULT_MODIFICATION_THRESHOLD,
+  normalizeFilterBy,
+} from '../shared/types.ts'
+import { getColorForModification } from '../util.ts'
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
 import { readColorCategory } from './colorUtils.ts'
 import {
@@ -83,54 +100,21 @@ import {
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
+import { computeArcBand } from './renderers/rendererTypes.ts'
 import {
   belowCoverageBandsGeometry,
   buildSectionRenders,
   computeStackedSections,
 } from './sectionLayout.ts'
-import {
-  arcColorLegendCategory,
-  computeArcsRegionMap,
-} from '../features/arcs/compute.ts'
-import {
-  bezierConnectionLegendItems,
-  enumerateBezierPairs,
-  isBezierArcPair,
-} from '../features/linkedReads/computeOverlay.ts'
-import { computeSashimiArcs } from '../features/sashimi/computeOverlay.ts'
-import {
-  COLOR_SCHEMES,
-  isModificationScheme,
-  normalizeColorBy,
-} from '../shared/colorSchemes.ts'
-import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
-import {
-  DEFAULT_MODIFICATION_THRESHOLD,
-  normalizeFilterBy,
-} from '../shared/types.ts'
-import { getColorForModification } from '../util.ts'
-import { computeArcBand } from './renderers/rendererTypes.ts'
 
-import type { ReadColorCategory } from './colorUtils.ts'
-import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
-import type {
-  LinkedReadsMode,
-  ReadConnectionsMode,
-  SashimiArcsMode,
-} from './constants.ts'
-import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
-import type { SectionsLayout } from './sectionLayout.ts'
 import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
-import type { CigarHitResult, ResolvedBlock } from '../shared/hitTestTypes.ts'
-import type { ScrollModel } from './components/sectionScreen.ts'
-import type { TooltipPayload } from './components/tooltipUtils.ts'
-import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
 import type { ModificationHitResult } from '../features/modification/hitTest.ts'
+import type { CigarHitResult, ResolvedBlock } from '../shared/hitTestTypes.ts'
 import type {
   ArcColorByType,
   ColorBy,
@@ -140,10 +124,28 @@ import type {
   PersistedColorBy,
   SortedBy,
 } from '../shared/types'
+import type { ReadColorCategory } from './colorUtils.ts'
+import type { ScrollModel } from './components/sectionScreen.ts'
+import type { TooltipPayload } from './components/tooltipUtils.ts'
+import type { LinearAlignmentsDisplayConfigSchema } from './configSchema'
+import type {
+  LinkedReadsMode,
+  ReadConnectionsMode,
+  SashimiArcsMode,
+} from './constants.ts'
+import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
+import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
+import type { SectionsLayout } from './sectionLayout.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type {
+  ExportSvgDisplayOptions,
+  FetchContext,
+  HeightMode,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 

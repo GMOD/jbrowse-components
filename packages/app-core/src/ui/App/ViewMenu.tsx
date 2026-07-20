@@ -11,13 +11,11 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit'
 import { observer } from 'mobx-react'
 
+import { isSessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import { useDockview } from './DockviewContext.tsx'
 import { renameIds } from './copyView.ts'
-import {
-  type SessionWithDockviewLayout,
-  isSessionWithDockviewLayout,
-} from '../../DockviewLayout/index.ts'
 
+import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { SessionWithMultipleViews } from '@jbrowse/product-core'
 import type { SvgIconProps } from '@mui/material'

@@ -1,9 +1,8 @@
 import { formatRelativeTime } from '@jbrowse/core/util'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 
-import type { SvgIconComponent } from '@mui/icons-material'
-
 import type { SessionMetadata } from '@jbrowse/web-core'
+import type { SvgIconComponent } from '@mui/icons-material'
 
 interface SessionMenuActions {
   activate: (id: string) => Promise<void>

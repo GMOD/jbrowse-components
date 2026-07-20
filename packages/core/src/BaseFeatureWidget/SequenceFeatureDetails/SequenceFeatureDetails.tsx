@@ -2,6 +2,7 @@ import { Suspense, lazy, useRef, useState } from 'react'
 
 import { observer } from 'mobx-react'
 
+import { LoadingEllipses } from '../../ui/index.ts'
 import SequenceFeatureMenu from './dialogs/SequenceFeatureMenu.tsx'
 import SequenceTypeSelector from './dialogs/SequenceTypeSelector.tsx'
 import TranscriptSelector from './dialogs/TranscriptSelector.tsx'
@@ -11,7 +12,6 @@ import {
   pickDefaultTranscriptIndex,
 } from './featureTypeUtil.ts'
 import { useSequenceFetch } from './useSequenceFetch.ts'
-import { LoadingEllipses } from '../../ui/index.ts'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { BaseFeatureWidgetModel } from '../stateModelFactory.ts'

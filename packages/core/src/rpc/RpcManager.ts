@@ -1,14 +1,14 @@
+import { readConfObject } from '../configuration/index.ts'
+import { isAppRootModel, isAuthNeededException } from '../util/types/index.ts'
 import MainThreadRpcDriver from './MainThreadRpcDriver.ts'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
-import { readConfObject } from '../configuration/index.ts'
-import { isAppRootModel, isAuthNeededException } from '../util/types/index.ts'
 
-import type BaseRpcDriver from './BaseRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
-import type { RpcArgs, RpcMethodName, RpcReturn } from './RpcRegistry.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type { StatusCallback } from '../util/progress.ts'
+import type BaseRpcDriver from './BaseRpcDriver.ts'
+import type { RpcArgs, RpcMethodName, RpcReturn } from './RpcRegistry.ts'
 
 export type RpcDriverFactory = (
   config: AnyConfigurationModel,

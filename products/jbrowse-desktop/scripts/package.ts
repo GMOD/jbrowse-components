@@ -10,21 +10,16 @@
  *
  * Auto-updates work via electron-updater reading latest*.yml from GitHub releases
  */
-
 import fs from 'fs'
 import path from 'path'
 
-import {
-  BUILD,
-  DIST,
-  VERSION,
-  parsePackagingArgs,
-  type Platform,
-} from './packaging/config.ts'
+import { BUILD, DIST, VERSION, parsePackagingArgs } from './packaging/config.ts'
 import { buildLinux } from './packaging/linux.ts'
 import { buildMac } from './packaging/mac.ts'
 import { ensureDir, fileSize, log } from './packaging/utils.ts'
 import { buildWindows } from './packaging/windows.ts'
+
+import type { Platform } from './packaging/config.ts'
 
 function currentPlatform(): Platform {
   const p = process.platform

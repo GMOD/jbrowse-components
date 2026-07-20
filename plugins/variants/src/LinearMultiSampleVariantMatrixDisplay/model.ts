@@ -3,8 +3,8 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 
-import type { VariantMatrixRenderingBackend } from './components/variantMatrixRenderingBackendTypes.ts'
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
+import type { VariantMatrixRenderingBackend } from './components/variantMatrixRenderingBackendTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,

@@ -1,8 +1,8 @@
 import { Menu } from '@jbrowse/core/ui'
 import HighlightAltIcon from '@mui/icons-material/HighlightAlt'
 
-import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
+import type { DotplotInteraction } from './useDotplotInteraction.ts'
 
 export default function SelectionContextMenu({
   model,

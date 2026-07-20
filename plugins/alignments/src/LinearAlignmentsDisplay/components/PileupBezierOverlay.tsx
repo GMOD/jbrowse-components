@@ -3,15 +3,15 @@ import { useState } from 'react'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 import {
   BEZIER_ARC_STROKE_OPACITY,
   BEZIER_ARC_STROKE_WIDTH,
   computePileupBezierArcsFromModel,
 } from './pileupBezierArcs.ts'
-import { bezierArcKey } from '../../features/linkedReads/computeOverlay.ts'
 
-import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { PileupArc } from '../../features/linkedReads/computeOverlay.ts'
+import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Takes the whole arc rather than positional (label, id1, id2) so the two ids

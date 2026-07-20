@@ -1,11 +1,11 @@
 import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 
 export interface VisibleLabel {
   x: number

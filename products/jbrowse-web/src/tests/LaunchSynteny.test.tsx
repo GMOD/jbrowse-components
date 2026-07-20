@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 import { expectCanvasMatch, setup } from './util.tsx'
+
 setup()
 
 jest.mock('../makeWorkerInstance', () => () => {})

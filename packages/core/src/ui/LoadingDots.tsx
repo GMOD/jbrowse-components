@@ -1,5 +1,5 @@
-import { dot1, dot2, dot3 } from './loadingDotKeyframes.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+import { dot1, dot2, dot3 } from './loadingDotKeyframes.ts'
 
 const useStyles = makeStyles()({
   dots: {

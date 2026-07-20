@@ -1,7 +1,7 @@
 import { isValidElement } from 'react'
 
-import { getColorByMenuItem } from './colorBy.tsx'
 import { pickColorOptions } from '../../shared/colorSchemes.ts'
+import { getColorByMenuItem } from './colorBy.tsx'
 
 import type { ColorBy } from '../../shared/types.ts'
 import type { DisplayTypeDefaultControl } from '@jbrowse/core/configuration'

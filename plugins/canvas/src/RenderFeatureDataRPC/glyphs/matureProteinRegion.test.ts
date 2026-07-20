@@ -1,13 +1,13 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
+import { collectRenderData } from '../collectRenderData.ts'
+import { mockDisplayConfig } from '../testUtils.ts'
 import { findGlyph } from './findGlyph.ts'
 import {
   hasMatureProteinChildren,
   layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
-import { collectRenderData } from '../collectRenderData.ts'
-import { mockDisplayConfig } from '../testUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

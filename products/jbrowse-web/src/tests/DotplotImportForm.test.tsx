@@ -1,6 +1,7 @@
 import { fireEvent, within } from '@testing-library/react'
 
 import { createView, doBeforeEach, expectCanvasMatch, setup } from './util.tsx'
+
 setup()
 
 const delay = { timeout: 50000 }

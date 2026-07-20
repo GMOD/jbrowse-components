@@ -6,6 +6,7 @@ import { WidgetType } from '@jbrowse/core/pluggableElementTypes'
 import { stateModelFactory } from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+
 export const configSchema = ConfigurationSchema('JobsListWidget', {})
 
 export default function JobsListWidgetF(pluginManager: PluginManager) {

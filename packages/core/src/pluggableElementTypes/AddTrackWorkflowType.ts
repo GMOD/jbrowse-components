@@ -1,8 +1,7 @@
-import type React from 'react'
-
 import PluggableElementBase from './PluggableElementBase.ts'
 
 import type { IAnyModelType } from '@jbrowse/mobx-state-tree'
+import type React from 'react'
 
 // The Add Track widget renders workflow components with both `model` and a
 // `switchWorkflow` callback (see AddTrackWidget), so both are part of the

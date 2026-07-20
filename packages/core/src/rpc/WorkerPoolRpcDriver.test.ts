@@ -1,8 +1,8 @@
 import WorkerPoolRpcDriver from './WorkerPoolRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
-import type { WorkerHandle } from './WorkerPoolRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
+import type { WorkerHandle } from './WorkerPoolRpcDriver.ts'
 
 function makeConfig(overrides: { workerCount?: number } = {}) {
   return rpcConfigSchema.create(overrides)

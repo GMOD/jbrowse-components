@@ -5,7 +5,6 @@ import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { observer } from 'mobx-react'
 
-import { bandOnScreen, bandScreenTop, sectionKey } from './sectionScreen.ts'
 import {
   GROUP_LABEL_BG_OPACITY,
   GROUP_LABEL_FONT_SIZE,
@@ -13,6 +12,7 @@ import {
   GROUP_LABEL_RADIUS,
   groupSectionLabel,
 } from '../groupLabelStyle.ts'
+import { bandOnScreen, bandScreenTop, sectionKey } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 

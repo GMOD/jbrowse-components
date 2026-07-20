@@ -2,11 +2,11 @@ import { hasCrossingSpans } from '../features/sashimi/computeOverlay.ts'
 import { compareGroupKeys } from '../shared/groupFeatures.ts'
 import { getOrCreate } from '../shared/util.ts'
 
-import type { LinkedReadsMode, SashimiArcsMode } from './constants.ts'
 import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types.ts'
+import type { LinkedReadsMode, SashimiArcsMode } from './constants.ts'
 
 // The one place the `rpcDataMap` → groups nested walk is spelled. Every scan
 // below (and the model's `.some`/max getters) iterates this generator instead of

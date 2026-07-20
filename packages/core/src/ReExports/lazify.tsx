@@ -1,5 +1,6 @@
-import type React from 'react'
 import { Suspense } from 'react'
+
+import type React from 'react'
 
 // React tags the result of React.lazy() with this; anything else (a plain or
 // forwardRef/memo component) is already loaded and needs no Suspense boundary

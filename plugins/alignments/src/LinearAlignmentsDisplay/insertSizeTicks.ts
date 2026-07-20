@@ -1,5 +1,5 @@
-import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
 import { arcYFraction } from '../features/arcs/arcYScale.ts'
+import { ARC_HEIGHT_MARGIN } from './shaders/palettes.ts'
 
 import type { ArcBand } from './renderers/rendererTypes.ts'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'

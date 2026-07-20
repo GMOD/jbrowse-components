@@ -38,13 +38,13 @@ import { autorun, observable } from 'mobx'
 import TooltipComponent from './components/TooltipComponent.tsx'
 import { isIndexSnpOffscreen } from './isIndexSnpOffscreen.ts'
 
+import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { LinearManhattanDisplayConfigModel } from './configSchemaFactory.ts'
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
   ManhattanRenderState,
   ManhattanRenderingBackend,
 } from './manhattanRenderingBackendTypes.ts'
-import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'

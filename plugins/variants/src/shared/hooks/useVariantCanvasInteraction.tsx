@@ -1,9 +1,10 @@
-import { type MouseEvent, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
+import type { MouseEvent } from 'react'
 
 // Matches the real display model's setHoveredGenotype param — a tooltip record
 // that always carries genotype + name (the rest is display-specific fields).

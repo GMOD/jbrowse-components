@@ -1,7 +1,7 @@
-import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 import { DASH } from '../util/asciiBytes.ts'
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
+import { buildMafCoverageRegion } from './buildMafCoverageRegion.ts'
 
 import type {
   MafBlock,

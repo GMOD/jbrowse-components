@@ -25,13 +25,13 @@ import {
   Typography,
 } from '@mui/material'
 
-import RecentSessionsCards from './RecentSessionsCards.tsx'
-import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
 import { useNotifyError } from '../../NotifyContext.ts'
 import OpenLinkDialog from '../../OpenLinkDialog.tsx'
 import DeleteSessionDialog from '../dialogs/DeleteSessionDialog.tsx'
 import RenameSessionDialog from '../dialogs/RenameSessionDialog.tsx'
 import { loadPluginManager, openSpecLink } from '../util.tsx'
+import RecentSessionsCards from './RecentSessionsCards.tsx'
+import RecentSessionsDataGrid from './RecentSessionsDataGrid.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

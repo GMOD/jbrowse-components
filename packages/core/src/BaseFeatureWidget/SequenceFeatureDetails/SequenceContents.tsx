@@ -1,6 +1,11 @@
 import { observer } from 'mobx-react'
 
 import {
+  getGeneticCode,
+  parseTranslTable,
+  relativizeTranslExcept,
+} from '../../util/geneticCodes.ts'
+import {
   modeHasUpDownstream,
   resolveShowCoordinates,
 } from './featureTypeUtil.ts'
@@ -9,19 +14,14 @@ import CDSSequence from './seqtypes/CDSSequence.tsx'
 import GenomicSequence from './seqtypes/GenomicSequence.tsx'
 import ProteinSequence from './seqtypes/ProteinSequence.tsx'
 import { getSequenceData } from './useSequenceData.ts'
-import {
-  getGeneticCode,
-  parseTranslTable,
-  relativizeTranslExcept,
-} from '../../util/geneticCodes.ts'
 
+import type { TranslExcept } from '../../util/geneticCodes.ts'
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { SeqState } from '../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
 } from './model.ts'
-import type { TranslExcept } from '../../util/geneticCodes.ts'
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { SeqState } from '../util.tsx'
 
 type SequenceData = NonNullable<ReturnType<typeof getSequenceData>>
 

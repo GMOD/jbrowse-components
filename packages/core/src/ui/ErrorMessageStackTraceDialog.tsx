@@ -8,6 +8,9 @@ import {
   IconButton,
 } from '@mui/material'
 
+import { readConfObject } from '../configuration/index.ts'
+import { hasSharedArrayBuffer } from '../util/stopToken.ts'
+import { useFetch } from '../util/useFetch.ts'
 import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
 import LoadingEllipses from './LoadingEllipses.tsx'
@@ -18,9 +21,6 @@ import {
 } from './getGraphicsCapabilities.ts'
 import { mapStackTrace } from './mapStackTrace.ts'
 import { useGraphicsCapabilities } from './useGraphicsCapabilities.ts'
-import { readConfObject } from '../configuration/index.ts'
-import { hasSharedArrayBuffer } from '../util/stopToken.ts'
-import { useFetch } from '../util/useFetch.ts'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 

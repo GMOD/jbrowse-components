@@ -6,8 +6,8 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { getBlockRefNames, makeBlockFeatures } from '../mcscanUtil.ts'
 import { parseBed, readFile } from '../util.ts'
 
-import type { MCScanAnchorsAdapterConfig } from './configSchema.ts'
 import type { BlockRow } from '../mcscanUtil.ts'
+import type { MCScanAnchorsAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 

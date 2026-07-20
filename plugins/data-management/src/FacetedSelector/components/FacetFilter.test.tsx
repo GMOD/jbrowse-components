@@ -2,8 +2,8 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
-import FacetFilter from './FacetFilter.tsx'
 import { facetedStateTreeF } from '../facetedModel.ts'
+import FacetFilter from './FacetFilter.tsx'
 
 function renderFilter() {
   const faceted = facetedStateTreeF().create({})

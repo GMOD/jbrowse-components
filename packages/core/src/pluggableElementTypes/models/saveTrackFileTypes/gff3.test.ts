@@ -1,5 +1,5 @@
-import { formatMultiLevelFeat, stringifyGFF3 } from './gff3.ts'
 import SimpleFeature from '../../../util/simpleFeature.ts'
+import { formatMultiLevelFeat, stringifyGFF3 } from './gff3.ts'
 
 import type { Feature } from '../../../util/simpleFeature.ts'
 

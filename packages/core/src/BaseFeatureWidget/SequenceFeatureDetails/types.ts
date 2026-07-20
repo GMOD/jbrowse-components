@@ -1,11 +1,10 @@
-import type { RefObject } from 'react'
-
+import type { SimpleFeatureSerialized } from '../../util/index.ts'
+import type { SeqState } from '../util.tsx'
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
 } from './model.ts'
-import type { SimpleFeatureSerialized } from '../../util/index.ts'
-import type { SeqState } from '../util.tsx'
+import type { RefObject } from 'react'
 
 export interface SequencePanelProps {
   sequence: SeqState

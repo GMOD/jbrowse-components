@@ -6,12 +6,12 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 
-import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 import {
   featuresPerPx,
   samplePreFetchDensity,
   tooManyFeaturesResult,
 } from '../RenderFeatureDataRPC/densityGate.ts'
+import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
 import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

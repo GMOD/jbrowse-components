@@ -1,5 +1,5 @@
-import type TrackHeightMixin from './models/TrackHeightMixin.tsx'
 import type { ExportSvgOptions } from '../LinearGenomeView/types.ts'
+import type TrackHeightMixin from './models/TrackHeightMixin.tsx'
 import type { DisplayModel } from '@jbrowse/core/pluggableElementTypes/models'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ThemeOptions } from '@mui/material'

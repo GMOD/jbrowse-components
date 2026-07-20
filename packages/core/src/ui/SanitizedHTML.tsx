@@ -1,13 +1,13 @@
 import { Suspense, lazy, useLayoutEffect, useRef } from 'react'
 
+import { linkify } from '../util/index.ts'
+import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
+
 declare global {
   interface Element {
     setHTML?(html: string): void
   }
 }
-
-import { rewriteExternalAnchors } from './rewriteExternalAnchors.ts'
-import { linkify } from '../util/index.ts'
 
 // source https://github.com/sindresorhus/html-tags/blob/master/html-tags.json
 // with some random uncommon ones removed. note: we just use this to run the content

@@ -3,7 +3,9 @@ import fs from 'fs'
 import slugify from 'slugify'
 import * as ts from 'typescript'
 
+import { writeFormatted } from './format.ts'
 import {
+  assertSingleHeader,
   codeBlock,
   collapsibleClosed,
   collectTransitive,
@@ -20,11 +22,9 @@ import {
   stripPropertyName,
   suffixCategory,
   tableCell,
-  assertSingleHeader,
   warnHeaderGaps,
   withHeaders,
 } from './util.ts'
-import { writeFormatted } from './format.ts'
 
 import type { Example, ExtractedNode } from './util.ts'
 

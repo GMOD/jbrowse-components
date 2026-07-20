@@ -1,9 +1,9 @@
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { isFlatArcShape } from './compute.ts'
 import * as arcShader from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
 import * as arcLineShader from '../../LinearAlignmentsDisplay/shaders/slang/arcLine.generated.ts'
 import * as arcMarkerShader from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.generated.ts'
+import { isFlatArcShape } from './compute.ts'
 
 import type { ArcsUploadData } from './types.ts'
 

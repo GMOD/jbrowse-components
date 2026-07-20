@@ -1,8 +1,8 @@
 import { CIGAR_D, CIGAR_I, CIGAR_M } from '@jbrowse/cigar-utils'
 
-import { getCigarOpAtInstance, getTooltip } from './util.ts'
 import { buildSyntenyGeometry } from '../../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import { KIND_BASE } from '../../LinearSyntenyRPC/syntenyColors.ts'
+import { getCigarOpAtInstance, getTooltip } from './util.ts'
 
 import type { FeatPos } from '../model.ts'
 

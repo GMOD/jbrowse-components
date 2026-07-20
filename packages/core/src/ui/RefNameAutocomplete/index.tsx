@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
 
 import { Autocomplete, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
+import { useDebounce, useFetch } from '../../util/index.ts'
 import {
   MAX_OPTIONS,
   cap,
@@ -13,12 +14,11 @@ import {
   getInputWidth,
   getOptionLabel,
 } from './util.ts'
-import { RefSequenceResult } from '../../TextSearch/BaseResults.ts'
-import { useDebounce, useFetch } from '../../util/index.ts'
 
-import type { Option } from './util.ts'
 import type BaseResult from '../../TextSearch/BaseResults.ts'
 import type { AbstractSessionModel } from '../../util/index.ts'
+import type { Option } from './util.ts'
+import type { CSSProperties, ReactNode } from 'react'
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
   session,

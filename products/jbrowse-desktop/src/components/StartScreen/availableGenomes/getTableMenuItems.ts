@@ -1,7 +1,7 @@
 import defaultFavs from '../defaultFavs.ts'
 
-import type { FilterOption } from './useGenomesData.ts'
 import type { Fav } from '../types.ts'
+import type { FilterOption } from './useGenomesData.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export function getTableMenuItems({

@@ -6,10 +6,9 @@
  * Uploads packaged artifacts to GitHub releases using the gh CLI.
  * Pass --publish along with a platform flag (--linux, --mac, --win).
  */
-
+import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { execSync } from 'child_process'
 
 import { DIST, VERSION, parsePackagingArgs } from './packaging/config.ts'
 

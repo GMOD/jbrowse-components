@@ -1,10 +1,10 @@
 import { observer } from 'mobx-react'
 
-import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawMafSummaryBars } from '../../LinearMafRenderer/rendering/summaryBars.ts'
+import OverlayCanvas from './OverlayCanvas.tsx'
 
-import type { SummaryBar } from './computeVisibleSummaryBars.ts'
 import type { MafColorPalette } from '../../LinearMafRenderer/util.ts'
+import type { SummaryBar } from './computeVisibleSummaryBars.ts'
 
 // Zoom-out per-species presence bars, drawn on a backend-independent Canvas2D
 // layer that composites over the (empty, at this zoom) alignment canvas exactly

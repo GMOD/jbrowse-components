@@ -1,11 +1,11 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BigMafAdapter from './BigMafAdapter.ts'
-import configSchema from './configSchema.ts'
 import BigBedAdapter from '../../../bed/src/BigBedAdapter/BigBedAdapter.ts'
 import bigBedConfigSchema from '../../../bed/src/BigBedAdapter/configSchema.ts'
 import { computeVisibleSummaryBars } from '../LinearMafDisplay/components/computeVisibleSummaryBars.ts'
+import BigMafAdapter from './BigMafAdapter.ts'
+import configSchema from './configSchema.ts'
 
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 

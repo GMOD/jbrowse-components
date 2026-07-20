@@ -1,5 +1,5 @@
-import SerializableFilterChain from './serializableFilterChain.ts'
 import createJexlInstance from '../../../util/jexl.ts'
+import SerializableFilterChain from './serializableFilterChain.ts'
 
 test('one', () => {
   const c = new SerializableFilterChain({

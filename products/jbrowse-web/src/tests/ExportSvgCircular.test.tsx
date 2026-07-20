@@ -1,6 +1,7 @@
 import { saveAs } from '@jbrowse/core/util'
 import { fireEvent, waitFor } from '@testing-library/react'
 
+import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json' }
 import { generateReadBuffer, volvoxGetFile } from './generateReadBuffer.ts'
 import {
   createView,
@@ -11,9 +12,9 @@ import {
   mockFile404,
   setup,
 } from './util.tsx'
-import volvoxConfig from '../../test_data/volvox/config.json' with { type: 'json' }
 
 import './svgExportMocks.ts'
+
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()

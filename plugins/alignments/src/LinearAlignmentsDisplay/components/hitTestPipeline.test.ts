@@ -1,13 +1,13 @@
+import { INTERBASE_INSERTION } from '../../shared/types.ts'
 import {
   SNP_HIT_MAX_BP_PER_PX,
   contextMenuFieldsForHit,
   performHitTest,
 } from './hitTestPipeline.ts'
-import { INTERBASE_INSERTION } from '../../shared/types.ts'
 
-import type { HitTestOptions } from './hitTestPipeline.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { HitTestOptions } from './hitTestPipeline.ts'
 
 function makeRpcData(
   overrides: Partial<PileupDataResult> = {},

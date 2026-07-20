@@ -1,6 +1,5 @@
 import { BlobFile, LocalFile } from 'generic-filehandle2'
 
-import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache.ts'
 import { isElectron, isNode } from '../index.ts'
 import { getBlob, getFileFromCache } from '../tracks.ts'
 import {
@@ -8,6 +7,7 @@ import {
   isRootModelWithInternetAccounts,
   isUriLocation,
 } from '../types/index.ts'
+import { RemoteFileWithRangeCache } from './RemoteFileWithRangeCache.ts'
 
 import type PluginManager from '../../PluginManager.ts'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'

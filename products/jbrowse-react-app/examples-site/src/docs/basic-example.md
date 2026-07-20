@@ -14,6 +14,7 @@ hand-assemble. Each entry in `views` carries its own view-type `init` blob:
 import '@jbrowse/react-app2/styles.css'
 
 import { JBrowse } from '@jbrowse/react-app2'
+
 ;<JBrowse
   assemblies={assemblies}
   tracks={tracks}

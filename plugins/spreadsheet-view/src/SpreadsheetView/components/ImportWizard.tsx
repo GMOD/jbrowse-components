@@ -20,8 +20,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import TrackSelector from './TrackSelector.tsx'
 import { fileTypes } from '../ImportWizard.ts'
+import TrackSelector from './TrackSelector.tsx'
 
 import type { SpreadsheetViewModel } from '../SpreadsheetViewModel.ts'
 import type { AbstractRootModel } from '@jbrowse/core/util'

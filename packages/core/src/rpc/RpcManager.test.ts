@@ -1,7 +1,7 @@
 import PluginManager from '../PluginManager.ts'
+import { AuthNeededError } from '../util/types/index.ts'
 import BaseRpcDriver from './BaseRpcDriver.ts'
 import RpcManager from './RpcManager.ts'
-import { AuthNeededError } from '../util/types/index.ts'
 
 // Stub of AppRootModel that satisfies isAppRootModel and records the ephemeral
 // accounts withAuthRetry creates so dedup behavior is observable.

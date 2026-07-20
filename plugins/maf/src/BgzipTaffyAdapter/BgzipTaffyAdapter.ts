@@ -4,6 +4,9 @@ import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import MafFeature from '../MafFeature.ts'
+import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
+import { lazyInit } from '../util/loadSubAdapter.ts'
 import {
   filterFirstLineInstructions,
   parseRowInstructions,
@@ -19,13 +22,10 @@ import {
   parseTaiIndex,
   selectIndexEntries,
 } from './taiIndex.ts'
-import MafFeature from '../MafFeature.ts'
-import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
-import { lazyInit } from '../util/loadSubAdapter.ts'
 
+import type { MafAdapterOptions } from '../types.ts'
 import type { AlignmentBlock, TafFeature } from './tafParsing.ts'
 import type { IndexData } from './types.ts'
-import type { MafAdapterOptions } from '../types.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
 

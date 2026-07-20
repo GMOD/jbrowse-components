@@ -3,9 +3,9 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
-import { groupByRadioMenuItem } from './groupByMenu.ts'
 import { GROUP_BY_DIMENSIONS } from '../../shared/groupFeatures.ts'
 import { isInterbaseType } from '../../shared/types.ts'
+import { groupByRadioMenuItem } from './groupByMenu.ts'
 
 import type { SortedBy } from '../../shared/types.ts'
 import type { GroupByModel } from '../dialogs/GroupByDialog.tsx'

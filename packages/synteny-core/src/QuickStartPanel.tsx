@@ -14,6 +14,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
 const useStyles = makeStyles()({
   summary: {
     display: 'flex',
@@ -21,9 +24,6 @@ const useStyles = makeStyles()({
     gap: 20,
   },
 })
-
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Quick start: launch straight from a pre-configured synteny track, which names

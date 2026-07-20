@@ -1,8 +1,9 @@
 import { useRef } from 'react'
-import type React from 'react'
 
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 import { usePointerDrag } from '../util/usePointerDrag.ts'
+
+import type React from 'react'
 
 const useStyles = makeStyles()(theme => ({
   horizontalHandle: {

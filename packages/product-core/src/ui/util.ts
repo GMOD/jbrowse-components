@@ -1,5 +1,3 @@
-import type { ComponentType } from 'react'
-
 import {
   evaluateJexl,
   getConf,
@@ -13,6 +11,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+import type { ComponentType } from 'react'
 
 export type AboutConfig = AnyConfigurationModel | Record<string, unknown>
 

@@ -1,7 +1,7 @@
 import { DefaultForAllAdornment } from './DefaultForAllAdornment.tsx'
 
-import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 import type { DisplayTypeDefaultControl } from '../configuration/promotableDefaults.ts'
+import type { CheckboxMenuItem, RadioMenuItem } from './MenuTypes.ts'
 
 // A promotable setting as one native checkbox menu row: the value toggles the
 // track (inheriting native hover/sizing/keyboard), and a trailing pin

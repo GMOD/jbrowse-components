@@ -5,9 +5,9 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
+import { facetedStateTreeF } from '../facetedModel.ts'
 import FacetedDataGrid from './FacetedDataGrid.tsx'
 import { getFacetedColumns } from './getFacetedColumns.tsx'
-import { facetedStateTreeF } from '../facetedModel.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'

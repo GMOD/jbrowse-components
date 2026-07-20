@@ -1,4 +1,3 @@
-import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
 import { hitTestCoverage } from '../../features/coverage/hitTest.ts'
 import { hitTestGap } from '../../features/gap/hitTest.ts'
 import { hitTestInterbase } from '../../features/indicator/hitTest.ts'
@@ -10,6 +9,7 @@ import { hitTestMismatch } from '../../features/mismatch/hitTest.ts'
 import { hitTestModification } from '../../features/modification/hitTest.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { hitTestClip } from '../../shared/clipPass.ts'
+import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CoverageHitResult } from '../../features/coverage/types.ts'

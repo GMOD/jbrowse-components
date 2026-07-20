@@ -4,23 +4,23 @@ import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
 import { comparer, reaction } from 'mobx'
 
-import { stringifyBED } from './saveTrackFileTypes/bed.ts'
-import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
-import { stringifyGFF3 } from './saveTrackFileTypes/gff3.ts'
 import { ConfigurationReference, getConf } from '../../configuration/index.ts'
 import { adapterConfigCacheKey } from '../../data_adapters/dataAdapterCache.ts'
 import { getContainingView, getEnv, getSession } from '../../util/index.ts'
 import { isSessionModelWithConfigEditing } from '../../util/types/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
+import { stringifyBED } from './saveTrackFileTypes/bed.ts'
+import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
+import { stringifyGFF3 } from './saveTrackFileTypes/gff3.ts'
 
-import type { DisplayModel } from './BaseDisplayModel.tsx'
 import type PluginManager from '../../PluginManager.ts'
-import type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
 } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
+import type { DisplayModel } from './BaseDisplayModel.tsx'
+import type { FileTypeExporter } from './saveTrackFileTypes/types.ts'
 import type {
   IAnyStateTreeNode,
   IType,

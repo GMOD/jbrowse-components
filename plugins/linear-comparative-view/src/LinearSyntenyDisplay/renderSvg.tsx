@@ -5,8 +5,8 @@ import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 
 import { drawSyntenyTrack } from './Canvas2DSyntenyRenderer.ts'
 
-import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { PaintLayerOpts } from '@jbrowse/core/util/paintLayer'
 
 export async function renderSvg(

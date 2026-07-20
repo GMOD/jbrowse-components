@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react'
-
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, max, measureText } from '@jbrowse/core/util'
@@ -7,13 +5,14 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
 import { when } from 'mobx'
 
+import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
 import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
-import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { ExportSvgOptions } from '../types.ts'
+import type { ReactNode } from 'react'
 
 // render LGV to SVG
 export async function renderToSvg(

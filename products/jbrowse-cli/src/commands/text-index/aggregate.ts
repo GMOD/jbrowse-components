@@ -1,3 +1,4 @@
+import { resolveConfigPath } from '../../utils.ts'
 import { createTrixAdapter } from './adapter-utils.ts'
 import {
   formatDryRun,
@@ -9,7 +10,6 @@ import {
   writeConf,
 } from './config-utils.ts'
 import { indexDriver } from './indexing-utils.ts'
-import { resolveConfigPath } from '../../utils.ts'
 
 import type { TextIndexFlags } from './index.ts'
 

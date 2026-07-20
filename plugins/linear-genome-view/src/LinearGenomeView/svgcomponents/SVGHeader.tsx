@@ -6,13 +6,13 @@ import {
 import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { useTheme } from '@mui/material'
 
-import SVGRuler from './SVGRuler.tsx'
-import SVGScalebar from './SVGScalebar.tsx'
-import { getHeaderLayout } from './util.ts'
 import Cytobands from '../components/Cytobands.tsx'
 import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
 import { getCytobands } from '../components/util.ts'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
+import SVGRuler from './SVGRuler.tsx'
+import SVGScalebar from './SVGScalebar.tsx'
+import { getHeaderLayout } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'

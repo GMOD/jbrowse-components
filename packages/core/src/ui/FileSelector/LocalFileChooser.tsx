@@ -1,13 +1,6 @@
 import { Box, Button, FormControl, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-declare global {
-  interface Window {
-    showOpenFilePicker(): Promise<FileSystemFileHandle[]>
-  }
-}
-
-import { dirFromPath } from './util.ts'
 import { isFileSystemAccessSupported } from '../../util/fileHandleStore.ts'
 import { isElectron } from '../../util/index.ts'
 import {
@@ -23,8 +16,15 @@ import {
   isFileHandleLocation,
   isLocalPathLocation,
 } from '../../util/types/index.ts'
+import { dirFromPath } from './util.ts'
 
 import type { FileLocation } from '../../util/types/index.ts'
+
+declare global {
+  interface Window {
+    showOpenFilePicker(): Promise<FileSystemFileHandle[]>
+  }
+}
 
 const useStyles = makeStyles()(theme => ({
   filename: {

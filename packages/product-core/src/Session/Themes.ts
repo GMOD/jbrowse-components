@@ -4,8 +4,8 @@ import { localStorageGetItem, localStorageSetItem } from '@jbrowse/core/util'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { isBaseSession } from './BaseSession.ts'
 import { asSession } from '../siblingCast.ts'
+import { isBaseSession } from './BaseSession.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { SerializableThemeArgs, ThemeMap } from '@jbrowse/core/ui'

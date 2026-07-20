@@ -1,4 +1,3 @@
-import { buildBaseColorTupleMap } from './baseColors.ts'
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   frequencyFade,
@@ -6,12 +5,13 @@ import {
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { buildBaseColorTupleMap } from './baseColors.ts'
 
-import type { MismatchUploadData } from './types.ts'
 import type {
   DrawBlock,
   RenderState,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { MismatchUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export function drawMismatches(

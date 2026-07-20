@@ -1,12 +1,12 @@
 import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../RenderFeatureDataRPC/testUtils.ts'
+import {
   fitScaleToFill,
   resolveFitLadder,
   snapFittedContentHeight,
 } from './fitLadder.ts'
-import {
-  makeFeatureData,
-  makeFlatbushItem,
-} from '../RenderFeatureDataRPC/testUtils.ts'
 
 import type { FitRung } from './fitLadder.ts'
 

@@ -9,7 +9,6 @@
 //
 // Mirrors scripts/ribbon-plot.mjs (chromosome painting by target, strand
 // normalization, size-asc draw order). Only the input parser changes.
-
 import { spawn } from 'child_process'
 import fs from 'fs'
 import readline from 'readline'

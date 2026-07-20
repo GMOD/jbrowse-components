@@ -1,11 +1,11 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
+import { findGlyph } from '../glyphs/findGlyph.ts'
+import { mockDisplayConfig } from '../testUtils.ts'
 import { CRISPR_CUT_COLOR, CRISPR_PAM_COLOR } from './glyphColors.ts'
 import { processFeatureRecord } from './glyphEmitters.ts'
 import { createCollector } from './renderContext.ts'
-import { findGlyph } from '../glyphs/findGlyph.ts'
-import { mockDisplayConfig } from '../testUtils.ts'
 
 import type { RenderContext } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'

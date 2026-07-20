@@ -6,8 +6,8 @@ import {
 
 import { computeSashimiArcs } from './computeOverlay.ts'
 
-import type { ComputeSashimiArcsOpts } from './computeOverlay.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { ComputeSashimiArcsOpts } from './computeOverlay.ts'
 
 // Minimal PileupDataResult with only the sashimi fields computeSashimiArcs reads.
 function makeData(counts: number[]): PileupDataResult {

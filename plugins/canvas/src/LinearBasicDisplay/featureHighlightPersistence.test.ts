@@ -1,10 +1,10 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { createTestEnvironment } from './testEnv.ts'
 import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 import type { FeatureHighlight } from './featureHighlight.ts'
 

@@ -2,8 +2,8 @@ import { abgrBlue, abgrGreen, abgrRed } from '@jbrowse/core/util/colorBits'
 
 import { getModificationName } from './modificationData.ts'
 
-import type { ModificationEntry } from './webglRpcTypes.ts'
 import type { ModTooltipEntry } from '../RenderAlignmentDataRPC/types'
+import type { ModificationEntry } from './webglRpcTypes.ts'
 
 export function buildModTooltipData({
   modifications,

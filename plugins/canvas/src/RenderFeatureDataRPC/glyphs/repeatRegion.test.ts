@@ -1,6 +1,6 @@
+import { mockDisplayConfig } from '../testUtils.ts'
 import { findGlyph } from './findGlyph.ts'
 import { isRepeatRegion, layoutRepeatRegion } from './repeatRegion.ts'
-import { mockDisplayConfig } from '../testUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 

@@ -1,7 +1,7 @@
 import { Grid } from '@mui/material'
 
-import SessionCard from './RecentSessionCard.tsx'
 import { useInnerDims } from '../availableGenomes/util.ts'
+import SessionCard from './RecentSessionCard.tsx'
 
 import type { RecentSessionData } from '../types.ts'
 

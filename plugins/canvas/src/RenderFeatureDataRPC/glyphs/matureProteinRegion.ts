@@ -1,5 +1,5 @@
-import { layoutChild, sortByPosition } from './glyphUtils.ts'
 import { featureType, getSubfeatures } from '../util.ts'
+import { layoutChild, sortByPosition } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'

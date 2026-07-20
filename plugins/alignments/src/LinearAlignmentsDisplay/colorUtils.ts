@@ -1,13 +1,13 @@
 import { abgrToCssRgba, normalizedRgbToCss } from '@jbrowse/core/util/colorBits'
 
-import { ColorScheme } from './constants.ts'
 import { COLOR_SCHEMES } from '../shared/colorSchemes.ts'
 import { classifyInsertSize } from '../shared/insertSizeStats.ts'
+import { ColorScheme } from './constants.ts'
 import { IS_GRADIENT_SPAN_FRAC } from './shaders/slang/read.iface.generated.ts'
 
+import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 import type { LinkedReadsMode } from './constants.ts'
 import type { ColorPalette, RGBColor } from './shaders/colors.ts'
-import type { InsertSizeBand } from '../shared/insertSizeStats.ts'
 
 // Re-exports from core — kept for backwards-compat with call sites.
 export const rgb255 = normalizedRgbToCss

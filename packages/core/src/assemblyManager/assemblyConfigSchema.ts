@@ -1,5 +1,5 @@
-import { expandAssemblySequenceAdapter } from './expandAssemblyConfigShorthand.ts'
 import { ConfigurationSchema } from '../configuration/index.ts'
+import { expandAssemblySequenceAdapter } from './expandAssemblyConfigShorthand.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'

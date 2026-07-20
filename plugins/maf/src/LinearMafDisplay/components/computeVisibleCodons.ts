@@ -1,14 +1,14 @@
 import { codonTable } from '@jbrowse/core/util'
 
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { BpToPx, VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type {
   MafBlock,
   MafRegionData,
 } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord } from '../../types.ts'
+import type { BpToPx, VisibleRegionsView } from './visibleRegionGeometry.ts'
 
 /**
  * How a species' codon compares to the reference (anchor) codon:

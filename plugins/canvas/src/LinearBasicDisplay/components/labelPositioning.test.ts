@@ -6,15 +6,15 @@ import {
 } from './labelPositioning.ts'
 
 import type {
-  LabelCullBand,
-  RegionWithData,
-  ResolvedLabel,
-} from './labelPositioning.ts'
-import type {
   FeatureDataResult,
   FeatureLabelData,
   LabelItem,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  LabelCullBand,
+  RegionWithData,
+  ResolvedLabel,
+} from './labelPositioning.ts'
 import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 function makeLabel(overrides: Partial<LabelItem> = {}): LabelItem {

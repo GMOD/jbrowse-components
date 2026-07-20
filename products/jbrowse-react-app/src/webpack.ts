@@ -1,4 +1,5 @@
 import 'dockview-react/dist/styles/dockview.css'
+
 // eslint-disable-next-line no-restricted-imports
 import * as React from 'react'
 

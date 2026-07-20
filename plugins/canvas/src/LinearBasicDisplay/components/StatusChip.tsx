@@ -1,6 +1,6 @@
-import type { MouseEvent, ReactElement } from 'react'
-
 import { Chip, Tooltip } from '@mui/material'
+
+import type { MouseEvent, ReactElement } from 'react'
 
 // Shared look for every bottom-right status "blurb" (feature-count, isoform
 // collapse, ...). One outlined MUI Chip so the indicators read as a single

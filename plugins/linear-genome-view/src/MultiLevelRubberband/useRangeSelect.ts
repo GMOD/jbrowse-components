@@ -1,10 +1,10 @@
-import type React from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { getRelativeX } from '@jbrowse/core/util/getRelativeX'
 import { transaction } from 'mobx'
 
 import type { MultiLevelRubberbandModel } from './types.ts'
+import type React from 'react'
 
 interface AnchorPosition {
   offsetX: number

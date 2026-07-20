@@ -15,7 +15,6 @@
 // Module files (those whose Slang source begins with `module <name>;`) are
 // treated as imports only. If a module declares `//! export-consts: A, B`
 // it emits a `<base>.generated.ts` with just those constant values.
-
 import { execFileSync, spawnSync } from 'node:child_process'
 import {
   chmodSync,

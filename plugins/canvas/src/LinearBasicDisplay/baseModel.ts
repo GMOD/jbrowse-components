@@ -50,13 +50,23 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { autorun, observable, toJS, untracked } from 'mobx'
 
 import {
+  FEATURE_DEFAULT_COLOR,
+  UTR_DEFAULT_COLOR,
+} from '../RenderFeatureDataRPC/featureColors.ts'
+import {
+  HEIGHT_MULTIPLIERS,
+  labelFontSize,
+} from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
+import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
+import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
+import {
   fetchCanvasFeatureDetails,
   findSubfeatureById,
   indexById,
   inlineRadioGroup,
   toggleArrayMember,
 } from './baseModelHelpers.ts'
-import CanvasFeatureGateMixin from '../shared/CanvasFeatureGateMixin.ts'
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
@@ -81,21 +91,19 @@ import {
   interpolateYData,
   rowGeometrySignature,
 } from './yMorph.ts'
-import {
-  FEATURE_DEFAULT_COLOR,
-  UTR_DEFAULT_COLOR,
-} from '../RenderFeatureDataRPC/featureColors.ts'
-import {
-  HEIGHT_MULTIPLIERS,
-  labelFontSize,
-} from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
-import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type {
   DisplayConfig,
   DisplayMode,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
+// rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
+// from it is enough to make rpcManager.call() resolve to the typed args.
+import type {
+  FeatureDataResult,
+  FlatbushItem,
+  RenderFeatureDataResult,
+  SubfeatureInfo,
+} from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
   FeatureItemEntry,
@@ -111,14 +119,6 @@ import type {
 import type { FitStage } from './fitLadder.ts'
 import type { IncrementalLayout } from './layout.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
-// rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
-// from it is enough to make rpcManager.call() resolve to the typed args.
-import type {
-  FeatureDataResult,
-  FlatbushItem,
-  RenderFeatureDataResult,
-  SubfeatureInfo,
-} from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'

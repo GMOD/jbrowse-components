@@ -1,7 +1,7 @@
 import { waitFor } from '@testing-library/react'
 
-import { createTestEnvironment } from './testEnv.ts'
 import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
+import { createTestEnvironment } from './testEnv.ts'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

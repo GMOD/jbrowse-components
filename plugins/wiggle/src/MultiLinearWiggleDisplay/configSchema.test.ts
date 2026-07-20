@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 
-import multiConfigSchema from './configSchema.ts'
 import linearConfigSchema from '../LinearWiggleDisplay/configSchema.ts'
+import multiConfigSchema from './configSchema.ts'
 
 test('MultiLinearWiggleDisplay config schema has autoscale and numQuantile defaults', () => {
   const config = multiConfigSchema.create({

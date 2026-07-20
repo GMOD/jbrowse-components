@@ -13,11 +13,11 @@
 //   BLUESKY_IDENTIFIER, BLUESKY_APP_PASSWORD      -> Bluesky
 //   MASTODON_ACCESS_TOKEN (+ MASTODON_INSTANCE)   -> Mastodon
 //   NEWSLETTER_LAMBDA (+ AWS creds in env)        -> email newsletter
-
 import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+
 import {
   BLOG_DIR,
   REPO,

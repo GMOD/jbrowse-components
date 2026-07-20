@@ -1,7 +1,7 @@
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafFrameRecord } from '../../types.ts'
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 
 export interface FrameMarker {
   /** screen px of the left edge of the CDS segment */

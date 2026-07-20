@@ -1,14 +1,14 @@
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
-import BigMafAdapter from './BigMafAdapter.ts'
-import configSchema from './configSchema.ts'
 // plugin-maf loads the summary BigBed through the plugin system at runtime;
 // in tests we wire a real BigBedAdapter directly as the sub-adapter so the
 // autoSql column naming (src/score/leftStatus/rightStatus) is exercised end to
 // end against a real UCSC bigMafSummary.bb.
 import BigBedAdapter from '../../../bed/src/BigBedAdapter/BigBedAdapter.ts'
 import bigBedConfigSchema from '../../../bed/src/BigBedAdapter/configSchema.ts'
+import BigMafAdapter from './BigMafAdapter.ts'
+import configSchema from './configSchema.ts'
 
 import type { getSubAdapterType } from '@jbrowse/core/data_adapters/dataAdapterCache'
 

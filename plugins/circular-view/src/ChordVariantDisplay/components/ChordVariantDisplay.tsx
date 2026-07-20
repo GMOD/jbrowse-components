@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react'
 
+import SVChordsReactComponent from '../../ChordRenderer/ReactComponent.tsx'
 import DisplayError from './DisplayError.tsx'
 import Loading from './Loading.tsx'
-import SVChordsReactComponent from '../../ChordRenderer/ReactComponent.tsx'
 
 import type { ChordDisplayModel } from '../../ChordRenderer/types.ts'
 

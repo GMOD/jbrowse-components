@@ -8,6 +8,8 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 
+import { getContainingTrack, getSession } from '../util/index.ts'
+import { ElementId } from '../util/types/mst.ts'
 import ConfigSlot from './configurationSlot.ts'
 import {
   getConfigurationSchemaMetadata,
@@ -18,12 +20,10 @@ import {
   isConstantEntry,
   isSlotDefinitionEntry,
 } from './util.ts'
-import { getContainingTrack, getSession } from '../util/index.ts'
-import { ElementId } from '../util/types/mst.ts'
 
+import type PluginManager from '../PluginManager.ts'
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
-import type PluginManager from '../PluginManager.ts'
 import type {
   IAnyType,
   IType,
@@ -475,7 +475,13 @@ type IsAny<T> = 0 extends 1 & T ? true : false
 // exactly as before this type existed: such factories gain no narrowing (their
 // slot values were already `any` via the `any` definition brand) but also don't
 // regress structural expectations like `DisplayModel`'s `{ displayId: string }`
-// that the old `any` instance satisfied vacuously.
+// that the old `any` instance satisfied vacuously. Measured cost of removing
+// this hatch (widened branch → `AnyConfigurationModel`): exactly ONE production
+// site breaks — `LinearVariantDisplayComponent` needs `configuration.displayId`,
+// which the config instance doesn't carry as a named prop (erased through the
+// `Record<string, any>` modelDefinition above). Fixing that one identifier is
+// the minimal unblock for narrowing the variant/canvas base — see the "Config
+// read type narrowing" section of `./CLAUDE.md`.
 type ConfigReferenceInstance<SCHEMA extends AnyConfigurationSchemaType> =
   SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? IsAny<D> extends true
@@ -501,8 +507,8 @@ type ConfigReferenceInstance<SCHEMA extends AnyConfigurationSchemaType> =
  * `SCHEMA['Type']` (which carries `IStateTreeNode<SCHEMA>`) double-brands the
  * node, and the two competing `IStateTreeNode<…>` brands defeat the single
  * `infer SCHEMA` in `ConfigurationSchemaForModel` (leaving it `any`). Re-adding a
- * plain `Type` keeps the single brand. See
- * `agent-docs/guides/CONFIG_TYPE_NARROWING.md`.
+ * plain `Type` keeps the single brand. See the "Config read type narrowing"
+ * section of `packages/core/src/configuration/CLAUDE.md`.
  */
 export type IConfigurationReference<SCHEMA extends AnyConfigurationSchemaType> =
   Omit<

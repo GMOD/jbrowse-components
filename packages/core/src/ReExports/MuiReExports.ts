@@ -1,4 +1,4 @@
-import { type ComponentType, lazy } from 'react'
+import { lazy } from 'react'
 
 import Checkbox from '@mui/material/Checkbox'
 import Divider from '@mui/material/Divider'
@@ -16,6 +16,8 @@ import Radio from '@mui/material/Radio'
 import Switch from '@mui/material/Switch'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+
+import type { ComponentType } from 'react'
 
 // A `lazy(...)` entry is served to plugins Suspense-wrapped (see lazify); a bare
 // (eager) entry is served as-is. Overlay containers (Menu/Popover/Popper/

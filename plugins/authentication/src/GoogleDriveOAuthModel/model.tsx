@@ -1,11 +1,11 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { configSchema as OAuthConfigSchema } from '../OAuthModel/index.ts'
+import baseModel from '../OAuthModel/model.tsx'
 import { GoogleDriveFile } from './GoogleDriveFilehandle.ts'
 import GoogleDriveIcon from './GoogleDriveIcon.tsx'
 import { getDescriptiveErrorMessage } from './util.ts'
-import { configSchema as OAuthConfigSchema } from '../OAuthModel/index.ts'
-import baseModel from '../OAuthModel/model.tsx'
 
 import type { GoogleDriveOAuthInternetAccountConfigModel } from './configSchema.ts'
 import type { UriLocation } from '@jbrowse/core/util/types'

@@ -1,4 +1,3 @@
-import type React from 'react'
 import { useRef } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
@@ -12,12 +11,13 @@ import { isAlive } from '@jbrowse/mobx-state-tree'
 import { transaction } from 'mobx'
 import { observer } from 'mobx-react'
 
-import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 import { SyntenyRendererFactory } from '../LinearSyntenyDisplay/SyntenyRenderer.ts'
+import { useWheelScrollZoom } from './useWheelScrollZoom.ts'
 
+import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
 import type { ParentViewDuck } from './parentViewDuck.ts'
 import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
-import type { LinearSyntenyDisplayModel } from '../LinearSyntenyDisplay/model.ts'
+import type React from 'react'
 
 const useStyles = makeStyles()({
   root: {

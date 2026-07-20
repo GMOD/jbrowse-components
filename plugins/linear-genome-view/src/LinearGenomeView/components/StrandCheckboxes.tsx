@@ -1,11 +1,11 @@
-import type { ReactNode } from 'react'
-
 import {
   Checkbox,
   FormControlLabel,
   FormGroup,
   Typography,
 } from '@mui/material'
+
+import type { ReactNode } from 'react'
 
 // Forward/reverse strand checkboxes plus the "select at least one" guard, shared
 // by the sequence-search mode panels. Extra checkboxes for a specific panel (e.g.

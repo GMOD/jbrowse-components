@@ -2,8 +2,8 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { findManhattanHit } from './findManhattanHit.ts'
 
-import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 function buildFlatbush(

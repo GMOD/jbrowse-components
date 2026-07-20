@@ -2,11 +2,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { act, render } from '@testing-library/react'
 
-import BaseFeatureDetails from './index.tsx'
 import PluginManager from '../../PluginManager.ts'
 import { ConfigurationSchema } from '../../configuration/index.ts'
 import { createJBrowseTheme } from '../../ui/index.ts'
 import { stateModelFactory } from '../stateModelFactory.ts'
+import BaseFeatureDetails from './index.tsx'
 
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 

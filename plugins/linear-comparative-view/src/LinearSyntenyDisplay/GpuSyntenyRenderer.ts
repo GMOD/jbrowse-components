@@ -12,12 +12,12 @@ import * as syntenyFillStraightShader from './shaders/syntenyFillStraight.genera
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import { pickFeatureAtPoint } from './syntenyPickEngine.ts'
 
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type {
   SyntenyRenderState,
   SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 const PASS_FILL_STRAIGHT = 'fillStraight'

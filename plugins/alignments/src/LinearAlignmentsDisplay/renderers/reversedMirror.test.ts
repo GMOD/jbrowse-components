@@ -5,8 +5,8 @@ import {
   drawAlignmentsToCtx,
 } from './Canvas2DAlignmentsRenderer.ts'
 
-import type { RenderState } from './rendererTypes.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+import type { RenderState } from './rendererTypes.ts'
 
 Object.defineProperty(globalThis, 'devicePixelRatio', {
   value: 1,

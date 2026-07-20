@@ -1,8 +1,8 @@
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 import { forEachInsertion } from '../../LinearMafRenderer/rendering/forEachInsertion.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 
 export interface InsertionMarker {
   /** screen px of the cell boundary the marker centers on */

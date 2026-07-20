@@ -1,6 +1,6 @@
 import {
-  getInsertionType,
   insertionBarWidth as getInsertionRectWidthPx,
+  getInsertionType,
   passesFrequencyGate,
 } from '../../LinearAlignmentsDisplay/constants.ts'
 import { INTERBASE_INSERTION } from '../../shared/types.ts'

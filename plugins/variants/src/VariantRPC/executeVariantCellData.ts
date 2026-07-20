@@ -19,7 +19,6 @@ import {
   getVariantSvType,
 } from '../shared/variantSvType.ts'
 
-import type { GetCellDataArgs } from './types.ts'
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import type { MatrixCellData } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
 import type { FilteredVariant } from '../shared/minorAlleleFrequencyUtils.ts'
@@ -28,6 +27,7 @@ import type {
   VariantFeatureGenotypes,
   VariantFeatureInfo,
 } from '../shared/types.ts'
+import type { GetCellDataArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'

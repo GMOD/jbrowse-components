@@ -13,10 +13,10 @@
 //     --content-type application/json
 //
 // Usage: node scripts/gen-panukb-manifest.mjs
-import { gunzipSync } from 'node:zlib'
 import { writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { gunzipSync } from 'node:zlib'
 
 const MANIFEST_URL =
   'https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_release/phenotype_manifest.tsv.bgz'

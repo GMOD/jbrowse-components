@@ -3,20 +3,6 @@ import {
   prepareCanvas,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { PILEUP_LAYERS } from './pileupLayers.ts'
-import {
-  type AlignmentsRenderingBackend,
-  type AlignmentsSources,
-  type CigarUploadData,
-  type DrawBlock,
-  type RenderBlock,
-  type RenderState,
-  bpToScreenX,
-  interbaseRangeEnds,
-  pileupRowY,
-  sectionRegionKey,
-  sectionRenderState,
-} from './rendererTypes.ts'
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
@@ -48,8 +34,15 @@ import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
 import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
 import { drawHardclips, drawSoftclips } from '../../shared/drawClipBars.ts'
 import { getSelectionBounds } from '../components/chainOverlayUtils.ts'
+import { PILEUP_LAYERS } from './pileupLayers.ts'
+import {
+  bpToScreenX,
+  interbaseRangeEnds,
+  pileupRowY,
+  sectionRegionKey,
+  sectionRenderState,
+} from './rendererTypes.ts'
 
-import type { PileupLayerId } from './pileupLayers.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
@@ -62,6 +55,15 @@ import type { OverlapsUploadData } from '../../features/overlap/types.ts'
 import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types.ts'
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
+import type { PileupLayerId } from './pileupLayers.ts'
+import type {
+  AlignmentsRenderingBackend,
+  AlignmentsSources,
+  CigarUploadData,
+  DrawBlock,
+  RenderBlock,
+  RenderState,
+} from './rendererTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export interface Canvas2DRegionData

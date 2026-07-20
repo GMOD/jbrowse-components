@@ -1,6 +1,7 @@
 import { assembleLocString } from '@jbrowse/core/util'
 import { readTranslocationMate } from '@jbrowse/sv-core'
 
+import { findFeatureViewLevel } from '../util.ts'
 import {
   LEFT,
   VariantOverlay,
@@ -10,10 +11,9 @@ import {
   strandToSign,
   tickAtPx,
 } from './overlayUtils.tsx'
-import { findFeatureViewLevel } from '../util.ts'
 
-import type { OverlayProps, PathSpec } from './overlayUtils.tsx'
 import type { LayoutRecord } from '../types.ts'
+import type { OverlayProps, PathSpec } from './overlayUtils.tsx'
 
 // Resolve the TRA mate to whichever view (row) actually contains its
 // INFO.CHR2/END position, so connections draw correctly across any number of

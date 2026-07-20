@@ -1,28 +1,28 @@
-import { writeFileSync, existsSync, mkdirSync } from 'fs'
+import { ChildProcess } from 'child_process'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import http from 'http'
 import { tmpdir } from 'os'
 import { dirname, resolve } from 'path'
 import { fileURLToPath } from 'url'
-import { ChildProcess } from 'child_process'
 
-import { WebDriver, By, until } from 'selenium-webdriver'
+import { By, WebDriver, until } from 'selenium-webdriver'
 
 import {
   APP_BINARY,
   REPO_ROOT,
-  isHeadless,
+  cleanupUI,
+  clickButton,
+  createDriver,
   delay,
+  findByText,
+  flushBrowserLogs,
+  isHeadless,
+  killProcesses,
+  openMenuItem,
+  openVolvoxGenome,
   startChromedriver,
   startStaticServer,
-  createDriver,
   waitForStartScreen,
-  openVolvoxGenome,
-  clickButton,
-  findByText,
-  cleanupUI,
-  openMenuItem,
-  flushBrowserLogs,
-  killProcesses,
 } from './harness.ts'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))

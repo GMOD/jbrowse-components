@@ -1,7 +1,8 @@
 import fs from 'fs'
-import esbuild from 'esbuild'
 import path from 'path'
 import { fileURLToPath } from 'url'
+
+import esbuild from 'esbuild'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const rootDir = path.resolve(__dirname, '..')

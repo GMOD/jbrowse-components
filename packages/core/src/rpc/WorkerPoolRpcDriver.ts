@@ -1,6 +1,6 @@
-import BaseRpcDriver from './BaseRpcDriver.ts'
 import { readConfObject } from '../configuration/index.ts'
 import { clamp } from '../util/index.ts'
+import BaseRpcDriver from './BaseRpcDriver.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'

@@ -1,3 +1,4 @@
+import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 import {
   FORCE_LOAD_HEADROOM,
   TOO_MANY_FEATURES_REASON,
@@ -9,7 +10,6 @@ import {
   scaleByteEstimate,
   scaledForceLoadByteLimit,
 } from './featureDensityUtils.ts'
-import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
 describe('raiseLimitPast', () => {
   it('raises the limit past the estimate by the shared headroom, rounded up', () => {

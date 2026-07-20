@@ -6,6 +6,10 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 
+import {
+  KIND_CIGAR_MATCH,
+  KIND_MARKER,
+} from '../LinearSyntenyRPC/syntenyColors.ts'
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import {
   buildFeaturePath,
@@ -17,18 +21,14 @@ import {
   strokeCenterline,
   strokeFeatureSideEdges,
 } from './syntenyPickEngine.ts'
-import {
-  KIND_CIGAR_MATCH,
-  KIND_MARKER,
-} from '../LinearSyntenyRPC/syntenyColors.ts'
 
+import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { CanvasLike, ComputedTransform } from './syntenyPickEngine.ts'
 import type {
   SyntenyRenderState,
   SyntenyRenderingBackend,
   SyntenyTrackRenderParams,
 } from './syntenyRenderingBackendTypes.ts'
-import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 
 export type { CanvasLike } from './syntenyPickEngine.ts'
 

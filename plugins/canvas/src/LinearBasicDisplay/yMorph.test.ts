@@ -1,14 +1,14 @@
 import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../RenderFeatureDataRPC/testUtils.ts'
+import {
   canMorph,
   captureDisplayedTops,
   captureFeatureTops,
   easeInOutCubic,
   interpolateYData,
 } from './yMorph.ts'
-import {
-  makeFeatureData,
-  makeFlatbushItem,
-} from '../RenderFeatureDataRPC/testUtils.ts'
 
 // One rect per feature, sitting at the feature's top.
 function region(features: { featureId: string; top: number }[]) {

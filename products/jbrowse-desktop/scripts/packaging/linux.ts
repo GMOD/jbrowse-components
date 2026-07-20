@@ -1,10 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
+import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
 import { packageApp } from './packager.ts'
 import { ensureDir, fileSizeMB, generateLatestYml, log, run } from './utils.ts'
-import { JBROWSE_PROTOCOL } from '../../electron/launchTarget.ts'
 
 export async function buildLinux({ noInstaller = false } = {}) {
   log('Building Linux package...')

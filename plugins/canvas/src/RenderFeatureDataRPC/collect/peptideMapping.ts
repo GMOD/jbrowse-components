@@ -1,11 +1,11 @@
 import { aminoAcidsBySegment } from '../peptides/aggregateAminoAcids.ts'
 import { dedupedSortedCDS } from '../peptides/cdsSegments.ts'
 
-import type { RenderContext } from './renderContext.ts'
 import type {
   AggregatedAminoAcid,
   CdsSegment,
 } from '../peptides/aggregateAminoAcids.ts'
+import type { RenderContext } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // CDS segments in transcription order: dedupedSortedCDS yields ascending genomic

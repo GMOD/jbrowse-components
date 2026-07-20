@@ -11,12 +11,12 @@ import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
-import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 
 interface OverlayModel {
   renderedShowLabels: boolean

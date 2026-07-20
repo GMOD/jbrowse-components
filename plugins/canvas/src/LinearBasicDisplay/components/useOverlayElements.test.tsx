@@ -2,11 +2,11 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
-import { useFloatingLabels } from './useOverlayElements.tsx'
 import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../../RenderFeatureDataRPC/testUtils.ts'
+import { useFloatingLabels } from './useOverlayElements.tsx'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 

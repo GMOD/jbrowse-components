@@ -21,8 +21,8 @@
 // Usage: node scripts/gen-nextstrain-demos.mjs
 import { execFileSync, execSync } from 'node:child_process'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const exampleDir = join(scriptDir, '..', 'src', 'examples')

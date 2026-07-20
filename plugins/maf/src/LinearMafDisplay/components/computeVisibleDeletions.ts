@@ -1,8 +1,8 @@
-import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 import { forEachDeletion } from '../../LinearMafRenderer/rendering/forEachDeletion.ts'
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 
-import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 
 export interface DeletionMarker {
   /** screen px of the left edge of the deleted run */

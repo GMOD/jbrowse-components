@@ -1,27 +1,27 @@
 import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../../RenderFeatureDataRPC/testUtils.ts'
+import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
   hoverTooltip,
   isHitFeature,
   performMultiRegionHitDetection,
 } from './hitTesting.ts'
-import {
-  makeFeatureData,
-  makeFlatbushItem,
-} from '../../RenderFeatureDataRPC/testUtils.ts'
 
-import type {
-  FlatbushRegionIndexes,
-  HitFeatureResult,
-  LabelVisibility,
-  VisibleRegion,
-} from './hitTesting.ts'
 import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type {
+  FlatbushRegionIndexes,
+  HitFeatureResult,
+  LabelVisibility,
+  VisibleRegion,
+} from './hitTesting.ts'
 
 function makeItem(
   featureId: string,

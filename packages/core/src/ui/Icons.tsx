@@ -1,8 +1,8 @@
-export { default as InfoIcon } from '@mui/icons-material/Info'
-
 import SvgIcon from '@mui/material/SvgIcon'
 
 import type { SvgIconProps } from '@mui/material/SvgIcon'
+
+export { default as InfoIcon } from '@mui/icons-material/Info'
 
 // https://materialdesignicons.com/ text-search icon
 export function Indexing(props: SvgIconProps) {

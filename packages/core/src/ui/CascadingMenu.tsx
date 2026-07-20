@@ -12,9 +12,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { makeStyles } from '../util/tss-react/index.ts'
 import HoverMenu from './HoverMenu.tsx'
 import { MenuItemTrailing } from './MenuItemTrailing.tsx'
-import { makeStyles } from '../util/tss-react/index.ts'
 
 import type {
   BaseMenuItem,

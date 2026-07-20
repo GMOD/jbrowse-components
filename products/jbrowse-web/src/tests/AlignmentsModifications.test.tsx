@@ -1,8 +1,8 @@
 import path from 'node:path'
 
+import config from '../../test_data/modifications_test/config.json' with { type: 'json' }
 import { testAlignmentModificationsDisplay } from './testAlignmentModificationsDisplay.tsx'
 import { doBeforeEach, setup } from './util.tsx'
-import config from '../../test_data/modifications_test/config.json' with { type: 'json' }
 
 setup()
 

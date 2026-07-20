@@ -1,9 +1,9 @@
+import { mockDisplayConfig } from '../testUtils.ts'
 import { layoutBox } from './box.ts'
 import { findGlyph } from './findGlyph.ts'
 import { sortByPosition } from './glyphUtils.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutSegments } from './segments.ts'
-import { mockDisplayConfig } from '../testUtils.ts'
 
 import type { FeatureLayout } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'

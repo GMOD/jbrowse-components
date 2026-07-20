@@ -3,8 +3,8 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { paletteColorsByRow } from './applyColorPalette.ts'
 import { IDENTITY_FIELDS, extraColumns } from '../sourcesGridUtils.ts'
+import { paletteColorsByRow } from './applyColorPalette.ts'
 
 import type { ColorColumn } from './SourceGrid.tsx'
 import type { ButtonProps } from '@mui/material'

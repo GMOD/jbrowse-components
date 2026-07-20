@@ -1,6 +1,5 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 import {
   BLACK_ABGR,
   NO_CALL_COLOR,
@@ -13,6 +12,7 @@ import {
   splitPhasedAlleles,
 } from '../../shared/getPhasedColor.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
+import { SHAPE_RECT, SHAPE_TRI_LEFT } from './variantShape.ts'
 
 import type { FilteredVariant } from '../../shared/minorAlleleFrequencyUtils.ts'
 import type {

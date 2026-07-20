@@ -5,10 +5,10 @@ import {
   baseLinearDisplayConfigSchema,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { GENE_GLYPH_MODES } from './geneGlyphMode.ts'
 import { migrateBasicConfigSnapshot } from './migrateBasicSnapshot.ts'
 import { SHOW_LABELS_MODES } from './showLabelsMode.ts'
-import { MAX_LABEL_FEATURE_DENSITY } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 

@@ -1,8 +1,8 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { isCallbackValue } from './slotValueUtils.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
+import { isCallbackValue } from './slotValueUtils.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'

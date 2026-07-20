@@ -9,16 +9,16 @@ import {
 import { destroy, isAlive } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 
-import { fetchConfig } from './fetchConfig.ts'
-import { launchFromLink } from './launchFromLink.ts'
-import { newSessionName, resolveSessionName } from './sessionName.ts'
 import corePlugins from '../../corePlugins.ts'
 import JBrowseRootModelFactory from '../../rootModel/rootModel.ts'
 import sessionModelFactory from '../../sessionModel/sessionModel.ts'
 import { fetchCJS } from '../../util.tsx'
+import { fetchConfig } from './fetchConfig.ts'
+import { launchFromLink } from './launchFromLink.ts'
+import { newSessionName, resolveSessionName } from './sessionName.ts'
 
-import type { JBrowseConfig } from './types.ts'
 import type { DesktopRootModel } from '../../rootModel/rootModel.ts'
+import type { JBrowseConfig } from './types.ts'
 
 export { addRelativeUris } from '@jbrowse/core/util/addRelativeUris'
 // re-exported so callers (e.g. LeftSidePanel) keep one import site

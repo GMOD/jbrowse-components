@@ -6,14 +6,14 @@ import {
 import { updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
-import { buildModTooltipData } from './buildTooltipData.ts'
-import { computeFrequenciesAndThresholds } from './computeFrequenciesAndThresholds.ts'
-import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 import {
   computeBisulfiteCoverage,
   computeModificationCoverage,
 } from '../features/modCoverage/compute.ts'
 import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
+import { buildModTooltipData } from './buildTooltipData.ts'
+import { computeFrequenciesAndThresholds } from './computeFrequenciesAndThresholds.ts'
+import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 
 import type { StrandBaseCounts } from './calculateModificationCounts.ts'
 import type {

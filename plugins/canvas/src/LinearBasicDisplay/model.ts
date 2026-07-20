@@ -18,13 +18,13 @@ import baseStateModelFactory, { getView } from './baseModel.ts'
 import { radioSubMenu } from './baseModelHelpers.ts'
 import { GENE_GLYPH_MODE_OPTIONS } from './geneGlyphMode.ts'
 
-const CollapseIntronsDialog = lazy(
-  () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
-)
-
 import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+const CollapseIntronsDialog = lazy(
+  () => import('./CollapseIntronsDialog/CollapseIntronsDialog.tsx'),
+)
 
 export type { Region } from '@jbrowse/core/util'
 

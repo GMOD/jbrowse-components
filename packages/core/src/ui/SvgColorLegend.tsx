@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- geometry constants belong with this leaf SVG primitive; no component state to fast-refresh */
-import type { ReactNode } from 'react'
-
 import { measureText } from '../util/index.ts'
+
+import type { ReactNode } from 'react'
 
 export interface ColorLegendEntry {
   // React key; keep distinct across entries

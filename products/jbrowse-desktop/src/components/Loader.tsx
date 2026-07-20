@@ -7,18 +7,18 @@ import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { useQueryParam } from '../useQueryParam.ts'
 import JBrowse from './JBrowse.tsx'
 import { NotificationProvider } from './Notifications.tsx'
 import { useNotifyError } from './NotifyContext.ts'
-import { useConfigLoad } from './useConfigLoad.ts'
-import { useSpecLinkLoad } from './useSpecLinkLoad.ts'
-import { useQueryParam } from '../useQueryParam.ts'
 import StartScreen from './StartScreen/StartScreen.tsx'
 import {
   destroyPluginManager,
   loadPluginManager,
   openSpecLink,
 } from './StartScreen/util.tsx'
+import { useConfigLoad } from './useConfigLoad.ts'
+import { useSpecLinkLoad } from './useSpecLinkLoad.ts'
 
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

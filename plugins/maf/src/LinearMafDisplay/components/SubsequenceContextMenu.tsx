@@ -5,9 +5,9 @@ import { useTheme } from '@mui/material'
 
 import { openSubsequenceWidget } from '../openSubsequenceWidget.ts'
 
-import type { ContextCoord } from './useDragSelection.ts'
 import type { Sample } from '../../types.ts'
 import type { LinearMafDisplayModel } from '../stateModel.ts'
+import type { ContextCoord } from './useDragSelection.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 

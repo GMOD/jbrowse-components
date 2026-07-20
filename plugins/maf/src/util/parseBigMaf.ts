@@ -1,8 +1,8 @@
 import { toMafStatus } from './mafStatus.ts'
 import { parseStrand } from './parseStrand.ts'
 
-import type { ParsedAssemblyName } from './parseAssemblyName.ts'
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
+import type { ParsedAssemblyName } from './parseAssemblyName.ts'
 
 const WHITESPACE_REGEX = / +/
 

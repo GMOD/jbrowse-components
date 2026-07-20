@@ -1,4 +1,3 @@
-import type React from 'react'
 import { lazy } from 'react'
 
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
@@ -35,13 +34,13 @@ import {
 } from './components/util.ts'
 import { LS_CURSOR_MODE } from './types.ts'
 
-import type { Dotplot1DViewModel } from './1dview.ts'
-import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type {
   DotplotGeometryData,
   DotplotRenderingBackend,
 } from '../DotplotDisplay/dotplotRenderingBackendTypes.ts'
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
+import type { Dotplot1DViewModel } from './1dview.ts'
+import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcStatus } from '@jbrowse/core/util'
@@ -49,6 +48,7 @@ import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
+import type React from 'react'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))

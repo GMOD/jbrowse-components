@@ -8,13 +8,6 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { PILEUP_LAYERS } from './pileupLayers.ts'
-import {
-  buildReadIdToIndex,
-  ensureRegion,
-  sectionRegionKey,
-  sectionRenderState,
-} from './rendererTypes.ts'
 import {
   ARC_LINE_PASS,
   ARC_MARKER_PASS,
@@ -107,7 +100,15 @@ import {
 } from '../shaders/palettes.ts'
 import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../shaders/slang/read.generated.ts'
+import { PILEUP_LAYERS } from './pileupLayers.ts'
+import {
+  buildReadIdToIndex,
+  ensureRegion,
+  sectionRegionKey,
+  sectionRenderState,
+} from './rendererTypes.ts'
 
+import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -120,7 +121,6 @@ import type {
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
-import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { GpuHal, PassDescriptor } from '@jbrowse/render-core/hal'
 
 // Shader strides — every pass shares the same Uniforms struct (see
