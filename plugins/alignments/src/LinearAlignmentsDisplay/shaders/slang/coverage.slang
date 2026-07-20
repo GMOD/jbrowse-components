@@ -30,10 +30,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float bottom = covBottom(u);
   float barTop = bottom + covBarScale(inst.depth, u);
-  o.position = float4(
-    flipX(lerp(x1, x2, local.x), u),
-    lerp(bottom, barTop, local.y),
-    0.0, 1.0);
+  o.position = flippedQuadPos(x1, x2, bottom, barTop, local, u);
   o.color = float4(unpackRGBA(u.colorCoverage).xyz, 1.0);
   return o;
 }

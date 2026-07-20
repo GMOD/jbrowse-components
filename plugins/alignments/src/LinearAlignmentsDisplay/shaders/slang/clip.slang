@@ -36,7 +36,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sx2 = clipCx + halfWClip;
 
   float2 yy = pileupY(float(inst.y), u);
-  o.position = float4(flipX(lerp(sx1, sx2, local.x), u), lerp(yy.y, yy.x, local.y), 0.0, 1.0);
+  o.position = flippedQuadPos(sx1, sx2, yy.y, yy.x, local, u);
   float3 c = (inst.kind == 0u) ? unpackRGBA(u.colorSoftclip).xyz : unpackRGBA(u.colorHardclip).xyz;
   o.color = float4(c, alpha);
   return o;

@@ -54,12 +54,10 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float clip2 = bpToClipX(inst.position + 1u, u);
   float sx1 = snapToPixelX(clip1, u.canvasW);
   float sx2 = max(sx1 + 2.0 / u.canvasW, snapToPixelX(clip2, u.canvasW));
-  float sx = lerp(sx1, sx2, local.x);
 
   float2 yy = pileupY(float(inst.y), u);
-  float sy = lerp(yy.y, yy.x, local.y);
 
-  o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
+  o.position = flippedQuadPos(sx1, sx2, yy.y, yy.x, local, u);
   o.color = float4(baseColor(inst.base, u), alpha);
   return o;
 }

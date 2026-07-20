@@ -33,10 +33,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float sTop = covAreaTop(u) - indOff - (inst.yOffset * u.interbaseHeight / u.canvasH) * 2.0;
   float sBot = sTop - (inst.segHeight * u.interbaseHeight / u.canvasH) * 2.0;
 
-  o.position = float4(
-    flipX(lerp(cx - barW * 0.5, cx + barW * 0.5, local.x), u),
-    lerp(sBot, sTop, local.y),
-    0.0, 1.0);
+  o.position = flippedQuadPos(cx - barW * 0.5, cx + barW * 0.5, sBot, sTop, local, u);
   o.color = float4(clipKindColor(inst.colorType, u), 1.0);
   return o;
 }

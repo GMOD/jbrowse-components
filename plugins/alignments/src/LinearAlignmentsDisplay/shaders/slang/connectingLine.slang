@@ -29,10 +29,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float syTop = 1.0 - yTop * px2clip;
   float syBot = 1.0 - yBot * px2clip;
 
-  o.position = float4(
-    flipX(lerp(sx1, sx2, local.x), u),
-    lerp(syBot, syTop, local.y),
-    0.0, 1.0);
+  o.position = flippedQuadPos(sx1, sx2, syBot, syTop, local, u);
   o.color = float4(0.0, 0.0, 0.0, 0.45);
   return o;
 }

@@ -46,10 +46,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 
   float2 yy = pileupY(inst.y, u);
 
-  o.position = float4(
-    flipX(lerp(sx1, sx2, local.x), u),
-    lerp(yy.y, yy.x, local.y),
-    0.0, 1.0);
+  o.position = flippedQuadPos(sx1, sx2, yy.y, yy.x, local, u);
   o.color = float4(OVERLAP_TINT, alpha);
   return o;
 }

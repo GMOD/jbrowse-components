@@ -91,14 +91,11 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
     }
   }
 
-  float sx = lerp(x1, x2, local.x);
-  float sy = lerp(y1, y2, local.y);
-
   // Long insertions draw as a fixed marker and never frequency-fade.
   float alpha = isLong ? 1.0 : frequencyFade(pxPerBp * pxPerBp, inst.frequency, u);
   if (alpha <= 0.0) { return discardVertex(); }
 
-  o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
+  o.position = flippedQuadPos(x1, x2, y1, y2, local, u);
   o.color = float4(unpackRGBA(u.colorInsertion).xyz, alpha);
   return o;
 }

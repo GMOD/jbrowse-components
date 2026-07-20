@@ -51,9 +51,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   }
   if (alpha <= 0.0) { return discardVertex(); }
 
-  float sx = lerp(sx1, sx2, local.x);
-  float sy = lerp(yBot, yTop, local.y);
-  o.position = float4(flipX(sx, u), sy, 0.0, 1.0);
+  o.position = flippedQuadPos(sx1, sx2, yBot, yTop, local, u);
   float3 c = (inst.gapType == GAP_DELETION) ? unpackRGBA(u.colorDeletion).xyz : unpackRGBA(u.colorSkip).xyz;
   o.color = float4(c, alpha);
   return o;

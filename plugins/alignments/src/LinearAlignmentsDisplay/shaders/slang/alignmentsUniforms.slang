@@ -372,9 +372,14 @@ public float4 covSegQuad(uint position, float yOffset, float segHeight,
   float k = covBarScale(relDepth, u);
   float segBot = bottom + yOffset * k;
   float segTop = segBot + segHeight * k;
-  return float4(
-    flipX(lerp(xx.x, xx.y, local.x), u),
-    lerp(segBot, segTop, local.y),
-    0.0, 1.0);
+  return flippedQuadPos(xx.x, xx.y, segBot, segTop, local, u);
+}
+
+// Clip-space position of one corner of a box mark: interpolate the
+// [x0,x1] x [yBot,yTop] clip box by the quadLocal() corner and apply the
+// reverse-strand X flip. Y args are (bottom, top) to match quadLocal's Y-up
+// local.y. Collapses the flip+lerp corner math shared by every box glyph.
+public float4 flippedQuadPos(float x0, float x1, float yBot, float yTop, float2 local, Uniforms u) {
+  return float4(flipX(lerp(x0, x1, local.x), u), lerp(yBot, yTop, local.y), 0.0, 1.0);
 }
 
