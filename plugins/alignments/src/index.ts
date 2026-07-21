@@ -8,6 +8,7 @@ import GuessAlignmentsTypesF from './GuessAlignmentsTypes/index.ts'
 import HtsgetBamAdapterF from './HtsgetBamAdapter/index.ts'
 import LinearAlignmentsDisplayF from './LinearAlignmentsDisplay/index.ts'
 import PileupDataRPCMethodsF from './RenderAlignmentDataRPC/index.ts'
+import ConsensusSequenceF from './consensus/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -24,6 +25,7 @@ export default class AlignmentsPlugin extends Plugin {
       LinearAlignmentsDisplayF,
       AlignmentsFeatureWidgetF,
       GuessAlignmentsTypesF,
+      ConsensusSequenceF,
     ]) {
       f(pluginManager)
     }

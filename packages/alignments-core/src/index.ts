@@ -118,3 +118,22 @@ export type {
   MismatchEntry,
   SNPCoverageResult,
 } from './coverageDownsampling.ts'
+export {
+  buildConsensusTally,
+  computeConsensus,
+  walkConsensus,
+} from './consensus/computeConsensus.ts'
+export type {
+  ConsensusFeature,
+  ConsensusOptions,
+  ConsensusRegion,
+  ConsensusTally,
+} from './consensus/computeConsensus.ts'
+export {
+  computeConsensusVariants,
+  variantsToVcf,
+} from './consensus/consensusVariants.ts'
+export type {
+  ConsensusVariant,
+  ConsensusVcfEntry,
+} from './consensus/consensusVariants.ts'

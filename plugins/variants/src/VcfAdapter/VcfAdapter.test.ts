@@ -60,3 +60,34 @@ test('getExportData filters by [start,end] overlap, matching getFeatures', async
   )
   expect(feats.map(f => f.get('name'))).toEqual(['del1'])
 })
+
+test('reads an in-memory VCF from a data: URI (consensus "open as track" path)', async () => {
+  const vcf = [
+    '##fileformat=VCFv4.3',
+    '##contig=<ID=ctgA>',
+    '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO',
+    'ctgA\t100\t.\tA\tG\t.\t.\tDP=10;AF=0.900',
+  ].join('\n')
+  const adapter = new Adapter(
+    configSchema.create({
+      vcfLocation: {
+        locationType: 'UriLocation',
+        uri: `data:text/plain;base64,${Buffer.from(vcf).toString('base64')}`,
+      },
+    }),
+  )
+
+  const feats = await firstValueFrom(
+    adapter
+      .getFeatures({
+        assemblyName: 'volvox',
+        refName: 'ctgA',
+        start: 0,
+        end: 200,
+      })
+      .pipe(toArray()),
+  )
+  expect(feats.length).toBe(1)
+  expect(feats[0]!.get('start')).toBe(99)
+  expect(feats[0]!.get('ALT')).toEqual(['G'])
+})
