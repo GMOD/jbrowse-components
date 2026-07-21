@@ -276,11 +276,21 @@ echo '{"views":[{"type":"LinearGenomeView","init":{"assembly":"volvox","loc":"ct
 jbrowse set-default-session --session session.json
 ```
 
-The one recipe with no add-track shortcut is the
+The one recipe with no `add-track` shortcut is the
 [multi-signal wiggle](#multiple-signals-on-one-track-each-its-own-color): its
-`MultiWiggleAdapter` bundles several files into one track, so write that track's
-config by hand (or with `--config`). See the [CLI reference](/docs/cli) for every
-flag.
+`MultiWiggleAdapter` bundles several files into one track, so write that track by
+hand (or pass the adapter through `--config`). See the [CLI reference](/docs/cli)
+for every flag.
+
+### Rendering a recipe as a static image
+
+To turn a recipe into a PNG or SVG without building a browsable instance, reach
+for [`@jbrowse/img`](/docs/jbrowse-img) (the `jb2export` command). It renders
+straight from your files and takes the same settings inline as per-track tokens
+(`color:`, `height:`, `sort:base`, `display:multivariant`), including a
+`--multiwig` flag that assembles the multi-signal track above for you. Use it for
+a figure; use `jbrowse add-track` when you want a config someone can open and
+explore.
 
 ---
 
@@ -1030,5 +1040,7 @@ the embedded version.
   views from a URL
 - [Automating JBrowse](/docs/automating) - the shared `init` launch model across
   config, URL, and embedded components
+- [Static image export (`@jbrowse/img`)](/docs/jbrowse-img) - render these
+  recipes to PNG/SVG from the command line, no config required
 - [Config reference](/docs/config/basetrack) - the complete, auto-generated slot
   list for every track, display, and adapter
