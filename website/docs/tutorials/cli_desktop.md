@@ -19,12 +19,17 @@ reproducible setup is portable across both apps.
 
 ## Install the CLI
 
-The CLI needs [Node.js](https://nodejs.org/) 20 or newer.
+The CLI needs [Node.js](https://nodejs.org/) 20 or newer — install it from
+[NodeSource](https://github.com/nodesource) or [NVM](https://github.com/nvm-sh/nvm)
+rather than `apt`, which tends to ship old versions.
 
 ```bash
 npm install -g @jbrowse/cli
 jbrowse --version
 ```
+
+To avoid a global install, replace `jbrowse` with `npx @jbrowse/cli` in any
+command below.
 
 ## Prepare your files first
 
