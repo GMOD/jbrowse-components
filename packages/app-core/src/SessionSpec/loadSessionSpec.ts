@@ -106,10 +106,23 @@ export async function loadSessionSpec(
     const createdViewIds: (string | undefined)[] = []
     for (const { type, ...view } of views) {
       const before = new Set(sessionViews().map(v => v.id))
-      await pluginManager.evaluateAsyncExtensionPoint(`LaunchView-${type}`, {
-        ...view,
-        session: rootModel.session,
-      })
+      // Strict so a launch handler that throws (missing/invalid assembly,
+      // unresolved track, ...) surfaces as a snackbar instead of being swallowed
+      // by the plain extension-point runner, which would leave a silent empty
+      // session. A handler that legitimately no-ops returns normally and is
+      // unaffected. Per-view try/catch so one bad view doesn't abort the rest.
+      try {
+        await pluginManager.evaluateAsyncExtensionPointStrict(
+          `LaunchView-${type}`,
+          {
+            ...view,
+            session: rootModel.session,
+          },
+        )
+      } catch (e) {
+        console.error(e)
+        rootModel.session?.notifyError(`Failed to launch ${type} view: ${e}`, e)
+      }
       createdViewIds.push(sessionViews().find(v => !before.has(v.id))?.id)
     }
 

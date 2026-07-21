@@ -4,7 +4,6 @@ import { getFileName } from '@jbrowse/core/util/tracks'
 import SPARQLAdapterF from './SPARQLAdapter/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AdapterGuesser } from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default class RdfPlugin extends Plugin {
@@ -14,7 +13,7 @@ export default class RdfPlugin extends Plugin {
     SPARQLAdapterF(pluginManager)
     pluginManager.addToExtensionPoint(
       'Core-guessAdapterForLocation',
-      (adapterGuesser: AdapterGuesser) => {
+      adapterGuesser => {
         return (
           file: FileLocation,
           index?: FileLocation,

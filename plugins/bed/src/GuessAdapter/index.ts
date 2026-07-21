@@ -6,16 +6,12 @@ import {
 } from '@jbrowse/core/util/tracks'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AdapterGuesser,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function GuessAdapterF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-guessAdapterForLocation',
-    (adapterGuesser: AdapterGuesser) => {
+    adapterGuesser => {
       return (
         file: FileLocation,
         index?: FileLocation,
@@ -104,7 +100,7 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
 
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
-    (trackTypeGuesser: TrackTypeGuesser) =>
+    trackTypeGuesser =>
       (adapterName: string, file?: FileLocation) => {
         if (
           adapterName === 'BedTabixAdapter' &&

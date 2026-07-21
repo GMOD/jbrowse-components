@@ -6,16 +6,12 @@ import {
 } from '@jbrowse/core/util/tracks'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AdapterGuesser,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function GuessAlignmentsTypesF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-guessAdapterForLocation',
-    (adapterGuesser: AdapterGuesser) => {
+    adapterGuesser => {
       return (
         file: FileLocation,
         index?: FileLocation,
@@ -49,7 +45,7 @@ export default function GuessAlignmentsTypesF(pluginManager: PluginManager) {
   )
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
-    (trackTypeGuesser: TrackTypeGuesser) => {
+    trackTypeGuesser => {
       return (adapterName: string) => {
         if (adapterName === 'BamAdapter' || adapterName === 'CramAdapter') {
           return 'AlignmentsTrack'

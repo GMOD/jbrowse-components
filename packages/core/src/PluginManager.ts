@@ -161,7 +161,9 @@ export interface ExtensionPointRegistry {
   }
   // singular: one widget renders, so this stays a single-component fold. A
   // callback returns its own component to replace/wrap the default, or the
-  // default unchanged to opt out
+  // default unchanged to opt out. Fired via PluggableComponent's `name` prop
+  // (no string-literal call site), so the docs tag lives here at the contract.
+  /** #extensionPoint Core-replaceWidget | sync | Replace or wrap the component that renders a widget */
   'Core-replaceWidget': {
     args: ComponentType<ReplaceWidgetProps>
     result: ComponentType<ReplaceWidgetProps>
@@ -771,6 +773,36 @@ export default class PluginManager {
         } catch (error) {
           console.error(error)
         }
+      }
+    }
+    return accumulator
+  }
+
+  // Like evaluateAsyncExtensionPoint but does NOT swallow callback errors. The
+  // swallow-and-continue in the plain variant suits accumulator points where one
+  // plugin failing should not sink the others; side-effecting points (launching
+  // a view, etc.) instead want the error to reach the caller so it can be
+  // surfaced rather than leaving the user with a silent no-op.
+  evaluateAsyncExtensionPointStrict<N extends ExtensionPointName>(
+    extensionPointName: N,
+    extendee: ExtensionPointArgs<N>,
+    props?: ExtensionPointProps<N>,
+  ): Promise<ExtensionPointResult<N>>
+  evaluateAsyncExtensionPointStrict(
+    extensionPointName: string,
+    extendee: unknown,
+    props?: Record<string, unknown>,
+  ): Promise<unknown>
+  async evaluateAsyncExtensionPointStrict(
+    extensionPointName: string,
+    extendee: unknown,
+    props?: Record<string, unknown>,
+  ) {
+    const callbacks = this.extensionPoints.get(extensionPointName)
+    let accumulator = extendee
+    if (callbacks) {
+      for (const callback of callbacks) {
+        accumulator = await callback(accumulator, props)
       }
     }
     return accumulator

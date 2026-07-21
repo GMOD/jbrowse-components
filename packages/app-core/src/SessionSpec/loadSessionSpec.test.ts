@@ -21,7 +21,8 @@ function setup(
   const pluginManager = {
     rootModel,
     extensionPoints: { has: (name: string) => name in handlers },
-    evaluateAsyncExtensionPoint: (name: string) => handlers[name]!(session),
+    evaluateAsyncExtensionPointStrict: (name: string) =>
+      handlers[name]!(session),
   } as unknown as PluginManager
   return { session, pluginManager }
 }
@@ -117,4 +118,32 @@ test('a spec view that creates no view leaves an undefined slot the layout skips
     viewIds: ['real'],
     size: undefined,
   })
+})
+
+test('a launch handler that throws surfaces an error instead of a silent no-op', async () => {
+  const { session, pluginManager } = setup({
+    'LaunchView-Good': async s => {
+      s.views.push({ id: 'good' })
+    },
+    'LaunchView-Bad': async () => {
+      throw new Error('No assembly provided')
+    },
+  })
+
+  await loadSessionSpec(
+    {
+      views: [
+        { type: 'Bad', assembly: 'volvox' },
+        { type: 'Good', assembly: 'volvox' },
+      ],
+    },
+    pluginManager,
+  )
+
+  // the bad view reports the real error, and the loop still launches the good one
+  expect(session.notifyError).toHaveBeenCalledWith(
+    expect.stringContaining('Failed to launch Bad view'),
+    expect.any(Error),
+  )
+  expect(session.views.map(v => v.id)).toEqual(['good'])
 })

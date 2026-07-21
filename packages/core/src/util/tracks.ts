@@ -316,6 +316,24 @@ export type TrackTypeGuesser = (
   file?: FileLocation,
 ) => string | undefined
 
+// Both guess points are accumulator-of-functions: each callback receives the
+// previously-registered guesser and returns a new one that either matches the
+// file itself or delegates to its predecessor (chain of responsibility). Typing
+// them here removes the `as AdapterGuesser`/`as TrackTypeGuesser` casts at every
+// fire site and gives plugin callbacks a checked signature.
+declare module '../PluginManager.ts' {
+  interface ExtensionPointRegistry {
+    'Core-guessAdapterForLocation': {
+      args: AdapterGuesser
+      result: AdapterGuesser
+    }
+    'Core-guessTrackTypeForLocation': {
+      args: TrackTypeGuesser
+      result: TrackTypeGuesser
+    }
+  }
+}
+
 // Handles both forward slashes and Windows backslashes in file:// URLs
 function filenameFromPath(path: string) {
   return path.replaceAll('\\', '/').split('/').at(-1) ?? ''
@@ -362,8 +380,8 @@ export function guessAdapter(
     const adapterGuesser = pluginManager.evaluateExtensionPoint(
       /** #extensionPoint Core-guessAdapterForLocation | sync | Guess an adapter config from a file location */
       'Core-guessAdapterForLocation',
-      (): AdapterConfig | undefined => undefined,
-    ) as AdapterGuesser
+      () => undefined,
+    )
 
     const adapter = adapterGuesser(file, index, adapterHint)
     if (adapter) {
@@ -389,8 +407,8 @@ export function guessTrackType(
     ).pluginManager.evaluateExtensionPoint(
       /** #extensionPoint Core-guessTrackTypeForLocation | sync | Guess a track type from a file location */
       'Core-guessTrackTypeForLocation',
-      (): string | undefined => undefined,
-    ) as TrackTypeGuesser
+      () => undefined,
+    )
 
     const trackType = trackTypeGuesser(adapterType, file)
     if (trackType) {
@@ -431,7 +449,7 @@ export function guessTrackConf(
   const adapterGuesser = pluginManager.evaluateExtensionPoint(
     'Core-guessAdapterForLocation',
     () => undefined,
-  ) as AdapterGuesser
+  )
   const adapter = adapterGuesser(file, indexLocation, undefined)
   if (!adapter || adapter.type === UNKNOWN) {
     throw new Error(
@@ -441,7 +459,7 @@ export function guessTrackConf(
   const trackTypeGuesser = pluginManager.evaluateExtensionPoint(
     'Core-guessTrackTypeForLocation',
     () => undefined,
-  ) as TrackTypeGuesser
+  )
   const name = getFileName(file)
   return {
     trackId: `${name}-${objectHash(adapter).slice(0, 8)}`,

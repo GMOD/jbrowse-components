@@ -36,7 +36,9 @@ declare module '@jbrowse/core/PluginManager' {
     }
     // singular: one dialog body renders, so this stays a single-component fold —
     // return your own component to replace/wrap the default, or the default to
-    // opt out
+    // opt out. Fired via PluggableComponent's `name` prop (no string-literal
+    // call site), so the docs tag lives here at the contract.
+    /** #extensionPoint Core-replaceAbout | sync | Replace or wrap a track's About dialog body */
     'Core-replaceAbout': {
       args: ComponentType<AboutPanelProps>
       result: ComponentType<AboutPanelProps>

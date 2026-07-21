@@ -8,16 +8,12 @@ import {
 import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type {
-  AdapterGuesser,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function VcfExtensionPointsF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint(
     'Core-guessAdapterForLocation',
-    (adapterGuesser: AdapterGuesser) => {
+    adapterGuesser => {
       return (
         file: FileLocation,
         index?: FileLocation,
@@ -84,7 +80,7 @@ export default function VcfExtensionPointsF(pluginManager: PluginManager) {
   )
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
-    (trackTypeGuesser: TrackTypeGuesser) => {
+    trackTypeGuesser => {
       return (adapterName: string) => {
         if (['VcfTabixAdapter', 'VcfAdapter'].includes(adapterName)) {
           return 'VariantTrack'

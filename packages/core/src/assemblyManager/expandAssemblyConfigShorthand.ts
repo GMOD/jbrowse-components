@@ -1,7 +1,6 @@
 import { UNKNOWN } from '../util/tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
-import type { AdapterGuesser } from '../util/tracks.ts'
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -37,7 +36,7 @@ export function expandAssemblySequenceAdapter(
     const guesser = pluginManager.evaluateExtensionPoint(
       'Core-guessAdapterForLocation',
       () => undefined,
-    ) as AdapterGuesser
+    )
     // baseUri (stamped next to `uri` by addRelativeUris for hub/relative configs)
     // rides on the file location so the guessed fastaLocation and its derived
     // .fai/.gzi siblings all resolve against the config's own location
