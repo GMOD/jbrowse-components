@@ -121,8 +121,9 @@ function MultiWiggleSvgBody({
       />
       {/* Overlay-mode color legend, drawn inline here (no inter-region masks in
           the flat export SVG). On screen this same legend is the hoisted
-          MultiWiggleLegendOverlay instead. */}
-      {model.isOverlay && model.sources.length > 1 ? (
+          MultiWiggleLegendOverlay instead, whose `showLegend` guard is mirrored
+          here so a dismissed legend stays out of the export. */}
+      {model.isOverlay && model.sources.length > 1 && model.showLegend ? (
         <OverlayColorLegend
           sources={model.sources}
           fallbackColor={model.posColor}
