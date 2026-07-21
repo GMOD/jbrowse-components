@@ -1,6 +1,42 @@
-import { DEMO_CONFIG, VOLVOX, lgvSession } from '../screenshot-spec-helpers.ts'
+import {
+  DEMO_CONFIG,
+  VOLVOX,
+  lgvSession,
+  sessionSpec,
+} from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+
+// Tetraploid potato multi-sample VCF (jbrowse.org/genomes/potato) rendered as a
+// genotype matrix — one column per variant, one row per sample. Loaded against
+// the local build (bare ?config=, prefixed with localhost by the generator) so
+// the current LinearMultiSampleVariantMatrixDisplay code runs, not the older
+// released one the remote config was authored against. `maxMissingnessFilter`
+// is the no-call ceiling config slot (1 = keep every variant); the before/after
+// pair below bakes two values into two otherwise byte-identical sessions so the
+// compose figure shows exactly which columns the filter drops. Inline display
+// props fold into the display snapshot (normalizeTrackInit) and real config
+// slots route onto the display config, so `maxMissingnessFilter` sets the slot.
+const POTATO_CONFIG = 'https://jbrowse.org/genomes/potato/config.json'
+function potatoMissingnessMatrix(maxMissingnessFilter: number) {
+  return sessionSpec(POTATO_CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'Stuberosum_448_v4.03',
+        loc: 'ST4.03ch01:23,700,000-26,100,000',
+        tracks: [
+          {
+            trackId: 'tetraploid_vcf',
+            type: 'LinearMultiSampleVariantMatrixDisplay',
+            height: 420,
+            maxMissingnessFilter,
+          },
+        ],
+      },
+    ],
+  })
+}
 
 export const variantsSpecs: ScreenshotSpec[] = [
   {
@@ -195,6 +231,64 @@ export const variantsSpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 10000 },
         ],
       },
+    ],
+  },
+
+  // Before/after max-missingness filter, over the tetraploid potato matrix.
+  // "Before": the ceiling at 1 keeps every variant, so columns with many
+  // no-call (missing) genotypes stay in the matrix.
+  {
+    mode: 'url',
+    name: 'variants/potato_missingness_before',
+    url: potatoMissingnessMatrix(1),
+    readySelector: '[data-testid="variant-matrix-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    // equal heights for the two parts give a clean top/bottom stack in compose
+    viewportHeight: 560,
+    annotations: [
+      {
+        type: 'text',
+        x: 300,
+        y: 60,
+        maxWidth: 520,
+        fontSize: 15,
+        text: 'Max missingness 1.0 (default): every variant kept, including high no-call columns',
+      },
+    ],
+  },
+
+  // "After": drop the ceiling to 0.1, so any variant whose no-call fraction
+  // exceeds 10% is hidden. Same window and layout — only the filter differs, so
+  // the columns that vanish are exactly the high-missingness ones.
+  {
+    mode: 'url',
+    name: 'variants/potato_missingness_after',
+    url: potatoMissingnessMatrix(0.1),
+    readySelector: '[data-testid="variant-matrix-display-done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+    viewportHeight: 560,
+    annotations: [
+      {
+        type: 'text',
+        x: 300,
+        y: 60,
+        maxWidth: 520,
+        fontSize: 15,
+        text: 'Max missingness 0.1: variants with more than 10% no-call genotypes are dropped',
+      },
+    ],
+  },
+
+  // Stack the two panels (unfiltered over filtered) into one before/after figure
+  // for the docs. Each part opens live on its own via its declarative session.
+  {
+    mode: 'compose',
+    name: 'variants/potato_missingness',
+    parts: [
+      'variants/potato_missingness_before',
+      'variants/potato_missingness_after',
     ],
   },
 ]
