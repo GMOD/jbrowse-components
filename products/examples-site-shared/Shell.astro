@@ -8,7 +8,6 @@ interface ExampleMeta {
   slug: string
   title: string
   group: string
-  dividerBefore?: boolean
 }
 
 interface Props {
@@ -27,6 +26,10 @@ const docsHref = 'https://jbrowse.org/jb2/docs/embedded_components/'
 const trimSlash = (s: string) => s.replace(/\/+$/, '')
 const here = trimSlash(Astro.url.pathname)
 const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
+
+// sidebar is grouped by each page's `group`, in first-appearance order (the
+// pages list is already group-contiguous), mirroring the index Gallery
+const groups = [...new Set(examples.map(e => e.group))]
 ---
 
 <html lang="en">
@@ -184,10 +187,16 @@ const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
         margin: 0;
         padding: 0;
       }
-      aside.sidebar li.section-start {
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px solid var(--rule);
+      aside.sidebar .nav-group + .nav-group {
+        margin-top: 6px;
+      }
+      aside.sidebar .nav-group-title {
+        padding: 10px 8px 3px;
+        font-size: 0.7em;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
       }
       aside.sidebar a {
         display: block;
@@ -398,20 +407,27 @@ const isActive = (slug: string) => trimSlash(`${base}${slug}`) === here
       <input type="checkbox" id="nav-toggle" class="nav-toggle-cb" />
       <label class="nav-toggle-label" for="nav-toggle">☰ Examples menu</label>
       <aside class="sidebar">
-        <ul>
-          {
-            examples.map(e => (
-              <li class={e.dividerBefore ? 'section-start' : undefined}>
-                <a
-                  href={`${base}${e.slug}/`}
-                  aria-current={isActive(e.slug) ? 'page' : undefined}
-                >
-                  {e.title}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
+        {
+          groups.map(group => (
+            <div class="nav-group">
+              <div class="nav-group-title">{group}</div>
+              <ul>
+                {examples
+                  .filter(e => e.group === group)
+                  .map(e => (
+                    <li>
+                      <a
+                        href={`${base}${e.slug}/`}
+                        aria-current={isActive(e.slug) ? 'page' : undefined}
+                      >
+                        {e.title}
+                      </a>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          ))
+        }
       </aside>
       <main style={`max-width:${mainMaxWidth}`}>
         <slot />

@@ -4,6 +4,7 @@ import { Code } from 'astro:components'
 import Example from '../examples/WithInit.tsx'
 import code from '../examples/WithInit.tsx?raw'
 import { examples } from '../examples.ts'
+import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
 import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 
@@ -114,6 +115,13 @@ const pmCommands = {
 
   <h2>Source</h2>
   <Code code={code} lang="tsx" />
+
+  <h2>Browse the examples</h2>
+  <p class="intro">
+    Each example renders the component live and shows its full source. Pick a
+    pattern below, or use the grouped list in the sidebar.
+  </p>
+  <Gallery examples={examples} />
 </Shell>
 
 <style>

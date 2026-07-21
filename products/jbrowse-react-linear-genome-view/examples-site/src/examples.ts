@@ -372,8 +372,6 @@ export const pages: ExamplePage[] = [
     title: 'Human exome',
     description: 'A human exome sequencing dataset on hg38.',
     group: 'Real-world demos',
-    // section break: how-to examples above, real-data demos below
-    dividerBefore: true,
     sections: [
       {
         slug: 'human-exome-example',
