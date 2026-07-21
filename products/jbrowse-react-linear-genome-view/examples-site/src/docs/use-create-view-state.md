@@ -32,5 +32,5 @@ If you instead call `createViewState` yourself, wrap it in `useState(() => …)`
 you, with no hook or state plumbing required.
 
 See the
-[embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/)
-for the full `createViewState` options.
+[Embedding JBrowse tutorial](https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/)
+for `createViewState` in a full worked example.

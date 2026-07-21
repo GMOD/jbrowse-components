@@ -7,5 +7,7 @@ add-track flow, such as sequence-search tracks and multi-wiggle tracks. Users
 can still toggle the tracks you provided on and off. They just can't introduce
 new ones.
 
-`disableAddTracks` is one of several embed props documented in the
-[embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/).
+`disableAddTracks` is one of several props the embedded `<LinearGenomeView>`
+accepts; the
+[Embedding JBrowse tutorial](https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/)
+shows the component in a full example.

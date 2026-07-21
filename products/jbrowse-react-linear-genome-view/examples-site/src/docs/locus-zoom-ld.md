@@ -22,4 +22,7 @@ and the
 [LinearManhattanDisplay](https://jbrowse.org/jb2/docs/config/linearmanhattandisplay/)
 `colorBy` slot. The
 [GWAS track guide](https://jbrowse.org/jb2/docs/config_guides/gwas_track/) walks
-through setup end to end.
+through setup end to end, and the
+[Linkage disequilibrium tutorial](https://jbrowse.org/jb2/docs/tutorials/linkage_disequilibrium/)
+covers the biology — reading an LD triangle, spotting a selective sweep, and
+when LD is the wrong tool.

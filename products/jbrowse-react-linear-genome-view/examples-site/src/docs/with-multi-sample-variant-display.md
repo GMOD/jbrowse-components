@@ -32,4 +32,8 @@ displays: [
 See [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack/),
 [VcfTabixAdapter](https://jbrowse.org/jb2/docs/config/vcftabixadapter/)
 (including `samplesTsvLocation`), and
-[LinearMultiSampleVariantDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantdisplay/).
+[LinearMultiSampleVariantDisplay](https://jbrowse.org/jb2/docs/config/linearmultisamplevariantdisplay/)
+([state model](https://jbrowse.org/jb2/docs/models/linearmultisamplevariantdisplay/)).
+The [1000 Genomes SVs tutorial](https://jbrowse.org/jb2/docs/tutorials/sv_multisamples/)
+works through population SVs and a family trio in a multi-sample display end to
+end.
