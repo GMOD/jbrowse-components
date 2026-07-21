@@ -20,8 +20,9 @@ reproducible setup is portable across both apps.
 ## Install the CLI
 
 The CLI needs [Node.js](https://nodejs.org/) 20 or newer — install it from
-[NodeSource](https://github.com/nodesource) or [NVM](https://github.com/nvm-sh/nvm)
-rather than `apt`, which tends to ship old versions.
+[NodeSource](https://github.com/nodesource) or
+[NVM](https://github.com/nvm-sh/nvm) rather than `apt`, which tends to ship old
+versions.
 
 ```bash
 npm install -g @jbrowse/cli
@@ -105,10 +106,9 @@ Inside `config.json`, the CLI referenced each file by its bare relative name
 
 In JBrowse Desktop, choose **File → Session → Open config.json or .jbrowse
 file…** (or the **Open .jbrowse or config.json or link** button on the start
-screen) and pick
-`myproject/config.json`. Desktop resolves each relative path against the
-config's own folder, loading the copied files straight from local disk, with no
-web server and no re-adding tracks through the UI.
+screen) and pick `myproject/config.json`. Desktop resolves each relative path
+against the config's own folder, loading the copied files straight from local
+disk, with no web server and no re-adding tracks through the UI.
 
 Since you already have a terminal open, you can also hand the config straight to
 Desktop and skip the start screen entirely:

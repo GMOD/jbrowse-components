@@ -1,12 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-} from '@mui/material'
+import { FormControl, InputLabel, MenuItem, Paper, Select } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { pickSyntenyTrackId } from './getSyntenyTracks.ts'

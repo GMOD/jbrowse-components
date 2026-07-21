@@ -67,24 +67,22 @@ const AlignmentsFeatureDetailsBody = observer(
   },
 )
 
-const AlignmentsFeatureDetails = observer(
-  function AlignmentsFeatureDetails({
-    model,
-  }: {
-    model: AlignmentFeatureWidgetModel
-  }) {
-    const { featureData } = model
-    return featureData ? (
-      <AlignmentsFeatureDetailsBody feat={featureData} model={model} />
-    ) : (
-      <Paper sx={{ p: 2 }}>
-        <Typography>
-          No feature loaded. It may not be available after a page refresh
-          because it was too large to persist in localStorage.
-        </Typography>
-      </Paper>
-    )
-  },
-)
+const AlignmentsFeatureDetails = observer(function AlignmentsFeatureDetails({
+  model,
+}: {
+  model: AlignmentFeatureWidgetModel
+}) {
+  const { featureData } = model
+  return featureData ? (
+    <AlignmentsFeatureDetailsBody feat={featureData} model={model} />
+  ) : (
+    <Paper sx={{ p: 2 }}>
+      <Typography>
+        No feature loaded. It may not be available after a page refresh because
+        it was too large to persist in localStorage.
+      </Typography>
+    </Paper>
+  )
+})
 
 export default AlignmentsFeatureDetails
