@@ -48,7 +48,7 @@ async function render(spec: ThumbSpec) {
   const input = sharp(join(imgDir, spec.src))
   const pipeline = spec.band
     ? await (async () => {
-        const { height = 0, width = 0 } = await input.metadata()
+        const { height, width } = await input.metadata()
         const top = Math.round(spec.band![0] * height)
         const bottom = Math.round(spec.band![1] * height)
         return input.extract({ left: 0, top, width, height: bottom - top })
