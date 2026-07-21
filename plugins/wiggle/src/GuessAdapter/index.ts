@@ -5,36 +5,28 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 export default function GuessAdapterF(pluginManager: PluginManager) {
-  pluginManager.addToExtensionPoint(
-    'Core-guessAdapterForLocation',
-    cb => {
-      return (
-        file: FileLocation,
-        index?: FileLocation,
-        adapterHint?: string,
-      ) => {
-        const fileName = getFileName(file)
-        return testAdapter(
-          fileName,
-          /\.(bw|bigwig)$/i,
-          adapterHint,
-          'BigWigAdapter',
-        )
-          ? {
-              type: 'BigWigAdapter',
-              bigWigLocation: file,
-            }
-          : cb(file, index, adapterHint)
-      }
-    },
-  )
+  pluginManager.addToExtensionPoint('Core-guessAdapterForLocation', cb => {
+    return (file: FileLocation, index?: FileLocation, adapterHint?: string) => {
+      const fileName = getFileName(file)
+      return testAdapter(
+        fileName,
+        /\.(bw|bigwig)$/i,
+        adapterHint,
+        'BigWigAdapter',
+      )
+        ? {
+            type: 'BigWigAdapter',
+            bigWigLocation: file,
+          }
+        : cb(file, index, adapterHint)
+    }
+  })
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
-    trackTypeGuesser =>
-      (adapterName: string, file?: FileLocation) => {
-        return adapterName === 'BigWigAdapter'
-          ? 'QuantitativeTrack'
-          : trackTypeGuesser(adapterName, file)
-      },
+    trackTypeGuesser => (adapterName: string, file?: FileLocation) => {
+      return adapterName === 'BigWigAdapter'
+        ? 'QuantitativeTrack'
+        : trackTypeGuesser(adapterName, file)
+    },
   )
 }

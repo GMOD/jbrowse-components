@@ -1,8 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
-import {
-  ConfigurationSchema,
-  getConf,
-} from '@jbrowse/core/configuration'
+import { ConfigurationSchema, getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'

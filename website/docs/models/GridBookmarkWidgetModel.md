@@ -13,32 +13,29 @@ see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
 
 ## Members
 
-| Member                                                                         | Kind       | Defined by              | Description                                                                                                                   |
-| ------------------------------------------------------------------------------ | ---------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [label](#property-label)                                                       | Properties | GridBookmarkWidgetModel |                                                                                                                               |
-| [highlight](#property-highlight)                                               | Properties | GridBookmarkWidgetModel |                                                                                                                               |
-| [id](#property-id)                                                             | Properties | GridBookmarkWidgetModel |                                                                                                                               |
-| [type](#property-type)                                                         | Properties | GridBookmarkWidgetModel |                                                                                                                               |
-| [bookmarks](#property-bookmarks)                                               | Properties | GridBookmarkWidgetModel | loaded from localStorage when not present in snapshot; sharedBookmarks from a shared URL are merged in via preProcessSnapshot |
-| [selectedBookmarks](#volatile-selectedbookmarks)                               | Volatiles  | GridBookmarkWidgetModel |                                                                                                                               |
-| [gridView](#volatile-gridview)                                                 | Volatiles  | GridBookmarkWidgetModel | which grid tab is visible: bookmarks or highlights                                                                            |
-| [bookmarkAssemblies](#getter-bookmarkassemblies)                               | Getters    | GridBookmarkWidgetModel |                                                                                                                               |
-| [validAssemblies](#getter-validassemblies)                                     | Getters    | GridBookmarkWidgetModel |                                                                                                                               |
-| [assembliesInViews](#getter-assembliesinviews)                                 | Getters    | GridBookmarkWidgetModel | assemblies currently displayed in any open view; the grids only show bookmarks/highlights belonging to these                  |
-| [visibleBookmarks](#getter-visiblebookmarks)                                   | Getters    | GridBookmarkWidgetModel | bookmarks belonging to an assembly currently open in a view                                                                   |
-| [setLabel](#action-setlabel)                                                   | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [setHighlight](#action-sethighlight)                                           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [setGridView](#action-setgridview)                                             | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [importBookmarks](#action-importbookmarks)                                     | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [addBookmark](#action-addbookmark)                                             | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [updateBookmarkLabel](#action-updatebookmarklabel)                             | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [updateBookmarkHighlight](#action-updatebookmarkhighlight)                     | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [updateBulkBookmarkHighlights](#action-updatebulkbookmarkhighlights)           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [setSelectedBookmarks](#action-setselectedbookmarks)                           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [setBookmarkedRegions](#action-setbookmarkedregions)                           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [clearBookmarksForLoadedAssemblies](#action-clearbookmarksforloadedassemblies) | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [clearSelectedBookmarks](#action-clearselectedbookmarks)                       | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
-| [removeBookmarkObject](#action-removebookmarkobject)                           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| Member                                                               | Kind       | Defined by              | Description                                                                                                                   |
+| -------------------------------------------------------------------- | ---------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [label](#property-label)                                             | Properties | GridBookmarkWidgetModel |                                                                                                                               |
+| [highlight](#property-highlight)                                     | Properties | GridBookmarkWidgetModel |                                                                                                                               |
+| [id](#property-id)                                                   | Properties | GridBookmarkWidgetModel |                                                                                                                               |
+| [type](#property-type)                                               | Properties | GridBookmarkWidgetModel |                                                                                                                               |
+| [bookmarks](#property-bookmarks)                                     | Properties | GridBookmarkWidgetModel | loaded from localStorage when not present in snapshot; sharedBookmarks from a shared URL are merged in via preProcessSnapshot |
+| [selectedBookmarks](#volatile-selectedbookmarks)                     | Volatiles  | GridBookmarkWidgetModel |                                                                                                                               |
+| [gridView](#volatile-gridview)                                       | Volatiles  | GridBookmarkWidgetModel | which grid tab is visible: bookmarks or highlights                                                                            |
+| [assembliesInViews](#getter-assembliesinviews)                       | Getters    | GridBookmarkWidgetModel | assemblies currently displayed in any open view; the grids only show bookmarks/highlights belonging to these                  |
+| [visibleBookmarks](#getter-visiblebookmarks)                         | Getters    | GridBookmarkWidgetModel | bookmarks belonging to an assembly currently open in a view                                                                   |
+| [setLabel](#action-setlabel)                                         | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [setHighlight](#action-sethighlight)                                 | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [setGridView](#action-setgridview)                                   | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [importBookmarks](#action-importbookmarks)                           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [addBookmark](#action-addbookmark)                                   | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [updateBookmarkLabel](#action-updatebookmarklabel)                   | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [updateBookmarkHighlight](#action-updatebookmarkhighlight)           | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [updateBulkBookmarkHighlights](#action-updatebulkbookmarkhighlights) | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [setSelectedBookmarks](#action-setselectedbookmarks)                 | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [setBookmarkedRegions](#action-setbookmarkedregions)                 | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [clearSelectedBookmarks](#action-clearselectedbookmarks)             | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
+| [removeBookmarkObject](#action-removebookmarkobject)                 | Actions    | GridBookmarkWidgetModel |                                                                                                                               |
 
 <details>
 <summary>GridBookmarkWidgetModel - Properties</summary>
@@ -153,23 +150,6 @@ type visibleBookmarks = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ 
 </details>
 
 <details>
-<summary>GridBookmarkWidgetModel - Getters (other undocumented members)</summary>
-
-#### getter: bookmarkAssemblies
-
-```ts
-type bookmarkAssemblies = string[]
-```
-
-#### getter: validAssemblies
-
-```ts
-type validAssemblies = Set<string>
-```
-
-</details>
-
-<details>
 <summary>GridBookmarkWidgetModel - Actions</summary>
 
 #### action: setLabel
@@ -236,12 +216,6 @@ type setSelectedBookmarks = (bookmarks: IExtendedLabeledRegionModel[]) => void
 
 ```ts
 type setBookmarkedRegions = (regions: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>>>[]) => void
-```
-
-#### action: clearBookmarksForLoadedAssemblies
-
-```ts
-type clearBookmarksForLoadedAssemblies = () => void
 ```
 
 #### action: clearSelectedBookmarks

@@ -100,23 +100,22 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
 
   pluginManager.addToExtensionPoint(
     'Core-guessTrackTypeForLocation',
-    trackTypeGuesser =>
-      (adapterName: string, file?: FileLocation) => {
-        if (
-          adapterName === 'BedTabixAdapter' &&
-          file &&
-          /\.bedmethyl\.gz$/i.test(getFileName(file))
-        ) {
-          return 'MultiQuantitativeTrack'
-        }
-        return (
-          {
-            BedpeAdapter: 'VariantTrack',
-            StarFusionAdapter: 'VariantTrack',
-            BedGraphAdapter: 'QuantitativeTrack',
-            BedGraphTabixAdapter: 'QuantitativeTrack',
-          }[adapterName] || trackTypeGuesser(adapterName, file)
-        )
-      },
+    trackTypeGuesser => (adapterName: string, file?: FileLocation) => {
+      if (
+        adapterName === 'BedTabixAdapter' &&
+        file &&
+        /\.bedmethyl\.gz$/i.test(getFileName(file))
+      ) {
+        return 'MultiQuantitativeTrack'
+      }
+      return (
+        {
+          BedpeAdapter: 'VariantTrack',
+          StarFusionAdapter: 'VariantTrack',
+          BedGraphAdapter: 'QuantitativeTrack',
+          BedGraphTabixAdapter: 'QuantitativeTrack',
+        }[adapterName] || trackTypeGuesser(adapterName, file)
+      )
+    },
   )
 }

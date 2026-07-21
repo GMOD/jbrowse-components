@@ -13,9 +13,9 @@ sentinel) can't happen through `getConf`. `readConfObject` is the intentional
 recurse). The promoted default lives in a personal, un-shared store, so **every
 boundary that serializes a display's config for elsewhere must flatten** — the
 worker via `resolvePromotableConfigSnapshot`, a shared/exported session via
-`bakePromotedDefaultsIntoSnapshot`. Layering: `promotableResolve.ts` (resolver) ←
-`getConf.ts` (reader) ← `promotableDefaults.ts` (control builders + share/worker
-helpers). Full model + the `ignorePromotedDefaults` opt-out:
+`bakePromotedDefaultsIntoSnapshot`. Layering: `promotableResolve.ts` (resolver)
+← `getConf.ts` (reader) ← `promotableDefaults.ts` (control builders +
+share/worker helpers). Full model + the `ignorePromotedDefaults` opt-out:
 `agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`.
 
 ## `getConf` vs `readConfObject`
@@ -72,11 +72,11 @@ work:
 param to its concrete schema type**
 (`configSchema: LinearArcDisplayConfigModel = ReturnType<typeof configSchemaFactory>`)
 instead of `AnyConfigurationSchemaType`. Every `getConf(self, …)` in that body
-then narrows for free. Done for the leaf display factories and three shared bases
-(`MultiSampleVariantBaseModel` → `SharedVariantConfigModel`,
-`LinearAlignmentsDisplay` → its config-schema type, and the LD `sharedModelFactory`
-→ `LDDisplayConfigSchema`), retyping subclass factories to pass an assignable
-schema in.
+then narrows for free. Done for the leaf display factories and three shared
+bases (`MultiSampleVariantBaseModel` → `SharedVariantConfigModel`,
+`LinearAlignmentsDisplay` → its config-schema type, and the LD
+`sharedModelFactory` → `LDDisplayConfigSchema`), retyping subclass factories to
+pass an assignable schema in.
 
 **Don't pin a shared base if any consumer reads its _own_ (non-shared) slots via
 `getConf(self, …)`.** The base owns the `configuration` prop, so pinning turns a

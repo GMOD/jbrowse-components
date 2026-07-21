@@ -771,9 +771,7 @@ export default function stateModelFactory(
         // scheme — `normal` included — pins this track over that default.
         // getConf walks the cascade and never surfaces `inherit`.
         get colorBy(): ColorBy {
-          return normalizeColorBy(
-            getConf(self, 'colorBy'),
-          )
+          return normalizeColorBy(getConf(self, 'colorBy'))
         },
 
         /**

@@ -54,8 +54,8 @@ config is loaded (see
 
 Each view's `init` blob is the same shape JBrowse Web serializes into its
 `?session=spec-…` URL, so its full field set — per-view `loc`/`tracks`,
-per-track `displaySnapshot` (initial display type, `height`, `color`,
-`colorBy`, …) — is documented in the
+per-track `displaySnapshot` (initial display type, `height`, `color`, `colorBy`,
+…) — is documented in the
 [URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#session-spec).
 
 `<JBrowse>` also accepts:

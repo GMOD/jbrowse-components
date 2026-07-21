@@ -1,12 +1,12 @@
+import { deepEqual } from '../util/deepEqual.ts'
+import { getSession, isViewContainer } from '../util/index.ts'
 import { getConf } from './getConf.ts'
 import { promotableSlots, resolveSlot } from './promotableResolve.ts'
 import { getSlotDefinition } from './slotFacade.ts'
-import { deepEqual } from '../util/deepEqual.ts'
-import { getSession, isViewContainer } from '../util/index.ts'
 import { getConfSnapshot, readConfObject } from './util.ts'
 
-import type { PromotableDisplay } from './promotableResolve.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
+import type { PromotableDisplay } from './promotableResolve.ts'
 
 /**
  * Session-wide "promoted defaults" for display-type config slots — the UI /

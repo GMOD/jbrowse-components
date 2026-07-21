@@ -1,5 +1,5 @@
-Most [view types](../comparative-views/#synteny-example) are declared up front in
-`defaultSession.views`. For views that should appear in response to runtime
+Most [view types](../comparative-views/#synteny-example) are declared up front
+in `defaultSession.views`. For views that should appear in response to runtime
 conditions instead (a button click, a search hit, a backend event), use the
 `LaunchView-*` extension points. This example boots an empty session and then
 launches a `LinearGenomeView` after mount:
@@ -20,8 +20,8 @@ await pluginManager.evaluateAsyncExtensionPoint('LaunchView-LinearGenomeView', {
 
 This is the same machinery the import wizard uses internally, so anything the
 user can launch from the UI you can launch from code. The shared `init` model
-behind every launch surface (this, `defaultSession.views`, and JBrowse Web's
-URL params) is described in
+behind every launch surface (this, `defaultSession.views`, and JBrowse Web's URL
+params) is described in
 [Automating JBrowse](https://jbrowse.org/jb2/docs/automating/). State actions
 like `showTrack`/`hideTrack` and `navToLocString` are documented per view under
 [docs/models](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

@@ -2,6 +2,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
+import { getConf } from './getConf.ts'
 import {
   getDisplayTypeDefaultChanges,
   isPromotableDefault,
@@ -12,7 +13,6 @@ import {
   resolvePromotableConfigSnapshot,
   tracksDifferingFrom,
 } from './promotableDefaults.ts'
-import { getConf } from './getConf.ts'
 import { readConfObject } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -797,7 +797,9 @@ describe('getConf resolves promotable slots; readConfObject stays raw', () => {
     // getConf walks the cascade to the concrete base; the raw read returns the
     // unset sentinel (undefined) it's stored as
     expect(getConf(display, 'guardedHeight')).toBe(7)
-    expect(readConfObject(display.configuration, 'guardedHeight')).toBeUndefined()
+    expect(
+      readConfObject(display.configuration, 'guardedHeight'),
+    ).toBeUndefined()
   })
 
   test('getConf on a promotable slot follows the session-wide default', () => {
@@ -805,7 +807,9 @@ describe('getConf resolves promotable slots; readConfObject stays raw', () => {
     session.setDisplayTypeDefault('TestDisplay', 'guardedHeight', 42)
     // getConf picks up the promoted default; readConfObject still sees no own value
     expect(getConf(display, 'guardedHeight')).toBe(42)
-    expect(readConfObject(display.configuration, 'guardedHeight')).toBeUndefined()
+    expect(
+      readConfObject(display.configuration, 'guardedHeight'),
+    ).toBeUndefined()
   })
 
   test('getConf on a plain (non-promotable) slot reads straight through', () => {

@@ -50,8 +50,9 @@ export async function navToBookmark(
     // this assembly has no navToLocString, so navigating to it would throw
     const isTarget = (v: AbstractViewModel) =>
       v.type === 'LinearGenomeView' && v.assemblyNames?.[0] === assembly
-    const view = (views.find(v => v.id === session.focusedViewId && isTarget(v)) ??
-      views.find(isTarget)) as MaybeLGV
+    const view = (views.find(
+      v => v.id === session.focusedViewId && isTarget(v),
+    ) ?? views.find(isTarget)) as MaybeLGV
 
     // slightly zoom out (grow 0.2) so the bookmarked region has context on
     // either side

@@ -163,7 +163,7 @@ Shared state model for LD displays
 
 ```ts
 // type signature
-type configuration = IConfigurationReference<AnyConfigurationSchemaType>
+type configuration = IConfigurationReference<ConfigurationSchemaType<{ readonly minorAlleleFrequencyFilter: { readonly type: "number"; readonly defaultValue: 0.1; readonly advanced: true; }; readonly lengthCutoffFilter: { readonly type: "number"; readonly defaultValue: number; readonly advanced: true; }; ... 14 more ...; readonly jexlFi...
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -291,7 +291,7 @@ recombination scale). The hit-test subtracts this from mouseY before reversing
 the render transform.
 
 ```ts
-type effectiveLineZoneHeight = any
+type effectiveLineZoneHeight = number
 ```
 
 #### getter: ldCanvasHeight
@@ -363,97 +363,97 @@ type prefersOffset = boolean
 #### getter: minorAlleleFrequencyFilter
 
 ```ts
-type minorAlleleFrequencyFilter = any
+type minorAlleleFrequencyFilter = number
 ```
 
 #### getter: lengthCutoffFilter
 
 ```ts
-type lengthCutoffFilter = any
+type lengthCutoffFilter = number
 ```
 
 #### getter: lineZoneHeight
 
 ```ts
-type lineZoneHeight = any
+type lineZoneHeight = number
 ```
 
 #### getter: ldMetric
 
 ```ts
-type ldMetric = any
+type ldMetric = 'r2' | 'dprime'
 ```
 
 #### getter: showLegend
 
 ```ts
-type showLegend = any
+type showLegend = boolean
 ```
 
 #### getter: showLDTriangle
 
 ```ts
-type showLDTriangle = any
+type showLDTriangle = boolean
 ```
 
 #### getter: showRecombination
 
 ```ts
-type showRecombination = any
+type showRecombination = boolean
 ```
 
 #### getter: recombinationZoneHeight
 
 ```ts
-type recombinationZoneHeight = any
+type recombinationZoneHeight = number
 ```
 
 #### getter: fitToHeight
 
 ```ts
-type fitToHeight = any
+type fitToHeight = boolean
 ```
 
 #### getter: hweFilterThreshold
 
 ```ts
-type hweFilterThreshold = any
+type hweFilterThreshold = number
 ```
 
 #### getter: callRateFilter
 
 ```ts
-type callRateFilter = any
+type callRateFilter = number
 ```
 
 #### getter: showVerticalGuides
 
 ```ts
-type showVerticalGuides = any
+type showVerticalGuides = boolean
 ```
 
 #### getter: showLabels
 
 ```ts
-type showLabels = any
+type showLabels = boolean
 ```
 
 #### getter: tickHeight
 
 ```ts
-type tickHeight = any
+type tickHeight = number
 ```
 
 #### getter: useGenomicPositions
 
 ```ts
-type useGenomicPositions = any
+type useGenomicPositions = boolean
 ```
 
 #### getter: signedLD
 
 ```ts
-type signedLD = any
+type signedLD = boolean
 ```
 
 #### getter: jexlFilters
@@ -512,14 +512,14 @@ type hitTest = (mouseX: number, mouseY: number) => LDFlatbushItem | undefined
 
 ```ts
 type rpcProps = () => {
-  ldMetric: any
-  minorAlleleFrequencyFilter: any
-  lengthCutoffFilter: any
-  hweFilterThreshold: any
-  callRateFilter: any
+  ldMetric: 'r2' | 'dprime'
+  minorAlleleFrequencyFilter: number
+  lengthCutoffFilter: number
+  hweFilterThreshold: number
+  callRateFilter: number
   jexlFilters: string[]
-  signedLD: any
-  useGenomicPositions: any
+  signedLD: boolean
+  useGenomicPositions: boolean
 }
 ```
 

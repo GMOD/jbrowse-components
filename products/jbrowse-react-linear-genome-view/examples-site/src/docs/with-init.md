@@ -35,6 +35,5 @@ toy genome:
 See [Advanced init](../session-setup/#with-init-advanced) for per-track display
 snapshots and view-level settings
 ([cytobands](https://jbrowse.org/jb2/docs/config/cytobandadapter/), gridlines,
-colorByCDS, …), and
-[Default session](../default-session/#default-session) for the full imperative
-snapshot form.
+colorByCDS, …), and [Default session](../default-session/#default-session) for
+the full imperative snapshot form.

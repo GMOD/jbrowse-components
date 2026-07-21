@@ -15,6 +15,6 @@ spreadsheet. `init` takes the `assembly` and a `uri` to the file. Note that
 Like every view type, this is declared as a `defaultSession.views` entry. See
 [Linear synteny view](../comparative-views/#synteny-example) for the general
 pattern. To pair a spreadsheet with a circular view that highlights breakends,
-see the [SV inspector](#sv-inspector-example). The view's properties and
-actions are listed in the
+see the [SV inspector](#sv-inspector-example). The view's properties and actions
+are listed in the
 [SpreadsheetView state model](https://jbrowse.org/jb2/docs/models/spreadsheetview/).

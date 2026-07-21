@@ -16,6 +16,6 @@ one.
 
 By default the views stack vertically. The app also has a **workspaces** mode
 (`session.setUseWorkspaces(true)`) that arranges views into a tiled, tabbed
-dockview layout. The session-spec `layout` syntax for describing such a
-tiling is documented under
+dockview layout. The session-spec `layout` syntax for describing such a tiling
+is documented under
 [Tiled views / Workspaces](https://jbrowse.org/jb2/docs/urlparams/#tiled-views--workspaces).

@@ -38,10 +38,7 @@ export default function HeightModeMixin<
        * -> `fixed` cascade and never returns the `inherit` sentinel.
        */
       get heightMode(): HeightMode {
-        return getConf(
-          self as unknown as TConf,
-          'heightMode',
-        )
+        return getConf(self as unknown as TConf, 'heightMode')
       },
       /**
        * #getter
