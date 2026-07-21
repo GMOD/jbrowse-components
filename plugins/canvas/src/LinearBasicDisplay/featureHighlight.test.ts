@@ -9,17 +9,9 @@ const gene: FeatureHighlight = {
   name: 'BRCA1',
 }
 
-test('exact span matches regardless of name', () => {
+test('exact span matches regardless of the stored label', () => {
   expect(
     featureMatchesHighlight({ startBp: 1000, endBp: 2000 }, 'chr1', gene),
-  ).toBe(true)
-  // shortened/missing label still matches on coords alone
-  expect(
-    featureMatchesHighlight(
-      { startBp: 1000, endBp: 2000, name: 'BRCA1...' },
-      'chr1',
-      gene,
-    ),
   ).toBe(true)
 })
 
@@ -29,43 +21,22 @@ test('off-by-one span (base convention drift) still matches', () => {
   ).toBe(true)
 })
 
-test('different span but overlapping + same name matches', () => {
-  // e.g. a transcript indexed under the gene, collapsed to the gene glyph
+test('an overlapping but non-exact span does not match (no overlap fallback)', () => {
+  // previously rescued by a matching name; text search now resolves by span
+  // alone, so a nested/overlapping feature no longer gets swept in
   expect(
-    featureMatchesHighlight(
-      { startBp: 1200, endBp: 1800, name: 'brca1' },
-      'chr1',
-      gene,
-    ),
-  ).toBe(true)
-})
-
-test('overlapping but different name does not match', () => {
-  expect(
-    featureMatchesHighlight(
-      { startBp: 1200, endBp: 1800, name: 'TP53' },
-      'chr1',
-      gene,
-    ),
+    featureMatchesHighlight({ startBp: 1200, endBp: 1800 }, 'chr1', gene),
   ).toBe(false)
 })
 
-test('same name but non-overlapping (paralog elsewhere) does not match', () => {
+test('a non-overlapping span (paralog elsewhere) does not match', () => {
   expect(
-    featureMatchesHighlight(
-      { startBp: 50000, endBp: 51000, name: 'BRCA1' },
-      'chr1',
-      gene,
-    ),
+    featureMatchesHighlight({ startBp: 50000, endBp: 51000 }, 'chr1', gene),
   ).toBe(false)
 })
 
 test('wrong refName never matches', () => {
   expect(
-    featureMatchesHighlight(
-      { startBp: 1000, endBp: 2000, name: 'BRCA1' },
-      'chr2',
-      gene,
-    ),
+    featureMatchesHighlight({ startBp: 1000, endBp: 2000 }, 'chr2', gene),
   ).toBe(false)
 })

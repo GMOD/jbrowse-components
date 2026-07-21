@@ -1,7 +1,7 @@
 import type { FlatbushItem } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 // The fields any rendered item — top-level feature or subfeature — is matched on
-type HighlightItem = Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>
+type HighlightItem = Pick<FlatbushItem, 'startBp' | 'endBp'>
 
 // A declarative request to highlight a feature. Two provenances, resolved
 // differently:
@@ -11,8 +11,8 @@ type HighlightItem = Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>
 //     features apart when they share a name AND overlap in span (the bug span
 //     matching caused: every same-named overlapping feature boxed at once).
 //   - Text search (trix) never serializes the adapter's uniqueId, so it omits
-//     featureId and pins the feature by what trix DOES record: the feature's
-//     exact span plus its indexed name, resolved fuzzily (below).
+//     featureId and pins the feature by the exact span trix records — the label
+//     is stored for display but not matched on (see featureMatchesHighlight).
 // Either way it is resolved against fetched features on the main thread (see
 // highlightedFeatureIdSet), so it survives pan/zoom/refetch.
 export interface FeatureHighlight {
@@ -20,6 +20,7 @@ export interface FeatureHighlight {
   // interbase (0-based half-open) genomic coords, matching FlatbushItem.startBp
   start: number
   end: number
+  // The searched label, kept for display/persistence only — not a matcher.
   name?: string
   // The rendered feature's (or subfeature's) reload-stable id. Set by the
   // right-click path; absent for text-search highlights, which have no id to
@@ -36,45 +37,25 @@ export interface HighlightTarget {
   featureId: string
 }
 
-// The reliable signal for a text-search highlight is the (refName, start, end)
-// triple — trix records the feature's exact coords, so a near-exact span match
-// resolves the common gene-search case on its own. `name` is only a best-effort
-// tiebreaker: the text-search label can be an indexed description ("protein
-// kinase") rather than the feature's Name, so it's used solely to RESCUE an
-// overlapping span — never to reject an otherwise-good span match. A
-// wrong/description label just falls back to span.
-function spanMatches(
-  item: Pick<FlatbushItem, 'startBp' | 'endBp'>,
-  h: FeatureHighlight,
-) {
-  return (
-    Math.abs(item.startBp - h.start) <= 1 && Math.abs(item.endBp - h.end) <= 1
-  )
-}
-
-function nameMatches(name: string | undefined, h: FeatureHighlight) {
-  return !!h.name && !!name && name.toLowerCase() === h.name.toLowerCase()
-}
-
-// The text-search rule: span-first, with an exact name rescuing an overlapping
-// span. Only reached for highlights without a featureId — an exact-id
-// (right-click) highlight is short-circuited in resolveFeatureHighlights before
-// this runs, so it never depends on span/name at all.
-function fuzzyMatches(item: HighlightItem, h: FeatureHighlight) {
-  const overlaps = item.endBp > h.start && item.startBp < h.end
-  return spanMatches(item, h) || (overlaps && nameMatches(item.name, h))
-}
-
-// Does a text-search highlight match this rendered feature or subfeature? The
-// same fuzzy rule serves both: a top-level feature matched by its span, or a
-// searched transcript whose span is a subspan of its gene (so the gene never
-// matched), matched as a subfeature.
+// A text-search highlight has no uniqueId to match on, so it resolves by the
+// exact span trix recorded — within ±1bp for the 1-based↔interbase convention.
+// The indexed span and the rendered feature's span both derive from the same
+// true genomic coords (the worker never clips to the region), so exact match is
+// reliable. There is deliberately no overlap or name fallback: a near-miss
+// simply fails to highlight rather than boxing a same-named neighbor that
+// happens to overlap. Reached only for highlights without a featureId — an
+// exact-id (right-click) highlight is short-circuited in
+// resolveFeatureHighlights before this runs.
 export function featureMatchesHighlight(
   item: HighlightItem,
   itemRefName: string,
   h: FeatureHighlight,
 ) {
-  return itemRefName === h.refName && fuzzyMatches(item, h)
+  return (
+    itemRefName === h.refName &&
+    Math.abs(item.startBp - h.start) <= 1 &&
+    Math.abs(item.endBp - h.end) <= 1
+  )
 }
 
 // The fields resolveFeatureHighlights needs from each fetched region — a
@@ -99,9 +80,9 @@ export interface ResolvedHighlights {
 }
 
 // Does highlight `h` resolve to a rendered item? An exact-id (right-click)
-// highlight matches by featureId alone — never span/name — so two features
-// sharing a name and span no longer both box; only the clicked one does. A
-// text-search highlight (no featureId) falls to the fuzzy span+name matcher.
+// highlight matches by featureId alone — never span — so two features sharing a
+// name and span no longer both box; only the clicked one does. A text-search
+// highlight (no featureId) falls to the exact-span matcher.
 function highlightHits(
   h: FeatureHighlight,
   item: HighlightItem,
@@ -125,7 +106,7 @@ function highlightHits(
 //           transcript buried/clipped in a dense track.
 //   `boxedBy` = index-aligned with `highlights`: which ids each individual
 //           highlight boxes. Attribution is the only honest answer to "which
-//           highlights box THIS?" — a fuzzy matcher re-run outside this loop
+//           highlights box THIS?" — a span matcher re-run outside this loop
 //           loses the topLevelMatched gate and reports matches for things a
 //           highlight never boxed. Fine for best-effort boxing, not for
 //           deciding what to DELETE; see removeFeatureHighlightsForId.
@@ -155,11 +136,7 @@ export function resolveFeatureHighlights(
       // sub-boxes inside the glyph.
       if (!topLevelMatched) {
         for (const s of data.subfeatureInfos) {
-          const item = {
-            startBp: s.startBp,
-            endBp: s.endBp,
-            name: s.displayLabel,
-          }
+          const item = { startBp: s.startBp, endBp: s.endBp }
           if (highlightHits(h, item, s.featureId, data.refName)) {
             boxed.add(s.featureId)
             pin.add(s.parentFeatureId)
