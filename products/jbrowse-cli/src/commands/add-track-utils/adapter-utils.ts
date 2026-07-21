@@ -8,7 +8,7 @@ interface LocalPathLocation {
   locationType: 'LocalPathLocation'
 }
 
-type Location = UriLocation | LocalPathLocation
+export type Location = UriLocation | LocalPathLocation
 
 export interface Adapter {
   type: string

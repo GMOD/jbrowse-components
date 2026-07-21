@@ -46,6 +46,25 @@ export function validateLoadAndLocation(location: string, load?: string): void {
   }
 }
 
+// --multiwig follows the same local-file rule as a single track: local sources
+// need a --load mode, a pure-URL set must omit it. hasLocalSource is true when
+// any comma/JSON string source is a local path.
+export function validateMultiWiggleLoad(
+  hasLocalSource: boolean,
+  load?: string,
+): void {
+  if (hasLocalSource && !load) {
+    throw new Error(
+      '--load is required when --multiwig includes local files (copy/move/symlink/inPlace)',
+    )
+  }
+  if (!hasLocalSource && load) {
+    throw new Error(
+      'The --load flag is used for local files only, but every --multiwig source is a URL',
+    )
+  }
+}
+
 export function validateAdapterType(adapterType: string): void {
   if (adapterType === 'UNKNOWN') {
     throw new Error('Track type is not recognized')

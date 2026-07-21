@@ -337,6 +337,161 @@ test('--color, --height, and --displayDefaults merge into displayDefaults', asyn
   })
 })
 
+test('--multiwig from a comma-separated list of URLs', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+
+    await runCommand([
+      'add-track',
+      '--multiwig',
+      'https://example.com/a.bw,https://example.com/b.bw',
+      '--name',
+      'Coverage',
+    ])
+
+    const track = readConf(ctx).tracks[0]
+    expect(track.type).toBe('MultiQuantitativeTrack')
+    expect(track.trackId).toBe('multiwiggle')
+    expect(track.name).toBe('Coverage')
+    expect(track.adapter).toEqual({
+      type: 'MultiWiggleAdapter',
+      subadapters: [
+        {
+          type: 'BigWigAdapter',
+          bigWigLocation: {
+            uri: 'https://example.com/a.bw',
+            locationType: 'UriLocation',
+          },
+        },
+        {
+          type: 'BigWigAdapter',
+          bigWigLocation: {
+            uri: 'https://example.com/b.bw',
+            locationType: 'UriLocation',
+          },
+        },
+      ],
+    })
+  })
+})
+
+test('--multiwig from a .json sources file passes subadapter objects through', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const sources = [
+      {
+        type: 'BigWigAdapter',
+        name: 'sample1',
+        color: '#f00',
+        bigWigLocation: { uri: 'https://example.com/1.bw' },
+      },
+      {
+        type: 'BigWigAdapter',
+        name: 'sample2',
+        color: '#00f',
+        bigWigLocation: { uri: 'https://example.com/2.bw' },
+      },
+    ]
+    await writeFile(ctxDir(ctx, 'sources.json'), JSON.stringify(sources))
+
+    await runCommand(['add-track', '--multiwig', 'sources.json'])
+
+    const track = readConf(ctx).tracks[0]
+    expect(track.trackId).toBe('sources')
+    expect(track.adapter).toEqual({
+      type: 'MultiWiggleAdapter',
+      subadapters: sources,
+    })
+  })
+})
+
+test('--multiwig copies local BigWigs and rewrites their locations', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeFile(ctxDir(ctx, 'a.bw'), 'a')
+    await writeFile(ctxDir(ctx, 'b.bw'), 'b')
+
+    await runCommand([
+      'add-track',
+      '--multiwig',
+      'a.bw,b.bw',
+      '--load',
+      'copy',
+      '--trackId',
+      'multi',
+      '--subDir',
+      'bw',
+    ])
+
+    expect(exists(ctxDir(ctx, 'bw/a.bw'))).toBe(true)
+    expect(exists(ctxDir(ctx, 'bw/b.bw'))).toBe(true)
+    expect(readConf(ctx).tracks[0].adapter.subadapters).toEqual([
+      {
+        type: 'BigWigAdapter',
+        bigWigLocation: { uri: 'bw/a.bw', locationType: 'UriLocation' },
+      },
+      {
+        type: 'BigWigAdapter',
+        bigWigLocation: { uri: 'bw/b.bw', locationType: 'UriLocation' },
+      },
+    ])
+  })
+})
+
+test('--multiwig builds explicit bigWigLocation objects so relative local paths resolve', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    fs.mkdirSync(ctxDir(ctx, 'raw'))
+    await writeFile(ctxDir(ctx, 'raw/a.bw'), 'a')
+    await writeFile(ctxDir(ctx, 'sources.json'), JSON.stringify(['raw/a.bw']))
+
+    await runCommand([
+      'add-track',
+      '--multiwig',
+      'sources.json',
+      '--load',
+      'copy',
+    ])
+
+    // the relative source becomes a config-relative bigWigLocation object (not a
+    // bare `bigWigs` string, which would not baseUri-resolve), and the file is
+    // copied beside the config
+    expect(exists(ctxDir(ctx, 'a.bw'))).toBe(true)
+    expect(readConf(ctx).tracks[0].adapter.subadapters).toEqual([
+      {
+        type: 'BigWigAdapter',
+        bigWigLocation: { uri: 'a.bw', locationType: 'UriLocation' },
+      },
+    ])
+  })
+})
+
+test('--multiwig with local files but no --load fails', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    await writeFile(ctxDir(ctx, 'a.bw'), 'a')
+    const { error } = await runCommand(['add-track', '--multiwig', 'a.bw'])
+    expect(error?.message).toMatchInlineSnapshot(
+      `"Error: --load is required when --multiwig includes local files (copy/move/symlink/inPlace)"`,
+    )
+  })
+})
+
+test('--multiwig alongside a positional track fails', async () => {
+  await runInTmpDir(async ctx => {
+    await initctx(ctx)
+    const { error } = await runCommand([
+      'add-track',
+      simpleBam,
+      '--multiwig',
+      'https://example.com/a.bw',
+    ])
+    expect(error?.message).toMatchInlineSnapshot(
+      `"Error: Pass either a positional track file or --multiwig, not both"`,
+    )
+  })
+})
+
 test('adds bam track from a url', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)

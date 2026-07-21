@@ -8,6 +8,7 @@ import {
   makeLocationProtocol,
 } from './add-track-utils/adapter-utils.ts'
 import { loadFiles } from './add-track-utils/file-operations.ts'
+import { buildMultiWiggle } from './add-track-utils/multiwig.ts'
 import {
   addSyntenyAssemblyNames,
   buildTrackConfig,
@@ -20,6 +21,7 @@ import {
   validateAssemblies,
   validateLoadAndLocation,
   validateLoadOption,
+  validateMultiWiggleLoad,
   validateTrackArg,
   warnUnknownAssemblyNames,
 } from './add-track-utils/validators.ts'
@@ -29,6 +31,7 @@ import {
 } from './shared/config-operations.ts'
 
 import type { Config } from '../base.ts'
+import type { Adapter, Location } from './add-track-utils/adapter-utils.ts'
 
 export async function run(args?: string[]) {
   const options = {
@@ -89,6 +92,11 @@ export async function run(args?: string[]) {
       type: 'string',
       description:
         'Inline JSON merged into the track displayDefaults (labels, mouseover, jexlFilters, etc.)',
+    },
+    multiwig: {
+      type: 'string',
+      description:
+        'Build a MultiQuantitativeTrack from several BigWigs (in place of the positional track arg): a comma-separated list of BigWig files/URLs, or a .json file holding an array of BigWig locations or subadapter objects, each with its own name/color',
     },
     target: {
       type: 'string',
@@ -156,6 +164,11 @@ export async function run(args?: string[]) {
     '--color \'jexl:feature.strand==1?"blue":"red"\'. --displayDefaults takes ' +
     'inline JSON for any other appearance setting (labels, mouseover, ' +
     'jexlFilters).\n\n' +
+    '--multiwig bundles several BigWigs into one MultiQuantitativeTrack, in ' +
+    'place of the positional track argument: pass a comma-separated list of ' +
+    'BigWig files/URLs, or a .json file with an array of BigWig locations or ' +
+    'subadapter objects (each carrying its own name/color/group). With --load, ' +
+    'local list entries are copied like any other track file.\n\n' +
     'For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is ' +
     'query,target — the reverse of the minimap2/nucmer input order. For the ' +
     'all-vs-all adapters (AllVsAllPAFAdapter, AllVsAllIndexedPAFAdapter) it is ' +
@@ -183,6 +196,12 @@ export async function run(args?: string[]) {
     '',
     '# color a track by strand and set its height (no escaping: single-quote the value, double-quote inside the jexl)',
     `$ jbrowse add-track genes.gff3.gz --load copy --color 'jexl:feature.strand==1?"blue":"red"' --height 200`,
+    '',
+    '# bundle several BigWigs into one MultiQuantitativeTrack (no positional track arg)',
+    '$ jbrowse add-track --multiwig a.bw,b.bw,c.bw --load copy --name "Coverage"',
+    '',
+    '# ...or from a sources.json carrying per-row name/color for each BigWig',
+    '$ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"',
   ]
 
   if (flags.help) {
@@ -198,9 +217,6 @@ export async function run(args?: string[]) {
 
   validateLoadOption(flags.load)
 
-  const location = positionals[0]
-  validateTrackArg(location)
-
   const {
     config,
     force,
@@ -215,9 +231,41 @@ export async function run(args?: string[]) {
     bed1,
     bed2,
     adapterType,
+    multiwig,
   } = flags
 
-  validateLoadAndLocation(location, load)
+  const location = positionals[0]
+  if (multiwig && location) {
+    throw new Error(
+      'Pass either a positional track file or --multiwig, not both',
+    )
+  }
+
+  const wrap = makeLocationProtocol(protocol)
+  const mapLocation = (p: string) => wrap(mapLocationForFiles(p, load, subDir))
+
+  // build the adapter (and the set of files to load) up front, so the track-arg
+  // and load validation runs before we touch the config on disk
+  const { adapter, files, trackType, trackId } = multiwig
+    ? buildMultiWiggleTrack({
+        sources: multiwig,
+        mapLocation,
+        load,
+        trackType: flags.trackType,
+        trackId: flags.trackId,
+      })
+    : buildFileTrack({
+        location,
+        index,
+        bed1,
+        bed2,
+        adapterType,
+        assemblyNames: flags.assemblyNames,
+        mapLocation,
+        load,
+        trackType: flags.trackType,
+        trackId: flags.trackId,
+      })
 
   const baseConfigObj = config ? parseConfigFlag(config) : undefined
   const displayDefaults = mergeDisplayDefaults({
@@ -233,28 +281,9 @@ export async function run(args?: string[]) {
   const targetConfigPath = await resolveConfigPath(target, out)
   const configDir = path.dirname(targetConfigPath)
 
-  const wrap = makeLocationProtocol(protocol)
-  const mapLocation = (p: string) => wrap(mapLocationForFiles(p, load, subDir))
-
-  const { adapter: guessedAdapter, files } = guessTrack({
-    location,
-    index,
-    bed1,
-    bed2,
-    adapterType,
-    mapLocation,
-  })
-
-  const adapter = addSyntenyAssemblyNames(guessedAdapter, flags.assemblyNames)
-
-  validateAdapterType(adapter.type)
-
   const configContents: Config = await readJsonFile(targetConfigPath)
   validateAssemblies(configContents, flags.assemblyNames)
 
-  const trackType = flags.trackType || guessTrackType(adapter.type)
-  const trackId =
-    flags.trackId || path.basename(location, path.extname(location))
   const name = flags.name || trackId
   const assemblyNames =
     flags.assemblyNames || configContents.assemblies?.[0]?.name || ''
@@ -297,4 +326,89 @@ export async function run(args?: string[]) {
     itemId: trackId,
     wasOverwritten,
   })
+}
+
+// what both track-building paths resolve to: the adapter, the local files to
+// load beside the config, and the track's type/id (either derived or overridden)
+interface BuiltTrack {
+  adapter: Adapter
+  files: (string | undefined)[]
+  trackType: string
+  trackId: string
+}
+
+// --multiwig: bundle several BigWigs into one MultiQuantitativeTrack
+function buildMultiWiggleTrack({
+  sources,
+  mapLocation,
+  load,
+  trackType,
+  trackId,
+}: {
+  sources: string
+  mapLocation: (l: string) => Location
+  load?: string
+  trackType?: string
+  trackId?: string
+}): BuiltTrack {
+  const { adapter, files } = buildMultiWiggle({ sources, mapLocation })
+  validateMultiWiggleLoad(files.length > 0, load)
+  return {
+    adapter,
+    files,
+    trackType: trackType || 'MultiQuantitativeTrack',
+    trackId: trackId || multiWiggleTrackId(sources),
+  }
+}
+
+// the usual path: one positional data file, adapter guessed from its extension
+function buildFileTrack({
+  location,
+  index,
+  bed1,
+  bed2,
+  adapterType,
+  assemblyNames,
+  mapLocation,
+  load,
+  trackType,
+  trackId,
+}: {
+  location?: string
+  index?: string
+  bed1?: string
+  bed2?: string
+  adapterType?: string
+  assemblyNames?: string
+  mapLocation: (l: string) => Location
+  load?: string
+  trackType?: string
+  trackId?: string
+}): BuiltTrack {
+  validateTrackArg(location)
+  validateLoadAndLocation(location, load)
+  const { adapter: guessedAdapter, files } = guessTrack({
+    location,
+    index,
+    bed1,
+    bed2,
+    adapterType,
+    mapLocation,
+  })
+  const adapter = addSyntenyAssemblyNames(guessedAdapter, assemblyNames)
+  validateAdapterType(adapter.type)
+  return {
+    adapter,
+    files,
+    trackType: trackType || guessTrackType(adapter.type),
+    trackId: trackId || path.basename(location, path.extname(location)),
+  }
+}
+
+// a .json sources file names the track after itself (sources.json -> sources); a
+// bare comma list has no filename to borrow, so it falls back to 'multiwiggle'
+function multiWiggleTrackId(sources: string): string {
+  return sources.toLowerCase().endsWith('.json')
+    ? path.basename(sources, path.extname(sources))
+    : 'multiwiggle'
 }

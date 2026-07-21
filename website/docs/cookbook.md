@@ -241,10 +241,10 @@ jbrowse add-track genes.gff3.gz --load copy --name Genes \
 
 The trick that keeps it readable: wrap the value in single quotes and use double
 quotes _inside_ the jexl, so there's nothing to escape. Anything else lands in
-one of two catch-all flags: `--displayDefaults` takes inline JSON for any display
-setting (the same object the recipes put under `displayDefaults`), and `--config`
-takes inline JSON for the rest of the track (top-level fields like `metadata` and
-`formatDetails`, or a full `displays` array).
+one of two catch-all flags: `--displayDefaults` takes inline JSON for any
+display setting (the same object the recipes put under `displayDefaults`), and
+`--config` takes inline JSON for the rest of the track (top-level fields like
+`metadata` and `formatDetails`, or a full `displays` array).
 
 ```bash
 jbrowse add-track genes.gff3.gz --load copy \
@@ -253,12 +253,12 @@ jbrowse add-track genes.gff3.gz --load copy \
 
 That covers every appearance recipe. Four `add-track` flags carry all of them:
 
-| To set                                                                             | Flag                        |
-| ---------------------------------------------------------------------------------- | --------------------------- |
-| Color or height                                                                    | `--color`, `--height`       |
+| To set                                                                                                            | Flag                         |
+| ----------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Color or height                                                                                                   | `--color`, `--height`        |
 | Any other display setting: labels, tooltips, `jexlFilters`, `colorBy`, `groupBy`, `scaleType`, `defaultRendering` | `--displayDefaults '<json>'` |
-| A non-default display (arc, matrix), or a top-level field like `metadata`/`formatDetails` | `--config '<json>'`   |
-| Track-selector folders                                                             | `--category "RNA-seq,Brain"` |
+| A non-default display (arc, matrix), or a top-level field like `metadata`/`formatDetails`                         | `--config '<json>'`          |
+| Track-selector folders                                                                                            | `--category "RNA-seq,Brain"` |
 
 A few settings aren't per-track. Alias chromosome names when you add the
 assembly:
@@ -268,29 +268,35 @@ jbrowse add-assembly genome.fa.gz --load copy --refNameAliases aliases.txt
 ```
 
 And open JBrowse to a curated view by writing the `defaultSession` from a file,
-which takes the same shape as the [TL;DR config's](#tldr-a-complete-config-on-one-screen)
-`defaultSession` (the `init` shorthand works here too):
+which takes the same shape as the
+[TL;DR config's](#tldr-a-complete-config-on-one-screen) `defaultSession` (the
+`init` shorthand works here too):
 
 ```bash
 echo '{"views":[{"type":"LinearGenomeView","init":{"assembly":"volvox","loc":"ctgA:1-50000","tracks":["genes","coverage"]}}]}' > session.json
 jbrowse set-default-session --session session.json
 ```
 
-The one recipe with no `add-track` shortcut is the
-[multi-signal wiggle](#multiple-signals-on-one-track-each-its-own-color): its
-`MultiWiggleAdapter` bundles several files into one track, so write that track by
-hand (or pass the adapter through `--config`). See the [CLI reference](/docs/cli)
-for every flag.
+The [multi-signal wiggle](#multiple-signals-on-one-track-each-its-own-color) is
+the one recipe that bundles several files into one track, so it has its own flag
+in place of the positional track argument. `--multiwig` takes a comma-separated
+list of BigWigs, or a `.json` sources file whose entries carry a per-row
+`name`/`color`, and builds the `MultiWiggleAdapter` for you:
+
+```bash
+jbrowse add-track --multiwig s1.bw,s2.bw,s3.bw --load copy --name "Coverage"
+```
+
+See the [CLI reference](/docs/cli) for every flag.
 
 ### Rendering a recipe as a static image
 
 To turn a recipe into a PNG or SVG without building a browsable instance, reach
 for [`@jbrowse/img`](/docs/jbrowse-img) (the `jb2export` command). It renders
 straight from your files and takes the same settings inline as per-track tokens
-(`color:`, `height:`, `sort:base`, `display:multivariant`), including a
-`--multiwig` flag that assembles the multi-signal track above for you. Use it for
-a figure; use `jbrowse add-track` when you want a config someone can open and
-explore.
+(`color:`, `height:`, `sort:base`, `display:multivariant`), and has its own
+`--multiwig` flag too. Use it for a figure; use `jbrowse add-track` when you
+want a config someone can open and explore.
 
 ---
 
@@ -748,6 +754,14 @@ See the [`LinearWiggleDisplay` config](/docs/config/linearwiggledisplay) for
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
 slot also accepts `multirowxy` (one stacked row per signal), `multirowdensity`,
 and `multixyplot` (all signals overlaid in one plot).
+
+From the CLI, `add-track --multiwig` builds this track. Pass the per-row
+`name`/`color` subadapters above as a `.json` sources file, or a bare
+comma-separated list for quick unnamed signals:
+
+```bash
+jbrowse add-track --multiwig v1.cram.bw,v2.cram.bw,v3.cram.bw --load copy --name Grains
+```
 
 <Figure caption="A three-sample MultiQuantitativeTrack over the AMY1 cluster (multirowxy): each 1000 Genomes sample's copy number draws in its own color and varies across the locus." src="/img/cookbook_multiwig.png"/>
 

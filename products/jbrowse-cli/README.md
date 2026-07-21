@@ -73,6 +73,7 @@ Use "jbrowse <command> --help" for more information about a command.
 
 ```
 
+
 ## jbrowse create
 
 ```
@@ -116,6 +117,7 @@ $ jbrowse create /path/to/new/installation --tag v1.0.0
 # List available versions
 $ jbrowse create --listVersions
 ```
+
 
 ## jbrowse add-assembly
 
@@ -221,6 +223,7 @@ $ jbrowse add-assembly https://example.com/data/sample.2bit
 $ jbrowse add-assembly myfile.fa.gz --load copy
 ```
 
+
 ## jbrowse add-track
 
 ```
@@ -243,9 +246,11 @@ Options:
   -d, --description          Optional description of the track
 
   -a, --assemblyNames        Assembly name or names for track as comma separated
-                             string. For synteny tracks the order is
+                             string. For pairwise synteny tracks the order is
                              query,target (reverse of minimap2/nucmer argument
-                             order)
+                             order); for all-vs-all adapters
+                             (AllVsAllPAFAdapter/AllVsAllIndexedPAFAdapter) list
+                             every assembly the file covers, in any order
 
       --category             Optional comma separated string of categories to
                              group tracks
@@ -260,6 +265,12 @@ Options:
 
       --displayDefaults      Inline JSON merged into the track displayDefaults
                              (labels, mouseover, jexlFilters, etc.)
+
+      --multiwig             Build a MultiQuantitativeTrack from several BigWigs
+                             (in place of the positional track arg): a
+                             comma-separated list of BigWig files/URLs, or a
+                             .json file holding an array of BigWig locations or
+                             subadapter objects, each with its own name/color
 
       --target               Path to config file in JB2 installation to write
                              out to
@@ -303,8 +314,17 @@ callback so nothing needs escaping, e.g. --color
 'jexl:feature.strand==1?"blue":"red"'. --displayDefaults takes inline JSON for
 any other appearance setting (labels, mouseover, jexlFilters).
 
-For synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target — the
-reverse of the minimap2/nucmer input order.
+--multiwig bundles several BigWigs into one MultiQuantitativeTrack, in place of
+the positional track argument: pass a comma-separated list of BigWig files/URLs,
+or a .json file with an array of BigWig locations or subadapter objects (each
+carrying its own name/color/group). With --load, local list entries are copied
+like any other track file.
+
+For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target
+— the reverse of the minimap2/nucmer input order. For the all-vs-all adapters
+(AllVsAllPAFAdapter, AllVsAllIndexedPAFAdapter) it is instead the full list of
+assemblies the file covers, in any order, since one all-vs-all file backs every
+pair.
 
 Examples:
 
@@ -328,7 +348,14 @@ $ jbrowse add-track /url/relative/path.bam --load inPlace
 
 # color a track by strand and set its height (no escaping: single-quote the value, double-quote inside the jexl)
 $ jbrowse add-track genes.gff3.gz --load copy --color 'jexl:feature.strand==1?"blue":"red"' --height 200
+
+# bundle several BigWigs into one MultiQuantitativeTrack (no positional track arg)
+$ jbrowse add-track --multiwig a.bw,b.bw,c.bw --load copy --name "Coverage"
+
+# ...or from a sources.json carrying per-row name/color for each BigWig
+$ jbrowse add-track --multiwig sources.json --name "CATlas ATAC"
 ```
+
 
 ## jbrowse text-index
 
@@ -420,6 +447,7 @@ $ jbrowse text-index -a hg19 --force
 $ jbrowse text-index --file myfile.gff3.gz --file myfile.vcfgz --out indexes
 ```
 
+
 ## jbrowse admin-server
 
 ```
@@ -458,6 +486,7 @@ $ jbrowse admin-server --root /path/to/jb2/
 # raise the body size limit for very large config updates
 $ jbrowse admin-server --bodySizeLimit 100mb
 ```
+
 
 ## jbrowse upgrade
 
@@ -506,6 +535,7 @@ $ jbrowse upgrade --url https://sample.com/jbrowse2.zip
 $ jbrowse upgrade --nightly
 ```
 
+
 ## jbrowse make-pif
 
 ```
@@ -523,11 +553,11 @@ Options:
 
       --coarse               Minimum insertion/deletion length (bp) at which a
                              coarse-tier row is split into multiple pieces so
-                             each row stays tight — 0 strips CIGAR with no
-                             splitting. Defaults to 10000. The no-CIGAR coarse
-                             tier (prefix T/Q) is emitted by default so
-                             whole-genome synteny views can auto-switch to it;
-                             pass --no-coarse to omit it.
+                             each row stays tight — 0 emits an unsplit coarse
+                             tier. Defaults to 10000. The no-CIGAR coarse tier
+                             (prefix T/Q) is emitted alongside the per-row CIGAR
+                             fine tier by default so whole-genome synteny views
+                             can auto-switch to it; pass --no-coarse to omit it.
 
       --no-coarse            Do not emit the coarse no-CIGAR tier; write only
                              the per-row CIGAR fine tier.
@@ -550,12 +580,13 @@ $ jbrowse make-pif input.paf --out output.pif.gz
 # use a CSI index for assemblies with chromosomes longer than ~512 Mb
 $ jbrowse make-pif input.paf --csi
 
-# strip CIGAR and emit only the coarse whole-genome tier
+# emit an unsplit coarse tier (alongside the fine tier)
 $ jbrowse make-pif input.paf --coarse 0
 
 # emit only the per-row CIGAR fine tier, skipping the coarse tier
 $ jbrowse make-pif input.paf --no-coarse
 ```
+
 
 ## jbrowse sort-gff
 
@@ -583,6 +614,7 @@ $ jbrowse sort-gff input.gtf | bgzip > sorted.gtf.gz
 $ tabix -p gff sorted.gtf.gz
 ```
 
+
 ## jbrowse sort-bed
 
 ```
@@ -603,6 +635,7 @@ $ tabix sorted.bed.gz
 
 # OR pipe data via stdin: cat file.bed | jbrowse sort-bed | bgzip > sorted.bed.gz
 ```
+
 
 ## jbrowse add-connection
 
@@ -659,6 +692,7 @@ $ jbrowse add-connection https://mysite.com/path/to/custom --type custom --confi
 $ jbrowse add-connection https://mysite.com/path/to/hub.txt --connectionId newId --name newName --target /path/to/jb2/installation/config.json
 ```
 
+
 ## jbrowse add-track-json
 
 ```
@@ -693,6 +727,7 @@ $ jbrowse add-track-json '{"type":"FeatureTrack","trackId":"genes","assemblyName
 $ jbrowse add-track-json track.json --out /path/to/jb2/
 ```
 
+
 ## jbrowse remove-track
 
 ```
@@ -720,6 +755,7 @@ $ jbrowse remove-track my_track_id --out /path/to/jb2/
 # remove a track from a specific config file
 $ jbrowse remove-track my_track_id --target /path/to/jb2/config.json
 ```
+
 
 ## jbrowse set-default-session
 
@@ -765,3 +801,5 @@ $ jbrowse set-default-session --currentSession
 # remove the existing default session
 $ jbrowse set-default-session --delete
 ```
+
+
