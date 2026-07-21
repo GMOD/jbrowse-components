@@ -68,13 +68,14 @@ const AlignmentsFeatureDetailsBody = observer(
 )
 
 const AlignmentsFeatureDetails = observer(
-  function AlignmentsFeatureDetails(props: {
+  function AlignmentsFeatureDetails({
+    model,
+  }: {
     model: AlignmentFeatureWidgetModel
   }) {
-    const { model } = props
     const { featureData } = model
     return featureData ? (
-      <AlignmentsFeatureDetailsBody feat={featureData} {...props} />
+      <AlignmentsFeatureDetailsBody feat={featureData} model={model} />
     ) : (
       <Paper sx={{ p: 2 }}>
         <Typography>

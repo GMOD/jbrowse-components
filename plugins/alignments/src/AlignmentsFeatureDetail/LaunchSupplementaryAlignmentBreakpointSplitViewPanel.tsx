@@ -7,8 +7,21 @@ import { observer } from 'mobx-react'
 import { getSAFeatures } from './getSAFeatures.ts'
 import { LaunchBreakpointSplitViewLink } from './links.tsx'
 
+import type { ReducedFeature } from './getSAFeatures.ts'
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
+
+// Reference coordinate of a segment's downstream (read-3') junction: its end on
+// forward strand, start on reverse.
+function downstreamBreakpoint(f: ReducedFeature) {
+  return f.strand === 1 ? f.end : f.start
+}
+
+// Reference coordinate of a segment's upstream (read-5') junction: its start on
+// forward strand, end on reverse.
+function upstreamBreakpoint(f: ReducedFeature) {
+  return f.strand === 1 ? f.start : f.end
+}
 
 const LaunchBreakpointSplitViewPanel = observer(
   function LaunchBreakpointSplitViewPanel({
@@ -35,8 +48,8 @@ const LaunchBreakpointSplitViewPanel = observer(
         <ul>
           {adjacentPairs.map(([f1, f2]) => (
             <li key={`${f1.uniqueId}-${f2.uniqueId}`}>
-              {f1.refName}:{toLocale(f1.strand === 1 ? f1.end : f1.start)} -&gt;{' '}
-              {f2.refName}:{toLocale(f2.strand === 1 ? f2.start : f2.end)}{' '}
+              {f1.refName}:{toLocale(downstreamBreakpoint(f1))} -&gt;{' '}
+              {f2.refName}:{toLocale(upstreamBreakpoint(f2))}{' '}
               <LaunchBreakpointSplitViewLink
                 model={model}
                 assemblyName={assemblyName}

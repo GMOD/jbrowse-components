@@ -44,7 +44,7 @@ export async function getSAFeatures({
     throw new Error('feature missing name')
   }
   const SA = getStringTag('SA', feature) ?? ''
-  const clipLengthAtStartOfRead = getClip(cigar, 1)
+  const clipLengthAtStartOfRead = getClip(cigar, origStrand)
 
   // get the canonical refname for the read because if the read.get('refName')
   // is chr1 and the actual fasta refName is 1 then no tracks can be opened on
