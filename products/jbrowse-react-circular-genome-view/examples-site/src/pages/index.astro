@@ -1,7 +1,9 @@
 ---
+import { Code } from 'astro:components'
+
 import { examples } from '../examples.ts'
-import Shell from '../layouts/Shell.astro'
 import Gallery from '../layouts/Gallery.astro'
+import Shell from '../layouts/Shell.astro'
 import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 ---
 
@@ -13,9 +15,43 @@ import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 >
   <h1>JBrowse Circular Genome View</h1>
   <p class="intro">
-    Live examples of the <code>@jbrowse/react-circular-genome-view2</code> React
-    component. Each page renders the component and shows its full source. Browse
-    by category in the sidebar.
+    <code>@jbrowse/react-circular-genome-view2</code> is a React component that
+    embeds a whole-genome circular overview — well suited to structural variants
+    and other long-range, cross-chromosome relationships. For a single
+    linear-track browser, use the{' '}
+    <a href="https://jbrowse.org/storybook/lgv/"
+      ><code>@jbrowse/react-linear-genome-view2</code></a
+    > component instead.
+  </p>
+
+  <div class="doc">
+    <h2>Install</h2>
+    <Code
+      code="npm install @jbrowse/react-circular-genome-view2 react react-dom"
+      lang="bash"
+    />
+
+    <h2>Usage</h2>
+    <p>
+      The declarative <code>CircularGenomeView</code> component takes an{' '}
+      <code>assembly</code> and <code>tracks</code>, plus an <code>init</code> for
+      which tracks to open (the{' '}
+      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a> covers
+      the assembly/track shape). Because it draws to canvas and uses browser-only
+      APIs, render it client-side only — in a server-rendered framework (Next.js,
+      Remix), load it with the framework's client-only wrapper (e.g.{' '}
+      <code>next/dynamic</code> with <code>{'{ ssr: false }'}</code>). The full
+      embedding guide is in the{' '}
+      <a href="https://jbrowse.org/jb2/docs/embedded_components/"
+        >embedded components docs</a
+      >.
+    </p>
+  </div>
+
+  <h2>Browse the examples</h2>
+  <p class="intro">
+    Each example renders the component live and shows its full source. Pick one
+    below, or use the grouped list in the sidebar.
   </p>
   <Gallery examples={examples} />
 </Shell>
