@@ -25,7 +25,7 @@ The pieces, and where each platform registers the scheme:
 | Renderer builds the session                           | `src/components/useSpecLinkLoad.ts` → `openSpecLink` (`StartScreen/util.tsx`)                                                                                 |
 | Same session, pasted instead of linked                | Start screen "Open" menu (`StartScreen/recentSessions/RecentSessionsPanel.tsx`) or File → Session → "Open JBrowse Web link..." (`src/rootModel/rootModel.ts`) |
 | macOS registration (`CFBundleURLTypes` in Info.plist) | `scripts/packaging/packager.ts` (`protocols`)                                                                                                                 |
-| Windows registration (`HKLM\Software\Classes`)        | `scripts/packaging/windows.ts` (NSIS install/uninstall)                                                                                                       |
+| Windows registration (`HKCU\Software\Classes`)        | `scripts/packaging/windows.ts` (NSIS install/uninstall)                                                                                                       |
 | Linux — see the caveat below                          | `scripts/packaging/linux.ts` (`.desktop` `MimeType`, `Exec=AppRun %U`)                                                                                        |
 
 **Linux registers nothing on its own.** We ship a bare AppImage, which doesn't
@@ -107,6 +107,12 @@ Remove-Item -path .\gtk+-bundle_2.22.1-20101229_win64.zip
 
 `pnpm package:win` will build and package the application as an NSIS installer
 (or portable ZIP if NSIS is not available).
+
+The installer is per-user (installs under `%LOCALAPPDATA%\Programs`, registers
+under `HKCU`, requires no admin/UAC), so electron-updater can apply background
+updates silently and relaunch the app. Note: users on an older per-machine
+build (installed under Program Files) will get a fresh per-user install on their
+next update rather than an in-place upgrade.
 
 For code signing, set these environment variables:
 

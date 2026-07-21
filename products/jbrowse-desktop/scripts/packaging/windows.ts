@@ -27,13 +27,19 @@ function createNsisScript(appDir: string, outputExe: string, useWine: boolean) {
     : outputExe.replace(/\\/g, '\\\\')
 
   return `
+Unicode true
+
 !include "MUI2.nsh"
 !include "FileFunc.nsh"
+!include "LogicLib.nsh"
 
 Name "${PRODUCT_NAME}"
 OutFile "${outputExeEscaped}"
-InstallDir "$PROGRAMFILES64\\${PRODUCT_NAME}"
-RequestExecutionLevel admin
+; Per-user install: no admin/UAC, so electron-updater can apply background
+; updates silently instead of raising a UAC prompt on every update. Location and
+; registry hive (HKCU) mirror electron-builder's default per-user NSIS target.
+InstallDir "$LOCALAPPDATA\\Programs\\${PRODUCT_NAME}"
+RequestExecutionLevel user
 
 !define MUI_ICON "${iconPath}"
 !define MUI_UNICON "${iconPath}"
@@ -64,24 +70,35 @@ Section "Install"
   CreateShortcut "$DESKTOP\\${PRODUCT_NAME}.lnk" "$INSTDIR\\${APP_NAME}.exe"
 
   ; Write registry keys for Add/Remove Programs
-  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME}"
-  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "UninstallString" "$INSTDIR\\Uninstall.exe"
-  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayIcon" "$INSTDIR\\${APP_NAME}.exe"
-  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "Publisher" "JBrowse Team"
-  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayVersion" "${VERSION}"
+  WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayName" "${PRODUCT_NAME}"
+  WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "UninstallString" "$INSTDIR\\Uninstall.exe"
+  WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayIcon" "$INSTDIR\\${APP_NAME}.exe"
+  WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "Publisher" "JBrowse Team"
+  WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "DisplayVersion" "${VERSION}"
 
   ; Register the ${JBROWSE_PROTOCOL}:// url scheme, so an "open in Desktop" link
   ; on a web page launches this install. macOS gets this from Info.plist and
   ; Linux from the .desktop file; on Windows it is registry-only.
-  WriteRegStr HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}" "" "URL:${PRODUCT_NAME} Protocol"
-  WriteRegStr HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}" "URL Protocol" ""
-  WriteRegStr HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}\\DefaultIcon" "" "$INSTDIR\\${APP_NAME}.exe,0"
-  WriteRegStr HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}\\shell\\open\\command" "" '"$INSTDIR\\${APP_NAME}.exe" "%1"'
+  WriteRegStr HKCU "Software\\Classes\\${JBROWSE_PROTOCOL}" "" "URL:${PRODUCT_NAME} Protocol"
+  WriteRegStr HKCU "Software\\Classes\\${JBROWSE_PROTOCOL}" "URL Protocol" ""
+  WriteRegStr HKCU "Software\\Classes\\${JBROWSE_PROTOCOL}\\DefaultIcon" "" "$INSTDIR\\${APP_NAME}.exe,0"
+  WriteRegStr HKCU "Software\\Classes\\${JBROWSE_PROTOCOL}\\shell\\open\\command" "" '"$INSTDIR\\${APP_NAME}.exe" "%1"'
 
   ; Get installed size
   \${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
   IntFmt $0 "0x%08X" $0
-  WriteRegDWORD HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "EstimatedSize" "$0"
+  WriteRegDWORD HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}" "EstimatedSize" "$0"
+
+  ; electron-updater applies a background update by running this installer
+  ; silently with --force-run (autoUpdater.ts calls quitAndInstall(true, true)).
+  ; Relaunch the app so a background update does not leave the user with no
+  ; window; a normal interactive install has no --force-run and does not.
+  \${GetParameters} $R0
+  ClearErrors
+  \${GetOptions} $R0 "--force-run" $R1
+  \${IfNot} \${Errors}
+    Exec '"$INSTDIR\\${APP_NAME}.exe"'
+  \${EndIf}
 SectionEnd
 
 Section "Uninstall"
@@ -95,8 +112,8 @@ Section "Uninstall"
   Delete "$DESKTOP\\${PRODUCT_NAME}.lnk"
 
   ; Remove registry keys
-  DeleteRegKey HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}"
-  DeleteRegKey HKLM "Software\\Classes\\${JBROWSE_PROTOCOL}"
+  DeleteRegKey HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${PRODUCT_NAME}"
+  DeleteRegKey HKCU "Software\\Classes\\${JBROWSE_PROTOCOL}"
 SectionEnd
 `
 }
