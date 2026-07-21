@@ -217,10 +217,16 @@ function frequencyAlpha(base: number, frequency: number) {
 
 // The whole low-frequency fade gate for one feature: honors the
 // "show low frequency mismatches" toggle, skips features that already cover a
-// full pixel, and normalizes the frequency byte. Callers pass `base` computed
-// from their geometry — pxPerBp (mismatch, clip) or its square (insertion, gap
-// deletion), which fades narrow features faster. Squaring can't change the
-// sub-pixel test, since base < 1 ⟺ pxPerBp < 1 for non-negative values.
+// full pixel, and normalizes the frequency byte. Callers pass `base` from their
+// geometry: `pxPerBp` for 1bp marks (mismatch, clip), `pxPerBp²` for the 1bp
+// insertion point-marker (squared so a narrow insertion fades faster than a
+// mismatch at the same zoom), and `widthPx²` for the multi-bp gap deletion — its
+// OWN on-screen span squared, NOT `pxPerBp²`, so a wide deletion stays opaque
+// when zoomed out instead of fading like a single base. Both the GPU
+// (gap.slang) and Canvas2D (drawGaps) pass `widthPx²`; keep them together.
+// Squaring only changes the fade *rate*: a feature is sub-pixel exactly when
+// base < 1, i.e. when the underlying width (`pxPerBp` for marks/insertions,
+// `widthPx` for deletions) is < 1, so the gate fires on the same features.
 //
 // Every fading pass must go through this rather than reassembling the gate
 // locally: hand-rolled copies are how the clip pass silently lost its toggle
