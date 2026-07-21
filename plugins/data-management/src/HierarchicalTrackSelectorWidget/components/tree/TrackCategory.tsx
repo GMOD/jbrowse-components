@@ -64,6 +64,9 @@ const useStyles = makeStyles()(theme => ({
   accordionText: {
     margin: 'auto 0',
     width: '100%',
+    '& a': {
+      color: 'inherit',
+    },
   },
   folderLabel: {
     display: 'flex',

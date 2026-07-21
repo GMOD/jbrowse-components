@@ -12,6 +12,18 @@ export function parseHubShortLabel(hubTxt: string) {
     .trim()
 }
 
+// a short, readable placeholder for a hub connection's name/category label
+// before parseHubShortLabel resolves (or if hub.txt has no shortLabel line);
+// avoids showing the full hub.txt URL in the track selector category header
+export function shortHubLabel(url: string) {
+  try {
+    const segments = new URL(url).pathname.split('/').filter(Boolean)
+    return segments.at(-2) ?? segments.at(-1) ?? url
+  } catch {
+    return url
+  }
+}
+
 // load a UCSC hub
 export async function loadHubSpec(
   {
@@ -38,7 +50,7 @@ export async function loadHubSpec(
     sessionConnections: hubURL.map(r => ({
       type: 'UCSCTrackHubConnection',
       connectionId: r,
-      name: r,
+      name: shortHubLabel(r),
       hubTxtLocation: {
         uri: r,
         locationType: 'UriLocation',
@@ -59,8 +71,15 @@ export async function loadHubSpec(
     }
     const sessionLabel = parseHubShortLabel(await res.text())
 
-    if (!sessionName && sessionLabel && isBaseSession(session)) {
-      session.setName(sessionLabel)
+    if (sessionLabel) {
+      if (!sessionName && isBaseSession(session)) {
+        session.setName(sessionLabel)
+      }
+      if (isWebSessionWithConnections(session)) {
+        session.sessionConnections
+          .find(c => c.connectionId === firstURL)
+          ?.setSlot('name', sessionLabel)
+      }
     }
   } catch (e) {
     console.error(e)
