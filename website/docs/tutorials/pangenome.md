@@ -64,7 +64,7 @@ docker run --rm -u "$(id -u):$(id -g)" -w /data -v "$PWD":/data \
 
 Pinning the image to a dated build tag (rather than `:latest`) keeps the graph
 reproducible. The same image also carries
-[odgi](https://github.com/pangenome/odgi), which projection 4 uses.
+[odgi](https://github.com/pangenome/odgi), which the depth projection uses.
 
 `-n` is the number of haplotypes, `-p` the minimum alignment identity, `-s` the
 segment length. `-p 90 -s 5000` suits a bacterial pangenome. `-c 3` is the one
@@ -82,7 +82,7 @@ pggb runs [wfmash](https://github.com/waveygang/wfmash) (all-vs-all alignment),
 [smoothxg](https://github.com/pangenome/smoothxg) (normalizes it), then the `-V`
 and `-M` steps. The output directory holds the graph (`*.smooth.final.gfa`), the
 all-vs-all PAF, the VCF, and the MAF, the outputs the sections below load
-(projection 4 reads the graph itself).
+(the depth projection reads the graph itself).
 
 ### Other builders
 
@@ -92,7 +92,7 @@ emits a VCF with `--vcf`, a GFA with `--gfa`, and a HAL with `--hal`.
 `halSynteny` into a PSL/PAF for the synteny projection. **odgi** projects any
 graph to the synteny PAF with `odgi untangle -i graph.og -r <ref> -p`.
 
-## Projection 1: all-vs-all synteny
+## All-vs-all synteny projection
 
 pggb's first step is a wfmash all-vs-all PAF, exactly the input the
 [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny) loads. Index it
@@ -125,7 +125,7 @@ Stack the four strains in a linear synteny view exactly as the
 describes. The PanSN `sample#` prefix on every PAF record is how the adapter
 maps a record to its strain.
 
-## Projection 2: pangenome variants
+## Pangenome variants projection
 
 `pggb -V K12` writes a VCF of every variant the graph decomposes against the K12
 path, genotyped across the other three strains, the pangenome as a table of
@@ -157,7 +157,8 @@ sample:
 }
 ```
 
-Stacking the MAF alignment (Projection 3, below) over the same window turns the
+Stacking the MAF alignment (the whole-genome alignment projection, below) over
+the same window turns the
 matrix from a standalone summary into something you can check: each band of
 shared or absent genotype sits directly above the per-strain alignment it was
 decomposed from.
@@ -168,7 +169,7 @@ The [multi-sample variant track guide](/docs/user_guides/multivariant_track)
 covers the matrix versus the per-position display, genotype coloring, and
 clustering samples by genotype.
 
-## Projection 3: whole-genome alignment (MAF)
+## Whole-genome alignment (MAF) projection
 
 `pggb -M` writes the multiple alignment as a MAF, which JBrowse reads as a
 [MAF track](/docs/config_guides/maf_track). One wrinkle: pggb orders each MAF
@@ -219,7 +220,7 @@ tree instead to draw the rows as a dendrogram. The
 per-row identity, and codon view, all derived from the alignment with no extra
 files.
 
-## Projection 4: pangenome depth (core vs accessory)
+## Pangenome depth projection (core vs accessory)
 
 The three projections above all show where the genomes _differ_. The one thing a
 pangenome is really about, how much of the graph is _shared_, is depth:
