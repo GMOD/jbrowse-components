@@ -15,6 +15,7 @@ import { ldSpecs } from './specs/ld.ts'
 import { mafSpecs } from './specs/maf.ts'
 import { methylationSpecs } from './specs/methylation.ts'
 import { pangenomeSpecs } from './specs/pangenome.ts'
+import { pangenomeCactusSpecs } from './specs/pangenome_cactus.ts'
 import { popgenSpecs } from './specs/popgen.ts'
 import { qtlSpecs } from './specs/qtl.ts'
 import { scatacSpecs } from './specs/scatac.ts'
@@ -47,6 +48,7 @@ export const specs: ScreenshotSpec[] = [
   ...gallerySpecs,
   ...mafSpecs,
   ...pangenomeSpecs,
+  ...pangenomeCactusSpecs,
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,

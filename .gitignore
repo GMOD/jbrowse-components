@@ -1,3 +1,4 @@
+ecoli_*
 website/static/video
 scripts/__pycache__
 **/.env

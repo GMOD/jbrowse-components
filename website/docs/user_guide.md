@@ -52,6 +52,7 @@ sidebar_label: Overview
 - [DNA methylation](/docs/tutorials/methylation) - Per-read, aggregate, and allele-specific methylation from long reads
 - [Synteny from ortholog tables](/docs/tutorials/multiway_synteny) - Stack N genomes from a jcvi MCScan .blocks file
 - [Pangenome graphs](/docs/tutorials/pangenome) - Visualize a pggb / Minigraph-Cactus pangenome graph in JBrowse
+- [Pangenome graphs with Minigraph-Cactus](/docs/tutorials/pangenome_cactus) - Build a Minigraph-Cactus pangenome graph and load its linear projections in JBrowse
 - [Population genomics](/docs/tutorials/population_genomics) - Fst, diversity, and Tajima's D scans plus a genotype matrix from one VCF
 - [Protein structures](/docs/tutorials/protein_structure) - View 3D protein structures and MSAs linked to genomic variants
 - [Read-pair heatmaps](/docs/tutorials/readpair_heatmap) - Turn an ordinary paired-end WGS alignment into a Hi-C-style contact heatmap that reveals structural variants, and load it in JBrowse as a .hic track

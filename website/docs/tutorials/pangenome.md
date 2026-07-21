@@ -87,7 +87,9 @@ depth projection reads the graph itself).
 ### Other builders
 
 The projections are builder-agnostic. **Minigraph-Cactus** (`cactus-pangenome`)
-emits a VCF with `--vcf`, a GFA with `--gfa`, and a HAL with `--hal`.
+emits a VCF with `--vcf`, a GFA with `--gfa`, and a HAL by default; the
+[Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus) builds this same
+four-strain demo that way and loads the same four projections.
 **progressiveCactus** produces a HAL. `hal2maf` turns it into the MAF and
 `halSynteny` into a PSL/PAF for the synteny projection. **odgi** projects any
 graph to the synteny PAF with `odgi untangle -i graph.og -r <ref> -p`.
@@ -398,6 +400,8 @@ output (on real disk) so a fresh run works out of the box. Export your own
 
 ## See also
 
+- [Pangenome graphs with Minigraph-Cactus](/docs/tutorials/pangenome_cactus) -
+  the same four strains and four projections, built with `cactus-pangenome`
 - [Synteny all-vs-all](/docs/tutorials/allvsall_synteny) - the four-strain
   synteny projection on its own, from a minimap2 all-vs-all PAF
 - [MAF track](/docs/user_guides/maf_track) - the multiple-alignment display and

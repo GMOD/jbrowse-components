@@ -34,10 +34,7 @@ For this tutorial we use a pre-configured JBrowse instance that already has the
 SV callset and trio alignment tracks loaded, so no data download is required. It
 was built with the usual `jbrowse add-track` workflow: the ensemble SV callset
 is bgzip-compressed and tabix-indexed on JBrowse's S3, and the trio tracks
-stream the published high-coverage CRAMs directly from the 1000 Genomes FTP. The
-demo also includes Oxford Nanopore long-read alignments for 1,019 of these
-samples, which we use in the inversion section below to read a breakpoint at
-single-read resolution.
+stream the published high-coverage CRAMs directly from the 1000 Genomes FTP.
 
 ## Getting started
 
@@ -167,19 +164,6 @@ span the inverted interval confirm the rearrangement.
 See the
 [SV visualization guide, Inversion section](/docs/user_guides/sv_visualization#inversion)
 for diagrams of these orientation patterns.
-
-For a cleaner signal, the demo also includes Oxford Nanopore long-read
-alignments for 1,019 samples, the
-[1KG ONT Vienna resource](https://www.internationalgenome.org/data-portal/data-collection/1kg_ont_vienna)
-([Schloissnig et al., 2025](https://doi.org/10.1038/s41586-025-09290-7)), under
-**1000 Genomes → Alignments → ONT (Vienna long-read)**. `HGSV_72999` is a
-heterozygous call in 274 of the 3,202 samples, 72 of which have ONT data, so we
-can pick a carrier and load its ONT track, for example **HG00637 ONT (Vienna)**.
-A short read can only imply the rearrangement through pair orientation, but a
-single ONT read runs straight through the breakpoint: the part before the
-junction aligns forward and the part after aligns to the reverse strand, shown
-as a supplementary/split alignment. So one read directly records the strand flip
-that defines the inversion.
 
 ### Breakpoint split view
 

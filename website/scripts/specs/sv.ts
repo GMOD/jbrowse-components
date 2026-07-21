@@ -513,6 +513,44 @@ export const svSpecs: ScreenshotSpec[] = [
     ],
   },
 
+  // Single ONT read reads out the inversion strand flip on the real 1000-genomes
+  // data used by the sv_multisamples tutorial. HGSV_72999 is a ~730 kb inversion
+  // (chr19:41,797,752-42,527,236) and HG00637 is a heterozygous carrier with
+  // Oxford Nanopore reads (1KG ONT Vienna, already in the hosted config as
+  // HG00637.ont.vienna.hg38). Because the inversion is far longer than one read,
+  // a read spans a single breakpoint: zoomed onto the left junction, its flank
+  // aligns forward and the segment continuing into the inverted block aligns to
+  // the reverse strand, so colorBy strand paints the flip directly at the column.
+  {
+    mode: 'url',
+    name: 'sv_ont_breakpoint',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '19:41,780,000-41,800,000',
+          tracks: [
+            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: 'HG00637.ont.vienna.hg38',
+              linkedReads: 'normal',
+              readConnections: 'arc',
+              drawInter: false,
+              height: 700,
+              coverageHeight: 80,
+              colorBy: { type: 'strand' },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG00637',
+    readyTimeout: 90000,
+    viewportHeight: 900,
+    settleMs: 40000,
+  },
+
   // C-GIAB live demo screenshots (load from jbrowse.org, not local test data)
 
   // Single-frame SV-inspector launch: the app "Add" menu with the "SV inspector"
