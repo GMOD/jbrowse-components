@@ -70,7 +70,7 @@ const ColorBySelector = observer(function ColorBySelector({
   const modes = COLOR_MODES.filter(
     m => m.value !== 'reference' || model.levels.length > 1,
   )
-  const active = COLOR_MODES.find(m => m.value === colorBy)
+  const active = modes.find(m => m.value === colorBy)
 
   return (
     <CascadingMenuButton

@@ -1,18 +1,14 @@
-import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
-import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
-import { useLocalStorage } from '@jbrowse/core/util'
-import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
-import { Divider, ToggleButton, Tooltip } from '@mui/material'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { asSyntenyModel } from '../../LinearSyntenyView/model.ts'
-import ColorBySelector from './ColorBySelector.tsx'
-import HeaderSearchBoxes from './HeaderSearchBoxes.tsx'
-import SyntenySettingsPopover from './SyntenySettingsPopover.tsx'
+import HeaderSearchBoxRow from './HeaderSearchBoxRow.tsx'
+import ScrollZoomToggle from './ScrollZoomToggle.tsx'
+import SyntenyHeaderControls from './SyntenyHeaderControls.tsx'
 import SyntenyWarnings from './SyntenyWarnings.tsx'
+import TrackSelectorMenuButton from './TrackSelectorMenuButton.tsx'
+import ViewOptionsMenuButton from './ViewOptionsMenuButton.tsx'
+import { useSearchBoxPrefs } from './useSearchBoxPrefs.ts'
 
 import type { LinearComparativeViewModel } from '../model.ts'
 
@@ -23,24 +19,6 @@ const useStyles = makeStyles()({
     gap: 4,
     minHeight: 48,
   },
-  inline: {
-    display: 'inline-flex',
-  },
-  vertical: {
-    flexDirection: 'column' as const,
-  },
-  searchBoxContainer: {
-    display: 'flex',
-    // scroll rather than clip when many rows' search boxes exceed the bar width
-    overflowX: 'auto',
-    minWidth: 0,
-    gap: 12,
-  },
-  scrollZoomButton: {
-    height: 44,
-    border: 'none',
-    textTransform: 'none',
-  },
 })
 
 const Header = observer(function Header({
@@ -49,147 +27,19 @@ const Header = observer(function Header({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
-  const { views } = model
-  // Persist search-box visibility/orientation per regime (few vs many genomes)
-  // rather than one global key, so the "compact default" heuristic isn't
-  // permanently overridden by a choice made in a differently-sized view.
-  const compact = views.length <= 3
-  const regime = compact ? 'compact' : 'large'
-  const [showSearchBoxes, setShowSearchBoxes] = useLocalStorage(
-    `lcv-showSearchBoxes-${regime}`,
-    compact,
-  )
-  const [sideBySide, setSideBySide] = useLocalStorage(
-    `lcv-sideBySide-${regime}`,
-    compact,
-  )
-
+  const prefs = useSearchBoxPrefs(model.views.length)
   const syntenyModel = asSyntenyModel(model)
-
-  // Track selectors for each synteny level (between adjacent rows) and each
-  // individual genome row. Shown flat for a two-genome view, grouped into
-  // submenus once there are more rows.
-  const syntenySelectors = views.slice(0, -1).map((_, idx) => ({
-    label: `Row ${idx + 1} → ${idx + 2} (${views[idx]!.assemblyNames.join(',')} → ${views[idx + 1]!.assemblyNames.join(',')})`,
-    onClick: () => {
-      model.activateTrackSelector(idx)
-    },
-  }))
-  const rowSelectors = views.map((view, idx) => ({
-    label: `Row ${idx + 1} track selector (${view.assemblyNames.join(',')})`,
-    onClick: () => {
-      view.activateTrackSelector()
-    },
-  }))
 
   return (
     <div className={classes.headerBar}>
-      <CascadingMenuButton
-        tooltip="Open track selectors"
-        menuItems={() =>
-          views.length === 2
-            ? [...syntenySelectors, ...rowSelectors]
-            : [
-                {
-                  label: 'Synteny track selectors',
-                  type: 'subMenu',
-                  subMenu: syntenySelectors,
-                },
-                {
-                  label: 'Row track selectors',
-                  type: 'subMenu',
-                  subMenu: rowSelectors,
-                },
-              ]
-        }
-      >
-        <TrackSelectorIcon />
-      </CascadingMenuButton>
-      <CascadingMenuButton
-        tooltip="View options"
-        menuItems={() => [
-          {
-            label: 'Row view menus',
-            type: 'subMenu',
-            subMenu: views.map((view, idx) => ({
-              label: `View ${idx + 1} Menu`,
-              subMenu: view.menuItems(),
-            })),
-          },
-          ...model.headerMenuItems(),
-          {
-            label: 'Show...',
-            icon: VisibilityIcon,
-            subMenu: [
-              ...model.showMenuItems(),
-              {
-                label: 'Show search boxes',
-                type: 'checkbox' as const,
-                checked: showSearchBoxes,
-                onClick: () => {
-                  setShowSearchBoxes(!showSearchBoxes)
-                },
-              },
-              {
-                label: 'Search box orientation',
-                subMenu: [
-                  {
-                    label: 'Side-by-side',
-                    type: 'radio' as const,
-                    checked: sideBySide,
-                    onClick: () => {
-                      setSideBySide(true)
-                    },
-                  },
-                  {
-                    label: 'Vertical',
-                    type: 'radio' as const,
-                    checked: !sideBySide,
-                    onClick: () => {
-                      setSideBySide(false)
-                    },
-                  },
-                ],
-              },
-            ],
-          },
-        ]}
-      >
-        <MoreVertIcon />
-      </CascadingMenuButton>
-      <Tooltip title="Scroll wheel zooms instead of scrolls">
-        <ToggleButton
-          value="scrollZoom"
-          selected={model.scrollZoom}
-          onChange={() => {
-            model.setScrollZoom(!model.scrollZoom)
-          }}
-          className={classes.scrollZoomButton}
-          size="small"
-        >
-          <ZoomInMapIcon />
-        </ToggleButton>
-      </Tooltip>
+      <TrackSelectorMenuButton model={model} />
+      <ViewOptionsMenuButton model={model} prefs={prefs} />
+      <ScrollZoomToggle model={model} />
 
-      {syntenyModel ? (
-        <>
-          <Divider orientation="vertical" flexItem />
-          <ColorBySelector model={syntenyModel} />
-          <SyntenySettingsPopover model={syntenyModel} />
-        </>
-      ) : null}
+      {syntenyModel ? <SyntenyHeaderControls model={syntenyModel} /> : null}
 
-      {showSearchBoxes ? (
-        <span
-          className={cx(
-            classes.searchBoxContainer,
-            sideBySide ? classes.inline : classes.vertical,
-          )}
-        >
-          {views.map(view => (
-            <HeaderSearchBoxes key={view.id} view={view} />
-          ))}
-        </span>
+      {prefs.showSearchBoxes ? (
+        <HeaderSearchBoxRow model={model} sideBySide={prefs.sideBySide} />
       ) : null}
 
       <SyntenyWarnings model={model} />
