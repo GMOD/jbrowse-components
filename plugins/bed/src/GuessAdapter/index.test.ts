@@ -2,10 +2,6 @@ import PluginManager from '@jbrowse/core/PluginManager'
 
 import BedPlugin from '../index.ts'
 
-import type {
-  AdapterGuesser,
-  TrackTypeGuesser,
-} from '@jbrowse/core/util/tracks'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
 function setup() {
@@ -15,11 +11,11 @@ function setup() {
   const guessAdapter = pluginManager.evaluateExtensionPoint(
     'Core-guessAdapterForLocation',
     () => undefined,
-  ) as AdapterGuesser
+  )
   const guessTrackType = pluginManager.evaluateExtensionPoint(
     'Core-guessTrackTypeForLocation',
     () => undefined,
-  ) as TrackTypeGuesser
+  )
   return { guessAdapter, guessTrackType }
 }
 
