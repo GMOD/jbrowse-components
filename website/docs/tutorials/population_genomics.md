@@ -10,20 +10,18 @@ Population-genetic scans are per-window statistics running along the genome: Fst
 (differentiation between groups), nucleotide diversity (π) within a group, dxy
 (divergence between groups). Each has the same shape as a wiggle track, so once
 you've computed them from a multi-sample VCF you can load them into JBrowse and
-read the peaks and troughs against genes. No single statistic is decisive on its
-own, so this tutorial stacks Fst, π, and Tajima's D on a shared genomic axis:
-where the signals line up is what points to a selective sweep, an inversion, or
-gene flow.
+read the peaks and troughs against genes. JBrowse does no population-genetic
+inference itself; it draws the windowed statistic your tool produced. No single
+statistic is decisive alone, so this tutorial stacks Fst, π, and Tajima's D on a
+shared genomic axis: where the signals line up is what points to a selective
+sweep, an inversion, or gene flow.
 
 The [Jupyter selection-scan example](/docs/jbrowse_jupyter) runs this same
-compute-then-view loop in Python (a windowed Fst scan loaded straight from a
-DataFrame) and is available as a Colab notebook.
+compute-then-view loop in Python and is available as a Colab notebook.
 
-JBrowse does no population-genetic inference itself. It just draws the windowed
-statistic your tool produced. Everything below is a reproducible pipeline: each
-command runs against publicly hosted _Drosophila melanogaster_ data on the dm6
-assembly and produces bigWig tracks you can load. Along the way it reproduces
-two signals from the
+Everything below is a reproducible pipeline: each command runs against publicly
+hosted _Drosophila melanogaster_ data on the dm6 assembly and produces bigWig
+tracks you can load. Along the way it reproduces two signals from the
 [Drosophila Genetic Reference Panel](http://dgrp2.gnets.ncsu.edu/) (DGRP), a
 panel of 205 inbred lines from a single Raleigh, North Carolina population
 ([Mackay et al. 2012](https://doi.org/10.1038/nature10811)):
@@ -297,7 +295,7 @@ sits at low background Fst. Seeing all the arms at once is what makes the signal
 read as genuinely elevated, rather than a baseline with nothing to compare it
 to.
 
-<Figure src="/img/popgen/fst_in2lt_2L.png" caption="Genome-wide view of all six dm6 arms, each track auto-scaled to its own data. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t-inverted and standard-arrangement lines, a tall elevated block across the whole left arm of chromosome 2 that stands out against low background Fst on every other arm. Bottom: whole-panel nucleotide diversity (π), near-uniform across arms."/>
+<Figure src="/img/popgen/fst_in2lt_2L.png" caption="All six dm6 arms, each track auto-scaled. Top: the In(2L)t inversion extent. Middle: Fst between In(2L)t and standard-arrangement lines, a tall block across the whole left arm of chromosome 2 against low background on every other arm. Bottom: whole-panel nucleotide diversity (π)."/>
 
 Then we use the search box to jump to `Cyp6g1` (on `2R`) and add the Tajima's D
 track from the pipeline alongside π. Both statistics dip together in the same
@@ -306,7 +304,7 @@ sharply negative while sitting near zero genome-wide. Seeing both drop in the
 same window is what marks a hard sweep, where either one alone would be
 ambiguous.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across ~400 kb of 2R around Cyp6g1 (highlighted, with Cyp6g1 and Cyp6g2 labeled in the gene track below). Both dip together over the swept window: Tajima's D drops to about -2 against its near-zero genome-wide baseline, and π falls to under a tenth of the flanking background. That joint trough, deeper and wider than the scattered background dips on either side, is the hard-sweep signature."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across ~400 kb of 2R around Cyp6g1 (highlighted; Cyp6g1 and Cyp6g2 labeled in the gene track). Both dip together over the swept window (Tajima's D to about -2, π to under a tenth of the flanking background): the joint trough is the hard-sweep signature."/>
 
 Other resistance and selection loci can be examined the same way, reading the
 signal against the gene:
