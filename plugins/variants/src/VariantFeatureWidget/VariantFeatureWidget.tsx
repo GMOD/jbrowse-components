@@ -54,7 +54,9 @@ function AnnotationPanel({
   )
 }
 
-const svTypes = ['inversion', 'deletion', 'duplication', 'cnv', 'sv']
+// matched as substrings of the feature's SO term (e.g. 'copy_number' catches
+// 'copy_number_variation', 'duplication' catches 'tandem_duplication')
+const svTypes = ['inversion', 'deletion', 'duplication', 'copy_number', 'sv']
 
 function LaunchBreakendWidgetArea({
   model,
