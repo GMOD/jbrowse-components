@@ -306,7 +306,7 @@ sharply negative while sitting near zero genome-wide. Seeing both drop in the
 same window is what marks a hard sweep, where either one alone would be
 ambiguous.
 
-<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across a 1 Mb window of 2R over Cyp6g1 (highlighted band), with the RefSeq gene track below. Both statistics dip together at the locus: Tajima's D falls to about -2 against a genome-wide-neutral baseline near zero, and π drops to under a tenth of the arm-wide background in the same window."/>
+<Figure src="/img/popgen/tajimad_cyp6g1.png" caption="Tajima's D (top) and π (middle) across ~400 kb of 2R around Cyp6g1 (highlighted, with Cyp6g1 and Cyp6g2 labeled in the gene track below). Both dip together over the swept window: Tajima's D drops to about -2 against its near-zero genome-wide baseline, and π falls to under a tenth of the flanking background. That joint trough, deeper and wider than the scattered background dips on either side, is the hard-sweep signature."/>
 
 Other resistance and selection loci can be examined the same way, reading the
 signal against the gene:

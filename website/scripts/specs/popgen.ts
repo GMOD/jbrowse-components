@@ -156,11 +156,12 @@ export const popgenSpecs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'dm6',
-          // widened to ~2 Mb so the joint Tajima's D + π dip at Cyp6g1 reads as a
-          // sharp, localized trough against more arm-background on both sides
-          // (whole-panel bigWigs cover the whole arm, so zooming out just adds
-          // context, no empty flanks)
-          loc: 'chr2R:11,200,000-13,200,000',
+          // ~400 kb around the swept window: wide enough that the joint Tajima's
+          // D + π trough reads against local background on both sides, tight
+          // enough that the highlighted sweep is a large fraction of the view and
+          // the gene track thins to where Cyp6g1 is identifiable (at 2 Mb the dip
+          // was ~3% of the width and the gene lane a solid wall)
+          loc: 'chr2R:12,000,000-12,400,000',
           // band the full swept window (~12.13-12.20 Mb) rather than just the
           // gene body, so it visibly covers the whole joint Tajima's D + π dip
           // (reviewer: highlight the entire dip)
