@@ -9,7 +9,7 @@ export interface Opts {
   session?: string
   assembly?: string
   config?: string
-  // A jbrowse.org assembly to pull the whole config from: a UCSC db name
+  // A genomes.jbrowse.org assembly to pull the whole config from: a UCSC db name
   // (hg19, mm10) or a GenArk accession (GCA_/GCF_...). Supplies the assembly
   // (sequence, cytobands, refNameAliases, geneticCodes) plus hosted trackIds
   // referenceable via --track. See resolveHub.ts.

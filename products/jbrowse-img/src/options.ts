@@ -30,7 +30,7 @@ export const optionDefs: OptionDef[] = [
   {
     name: 'hub',
     description:
-      'Pull a whole config from jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)',
+      'Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)',
   },
   {
     name: 'track',
@@ -163,7 +163,7 @@ const examples: [string, string][] = [
   ],
   [
     '--hub hg19 --track hg19-ncbiRefSeqCurated --loc chr1:1-100000 --out out.svg',
-    'Pull the hg19 config from jbrowse.org and show a hosted track',
+    'Pull the hg19 config from genomes.jbrowse.org and show a hosted track',
   ],
   [
     '--config jbrowse.json --assembly hg38 --tracks tracks.json --loc chr1:1-100000 --out out.svg',
@@ -392,7 +392,7 @@ export function buildHelp(
     '',
     `Comparative subcommands (run "${scriptName} dotplot --help"): ${subcommandNames.join(', ')}`,
     '',
-    `Discovery: "${scriptName} list" lists jbrowse.org assemblies; "${scriptName} list <hub> [filter]" lists a hub's tracks`,
+    `Discovery: "${scriptName} list" lists genomes.jbrowse.org assemblies; "${scriptName} list <hub> [filter]" lists a hub's tracks`,
   ].join('\n')
 }
 

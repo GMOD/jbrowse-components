@@ -3,11 +3,11 @@ import { hubUrl } from '@jbrowse/core/util/fetchHub'
 
 import type { Config } from './types.ts'
 
-// jbrowse.org hosts a self-contained config.json per assembly: the assembly
-// (remote 2bit sequence, refNameAliases, cytobands, geneticCodes) plus its full
-// track set, all as remote URIs. `--hub` pulls one of these so a user gets
-// cytobands/aliasing/hosted trackIds without hand-wiring --fasta/--aliases. The
-// token -> URL mapping is core's (shared with the embedded mounts).
+// genomes.jbrowse.org hosts a self-contained config.json per assembly: the
+// assembly (remote 2bit sequence, refNameAliases, cytobands, geneticCodes) plus
+// its full track set, all as remote URIs. `--hub` pulls one of these so a user
+// gets cytobands/aliasing/hosted trackIds without hand-wiring --fasta/--aliases.
+// The token -> URL mapping is core's (shared with the embedded mounts).
 
 function isUrl(str: string) {
   return /^https?:\/\//i.test(str)
@@ -33,9 +33,9 @@ async function fetchConfig(url: string, context: string, hint = '') {
 }
 
 // Fetch the config object when it must come off the network: a --hub token
-// (resolved to its jbrowse.org URL) or a --config that is itself a URL. Returns
-// undefined when neither applies, so readData falls back to its local --config
-// file read.
+// (resolved to its genomes.jbrowse.org URL) or a --config that is itself a URL.
+// Returns undefined when neither applies, so readData falls back to its local
+// --config file read.
 export async function resolveConfigObject({
   hub,
   config,
@@ -47,7 +47,7 @@ export async function resolveConfigObject({
     return fetchConfig(
       hubUrl(hub),
       `Failed to fetch --hub "${hub}"`,
-      ' See https://jbrowse.org for available assemblies.',
+      ' See https://genomes.jbrowse.org for available assemblies.',
     )
   }
   if (config && isUrl(config)) {

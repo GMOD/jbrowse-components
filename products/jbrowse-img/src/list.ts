@@ -4,7 +4,7 @@ import { trackName, trackType } from './trackFields.ts'
 import type { Track } from './types.ts'
 
 // `jb2export list` discovery: print the assemblies hosted on
-// jbrowse.org, or the tracks inside one hub's config, so a user can find
+// genomes.jbrowse.org, or the tracks inside one hub's config, so a user can find
 // the --hub name and --track ids without leaving the terminal. The formatting is
 // split from the fetch so it's unit-testable without the network.
 
@@ -26,7 +26,7 @@ export function formatAssemblies(genomes: Record<string, UcscGenome>) {
     return `  ${name.padEnd(pad)}  ${about}`
   })
   return [
-    `Assemblies on jbrowse.org (${names.length}):`,
+    `Assemblies on genomes.jbrowse.org (${names.length}):`,
     ...lines,
     '',
     'Render one:      jb2export --hub <name> --loc <region> --out out.svg',
