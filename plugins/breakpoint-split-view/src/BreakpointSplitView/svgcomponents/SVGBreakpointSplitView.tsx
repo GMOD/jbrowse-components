@@ -71,7 +71,9 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // top y of each view's group (its assembly label floats in the fontSize band
   // above); the track bodies within start a further `offset` down. Shared by the
   // view groups and the overlay anchors so the two can't drift.
-  const viewTops = heights.map((_, idx) => fontSize + sum(heights.slice(0, idx)))
+  const viewTops = heights.map(
+    (_, idx) => fontSize + sum(heights.slice(0, idx)),
+  )
   const trackOffsets = visibleTracksByView.map((tracks, idx) =>
     getTrackOffsets(tracks, textOffset, viewTops[idx]! + offset),
   )
