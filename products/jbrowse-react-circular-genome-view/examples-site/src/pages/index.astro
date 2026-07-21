@@ -40,11 +40,13 @@ import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
       the assembly/track shape). Because it draws to canvas and uses browser-only
       APIs, render it client-side only — in a server-rendered framework (Next.js,
       Remix), load it with the framework's client-only wrapper (e.g.{' '}
-      <code>next/dynamic</code> with <code>{'{ ssr: false }'}</code>). The full
-      embedding guide is in the{' '}
+      <code>next/dynamic</code> with <code>{'{ ssr: false }'}</code>). The{' '}
+      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/"
+        >Embedding JBrowse tutorial</a
+      > is a worked example, and the{' '}
       <a href="https://jbrowse.org/jb2/docs/embedded_components/"
-        >embedded components docs</a
-      >.
+        >embedded components page</a
+      > compares the packages and links Vite/Next.js starter templates.
     </p>
   </div>
 
