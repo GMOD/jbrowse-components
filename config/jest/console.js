@@ -40,7 +40,10 @@ console.warn = (...args) => {
     r.includes('LD coloring: index SNP') ||
     // add-track.test.ts: 'adds bam track with all the custom fields' passes an
     // unregistered --assemblyNames value on purpose to exercise custom-field handling
-    r.includes('assembly name(s) not found in config')
+    r.includes('assembly name(s) not found in config') ||
+    // applyTrackOpts.test.ts: 'an unknown heightMode is ignored' passes
+    // heightMode:bogus on purpose to verify it's ignored
+    r.includes('unknown heightMode')
   ) {
     return undefined
   }
