@@ -2,7 +2,19 @@ import { useState } from 'react'
 
 import { JBrowse } from '@jbrowse/react-app2'
 
-import { volvoxConfig } from '../volvoxConfig.ts'
+const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
+
+const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
+
+const tracks = [
+  {
+    type: 'AlignmentsTrack',
+    trackId: 'volvox_cram',
+    name: 'volvox-sorted.cram',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'CramAdapter', uri: `${base}/volvox-sorted.cram` },
+  },
+]
 
 // onChange fires on every MST patch. Use it to persist the session (e.g. to
 // localStorage or a backend), drive an undo/redo stack, or sync external UI.
@@ -25,8 +37,8 @@ export default function WithOnChange() {
         </pre>
       </div>
       <JBrowse
-        assemblies={volvoxConfig.assemblies}
-        tracks={volvoxConfig.tracks}
+        assemblies={assemblies}
+        tracks={tracks}
         views={[
           {
             type: 'LinearGenomeView',

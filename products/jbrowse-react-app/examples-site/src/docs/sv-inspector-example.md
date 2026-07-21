@@ -1,7 +1,7 @@
 `SvInspectorView` pairs a spreadsheet of structural variants with a circular
 view, so clicking a row highlights the variant's breakend loci in the circular
 view. It uses the same `init` shape as the
-[spreadsheet view](../spreadsheet-example/):
+[spreadsheet view](#spreadsheet-example):
 
 ```js
 {
@@ -14,6 +14,6 @@ view. It uses the same `init` shape as the
 ```
 
 Like every view type, this is declared as a `defaultSession.views` entry. See
-[Linear synteny view](../synteny-views/#synteny-example) for the general
+[Linear synteny view](../comparative-views/#synteny-example) for the general
 pattern. The fields `init` accepts come from the
 [SvInspectorView model docs](https://jbrowse.org/jb2/docs/models/svinspectorview/).

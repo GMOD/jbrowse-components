@@ -1,26 +1,8 @@
 import { JBrowse } from '@jbrowse/react-app2'
 
-const assemblies = [
-  {
-    name: 'volvox',
-    sequence: {
-      adapter: {
-        type: 'TwoBitAdapter',
-        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-      },
-    },
-    refNameAliases: {
-      adapter: {
-        type: 'FromConfigAdapter',
-        adapterId: 'W6DyPGJ0UU',
-        features: [
-          { refName: 'ctgA', uniqueId: 'alias1', aliases: ['A'] },
-          { refName: 'ctgB', uniqueId: 'alias2', aliases: ['B'] },
-        ],
-      },
-    },
-  },
-]
+const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
+
+const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
 
 const tracks = [
   {
@@ -29,10 +11,7 @@ const tracks = [
     name: 'volvox structural variants',
     assemblyNames: ['volvox'],
     category: ['Variants'],
-    adapter: {
-      type: 'VcfTabixAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.dup.vcf.gz',
-    },
+    adapter: { type: 'VcfTabixAdapter', uri: `${base}/volvox.dup.vcf.gz` },
   },
   {
     type: 'AlignmentsTrack',
@@ -40,10 +19,7 @@ const tracks = [
     name: 'volvox-sorted.cram',
     assemblyNames: ['volvox'],
     category: ['Alignments'],
-    adapter: {
-      type: 'CramAdapter',
-      uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.cram',
-    },
+    adapter: { type: 'CramAdapter', uri: `${base}/volvox-sorted.cram` },
   },
 ]
 

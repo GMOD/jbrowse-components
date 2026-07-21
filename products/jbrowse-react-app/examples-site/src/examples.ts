@@ -11,14 +11,14 @@ export const pages: ExamplePage[] = [
     slug: 'basic-example',
     title: 'Basic example',
     description:
-      'A minimal app: one assembly, one alignments track, opened in a linear genome view, via the managed JBrowse component.',
+      'The whole app in one declarative call: a { name, uri } assembly, one alignments track, opened in a linear genome view.',
     group: 'Getting started',
     sections: [
       {
         slug: 'basic-example',
         title: 'Basic example',
         description:
-          'A minimal app: one assembly, one alignments track, opened in a linear genome view, via the managed JBrowse component.',
+          'The whole app in one declarative call: a { name, uri } assembly, one alignments track, opened in a linear genome view.',
       },
     ],
   },
@@ -26,7 +26,7 @@ export const pages: ExamplePage[] = [
     slug: 'customizing-the-app',
     title: 'Customizing the app',
     description:
-      'Small tweaks to the managed app: switch to the dark theme, observe state changes, fit it into a sized container, or offload data parsing to a web worker.',
+      'Small tweaks to the app: switch to the dark theme, observe state changes, fit it into a sized container, or offload data parsing to a web worker.',
     group: 'Getting started',
     sections: [
       {
@@ -61,7 +61,7 @@ export const pages: ExamplePage[] = [
     slug: 'loading-config',
     title: 'Loading configuration',
     description:
-      'Three ways to get a JBrowse config into the app: bundle it at build time, fetch it at runtime, or add tracks programmatically.',
+      'Get a JBrowse config into the app: bundle it at build time, fetch it at runtime, add tracks programmatically, or launch a view imperatively.',
     group: 'Loading config',
     sections: [
       {
@@ -82,56 +82,21 @@ export const pages: ExamplePage[] = [
         description:
           'Add a track config at runtime with addTrackConf + showTrack.',
       },
+      {
+        slug: 'with-launch-linear-genome-view',
+        title: 'Launch a view imperatively',
+        description:
+          'Open a linear genome view after mount via the LaunchView extension point, instead of the declarative views prop.',
+      },
     ],
   },
 
   // --- View types ---
   {
-    slug: 'with-launch-linear-genome-view',
-    title: 'Launch a linear genome view',
+    slug: 'comparative-views',
+    title: 'Comparative views',
     description:
-      'Open a linear genome view imperatively via the LaunchView extension point.',
-    group: 'View types',
-    sections: [
-      {
-        slug: 'with-launch-linear-genome-view',
-        title: 'Launch a linear genome view',
-        description:
-          'Open a linear genome view imperatively via the LaunchView extension point.',
-      },
-    ],
-  },
-  {
-    slug: 'circular-example',
-    title: 'Circular view',
-    description: 'Show structural variants in a circular view.',
-    group: 'View types',
-    sections: [
-      {
-        slug: 'circular-example',
-        title: 'Circular view',
-        description: 'Show structural variants in a circular view.',
-      },
-    ],
-  },
-  {
-    slug: 'dotplot-example',
-    title: 'Dotplot view',
-    description: 'A self-vs-self volvox dotplot.',
-    group: 'View types',
-    sections: [
-      {
-        slug: 'dotplot-example',
-        title: 'Dotplot view',
-        description: 'A self-vs-self volvox dotplot.',
-      },
-    ],
-  },
-  {
-    slug: 'synteny-views',
-    title: 'Synteny views',
-    description:
-      'Compare assemblies with linear synteny — declaratively, via the imperative mount, or stacked multi-way.',
+      'Compare assemblies: a linear synteny view (declaratively or via the imperative mount), a dotplot, and a stacked multi-way synteny view.',
     group: 'View types',
     sections: [
       {
@@ -140,10 +105,15 @@ export const pages: ExamplePage[] = [
         description: 'Compare two assemblies with a PAF synteny track.',
       },
       {
+        slug: 'dotplot-example',
+        title: 'Dotplot view',
+        description: 'A self-vs-self volvox dotplot.',
+      },
+      {
         slug: 'create-app-synteny',
         title: 'Synteny via the imperative mount',
         description:
-          'Mount the full app with createApp() — the framework-agnostic primitive non-React hosts (anywidget, htmlwidgets) use — and open a synteny view declaratively.',
+          'Mount the app with createApp() — the framework-agnostic primitive non-React hosts (anywidget, htmlwidgets) use — and open a synteny view declaratively.',
       },
       {
         slug: 'multiway-synteny-example',
@@ -154,53 +124,33 @@ export const pages: ExamplePage[] = [
     ],
   },
   {
-    slug: 'breakpoint-split-example',
-    title: 'Breakpoint split view',
-    description: 'Visualize a structural variant across two regions.',
+    slug: 'structural-variant-views',
+    title: 'Structural variant views',
+    description:
+      'Inspect structural variants in volvox: a circular overview, a breakpoint split view, a VCF spreadsheet, the SV inspector, and several of these stacked in one session.',
     group: 'View types',
     sections: [
+      {
+        slug: 'circular-example',
+        title: 'Circular view',
+        description: 'Show structural variants in a circular view.',
+      },
       {
         slug: 'breakpoint-split-example',
         title: 'Breakpoint split view',
         description: 'Visualize a structural variant across two regions.',
       },
-    ],
-  },
-  {
-    slug: 'spreadsheet-example',
-    title: 'Spreadsheet view',
-    description: 'Load a VCF into a sortable, filterable spreadsheet.',
-    group: 'View types',
-    sections: [
       {
         slug: 'spreadsheet-example',
         title: 'Spreadsheet view',
         description: 'Load a VCF into a sortable, filterable spreadsheet.',
       },
-    ],
-  },
-  {
-    slug: 'sv-inspector-example',
-    title: 'SV inspector',
-    description:
-      'Inspect a structural-variant VCF with a paired spreadsheet + circular view.',
-    group: 'View types',
-    sections: [
       {
         slug: 'sv-inspector-example',
         title: 'SV inspector',
         description:
           'Inspect a structural-variant VCF with a paired spreadsheet + circular view.',
       },
-    ],
-  },
-  {
-    slug: 'multi-view-session',
-    title: 'Multiple views in one session',
-    description:
-      'Stack a circular SV overview and a linear detail view — the app manages both at once.',
-    group: 'View types',
-    sections: [
       {
         slug: 'multi-view-session',
         title: 'Multiple views in one session',
@@ -239,6 +189,8 @@ export const pages: ExamplePage[] = [
     description:
       'A richer hg38 session: genes, repeats, exome alignments, variants, and conservation.',
     group: 'Real-world demos',
+    // section break: how-to examples above, real-data demo below
+    dividerBefore: true,
     sections: [
       {
         slug: 'human-demo',

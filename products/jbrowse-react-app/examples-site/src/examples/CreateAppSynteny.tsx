@@ -1,6 +1,27 @@
 import { createApp } from '@jbrowse/react-app2'
 
-import { volvoxConfig } from '../volvoxConfig.ts'
+const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
+
+const assemblies = [
+  { name: 'volvox', uri: `${base}/volvox.2bit` },
+  { name: 'volvox_del', uri: `${base}/volvox_del.fa` },
+]
+
+const tracks = [
+  {
+    type: 'SyntenyTrack',
+    trackId: 'volvox_del.paf',
+    name: 'volvox_del.paf',
+    assemblyNames: ['volvox', 'volvox_del'],
+    category: ['Synteny'],
+    adapter: {
+      type: 'PAFAdapter',
+      uri: `${base}/volvox_del.paf`,
+      targetAssembly: 'volvox',
+      queryAssembly: 'volvox_del',
+    },
+  },
+]
 
 // Every other example on this site uses the <JBrowse> React component. This one
 // uses `createApp` instead — the framework-agnostic imperative mount that
@@ -14,8 +35,8 @@ export default function CreateAppSynteny() {
       ref={el => {
         if (el) {
           const controller = createApp(el, {
-            assemblies: volvoxConfig.assemblies,
-            tracks: volvoxConfig.tracks,
+            assemblies,
+            tracks,
             views: [
               {
                 type: 'LinearSyntenyView',

@@ -1,4 +1,6 @@
 ---
+import DotplotExample from "../examples/DotplotExample.tsx"
+import dotplotCode from "../examples/DotplotExample.tsx?raw"
 import SyntenyExample from "../examples/SyntenyExample.tsx"
 import syntenyCode from "../examples/SyntenyExample.tsx?raw"
 import CreateAppSynteny from "../examples/CreateAppSynteny.tsx"
@@ -9,7 +11,8 @@ import { pages, section } from "../examples.ts"
 import Layout from "../layouts/ExampleLayout.astro"
 import Section from "../layouts/ExampleSection.astro"
 
-const page = pages.find(p => p.slug === "synteny-views")!
+const page = pages.find(p => p.slug === "comparative-views")!
+const dotplot = section(page, "dotplot-example")
 const synteny = section(page, "synteny-example")
 const createAppSection = section(page, "create-app-synteny")
 const multiway = section(page, "multiway-synteny-example")
@@ -18,6 +21,9 @@ const multiway = section(page, "multiway-synteny-example")
 <Layout page={page}>
   <Section {...synteny} code={syntenyCode}>
     <SyntenyExample client:only="react" />
+  </Section>
+  <Section {...dotplot} code={dotplotCode}>
+    <DotplotExample client:only="react" />
   </Section>
   <Section {...createAppSection} code={createAppSyntenyCode}>
     <CreateAppSynteny client:only="react" />

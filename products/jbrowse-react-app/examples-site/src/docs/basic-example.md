@@ -32,6 +32,14 @@ import { JBrowse } from '@jbrowse/react-app2'
 />
 ```
 
+The simplest `assemblies` entry is just a name and a sequence-file URL —
+`{ name: 'volvox', uri: 'https://.../volvox.2bit' }` (see the source below).
+JBrowse picks the adapter (`TwoBitAdapter`, `BgzipFastaAdapter`, or
+`IndexedFastaAdapter`) from the file extension and derives the `.fai`/`.gzi`
+index siblings, so no adapter-type boilerplate is needed. Add
+`refNameAliases: { uri: '.../aliases.txt' }` when a track's reference names
+differ from the sequence's (e.g. `chr1` vs `1`).
+
 The stylesheet import is required. Without it the view manager's tabs render
 unstyled. Import it once, anywhere in your app. It ships as a plain CSS file, so
 a build without a CSS loader can instead link
@@ -43,6 +51,12 @@ between the two. Unlike JBrowse Web, the embedded component does **not**
 auto-fetch a `config.json` from a URL parameter. You control how and when the
 config is loaded (see
 [Import a config.json](../loading-config/#with-import-config-json)).
+
+Each view's `init` blob is the same shape JBrowse Web serializes into its
+`?session=spec-…` URL, so its full field set — per-view `loc`/`tracks`,
+per-track `displaySnapshot` (initial display type, `height`, `color`,
+`colorBy`, …) — is documented in the
+[URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#session-spec).
 
 `<JBrowse>` also accepts:
 

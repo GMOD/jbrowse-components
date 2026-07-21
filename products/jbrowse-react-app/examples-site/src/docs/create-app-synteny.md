@@ -9,7 +9,7 @@ primitive that non-React hosts (Jupyter anywidgets, R htmlwidgets, plain
 
 Because it drives the full app, one declarative `views` list reaches every view
 type. Here a `LinearSyntenyView`, the exact same `{ type, init }` shape the
-[`<JBrowse>` synteny example](../synteny-views/#synteny-example) uses:
+[`<JBrowse>` synteny example](#synteny-example) uses:
 
 ```js
 import '@jbrowse/react-app2/styles.css'

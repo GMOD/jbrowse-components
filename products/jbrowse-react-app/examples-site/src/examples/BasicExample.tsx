@@ -1,24 +1,11 @@
 import { JBrowse } from '@jbrowse/react-app2'
 
+// The flattest assembly form: a name and a sequence-file URL. JBrowse picks the
+// adapter (TwoBit/BgzipFasta/IndexedFasta) from the file extension.
 const assemblies = [
   {
     name: 'volvox',
-    sequence: {
-      adapter: {
-        type: 'TwoBitAdapter',
-        uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
-      },
-    },
-    refNameAliases: {
-      adapter: {
-        type: 'FromConfigAdapter',
-        adapterId: 'W6DyPGJ0UU',
-        features: [
-          { refName: 'ctgA', uniqueId: 'alias1', aliases: ['A'] },
-          { refName: 'ctgB', uniqueId: 'alias2', aliases: ['B'] },
-        ],
-      },
-    },
+    uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
   },
 ]
 
@@ -28,7 +15,6 @@ const tracks = [
     trackId: 'volvox_cram',
     name: 'volvox-sorted.cram',
     assemblyNames: ['volvox'],
-    category: ['Alignments'],
     adapter: {
       type: 'CramAdapter',
       uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox-sorted.cram',

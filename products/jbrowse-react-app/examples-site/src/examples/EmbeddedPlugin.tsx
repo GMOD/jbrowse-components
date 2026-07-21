@@ -1,11 +1,23 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { JBrowse } from '@jbrowse/react-app2'
 
-import { volvoxConfig } from '../volvoxConfig.ts'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
+
+const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
+
+const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
+
+const tracks = [
+  {
+    type: 'AlignmentsTrack',
+    trackId: 'volvox_cram',
+    name: 'volvox-sorted.cram',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'CramAdapter', uri: `${base}/volvox-sorted.cram` },
+  },
+]
 
 class HighlightRegionPlugin extends Plugin {
   name = 'HighlightRegionPlugin'
@@ -52,8 +64,8 @@ class HighlightRegionPlugin extends Plugin {
 export default function EmbeddedPlugin() {
   return (
     <JBrowse
-      assemblies={volvoxConfig.assemblies}
-      tracks={volvoxConfig.tracks}
+      assemblies={assemblies}
+      tracks={tracks}
       plugins={[HighlightRegionPlugin]}
       views={[
         {

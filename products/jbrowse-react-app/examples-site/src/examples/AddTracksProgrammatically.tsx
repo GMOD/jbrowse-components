@@ -2,15 +2,21 @@ import { useRef, useState } from 'react'
 
 import { JBrowse } from '@jbrowse/react-app2'
 
-import { volvoxConfig } from '../volvoxConfig.ts'
-
 import type { ViewModel } from '@jbrowse/react-app2'
 
-// a track config you want to add at runtime instead of up front (here pulled
-// from the volvox config, but it could be any track config object)
-const genesTrackConf = volvoxConfig.tracks.find(
-  t => t.trackId === 'gff3tabix_genes',
-)!
+const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
+
+const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
+
+// a track config you want to add at runtime instead of up front — it could be
+// any track config object, e.g. one a user built or fetched
+const genesTrackConf = {
+  type: 'FeatureTrack',
+  trackId: 'volvox_genes',
+  name: 'Volvox genes',
+  assemblyNames: ['volvox'],
+  adapter: { type: 'Gff3TabixAdapter', uri: `${base}/volvox.sort.gff3.gz` },
+}
 
 export default function AddTracksProgrammatically() {
   // ref to the live engine, for imperative control after launch
@@ -21,7 +27,7 @@ export default function AddTracksProgrammatically() {
     const state = ref.current
     if (state) {
       state.jbrowse.addTrackConf(genesTrackConf)
-      state.session.views[0]?.showTrack('gff3tabix_genes')
+      state.session.views[0]?.showTrack('volvox_genes')
       setAdded(true)
     }
   }
@@ -38,10 +44,8 @@ export default function AddTracksProgrammatically() {
       </button>
       <JBrowse
         ref={ref}
-        assemblies={volvoxConfig.assemblies}
-        tracks={volvoxConfig.tracks.filter(
-          t => t.trackId !== 'gff3tabix_genes',
-        )}
+        assemblies={assemblies}
+        tracks={[]}
         sessionName="Programmatic tracks"
         views={[
           {
