@@ -1558,7 +1558,7 @@ consequences:
 - Metadata-driven, single promotable flag feeds the UI (~85%): architecturally
   sound; the badge already proves zero-per-slot enumeration works.
 - Track-menu auto-generation via the mixin (~80%): operates on the live display
-  model, where `resolveSlot`/`getConfResolved` already work correctly and
+  model, where `resolveSlot`/`getConf` already work correctly and
   reactively. The safe generalization.
 - Config-editor GUI as a clean drop-in (~40%): feasible, but it's the three
   frictions above — detached target, two persistence axes, raw-vs-resolved
@@ -2028,3 +2028,23 @@ natively before the waterfill ever compresses anything.
   behaves before investing further.
 
 Bigger item, only if there's real demand: making @jbrowse/shader-tools a true third-party CLI (ADR-030) — lifting the hardcoded REPO_ROOT/SHARED_INCLUDE into args. That's a project, not a cleanup, and only pays off if an external plugin repo actually needs to compile its own .slang.
+
+
+
+## packages/add-track-core
+
+A minimal shared package (zero external deps) for adapter guessing logic, so the CLI and the
+plugins don't duplicate file-extension → adapter-type and adapter-type → track-type mappings.
+
+The CLI's `guessAdapter`/`guessFileNames`/`adapterTypesToTrackTypeMap` in
+`products/jbrowse-cli/src/commands/add-track-utils/adapter-utils.ts` and the plugins'
+`Core-guessAdapterForLocation` / `Core-guessTrackTypeForLocation` extension points both encode
+the same knowledge. When a new adapter is added the list must be updated in both places, which
+is how bugs creep in (e.g. missing BedGraphTabixAdapter, unescaped regex dots).
+
+A shared package would centralize at least the mappings (regex constants, type maps). The CLI
+flat-function path and the plugin extension-point path could remain separate consumers; they
+just import from one source of truth.
+
+Motivation: avoid CLI depending directly on `packages/core`, and eliminate the duplication
+that causes drift bugs.
