@@ -215,7 +215,7 @@ describe('transcript highlight context menu', () => {
     expect(menuLabels(display)).toContain('This mRNA')
   })
 
-  it('falls back to span alone for an unnamed subfeature, boxing its twins', () => {
+  it('boxes only the clicked subfeature even when unnamed, not its same-span twin', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const unnamed = makeTranscript({ displayLabel: undefined })
@@ -224,9 +224,9 @@ describe('transcript highlight context menu', () => {
     display.openContextMenu(gene, 0, 0, 0, unnamed)
     clickLabel(display, 'This mRNA')
 
-    // no name to tell it from its same-span sibling, so both get boxed. Deliberate:
-    // requiring a name here would resolve to nothing and make the click dead.
-    expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1', 'EDEN.2'])
+    // right-click highlights resolve by the clicked feature's exact id, not
+    // span/name, so a same-span sibling is never swept in regardless of naming
+    expect([...display.highlightedFeatureIdSet]).toEqual(['EDEN.1'])
   })
 
   it('boxes the clicked isoform on hover while the menu is open', () => {
