@@ -9,6 +9,7 @@ import { observer } from 'mobx-react'
 
 import { getTraMate } from '../VcfFeature/util.ts'
 import AltFormatter from './AltFormatter.tsx'
+import { isSvLaunchType } from './svLaunchType.ts'
 import VariantSampleGrid from './VariantSampleGrid/VariantSampleGrid.tsx'
 import { variantFieldDescriptions } from './variantFieldDescriptions.ts'
 
@@ -54,10 +55,6 @@ function AnnotationPanel({
   )
 }
 
-// matched as substrings of the feature's SO term (e.g. 'copy_number' catches
-// 'copy_number_variation', 'duplication' catches 'tandem_duplication')
-const svTypes = ['inversion', 'deletion', 'duplication', 'copy_number', 'sv']
-
 function LaunchBreakendWidgetArea({
   model,
   feat,
@@ -82,7 +79,7 @@ function LaunchBreakendWidgetArea({
       model={model}
       locStrings={[`${mate.refName}:${mate.start}`]}
     />
-  ) : svTypes.some(t => type.includes(t)) ? (
+  ) : isSvLaunchType(type) ? (
     <LaunchSvPanel feature={feat} model={model} />
   ) : null
 }
